@@ -1,0 +1,19 @@
+query EnvironmentsQuery {
+  viewer {
+    id
+    environments {
+      nodes {
+        id
+        name
+      }
+    }
+  }
+}
+
+query GetDefaultEnvironmentQuery {
+  viewer {
+    defaultEnvironment {
+      id
+    }
+  }
+}

@@ -1,0 +1,53 @@
+mutation CreateParameterQuery($keyName: String!) {
+  createParameter(input: { keyName: $keyName }) {
+    clientMutationId
+    parameter {
+      id
+    }
+    errors {
+      path
+      message
+    }
+  }
+}
+
+query GetParameterByNameQuery($envName: String, $keyName: String!) {
+  viewer {
+    parameter(keyName: $keyName) {
+      id
+      environmentValue(environmentName: $envName) {
+        parameterValue
+      }
+    }
+  }
+}
+
+
+query ParametersQuery($environmentId: ID) {
+  viewer {
+    id
+    parameters(orderBy: { keyName: ASC }) {
+      nodes {
+        id
+        keyName
+        environmentValue(environmentId: $environmentId) {
+          parameterValue
+        }
+      }
+    }
+  }
+}
+
+mutation UpdateParameterQuery($environmentId: ID, $id: ID!, $value: String) {
+  updateParameter(input: { id: $id, value: $value, environmentId: $environmentId }) {
+    clientMutationId
+    parameter {
+      id
+    }
+
+    errors {
+      path
+      message
+    }
+  }
+}
