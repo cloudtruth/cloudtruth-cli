@@ -197,13 +197,13 @@ mod tests {
 
     #[test]
     fn completions_work_without_config() {
-        let mut cmd = Command::cargo_bin(cli::binary_name()).unwrap();
+        let mut cmd = cmd();
         cmd.args(&["completions", "bash"]).assert().success();
     }
 
     #[test]
     fn completions_error_with_bad_shell_name() {
-        let mut cmd = Command::cargo_bin(cli::binary_name()).unwrap();
+        let mut cmd = cmd();
         cmd.args(&["completions", "bad"])
             .assert()
             .failure()
@@ -212,7 +212,7 @@ mod tests {
 
     #[test]
     fn environments_commands_validate_config() {
-        let mut cmd = Command::cargo_bin(cli::binary_name()).unwrap();
+        let mut cmd = cmd();
         cmd.env("CT_API_KEY", "")
             .env("NO_COLOR", "true")
             .args(&["environments", "list"])
@@ -223,7 +223,7 @@ mod tests {
 
     #[test]
     fn parameters_commands_validate_config() {
-        let mut cmd = Command::cargo_bin(cli::binary_name()).unwrap();
+        let mut cmd = cmd();
         cmd.env("CT_API_KEY", "")
             .env("NO_COLOR", "true")
             .args(&["parameters", "list"])
@@ -234,7 +234,7 @@ mod tests {
 
     #[test]
     fn templates_commands_validate_config() {
-        let mut cmd = Command::cargo_bin(cli::binary_name()).unwrap();
+        let mut cmd = cmd();
         cmd.env("CT_API_KEY", "")
             .env("NO_COLOR", "true")
             .args(&["templates", "list"])
