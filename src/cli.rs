@@ -1,4 +1,4 @@
-use clap::{App, Arg, Shell, SubCommand};
+use clap::{App, AppSettings, Arg, Shell, SubCommand};
 
 pub fn binary_name() -> String {
     option_env!("CARGO_PKG_NAME")
@@ -9,6 +9,7 @@ pub fn binary_name() -> String {
 pub fn build_cli() -> App<'static, 'static> {
     App::new("CloudTruth")
         .version("0.1.0")
+        .setting(AppSettings::SubcommandRequiredElseHelp)
         .arg(
             Arg::with_name("api_key")
                 .short("k")

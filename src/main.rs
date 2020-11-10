@@ -165,6 +165,36 @@ mod tests {
     use predicates::prelude::predicate::str::*;
     use std::process::Command;
 
+    fn cmd() -> Command {
+        Command::cargo_bin(cli::binary_name()).unwrap()
+    }
+
+    fn help_text() -> String {
+        let mut help_cmd = cmd();
+        help_cmd
+            .env("NO_COLOR", "true")
+            .arg("help")
+            .assert()
+            .success();
+
+        let help_message = std::str::from_utf8(&help_cmd.output().unwrap().stdout)
+            .unwrap()
+            .to_string();
+
+        help_message
+    }
+
+    #[test]
+    fn requires_at_least_one_subommand() {
+        // Verify that invoking the CLI app without any arguments sets an error status code and
+        // prints out the help message.
+        let mut cmd = cmd();
+        cmd.env("NO_COLOR", "true")
+            .assert()
+            .failure()
+            .stderr(help_text());
+    }
+
     #[test]
     fn completions_work_without_config() {
         let mut cmd = Command::cargo_bin(cli::binary_name()).unwrap();
