@@ -8,8 +8,25 @@ license = "Apache-2.0"
 homepage = "https://cloudtruth.com/"
 repository = "https://github.com/cloudtruth/cloudtruth-cli"
 readme = "README.md"
+build = "build.rs"
+
+[package.metadata.deb]
+assets = [
+    ["target/release/cloudtruth", "usr/bin/", "755"],
+    ["target/release/completions/cloudtruth.bash", "usr/share/bash-completion/completions/cloudtruth", "644"],
+    ["target/release/completions/cloudtruth.fish", "usr/share/fish/vendor_completions.d/cloudtruth.fish", "644"],
+    ["target/release/completions/_cloudtruth", "usr/share/zsh/vendor-completions/_cloudtruth", "644"],
+    ["README.md", "usr/share/doc/cloudtruth/", "644"],
+]
+extended-description = """\
+The cloudtruth CLI provides an easy way to script actions related to configuration
+data you have stored within the CloudTruth configuration management service.
+"""
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[build-dependencies]
+clap = "2.33.3"
 
 [dependencies]
 clap = "2.33.3"
