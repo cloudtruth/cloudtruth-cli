@@ -53,7 +53,7 @@ impl Config {
         indoc!(
             r#"
             # Your CloudTruth API key.
-            api_key: 
+            api_key: ""
         "#
         )
     }
