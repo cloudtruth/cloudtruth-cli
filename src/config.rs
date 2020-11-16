@@ -12,6 +12,20 @@ static INSTANCE: OnceCell<Config> = OnceCell::new();
 
 const CONFIG_FILE_NAME: &str = "cli.yml";
 
+// Linux follows the XDG directory layout and creates one directory per application. However, our
+// configuration files indicate the application name, so we can use a shared directory.
+#[cfg(target_os = "linux")]
+const APPLICATION_NAME: &str = "CloudTruth";
+
+#[cfg(not(target_os = "linux"))]
+const APPLICATION_NAME: &str = "CloudTruth CLI";
+
+#[cfg(target_os = "macos")]
+const ORGANIZATION_NAME: &str = "cloudtruth";
+
+#[cfg(not(target_os = "macos"))]
+const ORGANIZATION_NAME: &str = "CloudTruth";
+
 #[derive(Serialize, Deserialize, Debug, Default)]
 pub struct Config {
     pub api_key: String,
@@ -26,7 +40,7 @@ pub struct ValidationError {
 impl Config {
     fn config_file() -> Option<PathBuf> {
         // Load settings from the configuration file if it exists.
-        if let Some(project_dirs) = ProjectDirs::from("com", "cloudtruth", "CloudTruth") {
+        if let Some(project_dirs) = ProjectDirs::from("com", ORGANIZATION_NAME, APPLICATION_NAME) {
             Some(project_dirs.config_dir().join(CONFIG_FILE_NAME))
         } else {
             None
@@ -134,6 +148,7 @@ mod tests {
     use crate::config::Config;
     use serial_test::serial;
     use std::env;
+    use std::path::PathBuf;
 
     // Any tests that manipulate environment variables should be run serially as environment
     // variables are a shared global resource. Any such tests should also restore the environment
@@ -170,5 +185,60 @@ mod tests {
         assert_eq!(config.server_url, "http://localhost:7001/graphql");
 
         env::remove_var("CT_SERVER_URL");
+    }
+
+    #[test]
+    #[cfg(target_os = "linux")]
+    #[serial]
+    fn get_config_file_location() {
+        let user_dirs = directories::UserDirs::new().unwrap();
+        let home_dir = user_dirs.home_dir();
+        let mut expected = PathBuf::new();
+        expected.push(home_dir);
+        expected.push(".config/cloudtruth/cli.yml");
+
+        assert_eq!(Config::config_file(), Some(expected))
+    }
+
+    #[test]
+    #[cfg(target_os = "linux")]
+    #[serial]
+    fn get_config_file_location_with_custom_xdg_config() {
+        let old_value = env::var("XDG_CONFIG_HOME ");
+        env::set_var("XDG_CONFIG_HOME", "/tmp");
+
+        let expected = PathBuf::from("/tmp/cloudtruth/cli.yml");
+
+        assert_eq!(Config::config_file(), Some(expected));
+
+        if let Ok(old_value) = old_value {
+            env::set_var("XDG_CONFIG_HOME", old_value);
+        } else {
+            env::remove_var("XDG_CONFIG_HOME");
+        }
+    }
+
+    #[test]
+    #[cfg(target_os = "macos")]
+    fn get_config_file_location() {
+        let user_dirs = directories::UserDirs::new().unwrap();
+        let home_dir = user_dirs.home_dir();
+        let mut expected = PathBuf::new();
+        expected.push(home_dir);
+        expected.push("Library/Application Support/com.cloudtruth.CloudTruth-CLI/cli.yml");
+
+        assert_eq!(Config::config_file(), Some(expected))
+    }
+
+    #[test]
+    #[cfg(target_os = "windows")]
+    fn get_config_file_location() {
+        let user_dirs = directories::UserDirs::new().unwrap();
+        let home_dir = user_dirs.home_dir();
+        let mut expected = PathBuf::new();
+        expected.push(home_dir);
+        expected.push("AppData/Roaming/CloudTruth/CloudTruth CLI/config/cli.yml");
+
+        assert_eq!(Config::config_file(), Some(expected))
     }
 }
