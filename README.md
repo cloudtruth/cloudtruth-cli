@@ -14,14 +14,15 @@ You can configure the application using:
 * Environment variables
 * Command-line arguments
 
+
 ### File-based Configuration
 
 The CloudTruth CLI utility stores its configuration in the YAML format.
 The configuration file must be named _cli.yml_ and must reside in the standard application configuration location for your platform:
 
 * Linux -> $XDG_CONFIG_HOME/cloudtruth/cli.yml
-* macOS -> $HOME/Library/Application Support/com.cloudtruth.CloudTruth/cli.yml
-* Windows -> %AppData%\cloudtruth\CloudTruth\cli.yml
+* macOS -> $HOME/Library/Application Support/com.cloudtruth.CloudTruth-CLI/cli.yml
+* Windows -> %AppData%\CloudTruth\CloudTruth CLI\config\cli.yml
 
 You can run `cloudtruth config edit` to initialize and open the configuration in your default editor.
 

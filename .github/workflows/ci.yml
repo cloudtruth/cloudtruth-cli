@@ -72,14 +72,6 @@ jobs:
           override: true
           components: rustfmt, clippy
 
-      - uses: actions/cache@v2
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            target
-          key: ${{ runner.os }}-cargo-${{ steps.rust.outputs.rustc_hash }}-${{ hashFiles('**/Cargo.lock') }}
-
       - name: Show Rust version and platform details
         run: rustc --version --verbose
 
