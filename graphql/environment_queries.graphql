@@ -1,10 +1,12 @@
 query EnvironmentsQuery {
   viewer {
     id
-    environments {
-      nodes {
-        id
-        name
+    organization {
+      environments {
+        nodes {
+          id
+          name
+        }
       }
     }
   }
@@ -12,8 +14,10 @@ query EnvironmentsQuery {
 
 query GetDefaultEnvironmentQuery {
   viewer {
-    defaultEnvironment {
-      id
+    organization {
+      environment {
+        id
+      }
     }
   }
 }

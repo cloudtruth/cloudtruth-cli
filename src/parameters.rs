@@ -116,8 +116,9 @@ impl Parameters {
         &self,
         env_name: Option<&str>,
         key_name: &str,
-    ) -> GraphQLResult<Option<get_parameter_by_name_query::GetParameterByNameQueryViewerParameter>>
-    {
+    ) -> GraphQLResult<
+        Option<get_parameter_by_name_query::GetParameterByNameQueryViewerOrganizationParameter>,
+    > {
         let query = GetParameterByNameQuery::build_query(get_parameter_by_name_query::Variables {
             env_name: env_name.map(|name| name.to_string()),
             key_name: key_name.to_string(),
@@ -128,7 +129,11 @@ impl Parameters {
         if let Some(errors) = response_body.errors {
             Err(GraphQLError::ResponseError(errors))
         } else if let Some(data) = response_body.data {
-            Ok(data.viewer.parameter)
+            Ok(data
+                .viewer
+                .organization
+                .expect("Primary organization not found")
+                .parameter)
         } else {
             Err(GraphQLError::MissingDataError)
         }
@@ -145,6 +150,8 @@ impl Parameters {
         } else if let Some(data) = response_body.data {
             Ok(data
                 .viewer
+                .organization
+                .expect("Primary organization not found")
                 .parameters
                 .nodes
                 .into_iter()

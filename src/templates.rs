@@ -39,7 +39,12 @@ impl Templates {
         if let Some(errors) = response_body.errors {
             Err(GraphQLError::ResponseError(errors))
         } else if let Some(data) = response_body.data {
-            Ok(data.viewer.template.and_then(|t| t.evaluated))
+            Ok(data
+                .viewer
+                .organization
+                .expect("Primary organization not found")
+                .template
+                .and_then(|t| t.evaluated))
         } else {
             Err(GraphQLError::MissingDataError)
         }
@@ -54,6 +59,8 @@ impl Templates {
         } else if let Some(data) = response_body.data {
             let mut list = data
                 .viewer
+                .organization
+                .expect("Primary organization not found")
                 .templates
                 .nodes
                 .into_iter()

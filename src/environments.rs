@@ -45,7 +45,12 @@ impl Environments {
             if let Some(errors) = response_body.errors {
                 Err(GraphQLError::ResponseError(errors))
             } else if let Some(data) = response_body.data {
-                Ok(data.viewer.default_environment.map(|env| env.id))
+                Ok(data
+                    .viewer
+                    .organization
+                    .expect("Primary organization not found")
+                    .environment
+                    .map(|env| env.id))
             } else {
                 Err(GraphQLError::MissingDataError)
             }
@@ -65,14 +70,20 @@ impl Environments {
 
     fn get_environments_full(
         &self,
-    ) -> GraphQLResult<Vec<environments_query::EnvironmentsQueryViewerEnvironmentsNodes>> {
+    ) -> GraphQLResult<Vec<environments_query::EnvironmentsQueryViewerOrganizationEnvironmentsNodes>>
+    {
         let query = EnvironmentsQuery::build_query(environments_query::Variables {});
         let response_body = graphql_request::<_, environments_query::ResponseData>(&query)?;
 
         if let Some(errors) = response_body.errors {
             Err(GraphQLError::ResponseError(errors))
         } else if let Some(data) = response_body.data {
-            Ok(data.viewer.environments.nodes)
+            Ok(data
+                .viewer
+                .organization
+                .expect("Primary organization not found")
+                .environments
+                .nodes)
         } else {
             Err(GraphQLError::MissingDataError)
         }

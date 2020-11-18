@@ -13,10 +13,12 @@ mutation CreateParameterQuery($keyName: String!) {
 
 query GetParameterByNameQuery($envName: String, $keyName: String!) {
   viewer {
-    parameter(keyName: $keyName) {
-      id
-      environmentValue(environmentName: $envName) {
-        parameterValue
+    organization {
+      parameter(keyName: $keyName) {
+        id
+        environmentValue(environmentName: $envName) {
+          parameterValue
+        }
       }
     }
   }
@@ -26,12 +28,14 @@ query GetParameterByNameQuery($envName: String, $keyName: String!) {
 query ParametersQuery($environmentId: ID) {
   viewer {
     id
-    parameters(orderBy: { keyName: ASC }) {
-      nodes {
-        id
-        keyName
-        environmentValue(environmentId: $environmentId) {
-          parameterValue
+    organization {
+      parameters(orderBy: { keyName: ASC }) {
+        nodes {
+          id
+          keyName
+          environmentValue(environmentId: $environmentId) {
+            parameterValue
+          }
         }
       }
     }
