@@ -31,31 +31,33 @@ pub type GraphQLResult<T> = std::result::Result<T, GraphQLError>;
 
 #[derive(Debug, Clone)]
 pub enum GraphQLError {
-    #[allow(dead_code)]
-    ItemNotFoundError,
+    EnvironmentNotFoundError(String),
     MissingDataError,
     NetworkError(Arc<reqwest::Error>),
+    ParameterNotFoundError(String),
     ResponseError(Vec<graphql_client::Error>),
     ServerError,
-    #[allow(dead_code)]
-    WrongDataTypeError,
 }
 
 impl fmt::Display for GraphQLError {
     fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
         match self {
-            GraphQLError::ItemNotFoundError => write!(f, "Unable to find item"),
+            GraphQLError::EnvironmentNotFoundError(name) => {
+                write!(f, "Unable to find environment '{}'", name)
+            }
             GraphQLError::MissingDataError => write!(
                 f,
                 "GraphQL response did not error, but does not have required data"
             ),
             GraphQLError::NetworkError(_) => write!(f, "Network error performing GraphQL query"),
+            GraphQLError::ParameterNotFoundError(key) => {
+                write!(f, "Unable to find parameter '{}'", key)
+            }
             GraphQLError::ResponseError(_) => write!(
                 f,
                 "GraphQL call successfully executed, but the response has errors"
             ),
             GraphQLError::ServerError => write!(f, "General server error"),
-            GraphQLError::WrongDataTypeError => write!(f, "Wrong GraphQL type returned"),
         }
     }
 }

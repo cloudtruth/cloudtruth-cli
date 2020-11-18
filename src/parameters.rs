@@ -66,6 +66,12 @@ impl Parameters {
         }
     }
 
+    /// Returns `Some(value)` if a value is configured for (parameter, environment) tuple or the
+    /// environment's ancestry chain has a value configured at some level.
+    ///
+    /// Return `None` if a parameter exists but does not have a value configured for the given
+    /// environment and the environment's ancestry chain does not have a value configured at any
+    /// level.
     pub fn get_body(
         &self,
         env_name: Option<&str>,
@@ -73,7 +79,31 @@ impl Parameters {
     ) -> GraphQLResult<Option<String>> {
         let parameter = self.get_parameter_full(env_name, key_name)?;
 
-        Ok(parameter.and_then(|p| p.environment_value.and_then(|ev| ev.parameter_value)))
+        // The query response can take multiple shapes depending on the state of the CloudTruth
+        // parameter store.
+        //
+        // 1) parameter = None -> Parameter does not exist
+        // 2) parameter.environment_value = None -> Environment does not exist
+        // 3) parameter.environment_value.parameter_value = None -> The parameter and the
+        // environment both exist, but the (parameter, environment) combination either does not have
+        // a configured value or inherits from an environment that does not have a configured value
+        // 4) parameter.environment_value.parameter_value = Some -> The parameter and the
+        // environment both exist and there is a value set or inherited in the (parameter, environment)
+        // combination.
+
+        if let Some(parameter) = parameter {
+            if let Some(environment_value) = parameter.environment_value {
+                Ok(environment_value.parameter_value)
+            } else {
+                Err(GraphQLError::EnvironmentNotFoundError(
+                    env_name
+                        .expect("The default environment should always be found")
+                        .to_string(),
+                ))
+            }
+        } else {
+            Err(GraphQLError::ParameterNotFoundError(key_name.to_string()))
+        }
     }
 
     pub fn get_id(&self, env_name: Option<&str>, key_name: &str) -> GraphQLResult<Option<String>> {

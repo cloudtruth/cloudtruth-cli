@@ -5,8 +5,12 @@ mod graphql;
 mod parameters;
 mod templates;
 
+#[macro_use]
+mod macros;
+
 use crate::config::Config;
 use crate::environments::Environments;
+use crate::graphql::GraphQLError;
 use crate::parameters::Parameters;
 use crate::templates::Templates;
 use color_eyre::eyre::Result;
@@ -37,6 +41,19 @@ fn check_config() -> Result<()> {
     Ok(())
 }
 
+fn check_valid_env(env: Option<&str>, environments: &Environments) -> Result<()> {
+    check_config()?;
+
+    if !environments.is_valid_environment_name(env)? {
+        panic!(
+            "The '{}' environment could not be found in your account.",
+            env.unwrap_or("default")
+        )
+    }
+
+    Ok(())
+}
+
 fn main() -> Result<()> {
     color_eyre::install()?;
 
@@ -44,16 +61,6 @@ fn main() -> Result<()> {
 
     let jwt = matches.value_of("api_key");
     Config::init_global(Config::load_config(jwt)?);
-
-    let environments = Environments::new();
-
-    let env = matches.value_of("env");
-    if !environments.is_valid_environment_name(env)? {
-        panic!(
-            "The '{}' environment could not be found in your account.",
-            env.unwrap_or("default")
-        )
-    }
 
     if let Some(matches) = matches.subcommand_matches("completions") {
         let shell = matches.value_of("SHELL").unwrap();
@@ -63,16 +70,23 @@ fn main() -> Result<()> {
             shell.parse().unwrap(),
             &mut io::stdout(),
         );
+
+        process::exit(0)
     }
 
     if let Some(matches) = matches.subcommand_matches("config") {
         if matches.subcommand_matches("edit").is_some() {
             Config::edit()?;
         }
+
+        process::exit(0)
     }
 
+    let environments = Environments::new();
+    let env = matches.value_of("env");
+
     if let Some(matches) = matches.subcommand_matches("environments") {
-        check_config()?;
+        check_valid_env(env, &environments)?;
 
         if matches.subcommand_matches("list").is_some() {
             let list = environments.get_environments()?;
@@ -81,7 +95,7 @@ fn main() -> Result<()> {
     }
 
     if let Some(matches) = matches.subcommand_matches("parameters") {
-        check_config()?;
+        check_valid_env(env, &environments)?;
 
         let parameters = Parameters::new();
 
@@ -94,16 +108,24 @@ fn main() -> Result<()> {
             }
         } else if let Some(matches) = matches.subcommand_matches("get") {
             let key = matches.value_of("KEY").unwrap();
-            let parameter = parameters.get_body(env, key)?;
+            let parameter = parameters.get_body(env, key);
 
-            if let Some(value) = parameter {
-                println!("{}", value)
+            if let Ok(parameter) = parameter {
+                // Treat parameters without values set as if the value were simply empty, since
+                // we need to display something sensible to the user.
+                println!("{}", parameter.unwrap_or_else(|| "".to_string()));
             } else {
-                println!(
-                    "Could not find a parameter with name '{}' in environment '{}'.",
-                    key,
-                    env.unwrap_or("default")
-                );
+                match parameter.unwrap_err() {
+                    GraphQLError::EnvironmentNotFoundError(name) => println!(
+                        "The '{}' environment could not be found in your organization.",
+                        name
+                    ),
+                    GraphQLError::ParameterNotFoundError(key) => println!(
+                        "The parameter '{}' could not be found in your organization.",
+                        key
+                    ),
+                    err => propagate_error!(err),
+                };
             }
         } else if let Some(matches) = matches.subcommand_matches("set") {
             let key = matches.value_of("KEY").unwrap();
@@ -128,7 +150,7 @@ fn main() -> Result<()> {
     }
 
     if let Some(matches) = matches.subcommand_matches("templates") {
-        check_config()?;
+        check_valid_env(env, &environments)?;
 
         let templates = Templates::new();
 
@@ -166,16 +188,20 @@ mod tests {
     use std::process::Command;
 
     fn cmd() -> Command {
-        Command::cargo_bin(cli::binary_name()).unwrap()
+        let mut cmd = Command::cargo_bin(cli::binary_name()).unwrap();
+
+        // Disable color output because it makes string matching hard in tests.
+        cmd.env("NO_COLOR", "true");
+
+        // Explicitly clear the API key so an individual dev's personal config isn't used for tests.
+        cmd.env("CT_API_KEY", "");
+
+        cmd
     }
 
     fn help_text() -> String {
         let mut help_cmd = cmd();
-        help_cmd
-            .env("NO_COLOR", "true")
-            .arg("help")
-            .assert()
-            .success();
+        help_cmd.arg("help").assert().success();
 
         let help_message = std::str::from_utf8(&help_cmd.output().unwrap().stdout)
             .unwrap()
@@ -185,14 +211,11 @@ mod tests {
     }
 
     #[test]
-    fn requires_at_least_one_subommand() {
+    fn requires_at_least_one_subcommand() {
         // Verify that invoking the CLI app without any arguments sets an error status code and
         // prints out the help message.
         let mut cmd = cmd();
-        cmd.env("NO_COLOR", "true")
-            .assert()
-            .failure()
-            .stderr(help_text());
+        cmd.assert().failure().stderr(help_text());
     }
 
     #[test]
@@ -214,7 +237,6 @@ mod tests {
     fn environments_commands_validate_config() {
         let mut cmd = cmd();
         cmd.env("CT_API_KEY", "")
-            .env("NO_COLOR", "true")
             .args(&["environments", "list"])
             .assert()
             .failure()
@@ -225,7 +247,6 @@ mod tests {
     fn parameters_commands_validate_config() {
         let mut cmd = cmd();
         cmd.env("CT_API_KEY", "")
-            .env("NO_COLOR", "true")
             .args(&["parameters", "list"])
             .assert()
             .failure()
@@ -236,8 +257,17 @@ mod tests {
     fn templates_commands_validate_config() {
         let mut cmd = cmd();
         cmd.env("CT_API_KEY", "")
-            .env("NO_COLOR", "true")
             .args(&["templates", "list"])
+            .assert()
+            .failure()
+            .stderr(starts_with("The API key is missing."));
+    }
+
+    #[test]
+    fn environment_validation_also_validates_config() {
+        let mut cmd = cmd();
+        cmd.env("CT_API_KEY", "")
+            .args(&["--env", "non-default", "templates", "list"])
             .assert()
             .failure()
             .stderr(starts_with("The API key is missing."));
