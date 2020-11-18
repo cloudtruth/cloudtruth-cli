@@ -5,8 +5,12 @@ mod graphql;
 mod parameters;
 mod templates;
 
+#[macro_use]
+mod macros;
+
 use crate::config::Config;
 use crate::environments::Environments;
+use crate::graphql::GraphQLError;
 use crate::parameters::Parameters;
 use crate::templates::Templates;
 use color_eyre::eyre::Result;
@@ -94,16 +98,24 @@ fn main() -> Result<()> {
             }
         } else if let Some(matches) = matches.subcommand_matches("get") {
             let key = matches.value_of("KEY").unwrap();
-            let parameter = parameters.get_body(env, key)?;
+            let parameter = parameters.get_body(env, key);
 
-            if let Some(value) = parameter {
-                println!("{}", value)
+            if let Ok(parameter) = parameter {
+                // Treat parameters without values set as if the value were simply empty, since
+                // we need to display something sensible to the user.
+                println!("{}", parameter.unwrap_or_else(|| "".to_string()));
             } else {
-                println!(
-                    "Could not find a parameter with name '{}' in environment '{}'.",
-                    key,
-                    env.unwrap_or("default")
-                );
+                match parameter.unwrap_err() {
+                    GraphQLError::EnvironmentNotFoundError(name) => println!(
+                        "The '{}' environment could not be found in your organization.",
+                        name
+                    ),
+                    GraphQLError::ParameterNotFoundError(key) => println!(
+                        "The parameter '{}' could not be found in your organization.",
+                        key
+                    ),
+                    err => propagate_error!(err),
+                };
             }
         } else if let Some(matches) = matches.subcommand_matches("set") {
             let key = matches.value_of("KEY").unwrap();
