@@ -82,6 +82,7 @@ input CreateAwsIntegrationInput {
   """
   clientMutationId: String
   enabledServices: [AwsIntegrationEnum!]
+  organizationId: ID
   roleName: String!
 }
 
@@ -109,6 +110,7 @@ input CreateEnvironmentInput {
   clientMutationId: String
   description: String
   name: String!
+  organizationId: ID
   parentId: ID!
 }
 
@@ -135,6 +137,7 @@ input CreateParameterInput {
   clientMutationId: String
   description: String
   keyName: String!
+  organizationId: ID
   value: String
 }
 
@@ -187,6 +190,7 @@ input CreateTemplateInput {
   clientMutationId: String
   description: String
   name: String!
+  organizationId: ID
 }
 
 """
@@ -245,7 +249,7 @@ type DeleteAwsIntegrationPayload {
   clientMutationId: String
   deletedAwsIntegrationId: ID
   errors: [UserError!]!
-  viewer: Viewer!
+  organization: Organization!
 }
 
 """
@@ -269,6 +273,7 @@ type DeleteEnvironmentPayload {
   clientMutationId: String
   deletedEnvironmentId: ID
   errors: [UserError!]!
+  organization: Organization!
 }
 
 """
@@ -292,6 +297,7 @@ type DeleteParameterPayload {
   clientMutationId: String
   deletedParameterId: ID
   errors: [UserError!]!
+  organization: Organization!
 }
 
 """
@@ -339,6 +345,7 @@ type DeleteTemplatePayload {
   clientMutationId: String
   deletedTemplateId: ID
   errors: [UserError!]!
+  organization: Organization!
 }
 
 type Environment implements Node {
@@ -1286,7 +1293,7 @@ type Viewer implements Node {
     """
     last: Int
   ): MembershipConnection!
-  organization(name: String): Organization
+  organization(id: ID): Organization
   personalAccessTokens(
     """
     Returns the elements in the list that come after the specified cursor.

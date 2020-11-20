@@ -36,9 +36,10 @@ impl Environments {
                 Ok(None)
             }
         } else {
-            let query = GetDefaultEnvironmentQuery::build_query(
-                get_default_environment_query::Variables {},
-            );
+            let query =
+                GetDefaultEnvironmentQuery::build_query(get_default_environment_query::Variables {
+                    organization_id: None,
+                });
             let response_body =
                 graphql_request::<_, get_default_environment_query::ResponseData>(&query)?;
 
@@ -72,7 +73,9 @@ impl Environments {
         &self,
     ) -> GraphQLResult<Vec<environments_query::EnvironmentsQueryViewerOrganizationEnvironmentsNodes>>
     {
-        let query = EnvironmentsQuery::build_query(environments_query::Variables {});
+        let query = EnvironmentsQuery::build_query(environments_query::Variables {
+            organization_id: None,
+        });
         let response_body = graphql_request::<_, environments_query::ResponseData>(&query)?;
 
         if let Some(errors) = response_body.errors {

@@ -1,6 +1,6 @@
-query GetTemplateByNameQuery($environmentName: String, $templateName: String!) {
+query GetTemplateByNameQuery($organizationId: ID, $environmentName: String, $templateName: String!) {
   viewer {
-    organization {
+    organization(id: $organizationId) {
       template(name: $templateName) {
         evaluated(environmentName: $environmentName)
       }
@@ -9,10 +9,10 @@ query GetTemplateByNameQuery($environmentName: String, $templateName: String!) {
 }
 
 
-query TemplatesQuery {
+query TemplatesQuery($organizationId: ID) {
   viewer {
     id
-    organization {
+    organization(id: $organizationId) {
       templates {
         nodes {
           id

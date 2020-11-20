@@ -45,6 +45,7 @@ impl Parameters {
     fn find_or_create(&self, env_name: Option<&str>, key_name: &str) -> GraphQLResult<String> {
         let create_query = CreateParameterQuery::build_query(create_parameter_query::Variables {
             key_name: key_name.to_string(),
+            organization_id: None,
         });
         let create_response_body =
             graphql_request::<_, create_parameter_query::ResponseData>(&create_query)?;
@@ -120,6 +121,7 @@ impl Parameters {
         Option<get_parameter_by_name_query::GetParameterByNameQueryViewerOrganizationParameter>,
     > {
         let query = GetParameterByNameQuery::build_query(get_parameter_by_name_query::Variables {
+            organization_id: None,
             env_name: env_name.map(|name| name.to_string()),
             key_name: key_name.to_string(),
         });
@@ -141,6 +143,7 @@ impl Parameters {
 
     pub fn get_parameters(&self, env_id: Option<String>) -> GraphQLResult<Vec<String>> {
         let query = ParametersQuery::build_query(parameters_query::Variables {
+            organization_id: None,
             environment_id: env_id,
         });
         let response_body = graphql_request::<_, parameters_query::ResponseData>(&query)?;

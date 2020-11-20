@@ -1,5 +1,5 @@
-mutation CreateParameterQuery($keyName: String!) {
-  createParameter(input: { keyName: $keyName }) {
+mutation CreateParameterQuery($organizationId: ID, $keyName: String!) {
+  createParameter(input: { organizationId: $organizationId, keyName: $keyName }) {
     clientMutationId
     parameter {
       id
@@ -11,9 +11,9 @@ mutation CreateParameterQuery($keyName: String!) {
   }
 }
 
-query GetParameterByNameQuery($envName: String, $keyName: String!) {
+query GetParameterByNameQuery($organizationId: ID, $envName: String, $keyName: String!) {
   viewer {
-    organization {
+    organization(id: $organizationId) {
       parameter(keyName: $keyName) {
         id
         environmentValue(environmentName: $envName) {
@@ -25,10 +25,10 @@ query GetParameterByNameQuery($envName: String, $keyName: String!) {
 }
 
 
-query ParametersQuery($environmentId: ID) {
+query ParametersQuery($organizationId: ID, $environmentId: ID) {
   viewer {
     id
-    organization {
+    organization(id: $organizationId) {
       parameters(orderBy: { keyName: ASC }) {
         nodes {
           id
