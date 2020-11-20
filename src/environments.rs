@@ -49,13 +49,12 @@ impl Environments {
     }
 
     pub fn is_valid_environment_name(&self, name: Option<&str>) -> GraphQLResult<bool> {
-        if let Some(name) = name {
-            let environments = self.get_environments_full()?;
+        let env = self.get_id(name)?;
 
-            Ok(environments.iter().any(|env| env.name == name))
-        } else {
-            // The default environment is always a valid name.
+        if env.is_some() {
             Ok(true)
+        } else {
+            Ok(false)
         }
     }
 
