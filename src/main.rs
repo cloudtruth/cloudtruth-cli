@@ -41,10 +41,14 @@ fn check_config() -> Result<()> {
     Ok(())
 }
 
-fn check_valid_env(env: Option<&str>, environments: &Environments) -> Result<()> {
+fn check_valid_env(
+    org_id: Option<&str>,
+    env: Option<&str>,
+    environments: &Environments,
+) -> Result<()> {
     check_config()?;
 
-    if !environments.is_valid_environment_name(env)? {
+    if !environments.is_valid_environment_name(org_id, env)? {
         panic!(
             "The '{}' environment could not be found in your account.",
             env.unwrap_or("default")
@@ -84,23 +88,24 @@ fn main() -> Result<()> {
 
     let environments = Environments::new();
     let env = matches.value_of("env");
+    let org_id: Option<&str> = None;
 
     if let Some(matches) = matches.subcommand_matches("environments") {
-        check_valid_env(env, &environments)?;
+        check_valid_env(org_id, env, &environments)?;
 
         if matches.subcommand_matches("list").is_some() {
-            let list = environments.get_environment_names()?;
+            let list = environments.get_environment_names(org_id)?;
             println!("{}", list.join("\n"))
         }
     }
 
     if let Some(matches) = matches.subcommand_matches("parameters") {
-        check_valid_env(env, &environments)?;
+        check_valid_env(org_id, env, &environments)?;
 
         let parameters = Parameters::new();
 
         if matches.subcommand_matches("list").is_some() {
-            let list = parameters.get_parameter_names(environments.get_id(env)?)?;
+            let list = parameters.get_parameter_names(org_id, environments.get_id(org_id, env)?)?;
             if list.is_empty() {
                 println!("There are no parameters in your account.")
             } else {
@@ -108,7 +113,7 @@ fn main() -> Result<()> {
             }
         } else if let Some(matches) = matches.subcommand_matches("get") {
             let key = matches.value_of("KEY").unwrap();
-            let parameter = parameters.get_body(env, key);
+            let parameter = parameters.get_body(org_id, env, key);
 
             if let Ok(parameter) = parameter {
                 // Treat parameters without values set as if the value were simply empty, since
@@ -131,7 +136,7 @@ fn main() -> Result<()> {
             let key = matches.value_of("KEY").unwrap();
             let value = matches.value_of("VALUE");
 
-            let updated_id = parameters.set_parameter(env, key, value)?;
+            let updated_id = parameters.set_parameter(org_id, env, key, value)?;
 
             if updated_id.is_some() {
                 println!(
@@ -150,12 +155,12 @@ fn main() -> Result<()> {
     }
 
     if let Some(matches) = matches.subcommand_matches("templates") {
-        check_valid_env(env, &environments)?;
+        check_valid_env(org_id, env, &environments)?;
 
         let templates = Templates::new();
 
         if matches.subcommand_matches("list").is_some() {
-            let list = templates.get_template_names()?;
+            let list = templates.get_template_names(org_id)?;
             if list.is_empty() {
                 println!("There are no templates in your account.")
             } else {
@@ -163,7 +168,7 @@ fn main() -> Result<()> {
             }
         } else if let Some(matches) = matches.subcommand_matches("get") {
             let template_name = matches.value_of("KEY").unwrap();
-            let body = templates.get_body_by_name(env, template_name)?;
+            let body = templates.get_body_by_name(org_id, env, template_name)?;
 
             if let Some(body) = body {
                 println!("{}", body)

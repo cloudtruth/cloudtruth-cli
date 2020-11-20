@@ -42,10 +42,15 @@ impl Parameters {
         Self {}
     }
 
-    fn find_or_create(&self, env_name: Option<&str>, key_name: &str) -> GraphQLResult<String> {
+    fn find_or_create(
+        &self,
+        org_id: Option<&str>,
+        env_name: Option<&str>,
+        key_name: &str,
+    ) -> GraphQLResult<String> {
         let create_query = CreateParameterQuery::build_query(create_parameter_query::Variables {
             key_name: key_name.to_string(),
-            organization_id: None,
+            organization_id: org_id.map(|id| id.to_string()),
         });
         let create_response_body =
             graphql_request::<_, create_parameter_query::ResponseData>(&create_query)?;
@@ -56,7 +61,7 @@ impl Parameters {
             let create_parameter = data.create_parameter.unwrap();
             if !create_parameter.errors.is_empty() {
                 // Try to fetch the parameter if we're unable to create it.
-                let id = self.get_id(env_name, key_name)?;
+                let id = self.get_id(org_id, env_name, key_name)?;
 
                 Ok(id.unwrap())
             } else {
@@ -75,10 +80,11 @@ impl Parameters {
     /// level.
     pub fn get_body(
         &self,
+        org_id: Option<&str>,
         env_name: Option<&str>,
         key_name: &str,
     ) -> GraphQLResult<Option<String>> {
-        let parameter = self.get_parameter_full(env_name, key_name)?;
+        let parameter = self.get_parameter_full(org_id, env_name, key_name)?;
 
         // The query response can take multiple shapes depending on the state of the CloudTruth
         // parameter store.
@@ -107,21 +113,27 @@ impl Parameters {
         }
     }
 
-    pub fn get_id(&self, env_name: Option<&str>, key_name: &str) -> GraphQLResult<Option<String>> {
-        let parameter = self.get_parameter_full(env_name, key_name)?;
+    pub fn get_id(
+        &self,
+        org_id: Option<&str>,
+        env_name: Option<&str>,
+        key_name: &str,
+    ) -> GraphQLResult<Option<String>> {
+        let parameter = self.get_parameter_full(org_id, env_name, key_name)?;
 
         Ok(parameter.map(|p| p.id))
     }
 
     fn get_parameter_full(
         &self,
+        org_id: Option<&str>,
         env_name: Option<&str>,
         key_name: &str,
     ) -> GraphQLResult<
         Option<get_parameter_by_name_query::GetParameterByNameQueryViewerOrganizationParameter>,
     > {
         let query = GetParameterByNameQuery::build_query(get_parameter_by_name_query::Variables {
-            organization_id: None,
+            organization_id: org_id.map(|id| id.to_string()),
             env_name: env_name.map(|name| name.to_string()),
             key_name: key_name.to_string(),
         });
@@ -141,9 +153,13 @@ impl Parameters {
         }
     }
 
-    pub fn get_parameter_names(&self, env_id: Option<String>) -> GraphQLResult<Vec<String>> {
+    pub fn get_parameter_names(
+        &self,
+        org_id: Option<&str>,
+        env_id: Option<String>,
+    ) -> GraphQLResult<Vec<String>> {
         let query = ParametersQuery::build_query(parameters_query::Variables {
-            organization_id: None,
+            organization_id: org_id.map(|id| id.to_string()),
             environment_id: env_id,
         });
         let response_body = graphql_request::<_, parameters_query::ResponseData>(&query)?;
@@ -167,12 +183,13 @@ impl Parameters {
 
     pub fn set_parameter(
         &self,
+        org_id: Option<&str>,
         env_name: Option<&str>,
         key_name: &str,
         value: Option<&str>,
     ) -> GraphQLResult<Option<String>> {
-        let environment_id = Environments::new().get_id(env_name)?;
-        let parameter_id = self.find_or_create(env_name, key_name)?;
+        let environment_id = Environments::new().get_id(org_id, env_name)?;
+        let parameter_id = self.find_or_create(org_id, env_name, key_name)?;
 
         let query = UpdateParameterQuery::build_query(update_parameter_query::Variables {
             id: parameter_id,

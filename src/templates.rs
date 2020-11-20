@@ -27,11 +27,12 @@ impl Templates {
 
     pub fn get_body_by_name(
         &self,
+        organization_id: Option<&str>,
         environment_name: Option<&str>,
         template_name: &str,
     ) -> GraphQLResult<Option<String>> {
         let query = GetTemplateByNameQuery::build_query(get_template_by_name_query::Variables {
-            organization_id: None,
+            organization_id: organization_id.map(|id| id.to_string()),
             environment_name: environment_name.map(|name| name.to_string()),
             template_name: template_name.to_string(),
         });
@@ -51,9 +52,9 @@ impl Templates {
         }
     }
 
-    pub fn get_template_names(&self) -> GraphQLResult<Vec<String>> {
+    pub fn get_template_names(&self, organization_id: Option<&str>) -> GraphQLResult<Vec<String>> {
         let query = TemplatesQuery::build_query(templates_query::Variables {
-            organization_id: None,
+            organization_id: organization_id.map(|id| id.to_string()),
         });
         let response_body = graphql_request::<_, templates_query::ResponseData>(&query)?;
 

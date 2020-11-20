@@ -25,10 +25,14 @@ impl Environments {
         Self {}
     }
 
-    pub fn get_id(&self, env_name: Option<&str>) -> GraphQLResult<Option<String>> {
+    pub fn get_id(
+        &self,
+        org_id: Option<&str>,
+        env_name: Option<&str>,
+    ) -> GraphQLResult<Option<String>> {
         let query =
             GetEnvironmentByNameQuery::build_query(get_environment_by_name_query::Variables {
-                organization_id: None,
+                organization_id: org_id.map(|id| id.to_string()),
                 environment_name: env_name.map(|name| name.to_string()),
             });
         let response_body =
@@ -48,8 +52,12 @@ impl Environments {
         }
     }
 
-    pub fn is_valid_environment_name(&self, name: Option<&str>) -> GraphQLResult<bool> {
-        let env = self.get_id(name)?;
+    pub fn is_valid_environment_name(
+        &self,
+        org_id: Option<&str>,
+        name: Option<&str>,
+    ) -> GraphQLResult<bool> {
+        let env = self.get_id(org_id, name)?;
 
         if env.is_some() {
             Ok(true)
@@ -60,10 +68,11 @@ impl Environments {
 
     fn get_environments_full(
         &self,
+        org_id: Option<&str>,
     ) -> GraphQLResult<Vec<environments_query::EnvironmentsQueryViewerOrganizationEnvironmentsNodes>>
     {
         let query = EnvironmentsQuery::build_query(environments_query::Variables {
-            organization_id: None,
+            organization_id: org_id.map(|id| id.to_string()),
         });
         let response_body = graphql_request::<_, environments_query::ResponseData>(&query)?;
 
@@ -81,8 +90,8 @@ impl Environments {
         }
     }
 
-    pub fn get_environment_names(&self) -> GraphQLResult<Vec<String>> {
-        let environments = self.get_environments_full()?;
+    pub fn get_environment_names(&self, org_id: Option<&str>) -> GraphQLResult<Vec<String>> {
+        let environments = self.get_environments_full(org_id)?;
         let mut list = environments
             .into_iter()
             .map(|n| n.name)
