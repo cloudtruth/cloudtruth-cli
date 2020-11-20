@@ -27,10 +27,12 @@ impl Templates {
 
     pub fn get_body_by_name(
         &self,
+        organization_id: Option<&str>,
         environment_name: Option<&str>,
         template_name: &str,
     ) -> GraphQLResult<Option<String>> {
         let query = GetTemplateByNameQuery::build_query(get_template_by_name_query::Variables {
+            organization_id: organization_id.map(|id| id.to_string()),
             environment_name: environment_name.map(|name| name.to_string()),
             template_name: template_name.to_string(),
         });
@@ -39,14 +41,21 @@ impl Templates {
         if let Some(errors) = response_body.errors {
             Err(GraphQLError::ResponseError(errors))
         } else if let Some(data) = response_body.data {
-            Ok(data.viewer.template.and_then(|t| t.evaluated))
+            Ok(data
+                .viewer
+                .organization
+                .expect("Primary organization not found")
+                .template
+                .and_then(|t| t.evaluated))
         } else {
             Err(GraphQLError::MissingDataError)
         }
     }
 
-    pub fn get_templates(&self) -> GraphQLResult<Vec<String>> {
-        let query = TemplatesQuery::build_query(templates_query::Variables {});
+    pub fn get_template_names(&self, organization_id: Option<&str>) -> GraphQLResult<Vec<String>> {
+        let query = TemplatesQuery::build_query(templates_query::Variables {
+            organization_id: organization_id.map(|id| id.to_string()),
+        });
         let response_body = graphql_request::<_, templates_query::ResponseData>(&query)?;
 
         if let Some(errors) = response_body.errors {
@@ -54,6 +63,8 @@ impl Templates {
         } else if let Some(data) = response_body.data {
             let mut list = data
                 .viewer
+                .organization
+                .expect("Primary organization not found")
                 .templates
                 .nodes
                 .into_iter()

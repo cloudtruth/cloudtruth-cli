@@ -1,19 +1,23 @@
-query EnvironmentsQuery {
+query EnvironmentsQuery($organizationId: ID) {
   viewer {
     id
-    environments {
-      nodes {
-        id
-        name
+    organization(id: $organizationId) {
+      environments {
+        nodes {
+          id
+          name
+        }
       }
     }
   }
 }
 
-query GetDefaultEnvironmentQuery {
+query GetEnvironmentByNameQuery($organizationId: ID, $environmentName: String) {
   viewer {
-    defaultEnvironment {
-      id
+    organization(id: $organizationId) {
+      environment(name: $environmentName) {
+        id
+      }
     }
   }
 }
