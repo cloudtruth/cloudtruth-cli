@@ -80,7 +80,7 @@ impl Config {
         INSTANCE.set(config).unwrap()
     }
 
-    pub fn load_config(jwt: Option<&str>) -> Result<Self, ConfigError> {
+    pub fn load_config(api_key: Option<&str>) -> Result<Self, ConfigError> {
         let mut settings = config::Config::default();
 
         // Set default configuration values.
@@ -100,7 +100,7 @@ impl Config {
 
         // Any arguments supplied via CLI options take precedence over values from both the
         // configuration file as well as the environment.
-        if let Some(api_key) = jwt {
+        if let Some(api_key) = api_key {
             settings.set("api_key", api_key)?;
         }
 
