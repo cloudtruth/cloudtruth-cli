@@ -12,10 +12,10 @@ query EnvironmentsQuery($organizationId: ID) {
   }
 }
 
-query GetDefaultEnvironmentQuery($organizationId: ID) {
+query GetEnvironmentByNameQuery($organizationId: ID, $environmentName: String) {
   viewer {
     organization(id: $organizationId) {
-      environment {
+      environment(name: $environmentName) {
         id
       }
     }

@@ -10,7 +10,7 @@ pub struct Environments {}
     query_path = "graphql/environment_queries.graphql",
     response_derives = "Debug"
 )]
-pub struct EnvironmentsQuery;
+pub struct GetEnvironmentByNameQuery;
 
 #[derive(GraphQLQuery)]
 #[graphql(
@@ -18,7 +18,7 @@ pub struct EnvironmentsQuery;
     query_path = "graphql/environment_queries.graphql",
     response_derives = "Debug"
 )]
-pub struct GetDefaultEnvironmentQuery;
+pub struct EnvironmentsQuery;
 
 impl Environments {
     pub fn new() -> Self {
@@ -26,35 +26,25 @@ impl Environments {
     }
 
     pub fn get_id(&self, env_name: Option<&str>) -> GraphQLResult<Option<String>> {
-        if let Some(env_name) = env_name {
-            let environments = self.get_environments_full()?;
-            let env = environments.iter().find(|env| env.name == env_name);
+        let query =
+            GetEnvironmentByNameQuery::build_query(get_environment_by_name_query::Variables {
+                organization_id: None,
+                environment_name: env_name.map(|name| name.to_string()),
+            });
+        let response_body =
+            graphql_request::<_, get_environment_by_name_query::ResponseData>(&query)?;
 
-            if let Some(env) = env {
-                Ok(Some(env.id.to_string()))
-            } else {
-                Ok(None)
-            }
+        if let Some(errors) = response_body.errors {
+            Err(GraphQLError::ResponseError(errors))
+        } else if let Some(data) = response_body.data {
+            Ok(data
+                .viewer
+                .organization
+                .expect("Primary organization not found")
+                .environment
+                .map(|env| env.id))
         } else {
-            let query =
-                GetDefaultEnvironmentQuery::build_query(get_default_environment_query::Variables {
-                    organization_id: None,
-                });
-            let response_body =
-                graphql_request::<_, get_default_environment_query::ResponseData>(&query)?;
-
-            if let Some(errors) = response_body.errors {
-                Err(GraphQLError::ResponseError(errors))
-            } else if let Some(data) = response_body.data {
-                Ok(data
-                    .viewer
-                    .organization
-                    .expect("Primary organization not found")
-                    .environment
-                    .map(|env| env.id))
-            } else {
-                Err(GraphQLError::MissingDataError)
-            }
+            Err(GraphQLError::MissingDataError)
         }
     }
 
