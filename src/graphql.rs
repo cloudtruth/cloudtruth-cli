@@ -53,9 +53,14 @@ impl fmt::Display for GraphQLError {
             GraphQLError::ParameterNotFoundError(key) => {
                 write!(f, "Unable to find parameter '{}'", key)
             }
-            GraphQLError::ResponseError(_) => write!(
+            GraphQLError::ResponseError(errors) => write!(
                 f,
-                "GraphQL call successfully executed, but the response has errors"
+                "GraphQL call successfully executed, but the response has errors:\n{}",
+                errors
+                    .iter()
+                    .map(|error| format!("  {}", error))
+                    .collect::<Vec<String>>()
+                    .join("\n")
             ),
             GraphQLError::ServerError => write!(f, "General server error"),
         }
