@@ -89,7 +89,7 @@ fn main() -> Result<()> {
         check_valid_env(env, &environments)?;
 
         if matches.subcommand_matches("list").is_some() {
-            let list = environments.get_environments()?;
+            let list = environments.get_environment_names()?;
             println!("{}", list.join("\n"))
         }
     }
@@ -100,7 +100,7 @@ fn main() -> Result<()> {
         let parameters = Parameters::new();
 
         if matches.subcommand_matches("list").is_some() {
-            let list = parameters.get_parameters(environments.get_id(env)?)?;
+            let list = parameters.get_parameter_names(environments.get_id(env)?)?;
             if list.is_empty() {
                 println!("There are no parameters in your account.")
             } else {
@@ -155,7 +155,7 @@ fn main() -> Result<()> {
         let templates = Templates::new();
 
         if matches.subcommand_matches("list").is_some() {
-            let list = templates.get_templates()?;
+            let list = templates.get_template_names()?;
             if list.is_empty() {
                 println!("There are no templates in your account.")
             } else {

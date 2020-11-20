@@ -141,7 +141,7 @@ impl Parameters {
         }
     }
 
-    pub fn get_parameters(&self, env_id: Option<String>) -> GraphQLResult<Vec<String>> {
+    pub fn get_parameter_names(&self, env_id: Option<String>) -> GraphQLResult<Vec<String>> {
         let query = ParametersQuery::build_query(parameters_query::Variables {
             organization_id: None,
             environment_id: env_id,

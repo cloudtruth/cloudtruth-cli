@@ -51,7 +51,7 @@ impl Templates {
         }
     }
 
-    pub fn get_templates(&self) -> GraphQLResult<Vec<String>> {
+    pub fn get_template_names(&self) -> GraphQLResult<Vec<String>> {
         let query = TemplatesQuery::build_query(templates_query::Variables {
             organization_id: None,
         });

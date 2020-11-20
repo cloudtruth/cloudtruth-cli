@@ -81,7 +81,7 @@ impl Environments {
         }
     }
 
-    pub fn get_environments(&self) -> GraphQLResult<Vec<String>> {
+    pub fn get_environment_names(&self) -> GraphQLResult<Vec<String>> {
         let environments = self.get_environments_full()?;
         let mut list = environments
             .into_iter()
