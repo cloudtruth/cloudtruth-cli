@@ -1,12 +1,13 @@
 use crate::cli::binary_name;
 use color_eyre::eyre::Result;
-use config::{ConfigError, File};
 use directories::ProjectDirs;
 use indoc::{formatdoc, indoc};
 use once_cell::sync::OnceCell;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
+use std::collections::HashMap;
+use std::env;
 use std::fs;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 static INSTANCE: OnceCell<Config> = OnceCell::new();
 
@@ -26,7 +27,64 @@ const ORGANIZATION_NAME: &str = "cloudtruth";
 #[cfg(not(target_os = "macos"))]
 const ORGANIZATION_NAME: &str = "CloudTruth";
 
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Deserialize, Debug, Default)]
+#[serde(default)]
+struct ConfigMap {
+    profiles: HashMap<String, Profile>,
+}
+
+#[derive(Clone, Deserialize, Debug)]
+#[serde(default)]
+struct Profile {
+    api_key: Option<String>,
+    server_url: Option<String>,
+}
+
+impl Default for Profile {
+    fn default() -> Self {
+        Self {
+            api_key: Some("".to_string()),
+            server_url: Some("https://ctcaas-graph.cloudtruth.com/graphql".to_string()),
+        }
+    }
+}
+
+impl Profile {
+    fn load_env_overrides(&mut self) {
+        let api_key = env::var("CT_API_KEY");
+        if let Ok(api_key) = api_key {
+            self.api_key = Some(api_key);
+        }
+
+        let server_url = env::var("CT_SERVER_URL");
+        if let Ok(server_url) = server_url {
+            self.server_url = Some(server_url);
+        }
+    }
+
+    fn merge(&mut self, other: &Self) {
+        if let Some(api_key) = &other.api_key {
+            self.api_key = Some(api_key.clone());
+        }
+
+        if let Some(server_url) = &other.server_url {
+            self.server_url = Some(server_url.clone());
+        }
+    }
+
+    fn to_config(&self) -> Config {
+        Config {
+            api_key: self.api_key.as_ref().expect("api_key is empty").clone(),
+            server_url: self
+                .server_url
+                .as_ref()
+                .expect("server_url is empty")
+                .clone(),
+        }
+    }
+}
+
+#[derive(Debug)]
 pub struct Config {
     pub api_key: String,
     pub server_url: String,
@@ -80,31 +138,39 @@ impl Config {
         INSTANCE.set(config).unwrap()
     }
 
-    pub fn load_config(api_key: Option<&str>) -> Result<Self, ConfigError> {
-        let mut settings = config::Config::default();
+    fn read_config(config_file: &Path) -> Result<String> {
+        let contents = fs::read_to_string(config_file)?;
 
-        // Set default configuration values.
-        settings.set_default("api_key", "")?;
-        settings.set_default("server_url", "https://ctcaas-graph.cloudtruth.com/graphql")?;
+        Ok(contents)
+    }
+
+    pub fn load_config(api_key: Option<&str>) -> Result<Self> {
+        let mut profile = Profile::default();
 
         // Load settings from the configuration file if it exists.
         if let Some(config_file) = Self::config_file() {
             if config_file.exists() {
-                settings.merge(File::from(config_file))?;
+                let config = Self::read_config(config_file.as_path())?;
+                let config_map: ConfigMap = serde_yaml::from_str(&config)?;
+
+                let default_profile = config_map.profiles.get("default");
+                if let Some(default_profile) = default_profile {
+                    profile.merge(default_profile);
+                }
             }
         }
 
         // Load values out of environment variables after loading them out of any config file so
         // that the environment values can take precedence.
-        settings.merge(config::Environment::with_prefix("CT"))?;
+        profile.load_env_overrides();
 
         // Any arguments supplied via CLI options take precedence over values from both the
         // configuration file as well as the environment.
         if let Some(api_key) = api_key {
-            settings.set("api_key", api_key)?;
+            profile.api_key = Some(api_key.to_string());
         }
 
-        Ok(settings.try_into()?)
+        Ok(profile.to_config())
     }
 
     pub fn edit() -> Result<()> {
