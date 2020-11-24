@@ -1,11 +1,11 @@
+mod profiles;
+
 use crate::cli::binary_name;
+use crate::config::profiles::Profile;
 use color_eyre::eyre::Result;
 use directories::ProjectDirs;
 use indoc::{formatdoc, indoc};
 use once_cell::sync::OnceCell;
-use serde::Deserialize;
-use std::collections::HashMap;
-use std::env;
 use std::fs;
 use std::path::{Path, PathBuf};
 
@@ -26,70 +26,6 @@ const ORGANIZATION_NAME: &str = "cloudtruth";
 
 #[cfg(not(target_os = "macos"))]
 const ORGANIZATION_NAME: &str = "CloudTruth";
-
-#[derive(Deserialize, Debug, Default)]
-#[serde(default)]
-struct ConfigMap {
-    profiles: HashMap<String, Profile>,
-}
-
-#[derive(Clone, Deserialize, Debug)]
-#[serde(default)]
-struct Profile {
-    api_key: Option<String>,
-    server_url: Option<String>,
-}
-
-impl Default for Profile {
-    fn default() -> Self {
-        Self {
-            api_key: Some("".to_string()),
-            server_url: Some("https://ctcaas-graph.cloudtruth.com/graphql".to_string()),
-        }
-    }
-}
-
-impl Profile {
-    fn load(config: &str) -> Result<Option<Profile>> {
-        let config_map: ConfigMap = serde_yaml::from_str(&config)?;
-        let profile = config_map.profiles.get("default");
-
-        Ok(profile.cloned())
-    }
-
-    fn load_env_overrides(&mut self) {
-        let api_key = env::var("CT_API_KEY");
-        if let Ok(api_key) = api_key {
-            self.api_key = Some(api_key);
-        }
-
-        let server_url = env::var("CT_SERVER_URL");
-        if let Ok(server_url) = server_url {
-            self.server_url = Some(server_url);
-        }
-    }
-
-    fn merge(&mut self, other: &Self) {
-        if let Some(api_key) = &other.api_key {
-            self.api_key = Some(api_key.clone());
-        }
-
-        if let Some(server_url) = &other.server_url {
-            self.server_url = Some(server_url.clone());
-        }
-    }
-
-    fn to_config(&self) -> Config {
-        Config {
-            api_key: self.api_key.as_ref().expect("api_key is empty").clone(),
-            server_url: self
-                .server_url
-                .as_ref()
-                .expect("server_url is empty")
-                .clone(),
-        }
-    }
-}
 
 #[derive(Debug)]
 pub struct Config {
@@ -218,7 +154,6 @@ impl Config {
 #[cfg(test)]
 mod tests {
     use crate::config::{Config, Profile};
-    use indoc::indoc;
     use serial_test::serial;
     use std::env;
     use std::path::PathBuf;
@@ -313,36 +248,5 @@ mod tests {
         expected.push("AppData/Roaming/CloudTruth/CloudTruth CLI/config/cli.yml");
 
         assert_eq!(Config::config_file(), Some(expected))
-    }
-
-    #[test]
-    fn get_api_key_from_config() {
-        let config = indoc!(
-            r#"
-        profiles:
-          default:
-            api_key: new_key
-        "#
-        );
-
-        let profile = Profile::load(config).unwrap();
-        assert_eq!(Some("new_key".to_string()), profile.unwrap().api_key)
-    }
-
-    #[test]
-    fn get_server_url_from_config() {
-        let config = indoc!(
-            r#"
-        profiles:
-          default:
-            server_url: http://localhost:7001/graphql
-        "#
-        );
-
-        let profile = Profile::load(config).unwrap();
-        assert_eq!(
-            Some("http://localhost:7001/graphql".to_string()),
-            profile.unwrap().server_url
-        )
     }
 }
