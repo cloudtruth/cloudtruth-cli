@@ -1,7 +1,7 @@
 mod profiles;
 
 use crate::cli::binary_name;
-use crate::config::profiles::Profile;
+use crate::config::profiles::{ConfigFile, Profile};
 use color_eyre::eyre::Result;
 use directories::ProjectDirs;
 use indoc::{formatdoc, indoc};
@@ -94,7 +94,7 @@ impl Config {
         if let Some(config_file) = Self::config_file() {
             if config_file.exists() {
                 let config = Self::read_config(config_file.as_path())?;
-                let loaded_profile = Profile::load(&config)?;
+                let loaded_profile = ConfigFile::load_profile(&config)?;
 
                 if let Some(loaded_profile) = loaded_profile {
                     profile.merge(&loaded_profile);
@@ -153,7 +153,7 @@ impl Config {
 
 #[cfg(test)]
 mod tests {
-    use crate::config::{Config, Profile};
+    use crate::config::Config;
     use serial_test::serial;
     use std::env;
     use std::path::PathBuf;

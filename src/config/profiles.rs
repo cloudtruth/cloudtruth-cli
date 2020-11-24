@@ -6,7 +6,7 @@ use std::env;
 
 #[derive(Deserialize, Debug, Default)]
 #[serde(default)]
-struct ConfigMap {
+pub struct ConfigFile {
     profiles: HashMap<String, Profile>,
 }
 
@@ -26,14 +26,16 @@ impl Default for Profile {
     }
 }
 
-impl Profile {
-    pub(crate) fn load(config: &str) -> Result<Option<Profile>> {
-        let config_map: ConfigMap = serde_yaml::from_str(&config)?;
+impl ConfigFile {
+    pub(crate) fn load_profile(config: &str) -> Result<Option<Profile>> {
+        let config_map: ConfigFile = serde_yaml::from_str(&config)?;
         let profile = config_map.profiles.get("default");
 
         Ok(profile.cloned())
     }
+}
 
+impl Profile {
     pub(crate) fn load_env_overrides(&mut self) {
         let api_key = env::var("CT_API_KEY");
         if let Ok(api_key) = api_key {
@@ -70,7 +72,7 @@ impl Profile {
 
 #[cfg(test)]
 mod tests {
-    use crate::config::profiles::Profile;
+    use crate::config::profiles::ConfigFile;
     use indoc::indoc;
 
     #[test]
@@ -83,7 +85,7 @@ mod tests {
         "#
         );
 
-        let profile = Profile::load(config).unwrap();
+        let profile = ConfigFile::load_profile(config).unwrap();
         assert_eq!(Some("new_key".to_string()), profile.unwrap().api_key)
     }
 
@@ -97,7 +99,7 @@ mod tests {
         "#
         );
 
-        let profile = Profile::load(config).unwrap();
+        let profile = ConfigFile::load_profile(config).unwrap();
         assert_eq!(
             Some("http://localhost:7001/graphql".to_string()),
             profile.unwrap().server_url
