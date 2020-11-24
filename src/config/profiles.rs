@@ -27,9 +27,9 @@ impl Default for Profile {
 }
 
 impl ConfigFile {
-    pub(crate) fn load_profile(config: &str) -> Result<Option<Profile>> {
+    pub(crate) fn load_profile(config: &str, profile_name: &str) -> Result<Option<Profile>> {
         let config_map: ConfigFile = serde_yaml::from_str(&config)?;
-        let profile = config_map.profiles.get("default");
+        let profile = config_map.profiles.get(profile_name);
 
         Ok(profile.cloned())
     }
@@ -80,13 +80,16 @@ mod tests {
         let config = indoc!(
             r#"
         profiles:
-          default:
-            api_key: new_key
+            default:
+                api_key: default_key
+
+            read-only:
+                api_key: read_only_key
         "#
         );
 
-        let profile = ConfigFile::load_profile(config).unwrap();
-        assert_eq!(Some("new_key".to_string()), profile.unwrap().api_key)
+        let profile = ConfigFile::load_profile(config, "read-only").unwrap();
+        assert_eq!(Some("read_only_key".to_string()), profile.unwrap().api_key)
     }
 
     #[test]
@@ -94,15 +97,29 @@ mod tests {
         let config = indoc!(
             r#"
         profiles:
-          default:
-            server_url: http://localhost:7001/graphql
+            default:
+                server_url: http://localhost:7001/graphql
         "#
         );
 
-        let profile = ConfigFile::load_profile(config).unwrap();
+        let profile = ConfigFile::load_profile(config, "default").unwrap();
         assert_eq!(
             Some("http://localhost:7001/graphql".to_string()),
             profile.unwrap().server_url
         )
+    }
+
+    #[test]
+    fn load_profile_with_bad_name() {
+        let config = indoc!(
+            r#"
+        profiles:
+            default:
+                api_key: my_key
+            "#
+        );
+
+        let profile = ConfigFile::load_profile(config, "non-matcch").unwrap();
+        assert!(profile.is_none())
     }
 }
