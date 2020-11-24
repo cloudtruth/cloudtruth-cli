@@ -1,7 +1,6 @@
 use color_eyre::eyre::Result;
 use serde::Deserialize;
 use std::collections::HashMap;
-use std::env;
 
 #[derive(Deserialize, Debug, Default)]
 #[serde(default)]
@@ -9,7 +8,7 @@ pub struct ConfigFile {
     profiles: HashMap<String, Profile>,
 }
 
-#[derive(Clone, Deserialize, Debug)]
+#[derive(Clone, Deserialize, Debug, PartialEq)]
 #[serde(default)]
 pub struct Profile {
     pub api_key: Option<String>,
@@ -35,18 +34,6 @@ impl ConfigFile {
 }
 
 impl Profile {
-    pub(crate) fn load_env_overrides(&mut self) {
-        let api_key = env::var("CT_API_KEY");
-        if let Ok(api_key) = api_key {
-            self.api_key = Some(api_key);
-        }
-
-        let server_url = env::var("CT_SERVER_URL");
-        if let Ok(server_url) = server_url {
-            self.server_url = Some(server_url);
-        }
-    }
-
     pub(crate) fn merge(&mut self, other: &Self) {
         if let Some(api_key) = &other.api_key {
             self.api_key = Some(api_key.clone());

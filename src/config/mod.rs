@@ -1,6 +1,8 @@
+mod env;
 mod profiles;
 
 use crate::cli::binary_name;
+use crate::config::env::ConfigEnv;
 use crate::config::profiles::{ConfigFile, Profile};
 use color_eyre::eyre::Result;
 use directories::ProjectDirs;
@@ -115,7 +117,7 @@ impl Config {
 
         // Load values out of environment variables after loading them out of any config file so
         // that the environment values can take precedence.
-        profile.load_env_overrides();
+        profile.merge(&ConfigEnv::load_profile());
 
         // Any arguments supplied via CLI options take precedence over values from both the
         // configuration file as well as the environment.
