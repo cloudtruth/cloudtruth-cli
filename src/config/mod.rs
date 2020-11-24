@@ -38,6 +38,17 @@ pub struct ValidationError {
     pub help_message: String,
 }
 
+impl From<Profile> for Config {
+    fn from(profile: Profile) -> Self {
+        Config {
+            api_key: profile.api_key.unwrap_or_else(|| "".to_string()),
+            server_url: profile
+                .server_url
+                .unwrap_or_else(|| "https://ctcaas-graph.cloudtruth.com/graphql".to_string()),
+        }
+    }
+}
+
 impl Config {
     fn config_file() -> Option<PathBuf> {
         // Load settings from the configuration file if it exists.
@@ -112,7 +123,7 @@ impl Config {
             profile.api_key = Some(api_key.to_string());
         }
 
-        Ok(profile.to_config())
+        Ok(profile.into())
     }
 
     pub fn edit() -> Result<()> {

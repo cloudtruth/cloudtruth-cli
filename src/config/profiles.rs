@@ -1,4 +1,3 @@
-use crate::config::Config;
 use color_eyre::eyre::Result;
 use serde::Deserialize;
 use std::collections::HashMap;
@@ -20,8 +19,8 @@ pub struct Profile {
 impl Default for Profile {
     fn default() -> Self {
         Self {
-            api_key: Some("".to_string()),
-            server_url: Some("https://ctcaas-graph.cloudtruth.com/graphql".to_string()),
+            api_key: None,
+            server_url: None,
         }
     }
 }
@@ -55,17 +54,6 @@ impl Profile {
 
         if let Some(server_url) = &other.server_url {
             self.server_url = Some(server_url.clone());
-        }
-    }
-
-    pub(crate) fn to_config(&self) -> Config {
-        Config {
-            api_key: self.api_key.as_ref().expect("api_key is empty").clone(),
-            server_url: self
-                .server_url
-                .as_ref()
-                .expect("server_url is empty")
-                .clone(),
         }
     }
 }
