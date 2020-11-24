@@ -50,6 +50,13 @@ impl Default for Profile {
 }
 
 impl Profile {
+    fn load(config: &str) -> Result<Option<Profile>> {
+        let config_map: ConfigMap = serde_yaml::from_str(&config)?;
+        let profile = config_map.profiles.get("default");
+
+        Ok(profile.cloned())
+    }
+
     fn load_env_overrides(&mut self) {
         let api_key = env::var("CT_API_KEY");
         if let Ok(api_key) = api_key {
@@ -151,11 +158,10 @@ impl Config {
         if let Some(config_file) = Self::config_file() {
             if config_file.exists() {
                 let config = Self::read_config(config_file.as_path())?;
-                let config_map: ConfigMap = serde_yaml::from_str(&config)?;
+                let loaded_profile = Profile::load(&config)?;
 
-                let default_profile = config_map.profiles.get("default");
-                if let Some(default_profile) = default_profile {
-                    profile.merge(default_profile);
+                if let Some(loaded_profile) = loaded_profile {
+                    profile.merge(&loaded_profile);
                 }
             }
         }
@@ -211,7 +217,8 @@ impl Config {
 
 #[cfg(test)]
 mod tests {
-    use crate::config::Config;
+    use crate::config::{Config, Profile};
+    use indoc::indoc;
     use serial_test::serial;
     use std::env;
     use std::path::PathBuf;
@@ -306,5 +313,36 @@ mod tests {
         expected.push("AppData/Roaming/CloudTruth/CloudTruth CLI/config/cli.yml");
 
         assert_eq!(Config::config_file(), Some(expected))
+    }
+
+    #[test]
+    fn get_api_key_from_config() {
+        let config = indoc!(
+            r#"
+        profiles:
+          default:
+            api_key: new_key
+        "#
+        );
+
+        let profile = Profile::load(config).unwrap();
+        assert_eq!(Some("new_key".to_string()), profile.unwrap().api_key)
+    }
+
+    #[test]
+    fn get_server_url_from_config() {
+        let config = indoc!(
+            r#"
+        profiles:
+          default:
+            server_url: http://localhost:7001/graphql
+        "#
+        );
+
+        let profile = Profile::load(config).unwrap();
+        assert_eq!(
+            Some("http://localhost:7001/graphql".to_string()),
+            profile.unwrap().server_url
+        )
     }
 }
