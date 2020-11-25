@@ -8,7 +8,7 @@ use crate::config::file::ConfigFile;
 use crate::config::profiles::Profile;
 use color_eyre::eyre::Result;
 use directories::ProjectDirs;
-use indoc::{formatdoc, indoc};
+use indoc::formatdoc;
 use once_cell::sync::OnceCell;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -72,20 +72,11 @@ impl Config {
                     }
                 }
 
-                fs::write(config_file, Self::default_config_file())?;
+                fs::write(config_file, ConfigFile::config_file_template())?;
             }
         }
 
         Ok(())
-    }
-
-    fn default_config_file() -> &'static str {
-        indoc!(
-            r#"
-            # Your CloudTruth API key.
-            api_key: ""
-        "#
-        )
     }
 
     pub fn global() -> &'static Self {

@@ -2,6 +2,7 @@ use crate::cli;
 use crate::config::profiles::Profile;
 use color_eyre::eyre::Result;
 use core::fmt;
+use indoc::indoc;
 use serde::export::Formatter;
 use serde::Deserialize;
 use serde_yaml::Error;
@@ -60,6 +61,27 @@ impl From<serde_yaml::Error> for ConfigFileError {
 }
 
 impl ConfigFile {
+    pub(crate) fn config_file_template() -> &'static str {
+        indoc!(
+            r#"
+            # You can have multiple profiles to group your configuration. E.g., if you belong to
+            # multiple organizations, you can create two separate profiles each with its own API
+            # key. When you invoke the CloudTruth CLI tool, you can pass an argument to choose
+            # which profile to load. Profiles can inherit values from other profiles by using the
+            # `source_profile` setting, providing it with the name of another profile. Profile
+            # chains can be arbitrarily deep, but may not contain cycles.
+
+            profiles:
+              default:
+                api_key: ""
+
+              # another-profile:
+              #   source_profile: default
+              #   api_key: "my-read-only-api-key"
+        "#
+        )
+    }
+
     pub(crate) fn load_profile(config: &str, profile_name: &str) -> ConfigFileResult<Profile> {
         let config_file: ConfigFile = serde_yaml::from_str(&config)?;
 
@@ -131,6 +153,13 @@ mod tests {
     use crate::config::file::{ConfigFile, ConfigFileError};
     use assert_matches::assert_matches;
     use indoc::indoc;
+
+    #[test]
+    fn default_config_file() {
+        let profile =
+            ConfigFile::load_profile(ConfigFile::config_file_template(), "default").unwrap();
+        assert_eq!(Some("".to_string()), profile.api_key);
+    }
 
     #[test]
     fn get_api_key_from_profile() {
