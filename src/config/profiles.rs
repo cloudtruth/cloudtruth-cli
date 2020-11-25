@@ -1,12 +1,4 @@
-use color_eyre::eyre::Result;
 use serde::Deserialize;
-use std::collections::HashMap;
-
-#[derive(Deserialize, Debug, Default)]
-#[serde(default)]
-pub struct ConfigFile {
-    profiles: HashMap<String, Profile>,
-}
 
 #[derive(Clone, Deserialize, Debug, PartialEq)]
 #[serde(default)]
@@ -24,77 +16,47 @@ impl Default for Profile {
     }
 }
 
-impl ConfigFile {
-    pub(crate) fn load_profile(config: &str, profile_name: &str) -> Result<Option<Profile>> {
-        let config_map: ConfigFile = serde_yaml::from_str(&config)?;
-        let profile = config_map.profiles.get(profile_name);
-
-        Ok(profile.cloned())
-    }
-}
-
 impl Profile {
-    pub(crate) fn merge(&mut self, other: &Self) {
-        if let Some(api_key) = &other.api_key {
-            self.api_key = Some(api_key.clone());
-        }
-
-        if let Some(server_url) = &other.server_url {
-            self.server_url = Some(server_url.clone());
+    #[must_use]
+    pub(crate) fn merge(&self, other: &Self) -> Profile {
+        Profile {
+            api_key: other.api_key.clone().or_else(|| self.api_key.clone()),
+            server_url: other.server_url.clone().or_else(|| self.server_url.clone()),
         }
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::config::profiles::ConfigFile;
-    use indoc::indoc;
+    use crate::config::profiles::Profile;
 
     #[test]
-    fn get_api_key_from_profile() {
-        let config = indoc!(
-            r#"
-        profiles:
-            default:
-                api_key: default_key
+    fn merged_values_take_priority() {
+        let first = Profile {
+            api_key: None,
+            server_url: None,
+        };
 
-            read-only:
-                api_key: read_only_key
-        "#
-        );
+        let second = Profile {
+            api_key: Some("new_key".to_string()),
+            server_url: Some("http://localhost:7001/graphql".to_string()),
+        };
 
-        let profile = ConfigFile::load_profile(config, "read-only").unwrap();
-        assert_eq!(Some("read_only_key".to_string()), profile.unwrap().api_key)
+        assert_eq!(second, first.merge(&second));
     }
 
     #[test]
-    fn get_server_url_from_profile() {
-        let config = indoc!(
-            r#"
-        profiles:
-            default:
-                server_url: http://localhost:7001/graphql
-        "#
-        );
+    fn merged_empty_values_are_ignored() {
+        let first = Profile {
+            api_key: Some("new_key".to_string()),
+            server_url: Some("http://localhost:7001/graphql".to_string()),
+        };
 
-        let profile = ConfigFile::load_profile(config, "default").unwrap();
-        assert_eq!(
-            Some("http://localhost:7001/graphql".to_string()),
-            profile.unwrap().server_url
-        )
-    }
+        let second = Profile {
+            api_key: None,
+            server_url: None,
+        };
 
-    #[test]
-    fn load_profile_with_bad_name() {
-        let config = indoc!(
-            r#"
-        profiles:
-            default:
-                api_key: my_key
-            "#
-        );
-
-        let profile = ConfigFile::load_profile(config, "non-matcch").unwrap();
-        assert!(profile.is_none())
+        assert_eq!(first, first.merge(&second));
     }
 }

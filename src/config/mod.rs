@@ -1,9 +1,11 @@
 mod env;
+mod file;
 mod profiles;
 
 use crate::cli::binary_name;
 use crate::config::env::ConfigEnv;
-use crate::config::profiles::{ConfigFile, Profile};
+use crate::config::file::ConfigFile;
+use crate::config::profiles::Profile;
 use color_eyre::eyre::Result;
 use directories::ProjectDirs;
 use indoc::{formatdoc, indoc};
@@ -110,14 +112,14 @@ impl Config {
                 let loaded_profile = ConfigFile::load_profile(&config, profile_name)?;
 
                 if let Some(loaded_profile) = loaded_profile {
-                    profile.merge(&loaded_profile);
+                    profile = profile.merge(&loaded_profile);
                 }
             }
         }
 
         // Load values out of environment variables after loading them out of any config file so
         // that the environment values can take precedence.
-        profile.merge(&ConfigEnv::load_profile());
+        profile = profile.merge(&ConfigEnv::load_profile());
 
         // Any arguments supplied via CLI options take precedence over values from both the
         // configuration file as well as the environment.
