@@ -30,8 +30,23 @@ The available configuration options are:
 
 ```yaml
 --- 
-api_key: <Your personal access token>
+profiles:
+  default:
+    api_key: <Your personal access token>
+
+  another_profile:
+    source_profile: default
+    api_key: <Another personal access token>
 ```
+
+Note that you can have multiple named profiles in your configuration, allowing you to maintain multiple sets of configuration fields in the configuration file.
+Values can be inherited from one profile to another by way of the `source_profile` configuration field.
+Profiles without an explicit `source_profile` configuration implicitly inherit from the _default_ profile.
+You may choose which profile to use by passing the `--profile` to the CloudTruth CLI binary:
+
+`cloudtruth --profile another-profile <subcommand>`
+
+If the `--profile` argument is not supplied, the profile named _default_ will be used.
 
 ### Environment-based Configuration
 
@@ -72,12 +87,21 @@ To see the full list of supported shells, you can run:
 
 All subcommands support a `--help` option to show you how the command should be invoked.
 
+### Switching Active Configuration Profile
+
+CloudTruth CLI profiles are a way of organizing the application's configuration data into multiple named groups.
+Profiles, in this sense, are unrelated to configuration values in your CloudTruth account.
+They simply allow you to configure the CloudTruth CLI for multiple organizations or multiple API keys with different access restrictions.
+By default, the profile named _default_ will be used, but you can select the active profile with the `--profile` flag:
+
+`cloudtruth --profile my-profile parameters get my_param`
+
 ### Switching Active CloudTruth Environment
 
 By default, all commands will run against the _default_ CloudTruth environment.
 To change the target environment, you can supply the global `--env` flag:
 
-`cloudtruth --env=production parameters get my_param`
+`cloudtruth --env production parameters get my_param`
 
 
 Development

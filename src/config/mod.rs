@@ -1,12 +1,17 @@
+mod env;
+mod file;
+mod profiles;
+
 use crate::cli::binary_name;
+use crate::config::env::ConfigEnv;
+use crate::config::file::ConfigFile;
+use crate::config::profiles::Profile;
 use color_eyre::eyre::Result;
-use config::{ConfigError, File};
 use directories::ProjectDirs;
-use indoc::{formatdoc, indoc};
+use indoc::formatdoc;
 use once_cell::sync::OnceCell;
-use serde::{Deserialize, Serialize};
 use std::fs;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 static INSTANCE: OnceCell<Config> = OnceCell::new();
 
@@ -26,7 +31,7 @@ const ORGANIZATION_NAME: &str = "cloudtruth";
 #[cfg(not(target_os = "macos"))]
 const ORGANIZATION_NAME: &str = "CloudTruth";
 
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Debug)]
 pub struct Config {
     pub api_key: String,
     pub server_url: String,
@@ -35,6 +40,17 @@ pub struct Config {
 pub struct ValidationError {
     pub message: String,
     pub help_message: String,
+}
+
+impl From<Profile> for Config {
+    fn from(profile: Profile) -> Self {
+        Config {
+            api_key: profile.api_key.unwrap_or_else(|| "".to_string()),
+            server_url: profile
+                .server_url
+                .unwrap_or_else(|| "https://ctcaas-graph.cloudtruth.com/graphql".to_string()),
+        }
+    }
 }
 
 impl Config {
@@ -56,20 +72,11 @@ impl Config {
                     }
                 }
 
-                fs::write(config_file, Self::default_config_file())?;
+                fs::write(config_file, ConfigFile::config_file_template())?;
             }
         }
 
         Ok(())
-    }
-
-    fn default_config_file() -> &'static str {
-        indoc!(
-            r#"
-            # Your CloudTruth API key.
-            api_key: ""
-        "#
-        )
     }
 
     pub fn global() -> &'static Self {
@@ -80,31 +87,36 @@ impl Config {
         INSTANCE.set(config).unwrap()
     }
 
-    pub fn load_config(jwt: Option<&str>) -> Result<Self, ConfigError> {
-        let mut settings = config::Config::default();
+    fn read_config(config_file: &Path) -> Result<String> {
+        let contents = fs::read_to_string(config_file)?;
 
-        // Set default configuration values.
-        settings.set_default("api_key", "")?;
-        settings.set_default("server_url", "https://ctcaas-graph.cloudtruth.com/graphql")?;
+        Ok(contents)
+    }
+
+    pub fn load_config(api_key: Option<&str>, profile_name: &str) -> Result<Self> {
+        let mut profile = Profile::default();
 
         // Load settings from the configuration file if it exists.
         if let Some(config_file) = Self::config_file() {
             if config_file.exists() {
-                settings.merge(File::from(config_file))?;
+                let config = Self::read_config(config_file.as_path())?;
+                let loaded_profile = ConfigFile::load_profile(&config, profile_name)?;
+
+                profile = profile.merge(&loaded_profile);
             }
         }
 
         // Load values out of environment variables after loading them out of any config file so
         // that the environment values can take precedence.
-        settings.merge(config::Environment::with_prefix("CT"))?;
+        profile = profile.merge(&ConfigEnv::load_profile());
 
         // Any arguments supplied via CLI options take precedence over values from both the
         // configuration file as well as the environment.
-        if let Some(api_key) = jwt {
-            settings.set("api_key", api_key)?;
+        if let Some(api_key) = api_key {
+            profile.api_key = Some(api_key.to_string());
         }
 
-        Ok(settings.try_into()?)
+        Ok(profile.into())
     }
 
     pub fn edit() -> Result<()> {
@@ -158,7 +170,7 @@ mod tests {
     #[serial]
     fn get_api_key_from_env() {
         env::set_var("CT_API_KEY", "new_key");
-        let config = Config::load_config(None).unwrap();
+        let config = Config::load_config(None, "default").unwrap();
 
         assert_eq!(config.api_key, "new_key");
 
@@ -169,7 +181,7 @@ mod tests {
     #[serial]
     fn api_key_from_args_takes_precedent() {
         env::set_var("CT_API_KEY", "key_from_env");
-        let config = Config::load_config(Some("key_from_args")).unwrap();
+        let config = Config::load_config(Some("key_from_args"), "default").unwrap();
 
         assert_eq!(config.api_key, "key_from_args");
 
@@ -180,7 +192,7 @@ mod tests {
     #[serial]
     fn get_server_url_from_env() {
         env::set_var("CT_SERVER_URL", "http://localhost:7001/graphql");
-        let config = Config::load_config(None).unwrap();
+        let config = Config::load_config(None, "default").unwrap();
 
         assert_eq!(config.server_url, "http://localhost:7001/graphql");
 

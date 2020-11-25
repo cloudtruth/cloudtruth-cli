@@ -63,8 +63,10 @@ fn main() -> Result<()> {
 
     let matches = cli::build_cli().get_matches();
 
-    let jwt = matches.value_of("api_key");
-    Config::init_global(Config::load_config(jwt)?);
+    let api_key = matches.value_of("api_key");
+    let profile_name = matches.value_of("profile").unwrap();
+
+    Config::init_global(Config::load_config(api_key, profile_name)?);
 
     if let Some(matches) = matches.subcommand_matches("completions") {
         let shell = matches.value_of("SHELL").unwrap();

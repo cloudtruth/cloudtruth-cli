@@ -26,6 +26,14 @@ pub fn build_cli() -> App<'static, 'static> {
                 .help("The CloudTruth environment to work with")
                 .takes_value(true),
         )
+        .arg(
+            Arg::with_name("profile")
+                .short("p")
+                .long("profile")
+                .help("The profile from the application configuration file to use")
+                .takes_value(true)
+                .default_value("default")
+        )
         .subcommand(
             SubCommand::with_name("completions")
                 .about("Generate shell completions for this application")
