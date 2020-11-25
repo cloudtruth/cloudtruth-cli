@@ -10,6 +10,7 @@ impl ConfigEnv {
         Profile {
             api_key: ConfigEnv::get_override("api_key"),
             server_url: ConfigEnv::get_override("server_url"),
+            source_profile: None,
         }
     }
 
@@ -37,7 +38,8 @@ mod tests {
         assert_eq!(
             Profile {
                 api_key: None,
-                server_url: None
+                server_url: None,
+                source_profile: None
             },
             ConfigEnv::load_profile()
         );
@@ -52,7 +54,8 @@ mod tests {
         assert_eq!(
             Profile {
                 api_key: Some("new_key".to_string()),
-                server_url: Some("http://localhost:7001/graphql".to_string())
+                server_url: Some("http://localhost:7001/graphql".to_string()),
+                source_profile: None
             },
             ConfigEnv::load_profile()
         );

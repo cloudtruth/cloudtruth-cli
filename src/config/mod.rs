@@ -111,9 +111,7 @@ impl Config {
                 let config = Self::read_config(config_file.as_path())?;
                 let loaded_profile = ConfigFile::load_profile(&config, profile_name)?;
 
-                if let Some(loaded_profile) = loaded_profile {
-                    profile = profile.merge(&loaded_profile);
-                }
+                profile = profile.merge(&loaded_profile);
             }
         }
 
