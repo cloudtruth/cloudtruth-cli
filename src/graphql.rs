@@ -62,7 +62,7 @@ impl fmt::Display for GraphQLError {
                     .collect::<Vec<String>>()
                     .join("\n")
             ),
-            GraphQLError::ServerError => write!(f, "General server error"),
+            GraphQLError::ServerError => write!(f, "There was an error on our server handling your request.\nOur ops team has been alerted and is investigating the issue."),
         }
     }
 }
