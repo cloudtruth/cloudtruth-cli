@@ -58,7 +58,7 @@ impl Parameters {
         if let Some(errors) = create_response_body.errors {
             Err(GraphQLError::ResponseError(errors))
         } else if let Some(data) = create_response_body.data {
-            let create_parameter = data.create_parameter.unwrap();
+            let create_parameter = data.create_parameter;
             if !create_parameter.errors.is_empty() {
                 // Try to fetch the parameter if we're unable to create it.
                 let id = self.get_id(org_id, env_name, key_name)?;
@@ -201,9 +201,7 @@ impl Parameters {
         if let Some(errors) = response_body.errors {
             Err(GraphQLError::ResponseError(errors))
         } else if let Some(data) = response_body.data {
-            Ok(data
-                .update_parameter
-                .and_then(|update| update.parameter.map(|p| p.id)))
+            Ok(data.update_parameter.parameter.map(|p| p.id))
         } else {
             Err(GraphQLError::MissingDataError)
         }
