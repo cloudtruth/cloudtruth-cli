@@ -1,16 +1,3 @@
-mutation CreateParameterQuery($organizationId: ID, $keyName: String!) {
-  createParameter(input: { organizationId: $organizationId, keyName: $keyName }) {
-    clientMutationId
-    parameter {
-      id
-    }
-    errors {
-      path
-      message
-    }
-  }
-}
-
 query GetParameterByNameQuery($organizationId: ID, $envName: String, $keyName: String!) {
   viewer {
     organization(id: $organizationId) {
@@ -42,8 +29,8 @@ query ParametersQuery($organizationId: ID, $environmentId: ID) {
   }
 }
 
-mutation UpdateParameterQuery($environmentId: ID, $id: ID!, $value: String) {
-  updateParameter(input: { id: $id, value: $value, environmentId: $environmentId }) {
+mutation UpsertParameterMutation($orgId: ID, $environmentName: String, $keyName: String!, $value: String) {
+  upsertParameter(input: { keyName: $keyName, value: $value, environmentName: $environmentName, organizationId: $orgId }) {
     clientMutationId
     parameter {
       id

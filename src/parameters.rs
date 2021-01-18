@@ -1,17 +1,8 @@
-use crate::environments::Environments;
 use crate::graphql::prelude::graphql_request;
 use crate::graphql::{GraphQLError, GraphQLResult};
 use graphql_client::*;
 
 pub struct Parameters {}
-
-#[derive(GraphQLQuery)]
-#[graphql(
-    schema_path = "graphql/schema.graphql",
-    query_path = "graphql/parameter_queries.graphql",
-    response_derives = "Debug"
-)]
-pub struct CreateParameterQuery;
 
 #[derive(GraphQLQuery)]
 #[graphql(
@@ -35,41 +26,11 @@ pub struct ParametersQuery;
     query_path = "graphql/parameter_queries.graphql",
     response_derives = "Debug"
 )]
-pub struct UpdateParameterQuery;
+pub struct UpsertParameterMutation;
 
 impl Parameters {
     pub fn new() -> Self {
         Self {}
-    }
-
-    fn find_or_create(
-        &self,
-        org_id: Option<&str>,
-        env_name: Option<&str>,
-        key_name: &str,
-    ) -> GraphQLResult<String> {
-        let create_query = CreateParameterQuery::build_query(create_parameter_query::Variables {
-            key_name: key_name.to_string(),
-            organization_id: org_id.map(|id| id.to_string()),
-        });
-        let create_response_body =
-            graphql_request::<_, create_parameter_query::ResponseData>(&create_query)?;
-
-        if let Some(errors) = create_response_body.errors {
-            Err(GraphQLError::ResponseError(errors))
-        } else if let Some(data) = create_response_body.data {
-            let create_parameter = data.create_parameter;
-            if !create_parameter.errors.is_empty() {
-                // Try to fetch the parameter if we're unable to create it.
-                let id = self.get_id(org_id, env_name, key_name)?;
-
-                Ok(id.unwrap())
-            } else {
-                Ok(create_parameter.parameter.unwrap().id)
-            }
-        } else {
-            Err(GraphQLError::MissingDataError)
-        }
     }
 
     /// Returns `Some(value)` if a value is configured for (parameter, environment) tuple or the
@@ -111,17 +72,6 @@ impl Parameters {
         } else {
             Err(GraphQLError::ParameterNotFoundError(key_name.to_string()))
         }
-    }
-
-    pub fn get_id(
-        &self,
-        org_id: Option<&str>,
-        env_name: Option<&str>,
-        key_name: &str,
-    ) -> GraphQLResult<Option<String>> {
-        let parameter = self.get_parameter_full(org_id, env_name, key_name)?;
-
-        Ok(parameter.map(|p| p.id))
     }
 
     fn get_parameter_full(
@@ -188,20 +138,18 @@ impl Parameters {
         key_name: &str,
         value: Option<&str>,
     ) -> GraphQLResult<Option<String>> {
-        let environment_id = Environments::new().get_id(org_id, env_name)?;
-        let parameter_id = self.find_or_create(org_id, env_name, key_name)?;
-
-        let query = UpdateParameterQuery::build_query(update_parameter_query::Variables {
-            id: parameter_id,
-            environment_id,
+        let query = UpsertParameterMutation::build_query(upsert_parameter_mutation::Variables {
+            org_id: org_id.map(|id| id.to_string()),
+            environment_name: env_name.map(|env| env.to_string()),
+            key_name: key_name.to_string(),
             value: value.map(|v| v.to_string()),
         });
-        let response_body = graphql_request::<_, update_parameter_query::ResponseData>(&query)?;
+        let response_body = graphql_request::<_, upsert_parameter_mutation::ResponseData>(&query)?;
 
         if let Some(errors) = response_body.errors {
             Err(GraphQLError::ResponseError(errors))
         } else if let Some(data) = response_body.data {
-            Ok(data.update_parameter.parameter.map(|p| p.id))
+            Ok(data.upsert_parameter.parameter.map(|p| p.id))
         } else {
             Err(GraphQLError::MissingDataError)
         }
