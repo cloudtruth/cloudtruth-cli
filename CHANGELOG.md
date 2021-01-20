@@ -1,3 +1,9 @@
+# 0.1.1 - 2021-01-20
+
+* Synchronized with the latest CloudTruth API
+* Replaced separate parameter creation and update calls with new upsert operation to avoid race conditions in CloudTruth
+  parameter store
+
 # 0.1.0 - 2020-11-30
 
 The first release of the CloudTruth CLI tool, being made available for:
@@ -10,8 +16,8 @@ The first release of the CloudTruth CLI tool, being made available for:
 
 This release includes the following functionality:
 
-* environments: list
-* parameters: list, get, and create/update
-* templates: list and evaluate
-* multi-profile configuration to support different API keys
-* shell file completion scripts
+* Environments: list
+* Parameters: list, get, and create/update
+* Templates: list and evaluate
+* Multi-profile configuration to support different API keys
+* Shell file completion scripts

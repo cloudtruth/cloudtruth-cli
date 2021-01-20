@@ -3,11 +3,11 @@ use crate::config::profiles::Profile;
 use color_eyre::eyre::Result;
 use core::fmt;
 use indoc::indoc;
-use serde::export::Formatter;
 use serde::Deserialize;
 use serde_yaml::Error;
 use std::collections::HashMap;
 use std::error;
+use std::fmt::Formatter;
 use std::sync::Arc;
 
 #[derive(Deserialize, Debug, Default)]
