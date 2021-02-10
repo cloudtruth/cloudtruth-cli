@@ -4,6 +4,15 @@ CloudTruth CLI
 The CloudTruth CLI tool is used for interacting with the [CloudTruth configuration management service](https://cloudtruth.com).
 In order to use this utility you must have an active CloudTruth account and generate a personal access token for authenticating with the API.
 
+Prerequisites
+-------------
+
+The CloudTruth service is secured using SSL certificates issued by Amazon's CA service.
+Amazon's CA is trusted by recent operating systems and browsers out of the box, but may require installation of an updated CA certificate package for older operating system releases.
+E.g., Debian-based systems may require the installation of the _ca-certificates_ package.
+If you install our Debian package, the necessary certificates package will be installed automatically.
+For other systems, you may have to see your operating system vendor or distribution provides if you see any SSL-related errors when running the `cloudtruth` application.
+
 Configuration
 -------------
 

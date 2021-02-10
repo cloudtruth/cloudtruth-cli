@@ -1,3 +1,8 @@
+# Unreleased
+
+* Added a new dependency on the _ca-certificates_ package for our Debian installer in order to handle SSL certificates
+  issued by Amazon's CA.
+
 # 0.1.1 - 2021-01-20
 
 * Synchronized with the latest CloudTruth API
