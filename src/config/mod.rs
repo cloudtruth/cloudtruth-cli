@@ -48,7 +48,7 @@ impl From<Profile> for Config {
             api_key: profile.api_key.unwrap_or_else(|| "".to_string()),
             server_url: profile
                 .server_url
-                .unwrap_or_else(|| "https://ctcaas-graph.cloudtruth.com/graphql".to_string()),
+                .unwrap_or_else(|| "https://api.cloudtruth.com/graphql".to_string()),
         }
     }
 }
