@@ -22,6 +22,7 @@ extended-description = """\
 The cloudtruth CLI provides an easy way to script actions related to configuration
 data you have stored within the CloudTruth configuration management service.
 """
+depends = "$auto, ca-certificates"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
