@@ -149,7 +149,15 @@ impl Parameters {
         if let Some(errors) = response_body.errors {
             Err(GraphQLError::ResponseError(errors))
         } else if let Some(data) = response_body.data {
-            Ok(data.upsert_parameter.parameter.map(|p| p.id))
+            let logical_errors = data.upsert_parameter.errors;
+
+            if !logical_errors.is_empty() {
+                Err(GraphQLError::build_logical_error(to_user_errors!(
+                    logical_errors
+                )))
+            } else {
+                Ok(data.upsert_parameter.parameter.map(|p| p.id))
+            }
         } else {
             Err(GraphQLError::MissingDataError)
         }

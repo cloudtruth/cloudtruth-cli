@@ -29,6 +29,12 @@ pub mod prelude {
     }
 }
 
+#[derive(Debug)]
+pub struct UserError {
+    pub message: String,
+    pub path: Option<Vec<String>>,
+}
+
 pub type GraphQLResult<T> = std::result::Result<T, GraphQLError>;
 
 #[derive(Debug, Clone)]
@@ -39,6 +45,34 @@ pub enum GraphQLError {
     ParameterNotFoundError(String),
     ResponseError(Vec<graphql_client::Error>),
     ServerError,
+    ValidationError(String, String),
+}
+
+impl GraphQLError {
+    pub fn build_logical_error(errors: Vec<UserError>) -> Self {
+        if !errors.is_empty() {
+            let error = errors.first();
+            let mut field = "".to_string();
+
+            if let Some(error) = error {
+                if let Some(path) = &error.path {
+                    field = path
+                        .iter()
+                        .filter(|value| **value != "attributes") // Strip out the "attributes" part of the message since it doesn't make sense in a client.
+                        .cloned() // Convert &String to String so the values can be joined.
+                        .collect::<Vec<String>>()
+                        .join(".");
+                }
+            }
+
+            Self::ValidationError(
+                field,
+                error.map_or("".to_string(), |error| error.message.clone()),
+            )
+        } else {
+            Self::ServerError
+        }
+    }
 }
 
 impl fmt::Display for GraphQLError {
@@ -65,6 +99,7 @@ impl fmt::Display for GraphQLError {
                     .join("\n")
             ),
             GraphQLError::ServerError => write!(f, "There was an error on our server handling your request.\nOur ops team has been alerted and is investigating the issue."),
+            GraphQLError::ValidationError(field, message) => write!(f, "There was a problem with a value you supplied: {} {}", field, message)
         }
     }
 }

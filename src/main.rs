@@ -1,12 +1,13 @@
-mod cli;
-mod config;
-mod environments;
 mod graphql;
-mod parameters;
-mod templates;
 
 #[macro_use]
 mod macros;
+
+mod cli;
+mod config;
+mod environments;
+mod parameters;
+mod templates;
 
 use crate::config::Config;
 use crate::environments::Environments;
