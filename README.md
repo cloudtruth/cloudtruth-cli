@@ -155,3 +155,9 @@ The project uses Clippy to catch potentially problematic code patterns and ensur
 It can be invoked with:
 
 `cargo clippy`
+
+### Debugging
+
+This project makes use of the semi-standard Rust [log crate](https://crates.io/crates/log) to provide runtime logging.
+In order to see the log, you can set the `RUST_LOG` environment value to a [standard log level value](https://docs.rs/log/0.4.14/log/enum.Level.html).
+Notably, our HTTP client library will emit a lot of helpful information about the request & response cycle at the _trace_ level.

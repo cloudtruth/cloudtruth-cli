@@ -60,6 +60,7 @@ fn check_valid_env(
 
 fn main() -> Result<()> {
     color_eyre::install()?;
+    env_logger::init();
 
     let matches = cli::build_cli().get_matches();
 

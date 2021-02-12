@@ -10,7 +10,9 @@ pub mod prelude {
     pub fn graphql_request<T: Serialize, R: DeserializeOwned>(
         json: &T,
     ) -> Result<graphql_client::Response<R>, GraphQLError> {
-        let client = reqwest::blocking::Client::new();
+        let client = reqwest::blocking::Client::builder()
+            .connection_verbose(true)
+            .build()?;
         let config = Config::global();
 
         let res = client
