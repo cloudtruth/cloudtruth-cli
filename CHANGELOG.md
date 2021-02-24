@@ -1,7 +1,9 @@
-# Unreleased
+# 0.1.2 - 2012-02-24
 
 * Added a new dependency on the _ca-certificates_ package for our Debian installer in order to handle SSL certificates
   issued by Amazon's CA.
+* Improved error messages when operations fail due to access restrictions on the API key.
+* Improved error messages for data validation issues.
 
 # 0.1.1 - 2021-01-20
 
