@@ -1,5 +1,5 @@
 use crate::graphql::prelude::graphql_request;
-use crate::graphql::{GraphQLError, GraphQLResult};
+use crate::graphql::{GraphQLError, GraphQLResult, Operation, Resource};
 use graphql_client::*;
 
 pub struct Parameters {}
@@ -147,7 +147,11 @@ impl Parameters {
         let response_body = graphql_request::<_, upsert_parameter_mutation::ResponseData>(&query)?;
 
         if let Some(errors) = response_body.errors {
-            Err(GraphQLError::ResponseError(errors))
+            Err(GraphQLError::build_query_error(
+                errors,
+                Resource::Parameter,
+                Operation::Upsert,
+            ))
         } else if let Some(data) = response_body.data {
             let logical_errors = data.upsert_parameter.errors;
 
