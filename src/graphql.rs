@@ -12,6 +12,7 @@ pub mod prelude {
     ) -> Result<graphql_client::Response<R>, GraphQLError> {
         let client = reqwest::blocking::Client::builder()
             .connection_verbose(true)
+            .user_agent(concat!("CloudTruth CLI/", env!("CARGO_PKG_VERSION")))
             .build()?;
         let config = Config::global();
 
