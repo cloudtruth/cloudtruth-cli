@@ -1,12 +1,13 @@
-mod cli;
-mod config;
-mod environments;
 mod graphql;
-mod parameters;
-mod templates;
 
 #[macro_use]
 mod macros;
+
+mod cli;
+mod config;
+mod environments;
+mod parameters;
+mod templates;
 
 use crate::config::Config;
 use crate::environments::Environments;
@@ -60,6 +61,7 @@ fn check_valid_env(
 
 fn main() -> Result<()> {
     color_eyre::install()?;
+    env_logger::init();
 
     let matches = cli::build_cli().get_matches();
 

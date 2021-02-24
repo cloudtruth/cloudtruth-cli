@@ -10,7 +10,9 @@ pub mod prelude {
     pub fn graphql_request<T: Serialize, R: DeserializeOwned>(
         json: &T,
     ) -> Result<graphql_client::Response<R>, GraphQLError> {
-        let client = reqwest::blocking::Client::new();
+        let client = reqwest::blocking::Client::builder()
+            .connection_verbose(true)
+            .build()?;
         let config = Config::global();
 
         let res = client
@@ -27,9 +29,32 @@ pub mod prelude {
     }
 }
 
+#[derive(Debug)]
+pub struct UserError {
+    pub message: String,
+    pub path: Option<Vec<String>>,
+}
+
+#[allow(dead_code)]
+#[derive(Clone, Debug)]
+pub enum Operation {
+    Create,
+    Delete,
+    Update,
+    Upsert,
+}
+
+#[allow(dead_code)]
+#[derive(Clone, Debug)]
+pub enum Resource {
+    Environment,
+    Parameter,
+    Template,
+}
+
 pub type GraphQLResult<T> = std::result::Result<T, GraphQLError>;
 
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug)]
 pub enum GraphQLError {
     EnvironmentNotFoundError(String),
     MissingDataError,
@@ -37,21 +62,66 @@ pub enum GraphQLError {
     ParameterNotFoundError(String),
     ResponseError(Vec<graphql_client::Error>),
     ServerError,
+    UnauthorizedError(Resource, Operation),
+    ValidationError(String, String),
+}
+
+impl GraphQLError {
+    pub fn build_query_error(
+        errors: Vec<graphql_client::Error>,
+        resource: Resource,
+        operation: Operation,
+    ) -> Self {
+        let unauthorized = errors
+            .iter()
+            .find(|error| error.message.contains("not allowed to"));
+
+        if unauthorized.is_some() {
+            Self::UnauthorizedError(resource, operation)
+        } else {
+            Self::ResponseError(errors)
+        }
+    }
+
+    pub fn build_logical_error(errors: Vec<UserError>) -> Self {
+        if !errors.is_empty() {
+            let error = errors.first();
+            let mut field = "".to_string();
+
+            if let Some(error) = error {
+                if let Some(path) = &error.path {
+                    field = path
+                        .iter()
+                        .filter(|value| **value != "attributes") // Strip out the "attributes" part of the message since it doesn't make sense in a client.
+                        .cloned() // Convert &String to String so the values can be joined.
+                        .collect::<Vec<String>>()
+                        .join(".");
+                }
+            }
+
+            Self::ValidationError(
+                field,
+                error.map_or("".to_string(), |error| error.message.clone()),
+            )
+        } else {
+            Self::ServerError
+        }
+    }
 }
 
 impl fmt::Display for GraphQLError {
     fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
         match self {
             GraphQLError::EnvironmentNotFoundError(name) => {
-                write!(f, "Unable to find environment '{}'", name)
+                write!(f, "Unable to find environment '{}'.", name)
             }
             GraphQLError::MissingDataError => write!(
                 f,
-                "GraphQL response did not error, but does not have required data"
+                "GraphQL response did not error, but does not have required data."
             ),
-            GraphQLError::NetworkError(_) => write!(f, "Network error performing GraphQL query"),
+            GraphQLError::NetworkError(_) => write!(f, "Network error performing GraphQL query."),
             GraphQLError::ParameterNotFoundError(key) => {
-                write!(f, "Unable to find parameter '{}'", key)
+                write!(f, "Unable to find parameter '{}'.", key)
             }
             GraphQLError::ResponseError(errors) => write!(
                 f,
@@ -63,6 +133,8 @@ impl fmt::Display for GraphQLError {
                     .join("\n")
             ),
             GraphQLError::ServerError => write!(f, "There was an error on our server handling your request.\nOur ops team has been alerted and is investigating the issue."),
+            GraphQLError::UnauthorizedError(resource, operation) => write!(f, "The access token is not authorized to {} this {}.", operation, resource),
+            GraphQLError::ValidationError(field, message) => write!(f, "There was a problem with a value you supplied: {} {}.", field, message)
         }
     }
 }
@@ -78,6 +150,21 @@ impl std::error::Error for GraphQLError {
         match self {
             GraphQLError::NetworkError(error) => Some(&**error),
             _ => None,
+        }
+    }
+}
+
+impl fmt::Display for Resource {
+    fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+        write!(f, "{}", format!("{:?}", self).to_lowercase())
+    }
+}
+
+impl fmt::Display for Operation {
+    fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+        match self {
+            Operation::Upsert => write!(f, "create or update"),
+            _ => write!(f, "{}", format!("{:?}", self).to_lowercase()),
         }
     }
 }
