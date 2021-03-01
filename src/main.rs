@@ -139,8 +139,9 @@ fn main() -> Result<()> {
         } else if let Some(matches) = matches.subcommand_matches("set") {
             let key = matches.value_of("KEY").unwrap();
             let value = matches.value_of("VALUE");
+            let fqn = matches.value_of("fully_qualified_name");
 
-            let updated_id = parameters.set_parameter(org_id, env, key, value)?;
+            let updated_id = parameters.set_parameter(org_id, env, key, value, fqn)?;
 
             if updated_id.is_some() {
                 println!(
