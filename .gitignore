@@ -1,1 +1,7 @@
 /target
+
+# Eclipse settings stuff
+.project
+
+# PyCharm stuff
+.idea/

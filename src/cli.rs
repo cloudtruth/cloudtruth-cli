@@ -86,4 +86,43 @@ pub fn build_cli() -> App<'static, 'static> {
                     .about("List CloudTruth templates"),
             ])
         )
+        .subcommand(
+            SubCommand::with_name("run")
+                .visible_aliases(&["run", "r"])
+                .about("Run a shell with the parameters in place")
+                .args(&[
+                    Arg::with_name("preserve")
+                        .long("preserve")
+                        .short("p")
+                        .help("Preserve existing environment."),
+                    Arg::with_name("set")
+                        .long("set")
+                        .short("s")
+                        .takes_value(true)
+                        //.multiple(true)
+                        .help("Set the variables in this run, even possibly overriding the CloudTruth environment."),
+                    Arg::with_name("remove")
+                        .long("remove")
+                        .short("r")
+                        .takes_value(true)
+                        //.multiple(true)
+                        .help("Remove the variables from the CloudTruth environment for this run.")
+                ])
+                .subcommands(vec![
+                    SubCommand::with_name("command")
+                        .visible_aliases(&["com", "comm", "cmd"])
+                        .about("Run this command")
+                        .arg(Arg::with_name("COMMAND")
+                            .required(true)
+                        ),
+                    SubCommand::with_name("arguments")
+                        .visible_alias("args")
+                        .about("Treat the rest of the arguments as the command")
+                        .arg(Arg::with_name("ARGUMENTS")
+                            .required(true)
+                            .multiple(true)
+                            .allow_hyphen_values(true)
+                        ),
+                ])
+        )
 }
