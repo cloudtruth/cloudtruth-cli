@@ -106,7 +106,7 @@ pub fn build_cli() -> App<'static, 'static> {
                         .short("r")
                         .takes_value(true)
                         //.multiple(true)
-                        .help("Remove the variables from the CloudTruth environment for this run.")
+                        .help("Remove the variables from the CloudTruth environment for this run."),
                 ])
                 .subcommands(vec![
                     SubCommand::with_name("command")

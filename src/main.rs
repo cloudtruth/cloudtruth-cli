@@ -378,7 +378,7 @@ mod main {
             vec!["run", "command", "printenv"],
         ];
         for cmd_args in commands {
-            println!("Testing: {}", cmd_args.join(" "));
+            println!("need_api_key test: {}", cmd_args.join(" "));
             let mut cmd = cmd();
             cmd.env("CT_API_KEY", "")
                 .args(cmd_args)
@@ -388,9 +388,7 @@ mod main {
         }
     }
 
-    // TODO: enable this  test -- not sure why it is not passing...
-    // #[test]
-    #[allow(dead_code)]
+    #[test]
     fn missing_subcommands() {
         let commands = &[
             vec!["config"],
@@ -399,8 +397,8 @@ mod main {
             // vec!["run"],
         ];
         for cmd_args in commands {
-            println!("Testing: {}", cmd_args.join(" "));
-            let warn_msg = format!("No '{}' sub-command executed.", cmd_args[0]);
+            println!("missing_subcommands test: {}", cmd_args.join(" "));
+            let warn_msg = format!("WARN: No '{}' sub-command executed.", cmd_args[0]);
             let mut cmd = cmd();
             cmd.args(cmd_args)
                 .assert()
