@@ -83,20 +83,20 @@ fn get_ct_vars(
     org_id: Option<&str>,
     env: Option<&str>,
     environments: &Environments,
-) -> HashMap<String, String> {
+) -> Result<HashMap<String, String>> {
     // Create a HashMap with all the CloudTruth environment values for this environment.
     let mut ct_vars = HashMap::new();
     let parameters = Parameters::new();
-    let env_id = environments.get_id(org_id, env).unwrap();
-    let list = parameters.get_parameter_names(org_id, env_id).unwrap();
+    let env_id = environments.get_id(org_id, env)?;
+    let list = parameters.get_parameter_names(org_id, env_id)?;
     for key in list.iter() {
-        let parameter = parameters.get_body(org_id, env, key).unwrap();
+        let parameter = parameters.get_body(org_id, env, key)?;
         // Put the key/value pair into the environment
         let value = parameter.unwrap_or_else(|| "".to_string());
         ct_vars.insert(key.to_string(), value);
     }
 
-    ct_vars
+    Ok(ct_vars)
 }
 
 fn process_overrides(overrides: Vec<String>) -> HashMap<String, String> {
@@ -119,7 +119,7 @@ fn process_run_command(
     env: Option<&str>,
     environments: &Environments,
     subcmd_args: &ArgMatches,
-) {
+) -> Result<()> {
     let mut sub_proc: Exec;
     if let Some(command_args) = subcmd_args.subcommand_matches("command") {
         let command = command_args.value_of("COMMAND").unwrap();
@@ -153,7 +153,7 @@ fn process_run_command(
     env_vars.insert("CT_ENV".to_string(), env.unwrap_or("default").to_string());
 
     // merge in the items from the CloudTruth environment
-    env_vars.extend(get_ct_vars(org_id, env, environments));
+    env_vars.extend(get_ct_vars(org_id, env, environments)?);
 
     // add the overrides
     env_vars.extend(process_overrides(overrides));
@@ -172,6 +172,8 @@ fn process_run_command(
     // now, run it and wait for the result
     let status = sub_proc.join();
     println!("Exited with status {:?}", status);
+
+    Ok(())
 }
 
 fn main() -> Result<()> {
@@ -307,7 +309,7 @@ fn main() -> Result<()> {
 
     if let Some(matches) = matches.subcommand_matches("run") {
         check_valid_env(org_id, env, &environments)?;
-        process_run_command(org_id, env, &environments, matches)
+        process_run_command(org_id, env, &environments, matches)?;
     }
 
     Ok(())
