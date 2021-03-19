@@ -142,6 +142,11 @@ The tests can be run via `cargo`:
 
 `cargo test`
 
+If you run into test failures, try this remedy:
+
+- unset CHARGEBEE_API_KEY
+- `cargo build`
+
 #### Formatting
 
 The project uses rustfmt to maintain consistency with the prevailing formatting standard.
@@ -161,3 +166,14 @@ It can be invoked with:
 This project makes use of the semi-standard Rust [log crate](https://crates.io/crates/log) to provide runtime logging.
 In order to see the log, you can set the `RUST_LOG` environment value to a [standard log level value](https://docs.rs/log/0.4.14/log/enum.Level.html).
 Notably, our HTTP client library will emit a lot of helpful information about the request & response cycle at the _trace_ level.
+
+### Testing Artifact Generation
+
+Generation of build artifacts is done using a GitHub Actions workflow and in many cases cannot be done in a local
+development environment.  To test changes to the artifact output, you can follow this workflow:
+
+1. Make your code changes and push to a branch.
+2. Create a tag for your branch and push following SemVer rules, for example _0.1.3-pre_.
+3. This creates a draft release and you can check the results in the Actions tab.
+4. You can delete the draft release and the artifacts after you are done, then submit a pull request
+   to get your changes into the _master_ branch.
