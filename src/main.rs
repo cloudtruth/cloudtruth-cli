@@ -10,6 +10,7 @@ mod parameters;
 mod templates;
 
 use crate::config::Config;
+use crate::config::{DEFAULT_ENV_NAME, ENV_VAR_PREFIX};
 use crate::environments::Environments;
 use crate::graphql::GraphQLError;
 use crate::parameters::Parameters;
@@ -45,12 +46,12 @@ fn check_config() -> Result<()> {
     Ok(())
 }
 
-fn warn(message: String) {
+fn warn_user(message: String) {
     println!("WARN: {}", message);
 }
 
 fn warn_missing_subcommand(command: &str) {
-    warn(format!("No '{}' sub-command executed.", command));
+    warn_user(format!("No '{}' sub-command executed.", command));
 }
 
 fn check_valid_env(
@@ -63,7 +64,7 @@ fn check_valid_env(
     if !environments.is_valid_environment_name(org_id, env)? {
         panic!(
             "The '{}' environment could not be found in your account.",
-            env.unwrap_or("default")
+            env.unwrap_or(DEFAULT_ENV_NAME)
         )
     }
 
@@ -71,11 +72,11 @@ fn check_valid_env(
 }
 
 fn current_env() -> HashMap<String, String> {
-    // Create a HashMap from the current set of environment variables (excluding a few)
+    // Create a HashMap from the current set of environment variables (excluding a few).
     let exclude = ["PS1", "TERM", "HOME"];
 
     env::vars()
-        .filter(|&(ref k, _)| !exclude.contains(&k.as_str()))
+        .filter(|(ref k, _)| !exclude.contains(&k.as_str()))
         .collect()
 }
 
@@ -100,12 +101,12 @@ fn get_ct_vars(
 }
 
 fn process_overrides(overrides: Vec<String>) -> HashMap<String, String> {
-    // Create HashMap with all the user-provided overrides
+    // Create HashMap with all the user-provided overrides.
     let mut over_vars = HashMap::new();
     for arg_val in overrides {
         let temp: Vec<&str> = arg_val.splitn(2, '=').collect();
         if temp.len() != 2 {
-            println!("Ignoring {} due to  no '='", arg_val);
+            warn_user(format!("Ignoring {} due to  no '='", arg_val));
             continue;
         }
         over_vars.insert(temp[0].to_string(), temp[1].to_string());
@@ -128,7 +129,7 @@ fn process_run_command(
         let mut arguments = arg_args.values_of_lossy("ARGUMENTS").unwrap();
         let command = arguments.remove(0);
         if command.contains(' ') {
-            warn("command contains spaces, and will likely fail.".to_string());
+            warn_user("command contains spaces, and will likely fail.".to_string());
             let mut reformed = format!("{} {}", command, arguments.join(" "));
             reformed = reformed.replace("$", "\\$");
             println!("Try using 'cloudtruth run command \"{}\"'", reformed.trim());
@@ -139,7 +140,7 @@ fn process_run_command(
         process::exit(0);
     }
 
-    // setup the environment for the sub-process
+    // Setup the environment for the sub-process.
     let preserve = subcmd_args.is_present("preserve");
     let overrides = subcmd_args.values_of_lossy("set").unwrap_or_default();
     let removals = subcmd_args.values_of_lossy("remove").unwrap_or_default();
@@ -149,16 +150,17 @@ fn process_run_command(
         current_env()
     };
 
-    // add breadcrumbs about which environment this came from
-    env_vars.insert("CT_ENV".to_string(), env.unwrap_or("default").to_string());
+    // Add breadcrumbs about which environment.
+    env_vars.insert(
+        format!("{}ENV", ENV_VAR_PREFIX),
+        env.unwrap_or(DEFAULT_ENV_NAME).to_string(),
+    );
 
-    // merge in the items from the CloudTruth environment
+    // Add in the items from the CloudTruth environment, and overrides.
     env_vars.extend(get_ct_vars(org_id, env, environments)?);
-
-    // add the overrides
     env_vars.extend(process_overrides(overrides));
 
-    // remove the specified values
+    // Remove the specified values.
     for r in removals {
         env_vars.remove(r.as_str());
     }
@@ -169,9 +171,8 @@ fn process_run_command(
         sub_proc = sub_proc.env(key, value);
     }
 
-    // now, run it and wait for the result
-    let status = sub_proc.join();
-    println!("Exited with status {:?}", status);
+    // Run the process and wait for the result.
+    sub_proc.join()?;
 
     Ok(())
 }
@@ -267,13 +268,13 @@ fn main() -> Result<()> {
                 println!(
                     "Successfully updated parameter '{}' in environment '{}'.",
                     key,
-                    env.unwrap_or("default")
+                    env.unwrap_or(DEFAULT_ENV_NAME)
                 );
             } else {
                 println!(
                     "Failed to update parameter '{}' in environment '{}'.",
                     key,
-                    env.unwrap_or("default")
+                    env.unwrap_or(DEFAULT_ENV_NAME)
                 );
             }
         }
@@ -301,7 +302,7 @@ fn main() -> Result<()> {
                 println!(
                     "Could not find a template with name '{}' in environment '{}'.",
                     template_name,
-                    env.unwrap_or("default")
+                    env.unwrap_or(DEFAULT_ENV_NAME)
                 )
             }
         }
@@ -316,8 +317,9 @@ fn main() -> Result<()> {
 }
 
 #[cfg(test)]
-mod main {
+mod main_test {
     use crate::cli;
+    use crate::config::CT_API_KEY;
     use assert_cmd::prelude::*;
     use predicates::prelude::predicate::str::*;
     use std::process::Command;
@@ -329,7 +331,7 @@ mod main {
         cmd.env("NO_COLOR", "true");
 
         // Explicitly clear the API key so an individual dev's personal config isn't used for tests.
-        cmd.env("CT_API_KEY", "");
+        cmd.env(CT_API_KEY, "");
 
         cmd
     }
@@ -380,7 +382,7 @@ mod main {
         for cmd_args in commands {
             println!("need_api_key test: {}", cmd_args.join(" "));
             let mut cmd = cmd();
-            cmd.env("CT_API_KEY", "")
+            cmd.env(CT_API_KEY, "")
                 .args(cmd_args)
                 .assert()
                 .failure()
@@ -392,9 +394,9 @@ mod main {
     fn missing_subcommands() {
         let commands = &[
             vec!["config"],
-            // TODO: add more here once we can get beyond a valid environment
-            // vec!["environments"],
-            // vec!["run"],
+            /* TODO: Rick Porter 3/2021: add more tests once we can get a valid environment, (e.g.
+               environment, run)
+            */
         ];
         for cmd_args in commands {
             println!("missing_subcommands test: {}", cmd_args.join(" "));

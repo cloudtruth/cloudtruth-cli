@@ -94,19 +94,19 @@ pub fn build_cli() -> App<'static, 'static> {
                     Arg::with_name("preserve")
                         .long("preserve")
                         .short("p")
-                        .help("Preserve existing environment."),
+                        .help("Preserve existing environment"),
                     Arg::with_name("set")
                         .long("set")
                         .short("s")
                         .takes_value(true)
                         //.multiple(true)
-                        .help("Set the variables in this run, even possibly overriding the CloudTruth environment."),
+                        .help("Set the variables in this run, even possibly overriding the CloudTruth environment"),
                     Arg::with_name("remove")
                         .long("remove")
                         .short("r")
                         .takes_value(true)
                         //.multiple(true)
-                        .help("Remove the variables from the CloudTruth environment for this run."),
+                        .help("Remove the variables from the CloudTruth environment for this run"),
                 ])
                 .subcommands(vec![
                     SubCommand::with_name("command")

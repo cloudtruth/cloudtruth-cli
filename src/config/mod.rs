@@ -17,6 +17,21 @@ static INSTANCE: OnceCell<Config> = OnceCell::new();
 
 const CONFIG_FILE_NAME: &str = "cli.yml";
 
+// This is the default environment name.
+pub const DEFAULT_ENV_NAME: &str = "default";
+
+// Default prefix for environment variables added by CloudTruth.
+pub const ENV_VAR_PREFIX: &str = "CT_";
+
+// Environment variable name used to specify the CloudTruth API value, so it does not need to be
+// specified on the command line.
+#[allow(dead_code)]
+pub const CT_API_KEY: &str = "CT_API_KEY";
+
+// Environment variable name used to override the default server URL.
+#[allow(dead_code)]
+pub const CT_SERVER_URL: &str = "CT_SERVER_URL";
+
 // Linux follows the XDG directory layout and creates one directory per application. However, our
 // configuration files indicate the application name, so we can use a shared directory.
 #[cfg(target_os = "linux")]
@@ -157,7 +172,7 @@ impl Config {
 
 #[cfg(test)]
 mod tests {
-    use crate::config::Config;
+    use crate::config::{Config, DEFAULT_ENV_NAME};
     use serial_test::serial;
     use std::env;
     use std::path::PathBuf;
@@ -170,7 +185,7 @@ mod tests {
     #[serial]
     fn get_api_key_from_env() {
         env::set_var("CT_API_KEY", "new_key");
-        let config = Config::load_config(None, "default").unwrap();
+        let config = Config::load_config(None, DEFAULT_ENV_NAME).unwrap();
 
         assert_eq!(config.api_key, "new_key");
 
@@ -181,7 +196,7 @@ mod tests {
     #[serial]
     fn api_key_from_args_takes_precedent() {
         env::set_var("CT_API_KEY", "key_from_env");
-        let config = Config::load_config(Some("key_from_args"), "default").unwrap();
+        let config = Config::load_config(Some("key_from_args"), DEFAULT_ENV_NAME).unwrap();
 
         assert_eq!(config.api_key, "key_from_args");
 
@@ -192,7 +207,7 @@ mod tests {
     #[serial]
     fn get_server_url_from_env() {
         env::set_var("CT_SERVER_URL", "http://localhost:7001/graphql");
-        let config = Config::load_config(None, "default").unwrap();
+        let config = Config::load_config(None, DEFAULT_ENV_NAME).unwrap();
 
         assert_eq!(config.server_url, "http://localhost:7001/graphql");
 

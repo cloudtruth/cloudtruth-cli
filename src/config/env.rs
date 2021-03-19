@@ -1,9 +1,8 @@
 use crate::config::profiles::Profile;
+use crate::config::ENV_VAR_PREFIX;
 use std::env;
 
 pub(crate) struct ConfigEnv {}
-
-const ENV_VAR_PREFIX: &str = "CT_";
 
 impl ConfigEnv {
     pub(crate) fn load_profile() -> Profile {
@@ -27,8 +26,8 @@ impl ConfigEnv {
 
 #[cfg(test)]
 mod tests {
-    use crate::config::env::ConfigEnv;
     use crate::config::profiles::Profile;
+    use crate::config::{ConfigEnv, CT_API_KEY, CT_SERVER_URL};
     use serial_test::serial;
     use std::env;
 
@@ -48,8 +47,8 @@ mod tests {
     #[test]
     #[serial]
     fn create_profile_from_env() {
-        env::set_var("CT_API_KEY", "new_key");
-        env::set_var("CT_SERVER_URL", "http://localhost:7001/graphql");
+        env::set_var(CT_API_KEY, "new_key");
+        env::set_var(CT_SERVER_URL, "http://localhost:7001/graphql");
 
         assert_eq!(
             Profile {
@@ -60,7 +59,7 @@ mod tests {
             ConfigEnv::load_profile()
         );
 
-        env::remove_var("CT_API_KEY");
-        env::remove_var("CT_SERVER_URL");
+        env::remove_var(CT_API_KEY);
+        env::remove_var(CT_SERVER_URL);
     }
 }
