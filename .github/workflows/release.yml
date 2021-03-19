@@ -271,3 +271,32 @@ jobs:
           asset_path: ${{ env.DEB_PATH }}
           asset_name: ${{ env.DEB_NAME }}
           asset_content_type: application/octet-stream
+
+      - name: Install cargo-generate-rpm
+        if: contains(matrix.build, 'linux')
+        run: cargo install cargo-generate-rpm
+
+      - name: Build RPM package
+        if: contains(matrix.build, 'linux')
+        shell: bash
+        run: |
+          sed -i 's/TARGET/${{ matrix.target }}/g' Cargo.rpm.toml
+          cat Cargo.rpm.toml >> Cargo.toml
+          
+          rpm_arch=$(echo "${{ matrix.target }}" | cut -d- -f1)
+          cargo generate-rpm --arch $rpm_arch
+
+          rpm_path=$(ls target/generate-rpm/cloudtruth-*$rpm_arch.rpm)
+          echo RPM_PATH=$rpm_path >> $GITHUB_ENV
+          echo RPM_NAME=$(basename $rpm_path) >> $GITHUB_ENV
+
+      - name: Upload RPM package
+        if: contains(matrix.build, 'linux')
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ env.RELEASE_UPLOAD_URL }}
+          asset_path: ${{ env.RPM_PATH }}
+          asset_name: ${{ env.RPM_NAME }}
+          asset_content_type: application/octet-stream

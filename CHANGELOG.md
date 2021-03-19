@@ -8,6 +8,7 @@
 * Parameters: 
   * Added `delete`
   * Enhanced `set` to allow setting parameter `description` and `secret` values.
+* Added RPM packages.
 
 # 0.2.0 - 2021-04-06
 
