@@ -76,13 +76,13 @@ impl Templates {
             organization_id: organization_id.map(|id| id.to_string()),
             environment_name: environment_name.map(|name| name.to_string()),
             template_name: template_name.to_string(),
-            filters: Some(get_implicit_template_query::ImplicitTemplateFilters {
+            filters: get_implicit_template_query::ImplicitTemplateFilters {
                 starts_with: starts_with.map(|search| search.to_string()),
                 ends_with: ends_with.map(|search| search.to_string()),
                 contains: contains.map(|search| search.to_string()),
                 secrets: Some(secrets),
                 export: Some(export),
-            }),
+            },
         });
         let response_body =
             graphql_request::<_, get_implicit_template_query::ResponseData>(&query)?;
