@@ -1,5 +1,5 @@
 use crate::config::profiles::Profile;
-use crate::config::ENV_VAR_PREFIX;
+use crate::config::{CT_API_KEY, CT_SERVER_URL, ENV_VAR_PREFIX};
 use std::env;
 
 pub(crate) struct ConfigEnv {}
@@ -7,14 +7,15 @@ pub(crate) struct ConfigEnv {}
 impl ConfigEnv {
     pub(crate) fn load_profile() -> Profile {
         Profile {
-            api_key: ConfigEnv::get_override("api_key"),
-            server_url: ConfigEnv::get_override("server_url"),
+            api_key: ConfigEnv::get_override(CT_API_KEY),
+            server_url: ConfigEnv::get_override(CT_SERVER_URL),
             source_profile: None,
         }
     }
 
     fn get_override(config_name: &str) -> Option<String> {
-        let value = env::var(format!("{}{}", ENV_VAR_PREFIX, config_name.to_uppercase()));
+        assert!(config_name.starts_with(ENV_VAR_PREFIX));
+        let value = env::var(config_name);
 
         if let Ok(value) = value {
             Some(value)

@@ -17,9 +17,13 @@ static INSTANCE: OnceCell<Config> = OnceCell::new();
 
 const CONFIG_FILE_NAME: &str = "cli.yml";
 
-// This is the default environment name.
+// Default environment name.
 pub const DEFAULT_ENV_NAME: &str = "default";
 
+/*************************************************************************
+ Environment variables.
+ All should start with ENV_VAR_PREFIX (CT_xxx).
+************************************************************************/
 // Default prefix for environment variables added by CloudTruth.
 pub const ENV_VAR_PREFIX: &str = "CT_";
 
@@ -172,7 +176,7 @@ impl Config {
 
 #[cfg(test)]
 mod tests {
-    use crate::config::{Config, DEFAULT_ENV_NAME};
+    use crate::config::{Config, CT_API_KEY, CT_SERVER_URL, DEFAULT_ENV_NAME};
     use serial_test::serial;
     use std::env;
     use std::path::PathBuf;
@@ -184,34 +188,34 @@ mod tests {
     #[test]
     #[serial]
     fn get_api_key_from_env() {
-        env::set_var("CT_API_KEY", "new_key");
+        env::set_var(CT_API_KEY, "new_key");
         let config = Config::load_config(None, DEFAULT_ENV_NAME).unwrap();
 
         assert_eq!(config.api_key, "new_key");
 
-        env::remove_var("CT_API_KEY");
+        env::remove_var(CT_API_KEY);
     }
 
     #[test]
     #[serial]
     fn api_key_from_args_takes_precedent() {
-        env::set_var("CT_API_KEY", "key_from_env");
+        env::set_var(CT_API_KEY, "key_from_env");
         let config = Config::load_config(Some("key_from_args"), DEFAULT_ENV_NAME).unwrap();
 
         assert_eq!(config.api_key, "key_from_args");
 
-        env::remove_var("CT_API_KEY")
+        env::remove_var(CT_API_KEY)
     }
 
     #[test]
     #[serial]
     fn get_server_url_from_env() {
-        env::set_var("CT_SERVER_URL", "http://localhost:7001/graphql");
+        env::set_var(CT_SERVER_URL, "http://localhost:7001/graphql");
         let config = Config::load_config(None, DEFAULT_ENV_NAME).unwrap();
 
         assert_eq!(config.server_url, "http://localhost:7001/graphql");
 
-        env::remove_var("CT_SERVER_URL");
+        env::remove_var(CT_SERVER_URL);
     }
 
     #[test]
