@@ -81,12 +81,9 @@ pub fn build_cli() -> App<'static, 'static> {
                 SubCommand::with_name("get")
                     .about("Get an evaluated template from CloudTruth")
                     .arg(Arg::with_name("KEY").required(true).index(1)),
-                SubCommand::with_name("list")
-                    .visible_alias("ls")
-                    .about("List CloudTruth templates"),
                 SubCommand::with_name("getit")
                     .about("Get implicit template")
-                    .arg(Arg::with_name("KEY")
+                    .arg(Arg::with_name("NAME")
                         .required(true)
                         .index(1))
                     .arg(Arg::with_name("secrets")
@@ -106,7 +103,10 @@ pub fn build_cli() -> App<'static, 'static> {
                     .arg(Arg::with_name("contains")
                         .long("contains")
                         .help("Return parameters containing search")
-                        .takes_value(true))
+                        .takes_value(true)),
+                SubCommand::with_name("list")
+                    .visible_alias("ls")
+                    .about("List CloudTruth templates")
             ])
         )
         .subcommand(
