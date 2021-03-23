@@ -7,20 +7,20 @@ mod cli;
 mod config;
 mod environments;
 mod parameters;
+mod subprocess;
 mod templates;
 
 use crate::config::Config;
-use crate::config::{DEFAULT_ENV_NAME, ENV_VAR_PREFIX};
+use crate::config::DEFAULT_ENV_NAME;
 use crate::environments::Environments;
 use crate::graphql::GraphQLError;
 use crate::parameters::Parameters;
+use crate::subprocess::{SubProcess, SubProcessIntf};
 use crate::templates::Templates;
 use clap::ArgMatches;
 use color_eyre::eyre::Result;
-use std::collections::HashMap;
 use std::io::{self, Write};
-use std::{env, process};
-use subprocess::Exec;
+use std::process;
 use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 
 fn check_config() -> Result<()> {
@@ -71,68 +71,27 @@ fn check_valid_env(
     Ok(())
 }
 
-fn current_env() -> HashMap<String, String> {
-    // Create a HashMap from the current set of environment variables (excluding a few).
-    let exclude = ["PS1", "TERM", "HOME"];
-
-    env::vars()
-        .filter(|(ref k, _)| !exclude.contains(&k.as_str()))
-        .collect()
-}
-
-fn get_ct_vars(
-    org_id: Option<&str>,
-    env: Option<&str>,
-    environments: &Environments,
-) -> Result<HashMap<String, String>> {
-    // Create a HashMap with all the CloudTruth environment values for this environment.
-    let mut ct_vars = HashMap::new();
-    let parameters = Parameters::new();
-    let env_id = environments.get_id(org_id, env)?;
-    let list = parameters.get_parameter_names(org_id, env_id)?;
-    for key in list.iter() {
-        let parameter = parameters.get_body(org_id, env, key)?;
-        // Put the key/value pair into the environment
-        let value = parameter.unwrap_or_else(|| "".to_string());
-        ct_vars.insert(key.to_string(), value);
-    }
-
-    Ok(ct_vars)
-}
-
-fn process_overrides(overrides: Vec<String>) -> HashMap<String, String> {
-    // Create HashMap with all the user-provided overrides.
-    let mut over_vars = HashMap::new();
-    for arg_val in overrides {
-        let temp: Vec<&str> = arg_val.splitn(2, '=').collect();
-        if temp.len() != 2 {
-            warn_user(format!("Ignoring {} due to  no '='", arg_val));
-            continue;
-        }
-        over_vars.insert(temp[0].to_string(), temp[1].to_string());
-    }
-
-    over_vars
-}
-
 fn process_run_command(
     org_id: Option<&str>,
     env: Option<&str>,
     environments: &Environments,
     subcmd_args: &ArgMatches,
 ) -> Result<()> {
-    let mut sub_proc: Exec;
-    if let Some(command) = subcmd_args.value_of("command") {
-        sub_proc = Exec::shell(command);
-    } else if let Some(mut arguments) = subcmd_args.values_of_lossy("arguments") {
-        let command = arguments.remove(0);
+    let mut sub_proc: SubProcess = SubProcess::new();
+    let mut arguments: Vec<String>;
+    let command: String;
+    if subcmd_args.is_present("command") {
+        command = subcmd_args.value_of("command").unwrap().to_string();
+        arguments = vec![];
+    } else if subcmd_args.is_present("arguments") {
+        arguments = subcmd_args.values_of_lossy("arguments").unwrap();
+        command = arguments.remove(0);
         if command.contains(' ') {
             warn_user("command contains spaces, and will likely fail.".to_string());
             let mut reformed = format!("{} {}", command, arguments.join(" "));
             reformed = reformed.replace("$", "\\$");
             println!("Try using 'cloudtruth run command \"{}\"'", reformed.trim());
         }
-        sub_proc = Exec::cmd(command).args(&arguments);
     } else {
         warn_missing_subcommand("run");
         process::exit(0);
@@ -142,35 +101,8 @@ fn process_run_command(
     let preserve = subcmd_args.is_present("preserve");
     let overrides = subcmd_args.values_of_lossy("set").unwrap_or_default();
     let removals = subcmd_args.values_of_lossy("remove").unwrap_or_default();
-    let mut env_vars = if !preserve {
-        HashMap::new()
-    } else {
-        current_env()
-    };
-
-    // Add breadcrumbs about which environment.
-    env_vars.insert(
-        format!("{}ENV", ENV_VAR_PREFIX),
-        env.unwrap_or(DEFAULT_ENV_NAME).to_string(),
-    );
-
-    // Add in the items from the CloudTruth environment, and overrides.
-    env_vars.extend(get_ct_vars(org_id, env, environments)?);
-    env_vars.extend(process_overrides(overrides));
-
-    // Remove the specified values.
-    for r in removals {
-        env_vars.remove(r.as_str());
-    }
-
-    // Common setup for the subprocess. By default, it streams stdin/stdout/stderr to parent.
-    sub_proc = sub_proc.env_clear();
-    for (key, value) in env_vars {
-        sub_proc = sub_proc.env(key, value);
-    }
-
-    // Run the process and wait for the result.
-    sub_proc.join()?;
+    sub_proc.set_environment(org_id, env, environments, preserve, &overrides, &removals)?;
+    sub_proc.run_command(command.as_str(), &arguments)?;
 
     Ok(())
 }
@@ -377,7 +309,7 @@ mod main_test {
             vec!["--env", "non-default", "templates", "list"],
             vec!["run", "--command", "printenv"],
             vec!["run", "-c", "printenv"],
-            vec!["run", "-s", "", "--", "ls", "-lh", "/tmp"],
+            vec!["run", "-s", "FOO=BAR", "--", "ls", "-lh", "/tmp"],
         ];
         for cmd_args in commands {
             println!("need_api_key test: {}", cmd_args.join(" "));
