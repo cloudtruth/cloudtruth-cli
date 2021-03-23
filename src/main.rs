@@ -122,11 +122,9 @@ fn process_run_command(
     subcmd_args: &ArgMatches,
 ) -> Result<()> {
     let mut sub_proc: Exec;
-    if let Some(command_args) = subcmd_args.subcommand_matches("command") {
-        let command = command_args.value_of("COMMAND").unwrap();
+    if let Some(command) = subcmd_args.value_of("command") {
         sub_proc = Exec::shell(command);
-    } else if let Some(arg_args) = subcmd_args.subcommand_matches("arguments") {
-        let mut arguments = arg_args.values_of_lossy("ARGUMENTS").unwrap();
+    } else if let Some(mut arguments) = subcmd_args.values_of_lossy("arguments") {
         let command = arguments.remove(0);
         if command.contains(' ') {
             warn_user("command contains spaces, and will likely fail.".to_string());
@@ -377,7 +375,9 @@ mod main_test {
             vec!["environments", "list"],
             vec!["templates", "list"],
             vec!["--env", "non-default", "templates", "list"],
-            vec!["run", "command", "printenv"],
+            vec!["run", "--command", "printenv"],
+            vec!["run", "-c", "printenv"],
+            vec!["run", "-s", "", "--", "ls", "-lh", "/tmp"],
         ];
         for cmd_args in commands {
             println!("need_api_key test: {}", cmd_args.join(" "));

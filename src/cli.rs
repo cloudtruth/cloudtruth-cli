@@ -99,30 +99,25 @@ pub fn build_cli() -> App<'static, 'static> {
                         .long("set")
                         .short("s")
                         .takes_value(true)
-                        //.multiple(true)
+                        .multiple(true)
                         .help("Set the variables in this run, even possibly overriding the CloudTruth environment"),
                     Arg::with_name("remove")
                         .long("remove")
                         .short("r")
                         .takes_value(true)
-                        //.multiple(true)
+                        .multiple(true)
                         .help("Remove the variables from the CloudTruth environment for this run"),
-                ])
-                .subcommands(vec![
-                    SubCommand::with_name("command")
-                        .visible_aliases(&["com", "comm", "cmd"])
-                        .about("Run this command")
-                        .arg(Arg::with_name("COMMAND")
-                            .required(true)
-                        ),
-                    SubCommand::with_name("arguments")
-                        .visible_alias("args")
-                        .about("Treat the rest of the arguments as the command")
-                        .arg(Arg::with_name("ARGUMENTS")
-                            .required(true)
-                            .multiple(true)
-                            .allow_hyphen_values(true)
-                        ),
+                    Arg::with_name("command")
+                        .long("command")
+                        .short("c")
+                        .takes_value(true)
+                        .help("Run this command"),
+                    Arg::with_name("arguments")
+                        .takes_value(true)
+                        .multiple(true)
+                        .allow_hyphen_values(true)
+                        .last(true)
+                        .help("Treat the rest of the arguments as the command"),
                 ])
         )
 }
