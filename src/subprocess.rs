@@ -36,7 +36,7 @@ impl SubProcess {
 
     fn current_env(&self) -> EnvSettings {
         // Create a EnvSettings from the current set of environment variables (excluding a few).
-        let exclude = ["PS1", "TERM", "HOME"];
+        let exclude = ["PS1", "TERM", "HOME", "PATH"];
 
         env::vars()
             .filter(|(ref k, _)| !exclude.contains(&k.as_str()))
@@ -69,8 +69,8 @@ impl SubProcess {
         for arg_val in overrides {
             let temp: Vec<&str> = arg_val.splitn(2, '=').collect();
             if temp.len() != 2 {
-                // TODO: provide feedback to user
-                //warn_user(format!("Ignoring {} due to  no '='", arg_val));
+                // TODO: Rick Porter 3/21 - provide feedback to user
+                // warn_user(format!("Ignoring {} due to no '='", arg_val));
                 continue;
             }
             over_vars.insert(temp[0].to_string(), temp[1].to_string());
