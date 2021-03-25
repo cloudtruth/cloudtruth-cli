@@ -53,9 +53,11 @@ pub enum Resource {
     Template,
 }
 
+#[allow(clippy::upper_case_acronyms)]
 pub type GraphQLResult<T> = std::result::Result<T, GraphQLError>;
 
 #[derive(Clone, Debug)]
+#[allow(clippy::upper_case_acronyms)]
 pub enum GraphQLError {
     EnvironmentNotFoundError(String),
     MissingDataError,
