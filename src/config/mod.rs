@@ -17,6 +17,28 @@ static INSTANCE: OnceCell<Config> = OnceCell::new();
 
 const CONFIG_FILE_NAME: &str = "cli.yml";
 
+// Default environment name.
+pub const DEFAULT_ENV_NAME: &str = "default";
+
+// Default profile name.
+pub const DEFAULT_PROF_NAME: &str = "default";
+
+/*************************************************************************
+ Environment variables.
+ All should start with ENV_VAR_PREFIX (CT_xxx).
+************************************************************************/
+// Default prefix for environment variables added by CloudTruth.
+pub const ENV_VAR_PREFIX: &str = "CT_";
+
+// Environment variable name used to specify the CloudTruth API value, so it does not need to be
+// specified on the command line.
+#[allow(dead_code)]
+pub const CT_API_KEY: &str = "CT_API_KEY";
+
+// Environment variable name used to override the default server URL.
+#[allow(dead_code)]
+pub const CT_SERVER_URL: &str = "CT_SERVER_URL";
+
 // Linux follows the XDG directory layout and creates one directory per application. However, our
 // configuration files indicate the application name, so we can use a shared directory.
 #[cfg(target_os = "linux")]
@@ -93,14 +115,15 @@ impl Config {
         Ok(contents)
     }
 
-    pub fn load_config(api_key: Option<&str>, profile_name: &str) -> Result<Self> {
+    pub fn load_config(api_key: Option<&str>, profile_name: Option<&str>) -> Result<Self> {
         let mut profile = Profile::default();
 
         // Load settings from the configuration file if it exists.
         if let Some(config_file) = Self::config_file() {
             if config_file.exists() {
                 let config = Self::read_config(config_file.as_path())?;
-                let loaded_profile = ConfigFile::load_profile(&config, profile_name)?;
+                let loaded_profile =
+                    ConfigFile::load_profile(&config, profile_name.unwrap_or(DEFAULT_PROF_NAME))?;
 
                 profile = profile.merge(&loaded_profile);
             }
@@ -157,7 +180,7 @@ impl Config {
 
 #[cfg(test)]
 mod tests {
-    use crate::config::Config;
+    use crate::config::{Config, CT_API_KEY, CT_SERVER_URL, DEFAULT_PROF_NAME};
     use serial_test::serial;
     use std::env;
     use std::path::PathBuf;
@@ -169,34 +192,34 @@ mod tests {
     #[test]
     #[serial]
     fn get_api_key_from_env() {
-        env::set_var("CT_API_KEY", "new_key");
-        let config = Config::load_config(None, "default").unwrap();
+        env::set_var(CT_API_KEY, "new_key");
+        let config = Config::load_config(None, Some(DEFAULT_PROF_NAME)).unwrap();
 
         assert_eq!(config.api_key, "new_key");
 
-        env::remove_var("CT_API_KEY");
+        env::remove_var(CT_API_KEY);
     }
 
     #[test]
     #[serial]
     fn api_key_from_args_takes_precedent() {
-        env::set_var("CT_API_KEY", "key_from_env");
-        let config = Config::load_config(Some("key_from_args"), "default").unwrap();
+        env::set_var(CT_API_KEY, "key_from_env");
+        let config = Config::load_config(Some("key_from_args"), Some(DEFAULT_PROF_NAME)).unwrap();
 
         assert_eq!(config.api_key, "key_from_args");
 
-        env::remove_var("CT_API_KEY")
+        env::remove_var(CT_API_KEY)
     }
 
     #[test]
     #[serial]
     fn get_server_url_from_env() {
-        env::set_var("CT_SERVER_URL", "http://localhost:7001/graphql");
-        let config = Config::load_config(None, "default").unwrap();
+        env::set_var(CT_SERVER_URL, "http://localhost:7001/graphql");
+        let config = Config::load_config(None, Some(DEFAULT_PROF_NAME)).unwrap();
 
         assert_eq!(config.server_url, "http://localhost:7001/graphql");
 
-        env::remove_var("CT_SERVER_URL");
+        env::remove_var(CT_SERVER_URL);
     }
 
     #[test]

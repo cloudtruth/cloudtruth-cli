@@ -7,16 +7,20 @@ mod cli;
 mod config;
 mod environments;
 mod parameters;
+mod subprocess;
 mod templates;
 
 use crate::config::Config;
+use crate::config::DEFAULT_ENV_NAME;
 use crate::environments::Environments;
 use crate::graphql::GraphQLError;
 use crate::parameters::Parameters;
+use crate::subprocess::{SubProcess, SubProcessIntf};
 use crate::templates::Templates;
+use clap::ArgMatches;
 use color_eyre::eyre::Result;
-use std::io::Write;
-use std::{io, process};
+use std::io::{self, Write};
+use std::process;
 use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 
 fn check_config() -> Result<()> {
@@ -42,6 +46,14 @@ fn check_config() -> Result<()> {
     Ok(())
 }
 
+fn warn_user(message: String) {
+    println!("WARN: {}", message);
+}
+
+fn warn_missing_subcommand(command: &str) {
+    warn_user(format!("No '{}' sub-command executed.", command));
+}
+
 fn check_valid_env(
     org_id: Option<&str>,
     env: Option<&str>,
@@ -52,9 +64,45 @@ fn check_valid_env(
     if !environments.is_valid_environment_name(org_id, env)? {
         panic!(
             "The '{}' environment could not be found in your account.",
-            env.unwrap_or("default")
+            env.unwrap_or(DEFAULT_ENV_NAME)
         )
     }
+
+    Ok(())
+}
+
+fn process_run_command(
+    org_id: Option<&str>,
+    env: Option<&str>,
+    environments: &Environments,
+    subcmd_args: &ArgMatches,
+) -> Result<()> {
+    let mut sub_proc: SubProcess = SubProcess::new();
+    let mut arguments: Vec<String>;
+    let command: String;
+    if subcmd_args.is_present("command") {
+        command = subcmd_args.value_of("command").unwrap().to_string();
+        arguments = vec![];
+    } else if subcmd_args.is_present("arguments") {
+        arguments = subcmd_args.values_of_lossy("arguments").unwrap();
+        command = arguments.remove(0);
+        if command.contains(' ') {
+            warn_user("command contains spaces, and will likely fail.".to_string());
+            let mut reformed = format!("{} {}", command, arguments.join(" "));
+            reformed = reformed.replace("$", "\\$");
+            println!("Try using 'cloudtruth run command \"{}\"'", reformed.trim());
+        }
+    } else {
+        warn_missing_subcommand("run");
+        process::exit(0);
+    }
+
+    // Setup the environment for the sub-process.
+    let preserve = subcmd_args.is_present("preserve");
+    let overrides = subcmd_args.values_of_lossy("set").unwrap_or_default();
+    let removals = subcmd_args.values_of_lossy("remove").unwrap_or_default();
+    sub_proc.set_environment(org_id, env, environments, preserve, &overrides, &removals)?;
+    sub_proc.run_command(command.as_str(), &arguments)?;
 
     Ok(())
 }
@@ -66,7 +114,7 @@ fn main() -> Result<()> {
     let matches = cli::build_cli().get_matches();
 
     let api_key = matches.value_of("api_key");
-    let profile_name = matches.value_of("profile").unwrap();
+    let profile_name = matches.value_of("profile");
 
     Config::init_global(Config::load_config(api_key, profile_name)?);
 
@@ -85,6 +133,8 @@ fn main() -> Result<()> {
     if let Some(matches) = matches.subcommand_matches("config") {
         if matches.subcommand_matches("edit").is_some() {
             Config::edit()?;
+        } else {
+            warn_missing_subcommand("config");
         }
 
         process::exit(0)
@@ -100,6 +150,8 @@ fn main() -> Result<()> {
         if matches.subcommand_matches("list").is_some() {
             let list = environments.get_environment_names(org_id)?;
             println!("{}", list.join("\n"))
+        } else {
+            warn_missing_subcommand("environments");
         }
     }
 
@@ -146,13 +198,13 @@ fn main() -> Result<()> {
                 println!(
                     "Successfully updated parameter '{}' in environment '{}'.",
                     key,
-                    env.unwrap_or("default")
+                    env.unwrap_or(DEFAULT_ENV_NAME)
                 );
             } else {
                 println!(
                     "Failed to update parameter '{}' in environment '{}'.",
                     key,
-                    env.unwrap_or("default")
+                    env.unwrap_or(DEFAULT_ENV_NAME)
                 );
             }
         }
@@ -180,18 +232,24 @@ fn main() -> Result<()> {
                 println!(
                     "Could not find a template with name '{}' in environment '{}'.",
                     template_name,
-                    env.unwrap_or("default")
+                    env.unwrap_or(DEFAULT_ENV_NAME)
                 )
             }
         }
+    }
+
+    if let Some(matches) = matches.subcommand_matches("run") {
+        check_valid_env(org_id, env, &environments)?;
+        process_run_command(org_id, env, &environments, matches)?;
     }
 
     Ok(())
 }
 
 #[cfg(test)]
-mod tests {
+mod main_test {
     use crate::cli;
+    use crate::config::CT_API_KEY;
     use assert_cmd::prelude::*;
     use predicates::prelude::predicate::str::*;
     use std::process::Command;
@@ -203,7 +261,7 @@ mod tests {
         cmd.env("NO_COLOR", "true");
 
         // Explicitly clear the API key so an individual dev's personal config isn't used for tests.
-        cmd.env("CT_API_KEY", "");
+        cmd.env(CT_API_KEY, "");
 
         cmd
     }
@@ -243,42 +301,43 @@ mod tests {
     }
 
     #[test]
-    fn environments_commands_validate_config() {
-        let mut cmd = cmd();
-        cmd.env("CT_API_KEY", "")
-            .args(&["environments", "list"])
-            .assert()
-            .failure()
-            .stderr(starts_with("The API key is missing."));
+    fn need_api_key() {
+        let commands = &[
+            vec!["parameters", "list"],
+            vec!["environments", "list"],
+            vec!["templates", "list"],
+            vec!["--env", "non-default", "templates", "list"],
+            vec!["run", "--command", "printenv"],
+            vec!["run", "-c", "printenv"],
+            vec!["run", "-s", "FOO=BAR", "--", "ls", "-lh", "/tmp"],
+        ];
+        for cmd_args in commands {
+            println!("need_api_key test: {}", cmd_args.join(" "));
+            let mut cmd = cmd();
+            cmd.env(CT_API_KEY, "")
+                .args(cmd_args)
+                .assert()
+                .failure()
+                .stderr(starts_with("The API key is missing."));
+        }
     }
 
     #[test]
-    fn parameters_commands_validate_config() {
-        let mut cmd = cmd();
-        cmd.env("CT_API_KEY", "")
-            .args(&["parameters", "list"])
-            .assert()
-            .failure()
-            .stderr(starts_with("The API key is missing."));
-    }
-
-    #[test]
-    fn templates_commands_validate_config() {
-        let mut cmd = cmd();
-        cmd.env("CT_API_KEY", "")
-            .args(&["templates", "list"])
-            .assert()
-            .failure()
-            .stderr(starts_with("The API key is missing."));
-    }
-
-    #[test]
-    fn environment_validation_also_validates_config() {
-        let mut cmd = cmd();
-        cmd.env("CT_API_KEY", "")
-            .args(&["--env", "non-default", "templates", "list"])
-            .assert()
-            .failure()
-            .stderr(starts_with("The API key is missing."));
+    fn missing_subcommands() {
+        let commands = &[
+            vec!["config"],
+            /* TODO: Rick Porter 3/2021: add more tests once we can get a valid environment, (e.g.
+               environment, run)
+            */
+        ];
+        for cmd_args in commands {
+            println!("missing_subcommands test: {}", cmd_args.join(" "));
+            let warn_msg = format!("WARN: No '{}' sub-command executed.", cmd_args[0]);
+            let mut cmd = cmd();
+            cmd.args(cmd_args)
+                .assert()
+                .success()
+                .stdout(starts_with(warn_msg));
+        }
     }
 }
