@@ -1,4 +1,8 @@
-# 0.1.2 - 2012-02-24
+# 0.1.3 - 2021-03-25
+
+* Added `run` option to run a command from an environment with parameters injected from the CloudTruth CLI.
+
+# 0.1.2 - 2021-02-24
 
 * Added a new dependency on the _ca-certificates_ package for our Debian installer in order to handle SSL certificates
   issued by Amazon's CA.
