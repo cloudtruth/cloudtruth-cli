@@ -35,6 +35,9 @@ mod tests {
     #[test]
     #[serial]
     fn create_profile_from_empty_env() {
+        env::remove_var(CT_API_KEY);
+        env::remove_var(CT_SERVER_URL);
+
         assert_eq!(
             Profile {
                 api_key: None,
