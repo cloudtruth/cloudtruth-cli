@@ -1,6 +1,7 @@
 use crate::graphql::prelude::graphql_request;
 use crate::graphql::{GraphQLError, GraphQLResult, Operation, Resource};
 use graphql_client::*;
+use std::collections::HashMap;
 
 pub struct Parameters {}
 
@@ -126,6 +127,40 @@ impl Parameters {
                 .into_iter()
                 .map(|n| n.key_name)
                 .collect())
+        } else {
+            Err(GraphQLError::MissingDataError)
+        }
+    }
+
+    pub fn get_parameter_values(
+        &self,
+        org_id: Option<&str>,
+        env_id: Option<String>,
+    ) -> GraphQLResult<HashMap<String, String>> {
+        let query = ParametersQuery::build_query(parameters_query::Variables {
+            organization_id: org_id.map(|id| id.to_string()),
+            environment_id: env_id,
+        });
+        let response_body = graphql_request::<_, parameters_query::ResponseData>(&query)?;
+
+        if let Some(errors) = response_body.errors {
+            Err(GraphQLError::ResponseError(errors))
+        } else if let Some(data) = response_body.data {
+            let mut env_vars = HashMap::new();
+            let params = data
+                .viewer
+                .organization
+                .expect("Primary organization not found")
+                .parameters
+                .nodes;
+            for p in params {
+                if let Some(env_value) = p.environment_value {
+                    if let Some(param_value) = env_value.parameter_value {
+                        env_vars.insert(p.key_name, param_value);
+                    }
+                }
+            }
+            Ok(env_vars)
         } else {
             Err(GraphQLError::MissingDataError)
         }

@@ -50,16 +50,9 @@ impl SubProcess {
         environments: &Environments,
     ) -> Result<EnvSettings> {
         // Create EnvSettings with all the CloudTruth environment values for this environment.
-        let mut ct_vars = EnvSettings::new();
         let parameters = Parameters::new();
         let env_id = environments.get_id(org_id, env)?;
-        let list = parameters.get_parameter_names(org_id, env_id)?;
-        for key in list.iter() {
-            let parameter = parameters.get_body(org_id, env, key)?;
-            // Put the key/value pair into the environment
-            let value = parameter.unwrap_or_else(|| "".to_string());
-            ct_vars.insert(key.to_string(), value);
-        }
+        let ct_vars = parameters.get_parameter_values(org_id, env_id)?;
         Ok(ct_vars)
     }
 
