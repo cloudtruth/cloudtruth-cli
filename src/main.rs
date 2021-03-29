@@ -249,7 +249,7 @@ fn main() -> Result<()> {
 #[cfg(test)]
 mod main_test {
     use crate::cli;
-    use crate::config::CT_API_KEY;
+    use crate::config::{CT_API_KEY, CT_SERVER_URL};
     use assert_cmd::prelude::*;
     use predicates::prelude::predicate::str::*;
     use std::process::Command;
@@ -262,6 +262,9 @@ mod main_test {
 
         // Explicitly clear the API key so an individual dev's personal config isn't used for tests.
         cmd.env(CT_API_KEY, "");
+
+        // Explicitly set the server to a bogus value that a server cannot to
+        cmd.env(CT_SERVER_URL, "http://0.0.0.0:0");
 
         cmd
     }
