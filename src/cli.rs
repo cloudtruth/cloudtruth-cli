@@ -91,10 +91,18 @@ pub fn build_cli() -> App<'static, 'static> {
                 .visible_aliases(&["run", "r"])
                 .about("Run a shell with the parameters in place")
                 .args(&[
-                    Arg::with_name("preserve")
-                        .long("preserve")
-                        .short("p")
-                        .help("Preserve existing environment"),
+                    Arg::with_name("inheritance")
+                        .long("inherit")
+                        .short("i")
+                        .takes_value(true)
+                        .case_insensitive(true)
+                        // TODO: Rick Porter 3/21 - pull subprocess::Inheritance enum value strings?
+                        .possible_value("none")
+                        .possible_value("underlay")
+                        .possible_value( "overlay")
+                        .possible_value("exclusive")
+                        .default_value("overlay")
+                        .help("Handle the relationship between local and CloudTruth environments."),
                     Arg::with_name("set")
                         .long("set")
                         .short("s")
