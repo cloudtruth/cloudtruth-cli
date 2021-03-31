@@ -1,4 +1,4 @@
-use crate::config::{DEFAULT_ENV_NAME, ENV_VAR_PREFIX};
+use crate::config::{CT_APP_REMOVABLE_VARS, CT_ENVIRONMENT, DEFAULT_ENV_NAME};
 use crate::environments::Environments;
 use crate::graphql::GraphQLError;
 use crate::parameters::Parameters;
@@ -98,6 +98,8 @@ pub trait SubProcessIntf {
         removals: &[String],
     ) -> SubProcessResult<()>;
 
+    fn remove_ct_app_vars(&mut self);
+
     fn run_command(&self, command: &str, arguments: &[String]) -> SubProcessResult<()>;
 }
 
@@ -167,7 +169,7 @@ impl SubProcessIntf for SubProcess {
 
         // Add breadcrumbs about which environment.
         self.env_vars.insert(
-            format!("{}ENV", ENV_VAR_PREFIX),
+            CT_ENVIRONMENT.to_string(),
             env.unwrap_or(DEFAULT_ENV_NAME).to_string(),
         );
 
@@ -214,6 +216,12 @@ impl SubProcessIntf for SubProcess {
                 self.env_vars.remove(r.as_str());
             }
             Ok(())
+        }
+    }
+
+    fn remove_ct_app_vars(&mut self) {
+        for app_var in CT_APP_REMOVABLE_VARS {
+            self.env_vars.remove(*app_var);
         }
     }
 

@@ -32,17 +32,21 @@ pub const ENV_VAR_PREFIX: &str = "CLOUDTRUTH_";
 
 // Environment variable name used to specify the CloudTruth API value, so it does not need to be
 // specified on the command line.
-#[allow(dead_code)]
 pub const CT_API_KEY: &str = "CLOUDTRUTH_API_KEY";
 
 // The old environment variable was named 'CT_API_KEY', and we want to provide a better
 // update process.
-#[allow(dead_code)]
 pub const CT_OLD_API_KEY: &str = "CT_API_KEY";
 
 // Environment variable name used to override the default server URL.
-#[allow(dead_code)]
 pub const CT_SERVER_URL: &str = "CLOUDTRUTH_SERVER_URL";
+
+// Environment variable name used to set the environment name.
+pub const CT_ENVIRONMENT: &str = "CLOUDTRUTH_ENVIRONMENT";
+
+// List of variables to remove to make a clean environment.
+#[allow(dead_code)]
+pub const CT_APP_REMOVABLE_VARS: &[&str] = &[CT_SERVER_URL, CT_API_KEY, CT_OLD_API_KEY];
 
 // Linux follows the XDG directory layout and creates one directory per application. However, our
 // configuration files indicate the application name, so we can use a shared directory.

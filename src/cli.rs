@@ -164,6 +164,10 @@ pub fn build_cli() -> App<'static, 'static> {
                         .allow_hyphen_values(true)
                         .last(true)
                         .help("Treat the rest of the arguments as the command"),
+                    Arg::with_name("permissive")
+                        .long("permissive")
+                        .short("p")
+                        .help("Allow CloudTruth application variables through")
                 ])
         )
 }
