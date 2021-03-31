@@ -1,12 +1,13 @@
 use crate::config::{DEFAULT_ENV_NAME, ENV_VAR_PREFIX};
 use crate::environments::Environments;
+use crate::graphql::GraphQLError;
 use crate::parameters::Parameters;
 use crate::warn_user;
 use color_eyre::eyre::Result;
 use std::collections::HashMap;
-use std::env;
 use std::fmt::{self, Display, Formatter};
 use std::str::FromStr;
+use std::{env, error};
 use subprocess::Exec;
 
 // for improved readability
@@ -46,6 +47,46 @@ impl FromStr for Inheritance {
     }
 }
 
+pub type SubProcessResult<T> = std::result::Result<T, SubProcessError>;
+
+#[derive(Clone, Debug)]
+pub enum SubProcessError {
+    EnvironmentCollisions(Vec<String>),
+    #[allow(clippy::upper_case_acronyms)]
+    GraphQLError(GraphQLError),
+    ProcessRunError(String),
+}
+
+impl error::Error for SubProcessError {}
+
+impl fmt::Display for SubProcessError {
+    fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
+        match self {
+            SubProcessError::EnvironmentCollisions(collisions) => {
+                write!(
+                    f,
+                    "Conflicting definitions in run environment for: {}",
+                    collisions.join(", ")
+                )
+            }
+            SubProcessError::ProcessRunError(details) => {
+                write!(f, "Process run error: {}", details)
+            }
+            SubProcessError::GraphQLError(err) => {
+                write!(f, "Problem querying the server: {}", err.to_string())
+            }
+        }
+    }
+}
+
+impl From<GraphQLError> for SubProcessError {
+    fn from(err: GraphQLError) -> Self {
+        SubProcessError::GraphQLError(err)
+    }
+}
+
+// NOTE: PopenError does not implement the Clone trait, so cannot be easily converted
+
 pub trait SubProcessIntf {
     fn set_environment(
         &mut self,
@@ -55,9 +96,9 @@ pub trait SubProcessIntf {
         inherit: Inheritance,
         overrides: &[String],
         removals: &[String],
-    ) -> Result<()>;
+    ) -> SubProcessResult<()>;
 
-    fn run_command(&self, command: &str, arguments: &[String]) -> Result<()>;
+    fn run_command(&self, command: &str, arguments: &[String]) -> SubProcessResult<()>;
 }
 
 pub struct SubProcess {
@@ -85,7 +126,7 @@ impl SubProcess {
         org_id: Option<&str>,
         env: Option<&str>,
         environments: &Environments,
-    ) -> Result<EnvSettings> {
+    ) -> SubProcessResult<EnvSettings> {
         // Create EnvSettings with all the CloudTruth environment values for this environment.
         let parameters = Parameters::new();
         let env_id = environments.get_id(org_id, env)?;
@@ -117,7 +158,7 @@ impl SubProcessIntf for SubProcess {
         inherit: Inheritance,
         overrides: &[String],
         removals: &[String],
-    ) -> Result<()> {
+    ) -> SubProcessResult<()> {
         self.env_vars = if inherit == Inheritance::None {
             EnvSettings::new()
         } else {
@@ -165,10 +206,7 @@ impl SubProcessIntf for SubProcess {
 
         // return the error(s) if there were not any collisions
         if !collisions.is_empty() {
-            panic!(
-                "Collisions between CloudTruth and local environments for: {}",
-                collisions.join(", ")
-            )
+            return Err(SubProcessError::EnvironmentCollisions(collisions));
         }
 
         // Remove the specified values.
@@ -179,7 +217,7 @@ impl SubProcessIntf for SubProcess {
         Ok(())
     }
 
-    fn run_command(&self, command: &str, arguments: &[String]) -> Result<()> {
+    fn run_command(&self, command: &str, arguments: &[String]) -> SubProcessResult<()> {
         let mut sub_proc: Exec;
 
         if arguments.is_empty() {
@@ -194,7 +232,9 @@ impl SubProcessIntf for SubProcess {
             sub_proc = sub_proc.env(key, value);
         }
 
-        sub_proc.join()?;
+        if let Err(err) = sub_proc.join() {
+            return Err(SubProcessError::ProcessRunError(err.to_string()));
+        }
         Ok(())
     }
 }
