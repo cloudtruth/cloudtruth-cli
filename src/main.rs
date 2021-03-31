@@ -15,12 +15,13 @@ use crate::config::DEFAULT_ENV_NAME;
 use crate::environments::Environments;
 use crate::graphql::GraphQLError;
 use crate::parameters::Parameters;
-use crate::subprocess::{SubProcess, SubProcessIntf};
+use crate::subprocess::{Inheritance, SubProcess, SubProcessIntf};
 use crate::templates::Templates;
 use clap::ArgMatches;
 use color_eyre::eyre::Result;
 use std::io::{self, Write};
 use std::process;
+use std::str::FromStr;
 use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 
 fn check_config() -> Result<()> {
@@ -98,10 +99,10 @@ fn process_run_command(
     }
 
     // Setup the environment for the sub-process.
-    let preserve = subcmd_args.is_present("preserve");
+    let inherit = Inheritance::from_str(subcmd_args.value_of("inheritance").unwrap()).unwrap();
     let overrides = subcmd_args.values_of_lossy("set").unwrap_or_default();
     let removals = subcmd_args.values_of_lossy("remove").unwrap_or_default();
-    sub_proc.set_environment(org_id, env, environments, preserve, &overrides, &removals)?;
+    sub_proc.set_environment(org_id, env, environments, inherit, &overrides, &removals)?;
     sub_proc.run_command(command.as_str(), &arguments)?;
 
     Ok(())
