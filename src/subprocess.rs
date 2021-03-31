@@ -8,7 +8,7 @@ use std::collections::HashMap;
 use std::fmt::{self, Display, Formatter};
 use std::str::FromStr;
 use std::{env, error};
-use subprocess::Exec;
+use subprocess::{Exec, PopenError};
 
 // for improved readability
 pub type EnvSettings = HashMap<String, String>;
@@ -24,12 +24,7 @@ pub enum Inheritance {
 
 impl Display for Inheritance {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        match self {
-            Inheritance::None => write!(f, "none"),
-            Inheritance::Underlay => write!(f, "underlay"),
-            Inheritance::Overlay => write!(f, "overlay"),
-            Inheritance::Exclusive => write!(f, "exclusive"),
-        }
+        write!(f, "{}", format!("{:?}", self).to_lowercase())
     }
 }
 
@@ -85,7 +80,12 @@ impl From<GraphQLError> for SubProcessError {
     }
 }
 
-// NOTE: PopenError does not implement the Clone trait, so cannot be easily converted
+// NOTE: PopenError does not implement the Clone trait, so just pass through a String
+impl From<PopenError> for SubProcessError {
+    fn from(err: PopenError) -> Self {
+        SubProcessError::ProcessRunError(format!("{}", err))
+    }
+}
 
 pub trait SubProcessIntf {
     fn set_environment(
@@ -206,15 +206,14 @@ impl SubProcessIntf for SubProcess {
 
         // return the error(s) if there were not any collisions
         if !collisions.is_empty() {
-            return Err(SubProcessError::EnvironmentCollisions(collisions));
+            Err(SubProcessError::EnvironmentCollisions(collisions))
+        } else {
+            // Remove the specified values.
+            for r in removals {
+                self.env_vars.remove(r.as_str());
+            }
+            Ok(())
         }
-
-        // Remove the specified values.
-        for r in removals {
-            self.env_vars.remove(r.as_str());
-        }
-
-        Ok(())
     }
 
     fn run_command(&self, command: &str, arguments: &[String]) -> SubProcessResult<()> {
@@ -232,9 +231,7 @@ impl SubProcessIntf for SubProcess {
             sub_proc = sub_proc.env(key, value);
         }
 
-        if let Err(err) = sub_proc.join() {
-            return Err(SubProcessError::ProcessRunError(err.to_string()));
-        }
+        sub_proc.join()?;
         Ok(())
     }
 }

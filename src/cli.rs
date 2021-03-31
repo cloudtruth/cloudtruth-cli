@@ -102,7 +102,7 @@ pub fn build_cli() -> App<'static, 'static> {
                         .possible_value( "overlay")
                         .possible_value("exclusive")
                         .default_value("overlay")
-                        .help("Handle the relationship between local and CloudTruth environments."),
+                        .help("Handle the relationship between local and CloudTruth environments"),
                     Arg::with_name("set")
                         .long("set")
                         .short("s")
