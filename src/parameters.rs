@@ -42,6 +42,8 @@ pub struct ParameterDetails {
     pub key: String,
     pub value: String,
     pub secret: bool,
+    pub description: String,
+    pub source: String,
 }
 
 impl Parameters {
@@ -203,12 +205,20 @@ impl Parameters {
                 .nodes;
             for p in params {
                 if let Some(env_value) = p.environment_value {
+                    let source: String;
+                    if let Some(inherit) = env_value.inherited_from {
+                        source = inherit.name;
+                    } else {
+                        source = env_value.environment.name;
+                    }
                     if let Some(param_value) = env_value.parameter_value {
                         env_vars.push(ParameterDetails {
                             id: p.id,
                             key: p.key_name,
                             value: param_value,
                             secret: p.is_secret,
+                            description: p.description.unwrap_or_default(),
+                            source,
                         });
                     }
                 }

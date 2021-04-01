@@ -22,8 +22,8 @@ use crate::subprocess::{Inheritance, SubProcess, SubProcessIntf};
 use crate::templates::Templates;
 use clap::ArgMatches;
 use color_eyre::eyre::Result;
-use prettytable::{Attr, Cell, Row, Table};
-use std::io::{self, Write};
+use prettytable::{format, Attr, Cell, Row, Table};
+use std::io::{self, stdout, Write};
 use std::process;
 use std::str::FromStr;
 use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
@@ -232,16 +232,19 @@ fn main() -> Result<()> {
                     env.unwrap_or(DEFAULT_ENV_NAME)
                 );
             }
-        } else if let Some(_matches) = matches.subcommand_matches("show") {
+        } else if let Some(matches) = matches.subcommand_matches("show") {
+            let fmt = matches.value_of("format").unwrap();
             let env_id = environments.get_id(org_id, env)?;
             let ct_vars = parameters.get_parameter_details(org_id, env_id)?;
             if ct_vars.is_empty() {
                 println!("No CloudTruth variables found!");
             } else {
                 let mut table = Table::new();
-                table.add_row(Row::new(vec![
-                    Cell::new("VARIABLE").with_style(Attr::Bold),
-                    Cell::new("VALUE").with_style(Attr::Bold),
+                table.set_titles(Row::new(vec![
+                    Cell::new("Name").with_style(Attr::Bold),
+                    Cell::new("Value").with_style(Attr::Bold),
+                    Cell::new("Source").with_style(Attr::Bold),
+                    Cell::new("Description").with_style(Attr::Bold),
                 ]));
                 for entry in ct_vars {
                     let out_val = if entry.secret {
@@ -249,9 +252,16 @@ fn main() -> Result<()> {
                     } else {
                         entry.value
                     };
-                    table.add_row(row![entry.key, out_val]);
+                    table.add_row(row![entry.key, out_val, entry.source, entry.description]);
                 }
-                table.printstd();
+                table.set_format(*format::consts::FORMAT_NO_LINESEP_WITH_TITLE);
+
+                if fmt == "csv" {
+                    table.to_csv(stdout())?;
+                } else {
+                    assert_eq!(fmt, "table");
+                    table.printstd();
+                }
             }
         } else {
             warn_missing_subcommand("parameters");

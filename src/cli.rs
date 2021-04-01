@@ -73,7 +73,15 @@ pub fn build_cli() -> App<'static, 'static> {
                         .arg(Arg::with_name("KEY").required(true).index(1))
                         .arg(Arg::with_name("VALUE").required(true).index(2)),
                     SubCommand::with_name("show")
-                        .about("Display parameters and values in a table"),
+                        .about("Display parameters and values in a table")
+                        .arg(Arg::with_name("format")
+                            .short("f")
+                            .long("format")
+                            .takes_value(true)
+                            .default_value("table")
+                            .possible_values(&["table", "csv"])
+                            .help("Parameter output data format")
+                        ),
                 ]),
         )
         .subcommand(SubCommand::with_name("templates")

@@ -38,8 +38,15 @@ query ParametersDetailQuery($organizationId: ID, $environmentId: ID) {
           id
           isSecret
           keyName
+          description
           environmentValue(environmentId: $environmentId) {
             parameterValue
+            inheritedFrom {
+              name
+            }
+            environment {
+              name
+            }
           }
         }
       }
