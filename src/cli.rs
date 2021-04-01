@@ -71,7 +71,9 @@ pub fn build_cli() -> App<'static, 'static> {
                     SubCommand::with_name("set")
                         .about("Set a static value in the selected environment for an existing parameter or creates a new one if needed")
                         .arg(Arg::with_name("KEY").required(true).index(1))
-                        .arg(Arg::with_name("VALUE").required(true).index(2))
+                        .arg(Arg::with_name("VALUE").required(true).index(2)),
+                    SubCommand::with_name("show")
+                        .about("Display parameters and values in a table"),
                 ]),
         )
         .subcommand(SubCommand::with_name("templates")

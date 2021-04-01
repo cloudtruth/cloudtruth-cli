@@ -27,7 +27,22 @@ pub struct ParametersQuery;
     query_path = "graphql/parameter_queries.graphql",
     response_derives = "Debug"
 )]
+pub struct ParametersDetailQuery;
+
+#[derive(GraphQLQuery)]
+#[graphql(
+    schema_path = "graphql/schema.graphql",
+    query_path = "graphql/parameter_queries.graphql",
+    response_derives = "Debug"
+)]
 pub struct UpsertParameterMutation;
+
+pub struct ParameterDetails {
+    pub id: String,
+    pub key: String,
+    pub value: String,
+    pub secret: bool,
+}
 
 impl Parameters {
     pub fn new() -> Self {
@@ -160,6 +175,45 @@ impl Parameters {
                     }
                 }
             }
+            Ok(env_vars)
+        } else {
+            Err(GraphQLError::MissingDataError)
+        }
+    }
+
+    pub fn get_parameter_details(
+        &self,
+        org_id: Option<&str>,
+        env_id: Option<String>,
+    ) -> GraphQLResult<Vec<ParameterDetails>> {
+        let query = ParametersDetailQuery::build_query(parameters_detail_query::Variables {
+            organization_id: org_id.map(|id| id.to_string()),
+            environment_id: env_id,
+        });
+        let response_body = graphql_request::<_, parameters_detail_query::ResponseData>(&query)?;
+        if let Some(errors) = response_body.errors {
+            Err(GraphQLError::ResponseError(errors))
+        } else if let Some(data) = response_body.data {
+            let mut env_vars: Vec<ParameterDetails> = Vec::new();
+            let params = data
+                .viewer
+                .organization
+                .expect("Primary organization not found")
+                .parameters
+                .nodes;
+            for p in params {
+                if let Some(env_value) = p.environment_value {
+                    if let Some(param_value) = env_value.parameter_value {
+                        env_vars.push(ParameterDetails {
+                            id: p.id,
+                            key: p.key_name,
+                            value: param_value,
+                            secret: p.is_secret,
+                        });
+                    }
+                }
+            }
+
             Ok(env_vars)
         } else {
             Err(GraphQLError::MissingDataError)

@@ -3,6 +3,9 @@ mod graphql;
 #[macro_use]
 mod macros;
 
+#[macro_use]
+extern crate prettytable;
+
 mod cli;
 mod config;
 mod environments;
@@ -19,10 +22,13 @@ use crate::subprocess::{Inheritance, SubProcess, SubProcessIntf};
 use crate::templates::Templates;
 use clap::ArgMatches;
 use color_eyre::eyre::Result;
+use prettytable::{Attr, Cell, Row, Table};
 use std::io::{self, Write};
 use std::process;
 use std::str::FromStr;
 use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
+
+const REDACTED: &str = "REDACTED";
 
 fn check_config() -> Result<()> {
     if let Some(issues) = Config::global().validate() {
@@ -226,6 +232,29 @@ fn main() -> Result<()> {
                     env.unwrap_or(DEFAULT_ENV_NAME)
                 );
             }
+        } else if let Some(_matches) = matches.subcommand_matches("show") {
+            let env_id = environments.get_id(org_id, env)?;
+            let ct_vars = parameters.get_parameter_details(org_id, env_id)?;
+            if ct_vars.is_empty() {
+                println!("No CloudTruth variables found!");
+            } else {
+                let mut table = Table::new();
+                table.add_row(Row::new(vec![
+                    Cell::new("VARIABLE").with_style(Attr::Bold),
+                    Cell::new("VALUE").with_style(Attr::Bold),
+                ]));
+                for entry in ct_vars {
+                    let out_val = if entry.secret {
+                        REDACTED.to_string()
+                    } else {
+                        entry.value
+                    };
+                    table.add_row(row![entry.key, out_val]);
+                }
+                table.printstd();
+            }
+        } else {
+            warn_missing_subcommand("parameters");
         }
     }
 
@@ -281,6 +310,8 @@ fn main() -> Result<()> {
                     env.unwrap_or("default")
                 )
             }
+        } else {
+            warn_missing_subcommand("templates");
         }
     }
 
