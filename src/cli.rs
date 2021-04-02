@@ -83,7 +83,8 @@ pub fn build_cli() -> App<'static, 'static> {
                     .arg(Arg::with_name("KEY").required(true).index(1)),
                 SubCommand::with_name("getit")
                     .about("Get implicit template for all parameters, \
-                    limited to alphanumeric and underscore key names")
+                    limited to alphanumeric and underscore key names. Formats available are: \
+                    dotenv, docker, and shell.")
                     .arg(Arg::with_name("contains")
                         .long("contains")
                         .help("Return parameters containing search")
