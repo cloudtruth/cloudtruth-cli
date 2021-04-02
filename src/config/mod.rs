@@ -28,16 +28,21 @@ pub const DEFAULT_PROF_NAME: &str = "default";
  All should start with ENV_VAR_PREFIX (CT_xxx).
 ************************************************************************/
 // Default prefix for environment variables added by CloudTruth.
-pub const ENV_VAR_PREFIX: &str = "CT_";
+pub const ENV_VAR_PREFIX: &str = "CLOUDTRUTH_";
 
 // Environment variable name used to specify the CloudTruth API value, so it does not need to be
 // specified on the command line.
 #[allow(dead_code)]
-pub const CT_API_KEY: &str = "CT_API_KEY";
+pub const CT_API_KEY: &str = "CLOUDTRUTH_TOKEN";
+
+// The old environment variable was named 'CT_API_KEY', and we want to provide a better
+// update process.
+#[allow(dead_code)]
+pub const CT_OLD_API_KEY: &str = "CT_API_KEY";
 
 // Environment variable name used to override the default server URL.
 #[allow(dead_code)]
-pub const CT_SERVER_URL: &str = "CT_SERVER_URL";
+pub const CT_SERVER_URL: &str = "CLOUDTRUTH_SERVER_URL";
 
 // Linux follows the XDG directory layout and creates one directory per application. However, our
 // configuration files indicate the application name, so we can use a shared directory.
@@ -158,16 +163,34 @@ impl Config {
         let mut messages = vec![];
 
         if self.api_key.is_empty() {
-            messages.push(ValidationError {
-                message: "The API key is missing.".to_string(),
-                help_message: formatdoc!(
-                    r#"
-                        Please either set the `api_key` setting in the configuration file
-                        (e.g., run "{} config edit"), pass it as the `--api-key` flag, or
-                        supply the API key via the `CT_API_KEY` environment variable."#,
-                    binary_name()
-                ),
-            });
+            if !std::env::var(CT_OLD_API_KEY).unwrap_or_default().is_empty() {
+                messages.push(ValidationError {
+                    message: "The API key is using the old variable.".to_string(),
+                    help_message: formatdoc!(
+                        r#"
+                            Please use the new environment variable ({}) to set the api_key. The
+                            current {} value should be set as the {} value. Otherwise, the api_key
+                            can be set in the configuration file using "{} config edit", or passing
+                            it on the command line using the --api-key option."#,
+                        CT_API_KEY,
+                        CT_OLD_API_KEY,
+                        CT_API_KEY,
+                        binary_name()
+                    ),
+                });
+            } else {
+                messages.push(ValidationError {
+                    message: "The API key is missing.".to_string(),
+                    help_message: formatdoc!(
+                        r#"
+                            Please either set the `api_key` setting in the configuration file
+                            (e.g., run "{} config edit"), pass it as the `--api-key` flag, or
+                            supply the API key via the `{}` environment variable."#,
+                        CT_API_KEY,
+                        binary_name()
+                    ),
+                });
+            }
         }
 
         if messages.is_empty() {
@@ -180,7 +203,7 @@ impl Config {
 
 #[cfg(test)]
 mod tests {
-    use crate::config::{Config, CT_API_KEY, CT_SERVER_URL, DEFAULT_PROF_NAME};
+    use crate::config::{Config, CT_API_KEY, CT_OLD_API_KEY, CT_SERVER_URL, DEFAULT_PROF_NAME};
     use serial_test::serial;
     use std::env;
     use std::path::PathBuf;
@@ -198,6 +221,19 @@ mod tests {
         assert_eq!(config.api_key, "new_key");
 
         env::remove_var(CT_API_KEY);
+    }
+
+    #[test]
+    #[serial]
+    fn get_api_key_from_new_env() {
+        env::set_var(CT_OLD_API_KEY, "old_key");
+        env::set_var(CT_API_KEY, "new_key");
+        let config = Config::load_config(None, Some(DEFAULT_PROF_NAME)).unwrap();
+
+        assert_eq!(config.api_key, "new_key");
+
+        env::remove_var(CT_API_KEY);
+        env::remove_var(CT_OLD_API_KEY);
     }
 
     #[test]

@@ -250,7 +250,7 @@ fn main() -> Result<()> {
 #[cfg(test)]
 mod main_test {
     use crate::cli;
-    use crate::config::{CT_API_KEY, CT_SERVER_URL};
+    use crate::config::{CT_API_KEY, CT_OLD_API_KEY, CT_SERVER_URL};
     use assert_cmd::prelude::*;
     use predicates::prelude::predicate::str::*;
     use std::process::Command;
@@ -319,10 +319,33 @@ mod main_test {
             println!("need_api_key test: {}", cmd_args.join(" "));
             let mut cmd = cmd();
             cmd.env(CT_API_KEY, "")
+                .env(CT_OLD_API_KEY, "")
                 .args(cmd_args)
                 .assert()
                 .failure()
                 .stderr(starts_with("The API key is missing."));
+        }
+    }
+
+    #[test]
+    fn old_api_key() {
+        let commands = &[
+            vec!["parameters", "list"],
+            vec!["environments", "list"],
+            vec!["templates", "list"],
+            vec!["--env", "non-default", "templates", "list"],
+            vec!["run", "--command", "printenv"],
+            vec!["run", "-c", "printenv"],
+            vec!["run", "-s", "FOO=BAR", "--", "ls", "-lh", "/tmp"],
+        ];
+        for cmd_args in commands {
+            println!("need_api_key test: {}", cmd_args.join(" "));
+            let mut cmd = cmd();
+            cmd.env(CT_OLD_API_KEY, "new_key")
+                .args(cmd_args)
+                .assert()
+                .failure()
+                .stderr(starts_with("The API key is using the old variable."));
         }
     }
 
