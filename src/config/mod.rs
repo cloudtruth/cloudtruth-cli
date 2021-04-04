@@ -33,7 +33,7 @@ pub const ENV_VAR_PREFIX: &str = "CLOUDTRUTH_";
 // Environment variable name used to specify the CloudTruth API value, so it does not need to be
 // specified on the command line.
 #[allow(dead_code)]
-pub const CT_API_KEY: &str = "CLOUDTRUTH_TOKEN";
+pub const CT_API_KEY: &str = "CLOUDTRUTH_API_KEY";
 
 // The old environment variable was named 'CT_API_KEY', and we want to provide a better
 // update process.
@@ -67,6 +67,13 @@ pub struct Config {
 pub struct ValidationError {
     pub message: String,
     pub help_message: String,
+}
+
+pub type ValidationWarning = String;
+
+pub struct ValidationIssues {
+    pub errors: Vec<ValidationError>,
+    pub warnings: Vec<ValidationWarning>,
 }
 
 impl From<Profile> for Config {
@@ -159,44 +166,37 @@ impl Config {
         Ok(())
     }
 
-    pub fn validate(&self) -> Option<Vec<ValidationError>> {
-        let mut messages = vec![];
+    pub fn validate(&self) -> Option<ValidationIssues> {
+        let mut errors = vec![];
+        let mut warnings = vec![];
 
         if self.api_key.is_empty() {
-            if !std::env::var(CT_OLD_API_KEY).unwrap_or_default().is_empty() {
-                messages.push(ValidationError {
-                    message: "The API key is using the old variable.".to_string(),
-                    help_message: formatdoc!(
-                        r#"
-                            Please use the new environment variable ({}) to set the api_key. The
-                            current {} value should be set as the {} value. Otherwise, the api_key
-                            can be set in the configuration file using "{} config edit", or passing
-                            it on the command line using the --api-key option."#,
-                        CT_API_KEY,
-                        CT_OLD_API_KEY,
-                        CT_API_KEY,
-                        binary_name()
-                    ),
-                });
-            } else {
-                messages.push(ValidationError {
-                    message: "The API key is missing.".to_string(),
-                    help_message: formatdoc!(
-                        r#"
-                            Please either set the `api_key` setting in the configuration file
-                            (e.g., run "{} config edit"), pass it as the `--api-key` flag, or
-                            supply the API key via the `{}` environment variable."#,
-                        CT_API_KEY,
-                        binary_name()
-                    ),
-                });
-            }
+            errors.push(ValidationError {
+                message: "The API key is missing.".to_string(),
+                help_message: formatdoc!(
+                    r#"
+                        Please either set the `api_key` setting in the configuration file
+                        (e.g., run "{} config edit"), pass it as the `--api-key` flag, or
+                        supply the API key via the `{}` environment variable."#,
+                    CT_API_KEY,
+                    binary_name()
+                ),
+            });
         }
 
-        if messages.is_empty() {
+        if ConfigEnv::get_override(CT_OLD_API_KEY).is_some()
+            && ConfigEnv::get_override(CT_API_KEY).is_none()
+        {
+            warnings.push(format!(
+                "Pleaes use {} to set the API key instead of {}",
+                CT_API_KEY, CT_OLD_API_KEY
+            ));
+        }
+
+        if errors.is_empty() && warnings.is_empty() {
             None
         } else {
-            Some(messages)
+            Some(ValidationIssues { errors, warnings })
         }
     }
 }

@@ -25,23 +25,41 @@ use std::str::FromStr;
 use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 
 fn check_config() -> Result<()> {
-    if let Some(errors) = Config::global().validate() {
+    if let Some(issues) = Config::global().validate() {
         let mut stderr = StandardStream::stderr(ColorChoice::Auto);
-        let mut error_color_spec = ColorSpec::new();
-        let mut help_color_spec = ColorSpec::new();
 
-        error_color_spec.set_fg(Some(Color::Red));
-        help_color_spec.set_fg(Some(Color::Cyan));
+        // print the warnings first, so the user sees them (even when errors are present)
+        let warnings = issues.warnings;
+        if !warnings.is_empty() {
+            let mut warning_color_spec = ColorSpec::new();
+            warning_color_spec.set_fg(Some(Color::Yellow));
+            stderr.set_color(&warning_color_spec)?;
 
-        for message in errors {
-            stderr.set_color(&error_color_spec)?;
-            writeln!(&mut stderr, "{}", message.message)?;
-
-            stderr.set_color(&help_color_spec)?;
-            writeln!(&mut stderr, "{}", message.help_message)?;
+            for message in warnings {
+                writeln!(&mut stderr, "{}", message)?;
+            }
+            stderr.reset()?;
         }
 
-        process::exit(1)
+        let errors = issues.errors;
+        if !errors.is_empty() {
+            let mut error_color_spec = ColorSpec::new();
+            let mut help_color_spec = ColorSpec::new();
+
+            error_color_spec.set_fg(Some(Color::Red));
+            help_color_spec.set_fg(Some(Color::Cyan));
+
+            for message in errors {
+                stderr.set_color(&error_color_spec)?;
+                writeln!(&mut stderr, "{}", message.message)?;
+
+                stderr.set_color(&help_color_spec)?;
+                writeln!(&mut stderr, "{}", message.help_message)?;
+            }
+            stderr.reset()?;
+
+            process::exit(1)
+        }
     }
 
     Ok(())
@@ -324,28 +342,6 @@ mod main_test {
                 .assert()
                 .failure()
                 .stderr(starts_with("The API key is missing."));
-        }
-    }
-
-    #[test]
-    fn old_api_key() {
-        let commands = &[
-            vec!["parameters", "list"],
-            vec!["environments", "list"],
-            vec!["templates", "list"],
-            vec!["--env", "non-default", "templates", "list"],
-            vec!["run", "--command", "printenv"],
-            vec!["run", "-c", "printenv"],
-            vec!["run", "-s", "FOO=BAR", "--", "ls", "-lh", "/tmp"],
-        ];
-        for cmd_args in commands {
-            println!("need_api_key test: {}", cmd_args.join(" "));
-            let mut cmd = cmd();
-            cmd.env(CT_OLD_API_KEY, "new_key")
-                .args(cmd_args)
-                .assert()
-                .failure()
-                .stderr(starts_with("The API key is using the old variable."));
         }
     }
 
