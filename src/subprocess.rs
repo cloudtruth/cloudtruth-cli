@@ -174,12 +174,13 @@ impl SubProcessIntf for SubProcess {
         // Add in the items from the CloudTruth environment (looking for collisions)
         let mut collisions: Vec<String> = vec![];
         let ct_vars = self.get_ct_vars(org_id, env, environments)?;
+        let empty = "".to_string();
         for (key, value) in ct_vars {
             if !self.env_vars.contains_key(&key) {
                 // when not already, insert it
                 self.env_vars.entry(key).or_insert(value);
             } else {
-                let orig = self.env_vars.get(&key).unwrap();
+                let orig = self.env_vars.get(&key).unwrap_or(&empty);
                 if inherit == Inheritance::Exclusive && value != *orig {
                     collisions.push(key);
                 } else if inherit == Inheritance::Overlay {
@@ -192,7 +193,7 @@ impl SubProcessIntf for SubProcess {
         // Add in the items from the overrides (looking for collisions)
         let over_vars = self.process_overrides(overrides);
         for (key, value) in over_vars {
-            let orig = self.env_vars.get(&key).unwrap();
+            let orig = self.env_vars.get(&key).unwrap_or(&empty);
             if inherit == Inheritance::Exclusive
                 && self.env_vars.contains_key(&key)
                 && value != *orig
