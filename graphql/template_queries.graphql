@@ -8,6 +8,16 @@ query GetTemplateByNameQuery($organizationId: ID, $environmentName: String, $tem
   }
 }
 
+query GetImplicitTemplateQuery($organizationId: ID, $environmentName: String, $templateName: String!, $filters: ImplicitTemplateFilters!) {
+  viewer {
+    organization(id: $organizationId) {
+      template(name: $templateName, filters: $filters) {
+        evaluated(environmentName: $environmentName)
+      }
+    }
+  }
+}
+
 
 query TemplatesQuery($organizationId: ID) {
   viewer {

@@ -236,6 +236,33 @@ fn main() -> Result<()> {
                     env.unwrap_or(DEFAULT_ENV_NAME)
                 )
             }
+        } else if let Some(matches) = matches.subcommand_matches("getit") {
+            let starts_with = matches.value_of("starts_with");
+            let ends_with = matches.value_of("ends_with");
+            let contains = matches.value_of("contains");
+            let template_name = matches.value_of("NAME").unwrap();
+            let export = matches.is_present("export");
+            let secrets = matches.is_present("secrets");
+            let body = templates.get_body_by_implicit_name(
+                org_id,
+                env,
+                starts_with,
+                ends_with,
+                contains,
+                export,
+                secrets,
+                template_name,
+            )?;
+
+            if let Some(body) = body {
+                println!("{}", body)
+            } else {
+                println!(
+                    "Could not find a template with name '{}' in environment '{}'.",
+                    template_name,
+                    env.unwrap_or("default")
+                )
+            }
         }
     }
 

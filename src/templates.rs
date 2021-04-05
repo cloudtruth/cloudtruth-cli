@@ -18,6 +18,14 @@ pub struct GetTemplateByNameQuery;
     query_path = "graphql/template_queries.graphql",
     response_derives = "Debug"
 )]
+pub struct GetImplicitTemplateQuery;
+
+#[derive(GraphQLQuery)]
+#[graphql(
+    schema_path = "graphql/schema.graphql",
+    query_path = "graphql/template_queries.graphql",
+    response_derives = "Debug"
+)]
 pub struct TemplatesQuery;
 
 impl Templates {
@@ -37,6 +45,49 @@ impl Templates {
             template_name: template_name.to_string(),
         });
         let response_body = graphql_request::<_, get_template_by_name_query::ResponseData>(&query)?;
+
+        if let Some(errors) = response_body.errors {
+            Err(GraphQLError::ResponseError(errors))
+        } else if let Some(data) = response_body.data {
+            Ok(data
+                .viewer
+                .organization
+                .expect("Primary organization not found")
+                .template
+                .and_then(|t| t.evaluated))
+        } else {
+            Err(GraphQLError::MissingDataError)
+        }
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    pub fn get_body_by_implicit_name(
+        &self,
+        organization_id: Option<&str>,
+        environment_name: Option<&str>,
+        starts_with: Option<&str>,
+        ends_with: Option<&str>,
+        contains: Option<&str>,
+        export: bool,
+        secrets: bool,
+        template_name: &str,
+    ) -> GraphQLResult<Option<String>> {
+        let name_prefix: String = "_getit_".to_owned();
+        let full_name = name_prefix + template_name;
+        let query = GetImplicitTemplateQuery::build_query(get_implicit_template_query::Variables {
+            organization_id: organization_id.map(|id| id.to_string()),
+            environment_name: environment_name.map(|name| name.to_string()),
+            template_name: full_name,
+            filters: get_implicit_template_query::ImplicitTemplateFilters {
+                starts_with: starts_with.map(|search| search.to_string()),
+                ends_with: ends_with.map(|search| search.to_string()),
+                contains: contains.map(|search| search.to_string()),
+                secrets: Some(secrets),
+                export: Some(export),
+            },
+        });
+        let response_body =
+            graphql_request::<_, get_implicit_template_query::ResponseData>(&query)?;
 
         if let Some(errors) = response_body.errors {
             Err(GraphQLError::ResponseError(errors))
