@@ -188,7 +188,7 @@ impl Config {
             && ConfigEnv::get_override(CT_API_KEY).is_none()
         {
             warnings.push(format!(
-                "Pleaes use {} to set the API key instead of {}",
+                "Please use {} instead of {} to set the API key.",
                 CT_API_KEY, CT_OLD_API_KEY
             ));
         }
