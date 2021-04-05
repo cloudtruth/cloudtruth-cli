@@ -67,11 +67,24 @@ pub fn build_cli() -> App<'static, 'static> {
                         .arg(Arg::with_name("KEY").required(true).index(1)),
                     SubCommand::with_name("list")
                         .visible_alias("ls")
-                        .about("List CloudTruth parameters"),
+                        .about("List CloudTruth parameters")
+                        .arg(Arg::with_name("values")
+                            .short("v")
+                            .long("values")
+                            .help("Display parameters and values")
+                        )
+                        .arg(Arg::with_name("format")
+                            .short("f")
+                            .long("format")
+                            .takes_value(true)
+                            .default_value("table")
+                            .possible_values(&["table", "csv"])
+                            .help("Parameter 'values' output data format")
+                        ),
                     SubCommand::with_name("set")
                         .about("Set a static value in the selected environment for an existing parameter or creates a new one if needed")
                         .arg(Arg::with_name("KEY").required(true).index(1))
-                        .arg(Arg::with_name("VALUE").required(true).index(2))
+                        .arg(Arg::with_name("VALUE").required(true).index(2)),
                 ]),
         )
         .subcommand(SubCommand::with_name("templates")

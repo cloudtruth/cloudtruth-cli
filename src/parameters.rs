@@ -27,7 +27,24 @@ pub struct ParametersQuery;
     query_path = "graphql/parameter_queries.graphql",
     response_derives = "Debug"
 )]
+pub struct ParametersDetailQuery;
+
+#[derive(GraphQLQuery)]
+#[graphql(
+    schema_path = "graphql/schema.graphql",
+    query_path = "graphql/parameter_queries.graphql",
+    response_derives = "Debug"
+)]
 pub struct UpsertParameterMutation;
+
+pub struct ParameterDetails {
+    pub id: String,
+    pub key: String,
+    pub value: String,
+    pub secret: bool,
+    pub description: String,
+    pub source: String,
+}
 
 impl Parameters {
     pub fn new() -> Self {
@@ -160,6 +177,56 @@ impl Parameters {
                     }
                 }
             }
+            Ok(env_vars)
+        } else {
+            Err(GraphQLError::MissingDataError)
+        }
+    }
+
+    pub fn get_parameter_details(
+        &self,
+        org_id: Option<&str>,
+        env_id: Option<String>,
+    ) -> GraphQLResult<Vec<ParameterDetails>> {
+        let query = ParametersDetailQuery::build_query(parameters_detail_query::Variables {
+            organization_id: org_id.map(|id| id.to_string()),
+            environment_id: env_id,
+        });
+        let response_body = graphql_request::<_, parameters_detail_query::ResponseData>(&query)?;
+        if let Some(errors) = response_body.errors {
+            Err(GraphQLError::ResponseError(errors))
+        } else if let Some(data) = response_body.data {
+            let mut env_vars: Vec<ParameterDetails> = Vec::new();
+            let params = data
+                .viewer
+                .organization
+                .expect("Primary organization not found")
+                .parameters
+                .nodes;
+            for p in params {
+                let mut param_value: String = "".to_string();
+                let mut source: String = "".to_string();
+
+                if let Some(env_value) = p.environment_value {
+                    if let Some(inherit) = env_value.inherited_from {
+                        source = inherit.name;
+                    } else {
+                        source = env_value.environment.name;
+                    }
+                    param_value = env_value.parameter_value.unwrap_or_default();
+                }
+
+                // Add an entry for every parameter, even if it has no value or source
+                env_vars.push(ParameterDetails {
+                    id: p.id,
+                    key: p.key_name,
+                    value: param_value,
+                    secret: p.is_secret,
+                    description: p.description.unwrap_or_default(),
+                    source,
+                });
+            }
+
             Ok(env_vars)
         } else {
             Err(GraphQLError::MissingDataError)

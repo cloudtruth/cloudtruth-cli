@@ -29,6 +29,31 @@ query ParametersQuery($organizationId: ID, $environmentId: ID) {
   }
 }
 
+query ParametersDetailQuery($organizationId: ID, $environmentId: ID) {
+  viewer {
+    id
+    organization(id: $organizationId) {
+      parameters(orderBy: { keyName: ASC }) {
+        nodes {
+          id
+          isSecret
+          keyName
+          description
+          environmentValue(environmentId: $environmentId) {
+            parameterValue
+            inheritedFrom {
+              name
+            }
+            environment {
+              name
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
 mutation UpsertParameterMutation($orgId: ID, $environmentName: String, $keyName: String!, $value: String) {
   upsertParameter(input: { keyName: $keyName, value: $value, environmentName: $environmentName, organizationId: $orgId }) {
     clientMutationId

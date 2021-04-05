@@ -3,6 +3,9 @@ mod graphql;
 #[macro_use]
 mod macros;
 
+#[macro_use]
+extern crate prettytable;
+
 mod cli;
 mod config;
 mod environments;
@@ -19,10 +22,13 @@ use crate::subprocess::{Inheritance, SubProcess, SubProcessIntf};
 use crate::templates::Templates;
 use clap::ArgMatches;
 use color_eyre::eyre::Result;
-use std::io::{self, Write};
+use prettytable::{format, Attr, Cell, Row, Table};
+use std::io::{self, stdout, Write};
 use std::process;
 use std::str::FromStr;
 use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
+
+const REDACTED: &str = "*****";
 
 fn check_config() -> Result<()> {
     if let Some(issues) = Config::global().validate() {
@@ -179,12 +185,47 @@ fn main() -> Result<()> {
 
         let parameters = Parameters::new();
 
-        if matches.subcommand_matches("list").is_some() {
-            let list = parameters.get_parameter_names(org_id, environments.get_id(org_id, env)?)?;
-            if list.is_empty() {
-                println!("There are no parameters in your account.")
+        if let Some(matches) = matches.subcommand_matches("list") {
+            let values = matches.is_present("values");
+            if !values {
+                let list =
+                    parameters.get_parameter_names(org_id, environments.get_id(org_id, env)?)?;
+                if list.is_empty() {
+                    println!("There are no parameters in your account.")
+                } else {
+                    println!("{}", list.join("\n"))
+                }
             } else {
-                println!("{}", list.join("\n"))
+                let fmt = matches.value_of("format").unwrap();
+                let env_id = environments.get_id(org_id, env)?;
+                let ct_vars = parameters.get_parameter_details(org_id, env_id)?;
+                if ct_vars.is_empty() {
+                    println!("No CloudTruth variables found!");
+                } else {
+                    let mut table = Table::new();
+                    table.set_titles(Row::new(vec![
+                        Cell::new("Name").with_style(Attr::Bold),
+                        Cell::new("Value").with_style(Attr::Bold),
+                        Cell::new("Source").with_style(Attr::Bold),
+                        Cell::new("Description").with_style(Attr::Bold),
+                    ]));
+                    for entry in ct_vars {
+                        let out_val = if entry.secret {
+                            REDACTED.to_string()
+                        } else {
+                            entry.value
+                        };
+                        table.add_row(row![entry.key, out_val, entry.source, entry.description]);
+                    }
+                    table.set_format(*format::consts::FORMAT_NO_LINESEP_WITH_TITLE);
+
+                    if fmt == "csv" {
+                        table.to_csv(stdout())?;
+                    } else {
+                        assert_eq!(fmt, "table");
+                        table.printstd();
+                    }
+                }
             }
         } else if let Some(matches) = matches.subcommand_matches("get") {
             let key = matches.value_of("KEY").unwrap();
@@ -226,6 +267,8 @@ fn main() -> Result<()> {
                     env.unwrap_or(DEFAULT_ENV_NAME)
                 );
             }
+        } else {
+            warn_missing_subcommand("parameters");
         }
     }
 
@@ -281,6 +324,8 @@ fn main() -> Result<()> {
                     env.unwrap_or("default")
                 )
             }
+        } else {
+            warn_missing_subcommand("templates");
         }
     }
 
