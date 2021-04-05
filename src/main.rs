@@ -126,7 +126,11 @@ fn process_run_command(
     let inherit = Inheritance::from_str(subcmd_args.value_of("inheritance").unwrap()).unwrap();
     let overrides = subcmd_args.values_of_lossy("set").unwrap_or_default();
     let removals = subcmd_args.values_of_lossy("remove").unwrap_or_default();
+    let permissive = subcmd_args.is_present("permissive");
     sub_proc.set_environment(org_id, env, environments, inherit, &overrides, &removals)?;
+    if !permissive {
+        sub_proc.remove_ct_app_vars();
+    }
     sub_proc.run_command(command.as_str(), &arguments)?;
 
     Ok(())
