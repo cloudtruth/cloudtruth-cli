@@ -72,12 +72,10 @@ impl Templates {
         secrets: bool,
         template_name: &str,
     ) -> GraphQLResult<Option<String>> {
-        let name_prefix: String = "_getit_".to_owned();
-        let full_name = name_prefix + template_name;
         let query = GetImplicitTemplateQuery::build_query(get_implicit_template_query::Variables {
             organization_id: organization_id.map(|id| id.to_string()),
             environment_name: environment_name.map(|name| name.to_string()),
-            template_name: full_name,
+            template_name: template_name.to_string(),
             filters: get_implicit_template_query::ImplicitTemplateFilters {
                 starts_with: starts_with.map(|search| search.to_string()),
                 ends_with: ends_with.map(|search| search.to_string()),
@@ -96,7 +94,7 @@ impl Templates {
                 .viewer
                 .organization
                 .expect("Primary organization not found")
-                .template
+                .implicit_template
                 .and_then(|t| t.evaluated))
         } else {
             Err(GraphQLError::MissingDataError)

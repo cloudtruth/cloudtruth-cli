@@ -838,6 +838,10 @@ input IdComparisonExp {
   _neq: ID
 }
 
+type ImplicitTemplate {
+  evaluated(environmentId: ID, environmentName: String): String
+}
+
 input ImplicitTemplateFilters {
   contains: String
   endsWith: String
@@ -1418,6 +1422,7 @@ type Organization implements HasPolicy & Node {
     last: Int
   ): GithubIntegrationConnection!
   id: ID!
+  implicitTemplate(filters: ImplicitTemplateFilters, name: String!): ImplicitTemplate
   integrations(
     """
     Returns the elements in the list that come after the specified cursor.
@@ -1551,7 +1556,7 @@ type Organization implements HasPolicy & Node {
     """
     last: Int
   ): ProjectConnection!
-  template(filters: ImplicitTemplateFilters, name: String!): Template
+  template(name: String!): Template
   templates(
     """
     Returns the elements in the list that come after the specified cursor.
