@@ -28,7 +28,7 @@ use std::process;
 use std::str::FromStr;
 use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 
-const REDACTED: &str = "REDACTED";
+const REDACTED: &str = "*****";
 
 fn check_config() -> Result<()> {
     if let Some(issues) = Config::global().validate() {

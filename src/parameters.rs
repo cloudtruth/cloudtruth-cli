@@ -204,24 +204,27 @@ impl Parameters {
                 .parameters
                 .nodes;
             for p in params {
+                let mut param_value: String = "".to_string();
+                let mut source: String = "".to_string();
+
                 if let Some(env_value) = p.environment_value {
-                    let source: String;
                     if let Some(inherit) = env_value.inherited_from {
                         source = inherit.name;
                     } else {
                         source = env_value.environment.name;
                     }
-                    if let Some(param_value) = env_value.parameter_value {
-                        env_vars.push(ParameterDetails {
-                            id: p.id,
-                            key: p.key_name,
-                            value: param_value,
-                            secret: p.is_secret,
-                            description: p.description.unwrap_or_default(),
-                            source,
-                        });
-                    }
+                    param_value = env_value.parameter_value.unwrap_or_default();
                 }
+
+                // Add an entry for every parameter, even if it has no value or source
+                env_vars.push(ParameterDetails {
+                    id: p.id,
+                    key: p.key_name,
+                    value: param_value,
+                    secret: p.is_secret,
+                    description: p.description.unwrap_or_default(),
+                    source,
+                });
             }
 
             Ok(env_vars)
