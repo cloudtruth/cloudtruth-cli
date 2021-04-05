@@ -25,23 +25,41 @@ use std::str::FromStr;
 use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 
 fn check_config() -> Result<()> {
-    if let Some(errors) = Config::global().validate() {
+    if let Some(issues) = Config::global().validate() {
         let mut stderr = StandardStream::stderr(ColorChoice::Auto);
-        let mut error_color_spec = ColorSpec::new();
-        let mut help_color_spec = ColorSpec::new();
 
-        error_color_spec.set_fg(Some(Color::Red));
-        help_color_spec.set_fg(Some(Color::Cyan));
+        // print the warnings first, so the user sees them (even when errors are present)
+        let warnings = issues.warnings;
+        if !warnings.is_empty() {
+            let mut warning_color_spec = ColorSpec::new();
+            warning_color_spec.set_fg(Some(Color::Yellow));
+            stderr.set_color(&warning_color_spec)?;
 
-        for message in errors {
-            stderr.set_color(&error_color_spec)?;
-            writeln!(&mut stderr, "{}", message.message)?;
-
-            stderr.set_color(&help_color_spec)?;
-            writeln!(&mut stderr, "{}", message.help_message)?;
+            for message in warnings {
+                writeln!(&mut stderr, "{}", message)?;
+            }
+            stderr.reset()?;
         }
 
-        process::exit(1)
+        let errors = issues.errors;
+        if !errors.is_empty() {
+            let mut error_color_spec = ColorSpec::new();
+            let mut help_color_spec = ColorSpec::new();
+
+            error_color_spec.set_fg(Some(Color::Red));
+            help_color_spec.set_fg(Some(Color::Cyan));
+
+            for message in errors {
+                stderr.set_color(&error_color_spec)?;
+                writeln!(&mut stderr, "{}", message.message)?;
+
+                stderr.set_color(&help_color_spec)?;
+                writeln!(&mut stderr, "{}", message.help_message)?;
+            }
+            stderr.reset()?;
+
+            process::exit(1)
+        }
     }
 
     Ok(())
@@ -277,7 +295,7 @@ fn main() -> Result<()> {
 #[cfg(test)]
 mod main_test {
     use crate::cli;
-    use crate::config::{CT_API_KEY, CT_SERVER_URL};
+    use crate::config::{CT_API_KEY, CT_OLD_API_KEY, CT_SERVER_URL};
     use assert_cmd::prelude::*;
     use predicates::prelude::predicate::str::*;
     use std::process::Command;
@@ -346,6 +364,7 @@ mod main_test {
             println!("need_api_key test: {}", cmd_args.join(" "));
             let mut cmd = cmd();
             cmd.env(CT_API_KEY, "")
+                .env(CT_OLD_API_KEY, "")
                 .args(cmd_args)
                 .assert()
                 .failure()
