@@ -28,6 +28,7 @@ pub const DEFAULT_PROF_NAME: &str = "default";
  All should start with ENV_VAR_PREFIX (CT_xxx).
 ************************************************************************/
 // Default prefix for environment variables added by CloudTruth.
+#[allow(dead_code)]
 pub const ENV_VAR_PREFIX: &str = "CLOUDTRUTH_";
 
 // Environment variable name used to specify the CloudTruth API value, so it does not need to be
