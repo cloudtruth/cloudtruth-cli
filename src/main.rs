@@ -305,7 +305,7 @@ fn main() -> Result<()> {
             let starts_with = matches.value_of("starts_with");
             let ends_with = matches.value_of("ends_with");
             let contains = matches.value_of("contains");
-            let template_name = matches.value_of("NAME").unwrap();
+            let template_format = matches.value_of("FORMAT").unwrap();
             let export = matches.is_present("export");
             let secrets = matches.is_present("secrets");
             let body = templates.get_body_by_implicit_name(
@@ -316,7 +316,7 @@ fn main() -> Result<()> {
                 contains,
                 export,
                 secrets,
-                template_name,
+                template_format,
             )?;
 
             if let Some(body) = body {
@@ -324,7 +324,7 @@ fn main() -> Result<()> {
             } else {
                 println!(
                     "Could not find a template with name '{}' in environment '{}'.",
-                    template_name,
+                    template_format,
                     env.unwrap_or("default")
                 )
             }

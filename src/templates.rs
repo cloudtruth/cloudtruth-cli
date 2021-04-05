@@ -1,6 +1,8 @@
 use crate::graphql::prelude::graphql_request;
 use crate::graphql::{GraphQLError, GraphQLResult};
+use get_implicit_template_query::ImplicitTemplateEnum;
 use graphql_client::*;
+use std::str::FromStr;
 
 pub struct Templates {}
 
@@ -70,12 +72,26 @@ impl Templates {
         contains: Option<&str>,
         export: bool,
         secrets: bool,
-        template_name: &str,
+        template_format: &str,
     ) -> GraphQLResult<Option<String>> {
+        impl FromStr for ImplicitTemplateEnum {
+            type Err = ();
+
+            fn from_str(input: &str) -> Result<ImplicitTemplateEnum, Self::Err> {
+                match input {
+                    "docker" => Ok(ImplicitTemplateEnum::DOCKER),
+                    "dotenv" => Ok(ImplicitTemplateEnum::DOTENV),
+                    "shell" => Ok(ImplicitTemplateEnum::SHELL),
+                    _ => Err(()),
+                }
+            }
+        }
+
+        let format: ImplicitTemplateEnum = template_format.parse().unwrap();
         let query = GetImplicitTemplateQuery::build_query(get_implicit_template_query::Variables {
             organization_id: organization_id.map(|id| id.to_string()),
             environment_name: environment_name.map(|name| name.to_string()),
-            template_name: template_name.to_string(),
+            template_format: format,
             filters: get_implicit_template_query::ImplicitTemplateFilters {
                 starts_with: starts_with.map(|search| search.to_string()),
                 ends_with: ends_with.map(|search| search.to_string()),
