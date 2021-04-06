@@ -1,3 +1,12 @@
+# 0.2.0 - 2021-04-06
+
+* Use `CLOUDTRUTH_API_KEY` instead of `CT_API_KEY` to set API key in the environment.
+* Templates: `getit` command to render implicit templates of all parameters for different
+  environments
+* Parameters: enhanced `list` command with `--values` flag and `--format` option to display 
+  parameter information and values.
+* Run: breaking changes to replace `--preserve` flag with `--inherit` option for more control.
+
 # 0.1.3 - 2021-03-25
 
 * Added `run` option to run a command from an environment with parameters injected from the CloudTruth CLI.
