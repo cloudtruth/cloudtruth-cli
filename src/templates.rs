@@ -1,6 +1,8 @@
 use crate::graphql::prelude::graphql_request;
 use crate::graphql::{GraphQLError, GraphQLResult};
+use get_implicit_template_query::ImplicitTemplateEnum;
 use graphql_client::*;
+use std::str::FromStr;
 
 pub struct Templates {}
 
@@ -70,14 +72,26 @@ impl Templates {
         contains: Option<&str>,
         export: bool,
         secrets: bool,
-        template_name: &str,
+        template_format: &str,
     ) -> GraphQLResult<Option<String>> {
-        let name_prefix: String = "_getit_".to_owned();
-        let full_name = name_prefix + template_name;
+        impl FromStr for ImplicitTemplateEnum {
+            type Err = ();
+
+            fn from_str(input: &str) -> Result<ImplicitTemplateEnum, Self::Err> {
+                match input {
+                    "docker" => Ok(ImplicitTemplateEnum::DOCKER),
+                    "dotenv" => Ok(ImplicitTemplateEnum::DOTENV),
+                    "shell" => Ok(ImplicitTemplateEnum::SHELL),
+                    _ => Err(()),
+                }
+            }
+        }
+
+        let format: ImplicitTemplateEnum = template_format.parse().unwrap();
         let query = GetImplicitTemplateQuery::build_query(get_implicit_template_query::Variables {
             organization_id: organization_id.map(|id| id.to_string()),
             environment_name: environment_name.map(|name| name.to_string()),
-            template_name: full_name,
+            template_format: format,
             filters: get_implicit_template_query::ImplicitTemplateFilters {
                 starts_with: starts_with.map(|search| search.to_string()),
                 ends_with: ends_with.map(|search| search.to_string()),
@@ -96,7 +110,7 @@ impl Templates {
                 .viewer
                 .organization
                 .expect("Primary organization not found")
-                .template
+                .implicit_template
                 .and_then(|t| t.evaluated))
         } else {
             Err(GraphQLError::MissingDataError)
