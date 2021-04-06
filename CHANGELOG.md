@@ -3,8 +3,8 @@
 * Use `CLOUDTRUTH_API_KEY` instead of `CT_API_KEY` to set API key in the environment.
 * Templates: `getit` command to render implicit templates of all parameters for different
   environments
-* Parameters: `list` has `--values` flag and `--format` option to display parameter information and 
-  values.
+* Parameters: enhanced `list` command with `--values` flag and `--format` option to display 
+  parameter information and values.
 * Run: breaking changes to replace `--preserve` flag with `--inherit` option for more control.
 
 # 0.1.3 - 2021-03-25
