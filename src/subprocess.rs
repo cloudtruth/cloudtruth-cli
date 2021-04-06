@@ -47,7 +47,6 @@ pub type SubProcessResult<T> = std::result::Result<T, SubProcessError>;
 #[derive(Clone, Debug)]
 pub enum SubProcessError {
     EnvironmentCollisions(Vec<String>),
-    #[allow(clippy::upper_case_acronyms)]
     GraphQLError(GraphQLError),
     ProcessRunError(String),
 }
