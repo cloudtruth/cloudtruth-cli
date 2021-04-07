@@ -76,7 +76,14 @@ fn check_config() -> Result<()> {
 }
 
 fn warn_user(message: String) {
-    println!("WARN: {}", message);
+    let mut stderr = StandardStream::stderr(ColorChoice::Auto);
+    let mut warning_color_spec = ColorSpec::new();
+    warning_color_spec.set_fg(Some(Color::Yellow));
+
+    // All commands below may fail, but just keep going with best effort.
+    let _ = stderr.set_color(&warning_color_spec);
+    let _ = writeln!(&mut stderr, "WARN: {}", message);
+    let _ = stderr.reset();
 }
 
 fn warn_missing_subcommand(command: &str) {
@@ -440,7 +447,7 @@ mod main_test {
             cmd.args(cmd_args)
                 .assert()
                 .success()
-                .stdout(starts_with(warn_msg));
+                .stderr(starts_with(warn_msg));
         }
     }
 }
