@@ -36,49 +36,52 @@ use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 
 const REDACTED: &str = "*****";
 
-fn check_config() -> Result<()> {
-    if let Some(issues) = Config::global().validate() {
-        let mut stderr = StandardStream::stderr(ColorChoice::Auto);
+fn stderr_message(message: String, color: Color) {
+    let mut stderr = StandardStream::stderr(ColorChoice::Auto);
+    let mut color_spec = ColorSpec::new();
+    color_spec.set_fg(Some(color));
 
+    // ignore the returns on these calls... we're on the warning path
+    let _ = stderr.set_color(&color_spec);
+    let _ = writeln!(&mut stderr, "{}", message);
+    let _ = stderr.reset();
+}
+
+fn warning_message(message: String) {
+    stderr_message(message, Color::Yellow);
+}
+
+fn error_message(message: String) {
+    stderr_message(message, Color::Red);
+}
+
+fn help_message(message: String) {
+    stderr_message(message, Color::Cyan);
+}
+
+fn check_config() {
+    if let Some(issues) = Config::global().validate() {
         // print the warnings first, so the user sees them (even when errors are present)
         let warnings = issues.warnings;
         if !warnings.is_empty() {
-            let mut warning_color_spec = ColorSpec::new();
-            warning_color_spec.set_fg(Some(Color::Yellow));
-            stderr.set_color(&warning_color_spec)?;
-
             for message in warnings {
-                writeln!(&mut stderr, "{}", message)?;
+                warning_message(message);
             }
-            stderr.reset()?;
         }
 
         let errors = issues.errors;
         if !errors.is_empty() {
-            let mut error_color_spec = ColorSpec::new();
-            let mut help_color_spec = ColorSpec::new();
-
-            error_color_spec.set_fg(Some(Color::Red));
-            help_color_spec.set_fg(Some(Color::Cyan));
-
-            for message in errors {
-                stderr.set_color(&error_color_spec)?;
-                writeln!(&mut stderr, "{}", message.message)?;
-
-                stderr.set_color(&help_color_spec)?;
-                writeln!(&mut stderr, "{}", message.help_message)?;
+            for err in errors {
+                error_message(err.message);
+                help_message(err.help_message);
             }
-            stderr.reset()?;
-
             process::exit(1)
         }
     }
-
-    Ok(())
 }
 
 fn warn_user(message: String) {
-    println!("WARN: {}", message);
+    warning_message(format!("WARN: {}", message));
 }
 
 fn warn_missing_subcommand(command: &str) {
@@ -90,7 +93,7 @@ fn check_valid_env(
     env: Option<&str>,
     environments: &Environments,
 ) -> Result<()> {
-    check_config()?;
+    check_config();
 
     if !environments.is_valid_environment_name(org_id, env)? {
         panic!(
@@ -464,7 +467,7 @@ mod main_test {
             cmd.args(cmd_args)
                 .assert()
                 .success()
-                .stdout(starts_with(warn_msg));
+                .stderr(starts_with(warn_msg));
         }
     }
 }
