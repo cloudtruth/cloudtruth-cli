@@ -173,4 +173,14 @@ pub fn build_cli() -> App<'static, 'static> {
                         .help("Allow CloudTruth application variables through")
                 ])
         )
+        .subcommand(
+            SubCommand::with_name("projects")
+                .visible_aliases(&["projects", "proj"])
+                .about("Work with CloudTruth projects")
+                .subcommands(vec![
+                    SubCommand::with_name("list")
+                        .visible_alias("ls")
+                        .about("List CloudTruth projects")
+                ])
+        )
 }

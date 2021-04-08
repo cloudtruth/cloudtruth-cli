@@ -14,6 +14,7 @@ mod cli;
 mod config;
 mod environments;
 mod parameters;
+mod projects;
 mod subprocess;
 mod templates;
 
@@ -22,6 +23,7 @@ use crate::config::DEFAULT_ENV_NAME;
 use crate::environments::Environments;
 use crate::graphql::GraphQLError;
 use crate::parameters::Parameters;
+use crate::projects::{Projects, ProjectsIntf};
 use crate::subprocess::{Inheritance, SubProcess, SubProcessIntf};
 use crate::templates::Templates;
 use clap::ArgMatches;
@@ -136,6 +138,21 @@ fn process_run_command(
         sub_proc.remove_ct_app_vars();
     }
     sub_proc.run_command(command.as_str(), &arguments)?;
+
+    Ok(())
+}
+
+fn process_project_command(
+    org_id: Option<&str>,
+    projects: &impl ProjectsIntf,
+    subcmd_args: &ArgMatches,
+) -> Result<()> {
+    if subcmd_args.subcommand_matches("list").is_some() {
+        let list = projects.get_project_names(org_id)?;
+        println!("{}", list.join("\n"))
+    } else {
+        warn_missing_subcommand("projects");
+    }
 
     Ok(())
 }
@@ -342,6 +359,12 @@ fn main() -> Result<()> {
         process_run_command(org_id, env, &environments, matches)?;
     }
 
+    if let Some(matches) = matches.subcommand_matches("projects") {
+        check_valid_env(org_id, env, &environments)?;
+        let projects = Projects::new();
+        process_project_command(org_id, &projects, matches)?;
+    }
+
     Ok(())
 }
 
@@ -412,6 +435,7 @@ mod main_test {
             vec!["run", "--command", "printenv"],
             vec!["run", "-c", "printenv"],
             vec!["run", "-s", "FOO=BAR", "--", "ls", "-lh", "/tmp"],
+            vec!["projects", "ls"],
         ];
         for cmd_args in commands {
             println!("need_api_key test: {}", cmd_args.join(" "));

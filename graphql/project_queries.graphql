@@ -1,0 +1,23 @@
+query ProjectsQuery($organizationId: ID) {
+  viewer {
+    id
+    organization(id: $organizationId) {
+      projects {
+        nodes {
+          id
+          name
+        }
+      }
+    }
+  }
+}
+
+query GetProjectByNameQuery($organizationId: ID, $projectName: String) {
+  viewer {
+    organization(id: $organizationId) {
+      project(name: $projectName) {
+        id
+      }
+    }
+  }
+}
