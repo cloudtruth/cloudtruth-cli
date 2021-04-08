@@ -18,8 +18,7 @@ mod projects;
 mod subprocess;
 mod templates;
 
-use crate::config::Config;
-use crate::config::DEFAULT_ENV_NAME;
+use crate::config::{Config, DEFAULT_ENV_NAME, DEFAULT_PROJ_NAME};
 use crate::environments::Environments;
 use crate::graphql::GraphQLError;
 use crate::parameters::Parameters;
@@ -88,18 +87,37 @@ fn warn_missing_subcommand(command: &str) {
     warn_user(format!("No '{}' sub-command executed.", command));
 }
 
-fn check_valid_env(
+fn check_valid(
     org_id: Option<&str>,
     env: Option<&str>,
+    proj: Option<&str>,
     environments: &Environments,
+    projects: &impl ProjectsIntf,
 ) -> Result<()> {
+    // start by checking the configuration -- API key, server url, etc
     check_config();
 
+    // The `err` value is used to allow accumulation of multiple errors to the user.
+    let mut err = false;
     if !environments.is_valid_environment_name(org_id, env)? {
-        panic!(
+        error_message(format!(
             "The '{}' environment could not be found in your account.",
-            env.unwrap_or(DEFAULT_ENV_NAME)
-        )
+            env.unwrap_or(DEFAULT_ENV_NAME),
+        ));
+        err = true;
+    }
+
+    if !projects.is_valid_project_name(org_id, proj)? {
+        error_message(format!(
+            "The '{}' project could not be found in your account.",
+            proj.unwrap_or(DEFAULT_PROJ_NAME)
+        ));
+        err = true;
+    }
+
+    // if any errors were encountered, exit with an error code
+    if err {
+        process::exit(2);
     }
 
     Ok(())
@@ -194,11 +212,14 @@ fn main() -> Result<()> {
     }
 
     let environments = Environments::new();
+    let projects = Projects::new();
     let env = matches.value_of("env");
+    let proj = matches.value_of("project");
     let org_id: Option<&str> = None;
 
     if let Some(matches) = matches.subcommand_matches("environments") {
-        check_valid_env(org_id, env, &environments)?;
+        // Check the config, and don't worry about valid env/proj when dealing with environments
+        check_config();
 
         if matches.subcommand_matches("list").is_some() {
             let list = environments.get_environment_names(org_id)?;
@@ -209,7 +230,7 @@ fn main() -> Result<()> {
     }
 
     if let Some(matches) = matches.subcommand_matches("parameters") {
-        check_valid_env(org_id, env, &environments)?;
+        check_valid(org_id, env, proj, &environments, &projects)?;
 
         let parameters = Parameters::new();
 
@@ -301,7 +322,7 @@ fn main() -> Result<()> {
     }
 
     if let Some(matches) = matches.subcommand_matches("templates") {
-        check_valid_env(org_id, env, &environments)?;
+        check_valid(org_id, env, proj, &environments, &projects)?;
 
         let templates = Templates::new();
 
@@ -358,12 +379,13 @@ fn main() -> Result<()> {
     }
 
     if let Some(matches) = matches.subcommand_matches("run") {
-        check_valid_env(org_id, env, &environments)?;
+        check_valid(org_id, env, proj, &environments, &projects)?;
         process_run_command(org_id, env, &environments, matches)?;
     }
 
     if let Some(matches) = matches.subcommand_matches("projects") {
-        check_valid_env(org_id, env, &environments)?;
+        // Check the config, and don't worry about valid env/proj when dealing with projects
+        check_config();
         let projects = Projects::new();
         process_project_command(org_id, &projects, matches)?;
     }
@@ -456,7 +478,10 @@ mod main_test {
     fn missing_subcommands() {
         let commands = &[
             vec!["config"],
-            /* TODO: Rick Porter 3/2021: add more tests once we can get a valid environment, (e.g.
+            vec!["projects"],
+            vec!["environments"],
+            /*
+            TODO: Rick Porter 3/2021: add more tests once we can get a valid environment, (e.g.
                environment, run)
             */
         ];
@@ -465,6 +490,7 @@ mod main_test {
             let warn_msg = format!("WARN: No '{}' sub-command executed.", cmd_args[0]);
             let mut cmd = cmd();
             cmd.args(cmd_args)
+                .env(CT_API_KEY, "dummy-key")
                 .assert()
                 .success()
                 .stderr(starts_with(warn_msg));

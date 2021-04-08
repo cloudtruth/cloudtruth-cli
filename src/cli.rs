@@ -28,11 +28,17 @@ pub fn build_cli() -> App<'static, 'static> {
         )
         .arg(
             Arg::with_name("profile")
-                .short("p")
+                .short("p")// TODO: remove this to avoid confusion with setting project?
                 .long("profile")
                 .help("The profile from the application configuration file to use")
                 .takes_value(true)
                 .default_value("default")
+        )
+        .arg(
+            Arg::with_name("project")
+                .long("project")
+                .help("The CloudTruth project to work with")
+                .takes_value(true)
         )
         .subcommand(
             SubCommand::with_name("completions")
