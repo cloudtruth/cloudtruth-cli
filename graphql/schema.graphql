@@ -369,8 +369,8 @@ type CreateProjectPayload {
   """
   clientMutationId: String
   errors: [UserError!]!
+  organization: Organization!
   project: Project
-  viewer: Viewer!
 }
 
 """
@@ -610,8 +610,8 @@ type DeleteProjectPayload {
   """
   clientMutationId: String
   errors: [UserError!]!
+  organization: Organization!
   project: Project
-  viewer: Viewer!
 }
 
 """
@@ -1541,6 +1541,7 @@ type Organization implements HasPolicy & Node {
     where: ParameterBoolExp
   ): ParameterConnection!
   policy: OrganizationPolicy!
+  project(name: String): Project
   projects(
     """
     Returns the elements in the list that come after the specified cursor.
@@ -2314,8 +2315,8 @@ type UpdateProjectPayload {
   """
   clientMutationId: String
   errors: [UserError!]!
+  organization: Organization!
   project: Project
-  viewer: Viewer!
 }
 
 """
