@@ -35,56 +35,57 @@ use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 
 const REDACTED: &str = "*****";
 
-fn stderr_message(message: String, color: Color) {
+fn stderr_message(message: String, color: Color) -> Result<()> {
     let mut stderr = StandardStream::stderr(ColorChoice::Auto);
     let mut color_spec = ColorSpec::new();
     color_spec.set_fg(Some(color));
 
-    // ignore the returns on these calls... we're on the warning path
-    let _ = stderr.set_color(&color_spec);
-    let _ = writeln!(&mut stderr, "{}", message);
-    let _ = stderr.reset();
+    stderr.set_color(&color_spec)?;
+    writeln!(&mut stderr, "{}", message)?;
+    stderr.reset()?;
+    Ok(())
 }
 
-fn warning_message(message: String) {
-    stderr_message(message, Color::Yellow);
+fn warning_message(message: String) -> Result<()> {
+    stderr_message(message, Color::Yellow)
 }
 
-fn error_message(message: String) {
-    stderr_message(message, Color::Red);
+fn error_message(message: String) -> Result<()> {
+    stderr_message(message, Color::Red)
 }
 
-fn help_message(message: String) {
-    stderr_message(message, Color::Cyan);
+fn help_message(message: String) -> Result<()> {
+    stderr_message(message, Color::Cyan)
 }
 
-fn check_config() {
+fn check_config() -> Result<()> {
     if let Some(issues) = Config::global().validate() {
         // print the warnings first, so the user sees them (even when errors are present)
         let warnings = issues.warnings;
         if !warnings.is_empty() {
             for message in warnings {
-                warning_message(message);
+                warning_message(message)?;
             }
         }
 
         let errors = issues.errors;
         if !errors.is_empty() {
             for err in errors {
-                error_message(err.message);
-                help_message(err.help_message);
+                error_message(err.message)?;
+                help_message(err.help_message)?;
             }
             process::exit(1)
         }
     }
+    Ok(())
 }
 
-fn warn_user(message: String) {
-    warning_message(format!("WARN: {}", message));
+fn warn_user(message: String) -> Result<()> {
+    warning_message(format!("WARN: {}", message))
 }
 
-fn warn_missing_subcommand(command: &str) {
-    warn_user(format!("No '{}' sub-command executed.", command));
+fn warn_missing_subcommand(command: &str) -> Result<()> {
+    warn_user(format!("No '{}' sub-command executed.", command))
 }
 
 fn check_valid(
@@ -95,7 +96,7 @@ fn check_valid(
     projects: &impl ProjectsIntf,
 ) -> Result<()> {
     // start by checking the configuration -- API key, server url, etc
-    check_config();
+    check_config()?;
 
     // The `err` value is used to allow accumulation of multiple errors to the user.
     let mut err = false;
@@ -103,7 +104,7 @@ fn check_valid(
         error_message(format!(
             "The '{}' environment could not be found in your account.",
             env.unwrap_or(DEFAULT_ENV_NAME),
-        ));
+        ))?;
         err = true;
     }
 
@@ -111,7 +112,7 @@ fn check_valid(
         error_message(format!(
             "The '{}' project could not be found in your account.",
             proj.unwrap_or(DEFAULT_PROJ_NAME)
-        ));
+        ))?;
         err = true;
     }
 
@@ -139,13 +140,13 @@ fn process_run_command(
         arguments = subcmd_args.values_of_lossy("arguments").unwrap();
         command = arguments.remove(0);
         if command.contains(' ') {
-            warn_user("command contains spaces, and will likely fail.".to_string());
+            warn_user("command contains spaces, and will likely fail.".to_string())?;
             let mut reformed = format!("{} {}", command, arguments.join(" "));
             reformed = reformed.replace("$", "\\$");
             println!("Try using 'cloudtruth run command \"{}\"'", reformed.trim());
         }
     } else {
-        warn_missing_subcommand("run");
+        warn_missing_subcommand("run")?;
         process::exit(0);
     }
 
@@ -172,7 +173,7 @@ fn process_project_command(
         let list = projects.get_project_names(org_id)?;
         println!("{}", list.join("\n"))
     } else {
-        warn_missing_subcommand("projects");
+        warn_missing_subcommand("projects")?;
     }
 
     Ok(())
@@ -205,7 +206,7 @@ fn main() -> Result<()> {
         if matches.subcommand_matches("edit").is_some() {
             Config::edit()?;
         } else {
-            warn_missing_subcommand("config");
+            warn_missing_subcommand("config")?;
         }
 
         process::exit(0)
@@ -219,13 +220,13 @@ fn main() -> Result<()> {
 
     if let Some(matches) = matches.subcommand_matches("environments") {
         // Check the config, and don't worry about valid env/proj when dealing with environments
-        check_config();
+        check_config()?;
 
         if matches.subcommand_matches("list").is_some() {
             let list = environments.get_environment_names(org_id)?;
             println!("{}", list.join("\n"))
         } else {
-            warn_missing_subcommand("environments");
+            warn_missing_subcommand("environments")?;
         }
     }
 
@@ -317,7 +318,7 @@ fn main() -> Result<()> {
                 );
             }
         } else {
-            warn_missing_subcommand("parameters");
+            warn_missing_subcommand("parameters")?;
         }
     }
 
@@ -374,7 +375,7 @@ fn main() -> Result<()> {
                 )
             }
         } else {
-            warn_missing_subcommand("templates");
+            warn_missing_subcommand("templates")?;
         }
     }
 
@@ -385,7 +386,7 @@ fn main() -> Result<()> {
 
     if let Some(matches) = matches.subcommand_matches("projects") {
         // Check the config, and don't worry about valid env/proj when dealing with projects
-        check_config();
+        check_config()?;
         let projects = Projects::new();
         process_project_command(org_id, &projects, matches)?;
     }
