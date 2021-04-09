@@ -1,3 +1,7 @@
+# Unreleased
+
+* Breaking change: use `--config/-c` instead of `--profile/-p` to specify a configuration profile.
+
 # 0.2.0 - 2021-04-06
 
 * Use `CLOUDTRUTH_API_KEY` instead of `CT_API_KEY` to set API key in the environment.
