@@ -28,13 +28,6 @@ pub trait ProjectsIntf {
         proj_name: Option<&str>,
     ) -> GraphQLResult<Option<String>>;
 
-    /// Make sure the provided `proj_name` is valid.
-    fn is_valid_project_name(
-        &self,
-        org_id: Option<&str>,
-        proj_name: Option<&str>,
-    ) -> GraphQLResult<bool>;
-
     /// Get a complete list of projects for this organization.
     fn get_project_names(&self, org_id: Option<&str>) -> GraphQLResult<Vec<String>>;
 }
@@ -91,20 +84,6 @@ impl ProjectsIntf for Projects {
                 .map(|proj| proj.id))
         } else {
             Err(GraphQLError::MissingDataError)
-        }
-    }
-
-    fn is_valid_project_name(
-        &self,
-        org_id: Option<&str>,
-        proj_name: Option<&str>,
-    ) -> GraphQLResult<bool> {
-        let proj = self.get_id(org_id, proj_name)?;
-
-        if proj.is_some() {
-            Ok(true)
-        } else {
-            Ok(false)
         }
     }
 
