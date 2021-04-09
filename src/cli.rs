@@ -28,11 +28,16 @@ pub fn build_cli() -> App<'static, 'static> {
         )
         .arg(
             Arg::with_name("profile")
-                .short("p")
                 .long("profile")
-                .help("The profile from the application configuration file to use")
+                .help("The configuration profile from the application configuration file to use")
                 .takes_value(true)
                 .default_value("default")
+        )
+        .arg(
+            Arg::with_name("project")
+                .long("project")
+                .help("The CloudTruth project to work with")
+                .takes_value(true)
         )
         .subcommand(
             SubCommand::with_name("completions")
@@ -171,6 +176,16 @@ pub fn build_cli() -> App<'static, 'static> {
                         .long("permissive")
                         .short("p")
                         .help("Allow CloudTruth application variables through")
+                ])
+        )
+        .subcommand(
+            SubCommand::with_name("projects")
+                .visible_aliases(&["projects", "proj"])
+                .about("Work with CloudTruth projects")
+                .subcommands(vec![
+                    SubCommand::with_name("list")
+                        .visible_alias("ls")
+                        .about("List CloudTruth projects")
                 ])
         )
 }

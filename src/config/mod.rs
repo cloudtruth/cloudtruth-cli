@@ -23,6 +23,9 @@ pub const DEFAULT_ENV_NAME: &str = "default";
 // Default profile name.
 pub const DEFAULT_PROF_NAME: &str = "default";
 
+// Default project name.
+pub const DEFAULT_PROJ_NAME: &str = "default";
+
 /*************************************************************************
  Environment variables.
  All should start with ENV_VAR_PREFIX (CT_xxx).

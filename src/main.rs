@@ -14,14 +14,15 @@ mod cli;
 mod config;
 mod environments;
 mod parameters;
+mod projects;
 mod subprocess;
 mod templates;
 
-use crate::config::Config;
-use crate::config::DEFAULT_ENV_NAME;
+use crate::config::{Config, DEFAULT_ENV_NAME, DEFAULT_PROJ_NAME};
 use crate::environments::Environments;
 use crate::graphql::GraphQLError;
 use crate::parameters::Parameters;
+use crate::projects::{Projects, ProjectsIntf};
 use crate::subprocess::{Inheritance, SubProcess, SubProcessIntf};
 use crate::templates::Templates;
 use clap::ArgMatches;
@@ -34,67 +35,90 @@ use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 
 const REDACTED: &str = "*****";
 
+fn stderr_message(message: String, color: Color) -> Result<()> {
+    let mut stderr = StandardStream::stderr(ColorChoice::Auto);
+    let mut color_spec = ColorSpec::new();
+    color_spec.set_fg(Some(color));
+
+    stderr.set_color(&color_spec)?;
+    writeln!(&mut stderr, "{}", message)?;
+    stderr.reset()?;
+    Ok(())
+}
+
+fn warning_message(message: String) -> Result<()> {
+    stderr_message(message, Color::Yellow)
+}
+
+fn error_message(message: String) -> Result<()> {
+    stderr_message(message, Color::Red)
+}
+
+fn help_message(message: String) -> Result<()> {
+    stderr_message(message, Color::Cyan)
+}
+
 fn check_config() -> Result<()> {
     if let Some(issues) = Config::global().validate() {
-        let mut stderr = StandardStream::stderr(ColorChoice::Auto);
-
         // print the warnings first, so the user sees them (even when errors are present)
         let warnings = issues.warnings;
         if !warnings.is_empty() {
-            let mut warning_color_spec = ColorSpec::new();
-            warning_color_spec.set_fg(Some(Color::Yellow));
-            stderr.set_color(&warning_color_spec)?;
-
             for message in warnings {
-                writeln!(&mut stderr, "{}", message)?;
+                warning_message(message)?;
             }
-            stderr.reset()?;
         }
 
         let errors = issues.errors;
         if !errors.is_empty() {
-            let mut error_color_spec = ColorSpec::new();
-            let mut help_color_spec = ColorSpec::new();
-
-            error_color_spec.set_fg(Some(Color::Red));
-            help_color_spec.set_fg(Some(Color::Cyan));
-
-            for message in errors {
-                stderr.set_color(&error_color_spec)?;
-                writeln!(&mut stderr, "{}", message.message)?;
-
-                stderr.set_color(&help_color_spec)?;
-                writeln!(&mut stderr, "{}", message.help_message)?;
+            for err in errors {
+                error_message(err.message)?;
+                help_message(err.help_message)?;
             }
-            stderr.reset()?;
-
             process::exit(1)
         }
     }
-
     Ok(())
 }
 
-fn warn_user(message: String) {
-    println!("WARN: {}", message);
+fn warn_user(message: String) -> Result<()> {
+    warning_message(format!("WARN: {}", message))
 }
 
-fn warn_missing_subcommand(command: &str) {
-    warn_user(format!("No '{}' sub-command executed.", command));
+fn warn_missing_subcommand(command: &str) -> Result<()> {
+    warn_user(format!("No '{}' sub-command executed.", command))
 }
 
-fn check_valid_env(
+fn check_valid(
     org_id: Option<&str>,
     env: Option<&str>,
+    proj: Option<&str>,
     environments: &Environments,
+    projects: &impl ProjectsIntf,
 ) -> Result<()> {
+    // start by checking the configuration -- API key, server url, etc
     check_config()?;
 
+    // The `err` value is used to allow accumulation of multiple errors to the user.
+    let mut err = false;
     if !environments.is_valid_environment_name(org_id, env)? {
-        panic!(
+        error_message(format!(
             "The '{}' environment could not be found in your account.",
-            env.unwrap_or(DEFAULT_ENV_NAME)
-        )
+            env.unwrap_or(DEFAULT_ENV_NAME),
+        ))?;
+        err = true;
+    }
+
+    if !projects.is_valid_project_name(org_id, proj)? {
+        error_message(format!(
+            "The '{}' project could not be found in your account.",
+            proj.unwrap_or(DEFAULT_PROJ_NAME)
+        ))?;
+        err = true;
+    }
+
+    // if any errors were encountered, exit with an error code
+    if err {
+        process::exit(2);
     }
 
     Ok(())
@@ -116,13 +140,13 @@ fn process_run_command(
         arguments = subcmd_args.values_of_lossy("arguments").unwrap();
         command = arguments.remove(0);
         if command.contains(' ') {
-            warn_user("command contains spaces, and will likely fail.".to_string());
+            warn_user("command contains spaces, and will likely fail.".to_string())?;
             let mut reformed = format!("{} {}", command, arguments.join(" "));
             reformed = reformed.replace("$", "\\$");
             println!("Try using 'cloudtruth run command \"{}\"'", reformed.trim());
         }
     } else {
-        warn_missing_subcommand("run");
+        warn_missing_subcommand("run")?;
         process::exit(0);
     }
 
@@ -136,6 +160,21 @@ fn process_run_command(
         sub_proc.remove_ct_app_vars();
     }
     sub_proc.run_command(command.as_str(), &arguments)?;
+
+    Ok(())
+}
+
+fn process_project_command(
+    org_id: Option<&str>,
+    projects: &impl ProjectsIntf,
+    subcmd_args: &ArgMatches,
+) -> Result<()> {
+    if subcmd_args.subcommand_matches("list").is_some() {
+        let list = projects.get_project_names(org_id)?;
+        println!("{}", list.join("\n"))
+    } else {
+        warn_missing_subcommand("projects")?;
+    }
 
     Ok(())
 }
@@ -167,29 +206,32 @@ fn main() -> Result<()> {
         if matches.subcommand_matches("edit").is_some() {
             Config::edit()?;
         } else {
-            warn_missing_subcommand("config");
+            warn_missing_subcommand("config")?;
         }
 
         process::exit(0)
     }
 
     let environments = Environments::new();
+    let projects = Projects::new();
     let env = matches.value_of("env");
+    let proj = matches.value_of("project");
     let org_id: Option<&str> = None;
 
     if let Some(matches) = matches.subcommand_matches("environments") {
-        check_valid_env(org_id, env, &environments)?;
+        // Check the config, and don't worry about valid env/proj when dealing with environments
+        check_config()?;
 
         if matches.subcommand_matches("list").is_some() {
             let list = environments.get_environment_names(org_id)?;
             println!("{}", list.join("\n"))
         } else {
-            warn_missing_subcommand("environments");
+            warn_missing_subcommand("environments")?;
         }
     }
 
     if let Some(matches) = matches.subcommand_matches("parameters") {
-        check_valid_env(org_id, env, &environments)?;
+        check_valid(org_id, env, proj, &environments, &projects)?;
 
         let parameters = Parameters::new();
 
@@ -276,12 +318,12 @@ fn main() -> Result<()> {
                 );
             }
         } else {
-            warn_missing_subcommand("parameters");
+            warn_missing_subcommand("parameters")?;
         }
     }
 
     if let Some(matches) = matches.subcommand_matches("templates") {
-        check_valid_env(org_id, env, &environments)?;
+        check_valid(org_id, env, proj, &environments, &projects)?;
 
         let templates = Templates::new();
 
@@ -333,13 +375,20 @@ fn main() -> Result<()> {
                 )
             }
         } else {
-            warn_missing_subcommand("templates");
+            warn_missing_subcommand("templates")?;
         }
     }
 
     if let Some(matches) = matches.subcommand_matches("run") {
-        check_valid_env(org_id, env, &environments)?;
+        check_valid(org_id, env, proj, &environments, &projects)?;
         process_run_command(org_id, env, &environments, matches)?;
+    }
+
+    if let Some(matches) = matches.subcommand_matches("projects") {
+        // Check the config, and don't worry about valid env/proj when dealing with projects
+        check_config()?;
+        let projects = Projects::new();
+        process_project_command(org_id, &projects, matches)?;
     }
 
     Ok(())
@@ -412,6 +461,7 @@ mod main_test {
             vec!["run", "--command", "printenv"],
             vec!["run", "-c", "printenv"],
             vec!["run", "-s", "FOO=BAR", "--", "ls", "-lh", "/tmp"],
+            vec!["projects", "ls"],
         ];
         for cmd_args in commands {
             println!("need_api_key test: {}", cmd_args.join(" "));
@@ -429,7 +479,10 @@ mod main_test {
     fn missing_subcommands() {
         let commands = &[
             vec!["config"],
-            /* TODO: Rick Porter 3/2021: add more tests once we can get a valid environment, (e.g.
+            vec!["projects"],
+            vec!["environments"],
+            /*
+            TODO: Rick Porter 3/2021: add more tests once we can get a valid environment, (e.g.
                environment, run)
             */
         ];
@@ -438,9 +491,10 @@ mod main_test {
             let warn_msg = format!("WARN: No '{}' sub-command executed.", cmd_args[0]);
             let mut cmd = cmd();
             cmd.args(cmd_args)
+                .env(CT_API_KEY, "dummy-key")
                 .assert()
                 .success()
-                .stdout(starts_with(warn_msg));
+                .stderr(starts_with(warn_msg));
         }
     }
 }

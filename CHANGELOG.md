@@ -1,3 +1,8 @@
+# Unreleased
+
+* Breaking change: the `--profile` option no longer supports the short (`-p`) version.
+* Projects: list
+
 # 0.2.0 - 2021-04-06
 
 * Use `CLOUDTRUTH_API_KEY` instead of `CT_API_KEY` to set API key in the environment.

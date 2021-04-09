@@ -3,7 +3,8 @@ use crate::environments::Environments;
 use crate::graphql::GraphQLError;
 use crate::parameters::Parameters;
 use crate::warn_user;
-use color_eyre::eyre::Result;
+use color_eyre::eyre::{ErrReport, Result};
+use color_eyre::Report;
 use std::collections::HashMap;
 use std::fmt::{self, Display, Formatter};
 use std::str::FromStr;
@@ -49,6 +50,7 @@ pub enum SubProcessError {
     EnvironmentCollisions(Vec<String>),
     GraphQLError(GraphQLError),
     ProcessRunError(String),
+    ProcessOutputError(String),
 }
 
 impl error::Error for SubProcessError {}
@@ -69,6 +71,9 @@ impl fmt::Display for SubProcessError {
             SubProcessError::GraphQLError(err) => {
                 write!(f, "Problem querying the server: {}", err.to_string())
             }
+            SubProcessError::ProcessOutputError(details) => {
+                write!(f, "Problem writing output: {}", details)
+            }
         }
     }
 }
@@ -83,6 +88,13 @@ impl From<GraphQLError> for SubProcessError {
 impl From<PopenError> for SubProcessError {
     fn from(err: PopenError) -> Self {
         SubProcessError::ProcessRunError(format!("{}", err))
+    }
+}
+
+// NOTE: ErrReport does not implement the Clone trait, so just pass through a String
+impl From<ErrReport> for SubProcessError {
+    fn from(err: Report) -> Self {
+        SubProcessError::ProcessOutputError(format!("{}", err))
     }
 }
 
@@ -135,18 +147,18 @@ impl SubProcess {
         Ok(ct_vars)
     }
 
-    fn process_overrides(&self, overrides: &[String]) -> EnvSettings {
+    fn process_overrides(&self, overrides: &[String]) -> Result<EnvSettings> {
         // Create EnvSettings with all the user-provided overrides.
         let mut over_vars = EnvSettings::new();
         for arg_val in overrides {
             let temp: Vec<&str> = arg_val.splitn(2, '=').collect();
             if temp.len() != 2 {
-                warn_user(format!("Ignoring {} due to no '='", arg_val));
+                warn_user(format!("Ignoring {} due to no '='", arg_val))?;
                 continue;
             }
             over_vars.insert(temp[0].to_string(), temp[1].to_string());
         }
-        over_vars
+        Ok(over_vars)
     }
 }
 
@@ -192,7 +204,7 @@ impl SubProcessIntf for SubProcess {
         }
 
         // Add in the items from the overrides (looking for collisions)
-        let over_vars = self.process_overrides(overrides);
+        let over_vars = self.process_overrides(overrides)?;
         for (key, value) in over_vars {
             let orig = self.env_vars.get(&key).unwrap_or(&empty);
             if inherit == Inheritance::Exclusive
