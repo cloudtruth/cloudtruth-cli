@@ -159,6 +159,16 @@ impl Config {
         Ok(profile.into())
     }
 
+    pub fn get_profile_names() -> Result<Vec<String>> {
+        let mut profiles: Vec<String> = Vec::new();
+        if let Some(config_file) = Self::config_file() {
+            if config_file.exists() {
+                let config = Self::read_config(config_file.as_path())?;
+                profiles = ConfigFile::get_profile_names(&config)?;
+            }
+        }
+        Ok(profiles)
+    }
     pub fn edit() -> Result<()> {
         if let Some(config_file) = Self::config_file() {
             if !config_file.exists() {

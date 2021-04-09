@@ -166,6 +166,13 @@ fn main() -> Result<()> {
     if let Some(matches) = matches.subcommand_matches("config") {
         if matches.subcommand_matches("edit").is_some() {
             Config::edit()?;
+        } else if matches.subcommand_matches("list").is_some() {
+            let profile_names = Config::get_profile_names()?;
+            if profile_names.is_empty() {
+                println!("No profiles exist in config.");
+            } else {
+                println!("{}", profile_names.join("\n"));
+            }
         } else {
             warn_missing_subcommand("config");
         }

@@ -100,6 +100,20 @@ impl ConfigFile {
         }
     }
 
+    pub(crate) fn get_profile_names(config: &str) -> ConfigFileResult<Vec<String>> {
+        let mut profiles: Vec<String> = Vec::new();
+        if !config.is_empty() {
+            let config_file: ConfigFile = serde_yaml::from_str(&config)?;
+            profiles = config_file
+                .profiles
+                .keys()
+                .cloned()
+                .collect::<Vec<String>>();
+        }
+
+        Ok(profiles)
+    }
+
     fn resolve_source_profile_chain(
         config_file: &ConfigFile,
         profile: &Profile,
@@ -315,5 +329,42 @@ mod tests {
             assert_eq!("c", profile_name);
             assert_eq!(vec!["c", "a", "b", "c"], cycle);
         });
+    }
+
+    #[test]
+    fn profile_names_basic() {
+        let config = indoc!(
+            r#"
+        profiles:
+            default:
+                api_key: default_key
+                server_url: http://localhost:7001/graphql
+
+            read-only:
+                api_key: read_only_key
+
+            invalid_url:
+                server_url: foobar.com
+        "#
+        );
+
+        let result = ConfigFile::get_profile_names(config);
+        assert!(result.is_ok());
+        let profile_names = result.unwrap();
+        for value in vec!["default", "read-only", "invalid_url"] {
+            assert!(profile_names
+                .iter()
+                .find(|&s| *s == value.to_string())
+                .is_some())
+        }
+    }
+
+    #[test]
+    fn profile_names_empty() {
+        let config = indoc!("");
+        let result = ConfigFile::get_profile_names(config);
+        assert!(&result.is_ok());
+        let profile_names = result.unwrap();
+        assert!(&profile_names.is_empty());
     }
 }

@@ -44,7 +44,10 @@ pub fn build_cli() -> App<'static, 'static> {
             .about("Configuration options for this application")
             .subcommands(vec![
                 SubCommand::with_name("edit")
-                    .about("Edit your configuration data for this application")
+                    .about("Edit your configuration data for this application"),
+                SubCommand::with_name("list")
+                    .visible_alias("ls")
+                    .about("List CloudTruth profiles in the local config file"),
                 ])
         )
         .subcommand(
