@@ -186,7 +186,7 @@ fn main() -> Result<()> {
     let matches = cli::build_cli().get_matches();
 
     let api_key = matches.value_of("api_key");
-    let profile_name = matches.value_of("config");
+    let profile_name = matches.value_of("profile");
 
     Config::init_global(Config::load_config(api_key, profile_name)?);
 

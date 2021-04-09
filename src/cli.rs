@@ -27,16 +27,14 @@ pub fn build_cli() -> App<'static, 'static> {
                 .takes_value(true),
         )
         .arg(
-            Arg::with_name("config")
-                .short("c")
-                .long("config")
+            Arg::with_name("profile")
+                .long("profile")
                 .help("The configuration profile from the application configuration file to use")
                 .takes_value(true)
                 .default_value("default")
         )
         .arg(
             Arg::with_name("project")
-                .short("p")
                 .long("project")
                 .help("The CloudTruth project to work with")
                 .takes_value(true)

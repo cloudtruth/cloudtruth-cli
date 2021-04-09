@@ -51,11 +51,11 @@ profiles:
 Note that you can have multiple named profiles in your configuration, allowing you to maintain multiple sets of configuration fields in the configuration file.
 Values can be inherited from one profile to another by way of the `source_profile` configuration field.
 Profiles without an explicit `source_profile` configuration implicitly inherit from the _default_ profile.
-You may choose which profile to use by passing the `--config` to the CloudTruth CLI binary:
+You may choose which profile to use by passing the `--profile` to the CloudTruth CLI binary:
 
-`cloudtruth --config another-profile <subcommand>`
+`cloudtruth --profile another-profile <subcommand>`
 
-If the `--config` argument is not supplied, the profile named _default_ will be used.
+If the `--profile` argument is not supplied, the profile named _default_ will be used.
 
 ### Environment-based Configuration
 
@@ -101,9 +101,9 @@ All subcommands support a `--help` option to show you how the command should be 
 CloudTruth CLI profiles are a way of organizing the application's configuration data into multiple named groups.
 Profiles, in this sense, are unrelated to configuration values in your CloudTruth account.
 They simply allow you to configure the CloudTruth CLI for multiple organizations or multiple API keys with different access restrictions.
-By default, the profile named _default_ will be used, but you can select the active profile with the `--config` flag:
+By default, the profile named _default_ will be used, but you can select the active profile with the `--profile` flag:
 
-`cloudtruth --config my-profile parameters get my_param`
+`cloudtruth --profile my-profile parameters get my_param`
 
 ### Switching Active CloudTruth Environment
 

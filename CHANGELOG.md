@@ -1,6 +1,7 @@
 # Unreleased
 
-* Breaking change: use `--config/-c` instead of `--profile/-p` to specify a configuration profile.
+* Breaking change: the `--profile` option no longer supports the short (`-p`) version.
+* Projects: list
 
 # 0.2.0 - 2021-04-06
 
