@@ -190,6 +190,201 @@ fn process_project_command(
     Ok(())
 }
 
+fn process_completion_command(subcmd_args: &ArgMatches) {
+    let shell = subcmd_args.value_of("SHELL").unwrap();
+
+    cli::build_cli().gen_completions_to(
+        cli::binary_name(),
+        shell.parse().unwrap(),
+        &mut io::stdout(),
+    );
+}
+
+fn process_config_command(subcmd_args: &ArgMatches) -> Result<()> {
+    if subcmd_args.subcommand_matches("edit").is_some() {
+        Config::edit()?;
+    } else if subcmd_args.subcommand_matches("list").is_some() {
+        let profile_names = Config::get_profile_names()?;
+        if profile_names.is_empty() {
+            println!("No profiles exist in config.");
+        } else {
+            println!("{}", profile_names.join("\n"));
+        }
+    } else {
+        warn_missing_subcommand("config")?;
+    }
+    Ok(())
+}
+
+fn process_environment_command(
+    org_id: Option<&str>,
+    environments: &Environments,
+    subcmd_args: &ArgMatches,
+) -> Result<()> {
+    if subcmd_args.subcommand_matches("list").is_some() {
+        let list = environments.get_environment_names(org_id)?;
+        println!("{}", list.join("\n"))
+    } else {
+        warn_missing_subcommand("environments")?;
+    }
+    Ok(())
+}
+
+fn process_parameters_command(
+    org_id: Option<&str>,
+    parameters: &Parameters,
+    resolved: &ResolvedIds,
+    subcmd_args: &ArgMatches,
+) -> Result<()> {
+    if let Some(subcmd_args) = subcmd_args.subcommand_matches("list") {
+        let values = subcmd_args.is_present("values");
+        if !values {
+            let list = parameters.get_parameter_names(org_id, resolved.env_id.clone())?;
+            if list.is_empty() {
+                println!("There are no parameters in your account.")
+            } else {
+                println!("{}", list.join("\n"))
+            }
+        } else {
+            let fmt = subcmd_args.value_of("format").unwrap();
+            let ct_vars = parameters.get_parameter_details(org_id, resolved.env_id.clone())?;
+            if ct_vars.is_empty() {
+                println!("No CloudTruth variables found!");
+            } else {
+                let mut table = Table::new();
+                table.set_titles(Row::new(vec![
+                    Cell::new("Name").with_style(Attr::Bold),
+                    Cell::new("Value").with_style(Attr::Bold),
+                    Cell::new("Source").with_style(Attr::Bold),
+                    Cell::new("Description").with_style(Attr::Bold),
+                ]));
+                for entry in ct_vars {
+                    let out_val = if entry.secret {
+                        REDACTED.to_string()
+                    } else {
+                        entry.value
+                    };
+                    table.add_row(row![entry.key, out_val, entry.source, entry.description]);
+                }
+                table.set_format(*format::consts::FORMAT_NO_LINESEP_WITH_TITLE);
+
+                if fmt == "csv" {
+                    table.to_csv(stdout())?;
+                } else {
+                    assert_eq!(fmt, "table");
+                    table.printstd();
+                }
+            }
+        }
+    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("get") {
+        let key = subcmd_args.value_of("KEY").unwrap();
+        let env_name = resolved.env_name.as_deref();
+        let parameter = parameters.get_body(org_id, env_name, key);
+
+        if let Ok(parameter) = parameter {
+            // Treat parameters without values set as if the value were simply empty, since
+            // we need to display something sensible to the user.
+            println!("{}", parameter.unwrap_or_else(|| "".to_string()));
+        } else {
+            match parameter.unwrap_err() {
+                GraphQLError::EnvironmentNotFoundError(name) => println!(
+                    "The '{}' environment could not be found in your organization.",
+                    name
+                ),
+                GraphQLError::ParameterNotFoundError(key) => println!(
+                    "The parameter '{}' could not be found in your organization.",
+                    key
+                ),
+                err => propagate_error!(err),
+            };
+        }
+    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("set") {
+        let key = subcmd_args.value_of("KEY").unwrap();
+        let env_name = resolved.env_name.as_deref();
+        let value = subcmd_args.value_of("VALUE");
+
+        let updated_id = parameters.set_parameter(org_id, env_name, key, value)?;
+
+        if updated_id.is_some() {
+            println!(
+                "Successfully updated parameter '{}' in environment '{}'.",
+                key,
+                env_name.unwrap_or(DEFAULT_ENV_NAME)
+            );
+        } else {
+            println!(
+                "Failed to update parameter '{}' in environment '{}'.",
+                key,
+                env_name.unwrap_or(DEFAULT_ENV_NAME)
+            );
+        }
+    } else {
+        warn_missing_subcommand("parameters")?;
+    }
+    Ok(())
+}
+
+fn process_templates_command(
+    org_id: Option<&str>,
+    templates: &Templates,
+    resolved: &ResolvedIds,
+    subcmd_args: &ArgMatches,
+) -> Result<()> {
+    if subcmd_args.subcommand_matches("list").is_some() {
+        let list = templates.get_template_names(org_id)?;
+        if list.is_empty() {
+            println!("There are no templates in your account.")
+        } else {
+            println!("{}", list.join("\n"))
+        }
+    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("get") {
+        let template_name = subcmd_args.value_of("KEY").unwrap();
+        let env_name = resolved.env_name.as_deref();
+        let body = templates.get_body_by_name(org_id, env_name, template_name)?;
+
+        if let Some(body) = body {
+            println!("{}", body)
+        } else {
+            println!(
+                "Could not find a template with name '{}' in environment '{}'.",
+                template_name,
+                env_name.unwrap_or(DEFAULT_ENV_NAME)
+            )
+        }
+    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("getit") {
+        let starts_with = subcmd_args.value_of("starts_with");
+        let ends_with = subcmd_args.value_of("ends_with");
+        let contains = subcmd_args.value_of("contains");
+        let template_format = subcmd_args.value_of("FORMAT").unwrap();
+        let export = subcmd_args.is_present("export");
+        let secrets = subcmd_args.is_present("secrets");
+        let env_name = resolved.env_name.as_deref();
+        let body = templates.get_body_by_implicit_name(
+            org_id,
+            env_name,
+            starts_with,
+            ends_with,
+            contains,
+            export,
+            secrets,
+            template_format,
+        )?;
+
+        if let Some(body) = body {
+            println!("{}", body)
+        } else {
+            println!(
+                "Could not find a template with name '{}' in environment '{}'.",
+                template_format,
+                env_name.unwrap_or("default")
+            )
+        }
+    } else {
+        warn_missing_subcommand("templates")?;
+    }
+    Ok(())
+}
+
 fn main() -> Result<()> {
     color_eyre::install()?;
     env_logger::init();
@@ -202,31 +397,12 @@ fn main() -> Result<()> {
     Config::init_global(Config::load_config(api_key, profile_name)?);
 
     if let Some(matches) = matches.subcommand_matches("completions") {
-        let shell = matches.value_of("SHELL").unwrap();
-
-        cli::build_cli().gen_completions_to(
-            cli::binary_name(),
-            shell.parse().unwrap(),
-            &mut io::stdout(),
-        );
-
+        process_completion_command(matches);
         process::exit(0)
     }
 
     if let Some(matches) = matches.subcommand_matches("config") {
-        if matches.subcommand_matches("edit").is_some() {
-            Config::edit()?;
-        } else if matches.subcommand_matches("list").is_some() {
-            let profile_names = Config::get_profile_names()?;
-            if profile_names.is_empty() {
-                println!("No profiles exist in config.");
-            } else {
-                println!("{}", profile_names.join("\n"));
-            }
-        } else {
-            warn_missing_subcommand("config")?;
-        }
-
+        process_config_command(matches)?;
         process::exit(0)
     }
 
@@ -237,12 +413,7 @@ fn main() -> Result<()> {
 
     if let Some(matches) = matches.subcommand_matches("environments") {
         let environments = Environments::new();
-        if matches.subcommand_matches("list").is_some() {
-            let list = environments.get_environment_names(org_id)?;
-            println!("{}", list.join("\n"))
-        } else {
-            warn_missing_subcommand("environments")?;
-        }
+        process_environment_command(org_id, &environments, matches)?;
     }
 
     if let Some(matches) = matches.subcommand_matches("projects") {
@@ -257,145 +428,12 @@ fn main() -> Result<()> {
 
     if let Some(matches) = matches.subcommand_matches("parameters") {
         let parameters = Parameters::new();
-
-        if let Some(matches) = matches.subcommand_matches("list") {
-            let values = matches.is_present("values");
-            if !values {
-                let list = parameters.get_parameter_names(org_id, resolved.env_id.clone())?;
-                if list.is_empty() {
-                    println!("There are no parameters in your account.")
-                } else {
-                    println!("{}", list.join("\n"))
-                }
-            } else {
-                let fmt = matches.value_of("format").unwrap();
-                let ct_vars = parameters.get_parameter_details(org_id, resolved.env_id.clone())?;
-                if ct_vars.is_empty() {
-                    println!("No CloudTruth variables found!");
-                } else {
-                    let mut table = Table::new();
-                    table.set_titles(Row::new(vec![
-                        Cell::new("Name").with_style(Attr::Bold),
-                        Cell::new("Value").with_style(Attr::Bold),
-                        Cell::new("Source").with_style(Attr::Bold),
-                        Cell::new("Description").with_style(Attr::Bold),
-                    ]));
-                    for entry in ct_vars {
-                        let out_val = if entry.secret {
-                            REDACTED.to_string()
-                        } else {
-                            entry.value
-                        };
-                        table.add_row(row![entry.key, out_val, entry.source, entry.description]);
-                    }
-                    table.set_format(*format::consts::FORMAT_NO_LINESEP_WITH_TITLE);
-
-                    if fmt == "csv" {
-                        table.to_csv(stdout())?;
-                    } else {
-                        assert_eq!(fmt, "table");
-                        table.printstd();
-                    }
-                }
-            }
-        } else if let Some(matches) = matches.subcommand_matches("get") {
-            let key = matches.value_of("KEY").unwrap();
-            let parameter = parameters.get_body(org_id, env, key);
-
-            if let Ok(parameter) = parameter {
-                // Treat parameters without values set as if the value were simply empty, since
-                // we need to display something sensible to the user.
-                println!("{}", parameter.unwrap_or_else(|| "".to_string()));
-            } else {
-                match parameter.unwrap_err() {
-                    GraphQLError::EnvironmentNotFoundError(name) => println!(
-                        "The '{}' environment could not be found in your organization.",
-                        name
-                    ),
-                    GraphQLError::ParameterNotFoundError(key) => println!(
-                        "The parameter '{}' could not be found in your organization.",
-                        key
-                    ),
-                    err => propagate_error!(err),
-                };
-            }
-        } else if let Some(matches) = matches.subcommand_matches("set") {
-            let key = matches.value_of("KEY").unwrap();
-            let value = matches.value_of("VALUE");
-
-            let updated_id = parameters.set_parameter(org_id, env, key, value)?;
-
-            if updated_id.is_some() {
-                println!(
-                    "Successfully updated parameter '{}' in environment '{}'.",
-                    key,
-                    env.unwrap_or(DEFAULT_ENV_NAME)
-                );
-            } else {
-                println!(
-                    "Failed to update parameter '{}' in environment '{}'.",
-                    key,
-                    env.unwrap_or(DEFAULT_ENV_NAME)
-                );
-            }
-        } else {
-            warn_missing_subcommand("parameters")?;
-        }
+        process_parameters_command(org_id, &parameters, &resolved, matches)?;
     }
 
     if let Some(matches) = matches.subcommand_matches("templates") {
         let templates = Templates::new();
-
-        if matches.subcommand_matches("list").is_some() {
-            let list = templates.get_template_names(org_id)?;
-            if list.is_empty() {
-                println!("There are no templates in your account.")
-            } else {
-                println!("{}", list.join("\n"))
-            }
-        } else if let Some(matches) = matches.subcommand_matches("get") {
-            let template_name = matches.value_of("KEY").unwrap();
-            let body = templates.get_body_by_name(org_id, env, template_name)?;
-
-            if let Some(body) = body {
-                println!("{}", body)
-            } else {
-                println!(
-                    "Could not find a template with name '{}' in environment '{}'.",
-                    template_name,
-                    env.unwrap_or(DEFAULT_ENV_NAME)
-                )
-            }
-        } else if let Some(matches) = matches.subcommand_matches("getit") {
-            let starts_with = matches.value_of("starts_with");
-            let ends_with = matches.value_of("ends_with");
-            let contains = matches.value_of("contains");
-            let template_format = matches.value_of("FORMAT").unwrap();
-            let export = matches.is_present("export");
-            let secrets = matches.is_present("secrets");
-            let body = templates.get_body_by_implicit_name(
-                org_id,
-                env,
-                starts_with,
-                ends_with,
-                contains,
-                export,
-                secrets,
-                template_format,
-            )?;
-
-            if let Some(body) = body {
-                println!("{}", body)
-            } else {
-                println!(
-                    "Could not find a template with name '{}' in environment '{}'.",
-                    template_format,
-                    env.unwrap_or("default")
-                )
-            }
-        } else {
-            warn_missing_subcommand("templates")?;
-        }
+        process_templates_command(org_id, &templates, &resolved, matches)?;
     }
 
     if let Some(matches) = matches.subcommand_matches("run") {
