@@ -1,26 +1,10 @@
-query GetParameterByNameQuery($organizationId: ID, $envName: String, $keyName: String!) {
+query GetParameterByNameQuery($organizationId: ID, $envName: String, $projectName: String, $keyName: String!) {
   viewer {
     organization(id: $organizationId) {
-      parameter(keyName: $keyName) {
-        id
-        environmentValue(environmentName: $envName) {
-          parameterValue
-        }
-      }
-    }
-  }
-}
-
-
-query ParametersQuery($organizationId: ID, $environmentId: ID) {
-  viewer {
-    id
-    organization(id: $organizationId) {
-      parameters(orderBy: { keyName: ASC }) {
-        nodes {
+      project(name: $projectName) {
+        parameter(keyName: $keyName) {
           id
-          keyName
-          environmentValue(environmentId: $environmentId) {
+          environmentValue(environmentName: $envName) {
             parameterValue
           }
         }
@@ -29,23 +13,45 @@ query ParametersQuery($organizationId: ID, $environmentId: ID) {
   }
 }
 
-query ParametersDetailQuery($organizationId: ID, $environmentId: ID) {
+
+query ParametersQuery($organizationId: ID, $environmentId: ID, $projectName: String) {
   viewer {
     id
     organization(id: $organizationId) {
-      parameters(orderBy: { keyName: ASC }) {
-        nodes {
-          id
-          isSecret
-          keyName
-          description
-          environmentValue(environmentId: $environmentId) {
-            parameterValue
-            inheritedFrom {
-              name
+      project(name: $projectName) {
+        parameters(orderBy: { keyName: ASC }) {
+          nodes {
+            id
+            keyName
+            environmentValue(environmentId: $environmentId) {
+              parameterValue
             }
-            environment {
-              name
+          }
+        }
+      }
+    }
+  }
+}
+
+query ParametersDetailQuery($organizationId: ID, $environmentId: ID, $projectName: String) {
+  viewer {
+    id
+    organization(id: $organizationId) {
+      project(name: $projectName) {
+        parameters(orderBy: { keyName: ASC }) {
+          nodes {
+            id
+            isSecret
+            keyName
+            description
+            environmentValue(environmentId: $environmentId) {
+              parameterValue
+              inheritedFrom {
+                name
+              }
+              environment {
+                name
+              }
             }
           }
         }

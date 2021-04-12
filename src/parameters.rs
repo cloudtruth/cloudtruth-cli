@@ -61,9 +61,10 @@ impl Parameters {
         &self,
         org_id: Option<&str>,
         env_name: Option<&str>,
+        proj_name: Option<String>,
         key_name: &str,
     ) -> GraphQLResult<Option<String>> {
-        let parameter = self.get_parameter_full(org_id, env_name, key_name)?;
+        let parameter = self.get_parameter_full(org_id, env_name, proj_name, key_name)?;
 
         // The query response can take multiple shapes depending on the state of the CloudTruth
         // parameter store.
@@ -96,6 +97,7 @@ impl Parameters {
         &self,
         org_id: Option<&str>,
         env_name: Option<&str>,
+        proj_name: Option<String>,
         key_name: &str,
     ) -> GraphQLResult<
         Option<get_parameter_by_name_query::GetParameterByNameQueryViewerOrganizationParameter>,
@@ -103,6 +105,7 @@ impl Parameters {
         let query = GetParameterByNameQuery::build_query(get_parameter_by_name_query::Variables {
             organization_id: org_id.map(|id| id.to_string()),
             env_name: env_name.map(|name| name.to_string()),
+            project_name: proj_name,
             key_name: key_name.to_string(),
         });
         let response_body =
@@ -125,10 +128,12 @@ impl Parameters {
         &self,
         org_id: Option<&str>,
         env_id: Option<String>,
+        proj_name: Option<String>,
     ) -> GraphQLResult<Vec<String>> {
         let query = ParametersQuery::build_query(parameters_query::Variables {
             organization_id: org_id.map(|id| id.to_string()),
             environment_id: env_id,
+            project_name: proj_name,
         });
         let response_body = graphql_request::<_, parameters_query::ResponseData>(&query)?;
 
@@ -153,10 +158,12 @@ impl Parameters {
         &self,
         org_id: Option<&str>,
         env_id: Option<String>,
+        proj_name: Option<String>,
     ) -> GraphQLResult<HashMap<String, String>> {
         let query = ParametersQuery::build_query(parameters_query::Variables {
             organization_id: org_id.map(|id| id.to_string()),
             environment_id: env_id,
+            project_name: proj_name,
         });
         let response_body = graphql_request::<_, parameters_query::ResponseData>(&query)?;
 
@@ -187,10 +194,12 @@ impl Parameters {
         &self,
         org_id: Option<&str>,
         env_id: Option<String>,
+        proj_name: Option<String>,
     ) -> GraphQLResult<Vec<ParameterDetails>> {
         let query = ParametersDetailQuery::build_query(parameters_detail_query::Variables {
             organization_id: org_id.map(|id| id.to_string()),
             environment_id: env_id,
+            project_name: proj_name,
         });
         let response_body = graphql_request::<_, parameters_detail_query::ResponseData>(&query)?;
         if let Some(errors) = response_body.errors {
