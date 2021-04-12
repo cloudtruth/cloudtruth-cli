@@ -140,7 +140,9 @@ impl SubProcess {
         // Create EnvSettings with all the CloudTruth environment values for this environment.
         let parameters = Parameters::new();
         let ct_vars = parameters.get_parameter_values(
-            org_id, resolved.env_id.clone(), resolved.proj_name.clone(),
+            org_id,
+            resolved.env_id.clone(),
+            resolved.proj_name.clone(),
         )?;
         Ok(ct_vars)
     }

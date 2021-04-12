@@ -1,3 +1,4 @@
+use crate::config::DEFAULT_PROJ_NAME;
 use crate::graphql::prelude::graphql_request;
 use crate::graphql::{GraphQLError, GraphQLResult, Operation, Resource};
 use graphql_client::*;
@@ -100,12 +101,14 @@ impl Parameters {
         proj_name: Option<String>,
         key_name: &str,
     ) -> GraphQLResult<
-        Option<get_parameter_by_name_query::GetParameterByNameQueryViewerOrganizationParameter>,
+        Option<
+            get_parameter_by_name_query::GetParameterByNameQueryViewerOrganizationProjectParameter,
+        >,
     > {
         let query = GetParameterByNameQuery::build_query(get_parameter_by_name_query::Variables {
             organization_id: org_id.map(|id| id.to_string()),
             env_name: env_name.map(|name| name.to_string()),
-            project_name: proj_name,
+            project_name: proj_name.clone(),
             key_name: key_name.to_string(),
         });
         let response_body =
@@ -114,11 +117,18 @@ impl Parameters {
         if let Some(errors) = response_body.errors {
             Err(GraphQLError::ResponseError(errors))
         } else if let Some(data) = response_body.data {
-            Ok(data
+            if let Some(project) = data
                 .viewer
                 .organization
                 .expect("Primary organization not found")
-                .parameter)
+                .project
+            {
+                Ok(project.parameter)
+            } else {
+                Err(GraphQLError::ProjectNotFoundError(
+                    proj_name.unwrap_or_else(|| DEFAULT_PROJ_NAME.to_string()),
+                ))
+            }
         } else {
             Err(GraphQLError::MissingDataError)
         }
@@ -133,22 +143,30 @@ impl Parameters {
         let query = ParametersQuery::build_query(parameters_query::Variables {
             organization_id: org_id.map(|id| id.to_string()),
             environment_id: env_id,
-            project_name: proj_name,
+            project_name: proj_name.clone(),
         });
         let response_body = graphql_request::<_, parameters_query::ResponseData>(&query)?;
 
         if let Some(errors) = response_body.errors {
             Err(GraphQLError::ResponseError(errors))
         } else if let Some(data) = response_body.data {
-            Ok(data
+            if let Some(project) = data
                 .viewer
                 .organization
                 .expect("Primary organization not found")
-                .parameters
-                .nodes
-                .into_iter()
-                .map(|n| n.key_name)
-                .collect())
+                .project
+            {
+                Ok(project
+                    .parameters
+                    .nodes
+                    .into_iter()
+                    .map(|n| n.key_name)
+                    .collect())
+            } else {
+                Err(GraphQLError::ProjectNotFoundError(
+                    proj_name.unwrap_or_else(|| DEFAULT_PROJ_NAME.to_string()),
+                ))
+            }
         } else {
             Err(GraphQLError::MissingDataError)
         }
@@ -163,7 +181,7 @@ impl Parameters {
         let query = ParametersQuery::build_query(parameters_query::Variables {
             organization_id: org_id.map(|id| id.to_string()),
             environment_id: env_id,
-            project_name: proj_name,
+            project_name: proj_name.clone(),
         });
         let response_body = graphql_request::<_, parameters_query::ResponseData>(&query)?;
 
@@ -171,20 +189,25 @@ impl Parameters {
             Err(GraphQLError::ResponseError(errors))
         } else if let Some(data) = response_body.data {
             let mut env_vars = HashMap::new();
-            let params = data
+            if let Some(project) = data
                 .viewer
                 .organization
                 .expect("Primary organization not found")
-                .parameters
-                .nodes;
-            for p in params {
-                if let Some(env_value) = p.environment_value {
-                    if let Some(param_value) = env_value.parameter_value {
-                        env_vars.insert(p.key_name, param_value);
+                .project
+            {
+                for p in project.parameters.nodes {
+                    if let Some(env_value) = p.environment_value {
+                        if let Some(param_value) = env_value.parameter_value {
+                            env_vars.insert(p.key_name, param_value);
+                        }
                     }
                 }
+                Ok(env_vars)
+            } else {
+                Err(GraphQLError::ProjectNotFoundError(
+                    proj_name.unwrap_or_else(|| DEFAULT_PROJ_NAME.to_string()),
+                ))
             }
-            Ok(env_vars)
         } else {
             Err(GraphQLError::MissingDataError)
         }
@@ -199,44 +222,48 @@ impl Parameters {
         let query = ParametersDetailQuery::build_query(parameters_detail_query::Variables {
             organization_id: org_id.map(|id| id.to_string()),
             environment_id: env_id,
-            project_name: proj_name,
+            project_name: proj_name.clone(),
         });
         let response_body = graphql_request::<_, parameters_detail_query::ResponseData>(&query)?;
         if let Some(errors) = response_body.errors {
             Err(GraphQLError::ResponseError(errors))
         } else if let Some(data) = response_body.data {
-            let mut env_vars: Vec<ParameterDetails> = Vec::new();
-            let params = data
+            if let Some(project) = data
                 .viewer
                 .organization
                 .expect("Primary organization not found")
-                .parameters
-                .nodes;
-            for p in params {
-                let mut param_value: String = "".to_string();
-                let mut source: String = "".to_string();
+                .project
+            {
+                let mut env_vars: Vec<ParameterDetails> = Vec::new();
+                for p in project.parameters.nodes {
+                    let mut param_value: String = "".to_string();
+                    let mut source: String = "".to_string();
 
-                if let Some(env_value) = p.environment_value {
-                    if let Some(inherit) = env_value.inherited_from {
-                        source = inherit.name;
-                    } else {
-                        source = env_value.environment.name;
+                    if let Some(env_value) = p.environment_value {
+                        if let Some(inherit) = env_value.inherited_from {
+                            source = inherit.name;
+                        } else {
+                            source = env_value.environment.name;
+                        }
+                        param_value = env_value.parameter_value.unwrap_or_default();
                     }
-                    param_value = env_value.parameter_value.unwrap_or_default();
+
+                    // Add an entry for every parameter, even if it has no value or source
+                    env_vars.push(ParameterDetails {
+                        id: p.id,
+                        key: p.key_name,
+                        value: param_value,
+                        secret: p.is_secret,
+                        description: p.description.unwrap_or_default(),
+                        source,
+                    });
                 }
-
-                // Add an entry for every parameter, even if it has no value or source
-                env_vars.push(ParameterDetails {
-                    id: p.id,
-                    key: p.key_name,
-                    value: param_value,
-                    secret: p.is_secret,
-                    description: p.description.unwrap_or_default(),
-                    source,
-                });
+                Ok(env_vars)
+            } else {
+                Err(GraphQLError::ProjectNotFoundError(
+                    proj_name.unwrap_or_else(|| DEFAULT_PROJ_NAME.to_string()),
+                ))
             }
-
-            Ok(env_vars)
         } else {
             Err(GraphQLError::MissingDataError)
         }

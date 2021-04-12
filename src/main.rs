@@ -240,7 +240,9 @@ fn process_parameters_command(
         let values = subcmd_args.is_present("values");
         if !values {
             let list = parameters.get_parameter_names(
-                org_id, resolved.env_id.clone(), resolved.proj_name.clone(),
+                org_id,
+                resolved.env_id.clone(),
+                resolved.proj_name.clone(),
             )?;
             if list.is_empty() {
                 println!("There are no parameters in your account.")
@@ -250,7 +252,9 @@ fn process_parameters_command(
         } else {
             let fmt = subcmd_args.value_of("format").unwrap();
             let ct_vars = parameters.get_parameter_details(
-                org_id, resolved.env_id.clone(), resolved.proj_name.clone(),
+                org_id,
+                resolved.env_id.clone(),
+                resolved.proj_name.clone(),
             )?;
             if ct_vars.is_empty() {
                 println!("No CloudTruth variables found!");
@@ -283,9 +287,7 @@ fn process_parameters_command(
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("get") {
         let key = subcmd_args.value_of("KEY").unwrap();
         let env_name = resolved.env_name.as_deref();
-        let parameter = parameters.get_body(
-            org_id, env_name, resolved.proj_name.clone(), key,
-        );
+        let parameter = parameters.get_body(org_id, env_name, resolved.proj_name.clone(), key);
 
         if let Ok(parameter) = parameter {
             // Treat parameters without values set as if the value were simply empty, since
