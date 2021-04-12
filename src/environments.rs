@@ -52,20 +52,6 @@ impl Environments {
         }
     }
 
-    pub fn is_valid_environment_name(
-        &self,
-        org_id: Option<&str>,
-        name: Option<&str>,
-    ) -> GraphQLResult<bool> {
-        let env = self.get_id(org_id, name)?;
-
-        if env.is_some() {
-            Ok(true)
-        } else {
-            Ok(false)
-        }
-    }
-
     fn get_environments_full(
         &self,
         org_id: Option<&str>,

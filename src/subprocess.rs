@@ -1,8 +1,7 @@
 use crate::config::{CT_APP_REMOVABLE_VARS, CT_ENVIRONMENT, DEFAULT_ENV_NAME};
-use crate::environments::Environments;
 use crate::graphql::GraphQLError;
 use crate::parameters::Parameters;
-use crate::warn_user;
+use crate::{warn_user, ResolvedIds};
 use color_eyre::eyre::{ErrReport, Result};
 use color_eyre::Report;
 use std::collections::HashMap;
@@ -102,8 +101,7 @@ pub trait SubProcessIntf {
     fn set_environment(
         &mut self,
         org_id: Option<&str>,
-        env: Option<&str>,
-        environments: &Environments,
+        resolved: &ResolvedIds,
         inherit: Inheritance,
         overrides: &[String],
         removals: &[String],
@@ -137,13 +135,11 @@ impl SubProcess {
     fn get_ct_vars(
         &self,
         org_id: Option<&str>,
-        env: Option<&str>,
-        environments: &Environments,
+        resolved: &ResolvedIds,
     ) -> SubProcessResult<EnvSettings> {
         // Create EnvSettings with all the CloudTruth environment values for this environment.
         let parameters = Parameters::new();
-        let env_id = environments.get_id(org_id, env)?;
-        let ct_vars = parameters.get_parameter_values(org_id, env_id)?;
+        let ct_vars = parameters.get_parameter_values(org_id, resolved.env_id.clone())?;
         Ok(ct_vars)
     }
 
@@ -166,8 +162,7 @@ impl SubProcessIntf for SubProcess {
     fn set_environment(
         &mut self,
         org_id: Option<&str>,
-        env: Option<&str>,
-        environments: &Environments,
+        resolved: &ResolvedIds,
         inherit: Inheritance,
         overrides: &[String],
         removals: &[String],
@@ -181,12 +176,15 @@ impl SubProcessIntf for SubProcess {
         // Add breadcrumbs about which environment.
         self.env_vars.insert(
             CT_ENVIRONMENT.to_string(),
-            env.unwrap_or(DEFAULT_ENV_NAME).to_string(),
+            resolved
+                .env_name
+                .clone()
+                .unwrap_or_else(|| DEFAULT_ENV_NAME.to_string()),
         );
 
         // Add in the items from the CloudTruth environment (looking for collisions)
         let mut collisions: Vec<String> = vec![];
-        let ct_vars = self.get_ct_vars(org_id, env, environments)?;
+        let ct_vars = self.get_ct_vars(org_id, &resolved)?;
         let empty = "".to_string();
         for (key, value) in ct_vars {
             if !self.env_vars.contains_key(&key) {

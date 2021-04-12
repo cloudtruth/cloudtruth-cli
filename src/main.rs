@@ -35,6 +35,13 @@ use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 
 const REDACTED: &str = "*****";
 
+pub struct ResolvedIds {
+    pub env_name: Option<String>,
+    pub env_id: Option<String>,
+    pub proj_name: Option<String>,
+    pub proj_id: Option<String>,
+}
+
 fn stderr_message(message: String, color: Color) -> Result<()> {
     let mut stderr = StandardStream::stderr(ColorChoice::Auto);
     let mut color_spec = ColorSpec::new();
@@ -88,19 +95,17 @@ fn warn_missing_subcommand(command: &str) -> Result<()> {
     warn_user(format!("No '{}' sub-command executed.", command))
 }
 
-fn check_valid(
-    org_id: Option<&str>,
-    env: Option<&str>,
-    proj: Option<&str>,
-    environments: &Environments,
-    projects: &impl ProjectsIntf,
-) -> Result<()> {
-    // start by checking the configuration -- API key, server url, etc
-    check_config()?;
-
+/// Resolves the environment and project strings.
+///
+/// If either fails, it prints an error and exits.
+/// On success, it returns a `ResolvedIds` structure that contains ids to avoid needing to resolve
+/// the names again.
+fn resolve_ids(org_id: Option<&str>, env: Option<&str>, proj: Option<&str>) -> Result<ResolvedIds> {
     // The `err` value is used to allow accumulation of multiple errors to the user.
     let mut err = false;
-    if !environments.is_valid_environment_name(org_id, env)? {
+    let environments = Environments::new();
+    let env_id = environments.get_id(org_id, env)?;
+    if env_id.is_none() {
         error_message(format!(
             "The '{}' environment could not be found in your account.",
             env.unwrap_or(DEFAULT_ENV_NAME),
@@ -108,7 +113,9 @@ fn check_valid(
         err = true;
     }
 
-    if !projects.is_valid_project_name(org_id, proj)? {
+    let projects = Projects::new();
+    let proj_id = projects.get_id(org_id, proj)?;
+    if proj_id.is_none() {
         error_message(format!(
             "The '{}' project could not be found in your account.",
             proj.unwrap_or(DEFAULT_PROJ_NAME)
@@ -121,13 +128,17 @@ fn check_valid(
         process::exit(2);
     }
 
-    Ok(())
+    Ok(ResolvedIds {
+        env_name: env.map(String::from),
+        env_id,
+        proj_name: proj.map(String::from),
+        proj_id,
+    })
 }
 
 fn process_run_command(
     org_id: Option<&str>,
-    env: Option<&str>,
-    environments: &Environments,
+    resolved: &ResolvedIds,
     subcmd_args: &ArgMatches,
 ) -> Result<()> {
     let mut sub_proc: SubProcess = SubProcess::new();
@@ -155,7 +166,7 @@ fn process_run_command(
     let overrides = subcmd_args.values_of_lossy("set").unwrap_or_default();
     let removals = subcmd_args.values_of_lossy("remove").unwrap_or_default();
     let permissive = subcmd_args.is_present("permissive");
-    sub_proc.set_environment(org_id, env, environments, inherit, &overrides, &removals)?;
+    sub_proc.set_environment(org_id, resolved, inherit, &overrides, &removals)?;
     if !permissive {
         sub_proc.remove_ct_app_vars();
     }
@@ -219,16 +230,13 @@ fn main() -> Result<()> {
         process::exit(0)
     }
 
-    let environments = Environments::new();
-    let projects = Projects::new();
-    let env = matches.value_of("env");
-    let proj = matches.value_of("project");
     let org_id: Option<&str> = None;
 
-    if let Some(matches) = matches.subcommand_matches("environments") {
-        // Check the config, and don't worry about valid env/proj when dealing with environments
-        check_config()?;
+    // Check the basic config (api-key, server-url) -- don't worry about valid env/proj, yet
+    check_config()?;
 
+    if let Some(matches) = matches.subcommand_matches("environments") {
+        let environments = Environments::new();
         if matches.subcommand_matches("list").is_some() {
             let list = environments.get_environment_names(org_id)?;
             println!("{}", list.join("\n"))
@@ -237,16 +245,23 @@ fn main() -> Result<()> {
         }
     }
 
-    if let Some(matches) = matches.subcommand_matches("parameters") {
-        check_valid(org_id, env, proj, &environments, &projects)?;
+    if let Some(matches) = matches.subcommand_matches("projects") {
+        let projects = Projects::new();
+        process_project_command(org_id, &projects, matches)?;
+    }
 
+    // Everything below here requires resolved environment/project values
+    let env = matches.value_of("env");
+    let proj = matches.value_of("project");
+    let resolved = resolve_ids(org_id, env, proj)?;
+
+    if let Some(matches) = matches.subcommand_matches("parameters") {
         let parameters = Parameters::new();
 
         if let Some(matches) = matches.subcommand_matches("list") {
             let values = matches.is_present("values");
             if !values {
-                let list =
-                    parameters.get_parameter_names(org_id, environments.get_id(org_id, env)?)?;
+                let list = parameters.get_parameter_names(org_id, resolved.env_id.clone())?;
                 if list.is_empty() {
                     println!("There are no parameters in your account.")
                 } else {
@@ -254,8 +269,7 @@ fn main() -> Result<()> {
                 }
             } else {
                 let fmt = matches.value_of("format").unwrap();
-                let env_id = environments.get_id(org_id, env)?;
-                let ct_vars = parameters.get_parameter_details(org_id, env_id)?;
+                let ct_vars = parameters.get_parameter_details(org_id, resolved.env_id.clone())?;
                 if ct_vars.is_empty() {
                     println!("No CloudTruth variables found!");
                 } else {
@@ -330,8 +344,6 @@ fn main() -> Result<()> {
     }
 
     if let Some(matches) = matches.subcommand_matches("templates") {
-        check_valid(org_id, env, proj, &environments, &projects)?;
-
         let templates = Templates::new();
 
         if matches.subcommand_matches("list").is_some() {
@@ -387,15 +399,7 @@ fn main() -> Result<()> {
     }
 
     if let Some(matches) = matches.subcommand_matches("run") {
-        check_valid(org_id, env, proj, &environments, &projects)?;
-        process_run_command(org_id, env, &environments, matches)?;
-    }
-
-    if let Some(matches) = matches.subcommand_matches("projects") {
-        // Check the config, and don't worry about valid env/proj when dealing with projects
-        check_config()?;
-        let projects = Projects::new();
-        process_project_command(org_id, &projects, matches)?;
+        process_run_command(org_id, &resolved, matches)?;
     }
 
     Ok(())
@@ -468,7 +472,6 @@ mod main_test {
             vec!["run", "--command", "printenv"],
             vec!["run", "-c", "printenv"],
             vec!["run", "-s", "FOO=BAR", "--", "ls", "-lh", "/tmp"],
-            vec!["projects", "ls"],
         ];
         for cmd_args in commands {
             println!("need_api_key test: {}", cmd_args.join(" "));
@@ -500,7 +503,6 @@ mod main_test {
             cmd.args(cmd_args)
                 .env(CT_API_KEY, "dummy-key")
                 .assert()
-                .success()
                 .stderr(starts_with(warn_msg));
         }
     }
