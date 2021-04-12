@@ -271,13 +271,13 @@ impl Parameters {
 
     pub fn set_parameter(
         &self,
-        org_id: Option<&str>,
+        proj_id: Option<String>,
         env_name: Option<&str>,
         key_name: &str,
         value: Option<&str>,
     ) -> GraphQLResult<Option<String>> {
         let query = UpsertParameterMutation::build_query(upsert_parameter_mutation::Variables {
-            org_id: org_id.map(|id| id.to_string()),
+            project_id: proj_id,
             environment_name: env_name.map(|env| env.to_string()),
             key_name: key_name.to_string(),
             value: value.map(|v| v.to_string()),

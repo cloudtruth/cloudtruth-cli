@@ -311,7 +311,8 @@ fn process_parameters_command(
         let env_name = resolved.env_name.as_deref();
         let value = subcmd_args.value_of("VALUE");
 
-        let updated_id = parameters.set_parameter(org_id, env_name, key, value)?;
+        let updated_id =
+            parameters.set_parameter(resolved.proj_id.clone(), env_name, key, value)?;
 
         if updated_id.is_some() {
             println!(
