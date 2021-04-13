@@ -414,11 +414,13 @@ fn main() -> Result<()> {
     if let Some(matches) = matches.subcommand_matches("environments") {
         let environments = Environments::new();
         process_environment_command(org_id, &environments, matches)?;
+        process::exit(0)
     }
 
     if let Some(matches) = matches.subcommand_matches("projects") {
         let projects = Projects::new();
         process_project_command(org_id, &projects, matches)?;
+        process::exit(0)
     }
 
     // Everything below here requires resolved environment/project values
