@@ -61,11 +61,11 @@ pub enum GraphQLError {
     MissingDataError,
     NetworkError(Arc<reqwest::Error>),
     ParameterNotFoundError(String),
+    ProjectNotFoundError(String),
     ResponseError(Vec<graphql_client::Error>),
     ServerError,
     UnauthorizedError(Resource, Operation),
     ValidationError(String, String),
-    ProjectNotFoundError(String),
 }
 
 impl GraphQLError {
@@ -124,7 +124,10 @@ impl fmt::Display for GraphQLError {
             GraphQLError::NetworkError(_) => write!(f, "Network error performing GraphQL query."),
             GraphQLError::ParameterNotFoundError(key) => {
                 write!(f, "Unable to find parameter '{}'.", key)
-            }
+            },
+            GraphQLError::ProjectNotFoundError(name) => {
+                write!(f, "Unable to find project '{}'.", name)
+            },
             GraphQLError::ResponseError(errors) => write!(
                 f,
                 "GraphQL call successfully executed, but the response has errors:\n{}",
@@ -137,9 +140,6 @@ impl fmt::Display for GraphQLError {
             GraphQLError::ServerError => write!(f, "There was an error on our server handling your request.\nOur ops team has been alerted and is investigating the issue."),
             GraphQLError::UnauthorizedError(resource, operation) => write!(f, "The access token is not authorized to {} this {}.", operation, resource),
             GraphQLError::ValidationError(field, message) => write!(f, "There was a problem with a value you supplied: {} {}.", field, message),
-            GraphQLError::ProjectNotFoundError(name) => {
-                write!(f, "Unable to find project '{}'", name)
-            },
         }
     }
 }
