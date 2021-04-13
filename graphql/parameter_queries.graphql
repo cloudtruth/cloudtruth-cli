@@ -73,3 +73,15 @@ mutation UpsertParameterMutation($projectId: ID, $environmentName: String, $keyN
     }
   }
 }
+
+mutation DeleteParameterMutation($parameterId: ID!) {
+  deleteParameter(input: {id: $parameterId}) {
+    clientMutationId
+    deletedParameterId
+
+    errors {
+      path
+      message
+    }
+  }
+}

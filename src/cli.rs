@@ -90,9 +90,14 @@ pub fn build_cli() -> App<'static, 'static> {
                             .help("Parameter 'values' output data format")
                         ),
                     SubCommand::with_name("set")
-                        .about("Set a static value in the selected environment for an existing parameter or creates a new one if needed")
+                        .about(concat!("Set a static value in the selected project/environment for ",
+                            "an existing parameter or creates a new one if needed"))
                         .arg(Arg::with_name("KEY").required(true).index(1))
                         .arg(Arg::with_name("VALUE").required(true).index(2)),
+                    SubCommand::with_name("delete")
+                        .visible_alias("del")
+                        .about("Delete the parameter from the project")
+                        .arg(Arg::with_name("KEY").required(true)),
                 ]),
         )
         .subcommand(SubCommand::with_name("templates")

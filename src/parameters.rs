@@ -38,6 +38,14 @@ pub struct ParametersDetailQuery;
 )]
 pub struct UpsertParameterMutation;
 
+#[derive(GraphQLQuery)]
+#[graphql(
+    schema_path = "graphql/schema.graphql",
+    query_path = "graphql/parameter_queries.graphql",
+    response_derives = "Debug"
+)]
+pub struct DeleteParameterMutation;
+
 pub struct ParameterDetails {
     pub id: String,
     pub key: String,
@@ -302,6 +310,56 @@ impl Parameters {
             }
         } else {
             Err(GraphQLError::MissingDataError)
+        }
+    }
+
+    /// Deletes the specified parameter by ID
+    ///
+    /// On success, it returns the deleted parameter ID. On failure, it returns a GraphQLError.
+    fn delete_param_by_id(&self, param_id: String) -> GraphQLResult<Option<String>> {
+        let query = DeleteParameterMutation::build_query(delete_parameter_mutation::Variables {
+            parameter_id: param_id,
+        });
+        let response_body = graphql_request::<_, delete_parameter_mutation::ResponseData>(&query)?;
+
+        if let Some(errors) = response_body.errors {
+            Err(GraphQLError::build_query_error(
+                errors,
+                Resource::Parameter,
+                Operation::Delete,
+            ))
+        } else if let Some(data) = response_body.data {
+            let logical_errors = data.delete_parameter.errors;
+            if !logical_errors.is_empty() {
+                Err(GraphQLError::build_logical_error(to_user_errors!(
+                    logical_errors
+                )))
+            } else {
+                Ok(data.delete_parameter.deleted_parameter_id)
+            }
+        } else {
+            Err(GraphQLError::MissingDataError)
+        }
+    }
+
+    /// Deletes the specified parameter from the specified project/environment.
+    ///
+    /// On success, it returns the ID of the deleted value. On failure, it returns a GraphQlError
+    /// with more failure information.
+    pub fn delete_parameter(
+        &self,
+        org_id: Option<&str>,
+        proj_name: Option<String>,
+        env_name: Option<&str>,
+        key_name: &str,
+    ) -> GraphQLResult<Option<String>> {
+        // The only delete mechanism is by parameter ID, so start by querying the parameter info.
+        let parameter = self.get_parameter_full(org_id, env_name, proj_name, key_name)?;
+
+        if let Some(parameter) = parameter {
+            self.delete_param_by_id(parameter.id)
+        } else {
+            Err(GraphQLError::ParameterNotFoundError(key_name.to_string()))
         }
     }
 }

@@ -309,6 +309,7 @@ fn process_parameters_command(
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("set") {
         let key = subcmd_args.value_of("KEY").unwrap();
         let env_name = resolved.env_name.as_deref();
+        let proj_name = resolved.proj_name.clone();
         let value = subcmd_args.value_of("VALUE");
 
         let updated_id =
@@ -316,14 +317,36 @@ fn process_parameters_command(
 
         if updated_id.is_some() {
             println!(
-                "Successfully updated parameter '{}' in environment '{}'.",
+                "Successfully updated parameter '{}' in project '{}' for environment '{}'.",
                 key,
+                proj_name.unwrap_or_else(|| DEFAULT_PROJ_NAME.to_string()),
                 env_name.unwrap_or(DEFAULT_ENV_NAME)
             );
         } else {
             println!(
-                "Failed to update parameter '{}' in environment '{}'.",
+                "Failed to update parameter '{}' in project '{}' for environment '{}'.",
                 key,
+                proj_name.unwrap_or_else(|| DEFAULT_PROJ_NAME.to_string()),
+                env_name.unwrap_or(DEFAULT_ENV_NAME)
+            );
+        }
+    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("delete") {
+        let key = subcmd_args.value_of("KEY").unwrap();
+        let env_name = resolved.env_name.as_deref();
+        let proj_name = resolved.proj_name.clone();
+        let removed_id = parameters.delete_parameter(org_id, proj_name.clone(), env_name, key)?;
+        if removed_id.is_some() {
+            println!(
+                "Successfully removed parameter '{}' from project '{}' for environment '{}'.",
+                key,
+                proj_name.unwrap_or_else(|| DEFAULT_PROJ_NAME.to_string()),
+                env_name.unwrap_or(DEFAULT_ENV_NAME)
+            );
+        } else {
+            println!(
+                "Failed to remove parameter '{}' from project '{}' for environment '{}'.",
+                key,
+                proj_name.unwrap_or_else(|| DEFAULT_PROJ_NAME.to_string()),
                 env_name.unwrap_or(DEFAULT_ENV_NAME)
             );
         }
