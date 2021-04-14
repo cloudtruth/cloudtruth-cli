@@ -6,6 +6,8 @@ query ProjectsQuery($organizationId: ID) {
         nodes {
           id
           name
+          description
+          defaultForOrganization,
         }
       }
     }

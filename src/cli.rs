@@ -9,6 +9,19 @@ pub fn binary_name() -> String {
         .to_string()
 }
 
+fn table_format_options() -> Arg<'static, 'static> {
+    Arg::with_name("format")
+        .short("f")
+        .long("format")
+        .takes_value(true)
+        .default_value("table")
+        .possible_values(&["table", "csv"])
+}
+
+fn values_flag() -> Arg<'static, 'static> {
+    Arg::with_name("values").short("v").long("values")
+}
+
 pub fn build_cli() -> App<'static, 'static> {
     app_from_crate!()
         .setting(AppSettings::SubcommandRequiredElseHelp)
@@ -76,17 +89,10 @@ pub fn build_cli() -> App<'static, 'static> {
                     SubCommand::with_name("list")
                         .visible_alias("ls")
                         .about("List CloudTruth parameters")
-                        .arg(Arg::with_name("values")
-                            .short("v")
-                            .long("values")
+                        .arg(values_flag()
                             .help("Display parameters and values")
                         )
-                        .arg(Arg::with_name("format")
-                            .short("f")
-                            .long("format")
-                            .takes_value(true)
-                            .default_value("table")
-                            .possible_values(&["table", "csv"])
+                        .arg(table_format_options()
                             .help("Parameter 'values' output data format")
                         ),
                     SubCommand::with_name("set")
@@ -189,6 +195,8 @@ pub fn build_cli() -> App<'static, 'static> {
                     SubCommand::with_name("list")
                         .visible_alias("ls")
                         .about("List CloudTruth projects")
+                        .arg(values_flag().help("Display additional project values"))
+                        .arg(table_format_options().help("Project 'values' output format"))
                 ])
         )
 }
