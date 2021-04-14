@@ -245,9 +245,34 @@ fn process_environment_command(
     environments: &Environments,
     subcmd_args: &ArgMatches,
 ) -> Result<()> {
-    if subcmd_args.subcommand_matches("list").is_some() {
-        let list = environments.get_environment_names(org_id)?;
-        println!("{}", list.join("\n"))
+    if let Some(subcmd_args) = subcmd_args.subcommand_matches("list") {
+        let details = environments.get_environment_details(org_id)?;
+        // NOTE: should always have at least the default environment
+        if !subcmd_args.is_present("values") {
+            let list = details
+                .iter()
+                .map(|v| v.name.clone())
+                .collect::<Vec<String>>();
+            println!("{}", list.join("\n"));
+        } else {
+            let fmt = subcmd_args.value_of("format").unwrap();
+            let mut table = Table::new();
+            table.set_titles(Row::new(vec![
+                Cell::new("Name").with_style(Attr::Bold),
+                Cell::new("Parent").with_style(Attr::Bold),
+                Cell::new("Description").with_style(Attr::Bold),
+            ]));
+            for entry in details {
+                table.add_row(row![entry.name, entry.parent, entry.description]);
+            }
+            table.set_format(*format::consts::FORMAT_NO_LINESEP_WITH_TITLE);
+            if fmt == "csv" {
+                table.to_csv(stdout())?;
+            } else {
+                assert_eq!(fmt, "table");
+                table.printstd();
+            }
+        }
     } else {
         warn_missing_subcommand("environments")?;
     }

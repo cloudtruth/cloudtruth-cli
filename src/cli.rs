@@ -76,6 +76,8 @@ pub fn build_cli() -> App<'static, 'static> {
                     SubCommand::with_name("list")
                         .visible_alias("ls")
                         .about("List CloudTruth environments")
+                        .arg(values_flag().help("Display addition environment values"))
+                        .arg(table_format_options().help(""))
                 ])
         )
         .subcommand(

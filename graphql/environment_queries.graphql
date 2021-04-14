@@ -6,6 +6,13 @@ query EnvironmentsQuery($organizationId: ID) {
         nodes {
           id
           name
+          description
+          ancestors {
+            name
+          }
+          parent {
+            name
+          }
         }
       }
     }

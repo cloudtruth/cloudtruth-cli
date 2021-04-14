@@ -20,6 +20,14 @@ pub struct GetEnvironmentByNameQuery;
 )]
 pub struct EnvironmentsQuery;
 
+pub struct EnvironmentDetails {
+    pub id: String,
+    pub name: String,
+    pub description: String,
+    pub parent: String,
+    pub ancestors: Vec<String>,
+}
+
 impl Environments {
     pub fn new() -> Self {
         Self {}
@@ -76,14 +84,27 @@ impl Environments {
         }
     }
 
-    pub fn get_environment_names(&self, org_id: Option<&str>) -> GraphQLResult<Vec<String>> {
+    pub fn get_environment_details(
+        &self,
+        org_id: Option<&str>,
+    ) -> GraphQLResult<Vec<EnvironmentDetails>> {
         let environments = self.get_environments_full(org_id)?;
-        let mut list = environments
-            .into_iter()
-            .map(|n| n.name)
-            .collect::<Vec<String>>();
-        list.sort();
-
-        Ok(list)
+        let mut env_info: Vec<EnvironmentDetails> = Vec::new();
+        for e in environments {
+            let ancestors = e.ancestors.iter().map(|v| v.name.clone()).collect();
+            let mut parent: String = "".to_string();
+            if let Some(p) = e.parent {
+                parent = p.name;
+            }
+            env_info.push(EnvironmentDetails {
+                id: e.id,
+                name: e.name,
+                description: e.description.unwrap_or_default(),
+                ancestors,
+                parent,
+            })
+        }
+        env_info.sort_by(|l, r| l.name.cmp(&r.name));
+        Ok(env_info)
     }
 }
