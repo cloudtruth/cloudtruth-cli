@@ -20,6 +20,13 @@ pub struct GetProjectByNameQuery;
 )]
 pub struct ProjectsQuery;
 
+pub struct ProjectDetails {
+    pub id: String,
+    pub name: String,
+    pub description: String,
+    pub is_default: bool,
+}
+
 pub trait ProjectsIntf {
     /// Resolve the `proj_name` to a String
     fn get_id(
@@ -29,7 +36,7 @@ pub trait ProjectsIntf {
     ) -> GraphQLResult<Option<String>>;
 
     /// Get a complete list of projects for this organization.
-    fn get_project_names(&self, org_id: Option<&str>) -> GraphQLResult<Vec<String>>;
+    fn get_project_details(&self, org_id: Option<&str>) -> GraphQLResult<Vec<ProjectDetails>>;
 }
 
 impl Projects {
@@ -87,14 +94,18 @@ impl ProjectsIntf for Projects {
         }
     }
 
-    fn get_project_names(&self, org_id: Option<&str>) -> GraphQLResult<Vec<String>> {
+    fn get_project_details(&self, org_id: Option<&str>) -> GraphQLResult<Vec<ProjectDetails>> {
         let projects = self.get_projects_full(org_id)?;
-        let mut list = projects
+        let mut list: Vec<ProjectDetails> = projects
             .into_iter()
-            .map(|n| n.name)
-            .collect::<Vec<String>>();
-        list.sort();
-
+            .map(|v| ProjectDetails {
+                id: v.id,
+                name: v.name,
+                description: v.description.unwrap_or_default(),
+                is_default: v.default_for_organization,
+            })
+            .collect();
+        list.sort_by(|l, r| l.name.cmp(&r.name));
         Ok(list)
     }
 }

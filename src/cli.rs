@@ -9,6 +9,19 @@ pub fn binary_name() -> String {
         .to_string()
 }
 
+fn table_format_options() -> Arg<'static, 'static> {
+    Arg::with_name("format")
+        .short("f")
+        .long("format")
+        .takes_value(true)
+        .default_value("table")
+        .possible_values(&["table", "csv"])
+}
+
+fn values_flag() -> Arg<'static, 'static> {
+    Arg::with_name("values").short("v").long("values")
+}
+
 pub fn build_cli() -> App<'static, 'static> {
     app_from_crate!()
         .setting(AppSettings::SubcommandRequiredElseHelp)
@@ -63,6 +76,8 @@ pub fn build_cli() -> App<'static, 'static> {
                     SubCommand::with_name("list")
                         .visible_alias("ls")
                         .about("List CloudTruth environments")
+                        .arg(values_flag().help("Display environment information/values"))
+                        .arg(table_format_options().help("Format for environment values data"))
                 ])
         )
         .subcommand(
@@ -80,18 +95,11 @@ pub fn build_cli() -> App<'static, 'static> {
                     SubCommand::with_name("list")
                         .visible_alias("ls")
                         .about("List CloudTruth parameters")
-                        .arg(Arg::with_name("values")
-                            .short("v")
-                            .long("values")
-                            .help("Display parameters and values")
+                        .arg(values_flag()
+                            .help("Display parameter information/values")
                         )
-                        .arg(Arg::with_name("format")
-                            .short("f")
-                            .long("format")
-                            .takes_value(true)
-                            .default_value("table")
-                            .possible_values(&["table", "csv"])
-                            .help("Parameter 'values' output data format")
+                        .arg(table_format_options()
+                            .help("Format for parameter values data")
                         ),
                     SubCommand::with_name("set")
                         .about(concat!("Set a static value in the selected project/environment for ",
@@ -138,6 +146,8 @@ pub fn build_cli() -> App<'static, 'static> {
                 SubCommand::with_name("list")
                     .visible_alias("ls")
                     .about("List CloudTruth templates")
+                    .arg(values_flag().help("Display template information/values"))
+                    .arg(table_format_options().help("Format for template values data"))
             ])
         )
         .subcommand(
@@ -194,6 +204,8 @@ pub fn build_cli() -> App<'static, 'static> {
                     SubCommand::with_name("list")
                         .visible_alias("ls")
                         .about("List CloudTruth projects")
+                        .arg(values_flag().help("Display project information/values"))
+                        .arg(table_format_options().help("Format for project values data"))
                 ])
         )
 }
