@@ -360,13 +360,30 @@ fn process_parameters_command(
         let key = subcmd_args.value_of("KEY").unwrap();
         let env_name = resolved.env_name.as_deref();
         let proj_name = resolved.proj_name.clone();
-        let value = subcmd_args.value_of("value");
-        let description = subcmd_args.value_of("description");
-        let secret: Option<bool> = match subcmd_args.value_of("secret") {
+        let mut value = subcmd_args.value_of("value").map(|v| v.to_string());
+        let mut description = subcmd_args.value_of("description").map(|v| v.to_string());
+        let mut secret: Option<bool> = match subcmd_args.value_of("secret") {
             Some("false") => Some(false),
             Some("true") => Some(true),
             _ => None,
         };
+
+        // get the original value, so that is not lost
+        if let Ok(Some(original)) =
+            parameters.get_parameter_full(org_id, env_name, proj_name.clone(), &key)
+        {
+            if value.is_none() {
+                if let Some(env_value) = original.environment_value {
+                    value = env_value.parameter_value;
+                }
+            }
+            if description.is_none() {
+                description = original.description;
+            }
+            if secret.is_none() {
+                secret = Some(original.is_secret);
+            }
+        }
 
         // make sure there is at least one parameter to updated
         if description.is_none() && secret.is_none() && value.is_none() {
@@ -382,8 +399,8 @@ fn process_parameters_command(
                 resolved.proj_id.clone(),
                 env_name,
                 key,
-                value,
-                description,
+                value.as_deref(),
+                description.as_deref(),
                 secret,
             )?;
 

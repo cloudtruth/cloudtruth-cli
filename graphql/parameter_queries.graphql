@@ -19,6 +19,9 @@ query GetParameterByNameQuery($organizationId: ID, $envName: String, $projectNam
           environmentValue(environmentName: $envName) {
             parameterValue
           }
+          keyName
+          isSecret
+          description
         }
       }
     }

@@ -152,7 +152,7 @@ impl Parameters {
         }
     }
 
-    fn get_parameter_full(
+    pub fn get_parameter_full(
         &self,
         org_id: Option<&str>,
         env_name: Option<&str>,
