@@ -2,6 +2,7 @@
 
 * Breaking change: the `--profile` option no longer supports the short (`-p`) version.
 * Projects: list
+* Parameters: delete
 
 # 0.2.0 - 2021-04-06
 

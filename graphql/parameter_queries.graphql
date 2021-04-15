@@ -1,3 +1,15 @@
+mutation DeleteParameterMutation($parameterId: ID!) {
+  deleteParameter(input: { id: $parameterId }) {
+    clientMutationId
+    deletedParameterId
+
+    errors {
+      path
+      message
+    }
+  }
+}
+
 query GetParameterByNameQuery($organizationId: ID, $envName: String, $projectName: String, $keyName: String!) {
   viewer {
     organization(id: $organizationId) {
