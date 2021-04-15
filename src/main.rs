@@ -388,12 +388,33 @@ fn process_templates_command(
     resolved: &ResolvedIds,
     subcmd_args: &ArgMatches,
 ) -> Result<()> {
-    if subcmd_args.subcommand_matches("list").is_some() {
-        let list = templates.get_template_names(org_id)?;
-        if list.is_empty() {
+    if let Some(subcmd_args) = subcmd_args.subcommand_matches("list") {
+        let details = templates.get_template_details(org_id)?;
+        if details.is_empty() {
             println!("There are no templates in your account.")
-        } else {
+        } else if !subcmd_args.is_present("values") {
+            let list = details
+                .iter()
+                .map(|n| n.name.clone())
+                .collect::<Vec<String>>();
             println!("{}", list.join("\n"))
+        } else {
+            let fmt = subcmd_args.value_of("format").unwrap();
+            let mut table = Table::new();
+            table.set_titles(Row::new(vec![
+                Cell::new("Name").with_style(Attr::Bold),
+                Cell::new("Description").with_style(Attr::Bold),
+            ]));
+            for entry in details {
+                table.add_row(row![entry.name, entry.description]);
+            }
+            table.set_format(*format::consts::FORMAT_NO_LINESEP_WITH_TITLE);
+            if fmt == "csv" {
+                table.to_csv(stdout())?;
+            } else {
+                assert_eq!(fmt, "table");
+                table.printstd();
+            }
         }
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("get") {
         let template_name = subcmd_args.value_of("KEY").unwrap();

@@ -76,8 +76,8 @@ pub fn build_cli() -> App<'static, 'static> {
                     SubCommand::with_name("list")
                         .visible_alias("ls")
                         .about("List CloudTruth environments")
-                        .arg(values_flag().help("Display addition environment values"))
-                        .arg(table_format_options().help(""))
+                        .arg(values_flag().help("Display environment information/values"))
+                        .arg(table_format_options().help("Format for environment values data"))
                 ])
         )
         .subcommand(
@@ -92,10 +92,10 @@ pub fn build_cli() -> App<'static, 'static> {
                         .visible_alias("ls")
                         .about("List CloudTruth parameters")
                         .arg(values_flag()
-                            .help("Display parameters and values")
+                            .help("Display parameter information/values")
                         )
                         .arg(table_format_options()
-                            .help("Parameter 'values' output data format")
+                            .help("Format for parameter values data")
                         ),
                     SubCommand::with_name("set")
                         .about("Set a static value in the selected environment for an existing parameter or creates a new one if needed")
@@ -141,6 +141,8 @@ pub fn build_cli() -> App<'static, 'static> {
                 SubCommand::with_name("list")
                     .visible_alias("ls")
                     .about("List CloudTruth templates")
+                    .arg(values_flag().help("Display template information/values"))
+                    .arg(table_format_options().help("Format for template values data"))
             ])
         )
         .subcommand(
@@ -197,8 +199,8 @@ pub fn build_cli() -> App<'static, 'static> {
                     SubCommand::with_name("list")
                         .visible_alias("ls")
                         .about("List CloudTruth projects")
-                        .arg(values_flag().help("Display additional project values"))
-                        .arg(table_format_options().help("Project 'values' output format"))
+                        .arg(values_flag().help("Display project information/values"))
+                        .arg(table_format_options().help("Format for project values data"))
                 ])
         )
 }

@@ -30,6 +30,12 @@ pub struct GetImplicitTemplateQuery;
 )]
 pub struct TemplatesQuery;
 
+pub struct TemplateDetails {
+    pub id: String,
+    pub name: String,
+    pub description: String,
+}
+
 impl Templates {
     pub fn new() -> Self {
         Self {}
@@ -117,7 +123,10 @@ impl Templates {
         }
     }
 
-    pub fn get_template_names(&self, organization_id: Option<&str>) -> GraphQLResult<Vec<String>> {
+    pub fn get_template_details(
+        &self,
+        organization_id: Option<&str>,
+    ) -> GraphQLResult<Vec<TemplateDetails>> {
         let query = TemplatesQuery::build_query(templates_query::Variables {
             organization_id: organization_id.map(|id| id.to_string()),
         });
@@ -126,16 +135,20 @@ impl Templates {
         if let Some(errors) = response_body.errors {
             Err(GraphQLError::ResponseError(errors))
         } else if let Some(data) = response_body.data {
-            let mut list = data
+            let mut list: Vec<TemplateDetails> = data
                 .viewer
                 .organization
                 .expect("Primary organization not found")
                 .templates
                 .nodes
                 .into_iter()
-                .map(|n| n.name)
-                .collect::<Vec<String>>();
-            list.sort();
+                .map(|n| TemplateDetails {
+                    id: n.id,
+                    name: n.name,
+                    description: n.description.unwrap_or_default(),
+                })
+                .collect();
+            list.sort_by(|l, r| l.name.cmp(&r.name));
 
             Ok(list)
         } else {

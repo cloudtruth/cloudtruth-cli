@@ -27,6 +27,7 @@ query TemplatesQuery($organizationId: ID) {
         nodes {
           id
           name
+          description
         }
       }
     }
