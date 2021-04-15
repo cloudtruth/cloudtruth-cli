@@ -22,6 +22,10 @@ fn values_flag() -> Arg<'static, 'static> {
     Arg::with_name("values").short("v").long("values")
 }
 
+fn secrets_display_flag() -> Arg<'static, 'static> {
+    Arg::with_name("secret").short("s").long("secrets")
+}
+
 pub fn build_cli() -> App<'static, 'static> {
     app_from_crate!()
         .setting(AppSettings::SubcommandRequiredElseHelp)
@@ -95,12 +99,9 @@ pub fn build_cli() -> App<'static, 'static> {
                     SubCommand::with_name("list")
                         .visible_alias("ls")
                         .about("List CloudTruth parameters")
-                        .arg(values_flag()
-                            .help("Display parameter information/values")
-                        )
-                        .arg(table_format_options()
-                            .help("Format for parameter values data")
-                        ),
+                        .arg(values_flag().help("Display parameter information/values"))
+                        .arg(table_format_options().help("Format for parameter values data"))
+                        .arg(secrets_display_flag().help("Display the secret parameter values")),
                     SubCommand::with_name("set")
                         .about(concat!("Set a static value in the selected project/environment for ",
                             "an existing parameter or creates a new one if needed"))
@@ -136,9 +137,7 @@ pub fn build_cli() -> App<'static, 'static> {
                         .possible_value("dotenv")
                         .possible_value("shell")
                         .index(1))
-                    .arg(Arg::with_name("secrets")
-                        .long("secrets")
-                        .help("Display the values of secret parameters"))
+                    .arg(secrets_display_flag().help("Display the secret parameter values"))
                     .arg(Arg::with_name("starts_with")
                         .long("starts-with")
                         .help("Return parameters starting with search")

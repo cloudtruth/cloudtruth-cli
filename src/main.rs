@@ -308,6 +308,7 @@ fn process_parameters_command(
             if ct_vars.is_empty() {
                 println!("No CloudTruth variables found!");
             } else {
+                let show_secrets = subcmd_args.is_present("secret");
                 let mut table = Table::new();
                 table.set_titles(Row::new(vec![
                     Cell::new("Name").with_style(Attr::Bold),
@@ -316,7 +317,7 @@ fn process_parameters_command(
                     Cell::new("Description").with_style(Attr::Bold),
                 ]));
                 for entry in ct_vars {
-                    let out_val = if entry.secret {
+                    let out_val = if entry.secret && !show_secrets {
                         REDACTED.to_string()
                     } else {
                         entry.value
