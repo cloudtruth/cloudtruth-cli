@@ -70,6 +70,10 @@ pub fn build_cli() -> App<'static, 'static> {
                 .visible_aliases(&["parameter", "params", "param", "p"])
                 .about("Work with CloudTruth parameters")
                 .subcommands(vec![
+                    SubCommand::with_name("delete")
+                        .visible_alias("del")
+                        .about("Delete the parameter from the project")
+                        .arg(Arg::with_name("KEY").required(true)),
                     SubCommand::with_name("get")
                         .about("Gets value for parameter in the selected environment")
                         .arg(Arg::with_name("KEY").required(true).index(1)),
@@ -94,10 +98,6 @@ pub fn build_cli() -> App<'static, 'static> {
                             "an existing parameter or creates a new one if needed"))
                         .arg(Arg::with_name("KEY").required(true).index(1))
                         .arg(Arg::with_name("VALUE").required(true).index(2)),
-                    SubCommand::with_name("delete")
-                        .visible_alias("del")
-                        .about("Delete the parameter from the project")
-                        .arg(Arg::with_name("KEY").required(true)),
                 ]),
         )
         .subcommand(SubCommand::with_name("templates")
