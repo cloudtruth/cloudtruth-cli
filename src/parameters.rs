@@ -12,6 +12,14 @@ pub struct Parameters {}
     query_path = "graphql/parameter_queries.graphql",
     response_derives = "Debug"
 )]
+pub struct DeleteParameterMutation;
+
+#[derive(GraphQLQuery)]
+#[graphql(
+    schema_path = "graphql/schema.graphql",
+    query_path = "graphql/parameter_queries.graphql",
+    response_derives = "Debug"
+)]
 pub struct GetParameterByNameQuery;
 
 #[derive(GraphQLQuery)]
@@ -37,14 +45,6 @@ pub struct ParametersDetailQuery;
     response_derives = "Debug"
 )]
 pub struct UpsertParameterMutation;
-
-#[derive(GraphQLQuery)]
-#[graphql(
-    schema_path = "graphql/schema.graphql",
-    query_path = "graphql/parameter_queries.graphql",
-    response_derives = "Debug"
-)]
-pub struct DeleteParameterMutation;
 
 pub struct ParameterDetails {
     pub id: String,
