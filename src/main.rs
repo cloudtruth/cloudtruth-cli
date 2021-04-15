@@ -360,25 +360,48 @@ fn process_parameters_command(
         let key = subcmd_args.value_of("KEY").unwrap();
         let env_name = resolved.env_name.as_deref();
         let proj_name = resolved.proj_name.clone();
-        let value = subcmd_args.value_of("VALUE");
+        let value = subcmd_args.value_of("value");
+        let description = subcmd_args.value_of("description");
+        let secret: Option<bool> = match subcmd_args.value_of("secret") {
+            Some("false") => Some(false),
+            Some("true") => Some(true),
+            _ => None,
+        };
 
-        let updated_id =
-            parameters.set_parameter(resolved.proj_id.clone(), env_name, key, value)?;
-
-        if updated_id.is_some() {
-            println!(
-                "Successfully updated parameter '{}' in project '{}' for environment '{}'.",
-                key,
-                proj_name.unwrap_or_else(|| DEFAULT_PROJ_NAME.to_string()),
-                env_name.unwrap_or(DEFAULT_ENV_NAME)
-            );
+        // make sure there is at least one parameter to updated
+        if description.is_none() && secret.is_none() && value.is_none() {
+            warn_user(
+                concat!(
+                    "Nothing changed. Should provide at least one of: ",
+                    "description, secret, or value."
+                )
+                .to_string(),
+            )?;
         } else {
-            println!(
-                "Failed to update parameter '{}' in project '{}' for environment '{}'.",
+            let updated_id = parameters.set_parameter(
+                resolved.proj_id.clone(),
+                env_name,
                 key,
-                proj_name.unwrap_or_else(|| DEFAULT_PROJ_NAME.to_string()),
-                env_name.unwrap_or(DEFAULT_ENV_NAME)
-            );
+                value,
+                description,
+                secret,
+            )?;
+
+            if updated_id.is_some() {
+                println!(
+                    "Successfully updated parameter '{}' in project '{}' for environment '{}'.",
+                    key,
+                    proj_name.unwrap_or_else(|| DEFAULT_PROJ_NAME.to_string()),
+                    env_name.unwrap_or(DEFAULT_ENV_NAME)
+                );
+            } else {
+                println!(
+                    "Failed to update parameter '{}' in project '{}' for environment '{}'.",
+                    key,
+                    proj_name.unwrap_or_else(|| DEFAULT_PROJ_NAME.to_string()),
+                    env_name.unwrap_or(DEFAULT_ENV_NAME)
+                );
+            }
         }
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("delete") {
         let key = subcmd_args.value_of("KEY").unwrap();

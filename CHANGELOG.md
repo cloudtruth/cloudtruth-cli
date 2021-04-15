@@ -1,8 +1,13 @@
 # Unreleased
 
-* Breaking change: the `--profile` option no longer supports the short (`-p`) version.
+* Breaking changes: 
+  * The `--profile` option no longer supports the short (`-p`) version to avoid confusion with 
+    the newly supported `--project` option.
+  * Parameters: `set` must provide `--value` option to change the value.
 * Projects: list
-* Parameters: delete
+* Parameters: 
+  * Added `delete`
+  * Enhanced `set` to allow setting parameter `description` and `secret` values.
 
 # 0.2.0 - 2021-04-06
 

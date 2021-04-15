@@ -333,12 +333,16 @@ impl Parameters {
         env_name: Option<&str>,
         key_name: &str,
         value: Option<&str>,
+        description: Option<&str>,
+        secret: Option<bool>,
     ) -> GraphQLResult<Option<String>> {
         let query = UpsertParameterMutation::build_query(upsert_parameter_mutation::Variables {
             project_id: proj_id,
             environment_name: env_name.map(|env| env.to_string()),
             key_name: key_name.to_string(),
             value: value.map(|v| v.to_string()),
+            description: description.map(|v| v.to_string()),
+            secret,
         });
         let response_body = graphql_request::<_, upsert_parameter_mutation::ResponseData>(&query)?;
 

@@ -72,8 +72,8 @@ query ParametersDetailQuery($organizationId: ID, $environmentId: ID, $projectNam
   }
 }
 
-mutation UpsertParameterMutation($projectId: ID, $environmentName: String, $keyName: String!, $value: String) {
-  upsertParameter(input: { keyName: $keyName, value: $value, environmentName: $environmentName, projectId: $projectId }) {
+mutation UpsertParameterMutation($projectId: ID, $environmentName: String, $keyName: String!, $value: String, $secret: Boolean, $description: String) {
+  upsertParameter(input: { keyName: $keyName, value: $value, environmentName: $environmentName, projectId: $projectId, isSecret: $secret , description: $description}) {
     clientMutationId
     parameter {
       id

@@ -106,7 +106,21 @@ pub fn build_cli() -> App<'static, 'static> {
                         .about(concat!("Set a static value in the selected project/environment for ",
                             "an existing parameter or creates a new one if needed"))
                         .arg(Arg::with_name("KEY").required(true).index(1))
-                        .arg(Arg::with_name("VALUE").required(true).index(2)),
+                        .arg(Arg::with_name("description")
+                            .takes_value(true)
+                            .short("d")
+                            .long("desc")
+                            .help("Parameter description"))
+                        .arg(Arg::with_name("secret")
+                            .long("secret")
+                            .takes_value(true)
+                            .possible_values(&["true", "false"])
+                            .help("Flags whether this is a secret parameter"))
+                        .arg(Arg::with_name("value")
+                            .short("v")
+                            .long("value")
+                            .takes_value(true)
+                            .help("Parameter value")),
                 ]),
         )
         .subcommand(SubCommand::with_name("templates")
