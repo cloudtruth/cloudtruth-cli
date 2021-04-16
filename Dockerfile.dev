@@ -1,0 +1,29 @@
+#
+# Copyright (C) 2021 CloudTruth, Inc.
+# All Rights Reserved
+#
+# This is a clean rust development container for building the CLI.
+# Map the project directory to /home/dev/cli when running the container.
+# Use "make image" then "make shell" to get a clean shell for building.
+#
+
+FROM rust:alpine
+
+ENV APP_USER="dev"
+ENV APP_DIR="/home/$APP_USER/cli"
+ENV CROSS_DOCKER_IN_DOCKER=true
+ENV OS_DEPS="bash docker-cli make musl-dev openssl-dev"
+
+RUN apk add --no-cache $OS_DEPS
+
+ARG user_uid=61000
+ARG user_gid=61000
+RUN addgroup -S $APP_USER -g $user_gid
+RUN adduser -S $APP_USER -G $APP_USER -s /bin/false -u $user_uid
+
+WORKDIR $APP_DIR
+USER $APP_USER
+CMD bash
+
+# install the things we need to build
+RUN cargo install cargo-deb cargo-generate-rpm cross
