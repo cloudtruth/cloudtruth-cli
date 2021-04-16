@@ -9,6 +9,7 @@ mod macros;
 
 #[macro_use]
 extern crate prettytable;
+extern crate rpassword;
 
 mod cli;
 mod config;
@@ -28,6 +29,7 @@ use crate::templates::Templates;
 use clap::ArgMatches;
 use color_eyre::eyre::Result;
 use prettytable::{format, Attr, Cell, Row, Table};
+use rpassword::read_password;
 use std::io::{self, stdout, Write};
 use std::process;
 use std::str::FromStr;
@@ -368,11 +370,17 @@ fn process_parameters_command(
             _ => None,
         };
 
+        // if user asked to be prompted
+        if subcmd_args.is_present("prompt") {
+            println!("Please enter the '{}' value: ", key);
+            value = Some(read_password()?);
+        }
+
         // make sure there is at least one parameter to updated
         if description.is_none() && secret.is_none() && value.is_none() {
             warn_user(
                 concat!(
-                    "Nothing changed. Should provide at least one of: ",
+                    "Nothing changed. Please provide at least one of: ",
                     "description, secret, or value."
                 )
                 .to_string(),
