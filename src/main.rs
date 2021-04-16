@@ -368,23 +368,6 @@ fn process_parameters_command(
             _ => None,
         };
 
-        // get the original value, so that is not lost
-        if let Ok(Some(original)) =
-            parameters.get_parameter_full(org_id, env_name, proj_name.clone(), &key)
-        {
-            if value.is_none() {
-                if let Some(env_value) = original.environment_value {
-                    value = env_value.parameter_value;
-                }
-            }
-            if description.is_none() {
-                description = original.description;
-            }
-            if secret.is_none() {
-                secret = Some(original.is_secret);
-            }
-        }
-
         // make sure there is at least one parameter to updated
         if description.is_none() && secret.is_none() && value.is_none() {
             warn_user(
@@ -395,6 +378,23 @@ fn process_parameters_command(
                 .to_string(),
             )?;
         } else {
+            // get the original value, so that is not lost
+            if let Ok(Some(original)) =
+                parameters.get_parameter_full(org_id, env_name, proj_name.clone(), &key)
+            {
+                if value.is_none() {
+                    if let Some(env_value) = original.environment_value {
+                        value = env_value.parameter_value;
+                    }
+                }
+                if description.is_none() {
+                    description = original.description;
+                }
+                if secret.is_none() {
+                    secret = Some(original.is_secret);
+                }
+            }
+
             let updated_id = parameters.set_parameter(
                 resolved.proj_id.clone(),
                 env_name,
