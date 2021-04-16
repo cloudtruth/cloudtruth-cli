@@ -582,6 +582,36 @@ fn process_parameters_command(
                 env_name.unwrap_or(DEFAULT_ENV_NAME)
             );
         }
+    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("export") {
+        let proj_name = resolved.proj_name.clone();
+        let starts_with = subcmd_args.value_of("starts_with");
+        let ends_with = subcmd_args.value_of("ends_with");
+        let contains = subcmd_args.value_of("contains");
+        let template_format = subcmd_args.value_of("FORMAT").unwrap();
+        let export = subcmd_args.is_present("export");
+        let secrets = subcmd_args.is_present("secrets");
+        let env_name = resolved.env_name.as_deref();
+        let body = parameters.export_parameters(
+            org_id,
+            proj_name,
+            env_name,
+            starts_with,
+            ends_with,
+            contains,
+            export,
+            secrets,
+            template_format,
+        )?;
+
+        if let Some(body) = body {
+            println!("{}", body)
+        } else {
+            println!(
+                "Could not find a template with name '{}' in environment '{}'.",
+                template_format,
+                env_name.unwrap_or("default")
+            )
+        }
     } else {
         warn_missing_subcommand("parameters")?;
     }
@@ -639,34 +669,6 @@ fn process_templates_command(
                 "Could not find a template with name '{}' in environment '{}'.",
                 template_name,
                 env_name.unwrap_or(DEFAULT_ENV_NAME)
-            )
-        }
-    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("getit") {
-        let starts_with = subcmd_args.value_of("starts_with");
-        let ends_with = subcmd_args.value_of("ends_with");
-        let contains = subcmd_args.value_of("contains");
-        let template_format = subcmd_args.value_of("FORMAT").unwrap();
-        let export = subcmd_args.is_present("export");
-        let secrets = subcmd_args.is_present("secrets");
-        let env_name = resolved.env_name.as_deref();
-        let body = templates.get_body_by_implicit_name(
-            org_id,
-            env_name,
-            starts_with,
-            ends_with,
-            contains,
-            export,
-            secrets,
-            template_format,
-        )?;
-
-        if let Some(body) = body {
-            println!("{}", body)
-        } else {
-            println!(
-                "Could not find a template with name '{}' in environment '{}'.",
-                template_format,
-                env_name.unwrap_or("default")
             )
         }
     } else {

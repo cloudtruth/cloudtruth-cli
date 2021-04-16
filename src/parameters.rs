@@ -1,8 +1,10 @@
 use crate::config::DEFAULT_PROJ_NAME;
 use crate::graphql::prelude::graphql_request;
 use crate::graphql::{GraphQLError, GraphQLResult, Operation, Resource};
+use crate::parameters::export_parameters_query::ExportParametersFormatEnum;
 use graphql_client::*;
 use std::collections::HashMap;
+use std::str::FromStr;
 
 pub struct Parameters {}
 
@@ -13,6 +15,14 @@ pub struct Parameters {}
     response_derives = "Debug"
 )]
 pub struct DeleteParameterMutation;
+
+#[derive(GraphQLQuery)]
+#[graphql(
+    schema_path = "graphql/schema.graphql",
+    query_path = "graphql/parameter_queries.graphql",
+    response_derives = "Debug"
+)]
+pub struct ExportParametersQuery;
 
 #[derive(GraphQLQuery)]
 #[graphql(
@@ -53,6 +63,20 @@ pub struct ParameterDetails {
     pub secret: bool,
     pub description: String,
     pub source: String,
+}
+
+/// Converts to ExportParametersFormatEnum from a &str.
+impl FromStr for ExportParametersFormatEnum {
+    type Err = ();
+
+    fn from_str(input: &str) -> Result<ExportParametersFormatEnum, Self::Err> {
+        match input {
+            "docker" => Ok(ExportParametersFormatEnum::DOCKER),
+            "dotenv" => Ok(ExportParametersFormatEnum::DOTENV),
+            "shell" => Ok(ExportParametersFormatEnum::SHELL),
+            _ => Err(()),
+        }
+    }
 }
 
 impl Parameters {
@@ -107,6 +131,59 @@ impl Parameters {
             self.delete_param_by_id(parameter.id)
         } else {
             Err(GraphQLError::ParameterNotFoundError(key_name.to_string()))
+        }
+    }
+
+    /// Exports the specified parameters and values to a well-known output type.
+    ///
+    /// On success, returns a formatted string containing the specified parameters/values in
+    /// the specified output format.
+    #[allow(clippy::too_many_arguments)]
+    pub fn export_parameters(
+        &self,
+        organization_id: Option<&str>,
+        project_name: Option<String>,
+        environment_name: Option<&str>,
+        starts_with: Option<&str>,
+        ends_with: Option<&str>,
+        contains: Option<&str>,
+        export: bool,
+        secrets: bool,
+        template_format: &str,
+    ) -> GraphQLResult<Option<String>> {
+        let format: ExportParametersFormatEnum = template_format.parse().unwrap();
+        let query = ExportParametersQuery::build_query(export_parameters_query::Variables {
+            organization_id: organization_id.map(|id| id.to_string()),
+            project_name: project_name.clone(),
+            environment_name: environment_name.map(|name| name.to_string()),
+            format,
+            filters: export_parameters_query::ExportParametersFilters {
+                starts_with: starts_with.map(|search| search.to_string()),
+                ends_with: ends_with.map(|search| search.to_string()),
+                contains: contains.map(|search| search.to_string()),
+                secrets: Some(secrets),
+                export: Some(export),
+            },
+        });
+        let response_body = graphql_request::<_, export_parameters_query::ResponseData>(&query)?;
+
+        if let Some(errors) = response_body.errors {
+            Err(GraphQLError::ResponseError(errors))
+        } else if let Some(data) = response_body.data {
+            if let Some(project) = data
+                .viewer
+                .organization
+                .expect("Primary organization not found")
+                .project
+            {
+                Ok(project.export_parameters.and_then(|v| v.evaluated))
+            } else {
+                Err(GraphQLError::ProjectNotFoundError(
+                    project_name.unwrap_or_else(|| DEFAULT_PROJ_NAME.to_string()),
+                ))
+            }
+        } else {
+            Err(GraphQLError::MissingDataError)
         }
     }
 
