@@ -9,6 +9,7 @@ mod macros;
 
 #[macro_use]
 extern crate prettytable;
+extern crate rpassword;
 
 mod cli;
 mod config;
@@ -28,9 +29,10 @@ use crate::templates::Templates;
 use clap::ArgMatches;
 use color_eyre::eyre::Result;
 use prettytable::{format, Attr, Cell, Row, Table};
+use rpassword::read_password;
 use std::io::{self, stdout, Write};
-use std::process;
 use std::str::FromStr;
+use std::{fs, process};
 use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 
 const REDACTED: &str = "*****";
@@ -360,25 +362,73 @@ fn process_parameters_command(
         let key = subcmd_args.value_of("KEY").unwrap();
         let env_name = resolved.env_name.as_deref();
         let proj_name = resolved.proj_name.clone();
-        let value = subcmd_args.value_of("VALUE");
+        let mut value = subcmd_args.value_of("value").map(|v| v.to_string());
+        let mut description = subcmd_args.value_of("description").map(|v| v.to_string());
+        let mut secret: Option<bool> = match subcmd_args.value_of("secret") {
+            Some("false") => Some(false),
+            Some("true") => Some(true),
+            _ => None,
+        };
 
-        let updated_id =
-            parameters.set_parameter(resolved.proj_id.clone(), env_name, key, value)?;
+        // if user asked to be prompted
+        if subcmd_args.is_present("prompt") {
+            println!("Please enter the '{}' value: ", key);
+            value = Some(read_password()?);
+        } else if let Some(filename) = subcmd_args.value_of("input-file") {
+            value = Some(fs::read_to_string(filename).expect("Failed to read value from file."));
+        }
 
-        if updated_id.is_some() {
-            println!(
-                "Successfully updated parameter '{}' in project '{}' for environment '{}'.",
-                key,
-                proj_name.unwrap_or_else(|| DEFAULT_PROJ_NAME.to_string()),
-                env_name.unwrap_or(DEFAULT_ENV_NAME)
-            );
+        // make sure there is at least one parameter to updated
+        if description.is_none() && secret.is_none() && value.is_none() {
+            warn_user(
+                concat!(
+                    "Nothing changed. Please provide at least one of: ",
+                    "description, secret, or value."
+                )
+                .to_string(),
+            )?;
         } else {
-            println!(
-                "Failed to update parameter '{}' in project '{}' for environment '{}'.",
+            // get the original value, so that is not lost
+            if let Ok(Some(original)) =
+                parameters.get_parameter_full(org_id, env_name, proj_name.clone(), &key)
+            {
+                if value.is_none() {
+                    if let Some(env_value) = original.environment_value {
+                        value = env_value.parameter_value;
+                    }
+                }
+                if description.is_none() {
+                    description = original.description;
+                }
+                if secret.is_none() {
+                    secret = Some(original.is_secret);
+                }
+            }
+
+            let updated_id = parameters.set_parameter(
+                resolved.proj_id.clone(),
+                env_name,
                 key,
-                proj_name.unwrap_or_else(|| DEFAULT_PROJ_NAME.to_string()),
-                env_name.unwrap_or(DEFAULT_ENV_NAME)
-            );
+                value.as_deref(),
+                description.as_deref(),
+                secret,
+            )?;
+
+            if updated_id.is_some() {
+                println!(
+                    "Successfully updated parameter '{}' in project '{}' for environment '{}'.",
+                    key,
+                    proj_name.unwrap_or_else(|| DEFAULT_PROJ_NAME.to_string()),
+                    env_name.unwrap_or(DEFAULT_ENV_NAME)
+                );
+            } else {
+                println!(
+                    "Failed to update parameter '{}' in project '{}' for environment '{}'.",
+                    key,
+                    proj_name.unwrap_or_else(|| DEFAULT_PROJ_NAME.to_string()),
+                    env_name.unwrap_or(DEFAULT_ENV_NAME)
+                );
+            }
         }
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("delete") {
         let key = subcmd_args.value_of("KEY").unwrap();
