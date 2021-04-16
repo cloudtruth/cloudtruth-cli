@@ -593,7 +593,7 @@ fn process_parameters_command(
         let env_name = resolved.env_name.as_deref();
         let body = parameters.export_parameters(
             org_id,
-            proj_name,
+            proj_name.clone(),
             env_name,
             starts_with,
             ends_with,
@@ -607,9 +607,10 @@ fn process_parameters_command(
             println!("{}", body)
         } else {
             println!(
-                "Could not find a template with name '{}' in environment '{}'.",
+                "Could not export parameters format '{}' from project '{}' in environment '{}'.",
                 template_format,
-                env_name.unwrap_or("default")
+                proj_name.unwrap_or_else(|| DEFAULT_PROJ_NAME.to_string()),
+                env_name.unwrap_or(DEFAULT_ENV_NAME)
             )
         }
     } else {
