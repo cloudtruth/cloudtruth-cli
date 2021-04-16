@@ -1,13 +1,17 @@
-# Unreleased
+# 0.3.0 - 2021-04-16
 
 * Breaking changes: 
   * The `--profile` option no longer supports the short (`-p`) version to avoid confusion with 
     the newly supported `--project` option.
-  * Parameters: `set` must provide `--value` option to change the value.
-* Projects: list
+  * Parameters: `set` must provide `--value`, `--prompt`, or `--input` option to set the value.
+* Added `--project` option to specify a non-default project
+* Environments: enhanced `list` with `--values` and `--format` options
+* Projects: added `list`
 * Parameters: 
   * Added `delete`
-  * Enhanced `set` to allow setting parameter `description` and `secret` values.
+  * Enhanced `set` to allow setting `description` and `secret` properties, along with options to 
+    enter a value without showing on screen.
+* Templates: enhanced `list` with `--values` and `--format` options
 * Added RPM packages.
 
 # 0.2.0 - 2021-04-06
