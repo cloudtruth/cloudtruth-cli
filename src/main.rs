@@ -31,8 +31,8 @@ use color_eyre::eyre::Result;
 use prettytable::{format, Attr, Cell, Row, Table};
 use rpassword::read_password;
 use std::io::{self, stdout, Write};
-use std::process;
 use std::str::FromStr;
+use std::{fs, process};
 use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 
 const REDACTED: &str = "*****";
@@ -374,6 +374,8 @@ fn process_parameters_command(
         if subcmd_args.is_present("prompt") {
             println!("Please enter the '{}' value: ", key);
             value = Some(read_password()?);
+        } else if let Some(filename) = subcmd_args.value_of("input-file") {
+            value = Some(fs::read_to_string(filename).expect("Failed to read value from file."));
         }
 
         // make sure there is at least one parameter to updated
