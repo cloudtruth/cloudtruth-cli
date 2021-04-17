@@ -1,8 +1,10 @@
-query GetTemplateByNameQuery($organizationId: ID, $environmentName: String, $templateName: String!) {
+query GetTemplateByNameQuery($organizationId: ID, $projectName: String, $environmentName: String, $templateName: String!) {
   viewer {
     organization(id: $organizationId) {
-      template(name: $templateName) {
-        evaluated(environmentName: $environmentName)
+      project(name: $projectName) {
+        template(name: $templateName) {
+          evaluated(environmentName: $environmentName)
+        }
       }
     }
   }
@@ -19,15 +21,17 @@ query GetImplicitTemplateQuery($organizationId: ID, $environmentName: String, $t
 }
 
 
-query TemplatesQuery($organizationId: ID) {
+query TemplatesQuery($organizationId: ID, $projectName: String) {
   viewer {
     id
     organization(id: $organizationId) {
-      templates {
-        nodes {
-          id
-          name
-          description
+      project(name: $projectName)  {
+        templates {
+          nodes {
+            id
+            name
+            description
+          }
         }
       }
     }
