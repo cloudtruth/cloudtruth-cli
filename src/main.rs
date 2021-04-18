@@ -463,9 +463,13 @@ fn process_templates_command(
     subcmd_args: &ArgMatches,
 ) -> Result<()> {
     if let Some(subcmd_args) = subcmd_args.subcommand_matches("list") {
-        let details = templates.get_template_details(org_id)?;
+        let proj_name = resolved.proj_name.clone();
+        let details = templates.get_template_details(org_id, proj_name.clone())?;
         if details.is_empty() {
-            println!("There are no templates in your account.")
+            println!(
+                "There are no templates in project `{}`.",
+                proj_name.unwrap_or_else(|| DEFAULT_PROJ_NAME.to_string())
+            );
         } else if !subcmd_args.is_present("values") {
             let list = details
                 .iter()
@@ -491,9 +495,10 @@ fn process_templates_command(
             }
         }
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("get") {
+        let proj_name = resolved.proj_name.clone();
         let template_name = subcmd_args.value_of("KEY").unwrap();
         let env_name = resolved.env_name.as_deref();
-        let body = templates.get_body_by_name(org_id, env_name, template_name)?;
+        let body = templates.get_body_by_name(org_id, proj_name, env_name, template_name)?;
 
         if let Some(body) = body {
             println!("{}", body)
