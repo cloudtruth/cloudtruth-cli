@@ -745,7 +745,7 @@ enum ExportParametersFormatEnum {
   SHELL
 }
 
-input ExportParametersFilters {
+input ExportParametersOptions {
   contains: String
   endsWith: String
   export: Boolean
@@ -1808,7 +1808,7 @@ type Project implements HasPolicy & Node {
   createdAt: ISO8601DateTime!
   defaultForOrganization: Boolean!
   description: String
-  exportParameters(filters: ExportParametersFilters, format: ExportParametersFormatEnum!): ExportParameters
+  exportParameters(options: ExportParametersOptions, format: ExportParametersFormatEnum!): ExportParameters
   id: ID!
   name: String!
   organization: Organization!

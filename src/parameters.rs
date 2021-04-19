@@ -157,7 +157,7 @@ impl Parameters {
             project_name: project_name.clone(),
             environment_name: environment_name.map(|name| name.to_string()),
             format,
-            filters: export_parameters_query::ExportParametersFilters {
+            options: export_parameters_query::ExportParametersOptions {
                 starts_with: starts_with.map(|search| search.to_string()),
                 ends_with: ends_with.map(|search| search.to_string()),
                 contains: contains.map(|search| search.to_string()),
