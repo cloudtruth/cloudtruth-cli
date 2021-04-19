@@ -22,6 +22,9 @@ mod templates;
 use crate::config::{Config, DEFAULT_ENV_NAME, DEFAULT_PROJ_NAME};
 use crate::environments::Environments;
 use crate::graphql::GraphQLError;
+use crate::parameters::export_parameters_query::{
+    ExportParametersFormatEnum, ExportParametersOptions,
+};
 use crate::parameters::Parameters;
 use crate::projects::{Projects, ProjectsIntf};
 use crate::subprocess::{Inheritance, SubProcess, SubProcessIntf};
@@ -591,17 +594,16 @@ fn process_parameters_command(
         let export = subcmd_args.is_present("export");
         let secrets = subcmd_args.is_present("secrets");
         let env_name = resolved.env_name.as_deref();
-        let body = parameters.export_parameters(
-            org_id,
-            proj_name.clone(),
-            env_name,
-            starts_with,
-            ends_with,
-            contains,
-            export,
-            secrets,
-            template_format,
-        )?;
+        let format = ExportParametersFormatEnum::from_str(template_format).unwrap();
+        let options = ExportParametersOptions {
+            starts_with: starts_with.map(|s| s.to_string()),
+            ends_with: ends_with.map(|s| s.to_string()),
+            contains: contains.map(|s| s.to_string()),
+            export: Some(export),
+            secrets: Some(secrets),
+        };
+        let body =
+            parameters.export_parameters(org_id, proj_name.clone(), env_name, options, format)?;
 
         if let Some(body) = body {
             println!("{}", body)

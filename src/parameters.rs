@@ -138,32 +138,20 @@ impl Parameters {
     ///
     /// On success, returns a formatted string containing the specified parameters/values in
     /// the specified output format.
-    #[allow(clippy::too_many_arguments)]
     pub fn export_parameters(
         &self,
         organization_id: Option<&str>,
         project_name: Option<String>,
         environment_name: Option<&str>,
-        starts_with: Option<&str>,
-        ends_with: Option<&str>,
-        contains: Option<&str>,
-        export: bool,
-        secrets: bool,
-        template_format: &str,
+        options: export_parameters_query::ExportParametersOptions,
+        format: ExportParametersFormatEnum,
     ) -> GraphQLResult<Option<String>> {
-        let format: ExportParametersFormatEnum = template_format.parse().unwrap();
         let query = ExportParametersQuery::build_query(export_parameters_query::Variables {
             organization_id: organization_id.map(|id| id.to_string()),
             project_name: project_name.clone(),
             environment_name: environment_name.map(|name| name.to_string()),
             format,
-            options: export_parameters_query::ExportParametersOptions {
-                starts_with: starts_with.map(|search| search.to_string()),
-                ends_with: ends_with.map(|search| search.to_string()),
-                contains: contains.map(|search| search.to_string()),
-                secrets: Some(secrets),
-                export: Some(export),
-            },
+            options,
         });
         let response_body = graphql_request::<_, export_parameters_query::ResponseData>(&query)?;
 
