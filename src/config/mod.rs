@@ -48,6 +48,9 @@ pub const CT_SERVER_URL: &str = "CLOUDTRUTH_SERVER_URL";
 // Environment variable name used to set the environment name.
 pub const CT_ENVIRONMENT: &str = "CLOUDTRUTH_ENVIRONMENT";
 
+// Environment variable name use to set the project name.
+pub const CT_PROJECT: &str = "CLOUDTRUTH_PROJECT";
+
 // List of variables to remove to make a clean environment.
 #[allow(dead_code)]
 pub const CT_APP_REMOVABLE_VARS: &[&str] = &[CT_SERVER_URL, CT_API_KEY, CT_OLD_API_KEY];
