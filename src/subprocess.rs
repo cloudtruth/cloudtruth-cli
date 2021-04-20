@@ -1,4 +1,6 @@
-use crate::config::{CT_APP_REMOVABLE_VARS, CT_ENVIRONMENT, DEFAULT_ENV_NAME};
+use crate::config::{
+    CT_APP_REMOVABLE_VARS, CT_ENVIRONMENT, CT_PROJECT, DEFAULT_ENV_NAME, DEFAULT_PROF_NAME,
+};
 use crate::graphql::GraphQLError;
 use crate::parameters::Parameters;
 use crate::{warn_user, ResolvedIds};
@@ -184,6 +186,13 @@ impl SubProcessIntf for SubProcess {
                 .env_name
                 .clone()
                 .unwrap_or_else(|| DEFAULT_ENV_NAME.to_string()),
+        );
+        self.env_vars.insert(
+            CT_PROJECT.to_string(),
+            resolved
+                .proj_name
+                .clone()
+                .unwrap_or_else(|| DEFAULT_PROF_NAME.to_string()),
         );
 
         // Add in the items from the CloudTruth environment (looking for collisions)
