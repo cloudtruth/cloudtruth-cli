@@ -1,0 +1,4 @@
+FROM ubuntu:xenial
+COPY install.sh /tmp/ctinstall.sh
+RUN chmod 755 /tmp/ctinstall.sh && /tmp/ctinstall.sh
+CMD cloudtruth --version

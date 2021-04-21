@@ -1,0 +1,7 @@
+      - name: {{ os }}-{{ version }}
+        shell: pwsh
+        run: |
+          .\install.ps1
+          New-Alias grep findstr
+          & "$ENV:TEMP\cloudtruth.exe" template get $ENV:CT_TEST_TEMPLATE | grep PEER
+

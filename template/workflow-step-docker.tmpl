@@ -1,0 +1,5 @@
+      - name: {{ os }}-{{ version }}
+        run: |
+          docker build . -f tests/Dockerfile.{{ os }}-{{ version }} -t cloudtruth:{{ os }}-{{ version }}
+          docker run -e CT_API_KEY -t cloudtruth:{{ os }}-{{ version }} cloudtruth template get ${CT_TEST_TEMPLATE} | grep PEER
+

@@ -1,0 +1,9 @@
+
+  {{ os }}:
+    runs-on: {{ runs_on }}
+    env:
+      CT_API_KEY: {{ '${{ secrets.CT_API_KEY }}' }}
+      CT_TEST_TEMPLATE: hello
+    steps:
+      - uses: actions/checkout@v2
+

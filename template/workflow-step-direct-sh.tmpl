@@ -1,0 +1,5 @@
+      - name: {{ os }}-{{ version }}
+        run: |
+          sudo ./install.sh
+          cloudtruth template get ${CT_TEST_TEMPLATE} | grep PEER
+
