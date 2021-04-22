@@ -1,5 +1,5 @@
       - name: {{ os }}-{{ version }}
         run: |
-          docker build . -f tests/Dockerfile.{{ os }}-{{ version }} -t cloudtruth:{{ os }}-{{ version }}
-          docker run -e CT_API_KEY -t cloudtruth:{{ os }}-{{ version }} cloudtruth template get ${CT_TEST_TEMPLATE} | grep PEER
+          docker build . -e CT_DOWNLOAD_URL -e CT_DOWNLOAD_VERSION -e CT_DOWNLOAD_AUTH_TOKEN -f tests/Dockerfile.{{ os }}-{{ version }} -t cloudtruth:{{ os }}-{{ version }}
+          docker run -e CLOUDTRUTH_API_KEY -t cloudtruth:{{ os }}-{{ version }} cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
 

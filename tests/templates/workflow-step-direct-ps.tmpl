@@ -1,7 +1,7 @@
       - name: {{ os }}-{{ version }}
         shell: pwsh
         run: |
-          .\install.ps1
+          .\install.ps1 -url "$ENV:CT_DOWNLOAD_URL" -version "$ENV:CT_DOWNLOAD_VERSION" -authToken "$ENV:CT_DOWNLOAD_AUTH_TOKEN"
           New-Alias grep findstr
-          & "$ENV:TEMP\cloudtruth.exe" template get $ENV:CT_TEST_TEMPLATE | grep PEER
+          & "$ENV:TEMP\cloudtruth.exe" --project "$ENV:CT_TEST_PROJECT" parameters list -v | grep "$ENV:CT_TEST_PARAM" | grep "$ENV:CT_TEST_VALUE"
 

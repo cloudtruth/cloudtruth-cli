@@ -1,5 +1,5 @@
       - name: {{ os }}-{{ version }}
         run: |
-          sudo ./install.sh
-          cloudtruth template get ${CT_TEST_TEMPLATE} | grep PEER
+          sudo ./install.sh --url ${CT_DOWNLOAD_URL} --version ${CT_DOWNLOAD_VERSION} --auth-token ${CT_DOWNLOAD_AUTH_TOKEN}
+          cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep "${CT_TEST_PARAM}" | grep "${CT_TEST_VALUE}"
 
