@@ -6,25 +6,31 @@ import yaml
 from jinja2 import Template
 
 
-with Path("cfg.yaml").open() as fp:
+template_dir="templates"
+docker_dir="docker"
+output_file="test.yaml"
+config_file="cfg.yaml"
+
+
+with Path(f"{config_file}").open() as fp:
     config = yaml.safe_load(fp.read())
 
-with Path("template/Dockerfile.tmpl").open() as fp:
+with Path(f"{template_dir}/Dockerfile.tmpl").open() as fp:
     dockerfile = fp.read()
 
-with Path("template/workflow-job.tmpl").open() as fp:
+with Path(f"{template_dir}/workflow-job.tmpl").open() as fp:
     job = fp.read()
 
-with Path("template/workflow-step-direct-ps.tmpl").open() as fp:
+with Path(f"{template_dir}/workflow-step-direct-ps.tmpl").open() as fp:
     step_direct_ps = fp.read()
 
-with Path("template/workflow-step-direct-sh.tmpl").open() as fp:
+with Path(f"{template_dir}/workflow-step-direct-sh.tmpl").open() as fp:
     step_direct_sh = fp.read()
 
-with Path("template/workflow-step-docker.tmpl").open() as fp:
+with Path(f"{template_dir}/workflow-step-docker.tmpl").open() as fp:
     step_docker = fp.read()
 
-with Path("template/workflow-header.yaml").open() as fp:
+with Path(f"{template_dir}/workflow-header.yaml").open() as fp:
     workflow = fp.read()
 
 for os, data in config["jobs"].items():
@@ -37,7 +43,7 @@ for os, data in config["jobs"].items():
             workflow += st.render(os=os, version=version)
 
             dt = Template(dockerfile)
-            with Path(f"tests/Dockerfile.{os}-{version}").open("w") as fp:
+            with Path(f"{docker_dir}/Dockerfile.{os}-{version}").open("w") as fp:
                 fp.write(dt.render(os=os, version=version))
     else:
         for version in data["versions"]:
@@ -46,5 +52,7 @@ for os, data in config["jobs"].items():
             st = Template(step_direct_ps if data.get("powershell") else step_direct_sh)
             workflow += st.render(os=os, version=version)
 
-with Path(".github/workflows/test.yaml").open("w") as fp:
+with Path(f"{output_file}").open("w") as fp:
     fp.write(workflow)
+
+print(f"Data from ${output_file} should be merged into .github/workflows/ files")
