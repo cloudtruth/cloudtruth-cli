@@ -1,0 +1,137 @@
+---
+on:
+  pull_request: {}
+
+name: 'Tests'
+
+jobs:
+  sca:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python-version: [3.7.7]
+
+    steps:
+      - name: Dump GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "${GITHUB_CONTEXT}"
+      - uses: actions/checkout@v2
+      - name: ShellCheck
+        uses: ludeeus/action-shellcheck@master
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Enforce pre-commit
+        run: |
+          python3 -m pip install pre-commit
+          pre-commit install
+          pre-commit run -a
+
+  alpine:
+    runs-on: ubuntu-latest
+    env:
+      CT_API_KEY: ${{ secrets.CT_API_KEY }}
+      CT_TEST_TEMPLATE: hello
+    steps:
+      - uses: actions/checkout@v2
+      - name: alpine-3.13
+        run: |
+          docker build . -f tests/Dockerfile.alpine-3.13 -t cloudtruth:alpine-3.13
+          docker run -e CT_API_KEY -t cloudtruth:alpine-3.13 cloudtruth template get ${CT_TEST_TEMPLATE} | grep PEER
+      - name: alpine-3.12
+        run: |
+          docker build . -f tests/Dockerfile.alpine-3.12 -t cloudtruth:alpine-3.12
+          docker run -e CT_API_KEY -t cloudtruth:alpine-3.12 cloudtruth template get ${CT_TEST_TEMPLATE} | grep PEER
+
+  centos:
+    runs-on: ubuntu-latest
+    env:
+      CT_API_KEY: ${{ secrets.CT_API_KEY }}
+      CT_TEST_TEMPLATE: hello
+    steps:
+      - uses: actions/checkout@v2
+      - name: centos-8
+        run: |
+          docker build . -f tests/Dockerfile.centos-8 -t cloudtruth:centos-8
+          docker run -e CT_API_KEY -t cloudtruth:centos-8 cloudtruth template get ${CT_TEST_TEMPLATE} | grep PEER
+      - name: centos-7
+        run: |
+          docker build . -f tests/Dockerfile.centos-7 -t cloudtruth:centos-7
+          docker run -e CT_API_KEY -t cloudtruth:centos-7 cloudtruth template get ${CT_TEST_TEMPLATE} | grep PEER
+
+  debian:
+    runs-on: ubuntu-latest
+    env:
+      CT_API_KEY: ${{ secrets.CT_API_KEY }}
+      CT_TEST_TEMPLATE: hello
+    steps:
+      - uses: actions/checkout@v2
+      - name: debian-bullseye-slim
+        run: |
+          docker build . -f tests/Dockerfile.debian-bullseye-slim -t cloudtruth:debian-bullseye-slim
+          docker run -e CT_API_KEY -t cloudtruth:debian-bullseye-slim cloudtruth template get ${CT_TEST_TEMPLATE} | grep PEER
+      - name: debian-buster-slim
+        run: |
+          docker build . -f tests/Dockerfile.debian-buster-slim -t cloudtruth:debian-buster-slim
+          docker run -e CT_API_KEY -t cloudtruth:debian-buster-slim cloudtruth template get ${CT_TEST_TEMPLATE} | grep PEER
+      - name: debian-jessie-slim
+        run: |
+          docker build . -f tests/Dockerfile.debian-jessie-slim -t cloudtruth:debian-jessie-slim
+          docker run -e CT_API_KEY -t cloudtruth:debian-jessie-slim cloudtruth template get ${CT_TEST_TEMPLATE} | grep PEER
+
+  macOS:
+    runs-on: macOS-latest
+    env:
+      CT_API_KEY: ${{ secrets.CT_API_KEY }}
+      CT_TEST_TEMPLATE: hello
+    steps:
+      - uses: actions/checkout@v2
+      - name: macOS-latest
+        run: |
+          sudo ./install.sh
+          cloudtruth template get ${CT_TEST_TEMPLATE} | grep PEER
+
+  ubuntu:
+    runs-on: ubuntu-latest
+    env:
+      CT_API_KEY: ${{ secrets.CT_API_KEY }}
+      CT_TEST_TEMPLATE: hello
+    steps:
+      - uses: actions/checkout@v2
+      - name: ubuntu-groovy
+        run: |
+          docker build . -f tests/Dockerfile.ubuntu-groovy -t cloudtruth:ubuntu-groovy
+          docker run -e CT_API_KEY -t cloudtruth:ubuntu-groovy cloudtruth template get ${CT_TEST_TEMPLATE} | grep PEER
+      - name: ubuntu-focal
+        run: |
+          docker build . -f tests/Dockerfile.ubuntu-focal -t cloudtruth:ubuntu-focal
+          docker run -e CT_API_KEY -t cloudtruth:ubuntu-focal cloudtruth template get ${CT_TEST_TEMPLATE} | grep PEER
+      - name: ubuntu-bionic
+        run: |
+          docker build . -f tests/Dockerfile.ubuntu-bionic -t cloudtruth:ubuntu-bionic
+          docker run -e CT_API_KEY -t cloudtruth:ubuntu-bionic cloudtruth template get ${CT_TEST_TEMPLATE} | grep PEER
+      - name: ubuntu-xenial
+        run: |
+          docker build . -f tests/Dockerfile.ubuntu-xenial -t cloudtruth:ubuntu-xenial
+          docker run -e CT_API_KEY -t cloudtruth:ubuntu-xenial cloudtruth template get ${CT_TEST_TEMPLATE} | grep PEER
+      - name: ubuntu-trusty
+        run: |
+          docker build . -f tests/Dockerfile.ubuntu-trusty -t cloudtruth:ubuntu-trusty
+          docker run -e CT_API_KEY -t cloudtruth:ubuntu-trusty cloudtruth template get ${CT_TEST_TEMPLATE} | grep PEER
+
+  windows:
+    runs-on: windows-latest
+    env:
+      CT_API_KEY: ${{ secrets.CT_API_KEY }}
+      CT_TEST_TEMPLATE: hello
+    steps:
+      - uses: actions/checkout@v2
+      - name: windows-latest
+        shell: pwsh
+        run: |
+          .\install.ps1
+          New-Alias grep findstr
+          & "$ENV:TEMP\cloudtruth.exe" template get $ENV:CT_TEST_TEMPLATE | grep PEER
