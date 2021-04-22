@@ -132,20 +132,28 @@ To build the application, check out the source code and then run:
 
 ### Developing
 
-This project uses [rusty-hook](https://github.com/swellaby/rusty-hook) to help ensure commits pass tests and conform to the project's code style.
-These checks are run automatically as a git pre-commit hook to help cut down on "fix formatting" or "address linter" commits.
-You do not need to explicitly write your own git pre-commit hook &mdash; rusty-hook will take care of that for you the first time you build the project.
+This project uses [rusty-hook](https://github.com/swellaby/rusty-hook) to help ensure commits pass 
+tests and conform to the project's code style.
+These checks are run automatically as a git pre-commit hook to help cut down on "fix formatting" or 
+"address linter" commits.
+You do not need to explicitly write your own git pre-commit hook &mdash; rusty-hook will take care 
+of that for you the first time you build the project.
+The pre-commit checks use `shellcheck` to check the `install.sh`.  You can run `make prerequisites` 
+to install `shellcheck`.
 
 #### Tests
 
-The tests can be run via `cargo`:
+The tests can be run with either:
 
-`cargo test`
+```
+cargo test
+make test
+```
 
 If you run into test failures, try this remedy:
 
 - unset CHARGEBEE_API_KEY
-- `cargo build`
+- `cargo test`
 
 #### Formatting
 
@@ -157,9 +165,12 @@ It can be invoked with:
 #### Linting
 
 The project uses Clippy to catch potentially problematic code patterns and ensure a consistent approach to solving problems.
-It can be invoked with:
+It can be invoked with either of the following:
 
-`cargo clippy`
+```
+cargo clippy
+make lint
+```
 
 ### Debugging
 
@@ -175,5 +186,7 @@ development environment.  To test changes to the artifact output, you can follow
 1. Make your code changes and push to a branch.
 2. Create a tag for your branch and push following SemVer rules, for example _0.1.3-pre_.
 3. This creates a draft release and you can check the results in the Actions tab.
+   a. The GitHub actions install on several platforms, and verify the `cloudtruth` command can
+      fetch a small set of data using the ci@cloudtruth.com account.
 4. You can delete the draft release and the artifacts after you are done, then submit a pull request
    to get your changes into the _master_ branch.
