@@ -1,4 +1,4 @@
 FROM ubuntu:focal
 COPY install.sh /tmp/ctinstall.sh
-RUN chmod 755 /tmp/ctinstall.sh && /tmp/ctinstall.sh
+RUN chmod 755 /tmp/ctinstall.sh && /tmp/ctinstall.sh --url "${CT_DOWNLOAD_URL}" --version "${CT_DOWNLOAD_VERSION}" --auth-token "${CT_DOWNLOAD_AUTH_TOKEN}"
 CMD cloudtruth --version

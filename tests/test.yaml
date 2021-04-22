@@ -32,106 +32,160 @@ jobs:
 
   alpine:
     runs-on: ubuntu-latest
+    needs: [ 'build-release' ]
     env:
-      CT_API_KEY: ${{ secrets.CT_API_KEY }}
-      CT_TEST_TEMPLATE: hello
+      # The CT_DOWNLOAD values are used for downloading the image
+      CT_DOWNLOAD_URL: ${{ env.RELEASE_UPLOAD_URL }}
+      CT_DOWNLOAD_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      CT_DOWNLOAD_VERSION: ${{ env.CT_VERSION }}
+
+      # These values are used for running the CLI command
+      CLOUDTRUTH_API_KEY: ${{ secrets.CI_ACCT_READONLY_CT_API_KEY }}
+      CT_TEST_PROJECT: TruthStrap
+      CT_TEST_PARAM: INTEGRATION_TEST_RESULT
+      CT_TEST_VALUE: Speicla
     steps:
       - uses: actions/checkout@v2
       - name: alpine-3.13
         run: |
-          docker build . -f tests/Dockerfile.alpine-3.13 -t cloudtruth:alpine-3.13
-          docker run -e CT_API_KEY -t cloudtruth:alpine-3.13 cloudtruth template get ${CT_TEST_TEMPLATE} | grep PEER
+          docker build . -e CT_DOWNLOAD_URL -e CT_DOWNLOAD_VERSION -e CT_DOWNLOAD_AUTH_TOKEN -f tests/Dockerfile.alpine-3.13 -t cloudtruth:alpine-3.13
+          docker run -e CLOUDTRUTH_API_KEY -t cloudtruth:alpine-3.13 cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
       - name: alpine-3.12
         run: |
-          docker build . -f tests/Dockerfile.alpine-3.12 -t cloudtruth:alpine-3.12
-          docker run -e CT_API_KEY -t cloudtruth:alpine-3.12 cloudtruth template get ${CT_TEST_TEMPLATE} | grep PEER
+          docker build . -e CT_DOWNLOAD_URL -e CT_DOWNLOAD_VERSION -e CT_DOWNLOAD_AUTH_TOKEN -f tests/Dockerfile.alpine-3.12 -t cloudtruth:alpine-3.12
+          docker run -e CLOUDTRUTH_API_KEY -t cloudtruth:alpine-3.12 cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
 
   centos:
     runs-on: ubuntu-latest
+    needs: [ 'build-release' ]
     env:
-      CT_API_KEY: ${{ secrets.CT_API_KEY }}
-      CT_TEST_TEMPLATE: hello
+      # The CT_DOWNLOAD values are used for downloading the image
+      CT_DOWNLOAD_URL: ${{ env.RELEASE_UPLOAD_URL }}
+      CT_DOWNLOAD_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      CT_DOWNLOAD_VERSION: ${{ env.CT_VERSION }}
+
+      # These values are used for running the CLI command
+      CLOUDTRUTH_API_KEY: ${{ secrets.CI_ACCT_READONLY_CT_API_KEY }}
+      CT_TEST_PROJECT: TruthStrap
+      CT_TEST_PARAM: INTEGRATION_TEST_RESULT
+      CT_TEST_VALUE: Speicla
     steps:
       - uses: actions/checkout@v2
       - name: centos-8
         run: |
-          docker build . -f tests/Dockerfile.centos-8 -t cloudtruth:centos-8
-          docker run -e CT_API_KEY -t cloudtruth:centos-8 cloudtruth template get ${CT_TEST_TEMPLATE} | grep PEER
+          docker build . -e CT_DOWNLOAD_URL -e CT_DOWNLOAD_VERSION -e CT_DOWNLOAD_AUTH_TOKEN -f tests/Dockerfile.centos-8 -t cloudtruth:centos-8
+          docker run -e CLOUDTRUTH_API_KEY -t cloudtruth:centos-8 cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
       - name: centos-7
         run: |
-          docker build . -f tests/Dockerfile.centos-7 -t cloudtruth:centos-7
-          docker run -e CT_API_KEY -t cloudtruth:centos-7 cloudtruth template get ${CT_TEST_TEMPLATE} | grep PEER
+          docker build . -e CT_DOWNLOAD_URL -e CT_DOWNLOAD_VERSION -e CT_DOWNLOAD_AUTH_TOKEN -f tests/Dockerfile.centos-7 -t cloudtruth:centos-7
+          docker run -e CLOUDTRUTH_API_KEY -t cloudtruth:centos-7 cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
 
   debian:
     runs-on: ubuntu-latest
+    needs: [ 'build-release' ]
     env:
-      CT_API_KEY: ${{ secrets.CT_API_KEY }}
-      CT_TEST_TEMPLATE: hello
+      # The CT_DOWNLOAD values are used for downloading the image
+      CT_DOWNLOAD_URL: ${{ env.RELEASE_UPLOAD_URL }}
+      CT_DOWNLOAD_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      CT_DOWNLOAD_VERSION: ${{ env.CT_VERSION }}
+
+      # These values are used for running the CLI command
+      CLOUDTRUTH_API_KEY: ${{ secrets.CI_ACCT_READONLY_CT_API_KEY }}
+      CT_TEST_PROJECT: TruthStrap
+      CT_TEST_PARAM: INTEGRATION_TEST_RESULT
+      CT_TEST_VALUE: Speicla
     steps:
       - uses: actions/checkout@v2
       - name: debian-bullseye-slim
         run: |
-          docker build . -f tests/Dockerfile.debian-bullseye-slim -t cloudtruth:debian-bullseye-slim
-          docker run -e CT_API_KEY -t cloudtruth:debian-bullseye-slim cloudtruth template get ${CT_TEST_TEMPLATE} | grep PEER
+          docker build . -e CT_DOWNLOAD_URL -e CT_DOWNLOAD_VERSION -e CT_DOWNLOAD_AUTH_TOKEN -f tests/Dockerfile.debian-bullseye-slim -t cloudtruth:debian-bullseye-slim
+          docker run -e CLOUDTRUTH_API_KEY -t cloudtruth:debian-bullseye-slim cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
       - name: debian-buster-slim
         run: |
-          docker build . -f tests/Dockerfile.debian-buster-slim -t cloudtruth:debian-buster-slim
-          docker run -e CT_API_KEY -t cloudtruth:debian-buster-slim cloudtruth template get ${CT_TEST_TEMPLATE} | grep PEER
+          docker build . -e CT_DOWNLOAD_URL -e CT_DOWNLOAD_VERSION -e CT_DOWNLOAD_AUTH_TOKEN -f tests/Dockerfile.debian-buster-slim -t cloudtruth:debian-buster-slim
+          docker run -e CLOUDTRUTH_API_KEY -t cloudtruth:debian-buster-slim cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
       - name: debian-jessie-slim
         run: |
-          docker build . -f tests/Dockerfile.debian-jessie-slim -t cloudtruth:debian-jessie-slim
-          docker run -e CT_API_KEY -t cloudtruth:debian-jessie-slim cloudtruth template get ${CT_TEST_TEMPLATE} | grep PEER
+          docker build . -e CT_DOWNLOAD_URL -e CT_DOWNLOAD_VERSION -e CT_DOWNLOAD_AUTH_TOKEN -f tests/Dockerfile.debian-jessie-slim -t cloudtruth:debian-jessie-slim
+          docker run -e CLOUDTRUTH_API_KEY -t cloudtruth:debian-jessie-slim cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
 
   macOS:
     runs-on: macOS-latest
+    needs: [ 'build-release' ]
     env:
-      CT_API_KEY: ${{ secrets.CT_API_KEY }}
-      CT_TEST_TEMPLATE: hello
+      # The CT_DOWNLOAD values are used for downloading the image
+      CT_DOWNLOAD_URL: ${{ env.RELEASE_UPLOAD_URL }}
+      CT_DOWNLOAD_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      CT_DOWNLOAD_VERSION: ${{ env.CT_VERSION }}
+
+      # These values are used for running the CLI command
+      CLOUDTRUTH_API_KEY: ${{ secrets.CI_ACCT_READONLY_CT_API_KEY }}
+      CT_TEST_PROJECT: TruthStrap
+      CT_TEST_PARAM: INTEGRATION_TEST_RESULT
+      CT_TEST_VALUE: Speicla
     steps:
       - uses: actions/checkout@v2
       - name: macOS-latest
         run: |
-          sudo ./install.sh
-          cloudtruth template get ${CT_TEST_TEMPLATE} | grep PEER
+          sudo ./install.sh --url ${CT_DOWNLOAD_URL} --version ${CT_DOWNLOAD_VERSION} --auth-token ${CT_DOWNLOAD_AUTH_TOKEN}
+          cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep "${CT_TEST_PARAM}" | grep "${CT_TEST_VALUE}"
 
   ubuntu:
     runs-on: ubuntu-latest
+    needs: [ 'build-release' ]
     env:
-      CT_API_KEY: ${{ secrets.CT_API_KEY }}
-      CT_TEST_TEMPLATE: hello
+      # The CT_DOWNLOAD values are used for downloading the image
+      CT_DOWNLOAD_URL: ${{ env.RELEASE_UPLOAD_URL }}
+      CT_DOWNLOAD_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      CT_DOWNLOAD_VERSION: ${{ env.CT_VERSION }}
+
+      # These values are used for running the CLI command
+      CLOUDTRUTH_API_KEY: ${{ secrets.CI_ACCT_READONLY_CT_API_KEY }}
+      CT_TEST_PROJECT: TruthStrap
+      CT_TEST_PARAM: INTEGRATION_TEST_RESULT
+      CT_TEST_VALUE: Speicla
     steps:
       - uses: actions/checkout@v2
       - name: ubuntu-groovy
         run: |
-          docker build . -f tests/Dockerfile.ubuntu-groovy -t cloudtruth:ubuntu-groovy
-          docker run -e CT_API_KEY -t cloudtruth:ubuntu-groovy cloudtruth template get ${CT_TEST_TEMPLATE} | grep PEER
+          docker build . -e CT_DOWNLOAD_URL -e CT_DOWNLOAD_VERSION -e CT_DOWNLOAD_AUTH_TOKEN -f tests/Dockerfile.ubuntu-groovy -t cloudtruth:ubuntu-groovy
+          docker run -e CLOUDTRUTH_API_KEY -t cloudtruth:ubuntu-groovy cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
       - name: ubuntu-focal
         run: |
-          docker build . -f tests/Dockerfile.ubuntu-focal -t cloudtruth:ubuntu-focal
-          docker run -e CT_API_KEY -t cloudtruth:ubuntu-focal cloudtruth template get ${CT_TEST_TEMPLATE} | grep PEER
+          docker build . -e CT_DOWNLOAD_URL -e CT_DOWNLOAD_VERSION -e CT_DOWNLOAD_AUTH_TOKEN -f tests/Dockerfile.ubuntu-focal -t cloudtruth:ubuntu-focal
+          docker run -e CLOUDTRUTH_API_KEY -t cloudtruth:ubuntu-focal cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
       - name: ubuntu-bionic
         run: |
-          docker build . -f tests/Dockerfile.ubuntu-bionic -t cloudtruth:ubuntu-bionic
-          docker run -e CT_API_KEY -t cloudtruth:ubuntu-bionic cloudtruth template get ${CT_TEST_TEMPLATE} | grep PEER
+          docker build . -e CT_DOWNLOAD_URL -e CT_DOWNLOAD_VERSION -e CT_DOWNLOAD_AUTH_TOKEN -f tests/Dockerfile.ubuntu-bionic -t cloudtruth:ubuntu-bionic
+          docker run -e CLOUDTRUTH_API_KEY -t cloudtruth:ubuntu-bionic cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
       - name: ubuntu-xenial
         run: |
-          docker build . -f tests/Dockerfile.ubuntu-xenial -t cloudtruth:ubuntu-xenial
-          docker run -e CT_API_KEY -t cloudtruth:ubuntu-xenial cloudtruth template get ${CT_TEST_TEMPLATE} | grep PEER
+          docker build . -e CT_DOWNLOAD_URL -e CT_DOWNLOAD_VERSION -e CT_DOWNLOAD_AUTH_TOKEN -f tests/Dockerfile.ubuntu-xenial -t cloudtruth:ubuntu-xenial
+          docker run -e CLOUDTRUTH_API_KEY -t cloudtruth:ubuntu-xenial cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
       - name: ubuntu-trusty
         run: |
-          docker build . -f tests/Dockerfile.ubuntu-trusty -t cloudtruth:ubuntu-trusty
-          docker run -e CT_API_KEY -t cloudtruth:ubuntu-trusty cloudtruth template get ${CT_TEST_TEMPLATE} | grep PEER
+          docker build . -e CT_DOWNLOAD_URL -e CT_DOWNLOAD_VERSION -e CT_DOWNLOAD_AUTH_TOKEN -f tests/Dockerfile.ubuntu-trusty -t cloudtruth:ubuntu-trusty
+          docker run -e CLOUDTRUTH_API_KEY -t cloudtruth:ubuntu-trusty cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
 
   windows:
     runs-on: windows-latest
+    needs: [ 'build-release' ]
     env:
-      CT_API_KEY: ${{ secrets.CT_API_KEY }}
-      CT_TEST_TEMPLATE: hello
+      # The CT_DOWNLOAD values are used for downloading the image
+      CT_DOWNLOAD_URL: ${{ env.RELEASE_UPLOAD_URL }}
+      CT_DOWNLOAD_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      CT_DOWNLOAD_VERSION: ${{ env.CT_VERSION }}
+
+      # These values are used for running the CLI command
+      CLOUDTRUTH_API_KEY: ${{ secrets.CI_ACCT_READONLY_CT_API_KEY }}
+      CT_TEST_PROJECT: TruthStrap
+      CT_TEST_PARAM: INTEGRATION_TEST_RESULT
+      CT_TEST_VALUE: Speicla
     steps:
       - uses: actions/checkout@v2
       - name: windows-latest
         shell: pwsh
         run: |
-          .\install.ps1
+          .\install.ps1 -url "$ENV:CT_DOWNLOAD_URL" -version "$ENV:CT_DOWNLOAD_VERSION" -authToken "$ENV:CT_DOWNLOAD_AUTH_TOKEN"
           New-Alias grep findstr
-          & "$ENV:TEMP\cloudtruth.exe" template get $ENV:CT_TEST_TEMPLATE | grep PEER
+          & "$ENV:TEMP\cloudtruth.exe" --project "$ENV:CT_TEST_PROJECT" parameters list -v | grep "$ENV:CT_TEST_PARAM" | grep "$ENV:CT_TEST_VALUE"
