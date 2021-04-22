@@ -3,6 +3,12 @@
 # Copyright (C) 2021 CloudTruth, Inc.
 #
 
+### Control     ############################################################
+CT_DRY_RUN=0
+CT_DOWNLOAD_URL=""
+CT_CLI_VERSION=""
+CT_DOWNLOAD_AUTH_TOKEN=""
+
 ### Detection     ############################################################
 
 # detect the architecture
@@ -31,29 +37,41 @@ if [ -z "${PKG}" ]; then
 fi
 
 ### Arguments     ############################################################
-
-# We use "$@" instead of $* to preserve argument-boundary information
-ARGS=$(getopt -o 'dhv' --long 'debug,help,version' -- "$@") || exit
-eval "set -- $ARGS"
-
 while true; do
     case $1 in
+      (-a|--auth-token)
+            CT_DOWNLOAD_AUTH_TOKEN=$2
+            shift 2;;
       (-d|--debug)
             set -x
+            shift;;
+      (--dry-run)
+            CT_DRY_RUN=1
             shift;;
       (-h|--help)
             echo "Usage: install.sh [ OPTIONS ]"
             echo ""
             echo "OPTIONS:"
-            echo "  -d | --debug           enable shell debug output"
-            echo "  -h | --help            show usage"
-            echo "  -v | --version <VER>   use a specific version"
+            echo "  -a | --auth-token <TOK>  authorization token for download"
+            echo "  -d | --debug             enable shell debug output"
+            echo "  -h | --help              show usage"
+            echo "  -u | --url <URL>         download directory URL"
+            echo "  -v | --version <VER>     use a specific version"
+            echo "       --dry-run           download, but do not install"
             exit 2;;
+      (-u|--url)
+            CT_DOWNLOAD_URL=$2
+            shift 2;;
       (-v|--version)
             CT_CLI_VERSION=$2
-            shift;;
+            shift 2;;
       (--)  shift; break;;
-      (*)   exit 1;;           # error
+      (*)
+            if [ -n "${1}" ]; then
+                echo "Invalid parameter: $1"
+                exit 1;           # error
+            fi
+            break;;
     esac
 done
 # remaining="$@"
@@ -90,22 +108,49 @@ else
     echo "Using version: ${CT_CLI_VERSION}"
 fi
 
+if [ -z "${T_DOWNLOAD_URL}" ]; then
+    CT_DOWNLOAD_URL="https://github.com/cloudtruth/cloudtruth-cli/releases/download/${CT_CLI_VERSION}"
+fi
+
 ### Install       ############################################################
+
+download() {
+    url=$1
+    auth_token=$2
+    filename=$(basename "$url")
+    minsize=100 # downloads that fail often have a 9-byte file
+    auth_header=""
+    if [ -n "${auth_token}" ]; then
+        auth_header="Authorization: token $auth_token"
+    fi
+
+    curl -sLOJ -H "$auth_header" "$url"
+    filesize=$(stat -c%s "$filename")
+    if [ "$filesize" -lt "$minsize" ]; then
+        echo "Failed to download: $url"
+        exit 3
+    fi
+    echo "Downloaded: $url"
+}
 
 # alpine, centos, rhel, macos - no package format yet, use generic binary
 if [ "$PKG" = "apk" ] || [ "$PKG" = "rpm" ] || [ "$PKG" = "macos" ]; then
     if [ "$PKG" = "macos" ]; then
-        PACKAGEDIR=cloudtruth-${CT_CLI_VERSION}-${ARCH}-apple-darwin
+        PACKAGE_DIR=cloudtruth-${CT_CLI_VERSION}-${ARCH}-apple-darwin
     else
-        PACKAGEDIR=cloudtruth-${CT_CLI_VERSION}-${ARCH}-unknown-linux-musl
+        PACKAGE_DIR=cloudtruth-${CT_CLI_VERSION}-${ARCH}-unknown-linux-musl
     fi
-    PACKAGE=${PACKAGEDIR}.tar.gz
+    PACKAGE=${PACKAGE_DIR}.tar.gz
     CWD=$(pwd)
     cd /tmp || exit
-    curl -sLOJ "https://github.com/cloudtruth/cloudtruth-cli/releases/download/${CT_CLI_VERSION}/${PACKAGE}"
+    download "${CT_DOWNLOAD_URL}/${PACKAGE}" "${CT_DOWNLOAD_AUTH_TOKEN}"
     tar xzf "${PACKAGE}" || exit
-    install -m 755 -o root "${PACKAGEDIR}/cloudtruth" /usr/local/bin
-    rm -rf "${PACKAGEDIR}"
+    if [ ${CT_DRY_RUN} -ne 0 ]; then
+        echo "Skipping install of ${PACKAGE_DIR}/cloudtruth"
+    else
+        install -m 755 -o root "${PACKAGE_DIR}/cloudtruth" /usr/local/bin
+    fi
+    rm -rf "${PACKAGE_DIR}"
     rm "${PACKAGE}"
     cd "${CWD}" || exit
 fi
@@ -118,10 +163,16 @@ if [ "$PKG" = "deb" ]; then
     PACKAGE=cloudtruth_${CT_CLI_VERSION}_${ARCH}.deb
     CWD=$(pwd)
     cd /tmp || exit
-    curl -sLOJ "https://github.com/cloudtruth/cloudtruth-cli/releases/download/${CT_CLI_VERSION}/${PACKAGE}"
-    dpkg -i "${PACKAGE}"
+    download "${CT_DOWNLOAD_URL}/${PACKAGE}" "${CT_DOWNLOAD_AUTH_TOKEN}"
+    if [ ${CT_DRY_RUN} -ne 0 ]; then
+        echo "Skipping install of ${PACKAGE}"
+    else
+        dpkg -i "${PACKAGE}"
+    fi
     rm "${PACKAGE}"
     cd "${CWD}" || exit
 fi
 
-cloudtruth --version
+if [ ${CT_DRY_RUN} -eq 0 ]; then
+    cloudtruth --version
+fi
