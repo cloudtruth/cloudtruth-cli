@@ -45,7 +45,7 @@ jobs:
       CT_TEST_PARAM: INTEGRATION_TEST_RESULT
       CT_TEST_VALUE: Speicla
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v1
       - name: alpine-3.13
         run: |
           docker build . -e CT_DOWNLOAD_URL -e CT_DOWNLOAD_VERSION -e CT_DOWNLOAD_AUTH_TOKEN -f tests/Dockerfile.alpine-3.13 -t cloudtruth:alpine-3.13
@@ -70,7 +70,7 @@ jobs:
       CT_TEST_PARAM: INTEGRATION_TEST_RESULT
       CT_TEST_VALUE: Speicla
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v1
       - name: centos-8
         run: |
           docker build . -e CT_DOWNLOAD_URL -e CT_DOWNLOAD_VERSION -e CT_DOWNLOAD_AUTH_TOKEN -f tests/Dockerfile.centos-8 -t cloudtruth:centos-8
@@ -95,7 +95,7 @@ jobs:
       CT_TEST_PARAM: INTEGRATION_TEST_RESULT
       CT_TEST_VALUE: Speicla
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v1
       - name: debian-bullseye-slim
         run: |
           docker build . -e CT_DOWNLOAD_URL -e CT_DOWNLOAD_VERSION -e CT_DOWNLOAD_AUTH_TOKEN -f tests/Dockerfile.debian-bullseye-slim -t cloudtruth:debian-bullseye-slim
@@ -124,7 +124,7 @@ jobs:
       CT_TEST_PARAM: INTEGRATION_TEST_RESULT
       CT_TEST_VALUE: Speicla
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v1
       - name: macOS-latest
         run: |
           sudo ./install.sh --url ${CT_DOWNLOAD_URL} --version ${CT_DOWNLOAD_VERSION} --auth-token ${CT_DOWNLOAD_AUTH_TOKEN}
@@ -145,7 +145,7 @@ jobs:
       CT_TEST_PARAM: INTEGRATION_TEST_RESULT
       CT_TEST_VALUE: Speicla
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v1
       - name: ubuntu-groovy
         run: |
           docker build . -e CT_DOWNLOAD_URL -e CT_DOWNLOAD_VERSION -e CT_DOWNLOAD_AUTH_TOKEN -f tests/Dockerfile.ubuntu-groovy -t cloudtruth:ubuntu-groovy
@@ -182,7 +182,7 @@ jobs:
       CT_TEST_PARAM: INTEGRATION_TEST_RESULT
       CT_TEST_VALUE: Speicla
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v1
       - name: windows-latest
         shell: pwsh
         run: |
