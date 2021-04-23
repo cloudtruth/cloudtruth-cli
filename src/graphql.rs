@@ -50,6 +50,7 @@ pub enum Operation {
 pub enum Resource {
     Environment,
     Parameter,
+    Project,
     Template,
 }
 
