@@ -210,7 +210,27 @@ fn process_project_command(
     projects: &impl ProjectsIntf,
     subcmd_args: &ArgMatches,
 ) -> Result<()> {
-    if let Some(subcmd_args) = subcmd_args.subcommand_matches("list") {
+    if let Some(subcmd_args) = subcmd_args.subcommand_matches("delete") {
+        let proj_name = subcmd_args.value_of("NAME");
+        let details = projects.get_id_details(org_id, proj_name)?;
+
+        if let Some(details) = details {
+            // NOTE: the server is responsible for checking if children exist
+            let mut confirmed = subcmd_args.is_present("confirm");
+            if !confirmed {
+                confirmed = user_confirm(format!("Delete project '{}'", proj_name.unwrap()));
+            }
+
+            if !confirmed {
+                warning_message(format!("Project '{}' not deleted!", proj_name.unwrap()))?;
+            } else {
+                projects.delete_project(details.id)?;
+                println!("Deleted project '{}'", proj_name.unwrap());
+            }
+        } else {
+            warning_message(format!("Project '{}' does not exist!", proj_name.unwrap()))?;
+        }
+    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("list") {
         let details = projects.get_project_details(org_id)?;
         // NOTE: should always have at least the default project
         if !subcmd_args.is_present("values") {
@@ -236,6 +256,30 @@ fn process_project_command(
                 assert_eq!(fmt, "table");
                 table.printstd();
             }
+        }
+    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("set") {
+        let proj_name = subcmd_args.value_of("NAME");
+        let description = subcmd_args.value_of("description");
+        let details = projects.get_id_details(org_id, proj_name)?;
+
+        if let Some(details) = details {
+            if description == Some(details.description.as_str()) {
+                warning_message(format!(
+                    "Project '{}' not updated: same description",
+                    proj_name.unwrap()
+                ))?;
+            } else if description.is_none() {
+                warning_message(format!(
+                    "Project '{}' not updated: no description provided",
+                    proj_name.unwrap()
+                ))?;
+            } else {
+                projects.update_project(details.name, details.id, description)?;
+                println!("Updated project '{}'", proj_name.unwrap());
+            }
+        } else {
+            projects.create_project(org_id, proj_name, description)?;
+            println!("Created project '{}'", proj_name.unwrap());
         }
     } else {
         warn_missing_subcommand("projects")?;

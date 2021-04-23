@@ -249,11 +249,32 @@ pub fn build_cli() -> App<'static, 'static> {
                 .visible_aliases(&["projects", "proj"])
                 .about("Work with CloudTruth projects")
                 .subcommands(vec![
+                    SubCommand::with_name("delete")
+                        .visible_alias("del")
+                        .about("Delete specified CloudTruth project")
+                        .arg(Arg::with_name("NAME")
+                            .index(1)
+                            .required(true)
+                            .help("Project name"))
+                        .arg(Arg::with_name("confirm")
+                            .long("confirm")
+                            .help("Avoid confirmation prompt")),
                     SubCommand::with_name("list")
                         .visible_alias("ls")
                         .about("List CloudTruth projects")
                         .arg(values_flag().help("Display project information/values"))
-                        .arg(table_format_options().help("Format for project values data"))
+                        .arg(table_format_options().help("Format for project values data")),
+                    SubCommand::with_name("set")
+                        .about("Create/update a CloudTruth project")
+                        .arg(Arg::with_name("NAME")
+                            .index(1)
+                            .required(true)
+                            .help("Project name"))
+                        .arg(Arg::with_name("description")
+                            .short("d")
+                            .long("desc")
+                            .takes_value(true)
+                            .help("Project's description")),
                 ])
         )
 }

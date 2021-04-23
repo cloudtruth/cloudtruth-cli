@@ -1,8 +1,24 @@
 use crate::graphql::prelude::graphql_request;
-use crate::graphql::{GraphQLError, GraphQLResult};
+use crate::graphql::{GraphQLError, GraphQLResult, Operation, Resource};
 use graphql_client::*;
 
 pub struct Projects {}
+
+#[derive(GraphQLQuery)]
+#[graphql(
+    schema_path = "graphql/schema.graphql",
+    query_path = "graphql/project_queries.graphql",
+    response_derives = "Debug"
+)]
+pub struct CreateProjectMutation;
+
+#[derive(GraphQLQuery)]
+#[graphql(
+    schema_path = "graphql/schema.graphql",
+    query_path = "graphql/project_queries.graphql",
+    response_derives = "Debug"
+)]
+pub struct DeleteProjectMutation;
 
 #[derive(GraphQLQuery)]
 #[graphql(
@@ -20,6 +36,14 @@ pub struct GetProjectByNameQuery;
 )]
 pub struct ProjectsQuery;
 
+#[derive(GraphQLQuery)]
+#[graphql(
+    schema_path = "graphql/schema.graphql",
+    query_path = "graphql/project_queries.graphql",
+    response_derives = "Debug"
+)]
+pub struct UpdateProjectMutation;
+
 pub struct ProjectDetails {
     pub id: String,
     pub name: String,
@@ -34,6 +58,32 @@ pub trait ProjectsIntf {
         org_id: Option<&str>,
         proj_name: Option<&str>,
     ) -> GraphQLResult<Option<String>>;
+
+    /// Get the details for `proj_name`
+    fn get_id_details(
+        &self,
+        org_id: Option<&str>,
+        proj_name: Option<&str>,
+    ) -> GraphQLResult<Option<ProjectDetails>>;
+
+    /// Create a project with the specified name/description
+    fn create_project(
+        &self,
+        org_id: Option<&str>,
+        proj_name: Option<&str>,
+        description: Option<&str>,
+    ) -> GraphQLResult<Option<String>>;
+
+    /// Update the specified project
+    fn update_project(
+        &self,
+        proj_name: String,
+        proj_id: String,
+        description: Option<&str>,
+    ) -> GraphQLResult<Option<String>>;
+
+    /// Delete the specified project
+    fn delete_project(&self, proj_id: String) -> GraphQLResult<Option<String>>;
 
     /// Get a complete list of projects for this organization.
     fn get_project_details(&self, org_id: Option<&str>) -> GraphQLResult<Vec<ProjectDetails>>;
@@ -69,11 +119,11 @@ impl Projects {
 }
 
 impl ProjectsIntf for Projects {
-    fn get_id(
+    fn get_id_details(
         &self,
         org_id: Option<&str>,
         proj_name: Option<&str>,
-    ) -> GraphQLResult<Option<String>> {
+    ) -> GraphQLResult<Option<ProjectDetails>> {
         let query = GetProjectByNameQuery::build_query(get_project_by_name_query::Variables {
             organization_id: org_id.map(|id| id.to_string()),
             project_name: proj_name.map(|name| name.to_string()),
@@ -88,9 +138,26 @@ impl ProjectsIntf for Projects {
                 .organization
                 .expect("Primary organization not found")
                 .project
-                .map(|proj| proj.id))
+                .map(|proj| ProjectDetails {
+                    id: proj.id,
+                    name: proj.name,
+                    description: proj.description.unwrap_or_default(),
+                    is_default: proj.default_for_organization,
+                }))
         } else {
             Err(GraphQLError::MissingDataError)
+        }
+    }
+
+    fn get_id(
+        &self,
+        org_id: Option<&str>,
+        proj_name: Option<&str>,
+    ) -> GraphQLResult<Option<String>> {
+        if let Some(details) = self.get_id_details(org_id, proj_name)? {
+            Ok(Some(details.id))
+        } else {
+            Ok(None)
         }
     }
 
@@ -107,5 +174,100 @@ impl ProjectsIntf for Projects {
             .collect();
         list.sort_by(|l, r| l.name.cmp(&r.name));
         Ok(list)
+    }
+
+    fn create_project(
+        &self,
+        org_id: Option<&str>,
+        proj_name: Option<&str>,
+        description: Option<&str>,
+    ) -> GraphQLResult<Option<String>> {
+        let query = CreateProjectMutation::build_query(create_project_mutation::Variables {
+            organization_id: org_id.map(|o| o.to_string()),
+            project_name: proj_name.unwrap().to_string(),
+            description: description.map(|d| d.to_string()),
+        });
+        let response_body = graphql_request::<_, create_project_mutation::ResponseData>(&query)?;
+
+        if let Some(errors) = response_body.errors {
+            Err(GraphQLError::build_query_error(
+                errors,
+                Resource::Project,
+                Operation::Create,
+            ))
+        } else if let Some(data) = response_body.data {
+            let logical_errors = data.create_project.errors;
+
+            if !logical_errors.is_empty() {
+                Err(GraphQLError::build_logical_error(to_user_errors!(
+                    logical_errors
+                )))
+            } else {
+                Ok(data.create_project.project.map(|p| p.id))
+            }
+        } else {
+            Err(GraphQLError::MissingDataError)
+        }
+    }
+
+    fn delete_project(&self, project_id: String) -> GraphQLResult<Option<String>> {
+        let query =
+            DeleteProjectMutation::build_query(delete_project_mutation::Variables { project_id });
+        let response_body = graphql_request::<_, delete_project_mutation::ResponseData>(&query)?;
+
+        if let Some(errors) = response_body.errors {
+            Err(GraphQLError::build_query_error(
+                errors,
+                Resource::Project,
+                Operation::Delete,
+            ))
+        } else if let Some(data) = response_body.data {
+            let logical_errors = data.delete_project.errors;
+            if !logical_errors.is_empty() {
+                Err(GraphQLError::build_logical_error(to_user_errors!(
+                    logical_errors
+                )))
+            } else if let Some(project) = data.delete_project.project {
+                Ok(Some(project.id))
+            } else {
+                Ok(None)
+            }
+        } else {
+            Err(GraphQLError::MissingDataError)
+        }
+    }
+
+    fn update_project(
+        &self,
+        project_name: String,
+        project_id: String,
+        description: Option<&str>,
+    ) -> GraphQLResult<Option<String>> {
+        let query = UpdateProjectMutation::build_query(update_project_mutation::Variables {
+            project_name,
+            project_id,
+            description: description.map(|d| d.to_string()),
+        });
+        let response_body = graphql_request::<_, update_project_mutation::ResponseData>(&query)?;
+
+        if let Some(errors) = response_body.errors {
+            Err(GraphQLError::build_query_error(
+                errors,
+                Resource::Project,
+                Operation::Update,
+            ))
+        } else if let Some(data) = response_body.data {
+            let logical_errors = data.update_project.errors;
+
+            if !logical_errors.is_empty() {
+                Err(GraphQLError::build_logical_error(to_user_errors!(
+                    logical_errors
+                )))
+            } else {
+                Ok(data.update_project.project.map(|p| p.id))
+            }
+        } else {
+            Err(GraphQLError::MissingDataError)
+        }
     }
 }
