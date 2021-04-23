@@ -18,6 +18,14 @@ pub struct CreateEnvironmentMutation;
     query_path = "graphql/environment_queries.graphql",
     response_derives = "Debug"
 )]
+pub struct DeleteEnvironmentMutation;
+
+#[derive(GraphQLQuery)]
+#[graphql(
+    schema_path = "graphql/schema.graphql",
+    query_path = "graphql/environment_queries.graphql",
+    response_derives = "Debug"
+)]
 pub struct GetEnvironmentByNameQuery;
 
 #[derive(GraphQLQuery)]
@@ -182,6 +190,34 @@ impl Environments {
                 )))
             } else {
                 Ok(data.create_environment.environment.map(|p| p.id))
+            }
+        } else {
+            Err(GraphQLError::MissingDataError)
+        }
+    }
+
+    pub fn delete_environment(&self, environment_id: String) -> GraphQLResult<Option<String>> {
+        let query =
+            DeleteEnvironmentMutation::build_query(delete_environment_mutation::Variables {
+                environment_id,
+            });
+        let response_body =
+            graphql_request::<_, delete_environment_mutation::ResponseData>(&query)?;
+
+        if let Some(errors) = response_body.errors {
+            Err(GraphQLError::build_query_error(
+                errors,
+                Resource::Environment,
+                Operation::Delete,
+            ))
+        } else if let Some(data) = response_body.data {
+            let logical_errors = data.delete_environment.errors;
+            if !logical_errors.is_empty() {
+                Err(GraphQLError::build_logical_error(to_user_errors!(
+                    logical_errors
+                )))
+            } else {
+                Ok(data.delete_environment.deleted_environment_id)
             }
         } else {
             Err(GraphQLError::MissingDataError)

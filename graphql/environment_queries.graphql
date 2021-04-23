@@ -51,6 +51,18 @@ mutation CreateEnvironmentMutation($organizationId: ID, $environmentName: String
   }
 }
 
+mutation DeleteEnvironmentMutation($environmentId: ID!) {
+  deleteEnvironment(input: { id: $environmentId }) {
+    clientMutationId
+    deletedEnvironmentId
+
+    errors {
+      path
+      message
+    }
+  }
+}
+
 mutation UpdateEnvironmentMutation($environmentId: ID!, $description: String) {
   updateEnvironment(input: { id: $environmentId, description: $description }) {
     clientMutationId
