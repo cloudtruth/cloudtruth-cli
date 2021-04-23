@@ -275,6 +275,43 @@ fn process_environment_command(
                 table.printstd();
             }
         }
+    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("set") {
+        let env_name = subcmd_args.value_of("NAME");
+        let parent_name = subcmd_args.value_of("parent");
+        let description = subcmd_args.value_of("description");
+        let details = environments.get_id_details(org_id, env_name)?;
+
+        if let Some(details) = details {
+            if description == Some(details.description.as_str()) {
+                warning_message(format!(
+                    "Environment '{}' not updated: same description",
+                    env_name.unwrap()
+                ))?;
+            } else if description.is_none() {
+                warning_message(format!(
+                    "Environment '{}' not updated: no description provided",
+                    env_name.unwrap()
+                ))?;
+            } else {
+                if parent_name.is_some() && parent_name.unwrap() != details.parent.as_str() {
+                    warning_message(format!(
+                        "Environment '{}' parent cannot be updated.",
+                        env_name.unwrap()
+                    ))?;
+                }
+                environments.update_environment(details.id, description)?;
+                println!("Updated environment '{}'", env_name.unwrap());
+            }
+        } else {
+            let parent_name = parent_name.unwrap_or(DEFAULT_ENV_NAME);
+            if let Some(parent_id) = environments.get_id(org_id, Some(parent_name))? {
+                environments.create_environment(org_id, env_name, description, parent_id)?;
+                println!("Created environment '{}'", env_name.unwrap());
+            } else {
+                error_message(format!("No parent environment '{}' found", parent_name))?;
+                process::exit(5);
+            }
+        }
     } else {
         warn_missing_subcommand("environments")?;
     }

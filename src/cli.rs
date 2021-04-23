@@ -81,7 +81,22 @@ pub fn build_cli() -> App<'static, 'static> {
                         .visible_alias("ls")
                         .about("List CloudTruth environments")
                         .arg(values_flag().help("Display environment information/values"))
-                        .arg(table_format_options().help("Format for environment values data"))
+                        .arg(table_format_options().help("Format for environment values data")),
+                    SubCommand::with_name("set")
+                        .about("Create/update a CloudTruth environment")
+                        .arg(Arg::with_name("NAME")
+                            .index(1)
+                            .help("Environment name"))
+                        .arg(Arg::with_name("description")
+                            .short("d")
+                            .long("desc")
+                            .takes_value(true)
+                            .help("Environment's description"))
+                        .arg(Arg::with_name("parent")
+                            .short("p")
+                            .long("parent")
+                            .takes_value(true)
+                            .help("Environment's parent name (only used for create)")),
                 ])
         )
         .subcommand(
