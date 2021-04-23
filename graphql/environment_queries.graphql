@@ -24,7 +24,55 @@ query GetEnvironmentByNameQuery($organizationId: ID, $environmentName: String) {
     organization(id: $organizationId) {
       environment(name: $environmentName) {
         id
+        name
+        description
+        ancestors {
+          name
+        }
+        parent {
+          name
+        }
       }
+    }
+  }
+}
+
+mutation CreateEnvironmentMutation($organizationId: ID, $environmentName: String!, $parentId: ID!, $description: String) {
+  createEnvironment(input: { organizationId: $organizationId, name: $environmentName, parentId: $parentId, description: $description}) {
+    clientMutationId
+    environment {
+      id
+    }
+
+    errors {
+      path
+      message
+    }
+  }
+}
+
+mutation DeleteEnvironmentMutation($environmentId: ID!) {
+  deleteEnvironment(input: { id: $environmentId }) {
+    clientMutationId
+    deletedEnvironmentId
+
+    errors {
+      path
+      message
+    }
+  }
+}
+
+mutation UpdateEnvironmentMutation($environmentId: ID!, $description: String) {
+  updateEnvironment(input: { id: $environmentId, description: $description }) {
+    clientMutationId
+    environment {
+      id
+    }
+
+    errors {
+      path
+      message
     }
   }
 }

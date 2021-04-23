@@ -30,7 +30,7 @@ use clap::ArgMatches;
 use color_eyre::eyre::Result;
 use prettytable::{format, Attr, Cell, Row, Table};
 use rpassword::read_password;
-use std::io::{self, stdout, Write};
+use std::io::{self, stdin, stdout, Write};
 use std::str::FromStr;
 use std::{fs, process};
 use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
@@ -95,6 +95,34 @@ fn warn_user(message: String) -> Result<()> {
 
 fn warn_missing_subcommand(command: &str) -> Result<()> {
     warn_user(format!("No '{}' sub-command executed.", command))
+}
+
+/// Prompts the user for 'y/n' output.
+///
+/// If the user answers 'y' (case insensitive), 'true' is returned.
+/// If the user answers 'n' (case insensitive), 'false' is returned.
+/// The prompt will be repeated upto 3 times if the users does not enter 'y|n'. If the
+/// max tries are exceeded, it returns 'false'.
+fn user_confirm(message: String) -> bool {
+    let max_tries = 3;
+    let mut confirmed = false;
+
+    for _ in 0..max_tries {
+        let mut input = String::new();
+        print!("{}? (y/n) ", message);
+        stdout().flush().unwrap();
+        let _ = stdin().read_line(&mut input);
+        input = input.trim().to_string().to_lowercase();
+        input.truncate(input.len());
+        if input.as_str() == "y" || input.as_str() == "yes" {
+            confirmed = true;
+            break;
+        }
+        if input.as_str() == "n" || input.as_str() == "no" {
+            break;
+        }
+    }
+    confirmed
 }
 
 /// Resolves the environment and project strings.
@@ -247,7 +275,30 @@ fn process_environment_command(
     environments: &Environments,
     subcmd_args: &ArgMatches,
 ) -> Result<()> {
-    if let Some(subcmd_args) = subcmd_args.subcommand_matches("list") {
+    if let Some(subcmd_args) = subcmd_args.subcommand_matches("delete") {
+        let env_name = subcmd_args.value_of("NAME");
+        let details = environments.get_id_details(org_id, env_name)?;
+
+        if let Some(details) = details {
+            // NOTE: the server is responsible for checking if children exist
+            let mut confirmed = subcmd_args.is_present("confirm");
+            if !confirmed {
+                confirmed = user_confirm(format!("Delete environment '{}'", env_name.unwrap()));
+            }
+
+            if !confirmed {
+                warning_message(format!("Environment '{}' not deleted!", env_name.unwrap()))?;
+            } else {
+                environments.delete_environment(details.id)?;
+                println!("Deleted environment '{}'", env_name.unwrap());
+            }
+        } else {
+            warning_message(format!(
+                "Environment '{}' does not exist!",
+                env_name.unwrap()
+            ))?;
+        }
+    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("list") {
         let details = environments.get_environment_details(org_id)?;
         // NOTE: should always have at least the default environment
         if !subcmd_args.is_present("values") {
@@ -273,6 +324,43 @@ fn process_environment_command(
             } else {
                 assert_eq!(fmt, "table");
                 table.printstd();
+            }
+        }
+    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("set") {
+        let env_name = subcmd_args.value_of("NAME");
+        let parent_name = subcmd_args.value_of("parent");
+        let description = subcmd_args.value_of("description");
+        let details = environments.get_id_details(org_id, env_name)?;
+
+        if let Some(details) = details {
+            if description == Some(details.description.as_str()) {
+                warning_message(format!(
+                    "Environment '{}' not updated: same description",
+                    env_name.unwrap()
+                ))?;
+            } else if description.is_none() {
+                warning_message(format!(
+                    "Environment '{}' not updated: no description provided",
+                    env_name.unwrap()
+                ))?;
+            } else {
+                if parent_name.is_some() && parent_name.unwrap() != details.parent.as_str() {
+                    warning_message(format!(
+                        "Environment '{}' parent cannot be updated.",
+                        env_name.unwrap()
+                    ))?;
+                }
+                environments.update_environment(details.id, description)?;
+                println!("Updated environment '{}'", env_name.unwrap());
+            }
+        } else {
+            let parent_name = parent_name.unwrap_or(DEFAULT_ENV_NAME);
+            if let Some(parent_id) = environments.get_id(org_id, Some(parent_name))? {
+                environments.create_environment(org_id, env_name, description, parent_id)?;
+                println!("Created environment '{}'", env_name.unwrap());
+            } else {
+                error_message(format!("No parent environment '{}' found", parent_name))?;
+                process::exit(5);
             }
         }
     } else {
