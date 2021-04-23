@@ -23,7 +23,7 @@ fn values_flag() -> Arg<'static, 'static> {
 }
 
 fn secrets_display_flag() -> Arg<'static, 'static> {
-    Arg::with_name("secret").short("s").long("secrets")
+    Arg::with_name("secrets").short("s").long("secrets")
 }
 
 pub fn build_cli() -> App<'static, 'static> {
@@ -172,8 +172,8 @@ pub fn build_cli() -> App<'static, 'static> {
                             .short("p")
                             .long("prompt")
                             .help("Set the value using unecho'd terminal"))
-                        .arg(Arg::with_name("secret")
-                            .long("secret")
+                        .arg(Arg::with_name("secrets")
+                            .long("secrets")
                             .takes_value(true)
                             .possible_values(&["true", "false"])
                             .help("Flags whether this is a secret parameter"))

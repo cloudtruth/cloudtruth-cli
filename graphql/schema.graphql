@@ -276,7 +276,8 @@ input CreateOrganizationInput {
   A unique identifier for the client performing the mutation.
   """
   clientMutationId: String
-  name: String!
+  eaorgid: ID
+  name: String
 }
 
 """
@@ -1383,6 +1384,7 @@ type Organization implements HasPolicy & Node {
     last: Int
   ): AwsIntegrationConnection!
   createdAt: ISO8601DateTime!
+  defaultProject: Project!
   environment(name: String): Environment
   environments(
     """
@@ -1405,7 +1407,7 @@ type Organization implements HasPolicy & Node {
     """
     last: Int
   ): EnvironmentConnection!
-  evaluateTemplate(body: String!, environmentId: ID): TemplateEvaluation
+  evaluateTemplate(body: String!, environmentId: ID): TemplateEvaluation @deprecated(reason: "Use project instead.")
   githubIntegrations(
     """
     Returns the elements in the list that come after the specified cursor.
@@ -1562,6 +1564,10 @@ type Organization implements HasPolicy & Node {
     """
     last: Int
   ): ProjectConnection!
+  subscriptionExpiresAt: ISO8601DateTime
+  subscriptionId: String
+  subscriptionPlanId: String
+  subscriptionPlanName: String
   template(name: String!): Template
   templates(
     """
@@ -1590,6 +1596,7 @@ type Organization implements HasPolicy & Node {
     names: [String!]
   ): TemplateConnection!
   updatedAt: ISO8601DateTime!
+  vaultId: String!
 }
 
 type OrganizationPolicy implements BasePolicy {
@@ -1808,7 +1815,8 @@ type Project implements HasPolicy & Node {
   createdAt: ISO8601DateTime!
   defaultForOrganization: Boolean!
   description: String
-  exportParameters(options: ExportParametersOptions, format: ExportParametersFormatEnum!): ExportParameters
+  evaluateTemplate(body: String!, environmentId: ID): TemplateEvaluation
+  exportParameters(format: ExportParametersFormatEnum!, options: ExportParametersOptions): ExportParameters
   id: ID!
   name: String!
   organization: Organization!
@@ -2050,7 +2058,6 @@ type Template implements HasPolicy & Node {
   policy: NodePolicy!
   project: Project!
   updatedAt: ISO8601DateTime!
-  url(environmentId: ID, environmentName: String): String
 }
 
 """
