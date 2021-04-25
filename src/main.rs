@@ -130,9 +130,19 @@ fn user_confirm(message: String) -> bool {
 /// If either fails, it prints an error and exits.
 /// On success, it returns a `ResolvedIds` structure that contains ids to avoid needing to resolve
 /// the names again.
-fn resolve_ids(org_id: Option<&str>, env: Option<&str>, proj: Option<&str>) -> Result<ResolvedIds> {
+fn resolve_ids(org_id: Option<&str>, config: &Config) -> Result<ResolvedIds> {
     // The `err` value is used to allow accumulation of multiple errors to the user.
     let mut err = false;
+    let env = if !config.environment.is_empty() {
+        Some(config.environment.as_str())
+    } else {
+        None
+    };
+    let proj = if !config.project.is_empty() {
+        Some(config.project.as_str())
+    } else {
+        None
+    };
     let environments = Environments::new();
     let env_id = environments.get_id(org_id, env)?;
     if env_id.is_none() {
@@ -301,12 +311,49 @@ fn process_completion_command(subcmd_args: &ArgMatches) {
 fn process_config_command(subcmd_args: &ArgMatches) -> Result<()> {
     if subcmd_args.subcommand_matches("edit").is_some() {
         Config::edit()?;
-    } else if subcmd_args.subcommand_matches("list").is_some() {
-        let profile_names = Config::get_profile_names()?;
-        if profile_names.is_empty() {
+    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("list") {
+        let details = Config::get_profile_details()?;
+        if details.is_empty() {
             println!("No profiles exist in config.");
-        } else {
+        } else if !subcmd_args.is_present("values") {
+            let profile_names: Vec<String> = details.iter().map(|v| v.name.clone()).collect();
             println!("{}", profile_names.join("\n"));
+        } else {
+            let show_secrets = subcmd_args.is_present("secret");
+            let fmt = subcmd_args.value_of("format").unwrap();
+            let mut table = Table::new();
+            table.set_titles(Row::new(vec![
+                Cell::new("Name").with_style(Attr::Bold),
+                Cell::new("API").with_style(Attr::Bold),
+                Cell::new("Environment").with_style(Attr::Bold),
+                Cell::new("Project").with_style(Attr::Bold),
+                Cell::new("Description").with_style(Attr::Bold),
+            ]));
+            for entry in details {
+                let mut api_value = "".to_string();
+                if let Some(api_key) = entry.api_key {
+                    if show_secrets {
+                        api_value = api_key;
+                    } else if !api_key.is_empty() {
+                        api_value = REDACTED.to_string();
+                    }
+                }
+                table.add_row(row![
+                    entry.name,
+                    api_value,
+                    entry.environment.unwrap_or_default(),
+                    entry.project.unwrap_or_default(),
+                    entry.description.unwrap_or_default(),
+                ]);
+            }
+            table.set_format(*format::consts::FORMAT_NO_LINESEP_WITH_TITLE);
+
+            if fmt == "csv" {
+                table.to_csv(stdout())?;
+            } else {
+                assert_eq!(fmt, "table");
+                table.printstd();
+            }
         }
     } else {
         warn_missing_subcommand("config")?;
@@ -683,8 +730,15 @@ fn main() -> Result<()> {
 
     let api_key = matches.value_of("api_key");
     let profile_name = matches.value_of("profile");
+    let env_name = matches.value_of("environment");
+    let proj_name = matches.value_of("project");
 
-    Config::init_global(Config::load_config(api_key, profile_name)?);
+    Config::init_global(Config::load_config(
+        api_key,
+        profile_name,
+        env_name,
+        proj_name,
+    )?);
 
     if let Some(matches) = matches.subcommand_matches("completions") {
         process_completion_command(matches);
@@ -714,9 +768,7 @@ fn main() -> Result<()> {
     }
 
     // Everything below here requires resolved environment/project values
-    let env = matches.value_of("env");
-    let proj = matches.value_of("project");
-    let resolved = resolve_ids(org_id, env, proj)?;
+    let resolved = resolve_ids(org_id, Config::global())?;
 
     if let Some(matches) = matches.subcommand_matches("parameters") {
         let parameters = Parameters::new();

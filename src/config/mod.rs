@@ -5,7 +5,7 @@ mod profiles;
 use crate::cli::binary_name;
 use crate::config::env::ConfigEnv;
 use crate::config::file::ConfigFile;
-use crate::config::profiles::Profile;
+use crate::config::profiles::{Profile, ProfileDetails};
 use color_eyre::eyre::Result;
 use directories::ProjectDirs;
 use indoc::formatdoc;
@@ -16,6 +16,9 @@ use std::path::{Path, PathBuf};
 static INSTANCE: OnceCell<Config> = OnceCell::new();
 
 const CONFIG_FILE_NAME: &str = "cli.yml";
+
+// Default GraphQL server URL
+pub const DEFAULT_SERVER_URL: &str = "https://api.cloudtruth.com/graphql";
 
 // Default environment name.
 pub const DEFAULT_ENV_NAME: &str = "default";
@@ -72,6 +75,8 @@ const ORGANIZATION_NAME: &str = "CloudTruth";
 #[derive(Debug)]
 pub struct Config {
     pub api_key: String,
+    pub environment: String,
+    pub project: String,
     pub server_url: String,
 }
 
@@ -91,9 +96,11 @@ impl From<Profile> for Config {
     fn from(profile: Profile) -> Self {
         Config {
             api_key: profile.api_key.unwrap_or_else(|| "".to_string()),
+            environment: profile.environment.unwrap_or_else(|| "".to_string()),
+            project: profile.project.unwrap_or_else(|| "".to_string()),
             server_url: profile
                 .server_url
-                .unwrap_or_else(|| "https://api.cloudtruth.com/graphql".to_string()),
+                .unwrap_or_else(|| DEFAULT_SERVER_URL.to_string()),
         }
     }
 }
@@ -138,7 +145,12 @@ impl Config {
         Ok(contents)
     }
 
-    pub fn load_config(api_key: Option<&str>, profile_name: Option<&str>) -> Result<Self> {
+    pub fn load_config(
+        api_key: Option<&str>,
+        profile_name: Option<&str>,
+        env_name: Option<&str>,
+        proj_name: Option<&str>,
+    ) -> Result<Self> {
         let mut profile = Profile::default();
 
         // Load settings from the configuration file if it exists.
@@ -161,16 +173,22 @@ impl Config {
         if let Some(api_key) = api_key {
             profile.api_key = Some(api_key.to_string());
         }
+        if let Some(env_name) = env_name {
+            profile.environment = Some(env_name.to_string());
+        }
+        if let Some(proj_name) = proj_name {
+            profile.project = Some(proj_name.to_string());
+        }
 
         Ok(profile.into())
     }
 
-    pub fn get_profile_names() -> Result<Vec<String>> {
-        let mut profiles: Vec<String> = Vec::new();
+    pub fn get_profile_details() -> Result<Vec<ProfileDetails>> {
+        let mut profiles: Vec<ProfileDetails> = Vec::new();
         if let Some(config_file) = Self::config_file() {
             if config_file.exists() {
                 let config = Self::read_config(config_file.as_path())?;
-                profiles = ConfigFile::get_profile_names(&config)?;
+                profiles = ConfigFile::get_profile_details(&config)?;
             }
         }
         Ok(profiles)
@@ -237,7 +255,7 @@ mod tests {
     #[serial]
     fn get_api_key_from_env() {
         env::set_var(CT_API_KEY, "new_key");
-        let config = Config::load_config(None, Some(DEFAULT_PROF_NAME)).unwrap();
+        let config = Config::load_config(None, Some(DEFAULT_PROF_NAME), None, None).unwrap();
 
         assert_eq!(config.api_key, "new_key");
 
@@ -249,7 +267,7 @@ mod tests {
     fn get_api_key_from_new_env() {
         env::set_var(CT_OLD_API_KEY, "old_key");
         env::set_var(CT_API_KEY, "new_key");
-        let config = Config::load_config(None, Some(DEFAULT_PROF_NAME)).unwrap();
+        let config = Config::load_config(None, Some(DEFAULT_PROF_NAME), None, None).unwrap();
 
         assert_eq!(config.api_key, "new_key");
 
@@ -261,7 +279,9 @@ mod tests {
     #[serial]
     fn api_key_from_args_takes_precedent() {
         env::set_var(CT_API_KEY, "key_from_env");
-        let config = Config::load_config(Some("key_from_args"), Some(DEFAULT_PROF_NAME)).unwrap();
+        let config =
+            Config::load_config(Some("key_from_args"), Some(DEFAULT_PROF_NAME), None, None)
+                .unwrap();
 
         assert_eq!(config.api_key, "key_from_args");
 
@@ -272,7 +292,7 @@ mod tests {
     #[serial]
     fn get_server_url_from_env() {
         env::set_var(CT_SERVER_URL, "http://localhost:7001/graphql");
-        let config = Config::load_config(None, Some(DEFAULT_PROF_NAME)).unwrap();
+        let config = Config::load_config(None, Some(DEFAULT_PROF_NAME), None, None).unwrap();
 
         assert_eq!(config.server_url, "http://localhost:7001/graphql");
 
