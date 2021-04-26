@@ -1,8 +1,11 @@
-# Unreleased
+# 0.4.0 - 2021-04-26
 
 * Breaking changes:
   * Moved `templates getit` functionality to `parameters export`.
+* Arguments `--project <proj>` and `--env <env>` can also be set using configuration profile, or 
+  environment variable (e.g. `CLOUDTRUTH_PROJECT`, `CLOUDTRUTH_ENVIRONMENT`).
 * Parameters: Added `export`
+* Config: enhanced `list` with `--values`, `--format`, and `--secrets` options
 
 # 0.3.0 - 2021-04-16
 
