@@ -6,6 +6,8 @@ import os
 from typing import List, Optional, Dict
 
 DEFAULT_SERVER_URL = "https://api.cloudtruth.com/graphql"
+LOG_COMMANDS = 1
+LOG_OUTPUT = 0
 
 
 def parse_args(*args) -> argparse.Namespace:
@@ -31,6 +33,7 @@ def parse_args(*args) -> argparse.Namespace:
     )
     return parser.parse_args(*args)
 
+
 @dataclasses.dataclass
 class Result:
     return_value: int = 0,
@@ -47,67 +50,77 @@ class Result:
     def _contains_value(self, stream: List[str], value):
         return self._first_line_contains(stream, value) is not None
 
-    def _contains_key_value(self, stream: List[str], key: str, value: str) -> bool:
-        line = self._first_line_contains(stream, key)
+    def _contains_both(self, stream: List[str], one: str, two: str) -> bool:
+        line = self._first_line_contains(stream, one)
         if line:
-            return value in line
+            return two in line
         return False
 
-    def out_contains_key_value(self, key: str, value: str) -> bool:
-        return self._contains_key_value(self.stdout, key, value)
+    def out_contains_both(self, one: str, two: str) -> bool:
+        return self._contains_both(self.stdout, one, two)
 
-    def out_contains_value(self, value: str) -> bool:
-        return self._contains_value(self.stdout, value)
+    def out_contains_value(self, one: str) -> bool:
+        return self._contains_value(self.stdout, one)
 
 
-def run(env: Dict[str, str], args: List[str]) -> Result:
-    print(f"Running: {' '.join(args)}")
+def run(env: Dict[str, str], cmd) -> Result:
+    if LOG_COMMANDS:
+        print(cmd)
+
     process = subprocess.run(
-        args, env=env, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        cmd, env=env, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
     )
-    return Result(
+    result = Result(
         return_value=process.returncode,
         stdout=process.stdout.decode("utf-8").split("\n"),
         stderr=process.stderr.decode("utf-8").split("\n"),
     )
 
+    if LOG_OUTPUT:
+        if result.stdout:
+            print("\n".join(result.stdout))
+        if result.stderr:
+            print("\n".join(result.stderr))
 
-def test_environment_crud(env: Dict[str, str], base_args: List[str]):
-    # verify `new_name` does not yet exist
-    new_name = "test-env-name"
-    sub_args = base_args + ["environments"]
-    result = run(env, sub_args + ["ls", "-v"])
+    return result
+
+
+def test_environment_crud(env: Dict[str, str], base_cmd: str):
+    # verify `env_name` does not yet exist
+    env_name = "test-env-name"
+    sub_cmd = base_cmd + " environments "
+    result = run(env, sub_cmd + "ls -v")
     assert result.return_value == 0, "Initial environment list failed"
-    assert not result.out_contains_key_value(new_name), "Environment pre-exists"
+    assert not result.out_contains_value(env_name), "Environment pre-exists"
 
     # create with a description
     orig_desc = "Description on create"
-    result = run(env, sub_args + ["set", {new_name},  "--desc", {orig_desc}])
+    result = run(env, sub_cmd + f"set {env_name} --desc \"{orig_desc}\"")
     assert result.return_value == 0, "Create command failed"
-    result = run(env, sub_args + ["ls", "-v"])
+    result = run(env, sub_cmd + "ls -v")
     assert result.return_value == 0, "Post-create environment list failed"
-    assert result.out_contains_key_value(new_name, orig_desc), "Created environment not in list"
+    assert result.out_contains_both(env_name, orig_desc), "Created environment not in list"
 
     # update the description
     new_desc = "Updated description"
-    result = run(env, sub_args + ["set", new_name, "--desc", new_desc])
+    result = run(env, sub_cmd + f"set {env_name} --desc \"{new_desc}\"")
     assert result.return_value == 0, "Update environment description"
-    result = run(env, sub_args + ["ls", "-v"])
+    result = run(env, sub_cmd + "ls --values")
     assert result.return_value == 0, "Post-update environment list failed"
-    assert result.out_contains_key_value(new_name, new_desc), "Updated environment not in list"
+    assert result.out_contains_both(env_name, new_desc), "Updated environment not in list"
 
     # test the list without the table
-    result = run(env, sub_args + ["list"])
+    result = run(env, sub_cmd + "list")
     assert result.return_value == 0, "Environment list without values failed"
-    assert result.out_contains_value(new_name), "Environment not in list"
-    assert not result.out_contains_key_value(new_name, new_desc), "Short list contains value"
+    assert result.out_contains_value(env_name), "Environment not in list"
+    assert not result.out_contains_both(env_name, new_desc), "Short list contains value"
 
     # delete the description
-    result = run(env, sub_args + ["delete", new_name, "--confirm"])
+    result = run(env, sub_cmd + f"delete {env_name} --confirm")
     assert result.return_value == 0, "Delete (With confirm)"
-    result = run(env, sub_args + ["ls", "-v"])
+    result = run(env, sub_cmd + "ls -v")
     assert result.return_value == 0, "Environment list failed"
-    assert result.out_contains_key_value(new_name, new_desc)
+    assert not result.out_contains_value(env_name), "Environment deleted"
 
 
 def cli_test(*args):
@@ -123,17 +136,18 @@ def cli_test(*args):
         env["CLOUDTRUTH_API_KEY"] = args.api_key
 
     # TODO: figure out right way to get this
-    base_args = ["/Users/rick/cloudtruth-cli/target/debug/cloudtruth"]
+    base_cmd = "target/debug/cloudtruth"
 
     # TODO: create loop and add try/catch
     # TODO: find functions matching name, so do not need to add call to function
     try:
-        test_environment_crud(env, base_args)
+        test_environment_crud(env, base_cmd)
     except AssertionError as err:
         breakpoint()
         result = 1
 
     return result
+
 
 if __name__ == "__main__":
     sys.exit(cli_test(sys.argv[1:]))
