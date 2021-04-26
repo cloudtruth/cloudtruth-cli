@@ -22,6 +22,9 @@ mod templates;
 use crate::config::{Config, DEFAULT_ENV_NAME, DEFAULT_PROJ_NAME};
 use crate::environments::Environments;
 use crate::graphql::GraphQLError;
+use crate::parameters::export_parameters_query::{
+    ExportParametersFormatEnum, ExportParametersOptions,
+};
 use crate::parameters::Parameters;
 use crate::projects::{Projects, ProjectsIntf};
 use crate::subprocess::{Inheritance, SubProcess, SubProcessIntf};
@@ -442,7 +445,7 @@ fn process_parameters_command(
             if ct_vars.is_empty() {
                 println!("No CloudTruth variables found!");
             } else {
-                let show_secrets = subcmd_args.is_present("secret");
+                let show_secrets = subcmd_args.is_present("secrets");
                 let mut table = Table::new();
                 table.set_titles(Row::new(vec![
                     Cell::new("Name").with_style(Attr::Bold),
@@ -496,7 +499,7 @@ fn process_parameters_command(
         let proj_name = resolved.proj_name.clone();
         let mut value = subcmd_args.value_of("value").map(|v| v.to_string());
         let mut description = subcmd_args.value_of("description").map(|v| v.to_string());
-        let mut secret: Option<bool> = match subcmd_args.value_of("secret") {
+        let mut secret: Option<bool> = match subcmd_args.value_of("secrets") {
             Some("false") => Some(false),
             Some("true") => Some(true),
             _ => None,
@@ -582,6 +585,36 @@ fn process_parameters_command(
                 env_name.unwrap_or(DEFAULT_ENV_NAME)
             );
         }
+    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("export") {
+        let proj_name = resolved.proj_name.clone();
+        let starts_with = subcmd_args.value_of("starts_with");
+        let ends_with = subcmd_args.value_of("ends_with");
+        let contains = subcmd_args.value_of("contains");
+        let template_format = subcmd_args.value_of("FORMAT").unwrap();
+        let export = subcmd_args.is_present("export");
+        let secrets = subcmd_args.is_present("secrets");
+        let env_name = resolved.env_name.as_deref();
+        let format = ExportParametersFormatEnum::from_str(template_format).unwrap();
+        let options = ExportParametersOptions {
+            starts_with: starts_with.map(|s| s.to_string()),
+            ends_with: ends_with.map(|s| s.to_string()),
+            contains: contains.map(|s| s.to_string()),
+            export: Some(export),
+            secrets: Some(secrets),
+        };
+        let body =
+            parameters.export_parameters(org_id, proj_name.clone(), env_name, options, format)?;
+
+        if let Some(body) = body {
+            println!("{}", body)
+        } else {
+            println!(
+                "Could not export parameters format '{}' from project '{}' in environment '{}'.",
+                template_format,
+                proj_name.unwrap_or_else(|| DEFAULT_PROJ_NAME.to_string()),
+                env_name.unwrap_or(DEFAULT_ENV_NAME)
+            )
+        }
     } else {
         warn_missing_subcommand("parameters")?;
     }
@@ -639,34 +672,6 @@ fn process_templates_command(
                 "Could not find a template with name '{}' in environment '{}'.",
                 template_name,
                 env_name.unwrap_or(DEFAULT_ENV_NAME)
-            )
-        }
-    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("getit") {
-        let starts_with = subcmd_args.value_of("starts_with");
-        let ends_with = subcmd_args.value_of("ends_with");
-        let contains = subcmd_args.value_of("contains");
-        let template_format = subcmd_args.value_of("FORMAT").unwrap();
-        let export = subcmd_args.is_present("export");
-        let secrets = subcmd_args.is_present("secrets");
-        let env_name = resolved.env_name.as_deref();
-        let body = templates.get_body_by_implicit_name(
-            org_id,
-            env_name,
-            starts_with,
-            ends_with,
-            contains,
-            export,
-            secrets,
-            template_format,
-        )?;
-
-        if let Some(body) = body {
-            println!("{}", body)
-        } else {
-            println!(
-                "Could not find a template with name '{}' in environment '{}'.",
-                template_format,
-                env_name.unwrap_or("default")
             )
         }
     } else {

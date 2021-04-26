@@ -10,6 +10,18 @@ mutation DeleteParameterMutation($parameterId: ID!) {
   }
 }
 
+query ExportParametersQuery($organizationId: ID, $environmentName: String, $projectName: String, $format: ExportParametersFormatEnum!, $options: ExportParametersOptions!) {
+  viewer {
+    organization(id: $organizationId) {
+      project(name: $projectName) {
+        exportParameters(format: $format, options: $options) {
+          evaluated(environmentName: $environmentName)
+        }
+      }
+    }
+  }
+}
+
 query GetParameterByNameQuery($organizationId: ID, $envName: String, $projectName: String, $keyName: String!) {
   viewer {
     organization(id: $organizationId) {

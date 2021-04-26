@@ -1,9 +1,7 @@
 use crate::config::DEFAULT_PROJ_NAME;
 use crate::graphql::prelude::graphql_request;
 use crate::graphql::{GraphQLError, GraphQLResult};
-use get_implicit_template_query::ImplicitTemplateEnum;
 use graphql_client::*;
-use std::str::FromStr;
 
 pub struct Templates {}
 
@@ -14,14 +12,6 @@ pub struct Templates {}
     response_derives = "Debug"
 )]
 pub struct GetTemplateByNameQuery;
-
-#[derive(GraphQLQuery)]
-#[graphql(
-    schema_path = "graphql/schema.graphql",
-    query_path = "graphql/template_queries.graphql",
-    response_derives = "Debug"
-)]
-pub struct GetImplicitTemplateQuery;
 
 #[derive(GraphQLQuery)]
 #[graphql(
@@ -72,61 +62,6 @@ impl Templates {
                     project_name.unwrap_or_else(|| DEFAULT_PROJ_NAME.to_string()),
                 ))
             }
-        } else {
-            Err(GraphQLError::MissingDataError)
-        }
-    }
-
-    #[allow(clippy::too_many_arguments)]
-    pub fn get_body_by_implicit_name(
-        &self,
-        organization_id: Option<&str>,
-        environment_name: Option<&str>,
-        starts_with: Option<&str>,
-        ends_with: Option<&str>,
-        contains: Option<&str>,
-        export: bool,
-        secrets: bool,
-        template_format: &str,
-    ) -> GraphQLResult<Option<String>> {
-        impl FromStr for ImplicitTemplateEnum {
-            type Err = ();
-
-            fn from_str(input: &str) -> Result<ImplicitTemplateEnum, Self::Err> {
-                match input {
-                    "docker" => Ok(ImplicitTemplateEnum::DOCKER),
-                    "dotenv" => Ok(ImplicitTemplateEnum::DOTENV),
-                    "shell" => Ok(ImplicitTemplateEnum::SHELL),
-                    _ => Err(()),
-                }
-            }
-        }
-
-        let format: ImplicitTemplateEnum = template_format.parse().unwrap();
-        let query = GetImplicitTemplateQuery::build_query(get_implicit_template_query::Variables {
-            organization_id: organization_id.map(|id| id.to_string()),
-            environment_name: environment_name.map(|name| name.to_string()),
-            template_format: format,
-            filters: get_implicit_template_query::ImplicitTemplateFilters {
-                starts_with: starts_with.map(|search| search.to_string()),
-                ends_with: ends_with.map(|search| search.to_string()),
-                contains: contains.map(|search| search.to_string()),
-                secrets: Some(secrets),
-                export: Some(export),
-            },
-        });
-        let response_body =
-            graphql_request::<_, get_implicit_template_query::ResponseData>(&query)?;
-
-        if let Some(errors) = response_body.errors {
-            Err(GraphQLError::ResponseError(errors))
-        } else if let Some(data) = response_body.data {
-            Ok(data
-                .viewer
-                .organization
-                .expect("Primary organization not found")
-                .implicit_template
-                .and_then(|t| t.evaluated))
         } else {
             Err(GraphQLError::MissingDataError)
         }

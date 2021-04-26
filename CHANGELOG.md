@@ -1,3 +1,9 @@
+# Unreleased
+
+* Breaking changes:
+  * Moved `templates getit` functionality to `parameters export`.
+* Parameters: Added `export`
+
 # 0.3.0 - 2021-04-16
 
 * Breaking changes: 

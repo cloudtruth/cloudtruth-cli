@@ -10,17 +10,6 @@ query GetTemplateByNameQuery($organizationId: ID, $projectName: String, $environ
   }
 }
 
-query GetImplicitTemplateQuery($organizationId: ID, $environmentName: String, $templateFormat: ImplicitTemplateEnum!, $filters: ImplicitTemplateFilters!) {
-  viewer {
-    organization(id: $organizationId) {
-      implicitTemplate(format: $templateFormat, filters: $filters) {
-        evaluated(environmentName: $environmentName)
-      }
-    }
-  }
-}
-
-
 query TemplatesQuery($organizationId: ID, $projectName: String) {
   viewer {
     id
