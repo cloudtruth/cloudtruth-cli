@@ -102,14 +102,18 @@ esac
 ### Auto-Version  ############################################################
 
 if [ -z "${CT_CLI_VERSION}" ]; then
-    CT_CLI_VERSION=$(curl --silent "https://api.github.com/repos/cloudtruth/cloudtruth-cli/releases/latest" | grep "tag_name" | sed -E 's/.*"([^"]+)".*/\1/')
+    CT_VER_FILE_URL="https://api.github.com/repos/cloudtruth/cloudtruth-cli/releases/latest"
+    CT_CLI_VERSION=$(curl --silent "${CT_VER_FILE_URL}" | \
+              grep "tag_name" | \
+              sed -E 's/.*"([^"]+)".*/\1/')
     echo "Latest version: ${CT_CLI_VERSION}"
 else
     echo "Using version: ${CT_CLI_VERSION}"
 fi
 
-if [ -z "${T_DOWNLOAD_URL}" ]; then
-    CT_DOWNLOAD_URL="https://github.com/cloudtruth/cloudtruth-cli/releases/download/${CT_CLI_VERSION}"
+if [ -z "${CT_DOWNLOAD_URL}" ]; then
+    CT_VER_BASE_URL="https://github.com/cloudtruth/cloudtruth-cli/releases/download"
+    CT_DOWNLOAD_URL="${CT_VER_BASE_URL}/${CT_CLI_VERSION}"
 fi
 
 ### Install       ############################################################
