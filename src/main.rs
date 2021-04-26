@@ -314,7 +314,7 @@ fn process_config_command(subcmd_args: &ArgMatches) -> Result<()> {
             let profile_names: Vec<String> = details.iter().map(|v| v.name.clone()).collect();
             println!("{}", profile_names.join("\n"));
         } else {
-            let show_secrets = subcmd_args.is_present("secret");
+            let show_secrets = subcmd_args.is_present("secrets");
             let fmt = subcmd_args.value_of("format").unwrap();
             let mut table = Table::new();
             table.set_titles(Row::new(vec![
