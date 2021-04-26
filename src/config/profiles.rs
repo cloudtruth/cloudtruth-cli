@@ -4,14 +4,29 @@ use serde::Deserialize;
 #[serde(default)]
 pub struct Profile {
     pub api_key: Option<String>,
+    pub description: Option<String>,
+    pub environment: Option<String>,
+    pub project: Option<String>,
     pub server_url: Option<String>,
     pub(crate) source_profile: Option<String>,
+}
+
+// TODO: Rick Porter 4/21, fix this so don't have to udpate when Profile is updated
+pub struct ProfileDetails {
+    pub api_key: Option<String>,
+    pub description: Option<String>,
+    pub environment: Option<String>,
+    pub name: String,
+    pub project: Option<String>,
 }
 
 impl Default for Profile {
     fn default() -> Self {
         Self {
             api_key: None,
+            description: None,
+            environment: None,
+            project: None,
             server_url: None,
             source_profile: None,
         }
@@ -23,6 +38,15 @@ impl Profile {
     pub(crate) fn merge(&self, other: &Self) -> Profile {
         Profile {
             api_key: other.api_key.clone().or_else(|| self.api_key.clone()),
+            description: other
+                .description
+                .clone()
+                .or_else(|| self.description.clone()),
+            environment: other
+                .environment
+                .clone()
+                .or_else(|| self.environment.clone()),
+            project: other.project.clone().or_else(|| self.project.clone()),
             server_url: other.server_url.clone().or_else(|| self.server_url.clone()),
             source_profile: self.source_profile.clone(),
         }
@@ -37,12 +61,18 @@ mod tests {
     fn merged_values_take_priority() {
         let first = Profile {
             api_key: None,
+            description: None,
+            environment: None,
+            project: None,
             server_url: None,
             ..Profile::default()
         };
 
         let second = Profile {
             api_key: Some("new_key".to_string()),
+            description: Some("describe your param in 25 words or less".to_string()),
+            environment: Some("my_environment".to_string()),
+            project: Some("skunkworks".to_string()),
             server_url: Some("http://localhost:7001/graphql".to_string()),
             ..Profile::default()
         };
@@ -54,12 +84,18 @@ mod tests {
     fn merged_empty_values_are_ignored() {
         let first = Profile {
             api_key: Some("new_key".to_string()),
+            description: Some("describe your param in 25 words or less".to_string()),
+            environment: Some("my_environment".to_string()),
+            project: Some("skunkworks".to_string()),
             server_url: Some("http://localhost:7001/graphql".to_string()),
             ..Profile::default()
         };
 
         let second = Profile {
             api_key: None,
+            description: None,
+            environment: None,
+            project: None,
             server_url: None,
             ..Profile::default()
         };

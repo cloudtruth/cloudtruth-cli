@@ -69,6 +69,9 @@ pub fn build_cli() -> App<'static, 'static> {
                     .about("Edit your configuration data for this application"),
                 SubCommand::with_name("list")
                     .visible_alias("ls")
+                    .arg(values_flag().help("Display profile information/values"))
+                    .arg(table_format_options().help("Display profile value info format"))
+                    .arg(secrets_display_flag().help("Display API key values"))
                     .about("List CloudTruth profiles in the local config file"),
                 ])
         )

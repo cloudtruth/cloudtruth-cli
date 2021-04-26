@@ -1,5 +1,5 @@
 use crate::cli;
-use crate::config::profiles::Profile;
+use crate::config::profiles::{Profile, ProfileDetails};
 use color_eyre::eyre::Result;
 use core::fmt;
 use indoc::indoc;
@@ -64,8 +64,8 @@ impl ConfigFile {
     pub(crate) fn config_file_template() -> &'static str {
         indoc!(
             r#"
-            # You can have multiple profiles to group your configuration. E.g., if you belong to
-            # multiple organizations, you can create two separate profiles each with its own API
+            # You can have multiple profiles to group your configuration. E.g., if you use multiple
+            # projects, you can create two separate profiles each with its own role appropriate API
             # key. When you invoke the CloudTruth CLI tool, you can pass an argument to choose
             # which profile to load. Profiles can inherit values from other profiles by using the
             # `source_profile` setting, providing it with the name of another profile. Profile
@@ -74,10 +74,14 @@ impl ConfigFile {
             profiles:
               default:
                 api_key: ""
+                description: Default environment/project
 
               # another-profile:
               #   source_profile: default
               #   api_key: "my-read-only-api-key"
+              #   description: Read-only user on a different project
+              #   project: other-project-name
+              #   environment: pre-production
         "#
         )
     }
@@ -100,15 +104,21 @@ impl ConfigFile {
         }
     }
 
-    pub(crate) fn get_profile_names(config: &str) -> ConfigFileResult<Vec<String>> {
-        let mut profiles: Vec<String> = Vec::new();
+    pub(crate) fn get_profile_details(config: &str) -> ConfigFileResult<Vec<ProfileDetails>> {
+        let mut profiles: Vec<ProfileDetails> = Vec::new();
         if !config.is_empty() {
             let config_file: ConfigFile = serde_yaml::from_str(&config)?;
             profiles = config_file
                 .profiles
-                .keys()
-                .cloned()
-                .collect::<Vec<String>>();
+                .iter()
+                .map(|(k, v)| ProfileDetails {
+                    api_key: v.api_key.clone(),
+                    description: v.description.clone(),
+                    environment: v.environment.clone(),
+                    name: k.clone(),
+                    project: v.project.clone(),
+                })
+                .collect();
         }
 
         Ok(profiles)
@@ -348,9 +358,9 @@ mod tests {
         "#
         );
 
-        let result = ConfigFile::get_profile_names(config);
+        let result = ConfigFile::get_profile_details(config);
         assert!(result.is_ok());
-        let profile_names = result.unwrap();
+        let profile_names: Vec<String> = result.unwrap().iter().map(|v| v.name.clone()).collect();
         for value in vec!["default", "read-only", "invalid_url"] {
             assert!(profile_names
                 .iter()
@@ -362,7 +372,7 @@ mod tests {
     #[test]
     fn profile_names_empty() {
         let config = indoc!("");
-        let result = ConfigFile::get_profile_names(config);
+        let result = ConfigFile::get_profile_details(config);
         assert!(&result.is_ok());
         let profile_names = result.unwrap();
         assert!(&profile_names.is_empty());
