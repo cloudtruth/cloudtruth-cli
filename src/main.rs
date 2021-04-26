@@ -133,16 +133,8 @@ fn user_confirm(message: String) -> bool {
 fn resolve_ids(org_id: Option<&str>, config: &Config) -> Result<ResolvedIds> {
     // The `err` value is used to allow accumulation of multiple errors to the user.
     let mut err = false;
-    let env = if !config.environment.is_empty() {
-        Some(config.environment.as_str())
-    } else {
-        None
-    };
-    let proj = if !config.project.is_empty() {
-        Some(config.project.as_str())
-    } else {
-        None
-    };
+    let env = config.environment.as_deref();
+    let proj = config.project.as_deref();
     let environments = Environments::new();
     let env_id = environments.get_id(org_id, env)?;
     if env_id.is_none() {

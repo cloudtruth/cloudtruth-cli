@@ -64,8 +64,8 @@ impl ConfigFile {
     pub(crate) fn config_file_template() -> &'static str {
         indoc!(
             r#"
-            # You can have multiple profiles to group your configuration. E.g., if you belong to
-            # multiple organizations, you can create two separate profiles each with its own API
+            # You can have multiple profiles to group your configuration. E.g., if you use multiple
+            # projects, you can create two separate profiles each with its own role appropriate API
             # key. When you invoke the CloudTruth CLI tool, you can pass an argument to choose
             # which profile to load. Profiles can inherit values from other profiles by using the
             # `source_profile` setting, providing it with the name of another profile. Profile
@@ -74,10 +74,14 @@ impl ConfigFile {
             profiles:
               default:
                 api_key: ""
+                description: Default environment/project
 
               # another-profile:
               #   source_profile: default
               #   api_key: "my-read-only-api-key"
+              #   description: Read-only user on a different project
+              #   project: other-project-name
+              #   environment: pre-production
         "#
         )
     }

@@ -75,8 +75,8 @@ const ORGANIZATION_NAME: &str = "CloudTruth";
 #[derive(Debug)]
 pub struct Config {
     pub api_key: String,
-    pub environment: String,
-    pub project: String,
+    pub environment: Option<String>,
+    pub project: Option<String>,
     pub server_url: String,
 }
 
@@ -96,8 +96,8 @@ impl From<Profile> for Config {
     fn from(profile: Profile) -> Self {
         Config {
             api_key: profile.api_key.unwrap_or_else(|| "".to_string()),
-            environment: profile.environment.unwrap_or_else(|| "".to_string()),
-            project: profile.project.unwrap_or_else(|| "".to_string()),
+            environment: profile.environment,
+            project: profile.project,
             server_url: profile
                 .server_url
                 .unwrap_or_else(|| DEFAULT_SERVER_URL.to_string()),
