@@ -138,13 +138,16 @@ def cli_test(*args):
     # TODO: figure out right way to get this
     base_cmd = "target/debug/cloudtruth"
 
-    # TODO: create loop and add try/catch
     # TODO: find functions matching name, so do not need to add call to function
-    try:
-        test_environment_crud(env, base_cmd)
-    except AssertionError as err:
-        breakpoint()
-        result = 1
+    tests = [
+        test_environment_crud,
+    ]
+    for test_fn in tests:
+        try:
+            test_fn(env, base_cmd)
+        except AssertionError as err:
+            print(f"ERROR: {test_fn.__name__}() failed: {err}")
+            result = 1
 
     return result
 
