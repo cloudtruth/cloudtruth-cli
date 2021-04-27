@@ -310,9 +310,7 @@ jobs:
     needs: [ 'build-release' ]
     env:
       # The CT_DOWNLOAD values are used for downloading the image
-      CT_DOWNLOAD_URL: ${{ env.RELEASE_UPLOAD_URL }}
       CT_DOWNLOAD_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      CT_DOWNLOAD_VERSION: ${{ env.CT_VERSION }}
 
       # These values are used for running the CLI command
       CLOUDTRUTH_API_KEY: ${{ secrets.CI_ACCT_READONLY_CT_API_KEY }}
@@ -320,12 +318,23 @@ jobs:
       CT_TEST_PARAM: INTEGRATION_TEST_RESULT
       CT_TEST_VALUE: Speicla
     steps:
-      - uses: actions/download-artifact@v1
+      - name: Get Artifacts
+        uses: actions/download-artifact@v1
+        with:
+          name: artifacts
+          path: artifacts
+
       - name: alpine-3.13
+        env:
+          CT_DOWNLOAD_URL: "file://`realpath .`/artifacts"
+          CT_DOWNLOAD_VERSION: "$(cat artifacts/release-version)"
         run: |
           docker build . -e CT_DOWNLOAD_URL -e CT_DOWNLOAD_VERSION -e CT_DOWNLOAD_AUTH_TOKEN -f tests/Dockerfile.alpine-3.13 -t cloudtruth:alpine-3.13
           docker run -e CLOUDTRUTH_API_KEY -t cloudtruth:alpine-3.13 cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
       - name: alpine-3.12
+        env:
+          CT_DOWNLOAD_URL: "file://`realpath .`/artifacts"
+          CT_DOWNLOAD_VERSION: "$(cat artifacts/release-version)"
         run: |
           docker build . -e CT_DOWNLOAD_URL -e CT_DOWNLOAD_VERSION -e CT_DOWNLOAD_AUTH_TOKEN -f tests/Dockerfile.alpine-3.12 -t cloudtruth:alpine-3.12
           docker run -e CLOUDTRUTH_API_KEY -t cloudtruth:alpine-3.12 cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
@@ -335,9 +344,7 @@ jobs:
     needs: [ 'build-release' ]
     env:
       # The CT_DOWNLOAD values are used for downloading the image
-      CT_DOWNLOAD_URL: ${{ env.RELEASE_UPLOAD_URL }}
       CT_DOWNLOAD_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      CT_DOWNLOAD_VERSION: ${{ env.CT_VERSION }}
 
       # These values are used for running the CLI command
       CLOUDTRUTH_API_KEY: ${{ secrets.CI_ACCT_READONLY_CT_API_KEY }}
@@ -345,12 +352,23 @@ jobs:
       CT_TEST_PARAM: INTEGRATION_TEST_RESULT
       CT_TEST_VALUE: Speicla
     steps:
-      - uses: actions/download-artifact@v1
+      - name: Get Artifacts
+        uses: actions/download-artifact@v1
+        with:
+          name: artifacts
+          path: artifacts
+
       - name: centos-8
+        env:
+          CT_DOWNLOAD_URL: "file://`realpath .`/artifacts"
+          CT_DOWNLOAD_VERSION: "$(cat artifacts/release-version)"
         run: |
           docker build . -e CT_DOWNLOAD_URL -e CT_DOWNLOAD_VERSION -e CT_DOWNLOAD_AUTH_TOKEN -f tests/Dockerfile.centos-8 -t cloudtruth:centos-8
           docker run -e CLOUDTRUTH_API_KEY -t cloudtruth:centos-8 cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
       - name: centos-7
+        env:
+          CT_DOWNLOAD_URL: "file://`realpath .`/artifacts"
+          CT_DOWNLOAD_VERSION: "$(cat artifacts/release-version)"
         run: |
           docker build . -e CT_DOWNLOAD_URL -e CT_DOWNLOAD_VERSION -e CT_DOWNLOAD_AUTH_TOKEN -f tests/Dockerfile.centos-7 -t cloudtruth:centos-7
           docker run -e CLOUDTRUTH_API_KEY -t cloudtruth:centos-7 cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
@@ -360,9 +378,7 @@ jobs:
     needs: [ 'build-release' ]
     env:
       # The CT_DOWNLOAD values are used for downloading the image
-      CT_DOWNLOAD_URL: ${{ env.RELEASE_UPLOAD_URL }}
       CT_DOWNLOAD_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      CT_DOWNLOAD_VERSION: ${{ env.CT_VERSION }}
 
       # These values are used for running the CLI command
       CLOUDTRUTH_API_KEY: ${{ secrets.CI_ACCT_READONLY_CT_API_KEY }}
@@ -370,16 +386,30 @@ jobs:
       CT_TEST_PARAM: INTEGRATION_TEST_RESULT
       CT_TEST_VALUE: Speicla
     steps:
-      - uses: actions/download-artifact@v1
+      - name: Get Artifacts
+        uses: actions/download-artifact@v1
+        with:
+          name: artifacts
+          path: artifacts
+
       - name: debian-bullseye-slim
+        env:
+          CT_DOWNLOAD_URL: "file://`realpath .`/artifacts"
+          CT_DOWNLOAD_VERSION: "$(cat artifacts/release-version)"
         run: |
           docker build . -e CT_DOWNLOAD_URL -e CT_DOWNLOAD_VERSION -e CT_DOWNLOAD_AUTH_TOKEN -f tests/Dockerfile.debian-bullseye-slim -t cloudtruth:debian-bullseye-slim
           docker run -e CLOUDTRUTH_API_KEY -t cloudtruth:debian-bullseye-slim cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
       - name: debian-buster-slim
+        env:
+          CT_DOWNLOAD_URL: "file://`realpath .`/artifacts"
+          CT_DOWNLOAD_VERSION: "$(cat artifacts/release-version)"
         run: |
           docker build . -e CT_DOWNLOAD_URL -e CT_DOWNLOAD_VERSION -e CT_DOWNLOAD_AUTH_TOKEN -f tests/Dockerfile.debian-buster-slim -t cloudtruth:debian-buster-slim
           docker run -e CLOUDTRUTH_API_KEY -t cloudtruth:debian-buster-slim cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
       - name: debian-jessie-slim
+        env:
+          CT_DOWNLOAD_URL: "file://`realpath .`/artifacts"
+          CT_DOWNLOAD_VERSION: "$(cat artifacts/release-version)"
         run: |
           docker build . -e CT_DOWNLOAD_URL -e CT_DOWNLOAD_VERSION -e CT_DOWNLOAD_AUTH_TOKEN -f tests/Dockerfile.debian-jessie-slim -t cloudtruth:debian-jessie-slim
           docker run -e CLOUDTRUTH_API_KEY -t cloudtruth:debian-jessie-slim cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
@@ -389,9 +419,7 @@ jobs:
     needs: [ 'build-release' ]
     env:
       # The CT_DOWNLOAD values are used for downloading the image
-      CT_DOWNLOAD_URL: ${{ env.RELEASE_UPLOAD_URL }}
       CT_DOWNLOAD_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      CT_DOWNLOAD_VERSION: ${{ env.CT_VERSION }}
 
       # These values are used for running the CLI command
       CLOUDTRUTH_API_KEY: ${{ secrets.CI_ACCT_READONLY_CT_API_KEY }}
@@ -399,8 +427,16 @@ jobs:
       CT_TEST_PARAM: INTEGRATION_TEST_RESULT
       CT_TEST_VALUE: Speicla
     steps:
-      - uses: actions/download-artifact@v1
+      - name: Get Artifacts
+        uses: actions/download-artifact@v1
+        with:
+          name: artifacts
+          path: artifacts
+
       - name: macOS-latest
+        env:
+          CT_DOWNLOAD_URL: "file://`realpath .`/artifacts"
+          CT_DOWNLOAD_VERSION: "$(cat artifacts/release-version)"
         run: |
           sudo ./install.sh --url ${CT_DOWNLOAD_URL} --version ${CT_DOWNLOAD_VERSION} --auth-token ${CT_DOWNLOAD_AUTH_TOKEN}
           cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep "${CT_TEST_PARAM}" | grep "${CT_TEST_VALUE}"
@@ -410,9 +446,7 @@ jobs:
     needs: [ 'build-release' ]
     env:
       # The CT_DOWNLOAD values are used for downloading the image
-      CT_DOWNLOAD_URL: ${{ env.RELEASE_UPLOAD_URL }}
       CT_DOWNLOAD_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      CT_DOWNLOAD_VERSION: ${{ env.CT_VERSION }}
 
       # These values are used for running the CLI command
       CLOUDTRUTH_API_KEY: ${{ secrets.CI_ACCT_READONLY_CT_API_KEY }}
@@ -420,24 +454,44 @@ jobs:
       CT_TEST_PARAM: INTEGRATION_TEST_RESULT
       CT_TEST_VALUE: Speicla
     steps:
-      - uses: actions/download-artifact@v1
+      - name: Get Artifacts
+        uses: actions/download-artifact@v1
+        with:
+          name: artifacts
+          path: artifacts
+
       - name: ubuntu-groovy
+        env:
+          CT_DOWNLOAD_URL: "file://`realpath .`/artifacts"
+          CT_DOWNLOAD_VERSION: "$(cat artifacts/release-version)"
         run: |
           docker build . -e CT_DOWNLOAD_URL -e CT_DOWNLOAD_VERSION -e CT_DOWNLOAD_AUTH_TOKEN -f tests/Dockerfile.ubuntu-groovy -t cloudtruth:ubuntu-groovy
           docker run -e CLOUDTRUTH_API_KEY -t cloudtruth:ubuntu-groovy cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
       - name: ubuntu-focal
+        env:
+          CT_DOWNLOAD_URL: "file://`realpath .`/artifacts"
+          CT_DOWNLOAD_VERSION: "$(cat artifacts/release-version)"
         run: |
           docker build . -e CT_DOWNLOAD_URL -e CT_DOWNLOAD_VERSION -e CT_DOWNLOAD_AUTH_TOKEN -f tests/Dockerfile.ubuntu-focal -t cloudtruth:ubuntu-focal
           docker run -e CLOUDTRUTH_API_KEY -t cloudtruth:ubuntu-focal cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
       - name: ubuntu-bionic
+        env:
+          CT_DOWNLOAD_URL: "file://`realpath .`/artifacts"
+          CT_DOWNLOAD_VERSION: "$(cat artifacts/release-version)"
         run: |
           docker build . -e CT_DOWNLOAD_URL -e CT_DOWNLOAD_VERSION -e CT_DOWNLOAD_AUTH_TOKEN -f tests/Dockerfile.ubuntu-bionic -t cloudtruth:ubuntu-bionic
           docker run -e CLOUDTRUTH_API_KEY -t cloudtruth:ubuntu-bionic cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
       - name: ubuntu-xenial
+        env:
+          CT_DOWNLOAD_URL: "file://`realpath .`/artifacts"
+          CT_DOWNLOAD_VERSION: "$(cat artifacts/release-version)"
         run: |
           docker build . -e CT_DOWNLOAD_URL -e CT_DOWNLOAD_VERSION -e CT_DOWNLOAD_AUTH_TOKEN -f tests/Dockerfile.ubuntu-xenial -t cloudtruth:ubuntu-xenial
           docker run -e CLOUDTRUTH_API_KEY -t cloudtruth:ubuntu-xenial cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
       - name: ubuntu-trusty
+        env:
+          CT_DOWNLOAD_URL: "file://`realpath .`/artifacts"
+          CT_DOWNLOAD_VERSION: "$(cat artifacts/release-version)"
         run: |
           docker build . -e CT_DOWNLOAD_URL -e CT_DOWNLOAD_VERSION -e CT_DOWNLOAD_AUTH_TOKEN -f tests/Dockerfile.ubuntu-trusty -t cloudtruth:ubuntu-trusty
           docker run -e CLOUDTRUTH_API_KEY -t cloudtruth:ubuntu-trusty cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
@@ -447,9 +501,7 @@ jobs:
     needs: [ 'build-release' ]
     env:
       # The CT_DOWNLOAD values are used for downloading the image
-      CT_DOWNLOAD_URL: ${{ env.RELEASE_UPLOAD_URL }}
       CT_DOWNLOAD_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      CT_DOWNLOAD_VERSION: ${{ env.CT_VERSION }}
 
       # These values are used for running the CLI command
       CLOUDTRUTH_API_KEY: ${{ secrets.CI_ACCT_READONLY_CT_API_KEY }}
@@ -457,9 +509,17 @@ jobs:
       CT_TEST_PARAM: INTEGRATION_TEST_RESULT
       CT_TEST_VALUE: Speicla
     steps:
-      - uses: actions/download-artifact@v1
+      - name: Get Artifacts
+        uses: actions/download-artifact@v1
+        with:
+          name: artifacts
+          path: artifacts
+
       - name: windows-latest
         shell: pwsh
+        env:
+          CT_DOWNLOAD_URL: "file://`realpath .`/artifacts"
+          CT_DOWNLOAD_VERSION: "$(cat artifacts/release-version)"
         run: |
           .\install.ps1 -url "$ENV:CT_DOWNLOAD_URL" -version "$ENV:CT_DOWNLOAD_VERSION" -authToken "$ENV:CT_DOWNLOAD_AUTH_TOKEN"
           New-Alias grep findstr
