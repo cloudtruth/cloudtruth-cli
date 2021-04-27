@@ -462,52 +462,47 @@ fn process_parameters_command(
     subcmd_args: &ArgMatches,
 ) -> Result<()> {
     if let Some(subcmd_args) = subcmd_args.subcommand_matches("list") {
-        let values = subcmd_args.is_present("values");
-        if !values {
-            let list = parameters.get_parameter_names(
-                org_id,
-                resolved.env_id.clone(),
-                resolved.proj_name.clone(),
-            )?;
-            if list.is_empty() {
-                println!("There are no parameters in your account.")
-            } else {
-                println!("{}", list.join("\n"))
-            }
+        let details = parameters.get_parameter_details(
+            org_id,
+            resolved.env_id.clone(),
+            resolved.proj_name.clone(),
+        )?;
+        if details.is_empty() {
+            println!(
+                "No parameters found in project {}",
+                resolved.proj_name.clone().unwrap()
+            );
+        } else if !subcmd_args.is_present("values") {
+            let list = details
+                .iter()
+                .map(|d| d.key.clone())
+                .collect::<Vec<String>>();
+            println!("{}", list.join("\n"))
         } else {
             let fmt = subcmd_args.value_of("format").unwrap();
-            let ct_vars = parameters.get_parameter_details(
-                org_id,
-                resolved.env_id.clone(),
-                resolved.proj_name.clone(),
-            )?;
-            if ct_vars.is_empty() {
-                println!("No CloudTruth variables found!");
-            } else {
-                let show_secrets = subcmd_args.is_present("secrets");
-                let mut table = Table::new();
-                table.set_titles(Row::new(vec![
-                    Cell::new("Name").with_style(Attr::Bold),
-                    Cell::new("Value").with_style(Attr::Bold),
-                    Cell::new("Source").with_style(Attr::Bold),
-                    Cell::new("Description").with_style(Attr::Bold),
-                ]));
-                for entry in ct_vars {
-                    let out_val = if entry.secret && !show_secrets {
-                        REDACTED.to_string()
-                    } else {
-                        entry.value
-                    };
-                    table.add_row(row![entry.key, out_val, entry.source, entry.description]);
-                }
-                table.set_format(*format::consts::FORMAT_NO_LINESEP_WITH_TITLE);
-
-                if fmt == "csv" {
-                    table.to_csv(stdout())?;
+            let show_secrets = subcmd_args.is_present("secrets");
+            let mut table = Table::new();
+            table.set_titles(Row::new(vec![
+                Cell::new("Name").with_style(Attr::Bold),
+                Cell::new("Value").with_style(Attr::Bold),
+                Cell::new("Source").with_style(Attr::Bold),
+                Cell::new("Description").with_style(Attr::Bold),
+            ]));
+            for entry in details {
+                let out_val = if entry.secret && !show_secrets {
+                    REDACTED.to_string()
                 } else {
-                    assert_eq!(fmt, "table");
-                    table.printstd();
-                }
+                    entry.value
+                };
+                table.add_row(row![entry.key, out_val, entry.source, entry.description]);
+            }
+            table.set_format(*format::consts::FORMAT_NO_LINESEP_WITH_TITLE);
+
+            if fmt == "csv" {
+                table.to_csv(stdout())?;
+            } else {
+                assert_eq!(fmt, "table");
+                table.printstd();
             }
         }
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("get") {

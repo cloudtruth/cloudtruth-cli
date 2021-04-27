@@ -257,44 +257,6 @@ impl Parameters {
         }
     }
 
-    pub fn get_parameter_names(
-        &self,
-        org_id: Option<&str>,
-        env_id: Option<String>,
-        proj_name: Option<String>,
-    ) -> GraphQLResult<Vec<String>> {
-        let query = ParametersQuery::build_query(parameters_query::Variables {
-            organization_id: org_id.map(|id| id.to_string()),
-            environment_id: env_id,
-            project_name: proj_name.clone(),
-        });
-        let response_body = graphql_request::<_, parameters_query::ResponseData>(&query)?;
-
-        if let Some(errors) = response_body.errors {
-            Err(GraphQLError::ResponseError(errors))
-        } else if let Some(data) = response_body.data {
-            if let Some(project) = data
-                .viewer
-                .organization
-                .expect("Primary organization not found")
-                .project
-            {
-                Ok(project
-                    .parameters
-                    .nodes
-                    .into_iter()
-                    .map(|n| n.key_name)
-                    .collect())
-            } else {
-                Err(GraphQLError::ProjectNotFoundError(
-                    proj_name.unwrap_or_else(|| DEFAULT_PROJ_NAME.to_string()),
-                ))
-            }
-        } else {
-            Err(GraphQLError::MissingDataError)
-        }
-    }
-
     pub fn get_parameter_values(
         &self,
         org_id: Option<&str>,
