@@ -35,7 +35,7 @@ $out = "$tmp.out"
 $package_base = "cloudtruth-$version-x86_64-pc-windows-msvc"
 $full_url="$url/$package_base.zip"
 if ($full_url.StartsWith("file://")) {
-    $local = $full_url.Replace("file:", "")
+    $local = $full_url.Replace("file://", "").Replace("/", "\")
     Copy-Item -Path $local -Destination $tmp
 } else {
     Invoke-WebRequest -OutFile $tmp -Headers $headers "$full_url"

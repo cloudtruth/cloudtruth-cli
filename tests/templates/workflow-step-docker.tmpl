@@ -1,7 +1,8 @@
       - name: {{ os }}-{{ version }}
         run: |
           CT_DOWNLOAD_VERSION=$(cat artifacts/release-version)
-          CT_DOWNLOAD_URL="file://`pwd`/artifacts/"
+          # Use the file copied into the docker image
+          CT_DOWNLOAD_URL="file://tmp/artifacts"
           docker build . --build-arg DOWNLOAD_URL=${CT_DOWNLOAD_URL} --build-arg DOWNLOAD_VERSION=${CT_DOWNLOAD_VERSION} -f tests/docker/Dockerfile.{{ os }}-{{ version }} -t cloudtruth:{{ os }}-{{ version }}
           docker run -e CLOUDTRUTH_API_KEY -t cloudtruth:{{ os }}-{{ version }} cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
 

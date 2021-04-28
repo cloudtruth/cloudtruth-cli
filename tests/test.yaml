@@ -54,13 +54,15 @@ jobs:
       - name: alpine-3.13
         run: |
           CT_DOWNLOAD_VERSION=$(cat artifacts/release-version)
-          CT_DOWNLOAD_URL="file://`pwd`/artifacts/"
+          # Use the file copied into the docker image
+          CT_DOWNLOAD_URL="file://tmp/artifacts"
           docker build . --build-arg DOWNLOAD_URL=${CT_DOWNLOAD_URL} --build-arg DOWNLOAD_VERSION=${CT_DOWNLOAD_VERSION} -f tests/docker/Dockerfile.alpine-3.13 -t cloudtruth:alpine-3.13
           docker run -e CLOUDTRUTH_API_KEY -t cloudtruth:alpine-3.13 cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
       - name: alpine-3.12
         run: |
           CT_DOWNLOAD_VERSION=$(cat artifacts/release-version)
-          CT_DOWNLOAD_URL="file://`pwd`/artifacts/"
+          # Use the file copied into the docker image
+          CT_DOWNLOAD_URL="file://tmp/artifacts"
           docker build . --build-arg DOWNLOAD_URL=${CT_DOWNLOAD_URL} --build-arg DOWNLOAD_VERSION=${CT_DOWNLOAD_VERSION} -f tests/docker/Dockerfile.alpine-3.12 -t cloudtruth:alpine-3.12
           docker run -e CLOUDTRUTH_API_KEY -t cloudtruth:alpine-3.12 cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
 
@@ -88,13 +90,15 @@ jobs:
       - name: centos-8
         run: |
           CT_DOWNLOAD_VERSION=$(cat artifacts/release-version)
-          CT_DOWNLOAD_URL="file://`pwd`/artifacts/"
+          # Use the file copied into the docker image
+          CT_DOWNLOAD_URL="file://tmp/artifacts"
           docker build . --build-arg DOWNLOAD_URL=${CT_DOWNLOAD_URL} --build-arg DOWNLOAD_VERSION=${CT_DOWNLOAD_VERSION} -f tests/docker/Dockerfile.centos-8 -t cloudtruth:centos-8
           docker run -e CLOUDTRUTH_API_KEY -t cloudtruth:centos-8 cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
       - name: centos-7
         run: |
           CT_DOWNLOAD_VERSION=$(cat artifacts/release-version)
-          CT_DOWNLOAD_URL="file://`pwd`/artifacts/"
+          # Use the file copied into the docker image
+          CT_DOWNLOAD_URL="file://tmp/artifacts"
           docker build . --build-arg DOWNLOAD_URL=${CT_DOWNLOAD_URL} --build-arg DOWNLOAD_VERSION=${CT_DOWNLOAD_VERSION} -f tests/docker/Dockerfile.centos-7 -t cloudtruth:centos-7
           docker run -e CLOUDTRUTH_API_KEY -t cloudtruth:centos-7 cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
 
@@ -122,19 +126,22 @@ jobs:
       - name: debian-bullseye-slim
         run: |
           CT_DOWNLOAD_VERSION=$(cat artifacts/release-version)
-          CT_DOWNLOAD_URL="file://`pwd`/artifacts/"
+          # Use the file copied into the docker image
+          CT_DOWNLOAD_URL="file://tmp/artifacts"
           docker build . --build-arg DOWNLOAD_URL=${CT_DOWNLOAD_URL} --build-arg DOWNLOAD_VERSION=${CT_DOWNLOAD_VERSION} -f tests/docker/Dockerfile.debian-bullseye-slim -t cloudtruth:debian-bullseye-slim
           docker run -e CLOUDTRUTH_API_KEY -t cloudtruth:debian-bullseye-slim cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
       - name: debian-buster-slim
         run: |
           CT_DOWNLOAD_VERSION=$(cat artifacts/release-version)
-          CT_DOWNLOAD_URL="file://`pwd`/artifacts/"
+          # Use the file copied into the docker image
+          CT_DOWNLOAD_URL="file://tmp/artifacts"
           docker build . --build-arg DOWNLOAD_URL=${CT_DOWNLOAD_URL} --build-arg DOWNLOAD_VERSION=${CT_DOWNLOAD_VERSION} -f tests/docker/Dockerfile.debian-buster-slim -t cloudtruth:debian-buster-slim
           docker run -e CLOUDTRUTH_API_KEY -t cloudtruth:debian-buster-slim cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
       - name: debian-jessie-slim
         run: |
           CT_DOWNLOAD_VERSION=$(cat artifacts/release-version)
-          CT_DOWNLOAD_URL="file://`pwd`/artifacts/"
+          # Use the file copied into the docker image
+          CT_DOWNLOAD_URL="file://tmp/artifacts"
           docker build . --build-arg DOWNLOAD_URL=${CT_DOWNLOAD_URL} --build-arg DOWNLOAD_VERSION=${CT_DOWNLOAD_VERSION} -f tests/docker/Dockerfile.debian-jessie-slim -t cloudtruth:debian-jessie-slim
           docker run -e CLOUDTRUTH_API_KEY -t cloudtruth:debian-jessie-slim cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
 
@@ -162,7 +169,7 @@ jobs:
       - name: macOS-latest
         run: |
           CT_DOWNLOAD_VERSION=$(cat artifacts/release-version)
-          CT_DOWNLOAD_URL="file://`pwd`/artifacts/"
+          CT_DOWNLOAD_URL="file://`pwd`/artifacts"
           sudo ./install.sh --url ${CT_DOWNLOAD_URL} --version ${CT_DOWNLOAD_VERSION}
           cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep "${CT_TEST_PARAM}" | grep "${CT_TEST_VALUE}"
 
@@ -190,31 +197,36 @@ jobs:
       - name: ubuntu-groovy
         run: |
           CT_DOWNLOAD_VERSION=$(cat artifacts/release-version)
-          CT_DOWNLOAD_URL="file://`pwd`/artifacts/"
+          # Use the file copied into the docker image
+          CT_DOWNLOAD_URL="file://tmp/artifacts"
           docker build . --build-arg DOWNLOAD_URL=${CT_DOWNLOAD_URL} --build-arg DOWNLOAD_VERSION=${CT_DOWNLOAD_VERSION} -f tests/docker/Dockerfile.ubuntu-groovy -t cloudtruth:ubuntu-groovy
           docker run -e CLOUDTRUTH_API_KEY -t cloudtruth:ubuntu-groovy cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
       - name: ubuntu-focal
         run: |
           CT_DOWNLOAD_VERSION=$(cat artifacts/release-version)
-          CT_DOWNLOAD_URL="file://`pwd`/artifacts/"
+          # Use the file copied into the docker image
+          CT_DOWNLOAD_URL="file://tmp/artifacts"
           docker build . --build-arg DOWNLOAD_URL=${CT_DOWNLOAD_URL} --build-arg DOWNLOAD_VERSION=${CT_DOWNLOAD_VERSION} -f tests/docker/Dockerfile.ubuntu-focal -t cloudtruth:ubuntu-focal
           docker run -e CLOUDTRUTH_API_KEY -t cloudtruth:ubuntu-focal cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
       - name: ubuntu-bionic
         run: |
           CT_DOWNLOAD_VERSION=$(cat artifacts/release-version)
-          CT_DOWNLOAD_URL="file://`pwd`/artifacts/"
+          # Use the file copied into the docker image
+          CT_DOWNLOAD_URL="file://tmp/artifacts"
           docker build . --build-arg DOWNLOAD_URL=${CT_DOWNLOAD_URL} --build-arg DOWNLOAD_VERSION=${CT_DOWNLOAD_VERSION} -f tests/docker/Dockerfile.ubuntu-bionic -t cloudtruth:ubuntu-bionic
           docker run -e CLOUDTRUTH_API_KEY -t cloudtruth:ubuntu-bionic cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
       - name: ubuntu-xenial
         run: |
           CT_DOWNLOAD_VERSION=$(cat artifacts/release-version)
-          CT_DOWNLOAD_URL="file://`pwd`/artifacts/"
+          # Use the file copied into the docker image
+          CT_DOWNLOAD_URL="file://tmp/artifacts"
           docker build . --build-arg DOWNLOAD_URL=${CT_DOWNLOAD_URL} --build-arg DOWNLOAD_VERSION=${CT_DOWNLOAD_VERSION} -f tests/docker/Dockerfile.ubuntu-xenial -t cloudtruth:ubuntu-xenial
           docker run -e CLOUDTRUTH_API_KEY -t cloudtruth:ubuntu-xenial cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
       - name: ubuntu-trusty
         run: |
           CT_DOWNLOAD_VERSION=$(cat artifacts/release-version)
-          CT_DOWNLOAD_URL="file://`pwd`/artifacts/"
+          # Use the file copied into the docker image
+          CT_DOWNLOAD_URL="file://tmp/artifacts"
           docker build . --build-arg DOWNLOAD_URL=${CT_DOWNLOAD_URL} --build-arg DOWNLOAD_VERSION=${CT_DOWNLOAD_VERSION} -f tests/docker/Dockerfile.ubuntu-trusty -t cloudtruth:ubuntu-trusty
           docker run -e CLOUDTRUTH_API_KEY -t cloudtruth:ubuntu-trusty cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
 

@@ -1,7 +1,7 @@
       - name: {{ os }}-{{ version }}
         run: |
           CT_DOWNLOAD_VERSION=$(cat artifacts/release-version)
-          CT_DOWNLOAD_URL="file://`pwd`/artifacts/"
+          CT_DOWNLOAD_URL="file://`pwd`/artifacts"
           sudo ./install.sh --url ${CT_DOWNLOAD_URL} --version ${CT_DOWNLOAD_VERSION}
           cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep "${CT_TEST_PARAM}" | grep "${CT_TEST_VALUE}"
 
