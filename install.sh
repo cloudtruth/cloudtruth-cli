@@ -130,7 +130,7 @@ download() {
     fi
 
     curl -sLOJ -H "$auth_header" -o "${filename}" "$url"
-    filesize=$(stat --format=%s "$filename")
+    filesize=$(stat -c %s "$filename")
     if [ "$filesize" -lt "$minsize" ]; then
         echo "Failed to download: $url"
         exit 3
@@ -148,7 +148,11 @@ if [ "$PKG" = "apk" ] || [ "$PKG" = "rpm" ] || [ "$PKG" = "macos" ]; then
     PACKAGE=${PACKAGE_DIR}.tar.gz
     CWD=$(pwd)
     cd "${TMP_DIR}" || exit
+    echo "Pre download"
+    ls -l
     download "${CT_DOWNLOAD_URL}/${PACKAGE}" "${CT_DOWNLOAD_AUTH_TOKEN}"
+    echo "Post download"
+    ls -l
     tar xzf "${PACKAGE}" || exit
     if [ ${CT_DRY_RUN} -ne 0 ]; then
         echo "Skipping install of ${PACKAGE_DIR}/cloudtruth"
@@ -168,7 +172,11 @@ if [ "$PKG" = "deb" ]; then
     PACKAGE=cloudtruth_${CT_CLI_VERSION}_${ARCH}.deb
     CWD=$(pwd)
     cd "${TMP_DIR}" || exit
+    echo "Pre download"
+    ls -l
     download "${CT_DOWNLOAD_URL}/${PACKAGE}" "${CT_DOWNLOAD_AUTH_TOKEN}"
+    echo "Post download"
+    ls -l
     if [ ${CT_DRY_RUN} -ne 0 ]; then
         echo "Skipping install of ${PACKAGE}"
     else
