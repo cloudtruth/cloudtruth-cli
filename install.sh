@@ -117,19 +117,20 @@ if [ -z "${CT_DOWNLOAD_URL}" ]; then
 fi
 
 ### Install       ############################################################
+TMP_DIR="/tmp"
 
 download() {
     url=$1
     auth_token=$2
-    filename=$(basename "$url")
+    filename="${TMP_DIR}/$(basename "$url")"
     minsize=100 # downloads that fail often have a 9-byte file
     auth_header=""
     if [ -n "${auth_token}" ]; then
         auth_header="Authorization: token $auth_token"
     fi
 
-    curl -sLOJ -H "$auth_header" "$url"
-    filesize=$(stat -c%s "$filename")
+    curl -sLOJ -H "$auth_header" -o "${filename}" "$url"
+    filesize=$(stat --format=%s "$filename")
     if [ "$filesize" -lt "$minsize" ]; then
         echo "Failed to download: $url"
         exit 3
@@ -146,7 +147,7 @@ if [ "$PKG" = "apk" ] || [ "$PKG" = "rpm" ] || [ "$PKG" = "macos" ]; then
     fi
     PACKAGE=${PACKAGE_DIR}.tar.gz
     CWD=$(pwd)
-    cd /tmp || exit
+    cd "${TMP_DIR}" || exit
     download "${CT_DOWNLOAD_URL}/${PACKAGE}" "${CT_DOWNLOAD_AUTH_TOKEN}"
     tar xzf "${PACKAGE}" || exit
     if [ ${CT_DRY_RUN} -ne 0 ]; then
@@ -166,7 +167,7 @@ if [ "$PKG" = "deb" ]; then
     fi
     PACKAGE=cloudtruth_${CT_CLI_VERSION}_${ARCH}.deb
     CWD=$(pwd)
-    cd /tmp || exit
+    cd "${TMP_DIR}" || exit
     download "${CT_DOWNLOAD_URL}/${PACKAGE}" "${CT_DOWNLOAD_AUTH_TOKEN}"
     if [ ${CT_DRY_RUN} -ne 0 ]; then
         echo "Skipping install of ${PACKAGE}"
