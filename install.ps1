@@ -34,7 +34,13 @@ $tmp = "$tmp.zip"
 $out = "$tmp.out"
 $package_base = "cloudtruth-$version-x86_64-pc-windows-msvc"
 $full_url="$url/$package_base.zip"
-Invoke-WebRequest -OutFile $tmp -Headers $headers "$full_url"
+if ($full_url.StartsWith("file://")) {
+    $local = $full_url.Replace("file:", "")
+    Copy-Item -Path $local -Destination $tmp
+} else {
+    Invoke-WebRequest -OutFile $tmp -Headers $headers "$full_url"
+}
+
 # make sure the file exists, and is bigger than 100 bytes
 if (!(Test-Path $tmp -PathType Leaf) -or ((Get-Item $tmp).Length -lt 100)) {
     Write-Error "Failed to download: $full_url"
