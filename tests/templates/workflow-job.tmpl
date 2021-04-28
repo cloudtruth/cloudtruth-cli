@@ -3,16 +3,21 @@
     runs-on: {{ runs_on }}
     needs: [ 'build-release' ]
     env:
-      # The CT_DOWNLOAD values are used for downloading the image
-      CT_DOWNLOAD_URL: {{ '${{ env.RELEASE_UPLOAD_URL }}' }}
-      CT_DOWNLOAD_AUTH_TOKEN: {{ '${{ secrets.GITHUB_TOKEN }}' }}
-      CT_DOWNLOAD_VERSION: {{ '${{ env.CT_VERSION }}' }}
-
       # These values are used for running the CLI command
       CLOUDTRUTH_API_KEY: {{ '${{ secrets.CI_ACCT_READONLY_CT_API_KEY }}' }}
       CT_TEST_PROJECT: TruthStrap
       CT_TEST_PARAM: INTEGRATION_TEST_RESULT
       CT_TEST_VALUE: Speicla
     steps:
+      # checkout to get the installer script(s)
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+
+      # get the packages to install
       - uses: actions/download-artifact@v1
+        with:
+          name: artifacts
+          path: artifacts
+
 
