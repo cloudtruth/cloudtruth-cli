@@ -61,7 +61,7 @@ jobs:
           docker build . \
             --build-arg DOWNLOAD_URL="${CT_DOWNLOAD_URL}" \
             --build-arg DOWNLOAD_VERSION="${CT_DOWNLOAD_VERSION}" \
-            --build-arg DOWNLOAD_AUTH_TOKEN="{CT_DOWNLOAD_AUTH_TOKEN}" \
+            --build-arg DOWNLOAD_AUTH_TOKEN="${CT_DOWNLOAD_AUTH_TOKEN}" \
             -f tests/docker/Dockerfile.alpine-3.13 \
             -t cloudtruth:alpine-3.13
           docker run -e CLOUDTRUTH_API_KEY -t cloudtruth:alpine-3.13 cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
@@ -72,7 +72,7 @@ jobs:
           docker build . \
             --build-arg DOWNLOAD_URL="${CT_DOWNLOAD_URL}" \
             --build-arg DOWNLOAD_VERSION="${CT_DOWNLOAD_VERSION}" \
-            --build-arg DOWNLOAD_AUTH_TOKEN="{CT_DOWNLOAD_AUTH_TOKEN}" \
+            --build-arg DOWNLOAD_AUTH_TOKEN="${CT_DOWNLOAD_AUTH_TOKEN}" \
             -f tests/docker/Dockerfile.alpine-3.12 \
             -t cloudtruth:alpine-3.12
           docker run -e CLOUDTRUTH_API_KEY -t cloudtruth:alpine-3.12 cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
@@ -108,7 +108,7 @@ jobs:
           docker build . \
             --build-arg DOWNLOAD_URL="${CT_DOWNLOAD_URL}" \
             --build-arg DOWNLOAD_VERSION="${CT_DOWNLOAD_VERSION}" \
-            --build-arg DOWNLOAD_AUTH_TOKEN="{CT_DOWNLOAD_AUTH_TOKEN}" \
+            --build-arg DOWNLOAD_AUTH_TOKEN="${CT_DOWNLOAD_AUTH_TOKEN}" \
             -f tests/docker/Dockerfile.centos-8 \
             -t cloudtruth:centos-8
           docker run -e CLOUDTRUTH_API_KEY -t cloudtruth:centos-8 cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
@@ -119,7 +119,7 @@ jobs:
           docker build . \
             --build-arg DOWNLOAD_URL="${CT_DOWNLOAD_URL}" \
             --build-arg DOWNLOAD_VERSION="${CT_DOWNLOAD_VERSION}" \
-            --build-arg DOWNLOAD_AUTH_TOKEN="{CT_DOWNLOAD_AUTH_TOKEN}" \
+            --build-arg DOWNLOAD_AUTH_TOKEN="${CT_DOWNLOAD_AUTH_TOKEN}" \
             -f tests/docker/Dockerfile.centos-7 \
             -t cloudtruth:centos-7
           docker run -e CLOUDTRUTH_API_KEY -t cloudtruth:centos-7 cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
@@ -155,7 +155,7 @@ jobs:
           docker build . \
             --build-arg DOWNLOAD_URL="${CT_DOWNLOAD_URL}" \
             --build-arg DOWNLOAD_VERSION="${CT_DOWNLOAD_VERSION}" \
-            --build-arg DOWNLOAD_AUTH_TOKEN="{CT_DOWNLOAD_AUTH_TOKEN}" \
+            --build-arg DOWNLOAD_AUTH_TOKEN="${CT_DOWNLOAD_AUTH_TOKEN}" \
             -f tests/docker/Dockerfile.debian-bullseye-slim \
             -t cloudtruth:debian-bullseye-slim
           docker run -e CLOUDTRUTH_API_KEY -t cloudtruth:debian-bullseye-slim cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
@@ -166,7 +166,7 @@ jobs:
           docker build . \
             --build-arg DOWNLOAD_URL="${CT_DOWNLOAD_URL}" \
             --build-arg DOWNLOAD_VERSION="${CT_DOWNLOAD_VERSION}" \
-            --build-arg DOWNLOAD_AUTH_TOKEN="{CT_DOWNLOAD_AUTH_TOKEN}" \
+            --build-arg DOWNLOAD_AUTH_TOKEN="${CT_DOWNLOAD_AUTH_TOKEN}" \
             -f tests/docker/Dockerfile.debian-buster-slim \
             -t cloudtruth:debian-buster-slim
           docker run -e CLOUDTRUTH_API_KEY -t cloudtruth:debian-buster-slim cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
@@ -177,7 +177,7 @@ jobs:
           docker build . \
             --build-arg DOWNLOAD_URL="${CT_DOWNLOAD_URL}" \
             --build-arg DOWNLOAD_VERSION="${CT_DOWNLOAD_VERSION}" \
-            --build-arg DOWNLOAD_AUTH_TOKEN="{CT_DOWNLOAD_AUTH_TOKEN}" \
+            --build-arg DOWNLOAD_AUTH_TOKEN="${CT_DOWNLOAD_AUTH_TOKEN}" \
             -f tests/docker/Dockerfile.debian-jessie-slim \
             -t cloudtruth:debian-jessie-slim
           docker run -e CLOUDTRUTH_API_KEY -t cloudtruth:debian-jessie-slim cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
@@ -247,7 +247,7 @@ jobs:
           docker build . \
             --build-arg DOWNLOAD_URL="${CT_DOWNLOAD_URL}" \
             --build-arg DOWNLOAD_VERSION="${CT_DOWNLOAD_VERSION}" \
-            --build-arg DOWNLOAD_AUTH_TOKEN="{CT_DOWNLOAD_AUTH_TOKEN}" \
+            --build-arg DOWNLOAD_AUTH_TOKEN="${CT_DOWNLOAD_AUTH_TOKEN}" \
             -f tests/docker/Dockerfile.ubuntu-groovy \
             -t cloudtruth:ubuntu-groovy
           docker run -e CLOUDTRUTH_API_KEY -t cloudtruth:ubuntu-groovy cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
@@ -258,7 +258,7 @@ jobs:
           docker build . \
             --build-arg DOWNLOAD_URL="${CT_DOWNLOAD_URL}" \
             --build-arg DOWNLOAD_VERSION="${CT_DOWNLOAD_VERSION}" \
-            --build-arg DOWNLOAD_AUTH_TOKEN="{CT_DOWNLOAD_AUTH_TOKEN}" \
+            --build-arg DOWNLOAD_AUTH_TOKEN="${CT_DOWNLOAD_AUTH_TOKEN}" \
             -f tests/docker/Dockerfile.ubuntu-focal \
             -t cloudtruth:ubuntu-focal
           docker run -e CLOUDTRUTH_API_KEY -t cloudtruth:ubuntu-focal cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
@@ -269,7 +269,7 @@ jobs:
           docker build . \
             --build-arg DOWNLOAD_URL="${CT_DOWNLOAD_URL}" \
             --build-arg DOWNLOAD_VERSION="${CT_DOWNLOAD_VERSION}" \
-            --build-arg DOWNLOAD_AUTH_TOKEN="{CT_DOWNLOAD_AUTH_TOKEN}" \
+            --build-arg DOWNLOAD_AUTH_TOKEN="${CT_DOWNLOAD_AUTH_TOKEN}" \
             -f tests/docker/Dockerfile.ubuntu-bionic \
             -t cloudtruth:ubuntu-bionic
           docker run -e CLOUDTRUTH_API_KEY -t cloudtruth:ubuntu-bionic cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
@@ -280,7 +280,7 @@ jobs:
           docker build . \
             --build-arg DOWNLOAD_URL="${CT_DOWNLOAD_URL}" \
             --build-arg DOWNLOAD_VERSION="${CT_DOWNLOAD_VERSION}" \
-            --build-arg DOWNLOAD_AUTH_TOKEN="{CT_DOWNLOAD_AUTH_TOKEN}" \
+            --build-arg DOWNLOAD_AUTH_TOKEN="${CT_DOWNLOAD_AUTH_TOKEN}" \
             -f tests/docker/Dockerfile.ubuntu-xenial \
             -t cloudtruth:ubuntu-xenial
           docker run -e CLOUDTRUTH_API_KEY -t cloudtruth:ubuntu-xenial cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
@@ -291,7 +291,7 @@ jobs:
           docker build . \
             --build-arg DOWNLOAD_URL="${CT_DOWNLOAD_URL}" \
             --build-arg DOWNLOAD_VERSION="${CT_DOWNLOAD_VERSION}" \
-            --build-arg DOWNLOAD_AUTH_TOKEN="{CT_DOWNLOAD_AUTH_TOKEN}" \
+            --build-arg DOWNLOAD_AUTH_TOKEN="${CT_DOWNLOAD_AUTH_TOKEN}" \
             -f tests/docker/Dockerfile.ubuntu-trusty \
             -t cloudtruth:ubuntu-trusty
           docker run -e CLOUDTRUTH_API_KEY -t cloudtruth:ubuntu-trusty cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
