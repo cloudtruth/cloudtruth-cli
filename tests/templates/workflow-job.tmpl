@@ -3,6 +3,9 @@
     runs-on: {{ runs_on }}
     needs: [ 'build-release' ]
     env:
+      # Need auth-token to download from unpublished release
+      CT_DOWNLOAD_AUTH_TOKEN={{ '${{ secrets.GITHUB_TOKEN }}' }}
+
       # These values are used for running the CLI command
       CLOUDTRUTH_API_KEY: {{ '${{ secrets.CI_ACCT_READONLY_CT_API_KEY }}' }}
       CT_TEST_PROJECT: TruthStrap

@@ -6,6 +6,5 @@ ENV CT_DOWNLOAD_URL=$DOWNLOAD_URL
 ENV CT_DOWNLOAD_VERSION=$DOWNLOAD_VERSION
 ENV CT_DOWNLOAD_AUTH_TOKEN=$DOWNLOAD_AUTH_TOKEN
 COPY install.sh /tmp/ctinstall.sh
-COPY artifacts /tmp/artifacts
 RUN chmod 755 /tmp/ctinstall.sh && /tmp/ctinstall.sh --url "${CT_DOWNLOAD_URL}" --version "${CT_DOWNLOAD_VERSION}" --auth-token "${CT_DOWNLOAD_AUTH_TOKEN}"
 CMD cloudtruth --version
