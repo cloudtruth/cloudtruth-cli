@@ -254,8 +254,7 @@ jobs:
       - name: windows-latest
         shell: pwsh
         run: |
-          $curr_dir = pwd
-          $ENV:CT_DOWNLOAD_URL = "file://$curr_dir/artifacts"
+          $ENV:CT_DOWNLOAD_URL = "file://.\artifacts"
           $ENV:CT_DOWNLOAD_VERSION = Get-Content .\artifacts\release-version -Raw
           .\install.ps1 -url "$ENV:CT_DOWNLOAD_URL" -version "$ENV:CT_DOWNLOAD_VERSION"
           New-Alias grep findstr
