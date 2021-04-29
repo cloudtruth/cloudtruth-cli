@@ -23,7 +23,7 @@ if ($url -eq "") {
 $headers=@{}
 if ($authToken -eq "") {
     $headers=@{
-        Authorization = "bearer $authToken"
+        Authorization = "Bearer $authToken"
         Accept = "application/octet-stream"
     }
 }
