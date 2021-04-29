@@ -89,7 +89,8 @@ jobs:
           echo "${{ steps.release.outputs.upload_url }}" > artifacts/release-upload-url
           # this path needs a little work to be where the assets live
           ORIG_URL="${{ steps.release.outputs.html_url }}"
-          FINAL_URL="${ORIG_URL/\/tag\///download//}"
+          echo "${ORIG_URL}" > artifacts/release-tag-url
+          FINAL_URL="${ORIG_URL/\/tag\///download/}"
           echo "${FINAL_URL}" > artifacts/release-download-url
 
       - name: Dump GitHub context
