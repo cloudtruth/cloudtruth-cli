@@ -87,7 +87,7 @@ jobs:
       - name: Save release URLs to artifact
         run: |
           echo "${{ steps.release.outputs.upload_url }}" > artifacts/release-upload-url
-          echo "${{ steps.release.outputs.html_url }}" > artifacts/release-download-url"
+          echo "${{ steps.release.outputs.html_url }}" > artifacts/release-download-url
 
       - name: Dump GitHub context
         env:
