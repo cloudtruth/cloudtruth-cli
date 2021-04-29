@@ -131,6 +131,7 @@ download() {
         accept_header="Accept: application/octet-stream"
     fi
 
+    set -x
     curl -sLOJ -H "$auth_header" -H "$accept_header" -o "${filename}" "$url"
     # NOTE: 'wc' is used to determine filesize, since 'stat' format args vary
     filesize=$(wc -c < "$filename")
@@ -141,6 +142,7 @@ download() {
         exit 3
     fi
     echo "Downloaded: $url"
+    set +x
 }
 
 # alpine, centos, rhel, macos - no package format yet, use generic binary
