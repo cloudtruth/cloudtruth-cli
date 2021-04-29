@@ -87,7 +87,10 @@ jobs:
       - name: Save release URLs to artifact
         run: |
           echo "${{ steps.release.outputs.upload_url }}" > artifacts/release-upload-url
-          echo "${{ steps.release.outputs.html_url }}" > artifacts/release-download-url
+          # this path needs a little work to be where the assets live
+          ORIG_URL="${{ steps.release.outputs.html_url }}"
+          FINAL_URL="${ORIG_URL/\/tag\///download//}"
+          echo "${FINAL_URL}" > artifacts/release-download-url
 
       - name: Dump GitHub context
         env:
