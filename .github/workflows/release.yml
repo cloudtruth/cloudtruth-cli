@@ -329,6 +329,9 @@ jobs:
           name: artifacts
           path: artifacts
 
+      - name: Display structure of downloaded files
+        run: ls -R
+
       - name: alpine-3.13
         run: |
           CT_DOWNLOAD_VERSION=$(cat artifacts/release-version)
@@ -376,6 +379,9 @@ jobs:
           name: artifacts
           path: artifacts
 
+      - name: Display structure of downloaded files
+        run: ls -R
+
       - name: centos-8
         run: |
           CT_DOWNLOAD_VERSION=$(cat artifacts/release-version)
@@ -422,6 +428,9 @@ jobs:
         with:
           name: artifacts
           path: artifacts
+
+      - name: Display structure of downloaded files
+        run: ls -R
 
       - name: debian-bullseye-slim
         run: |
@@ -481,6 +490,9 @@ jobs:
           name: artifacts
           path: artifacts
 
+      - name: Display structure of downloaded files
+        run: ls -R
+
       - name: macOS-latest
         run: |
           CT_DOWNLOAD_VERSION=$(cat artifacts/release-version)
@@ -511,6 +523,9 @@ jobs:
         with:
           name: artifacts
           path: artifacts
+
+      - name: Display structure of downloaded files
+        run: ls -R
 
       - name: ubuntu-groovy
         run: |
@@ -591,6 +606,9 @@ jobs:
         with:
           name: artifacts
           path: artifacts
+
+      - name: Display structure of downloaded files
+        run: ls -R
 
       - name: windows-latest
         shell: pwsh
