@@ -22,7 +22,10 @@ if ($url -eq "") {
 # start off with empty additional headers, and add auth headers if needed
 $headers=@{}
 if ($authToken -eq "") {
-    $headers=@{ Authorization="token $authToken" }
+    $headers=@{
+        Authorization = "token $authToken"
+        Accept = "application/octet-stream"
+    }
 }
 
 ### Install-ish   ############################################################
@@ -42,8 +45,14 @@ if ($full_url.StartsWith("file://")) {
 }
 
 # make sure the file exists, and is bigger than 100 bytes
-if (!(Test-Path $tmp -PathType Leaf) -or ((Get-Item $tmp).Length -lt 100)) {
+if (!(Test-Path $tmp -PathType Leaf)) {
     Write-Error "Failed to download: $full_url"
+    return
+}
+$filesize = (Get-Item $tmp).Length
+if ($filesize -lt 100) {
+    Write-Error "Problem downloading: $full_url"
+    Write-Error "File exists, but is only $filesize bytes"
     return
 }
 Write-Host "Downloaded: $full_url"

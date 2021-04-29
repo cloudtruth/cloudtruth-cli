@@ -125,14 +125,18 @@ download() {
     filename="${TMP_DIR}/$(basename "$url")"
     minsize=100 # downloads that fail often have a 9-byte file
     auth_header=""
+    accept_header=""
     if [ -n "${auth_token}" ]; then
         auth_header="Authorization: token $auth_token"
+        accept_header="Accept: application/octet-stream"
     fi
 
-    curl -sLOJ -H "$auth_header" -o "${filename}" "$url"
+    curl -sLOJ -H "$auth_header" -H "$accept_header" -o "${filename}" "$url"
     # NOTE: 'wc' is used to determine filesize, since 'stat' format args vary
     filesize=$(wc -c < "$filename")
     if [ "$filesize" -lt "$minsize" ]; then
+        echo "${filename} was only ${filesize} bytes"
+        stat "$filename"
         echo "Failed to download: $url"
         exit 3
     fi
