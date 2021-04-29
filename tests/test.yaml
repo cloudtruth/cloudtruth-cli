@@ -57,6 +57,9 @@ jobs:
       - name: Display structure of downloaded files
         run: ls -R
 
+      - name: Print debug
+        run: echo ${{ steps }}
+
       - name: alpine-3.13
         run: |
           CT_DOWNLOAD_VERSION=$(cat artifacts/release-version)
@@ -107,6 +110,9 @@ jobs:
       - name: Display structure of downloaded files
         run: ls -R
 
+      - name: Print debug
+        run: echo ${{ steps }}
+
       - name: centos-8
         run: |
           CT_DOWNLOAD_VERSION=$(cat artifacts/release-version)
@@ -156,6 +162,9 @@ jobs:
 
       - name: Display structure of downloaded files
         run: ls -R
+
+      - name: Print debug
+        run: echo ${{ steps }}
 
       - name: debian-bullseye-slim
         run: |
@@ -218,6 +227,9 @@ jobs:
       - name: Display structure of downloaded files
         run: ls -R
 
+      - name: Print debug
+        run: echo ${{ steps }}
+
       - name: macOS-latest
         run: |
           CT_DOWNLOAD_VERSION=$(cat artifacts/release-version)
@@ -251,6 +263,9 @@ jobs:
 
       - name: Display structure of downloaded files
         run: ls -R
+
+      - name: Print debug
+        run: echo ${{ steps }}
 
       - name: ubuntu-groovy
         run: |
@@ -334,6 +349,9 @@ jobs:
 
       - name: Display structure of downloaded files
         run: ls -R
+
+      - name: Print debug
+        run: echo ${{ steps }}
 
       - name: windows-latest
         shell: pwsh

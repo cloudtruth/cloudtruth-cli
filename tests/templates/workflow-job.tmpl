@@ -26,4 +26,7 @@
       - name: Display structure of downloaded files
         run: ls -R
 
+      - name: Print debug
+        run: echo {{ '${{ steps }}' }}
+
 
