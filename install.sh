@@ -130,7 +130,8 @@ download() {
     fi
 
     curl -sLOJ -H "$auth_header" -o "${filename}" "$url"
-    filesize=$(stat -c %s "$filename")
+    # NOTE: 'wc' is used to determine filesize, since 'stat' format args vary
+    filesize=$(wc -c < "$filename")
     if [ "$filesize" -lt "$minsize" ]; then
         echo "Failed to download: $url"
         exit 3
