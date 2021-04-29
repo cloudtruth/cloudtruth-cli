@@ -127,7 +127,7 @@ download() {
     auth_header=""
     accept_header=""
     if [ -n "${auth_token}" ]; then
-        auth_header="Authorization: token $auth_token"
+        auth_header="Authorization: bearer $auth_token"
         accept_header="Accept: application/octet-stream"
     fi
 
