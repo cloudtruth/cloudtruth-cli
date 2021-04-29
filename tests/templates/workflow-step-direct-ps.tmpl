@@ -1,7 +1,7 @@
       - name: {{ os }}-{{ version }}
         shell: pwsh
         run: |
-          $ENV:CT_DOWNLOAD_URL = Get-Content .\artifacts\release-upload-url -Raw
+          $ENV:CT_DOWNLOAD_URL = Get-Content .\artifacts\release-download-url -Raw
           $ENV:CT_DOWNLOAD_VERSION = Get-Content .\artifacts\release-version -Raw
           .\install.ps1 -url "$ENV:CT_DOWNLOAD_URL" -version "$ENV:CT_DOWNLOAD_VERSION" -authToken "$ENV:CT_DOWNLOAD_AUTH_TOKEN"
           New-Alias grep findstr

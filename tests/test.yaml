@@ -76,7 +76,7 @@ jobs:
       - name: alpine-3.13
         run: |
           CT_DOWNLOAD_VERSION=$(cat artifacts/release-version)
-          CT_DOWNLOAD_URL=$(cat artifacts/release-upload-url)
+          CT_DOWNLOAD_URL=$(cat artifacts/release-download-url)
           docker build . \
             --build-arg DOWNLOAD_URL="${CT_DOWNLOAD_URL}" \
             --build-arg DOWNLOAD_VERSION="${CT_DOWNLOAD_VERSION}" \
@@ -87,7 +87,7 @@ jobs:
       - name: alpine-3.12
         run: |
           CT_DOWNLOAD_VERSION=$(cat artifacts/release-version)
-          CT_DOWNLOAD_URL=$(cat artifacts/release-upload-url)
+          CT_DOWNLOAD_URL=$(cat artifacts/release-download-url)
           docker build . \
             --build-arg DOWNLOAD_URL="${CT_DOWNLOAD_URL}" \
             --build-arg DOWNLOAD_VERSION="${CT_DOWNLOAD_VERSION}" \
@@ -142,7 +142,7 @@ jobs:
       - name: centos-8
         run: |
           CT_DOWNLOAD_VERSION=$(cat artifacts/release-version)
-          CT_DOWNLOAD_URL=$(cat artifacts/release-upload-url)
+          CT_DOWNLOAD_URL=$(cat artifacts/release-download-url)
           docker build . \
             --build-arg DOWNLOAD_URL="${CT_DOWNLOAD_URL}" \
             --build-arg DOWNLOAD_VERSION="${CT_DOWNLOAD_VERSION}" \
@@ -153,7 +153,7 @@ jobs:
       - name: centos-7
         run: |
           CT_DOWNLOAD_VERSION=$(cat artifacts/release-version)
-          CT_DOWNLOAD_URL=$(cat artifacts/release-upload-url)
+          CT_DOWNLOAD_URL=$(cat artifacts/release-download-url)
           docker build . \
             --build-arg DOWNLOAD_URL="${CT_DOWNLOAD_URL}" \
             --build-arg DOWNLOAD_VERSION="${CT_DOWNLOAD_VERSION}" \
@@ -208,7 +208,7 @@ jobs:
       - name: debian-bullseye-slim
         run: |
           CT_DOWNLOAD_VERSION=$(cat artifacts/release-version)
-          CT_DOWNLOAD_URL=$(cat artifacts/release-upload-url)
+          CT_DOWNLOAD_URL=$(cat artifacts/release-download-url)
           docker build . \
             --build-arg DOWNLOAD_URL="${CT_DOWNLOAD_URL}" \
             --build-arg DOWNLOAD_VERSION="${CT_DOWNLOAD_VERSION}" \
@@ -219,7 +219,7 @@ jobs:
       - name: debian-buster-slim
         run: |
           CT_DOWNLOAD_VERSION=$(cat artifacts/release-version)
-          CT_DOWNLOAD_URL=$(cat artifacts/release-upload-url)
+          CT_DOWNLOAD_URL=$(cat artifacts/release-download-url)
           docker build . \
             --build-arg DOWNLOAD_URL="${CT_DOWNLOAD_URL}" \
             --build-arg DOWNLOAD_VERSION="${CT_DOWNLOAD_VERSION}" \
@@ -230,7 +230,7 @@ jobs:
       - name: debian-jessie-slim
         run: |
           CT_DOWNLOAD_VERSION=$(cat artifacts/release-version)
-          CT_DOWNLOAD_URL=$(cat artifacts/release-upload-url)
+          CT_DOWNLOAD_URL=$(cat artifacts/release-download-url)
           docker build . \
             --build-arg DOWNLOAD_URL="${CT_DOWNLOAD_URL}" \
             --build-arg DOWNLOAD_VERSION="${CT_DOWNLOAD_VERSION}" \
@@ -285,7 +285,7 @@ jobs:
       - name: macOS-latest
         run: |
           CT_DOWNLOAD_VERSION=$(cat artifacts/release-version)
-          CT_DOWNLOAD_URL=$(cat artifacts/release-upload-url)
+          CT_DOWNLOAD_URL=$(cat artifacts/release-download-url)
           sudo ./install.sh --url "${CT_DOWNLOAD_URL}" --version "${CT_DOWNLOAD_VERSION}" --auth-token "${CT_DOWNLOAD_AUTH_TOKEN}"
           cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep "${CT_TEST_PARAM}" | grep "${CT_TEST_VALUE}"
 
@@ -335,7 +335,7 @@ jobs:
       - name: ubuntu-groovy
         run: |
           CT_DOWNLOAD_VERSION=$(cat artifacts/release-version)
-          CT_DOWNLOAD_URL=$(cat artifacts/release-upload-url)
+          CT_DOWNLOAD_URL=$(cat artifacts/release-download-url)
           docker build . \
             --build-arg DOWNLOAD_URL="${CT_DOWNLOAD_URL}" \
             --build-arg DOWNLOAD_VERSION="${CT_DOWNLOAD_VERSION}" \
@@ -346,7 +346,7 @@ jobs:
       - name: ubuntu-focal
         run: |
           CT_DOWNLOAD_VERSION=$(cat artifacts/release-version)
-          CT_DOWNLOAD_URL=$(cat artifacts/release-upload-url)
+          CT_DOWNLOAD_URL=$(cat artifacts/release-download-url)
           docker build . \
             --build-arg DOWNLOAD_URL="${CT_DOWNLOAD_URL}" \
             --build-arg DOWNLOAD_VERSION="${CT_DOWNLOAD_VERSION}" \
@@ -357,7 +357,7 @@ jobs:
       - name: ubuntu-bionic
         run: |
           CT_DOWNLOAD_VERSION=$(cat artifacts/release-version)
-          CT_DOWNLOAD_URL=$(cat artifacts/release-upload-url)
+          CT_DOWNLOAD_URL=$(cat artifacts/release-download-url)
           docker build . \
             --build-arg DOWNLOAD_URL="${CT_DOWNLOAD_URL}" \
             --build-arg DOWNLOAD_VERSION="${CT_DOWNLOAD_VERSION}" \
@@ -368,7 +368,7 @@ jobs:
       - name: ubuntu-xenial
         run: |
           CT_DOWNLOAD_VERSION=$(cat artifacts/release-version)
-          CT_DOWNLOAD_URL=$(cat artifacts/release-upload-url)
+          CT_DOWNLOAD_URL=$(cat artifacts/release-download-url)
           docker build . \
             --build-arg DOWNLOAD_URL="${CT_DOWNLOAD_URL}" \
             --build-arg DOWNLOAD_VERSION="${CT_DOWNLOAD_VERSION}" \
@@ -379,7 +379,7 @@ jobs:
       - name: ubuntu-trusty
         run: |
           CT_DOWNLOAD_VERSION=$(cat artifacts/release-version)
-          CT_DOWNLOAD_URL=$(cat artifacts/release-upload-url)
+          CT_DOWNLOAD_URL=$(cat artifacts/release-download-url)
           docker build . \
             --build-arg DOWNLOAD_URL="${CT_DOWNLOAD_URL}" \
             --build-arg DOWNLOAD_VERSION="${CT_DOWNLOAD_VERSION}" \
@@ -434,7 +434,7 @@ jobs:
       - name: windows-latest
         shell: pwsh
         run: |
-          $ENV:CT_DOWNLOAD_URL = Get-Content .\artifacts\release-upload-url -Raw
+          $ENV:CT_DOWNLOAD_URL = Get-Content .\artifacts\release-download-url -Raw
           $ENV:CT_DOWNLOAD_VERSION = Get-Content .\artifacts\release-version -Raw
           .\install.ps1 -url "$ENV:CT_DOWNLOAD_URL" -version "$ENV:CT_DOWNLOAD_VERSION" -authToken "$ENV:CT_DOWNLOAD_AUTH_TOKEN"
           New-Alias grep findstr

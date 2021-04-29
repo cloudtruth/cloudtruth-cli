@@ -1,7 +1,7 @@
       - name: {{ os }}-{{ version }}
         run: |
           CT_DOWNLOAD_VERSION=$(cat artifacts/release-version)
-          CT_DOWNLOAD_URL=$(cat artifacts/release-upload-url)
+          CT_DOWNLOAD_URL=$(cat artifacts/release-download-url)
           docker build . \
             --build-arg DOWNLOAD_URL="${CT_DOWNLOAD_URL}" \
             --build-arg DOWNLOAD_VERSION="${CT_DOWNLOAD_VERSION}" \
