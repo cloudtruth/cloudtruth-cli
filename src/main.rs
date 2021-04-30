@@ -47,6 +47,7 @@ pub struct ResolvedIds {
     pub proj_id: Option<String>,
 }
 
+/// Print a message to stderr in the specified color.
 fn stderr_message(message: String, color: Color) -> Result<()> {
     let mut stderr = StandardStream::stderr(ColorChoice::Auto);
     let mut color_spec = ColorSpec::new();
@@ -58,18 +59,25 @@ fn stderr_message(message: String, color: Color) -> Result<()> {
     Ok(())
 }
 
+/// Print the provided message to stderr in 'Yellow'.
 fn warning_message(message: String) -> Result<()> {
     stderr_message(message, Color::Yellow)
 }
 
+/// Print the provided message to stderr in 'Red'.
 fn error_message(message: String) -> Result<()> {
     stderr_message(message, Color::Red)
 }
 
+/// Print the provided message to stderr in 'Cyan'.
 fn help_message(message: String) -> Result<()> {
     stderr_message(message, Color::Cyan)
 }
 
+/// Insures the configuration is valid.
+///
+/// If there are errors, it will print the error/help and exit.
+/// If only warnings happen (e.g. using old API key name), it will print the warning and keep going.
 fn check_config() -> Result<()> {
     if let Some(issues) = Config::global().validate() {
         // print the warnings first, so the user sees them (even when errors are present)
@@ -92,10 +100,12 @@ fn check_config() -> Result<()> {
     Ok(())
 }
 
+/// Add "WARN:" prefix to the message, and print it to stderr
 fn warn_user(message: String) -> Result<()> {
     warning_message(format!("WARN: {}", message))
 }
 
+/// Simple method for standardizing the message when no sub-command is executed.
 fn warn_missing_subcommand(command: &str) -> Result<()> {
     warn_user(format!("No '{}' sub-command executed.", command))
 }
@@ -171,6 +181,7 @@ fn resolve_ids(org_id: Option<&str>, config: &Config) -> Result<ResolvedIds> {
     })
 }
 
+/// Process the 'run' sub-command
 fn process_run_command(
     org_id: Option<&str>,
     resolved: &ResolvedIds,
@@ -210,6 +221,7 @@ fn process_run_command(
     Ok(())
 }
 
+/// Process the 'project' sub-command
 fn process_project_command(
     org_id: Option<&str>,
     projects: &impl ProjectsIntf,
@@ -293,6 +305,7 @@ fn process_project_command(
     Ok(())
 }
 
+/// Process the 'completion' sub-command
 fn process_completion_command(subcmd_args: &ArgMatches) {
     let shell = subcmd_args.value_of("SHELL").unwrap();
 
@@ -303,6 +316,7 @@ fn process_completion_command(subcmd_args: &ArgMatches) {
     );
 }
 
+/// Process the 'config' sub-command
 fn process_config_command(subcmd_args: &ArgMatches) -> Result<()> {
     if subcmd_args.subcommand_matches("edit").is_some() {
         Config::edit()?;
@@ -356,6 +370,7 @@ fn process_config_command(subcmd_args: &ArgMatches) -> Result<()> {
     Ok(())
 }
 
+/// Process the 'environment' sub-command
 fn process_environment_command(
     org_id: Option<&str>,
     environments: &Environments,
@@ -455,6 +470,7 @@ fn process_environment_command(
     Ok(())
 }
 
+/// Process the 'parameters' sub-command
 fn process_parameters_command(
     org_id: Option<&str>,
     parameters: &Parameters,
@@ -655,6 +671,7 @@ fn process_parameters_command(
     Ok(())
 }
 
+/// Process the 'templates' sub-command
 fn process_templates_command(
     org_id: Option<&str>,
     templates: &Templates,
