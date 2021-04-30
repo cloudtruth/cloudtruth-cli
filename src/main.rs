@@ -174,9 +174,9 @@ fn resolve_ids(org_id: Option<&str>, config: &Config) -> Result<ResolvedIds> {
 fn process_run_command(
     org_id: Option<&str>,
     resolved: &ResolvedIds,
+    sub_proc: &mut impl SubProcessIntf,
     subcmd_args: &ArgMatches,
 ) -> Result<()> {
-    let mut sub_proc: SubProcess = SubProcess::new();
     let mut arguments: Vec<String>;
     let command: String;
     if subcmd_args.is_present("command") {
@@ -773,7 +773,8 @@ fn main() -> Result<()> {
     }
 
     if let Some(matches) = matches.subcommand_matches("run") {
-        process_run_command(org_id, &resolved, matches)?;
+        let mut sub_proc = SubProcess::new();
+        process_run_command(org_id, &resolved, &mut sub_proc, matches)?;
     }
 
     Ok(())
