@@ -43,6 +43,7 @@ const REDACTED: &str = "*****";
 pub struct ResolvedIds {
     pub env_name: Option<String>,
     pub env_id: Option<String>,
+    pub org_id: Option<String>,
     pub proj_name: Option<String>,
     pub proj_id: Option<String>,
 }
@@ -176,6 +177,7 @@ fn resolve_ids(org_id: Option<&str>, config: &Config) -> Result<ResolvedIds> {
     Ok(ResolvedIds {
         env_name: env.map(String::from),
         env_id,
+        org_id: org_id.map(String::from),
         proj_name: proj.map(String::from),
         proj_id,
     })
@@ -183,10 +185,9 @@ fn resolve_ids(org_id: Option<&str>, config: &Config) -> Result<ResolvedIds> {
 
 /// Process the 'run' sub-command
 fn process_run_command(
-    org_id: Option<&str>,
-    resolved: &ResolvedIds,
-    sub_proc: &mut impl SubProcessIntf,
     subcmd_args: &ArgMatches,
+    sub_proc: &mut impl SubProcessIntf,
+    resolved: &ResolvedIds,
 ) -> Result<()> {
     let mut arguments: Vec<String>;
     let command: String;
@@ -208,6 +209,7 @@ fn process_run_command(
     }
 
     // Setup the environment for the sub-process.
+    let org_id = resolved.org_id.as_deref();
     let inherit = Inheritance::from_str(subcmd_args.value_of("inheritance").unwrap()).unwrap();
     let overrides = subcmd_args.values_of_lossy("set").unwrap_or_default();
     let removals = subcmd_args.values_of_lossy("remove").unwrap_or_default();
@@ -223,9 +225,9 @@ fn process_run_command(
 
 /// Process the 'project' sub-command
 fn process_project_command(
-    org_id: Option<&str>,
-    projects: &impl ProjectsIntf,
     subcmd_args: &ArgMatches,
+    projects: &impl ProjectsIntf,
+    org_id: Option<&str>,
 ) -> Result<()> {
     if let Some(subcmd_args) = subcmd_args.subcommand_matches("delete") {
         let proj_name = subcmd_args.value_of("NAME");
@@ -372,9 +374,9 @@ fn process_config_command(subcmd_args: &ArgMatches) -> Result<()> {
 
 /// Process the 'environment' sub-command
 fn process_environment_command(
-    org_id: Option<&str>,
-    environments: &Environments,
     subcmd_args: &ArgMatches,
+    environments: &Environments,
+    org_id: Option<&str>,
 ) -> Result<()> {
     if let Some(subcmd_args) = subcmd_args.subcommand_matches("delete") {
         let env_name = subcmd_args.value_of("NAME");
@@ -472,14 +474,13 @@ fn process_environment_command(
 
 /// Process the 'parameters' sub-command
 fn process_parameters_command(
-    org_id: Option<&str>,
+    subcmd_args: &ArgMatches,
     parameters: &Parameters,
     resolved: &ResolvedIds,
-    subcmd_args: &ArgMatches,
 ) -> Result<()> {
     if let Some(subcmd_args) = subcmd_args.subcommand_matches("list") {
         let details = parameters.get_parameter_details(
-            org_id,
+            resolved.org_id.as_deref(),
             resolved.env_id.clone(),
             resolved.proj_name.clone(),
         )?;
@@ -524,6 +525,7 @@ fn process_parameters_command(
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("get") {
         let key = subcmd_args.value_of("KEY").unwrap();
         let env_name = resolved.env_name.as_deref();
+        let org_id = resolved.org_id.as_deref();
         let parameter = parameters.get_body(org_id, env_name, resolved.proj_name.clone(), key);
 
         if let Ok(parameter) = parameter {
@@ -545,6 +547,7 @@ fn process_parameters_command(
         }
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("set") {
         let key = subcmd_args.value_of("KEY").unwrap();
+        let org_id = resolved.org_id.as_deref();
         let env_name = resolved.env_name.as_deref();
         let proj_name = resolved.proj_name.clone();
         let mut value = subcmd_args.value_of("value").map(|v| v.to_string());
@@ -617,6 +620,7 @@ fn process_parameters_command(
         }
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("delete") {
         let key = subcmd_args.value_of("KEY").unwrap();
+        let org_id = resolved.org_id.as_deref();
         let env_name = resolved.env_name.as_deref();
         let proj_name = resolved.proj_name.clone();
         let removed_id = parameters.delete_parameter(org_id, proj_name.clone(), env_name, key)?;
@@ -636,6 +640,7 @@ fn process_parameters_command(
             );
         }
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("export") {
+        let org_id = resolved.org_id.as_deref();
         let proj_name = resolved.proj_name.clone();
         let starts_with = subcmd_args.value_of("starts_with");
         let ends_with = subcmd_args.value_of("ends_with");
@@ -673,12 +678,12 @@ fn process_parameters_command(
 
 /// Process the 'templates' sub-command
 fn process_templates_command(
-    org_id: Option<&str>,
+    subcmd_args: &ArgMatches,
     templates: &Templates,
     resolved: &ResolvedIds,
-    subcmd_args: &ArgMatches,
 ) -> Result<()> {
     if let Some(subcmd_args) = subcmd_args.subcommand_matches("list") {
+        let org_id = resolved.org_id.as_deref();
         let proj_name = resolved.proj_name.clone();
         let details = templates.get_template_details(org_id, proj_name.clone())?;
         if details.is_empty() {
@@ -711,6 +716,7 @@ fn process_templates_command(
             }
         }
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("get") {
+        let org_id = resolved.org_id.as_deref();
         let proj_name = resolved.proj_name.clone();
         let template_name = subcmd_args.value_of("KEY").unwrap();
         let env_name = resolved.env_name.as_deref();
@@ -766,13 +772,13 @@ fn main() -> Result<()> {
 
     if let Some(matches) = matches.subcommand_matches("environments") {
         let environments = Environments::new();
-        process_environment_command(org_id, &environments, matches)?;
+        process_environment_command(matches, &environments, org_id)?;
         process::exit(0)
     }
 
     if let Some(matches) = matches.subcommand_matches("projects") {
         let projects = Projects::new();
-        process_project_command(org_id, &projects, matches)?;
+        process_project_command(matches, &projects, org_id)?;
         process::exit(0)
     }
 
@@ -781,17 +787,17 @@ fn main() -> Result<()> {
 
     if let Some(matches) = matches.subcommand_matches("parameters") {
         let parameters = Parameters::new();
-        process_parameters_command(org_id, &parameters, &resolved, matches)?;
+        process_parameters_command(matches, &parameters, &resolved)?;
     }
 
     if let Some(matches) = matches.subcommand_matches("templates") {
         let templates = Templates::new();
-        process_templates_command(org_id, &templates, &resolved, matches)?;
+        process_templates_command(matches, &templates, &resolved)?;
     }
 
     if let Some(matches) = matches.subcommand_matches("run") {
         let mut sub_proc = SubProcess::new();
-        process_run_command(org_id, &resolved, &mut sub_proc, matches)?;
+        process_run_command(matches, &mut sub_proc, &resolved)?;
     }
 
     Ok(())
