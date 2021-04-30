@@ -722,7 +722,7 @@ fn main() -> Result<()> {
 
     let api_key = matches.value_of("api_key");
     let profile_name = matches.value_of("profile");
-    let env_name = matches.value_of("environment");
+    let env_name = matches.value_of("env");
     let proj_name = matches.value_of("project");
 
     Config::init_global(Config::load_config(
