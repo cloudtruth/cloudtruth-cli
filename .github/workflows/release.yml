@@ -371,9 +371,8 @@ jobs:
       - name: Update URL
         run: |
           ORIG_URL=$(cat artifacts/release-download-url)
-          FINAL_URL="${ORIG_URL/https:\/\//https://$CT_DOWNLOAD_AUTH_TOKEN@/}"
+          FINAL_URL="${ORIG_URL/https:\/\//https://$CT_DOWNLOAD_AUTH_TOKEN:@/}"
           echo "${FINAL_URL}" > artifacts/release-download-url
-
 
       - name: alpine-3.13
         run: |

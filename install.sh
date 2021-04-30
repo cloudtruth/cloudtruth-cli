@@ -4,10 +4,11 @@
 #
 
 ### Control     ############################################################
-CT_DRY_RUN=0
-CT_DOWNLOAD_URL=""
+
 CT_CLI_VERSION=""
 CT_DOWNLOAD_AUTH_TOKEN=""
+CT_DOWNLOAD_URL=""
+CT_DRY_RUN=0
 
 ### Detection     ############################################################
 
@@ -117,6 +118,7 @@ if [ -z "${CT_DOWNLOAD_URL}" ]; then
 fi
 
 ### Install       ############################################################
+
 TMP_DIR="/tmp"
 
 download() {
@@ -131,18 +133,10 @@ download() {
         accept_header="Accept: application/octet-stream"
     fi
 
-    set -x
-    curl -sLOJ -H "$auth_header" -H "$accept_header" -o "${filename}" "$url"
-    # NOTE: 'wc' is used to determine filesize, since 'stat' format args vary
-    filesize=$(wc -c < "$filename")
-    if [ "$filesize" -lt "$minsize" ]; then
-        echo "${filename} was only ${filesize} bytes"
-        stat "$filename"
-        echo "Failed to download: $url"
-        exit 3
-    fi
+    set -ex
+    curl -fsLOJ -o "${filename}" "$url"
     echo "Downloaded: $url"
-    set +x
+    set +ex
 }
 
 # alpine, centos, rhel, macos - no package format yet, use generic binary
