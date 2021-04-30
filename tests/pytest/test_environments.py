@@ -1,0 +1,59 @@
+import os
+from testcase import TestCase
+
+
+class TestEnvironments(TestCase):
+    def test_environment_basic(self):
+        # verify `env_name` does not yet exist
+        base_cmd = self.get_cli_base_cmd()  # TODO: add other args here??
+        cmd_env = self.get_cmd_env()
+        env_name = "test-env-name" #  TODO: make unique by datetime? 
+        sub_cmd = base_cmd + "environments "
+        result = self.run_cli(cmd_env, sub_cmd + "ls -v")
+        self.assertEqual(result.return_value, 0)
+        self.assertFalse(result.out_contains_value(env_name))
+
+        # create with a description
+        orig_desc = "Description on create"
+        result = self.run_cli(cmd_env, sub_cmd + f"set {env_name} --desc \"{orig_desc}\"")
+        self.assertEqual(result.return_value, 0)
+        result = self.run_cli(cmd_env, sub_cmd + "ls -v")
+        self.assertEqual(result.return_value, 0)
+        self.assertTrue(result.out_contains_both(env_name, orig_desc))
+
+        # update the description
+        new_desc = "Updated description"
+        result = self.run_cli(cmd_env, sub_cmd + f"set {env_name} --desc \"{new_desc}\"")
+        self.assertEqual(result.return_value, 0)
+        result = self.run_cli(cmd_env, sub_cmd + "ls --values")
+        self.assertEqual(result.return_value, 0)
+        self.assertTrue(result.out_contains_both(env_name, new_desc))
+
+        # idempotent - do it again
+        result = self.run_cli(cmd_env, sub_cmd + f"set {env_name} --desc \"{new_desc}\"")
+        self.assertEqual(result.return_value, 0)
+        self.assertTrue(result.err_contains_value(f"Environment '{env_name}' not updated: same description"))
+
+        # nothing to update
+        result = self.run_cli(cmd_env, sub_cmd + f"set {env_name}")
+        self.assertEqual(result.return_value, 0)
+        self.assertTrue(result.err_contains_value(f"Environment '{env_name}' not updated: no description"))
+
+        # test the list without the table
+        result = self.run_cli(cmd_env, sub_cmd + "list")
+        self.assertEqual(result.return_value, 0)
+        self.assertTrue(result.out_contains_value(env_name))
+        self.assertFalse(result.out_contains_both(env_name, new_desc))
+    
+        # delete the description
+        result = self.run_cli(cmd_env, sub_cmd + f"delete {env_name} --confirm")
+        self.assertEqual(result.return_value, 0)
+        result = self.run_cli(cmd_env, sub_cmd + "ls -v")
+        self.assertEqual(result.return_value, 0)
+        self.assertFalse(result.out_contains_value(env_name))
+    
+        # do it again, see we have success and a warning
+        result = self.run_cli(cmd_env, sub_cmd + f"delete {env_name} --confirm")
+        self.assertEqual(result.return_value, 0)
+        self.assertTrue(result.err_contains_value(f"Environment '{env_name}' does not exist"))
+
