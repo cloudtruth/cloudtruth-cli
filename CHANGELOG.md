@@ -1,3 +1,7 @@
+# 0.4.1 - 2021-04-30
+
+* Bug fix: use the `--env <env>` argument.
+
 # 0.4.0 - 2021-04-28
 
 * Breaking changes:
