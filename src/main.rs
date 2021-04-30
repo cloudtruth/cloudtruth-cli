@@ -552,7 +552,7 @@ fn process_parameters_command(
         let proj_name = resolved.proj_name.clone();
         let mut value = subcmd_args.value_of("value").map(|v| v.to_string());
         let mut description = subcmd_args.value_of("description").map(|v| v.to_string());
-        let mut secret: Option<bool> = match subcmd_args.value_of("secrets") {
+        let mut secret: Option<bool> = match subcmd_args.value_of("secret") {
             Some("false") => Some(false),
             Some("true") => Some(true),
             _ => None,
