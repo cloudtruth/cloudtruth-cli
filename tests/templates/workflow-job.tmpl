@@ -41,5 +41,12 @@
           STEPS_CONTEXT: {{ '${{ toJSON(steps) }}' }}
         run: echo "$STEPS_CONTEXT"
 
+      - name: Update URL
+        run: |
+          ORIG_URL=$(cat artifacts/release-download-url)
+          GITHUB_TOKEN={{ '${{ secrets.GITHUB_TOKEN }}' }}
+          FINAL_URL="${ORIG_URL/https:\/\//https://$TOKEN@/}"
+          echo "${FINAL_URL}" > artifacts/release-download-url
+
 
 

@@ -72,6 +72,13 @@ jobs:
           STEPS_CONTEXT: ${{ toJSON(steps) }}
         run: echo "$STEPS_CONTEXT"
 
+      - name: Update URL
+        run: |
+          ORIG_URL=$(cat artifacts/release-download-url)
+          GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
+          FINAL_URL="${ORIG_URL/https:\/\//https://$TOKEN@/}"
+          echo "${FINAL_URL}" > artifacts/release-download-url
+
 
       - name: alpine-3.13
         run: |
@@ -138,6 +145,13 @@ jobs:
           STEPS_CONTEXT: ${{ toJSON(steps) }}
         run: echo "$STEPS_CONTEXT"
 
+      - name: Update URL
+        run: |
+          ORIG_URL=$(cat artifacts/release-download-url)
+          GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
+          FINAL_URL="${ORIG_URL/https:\/\//https://$TOKEN@/}"
+          echo "${FINAL_URL}" > artifacts/release-download-url
+
 
       - name: centos-8
         run: |
@@ -203,6 +217,13 @@ jobs:
         env:
           STEPS_CONTEXT: ${{ toJSON(steps) }}
         run: echo "$STEPS_CONTEXT"
+
+      - name: Update URL
+        run: |
+          ORIG_URL=$(cat artifacts/release-download-url)
+          GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
+          FINAL_URL="${ORIG_URL/https:\/\//https://$TOKEN@/}"
+          echo "${FINAL_URL}" > artifacts/release-download-url
 
 
       - name: debian-bullseye-slim
@@ -281,6 +302,13 @@ jobs:
           STEPS_CONTEXT: ${{ toJSON(steps) }}
         run: echo "$STEPS_CONTEXT"
 
+      - name: Update URL
+        run: |
+          ORIG_URL=$(cat artifacts/release-download-url)
+          GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
+          FINAL_URL="${ORIG_URL/https:\/\//https://$TOKEN@/}"
+          echo "${FINAL_URL}" > artifacts/release-download-url
+
 
       - name: macOS-latest
         run: |
@@ -330,6 +358,13 @@ jobs:
         env:
           STEPS_CONTEXT: ${{ toJSON(steps) }}
         run: echo "$STEPS_CONTEXT"
+
+      - name: Update URL
+        run: |
+          ORIG_URL=$(cat artifacts/release-download-url)
+          GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
+          FINAL_URL="${ORIG_URL/https:\/\//https://$TOKEN@/}"
+          echo "${FINAL_URL}" > artifacts/release-download-url
 
 
       - name: ubuntu-groovy
@@ -429,6 +464,13 @@ jobs:
         env:
           STEPS_CONTEXT: ${{ toJSON(steps) }}
         run: echo "$STEPS_CONTEXT"
+
+      - name: Update URL
+        run: |
+          ORIG_URL=$(cat artifacts/release-download-url)
+          GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
+          FINAL_URL="${ORIG_URL/https:\/\//https://$TOKEN@/}"
+          echo "${FINAL_URL}" > artifacts/release-download-url
 
 
       - name: windows-latest
