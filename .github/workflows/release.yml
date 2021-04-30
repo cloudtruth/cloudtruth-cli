@@ -371,8 +371,7 @@ jobs:
       - name: Update URL
         run: |
           ORIG_URL=$(cat artifacts/release-download-url)
-          GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
-          FINAL_URL="${ORIG_URL/https:\/\//https://$TOKEN@/}"
+          FINAL_URL="${ORIG_URL/https:\/\//https://$CT_DOWNLOAD_AUTH_TOKEN@/}"
           echo "${FINAL_URL}" > artifacts/release-download-url
 
 
@@ -444,8 +443,7 @@ jobs:
       - name: Update URL
         run: |
           ORIG_URL=$(cat artifacts/release-download-url)
-          GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
-          FINAL_URL="${ORIG_URL/https:\/\//https://$TOKEN@/}"
+          FINAL_URL="${ORIG_URL/https:\/\//https://$CT_DOWNLOAD_AUTH_TOKEN@/}"
           echo "${FINAL_URL}" > artifacts/release-download-url
 
 
@@ -517,8 +515,7 @@ jobs:
       - name: Update URL
         run: |
           ORIG_URL=$(cat artifacts/release-download-url)
-          GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
-          FINAL_URL="${ORIG_URL/https:\/\//https://$TOKEN@/}"
+          FINAL_URL="${ORIG_URL/https:\/\//https://$CT_DOWNLOAD_AUTH_TOKEN@/}"
           echo "${FINAL_URL}" > artifacts/release-download-url
 
 
@@ -601,8 +598,7 @@ jobs:
       - name: Update URL
         run: |
           ORIG_URL=$(cat artifacts/release-download-url)
-          GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
-          FINAL_URL="${ORIG_URL/https:\/\//https://$TOKEN@/}"
+          FINAL_URL="${ORIG_URL/https:\/\//https://$CT_DOWNLOAD_AUTH_TOKEN@/}"
           echo "${FINAL_URL}" > artifacts/release-download-url
 
 
@@ -658,8 +654,7 @@ jobs:
       - name: Update URL
         run: |
           ORIG_URL=$(cat artifacts/release-download-url)
-          GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
-          FINAL_URL="${ORIG_URL/https:\/\//https://$TOKEN@/}"
+          FINAL_URL="${ORIG_URL/https:\/\//https://$CT_DOWNLOAD_AUTH_TOKEN@/}"
           echo "${FINAL_URL}" > artifacts/release-download-url
 
 
@@ -764,8 +759,7 @@ jobs:
       - name: Update URL
         run: |
           ORIG_URL=$(cat artifacts/release-download-url)
-          GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
-          FINAL_URL="${ORIG_URL/https:\/\//https://$TOKEN@/}"
+          FINAL_URL="${ORIG_URL/https:\/\//https://$CT_DOWNLOAD_AUTH_TOKEN@/}"
           echo "${FINAL_URL}" > artifacts/release-download-url
 
 
