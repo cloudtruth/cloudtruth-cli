@@ -339,8 +339,9 @@ jobs:
       CT_TEST_VALUE: Speicla
 
     steps:
-      - name: "Can GITHUB_TOKEN see draft releases?"
-        run: curl -fv -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/cloudtruth/cloudtruth-cli/releases"
+      - name: debug-token-sees-draft
+        run: |
+          curl -fv -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/cloudtruth/cloudtruth-cli/releases
 
       # checkout to get the installer script(s)
       - uses: actions/checkout@v2
