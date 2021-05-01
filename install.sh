@@ -125,18 +125,16 @@ download() {
     url=$1
     auth_token=$2
     filename="${TMP_DIR}/$(basename "$url")"
-    minsize=100 # downloads that fail often have a 9-byte file
     auth_header=""
-    accept_header=""
     if [ -n "${auth_token}" ]; then
-        auth_header="Authorization: Bearer $auth_token"
-        accept_header="Accept: application/octet-stream"
+        auth_header="Authorization: token ${auth_token}"
     fi
 
     set -ex
-    curl -fsLOJ -o "${filename}" "$url"
-    echo "Downloaded: $url"
+    # make -fsL, disable x mode
+    curl -H "${auth_header}" -fv --location-trusted -o "${filename}" "${url}"
     set +ex
+    echo "Downloaded: $url"
 }
 
 # alpine, centos, rhel, macos - no package format yet, use generic binary
