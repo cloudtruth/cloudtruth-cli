@@ -20,6 +20,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: ShellCheck
+        uses: ludeeus/action-shellcheck@1
+
       - name: Install Rust
         id: rust
         uses: actions-rs/toolchain@v1

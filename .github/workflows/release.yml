@@ -87,11 +87,10 @@ jobs:
       - name: Save release URLs to artifact
         run: |
           echo "${{ steps.release.outputs.upload_url }}" > artifacts/release-upload-url
-          # this path needs a little work to be where the assets live
-          ORIG_URL="${{ steps.release.outputs.html_url }}"
-          echo "${ORIG_URL}" > artifacts/release-tag-url
-          FINAL_URL="${ORIG_URL/\/tag\///download/}"
-          echo "${FINAL_URL}" > artifacts/release-download-url
+          TAG_URL="${{ steps.release.outputs.html_url }}"
+          echo "${TAG_URL}" > artifacts/release-tag-url
+          DOWNLOAD_URL="${TAG_URL/\/tag\///download/}"
+          echo "${DOWNLOAD_URL}" > artifacts/release-download-url
 
       - name: Dump GitHub context
         env:
@@ -338,7 +337,11 @@ jobs:
       CT_TEST_PROJECT: TruthStrap
       CT_TEST_PARAM: INTEGRATION_TEST_RESULT
       CT_TEST_VALUE: Speicla
+
     steps:
+      - name: "Can GITHUB_TOKEN see draft releases?"
+        run: curl -fv -H "Authorization: token ${CT_DOWNLOAD_AUTH_TOKEN}" https://api.github.com/repos/cloudtruth/cloudtruth-cli/releases
+
       # checkout to get the installer script(s)
       - uses: actions/checkout@v2
         with:
@@ -368,12 +371,6 @@ jobs:
           STEPS_CONTEXT: ${{ toJSON(steps) }}
         run: echo "$STEPS_CONTEXT"
 
-      - name: Update URL
-        run: |
-          ORIG_URL=$(cat artifacts/release-download-url)
-          FINAL_URL="${ORIG_URL/https:\/\//https://$CT_DOWNLOAD_AUTH_TOKEN:@/}"
-          echo "${FINAL_URL}" > artifacts/release-download-url
-
       - name: alpine-3.13
         run: |
           CT_DOWNLOAD_VERSION=$(cat artifacts/release-version)
@@ -385,6 +382,7 @@ jobs:
              -f tests/docker/Dockerfile.alpine-3.13 \
              -t cloudtruth:alpine-3.13
           docker run -e CLOUDTRUTH_API_KEY -t cloudtruth:alpine-3.13 cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
+
       - name: alpine-3.12
         run: |
           CT_DOWNLOAD_VERSION=$(cat artifacts/release-version)
@@ -439,13 +437,6 @@ jobs:
           STEPS_CONTEXT: ${{ toJSON(steps) }}
         run: echo "$STEPS_CONTEXT"
 
-      - name: Update URL
-        run: |
-          ORIG_URL=$(cat artifacts/release-download-url)
-          FINAL_URL="${ORIG_URL/https:\/\//https://$CT_DOWNLOAD_AUTH_TOKEN@/}"
-          echo "${FINAL_URL}" > artifacts/release-download-url
-
-
       - name: centos-8
         run: |
           CT_DOWNLOAD_VERSION=$(cat artifacts/release-version)
@@ -457,6 +448,7 @@ jobs:
              -f tests/docker/Dockerfile.centos-8 \
              -t cloudtruth:centos-8
           docker run -e CLOUDTRUTH_API_KEY -t cloudtruth:centos-8 cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
+
       - name: centos-7
         run: |
           CT_DOWNLOAD_VERSION=$(cat artifacts/release-version)
@@ -511,13 +503,6 @@ jobs:
           STEPS_CONTEXT: ${{ toJSON(steps) }}
         run: echo "$STEPS_CONTEXT"
 
-      - name: Update URL
-        run: |
-          ORIG_URL=$(cat artifacts/release-download-url)
-          FINAL_URL="${ORIG_URL/https:\/\//https://$CT_DOWNLOAD_AUTH_TOKEN@/}"
-          echo "${FINAL_URL}" > artifacts/release-download-url
-
-
       - name: debian-bullseye-slim
         run: |
           CT_DOWNLOAD_VERSION=$(cat artifacts/release-version)
@@ -529,6 +514,7 @@ jobs:
              -f tests/docker/Dockerfile.debian-bullseye-slim \
              -t cloudtruth:debian-bullseye-slim
           docker run -e CLOUDTRUTH_API_KEY -t cloudtruth:debian-bullseye-slim cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
+
       - name: debian-buster-slim
         run: |
           CT_DOWNLOAD_VERSION=$(cat artifacts/release-version)
@@ -540,6 +526,7 @@ jobs:
              -f tests/docker/Dockerfile.debian-buster-slim \
              -t cloudtruth:debian-buster-slim
           docker run -e CLOUDTRUTH_API_KEY -t cloudtruth:debian-buster-slim cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
+
       - name: debian-jessie-slim
         run: |
           CT_DOWNLOAD_VERSION=$(cat artifacts/release-version)
@@ -594,13 +581,6 @@ jobs:
           STEPS_CONTEXT: ${{ toJSON(steps) }}
         run: echo "$STEPS_CONTEXT"
 
-      - name: Update URL
-        run: |
-          ORIG_URL=$(cat artifacts/release-download-url)
-          FINAL_URL="${ORIG_URL/https:\/\//https://$CT_DOWNLOAD_AUTH_TOKEN@/}"
-          echo "${FINAL_URL}" > artifacts/release-download-url
-
-
       - name: macOS-latest
         run: |
           CT_DOWNLOAD_VERSION=$(cat artifacts/release-version)
@@ -650,13 +630,6 @@ jobs:
           STEPS_CONTEXT: ${{ toJSON(steps) }}
         run: echo "$STEPS_CONTEXT"
 
-      - name: Update URL
-        run: |
-          ORIG_URL=$(cat artifacts/release-download-url)
-          FINAL_URL="${ORIG_URL/https:\/\//https://$CT_DOWNLOAD_AUTH_TOKEN@/}"
-          echo "${FINAL_URL}" > artifacts/release-download-url
-
-
       - name: ubuntu-groovy
         run: |
           CT_DOWNLOAD_VERSION=$(cat artifacts/release-version)
@@ -668,6 +641,7 @@ jobs:
              -f tests/docker/Dockerfile.ubuntu-groovy \
              -t cloudtruth:ubuntu-groovy
           docker run -e CLOUDTRUTH_API_KEY -t cloudtruth:ubuntu-groovy cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
+
       - name: ubuntu-focal
         run: |
           CT_DOWNLOAD_VERSION=$(cat artifacts/release-version)
@@ -679,6 +653,7 @@ jobs:
              -f tests/docker/Dockerfile.ubuntu-focal \
              -t cloudtruth:ubuntu-focal
           docker run -e CLOUDTRUTH_API_KEY -t cloudtruth:ubuntu-focal cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
+
       - name: ubuntu-bionic
         run: |
           CT_DOWNLOAD_VERSION=$(cat artifacts/release-version)
@@ -690,6 +665,7 @@ jobs:
              -f tests/docker/Dockerfile.ubuntu-bionic \
              -t cloudtruth:ubuntu-bionic
           docker run -e CLOUDTRUTH_API_KEY -t cloudtruth:ubuntu-bionic cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
+
       - name: ubuntu-xenial
         run: |
           CT_DOWNLOAD_VERSION=$(cat artifacts/release-version)
@@ -701,6 +677,7 @@ jobs:
              -f tests/docker/Dockerfile.ubuntu-xenial \
              -t cloudtruth:ubuntu-xenial
           docker run -e CLOUDTRUTH_API_KEY -t cloudtruth:ubuntu-xenial cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
+
       - name: ubuntu-trusty
         run: |
           CT_DOWNLOAD_VERSION=$(cat artifacts/release-version)
@@ -754,13 +731,6 @@ jobs:
         env:
           STEPS_CONTEXT: ${{ toJSON(steps) }}
         run: echo "$STEPS_CONTEXT"
-
-      - name: Update URL
-        run: |
-          ORIG_URL=$(cat artifacts/release-download-url)
-          FINAL_URL="${ORIG_URL/https:\/\//https://$CT_DOWNLOAD_AUTH_TOKEN@/}"
-          echo "${FINAL_URL}" > artifacts/release-download-url
-
 
       - name: windows-latest
         shell: pwsh
