@@ -3,12 +3,16 @@
 # Copyright (C) 2021 CloudTruth, Inc.
 #
 
+set -e
+
 ### Control     ############################################################
 
 CT_CLI_VERSION=""
-CT_DOWNLOAD_AUTH_TOKEN=""
-CT_DOWNLOAD_URL=""
+CT_DEBUG=0
+CT_DRAFT_AUTH_TOKEN=""
+CT_DRAFT_RELEASE_ID=""
 CT_DRY_RUN=0
+CT_INSTALL_PREREQUISITES=1
 
 ### Detection     ############################################################
 
@@ -41,27 +45,38 @@ fi
 while true; do
     case $1 in
       (-a|--auth-token)
-            CT_DOWNLOAD_AUTH_TOKEN=$2
+            CT_DRAFT_AUTH_TOKEN=$2
             shift 2;;
       (-d|--debug)
+            CT_DEBUG=1
+            echo "[debug] enabled"
             set -x
             shift;;
-      (--dry-run)
+      (-y|--dry-run)
             CT_DRY_RUN=1
+            echo "[dry-run] enabled"
             shift;;
       (-h|--help)
             echo "Usage: install.sh [ OPTIONS ]"
             echo ""
             echo "OPTIONS:"
-            echo "  -a | --auth-token <TOK>  authorization token for download"
             echo "  -d | --debug             enable shell debug output"
             echo "  -h | --help              show usage"
-            echo "  -u | --url <URL>         download directory URL"
+            echo "  -n | --no-prerequisites  do not attempt to install prerequisites"
             echo "  -v | --version <VER>     use a specific version"
-            echo "       --dry-run           download, but do not install"
+            echo "  -y | --dry-run           download, but do not install"
+            echo ""
+            echo "These options are only used for testing during the CloudTruth release workflow:"
+            echo ""
+            echo "  -a | --auth-token <TOK>  authorization token to access draft release"
+            echo "  -r | --release-id <ID>   identity of draft release"
+            echo ""
             exit 2;;
-      (-u|--url)
-            CT_DOWNLOAD_URL=$2
+      (-n|--no-prerequisites)
+            CT_INSTALL_PREREQUISITES=0
+            shift;;
+      (-r|--release-id)
+            CT_DRAFT_RELEASE_ID=$2
             shift 2;;
       (-v|--version)
             CT_CLI_VERSION=$2
@@ -69,7 +84,7 @@ while true; do
       (--)  shift; break;;
       (*)
             if [ -n "${1}" ]; then
-                echo "Invalid parameter: $1"
+                echo "Invalid parameter: ${1}"
                 exit 1;           # error
             fi
             break;;
@@ -79,26 +94,32 @@ done
 
 ### Prerequisites ############################################################
 
-case "$PKG" in
-    (apk)
-        # alpine - no package format yet, use generic
-        apk add curl || exit
-        ;;
-    (deb)
-        # debian based
-        if [ -f /.dockerenv ]; then
-            apt-get update
-        fi
-        apt-get install --no-install-recommends --yes ca-certificates curl
-        if [ -f /.dockerenv ]; then
-            apt-get purge
-        fi
-        ;;
-    (rpm)
-        # centos, rhel
-        yum install -y curl || exit
-        ;;
-esac
+prerequisites() {
+    case "$PKG" in
+        (apk)
+            # alpine - no package format yet, use generic
+            apk add curl
+            ;;
+        (deb)
+            # debian based
+            if [ -f /.dockerenv ]; then
+                apt-get update
+            fi
+            apt-get install --no-install-recommends --yes ca-certificates curl
+            if [ -f /.dockerenv ]; then
+                apt-get purge
+            fi
+            ;;
+        (rpm)
+            # centos, rhel
+            yum install -y curl
+            ;;
+    esac
+}
+
+if [ ${CT_INSTALL_PREREQUISITES} -eq 1 ]; then
+  prerequisites
+fi
 
 ### Auto-Version  ############################################################
 
@@ -112,69 +133,97 @@ else
     echo "Using version: ${CT_CLI_VERSION}"
 fi
 
-if [ -z "${CT_DOWNLOAD_URL}" ]; then
-    CT_VER_BASE_URL="https://github.com/cloudtruth/cloudtruth-cli/releases/download"
-    CT_DOWNLOAD_URL="${CT_VER_BASE_URL}/${CT_CLI_VERSION}"
-fi
-
 ### Install       ############################################################
 
-TMP_DIR="/tmp"
-
-download() {
-    url=$1
-    auth_token=$2
-    filename="${TMP_DIR}/$(basename "$url")"
-    auth_header=""
-    if [ -n "${auth_token}" ]; then
-        auth_header="Authorization: token ${auth_token}"
-    fi
-
-    set -ex
-    # make -fsL, disable x mode
-    curl -H "${auth_header}" -fv --location-trusted -o "${filename}" "${url}"
-    set +ex
-    echo "Downloaded: $url"
+cleanup() {
+  cd ${ORIG_DIR}
+  # rm -r "${TMP_DIR}"
 }
 
-# alpine, centos, rhel, macos - no package format yet, use generic binary
-if [ "$PKG" = "apk" ] || [ "$PKG" = "rpm" ] || [ "$PKG" = "macos" ]; then
-    if [ "$PKG" = "macos" ]; then
+ORIG_DIR=$(pwd)
+TMP_DIR=$(mktemp -d)
+trap cleanup EXIT
+cd ${TMP_DIR}
+
+download() {
+    if [ -z "${CT_DRAFT_RELEASE_ID}" ]; then
+      download_release $1
+    else
+      download_draft $1
+    fi
+}
+
+# this is used to download release assets
+download_release() {
+    package=$1
+    base_url="https://github.com/cloudtruth/cloudtruth-cli/releases/download"
+    download_url="${base_url}/${CT_CLI_VERSION}/${package}"
+    curl -fsL -H "Accept: application/octet-stream" -o "${package}" "${download_url}"
+}
+
+# this is used to download a draft release during integration testing
+download_draft() {
+    package=$1
+    assetfile="${CT_DRAFT_RELEASE_ID}.assets.json"
+
+    # get all the assets for the release
+    curl -fs -H "Authorization: token ${CT_DRAFT_AUTH_TOKEN}" -o "${assetfile}" \
+        "https://api.github.com/repos/cloudtruth/cloudtruth-cli/releases/${CT_DRAFT_RELEASE_ID}/assets"
+
+    # find the asset id for the given package
+    asset_id=$(jq ".[] | select(.name==\"${package}\") | .id" "${assetfile}")
+    rm ${assetfile}
+
+    download_url="https://api.github.com/repos/cloudtruth/cloudtruth-cli/releases/assets/${asset_id}"
+    curl -fs --location-trusted -H "Authorization: token ${CT_DRAFT_AUTH_TOKEN}" -H "Accept: application/octet-stream" -o "${package}" "${download_url}"
+}
+
+# alpine, macos - no package format yet, use generic binary
+if [ "${PKG}" = "apk" ] || [ "${PKG}" = "macos" ]; then
+    if [ "${PKG}" = "macos" ]; then
         PACKAGE_DIR=cloudtruth-${CT_CLI_VERSION}-${ARCH}-apple-darwin
     else
         PACKAGE_DIR=cloudtruth-${CT_CLI_VERSION}-${ARCH}-unknown-linux-musl
     fi
     PACKAGE=${PACKAGE_DIR}.tar.gz
-    CWD=$(pwd)
-    cd "${TMP_DIR}" || exit
-    download "${CT_DOWNLOAD_URL}/${PACKAGE}" "${CT_DOWNLOAD_AUTH_TOKEN}"
-    tar xzf "${PACKAGE}" || exit
+    download "${PACKAGE}"
+    tar xzf "${PACKAGE}"
     if [ ${CT_DRY_RUN} -ne 0 ]; then
-        echo "Skipping install of ${PACKAGE_DIR}/cloudtruth"
+        echo "[dry-run] skipping install of ${PACKAGE_DIR}/cloudtruth"
     else
         install -m 755 -o root "${PACKAGE_DIR}/cloudtruth" /usr/local/bin
     fi
-    rm -rf "${PACKAGE_DIR}"
-    rm "${PACKAGE}"
-    cd "${CWD}" || exit
 fi
 
 # debian based
-if [ "$PKG" = "deb" ]; then
+if [ "${PKG}" = "deb" ]; then
     if [ "${ARCH}" = "x86_64" ]; then
         ARCH="amd64"
     fi
+    # debian package names strip build information off the release version name
+    # this is typical in a draft build, like 0.3.0_mytest.1 => 0.3.0
+    CT_CLI_VERSION=$(echo ${CT_CLI_VERSION} | cut -d'_' -f1)
     PACKAGE=cloudtruth_${CT_CLI_VERSION}_${ARCH}.deb
-    CWD=$(pwd)
-    cd "${TMP_DIR}" || exit
-    download "${CT_DOWNLOAD_URL}/${PACKAGE}" "${CT_DOWNLOAD_AUTH_TOKEN}"
+    download "${PACKAGE}"
     if [ ${CT_DRY_RUN} -ne 0 ]; then
-        echo "Skipping install of ${PACKAGE}"
+        echo "[dry-run] skipping install of ${PACKAGE}"
     else
         dpkg -i "${PACKAGE}"
     fi
-    rm "${PACKAGE}"
-    cd "${CWD}" || exit
+fi
+
+# debian based
+if [ "${PKG}" = "rpm" ]; then
+    # rpm package names strip build information off the release version name
+    # this is typical in a draft build, like 0.3.0_mytest.1 => 0.3.0
+    CT_CLI_VERSION=$(echo ${CT_CLI_VERSION} | cut -d'_' -f1)
+    PACKAGE=cloudtruth_${CT_CLI_VERSION}-1_${ARCH}.rpm
+    download "${PACKAGE}"
+    if [ ${CT_DRY_RUN} -ne 0 ]; then
+        echo "[dry-run] skipping install of ${PACKAGE}"
+    else
+        dpkg -i "${PACKAGE}"
+    fi
 fi
 
 if [ ${CT_DRY_RUN} -eq 0 ]; then

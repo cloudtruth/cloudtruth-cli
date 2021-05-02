@@ -10,7 +10,7 @@ param($version="", $url="", $authToken="", [Int16] $dryRun=0)
 
 if ($version -eq "") {
     $version = ((Invoke-WebRequest https://api.github.com/repos/cloudtruth/cloudtruth-cli/releases/latest).Content | ConvertFrom-Json).tag_name
-    Write-Host  "Latest version: $version"
+    Write-Host "Latest version: $version"
 } else {
     Write-Host "Using version: $version"
 }
@@ -23,7 +23,7 @@ if ($url -eq "") {
 $headers=@{}
 if ($authToken -eq "") {
     $headers=@{
-        Authorization = "Bearer $authToken"
+        Authorization = "token $authToken"
         Accept = "application/octet-stream"
     }
 }

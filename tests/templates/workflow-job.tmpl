@@ -1,9 +1,9 @@
 
-  {{ os }}:
+  test-{{ os }}:
     runs-on: {{ runs_on }}
     needs: [ 'build-release' ]
     env:
-      # Need auth-token to download from unpublished release
+      # Need auth-token to download from draft release
       CT_DOWNLOAD_AUTH_TOKEN: {{ '${{ secrets.GITHUB_TOKEN }}' }}
 
       # These values are used for running the CLI command
@@ -11,33 +11,14 @@
       CT_TEST_PROJECT: TruthStrap
       CT_TEST_PARAM: INTEGRATION_TEST_RESULT
       CT_TEST_VALUE: Speicla
+
     steps:
-      # checkout to get the installer script(s)
       - uses: actions/checkout@v2
         with:
           fetch-depth: 1
 
-      # get the packages to install
       - uses: actions/download-artifact@v1
         with:
           name: artifacts
           path: artifacts
-
-      - name: Display structure of downloaded files
-        run: ls -R
-
-      - name: Dump GitHub context
-        env:
-          GITHUB_CONTEXT: {{ '${{ toJSON(github) }}' }}
-        run: echo "$GITHUB_CONTEXT"
-
-      - name: Dump job context
-        env:
-          JOB_CONTEXT: {{ '${{ toJSON(job) }}' }}
-        run: echo "$JOB_CONTEXT"
-
-      - name: Dump steps context
-        env:
-          STEPS_CONTEXT: {{ '${{ toJSON(steps) }}' }}
-        run: echo "$STEPS_CONTEXT"
 
