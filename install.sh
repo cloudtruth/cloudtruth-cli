@@ -7,9 +7,9 @@ set -e
 
 ### Control     ############################################################
 
-CT_CLI_VERSION=""
-CT_DRAFT_AUTH_TOKEN=""
-CT_DRAFT_RELEASE_ID=""
+CT_CLI_VERSION=
+CT_DRAFT_AUTH_TOKEN=
+CT_DRAFT_RELEASE_ID=
 CT_DRY_RUN=0
 CT_INSTALL_PREREQUISITES=1
 
