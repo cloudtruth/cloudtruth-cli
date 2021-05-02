@@ -41,6 +41,7 @@ if [ -z "${PKG}" ]; then
 fi
 
 ### Arguments     ############################################################
+
 while true; do
     case $1 in
       (-a|--auth-token)
@@ -92,11 +93,11 @@ done
 
 ### Prerequisites ############################################################
 
-PREREQUISITES=curl
+PREREQUISITES="curl"
 
 if [ -n "${CT_DRAFT_RELEASE_ID}" ]; then
   # downloading from the github draft release needs to parse json
-  PREREQUISITES=${PREREQUISITES} jq
+  PREREQUISITES="${PREREQUISITES} jq"
 fi
 
 prerequisites() {
@@ -217,7 +218,7 @@ if [ "${PKG}" = "deb" ]; then
     fi
 fi
 
-# debian based
+# rpm based
 if [ "${PKG}" = "rpm" ]; then
     # rpm package names strip build information off the release version name
     # this is typical in a draft build, like 0.3.0_mytest.1 => 0.3.0
@@ -227,7 +228,7 @@ if [ "${PKG}" = "rpm" ]; then
     if [ ${CT_DRY_RUN} -ne 0 ]; then
         echo "[dry-run] skipping install of ${PACKAGE}"
     else
-        dpkg -i "${PACKAGE}"
+        rpm -i "${PACKAGE}"
     fi
 fi
 

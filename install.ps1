@@ -1,8 +1,32 @@
+#
+# Copyright (C) 2021 CloudTruth, Inc.
+#
+# NOTE: this puts cloudtruth.exe into $ENV:TEMP and leaves gunk behind
+#       we'll make a chocolatey or scoop package soon, hopefully
+#
+
 ### Detection     ############################################################
 
 ### Arguments     ############################################################
 
-param($version="", $url="", $authToken="", [Int16] $dryRun=0)
+Param(
+    [Parameter(
+        HelpMessage="Specify the version of the CLI to install.  If not specified, the latest version is installed.")]
+    [String]
+    $Version,
+
+    [Parameter(
+        ParameterSetName="Testing",
+        HelpMessage="A GitHub authentication token for integration testing.")]
+    [String]
+    $authToken,
+
+    [Parameter(
+        ParameterSetName="Testing",
+        HelpMessage="A GitHub Draft Release ID for integration testing.")]
+    [String]
+    $releaseId,
+)
 
 ### Prerequisites ############################################################
 
@@ -15,22 +39,16 @@ if ($version -eq "") {
     Write-Host "Using version: $version"
 }
 
-if ($url -eq "") {
-    $url = "https://github.com/cloudtruth/cloudtruth-cli/releases/download/$version"
-}
-
-# start off with empty additional headers, and add auth headers if needed
-$headers=@{}
-if ($authToken -eq "") {
-    $headers=@{
-        Authorization = "token $authToken"
-        Accept = "application/octet-stream"
-    }
+$headers = @{Accept = "application/octet-stream"}
+if ($authToken) {
+    $headers += @{Authorization = "token $authToken"}
 }
 
 ### Install-ish   ############################################################
 
 # TODO, this puts cloudtruth.exe into $ENV:TEMP and leaves gunk behind
+
+if ($authToken) {
 
 $tmp = New-TemporaryFile
 $tmp = "$tmp.zip"
