@@ -8,7 +8,6 @@ set -e
 ### Control     ############################################################
 
 CT_CLI_VERSION=""
-CT_DEBUG=0
 CT_DRAFT_AUTH_TOKEN=""
 CT_DRAFT_RELEASE_ID=""
 CT_DRY_RUN=0
@@ -48,7 +47,6 @@ while true; do
             CT_DRAFT_AUTH_TOKEN=$2
             shift 2;;
       (-d|--debug)
-            CT_DEBUG=1
             echo "[debug] enabled"
             set -x
             shift;;
@@ -94,25 +92,32 @@ done
 
 ### Prerequisites ############################################################
 
+PREREQUISITES=curl
+
+if [ -n "${CT_DRAFT_RELEASE_ID}" ]; then
+  # downloading from the github draft release needs to parse json
+  PREREQUISITES=${PREREQUISITES} jq
+fi
+
 prerequisites() {
     case "$PKG" in
         (apk)
             # alpine - no package format yet, use generic
-            apk add curl
+            apk add ${PREREQUISITES}
             ;;
         (deb)
             # debian based
             if [ -f /.dockerenv ]; then
                 apt-get update
             fi
-            apt-get install --no-install-recommends --yes ca-certificates curl
+            apt-get install --no-install-recommends --yes ${PREREQUISITES}
             if [ -f /.dockerenv ]; then
                 apt-get purge
             fi
             ;;
         (rpm)
             # centos, rhel
-            yum install -y curl
+            yum install -y ${PREREQUISITES}
             ;;
     esac
 }
@@ -136,20 +141,20 @@ fi
 ### Install       ############################################################
 
 cleanup() {
-  cd ${ORIG_DIR}
-  # rm -r "${TMP_DIR}"
+  cd "${ORIG_DIR}"
+  rm -r "${TMP_DIR}"
 }
 
 ORIG_DIR=$(pwd)
 TMP_DIR=$(mktemp -d)
 trap cleanup EXIT
-cd ${TMP_DIR}
+cd "${TMP_DIR}"
 
 download() {
     if [ -z "${CT_DRAFT_RELEASE_ID}" ]; then
-      download_release $1
+      download_release "$1"
     else
-      download_draft $1
+      download_draft "$1"
     fi
 }
 
@@ -172,7 +177,7 @@ download_draft() {
 
     # find the asset id for the given package
     asset_id=$(jq ".[] | select(.name==\"${package}\") | .id" "${assetfile}")
-    rm ${assetfile}
+    rm "${assetfile}"
 
     download_url="https://api.github.com/repos/cloudtruth/cloudtruth-cli/releases/assets/${asset_id}"
     curl -fs --location-trusted -H "Authorization: token ${CT_DRAFT_AUTH_TOKEN}" -H "Accept: application/octet-stream" -o "${package}" "${download_url}"
@@ -202,7 +207,7 @@ if [ "${PKG}" = "deb" ]; then
     fi
     # debian package names strip build information off the release version name
     # this is typical in a draft build, like 0.3.0_mytest.1 => 0.3.0
-    CT_CLI_VERSION=$(echo ${CT_CLI_VERSION} | cut -d'_' -f1)
+    CT_CLI_VERSION=$(echo "${CT_CLI_VERSION}" | cut -d'_' -f1)
     PACKAGE=cloudtruth_${CT_CLI_VERSION}_${ARCH}.deb
     download "${PACKAGE}"
     if [ ${CT_DRY_RUN} -ne 0 ]; then
@@ -216,7 +221,7 @@ fi
 if [ "${PKG}" = "rpm" ]; then
     # rpm package names strip build information off the release version name
     # this is typical in a draft build, like 0.3.0_mytest.1 => 0.3.0
-    CT_CLI_VERSION=$(echo ${CT_CLI_VERSION} | cut -d'_' -f1)
+    CT_CLI_VERSION=$(echo "${CT_CLI_VERSION}" | cut -d'_' -f1)
     PACKAGE=cloudtruth_${CT_CLI_VERSION}-1_${ARCH}.rpm
     download "${PACKAGE}"
     if [ ${CT_DRY_RUN} -ne 0 ]; then
