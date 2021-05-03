@@ -18,6 +18,8 @@ DEFAULT_SERVER_URL = "https://api.cloudtruth.com/graphql"
 DEFAULT_PROJ_NAME = "default"
 DEFAULT_ENV_NAME = "default"
 
+AUTO_DESCRIPTION = "Automated testing via `live_test`"
+
 
 @dataclasses.dataclass
 class Result:
@@ -120,7 +122,8 @@ class TestCase(unittest.TestCase):
         return result
 
     def create_project(self, cmd_env, proj_name: str) -> None:
-        result = self.run_cli(cmd_env, self._base_cmd + f"proj set '{proj_name}'")
+        result = self.run_cli(cmd_env,
+                              self._base_cmd + f"proj set '{proj_name}' -d '{AUTO_DESCRIPTION}'")
         self.assertEqual(result.return_value, 0)
 
     def delete_project(self, cmd_env, proj_name: str) -> None:
@@ -128,7 +131,8 @@ class TestCase(unittest.TestCase):
         self.assertEqual(result.return_value, 0)
 
     def create_environment(self, cmd_env, env_name: str) -> None:
-        result = self.run_cli(cmd_env, self._base_cmd + f"env set '{env_name}'")
+        result = self.run_cli(cmd_env,
+                              self._base_cmd + f"env set '{env_name}' -d '{AUTO_DESCRIPTION}'")
         self.assertEqual(result.return_value, 0)
 
     def delete_environment(self, cmd_env, env_name: str) -> None:
@@ -136,7 +140,9 @@ class TestCase(unittest.TestCase):
         self.assertEqual(result.return_value, 0)
 
     def set_param(self, cmd_env, proj: str, name: str, value: str, secret: bool = False):
-        result = self.run_cli(cmd_env, self._base_cmd + f"--project '{proj}' param set '{name}' --value '{value}' --secret '{str(secret).lower()}'")
+        result = self.run_cli(cmd_env,
+                              self._base_cmd + f"--project '{proj}' param set '{name}' " +
+                              f"--value '{value}' --secret '{str(secret).lower()}'")
         self.assertEqual(result.return_value, 0)
 
     def delete_param(self, cmd_env, proj: str, name: str):

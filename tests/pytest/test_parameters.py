@@ -2,13 +2,17 @@ from testcase import TestCase
 
 
 class TestParameters(TestCase):
+
+    def _empty_message(self, proj_name: str) -> str:
+        return f"No parameters found in project {proj_name}"
+
     def test_parameter_basic(self):
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
 
         # add a new project
         proj_name = "test-param-basic"
-        empty_msg = f"No parameters found in project {proj_name}"
+        empty_msg = self._empty_message(proj_name)
         self.create_project(cmd_env, proj_name)
 
         # check that there are no parameters
@@ -126,7 +130,7 @@ my_param,cRaZy value,default,this is just a test description
 
         # add a new project
         proj_name = "test-param-secret"
-        empty_msg = f"No parameters found in project {proj_name}"
+        empty_msg = self._empty_message(proj_name)
         self.create_project(cmd_env, proj_name)
 
         # check that there are no parameters
@@ -305,5 +309,138 @@ my_param,super-SENSITIVE-vAluE,default,my secret value
 +-----------+------------+---------+-------------+
 """)
 
+        result = self.run_cli(cmd_env, base_cmd + f"--project {proj_name1} param export docker")
+        self.assertEqual(result.return_value, 0)
+        self.assertEqual(result.out(), """\
+SNA=foo
+
+""")
+
+        result = self.run_cli(cmd_env, base_cmd + f"--project {proj_name2} param export docker")
+        self.assertEqual(result.return_value, 0)
+        self.assertEqual(result.out(), """\
+SNA=fu
+
+""")
+
         self.delete_project(cmd_env, proj_name1)
         self.delete_project(cmd_env, proj_name2)
+
+    def test_parameter_export(self):
+        base_cmd = self.get_cli_base_cmd()
+        cmd_env = self.get_cmd_env()
+
+        # add a new project
+        proj_name = "test-param-export"
+        empty_msg = self._empty_message(proj_name)
+        self.create_project(cmd_env, proj_name)
+
+        # check that there are no parameters -- to avoid later confusion
+        sub_cmd = base_cmd + f" --project {proj_name} parameters "
+        result = self.run_cli(cmd_env, sub_cmd + "list")
+        self.assertEqual(result.return_value, 0)
+        self.assertTrue(result.out_contains_value(empty_msg))
+
+        ########
+        # add first, non-secret parameter
+        key1 = "first_param"
+        value1 = "posix_compliant_value"
+        self.set_param(cmd_env, proj_name, key1, value1)
+
+        # add first, non-secret parameter
+        key2 = "SECOND_PARAM"
+        value2 = "a value with spaces"
+        self.set_param(cmd_env, proj_name, key2, value2)
+
+        # add a non-posix complaint key with a posix value
+        key3 = "non.posix.key"
+        value3 = "posix_value_invalid_key"
+        self.set_param(cmd_env, proj_name, key3, value3)
+
+        # add first, secret parameter
+        key4 = "FIRST_PARAM_SECRET"
+        value4 = "top-secret-sci"
+        self.set_param(cmd_env, proj_name, key4, value4, secret=True)
+
+        # add first, secret parameter
+        key5 = "second_secret"
+        value5 = "sensitive value with spaces"
+        self.set_param(cmd_env, proj_name, key5, value5, secret=True)
+
+        #####################
+        # Docker
+        docker_cmd = base_cmd + f"--project {proj_name} param export docker "
+        result = self.run_cli(cmd_env, docker_cmd)
+        self.assertEqual(result.return_value, 0)
+        self.assertEqual(result.out(), """\
+SECOND_PARAM=a value with spaces
+FIRST_PARAM=posix_compliant_value
+
+""")
+
+        result = self.run_cli(cmd_env, docker_cmd + "--secrets")
+        self.assertEqual(result.out(), """\
+FIRST_PARAM_SECRET=top-secret-sci
+SECOND_PARAM=a value with spaces
+FIRST_PARAM=posix_compliant_value
+SECOND_SECRET=sensitive value with spaces
+
+""")
+
+        result = self.run_cli(cmd_env, docker_cmd + "--secrets --starts-with SECOND")
+        self.assertEqual(result.out(), """\
+SECOND_PARAM=a value with spaces
+
+""")
+
+        # use uppercase key without secrets
+        result = self.run_cli(cmd_env, docker_cmd + "--starts-with FIRST")
+        self.assertEqual(result.out(), """\
+
+""")
+
+        # use uppercase key with secrets
+        result = self.run_cli(cmd_env, docker_cmd + "--starts-with FIRST -s")
+        self.assertEqual(result.out(), """\
+FIRST_PARAM_SECRET=top-secret-sci
+
+""")
+
+        # use lowercase key with secrets
+        result = self.run_cli(cmd_env, docker_cmd + "--contains param -s")
+        self.assertEqual(result.out(), """\
+FIRST_PARAM=posix_compliant_value
+
+""")
+
+        # see if filter picks up non-posix
+        result = self.run_cli(cmd_env, docker_cmd + "--contains posix -s")
+        self.assertEqual(result.out(), """\
+
+""")
+
+        #####################
+        # Dotenv
+        dotenv_cmd = base_cmd + f"--project {proj_name} param export dotenv "
+        result = self.run_cli(cmd_env, dotenv_cmd)
+        self.assertEqual(result.return_value, 0)
+        self.assertEqual(result.out(), """\
+SECOND_PARAM="a value with spaces"
+FIRST_PARAM="posix_compliant_value"
+
+""")
+
+        #####################
+        # Shell
+        shell_cmd = base_cmd + f"--project {proj_name} param export shell "
+        result = self.run_cli(cmd_env, shell_cmd)
+        self.assertEqual(result.return_value, 0)
+        self.assertEqual(result.out(), """\
+SECOND_PARAM=a\ value\ with\ spaces
+FIRST_PARAM=posix_compliant_value
+
+""")
+
+        # cleanup (no need to delete individual parameters)
+        self.delete_project(cmd_env, proj_name)
+
