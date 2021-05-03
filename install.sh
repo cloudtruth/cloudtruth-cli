@@ -49,6 +49,7 @@ while true; do
             shift 2;;
       (-d|--debug)
             echo "[debug] enabled"
+            EXTRA_CURL_OPTIONS="-v"
             set -x
             shift;;
       (-y|--dry-run)
@@ -94,12 +95,12 @@ done
 ### Prerequisites ############################################################
 
 PREREQUISITES="curl"
-
 if [ -n "${CT_DRAFT_RELEASE_ID}" ]; then
-  # downloading from the github draft release needs to parse json
-  PREREQUISITES="${PREREQUISITES} jq"
+  # additional requirements to handle GitHub draft release integration testing
+  PREREQUISITES="${PREREQUISITES} ca-certificates jq"
 fi
 
+# shellcheck disable=SC2086
 prerequisites() {
     case "$PKG" in
         (apk)
@@ -164,7 +165,7 @@ download_release() {
     package=$1
     base_url="https://github.com/cloudtruth/cloudtruth-cli/releases/download"
     download_url="${base_url}/${CT_CLI_VERSION}/${package}"
-    curl -fsL -H "Accept: application/octet-stream" -o "${package}" "${download_url}"
+    curl ${EXTRA_CURL_OPTIONS} -fsL -H "Accept: application/octet-stream" -o "${package}" "${download_url}"
 }
 
 # this is used to download a draft release during integration testing
@@ -173,7 +174,7 @@ download_draft() {
     assetfile="${CT_DRAFT_RELEASE_ID}.assets.json"
 
     # get all the assets for the release
-    curl -fs -H "Authorization: token ${CT_DRAFT_AUTH_TOKEN}" -o "${assetfile}" \
+    curl ${EXTRA_CURL_OPTIONS} -fs -H "Authorization: token ${CT_DRAFT_AUTH_TOKEN}" -o "${assetfile}" \
         "https://api.github.com/repos/cloudtruth/cloudtruth-cli/releases/${CT_DRAFT_RELEASE_ID}/assets"
 
     # find the asset id for the given package
@@ -181,7 +182,7 @@ download_draft() {
     rm "${assetfile}"
 
     download_url="https://api.github.com/repos/cloudtruth/cloudtruth-cli/releases/assets/${asset_id}"
-    curl -fs --location-trusted -H "Authorization: token ${CT_DRAFT_AUTH_TOKEN}" -H "Accept: application/octet-stream" -o "${package}" "${download_url}"
+    curl ${EXTRA_CURL_OPTIONS} -fs --location-trusted -H "Authorization: token ${CT_DRAFT_AUTH_TOKEN}" -H "Accept: application/octet-stream" -o "${package}" "${download_url}"
 }
 
 # alpine, macos - no package format yet, use generic binary
@@ -223,7 +224,7 @@ if [ "${PKG}" = "rpm" ]; then
     # rpm package names strip build information off the release version name
     # this is typical in a draft build, like 0.3.0_mytest.1 => 0.3.0
     CT_CLI_VERSION=$(echo "${CT_CLI_VERSION}" | cut -d'_' -f1)
-    PACKAGE=cloudtruth_${CT_CLI_VERSION}-1_${ARCH}.rpm
+    PACKAGE=cloudtruth-${CT_CLI_VERSION}-1.${ARCH}.rpm
     download "${PACKAGE}"
     if [ ${CT_DRY_RUN} -ne 0 ]; then
         echo "[dry-run] skipping install of ${PACKAGE}"
