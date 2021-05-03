@@ -41,6 +41,7 @@ def parse_args(*args) -> argparse.Namespace:
         "--file",
         dest="file_filter",
         type=str,
+        default="test_*.py",
         help="Filter the files run using the specified pattern"
     )
     # TODO: add test file filtering, add test case filtering
@@ -59,9 +60,8 @@ def live_test(*args):
     if args.api_key:
         env["CLOUDTRUTH_API_KEY"] = args.api_key
 
-    # TODO: file-filter
     test_directory = '.'
-    suite = unittest.TestLoader().discover(test_directory)
+    suite = unittest.TestLoader().discover(test_directory, pattern=args.file_filter)
 
     if args.debug:
         suite.debug()
