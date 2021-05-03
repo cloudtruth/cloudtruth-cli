@@ -623,22 +623,25 @@ fn process_parameters_command(
         let org_id = resolved.org_id.as_deref();
         let env_name = resolved.env_name.as_deref();
         let proj_name = resolved.proj_name.clone();
-        let removed_id = parameters.delete_parameter(org_id, proj_name.clone(), env_name, key)?;
-        if removed_id.is_some() {
-            println!(
-                "Successfully removed parameter '{}' from project '{}' for environment '{}'.",
-                key,
-                proj_name.unwrap_or_else(|| DEFAULT_PROJ_NAME.to_string()),
-                env_name.unwrap_or(DEFAULT_ENV_NAME)
-            );
-        } else {
-            println!(
-                "Failed to remove parameter '{}' from project '{}' for environment '{}'.",
-                key,
-                proj_name.unwrap_or_else(|| DEFAULT_PROJ_NAME.to_string()),
-                env_name.unwrap_or(DEFAULT_ENV_NAME)
-            );
-        }
+        let result = parameters.delete_parameter(org_id, proj_name.clone(), env_name, key);
+        let _ = match result {
+            Ok(Some(_)) => {
+                println!(
+                    "Successfully removed parameter '{}' from project '{}' for environment '{}'.",
+                    key,
+                    proj_name.unwrap_or_else(|| DEFAULT_PROJ_NAME.to_string()),
+                    env_name.unwrap_or(DEFAULT_ENV_NAME)
+                );
+            }
+            _ => {
+                println!(
+                    "Failed to remove parameter '{}' from project '{}' for environment '{}'.",
+                    key,
+                    proj_name.unwrap_or_else(|| DEFAULT_PROJ_NAME.to_string()),
+                    env_name.unwrap_or(DEFAULT_ENV_NAME)
+                );
+            }
+        };
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("export") {
         let org_id = resolved.org_id.as_deref();
         let proj_name = resolved.proj_name.clone();
