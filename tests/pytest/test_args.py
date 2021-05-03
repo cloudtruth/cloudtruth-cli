@@ -74,7 +74,5 @@ class TestTopLevelArgs(TestCase):
         }.items():
             for alias in [subcmd] + aliases:
                 result = self.run_cli(cmd_env, base_cmd + alias)
-                if result.return_value != 0:
-                    breakpoint()
                 self.assertEqual(result.return_value, 0)
                 self.assertIn(f"No '{subcmd}' sub-command executed", result.err())

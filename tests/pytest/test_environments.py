@@ -70,7 +70,6 @@ class TestEnvironments(TestCase):
         result = self.run_cli(cmd_env, base_cmd + f"environment delete {DEFAULT_ENV_NAME} --confirm")
         self.assertNotEqual(result.return_value, 0)
         self.assertIn("Cannot delete the default environment", result.err())
-        breakpoint()
 
         # make sure we get the same parameter list
         after = self.run_cli(cmd_env, param_cmd)
