@@ -6,6 +6,15 @@ from pathlib import Path
 from typing import List, Optional, Dict
 
 
+# These are environment variable names used by the application
+CT_API_KEY = "CLOUDTRUTH_API_KEY"
+CT_ENV = "CLOUDTRUTH_ENVIRONMENT"
+CT_PROJ = "CLOUDTRUTH_PROJECT"
+CT_URL = "CLOUDTRUTH_SERVER_URL"
+
+DEFAULT_SERVER_URL = "https://api.cloudtruth.com/graphql"
+
+
 @dataclasses.dataclass
 class Result:
     return_value: int = 0,

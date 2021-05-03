@@ -3,7 +3,7 @@ import os
 import sys
 import unittest
 
-DEFAULT_SERVER_URL = "https://api.cloudtruth.com/graphql"
+from testcase import CT_API_KEY, CT_URL, DEFAULT_SERVER_URL
 
 
 def parse_args(*args) -> argparse.Namespace:
@@ -44,7 +44,7 @@ def parse_args(*args) -> argparse.Namespace:
         default="test_*.py",
         help="Filter the files run using the specified pattern"
     )
-    # TODO: add test file filtering, add test case filtering
+    # TODO: add test case filtering
     return parser.parse_args(*args)
 
 
@@ -52,13 +52,13 @@ def live_test(*args):
     result = 0
     args = parse_args(*args)
     if args.url is None:
-        args.url = os.environ("CLOUDTRUTH_API_KEY")
+        args.url = os.environ(CT_API_KEY)
 
     env = os.environ.copy()
     if args.url:
-        env["CLOUDTRUTH_SERVER_URL"] = args.url
+        env[CT_URL] = args.url
     if args.api_key:
-        env["CLOUDTRUTH_API_KEY"] = args.api_key
+        env[CT_API_KEY] = args.api_key
 
     test_directory = '.'
     suite = unittest.TestLoader().discover(test_directory, pattern=args.file_filter)

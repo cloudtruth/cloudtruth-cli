@@ -1,6 +1,6 @@
+from testcase import CT_URL
 from testcase import TestCase
 
-CT_URL = "CLOUDTRUTH_SERVER_URL"
 
 class TestRun(TestCase):
 
