@@ -119,6 +119,11 @@ prerequisites() {
             ;;
         (rpm)
             # centos, rhel
+            if [ -n "${CT_DRAFT_RELEASE_ID}" ] && [ $(rpm -E %{rhel}) -eq 7 ]; then
+              # jq is needed for draft release parsing, jq is in centos7 epel repository
+              yum -y install epel-release
+              yum repolist
+            fi
             yum install -y ${PREREQUISITES}
             ;;
     esac

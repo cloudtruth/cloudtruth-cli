@@ -5,8 +5,6 @@
 #       we'll make a chocolatey or scoop package soon, hopefully
 #
 
-### Detection     ############################################################
-
 ### Arguments     ############################################################
 
 Param(
@@ -23,12 +21,25 @@ Param(
 
     [Parameter(
         ParameterSetName="Testing",
+        HelpMessage="Do not install, just download.")]
+    [Switch]
+    $dryRun,
+
+    [Parameter(
+        ParameterSetName="Testing",
         HelpMessage="A GitHub Draft Release ID for integration testing.")]
     [String]
-    $releaseId,
+    $releaseId
 )
 
+### Detection     ############################################################
+
+# TODO: we  only support x86_64 platform right now
+$platform ="x86_64"
+
 ### Prerequisites ############################################################
+
+
 
 ### Auto-Version  ############################################################
 
@@ -46,41 +57,35 @@ if ($authToken) {
 
 ### Install-ish   ############################################################
 
-# TODO, this puts cloudtruth.exe into $ENV:TEMP and leaves gunk behind
-
-if ($authToken) {
-
 $tmp = New-TemporaryFile
 $tmp = "$tmp.zip"
 $out = "$tmp.out"
-$package_base = "cloudtruth-$version-x86_64-pc-windows-msvc"
-$full_url="$url/$package_base.zip"
-if ($full_url.StartsWith("file://")) {
-    $local = $full_url.Replace("file://", "").Replace("/", "\")
-    Copy-Item -Path $local -Destination $tmp
+$package = "cloudtruth-$version-$platform-pc-windows-msvc"
+
+if (!$releaseId) {
+    # normal production codepath
+    $base_url = "https://github.com/cloudtruth/cloudtruth-cli/releases/download"
+    $download_url = "${base_url}/${version}/${package}.zip"
 } else {
-    Invoke-WebRequest -OutFile $tmp -Headers $headers "$full_url"
+    # handle a GitHu draft release for integration testing
+    $content = (Invoke-WebRequest -Headers @{Authorization = "token $authToken"} "https://api.github.com/repos/cloudtruth/cloudtruth-cli/releases/${releaseId}/assets").Content
+    $assets = $content | ConvertFrom-Json
+    $assetId = ($assets | where { $_.Name -eq "${package}.zip" }).id
+    $download_url = "https://api.github.com/repos/cloudtruth/cloudtruth-cli/releases/assets/${assetId}"
 }
 
-# make sure the file exists, and is bigger than 100 bytes
-if (!(Test-Path $tmp -PathType Leaf)) {
-    Write-Error "Failed to download: $full_url"
-    return
-}
-$filesize = (Get-Item $tmp).Length
-if ($filesize -lt 100) {
-    Write-Error "Problem downloading: $full_url"
-    Write-Error "File exists, but is only $filesize bytes"
-    return
-}
-Write-Host "Downloaded: $full_url"
+Invoke-WebRequest -OutFile $tmp -Headers $headers "${download_url}"
+Write-Host "Downloaded: $package"
+
 $tmp | Expand-Archive -DestinationPath $out
-if ($dryRun -ne 0) {
-    "Skipping install of $package_base\cloudtruth.exe"
+if ($dryRun.IsPresent) {
+    "Skipping install of ${package}\cloudtruth.exe"
 } else {
-    Copy-Item -Path "$out\$package_base\cloudtruth.exe" -Destination $ENV:TEMP
+    Copy-Item -Path "$out\${package}\cloudtruth.exe" -Destination $ENV:TEMP
 }
 
-if ($dryRun -eq 0) {
+if (!$dryRun.IsPresent) {
     & "$ENV:TEMP\cloudtruth.exe" --version
 }
+
+return "$ENV:TEMP\cloudtruth.exe"
