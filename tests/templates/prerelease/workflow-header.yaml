@@ -1,0 +1,8 @@
+---
+on:
+  release:
+    types: [prereleased]
+
+name: 'Check Pre-Release'
+
+jobs:
