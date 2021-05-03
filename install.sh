@@ -113,6 +113,8 @@ prerequisites() {
             ;;
         (deb)
             # debian based
+            # had problems downloading from GitHub on debian buster without ca-certificates update
+            PREREQUISITES="${PREREQUISITES} ca-certificates"
             if [ ${CT_DRY_RUN} -ne 0 ]; then
                 CT_PREREQ_DRY_RUN="--dry-run"
             fi
@@ -224,8 +226,8 @@ if [ "${PKG}" = "deb" ]; then
     fi
     # debian package names strip build information off the release version name
     # this is typical in a draft build, like 0.3.0_mytest.1 => 0.3.0
-    CT_CLI_VERSION=$(echo "${CT_CLI_VERSION}" | cut -d'_' -f1)
-    PACKAGE=cloudtruth_${CT_CLI_VERSION}_${ARCH}.deb
+    CT_CLI_VERSION_STUB=$(echo "${CT_CLI_VERSION}" | cut -d'-' -f1)
+    PACKAGE=cloudtruth_${CT_CLI_VERSION_STUB}_${ARCH}.deb
     download "${PACKAGE}"
     if [ ${CT_DRY_RUN} -ne 0 ]; then
         echo "[dry-run] skipping install of ${PACKAGE}"
@@ -238,8 +240,8 @@ fi
 if [ "${PKG}" = "rpm" ]; then
     # rpm package names strip build information off the release version name
     # this is typical in a draft build, like 0.3.0_mytest.1 => 0.3.0
-    CT_CLI_VERSION=$(echo "${CT_CLI_VERSION}" | cut -d'_' -f1)
-    PACKAGE=cloudtruth-${CT_CLI_VERSION}-1.${ARCH}.rpm
+    CT_CLI_VERSION_STUB=$(echo "${CT_CLI_VERSION}" | cut -d'-' -f1)
+    PACKAGE=cloudtruth-${CT_CLI_VERSION_STUB}-1.${ARCH}.rpm
     download "${PACKAGE}"
     if [ ${CT_DRY_RUN} -ne 0 ]; then
         echo "[dry-run] skipping install of ${PACKAGE}"

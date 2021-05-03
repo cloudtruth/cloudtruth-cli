@@ -1,0 +1,20 @@
+
+  test-{{ os }}:
+    runs-on: {{ runs_on }}
+    env:
+      # These values are used for running the CLI command
+      CLOUDTRUTH_API_KEY: {{ '${{ secrets.CI_ACCT_READONLY_CT_API_KEY }}' }}
+      CT_TEST_PROJECT: TruthStrap
+      CT_TEST_PARAM: INTEGRATION_TEST_RESULT
+      CT_TEST_VALUE: Speicla
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+
+      - name: Get the release version from the tag
+        if: env.CT_VERSION == ''
+        run: |
+          echo CT_VERSION=${GITHUB_REF#refs/tags/} >> $GITHUB_ENV
+

@@ -88,14 +88,11 @@ Invoke-WebRequest -OutFile $tmp -Headers $headers "${download_url}"
 Write-Information -MessageData "Downloaded: $package"
 
 $tmp | Expand-Archive -DestinationPath $out
+
 if ($dryRun.IsPresent) {
     Write-Warning -MessageData "Skipping install of ${package}\cloudtruth.exe"
 } else {
     Copy-Item -Path "$out\${package}\cloudtruth.exe" -Destination $ENV:TEMP
-}
-
-if (!$dryRun.IsPresent) {
     Write-Information -MessageData (& "$ENV:TEMP\cloudtruth.exe" --version)
+    return "$ENV:TEMP\cloudtruth.exe"
 }
-
-return "$ENV:TEMP\cloudtruth.exe"
