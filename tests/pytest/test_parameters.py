@@ -47,6 +47,15 @@ class TestParameters(TestCase):
 +----------+-------------+---------+---------------------------------+
 """)
 
+        # use CSV
+        result = self.run_cli(cmd_env, sub_cmd + f"ls -v -f csv")
+        self.assertTrue(result.out_contains_both(key1, value1))
+        self.assertTrue(result.out_contains_both(key1, desc1))
+        self.assertEqual(result.out(), """\
+Name,Value,Source,Description
+my_param,cRaZy value,default,this is just a test description
+""")
+
         # delete the parameter
         result = self.run_cli(cmd_env, sub_cmd + f"delete {key1}")
         self.assertEqual(result.return_value, 0)
@@ -103,6 +112,14 @@ class TestParameters(TestCase):
 | my_param | ***** | default | my secret value |
 +----------+-------+---------+-----------------+
 """)
+        # use CSV
+        result = self.run_cli(cmd_env, sub_cmd + f"ls -v -f csv")
+        self.assertFalse(result.out_contains_both(key1, value1))
+        self.assertTrue(result.out_contains_both(key1, desc1))
+        self.assertEqual(result.out(), """\
+Name,Value,Source,Description
+my_param,*****,default,my secret value
+""")
 
         # now, display with the secrets value
         result = self.run_cli(cmd_env, sub_cmd + f"list --values --secrets")
@@ -114,6 +131,15 @@ class TestParameters(TestCase):
 +----------+-----------------------+---------+-----------------+
 | my_param | super-SENSITIVE-vAluE | default | my secret value |
 +----------+-----------------------+---------+-----------------+
+""")
+
+        # use CSV
+        result = self.run_cli(cmd_env, sub_cmd + f"list --values --secrets --format csv")
+        self.assertTrue(result.out_contains_both(key1, value1))
+        self.assertTrue(result.out_contains_both(key1, desc1))
+        self.assertEqual(result.out(), """\
+Name,Value,Source,Description
+my_param,super-SENSITIVE-vAluE,default,my secret value
 """)
 
         # delete the parameter

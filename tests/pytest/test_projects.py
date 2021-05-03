@@ -44,7 +44,13 @@ class TestProjects(TestCase):
         self.assertEqual(result.return_value, 0)
         self.assertTrue(result.out_contains_value(proj_name))
         self.assertFalse(result.out_contains_both(proj_name, new_desc))
-    
+
+        # test the csv output
+        result = self.run_cli(cmd_env, sub_cmd + "list -v -f csv")
+        self.assertEqual(result.return_value, 0)
+        self.assertTrue(result.out_contains_value(proj_name))
+        self.assertTrue(result.out_contains_both(proj_name, new_desc))
+
         # delete the description
         result = self.run_cli(cmd_env, sub_cmd + f"delete {proj_name} --confirm")
         self.assertEqual(result.return_value, 0)

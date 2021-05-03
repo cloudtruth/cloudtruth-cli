@@ -44,7 +44,12 @@ class TestEnvironments(TestCase):
         self.assertEqual(result.return_value, 0)
         self.assertTrue(result.out_contains_value(env_name))
         self.assertFalse(result.out_contains_both(env_name, new_desc))
-    
+
+        # test the csv output
+        result = self.run_cli(cmd_env, sub_cmd + "list -v -f csv")
+        self.assertEqual(result.return_value, 0)
+        self.assertTrue(result.out_contains_both(env_name, new_desc))
+
         # delete the description
         result = self.run_cli(cmd_env, sub_cmd + f"delete {env_name} --confirm")
         self.assertEqual(result.return_value, 0)
