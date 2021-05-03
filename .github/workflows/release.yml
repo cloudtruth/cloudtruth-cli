@@ -594,16 +594,17 @@ jobs:
           name: artifacts
           path: artifacts
 
-      - name: debug-see-environment
+      - name: set-environment
         shell: pwsh
         run: |
+          $ENV:CT_DOWNLOAD_RELEASE_ID = Get-Content .\artifacts\release-id -Raw
+          $ENV:CT_DOWNLOAD_VERSION = Get-Content .\artifacts\release-version -Raw
           Get-ChildItem -Path Env:\
 
       - name: windows-latest
         shell: pwsh
         run: |
-          $releaseId = Get-Content .\artifacts\release-id -Raw
-          $version = Get-Content .\artifacts\release-version -Raw
-          $ctExe = (.\install.ps1 -authToken "$ENV:CT_DOWNLOAD_AUTH_TOKEN" -releaseId $releaseId -version $version)
+          $InformationPreference = 'Continue'
           New-Alias grep findstr
+          $ctExe = .\install.ps1 -authToken "$ENV:CT_DOWNLOAD_AUTH_TOKEN" -releaseId "$ENV:CT_DOWNLOAD_RELEASE_ID" -version "$ENV:CT_DOWNLOAD_VERSION"
           & $ctExe --project "$ENV:CT_TEST_PROJECT" parameters list -v | grep "$ENV:CT_TEST_PARAM" | grep "$ENV:CT_TEST_VALUE"

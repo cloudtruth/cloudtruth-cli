@@ -1,6 +1,16 @@
 #
 # Copyright (C) 2021 CloudTruth, Inc.
 #
+# Downloads the CloudTruth CLI executable and returns a path to it.
+# You can Invoke-Expression on the result to run CloudTruth
+# or ampersand notation, for example:
+#
+# $ctExe = .\install.ps1
+# (& $ctExe --version)
+#
+# To see any informational messages, set $InformationPreference = 'Continue'
+# before running.
+# 
 # NOTE: this puts cloudtruth.exe into $ENV:TEMP and leaves gunk behind
 #       we'll make a chocolatey or scoop package soon, hopefully
 #
@@ -11,7 +21,7 @@ Param(
     [Parameter(
         HelpMessage="Specify the version of the CLI to install.  If not specified, the latest version is installed.")]
     [String]
-    $Version,
+    $version,
 
     [Parameter(
         ParameterSetName="Testing",
@@ -45,9 +55,9 @@ $platform ="x86_64"
 
 if ($version -eq "") {
     $version = ((Invoke-WebRequest https://api.github.com/repos/cloudtruth/cloudtruth-cli/releases/latest).Content | ConvertFrom-Json).tag_name
-    Write-Host "Latest version: $version"
+    Write-Information -MessageData "Latest version: $version"
 } else {
-    Write-Host "Using version: $version"
+    Write-Information -MessageData "Using version: $version"
 }
 
 $headers = @{Accept = "application/octet-stream"}
@@ -75,17 +85,17 @@ if (!$releaseId) {
 }
 
 Invoke-WebRequest -OutFile $tmp -Headers $headers "${download_url}"
-Write-Host "Downloaded: $package"
+Write-Information -MessageData "Downloaded: $package"
 
 $tmp | Expand-Archive -DestinationPath $out
 if ($dryRun.IsPresent) {
-    "Skipping install of ${package}\cloudtruth.exe"
+    Write-Warning -MessageData "Skipping install of ${package}\cloudtruth.exe"
 } else {
     Copy-Item -Path "$out\${package}\cloudtruth.exe" -Destination $ENV:TEMP
 }
 
 if (!$dryRun.IsPresent) {
-    & "$ENV:TEMP\cloudtruth.exe" --version
+    Write-Information -MessageData (& "$ENV:TEMP\cloudtruth.exe" --version)
 }
 
 return "$ENV:TEMP\cloudtruth.exe"
