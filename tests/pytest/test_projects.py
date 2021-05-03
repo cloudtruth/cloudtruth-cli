@@ -1,5 +1,5 @@
-import os
 from testcase import TestCase
+from testcase import DEFAULT_PROJ_NAME, DEFAULT_ENV_NAME
 
 
 class TestProjects(TestCase):
@@ -57,3 +57,20 @@ class TestProjects(TestCase):
         self.assertEqual(result.return_value, 0)
         self.assertTrue(result.err_contains_value(f"Project '{proj_name}' does not exist"))
 
+    def test_cannot_delete_default(self):
+        base_cmd = self.get_cli_base_cmd()
+        cmd_env = self.get_cmd_env()
+        # set the proj/env to 'default', and do not expose secrets
+        param_cmd = base_cmd + f"--project {DEFAULT_PROJ_NAME} --env {DEFAULT_ENV_NAME} param ls -v"
+
+        # get an original snapshot (do not expose secrets)
+        before = self.run_cli(cmd_env, param_cmd)
+
+        # attempt to delete the default project and see failure
+        result = self.run_cli(cmd_env, base_cmd + f"project delete {DEFAULT_PROJ_NAME} --confirm")
+        self.assertNotEqual(result.return_value, 0)
+        self.assertIn("Cannot delete the default project", result.err())
+
+        # make sure we get the same parameter list
+        after = self.run_cli(cmd_env, param_cmd)
+        self.assertEqual(before, after)

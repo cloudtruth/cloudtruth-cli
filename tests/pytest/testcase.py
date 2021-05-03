@@ -15,6 +15,8 @@ CT_PROJ = "CLOUDTRUTH_PROJECT"
 CT_URL = "CLOUDTRUTH_SERVER_URL"
 
 DEFAULT_SERVER_URL = "https://api.cloudtruth.com/graphql"
+DEFAULT_PROJ_NAME = "default"
+DEFAULT_ENV_NAME = "default"
 
 
 @dataclasses.dataclass
