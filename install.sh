@@ -36,7 +36,7 @@ elif [ "${OS}" = "Darwin" ]; then
 fi
 
 if [ -z "${PKG}" ]; then
-    >&2 echo "Cannot determine system package format."
+    >&2 echo "[error] cannot determine system package format"
     exit 43
 fi
 
@@ -60,11 +60,12 @@ while true; do
             echo "Usage: install.sh [ OPTIONS ]"
             echo ""
             echo "OPTIONS:"
+            echo ""
             echo "  -d | --debug             enable shell debug output"
             echo "  -h | --help              show usage"
             echo "  -n | --no-prerequisites  do not attempt to install prerequisites"
             echo "  -v | --version <VER>     use a specific version"
-            echo "  -y | --dry-run           download, but do not install"
+            echo "  -y | --dry-run           download but do not install (may fail if prerequisites are missing)"
             echo ""
             echo "These options are only used for testing during the CloudTruth release workflow:"
             echo ""
@@ -84,8 +85,8 @@ while true; do
       (--)  shift; break;;
       (*)
             if [ -n "${1}" ]; then
-                echo "Invalid parameter: ${1}"
-                exit 1;           # error
+                echo "[error] invalid parameter: ${1}"
+                exit 1; # error
             fi
             break;;
     esac
@@ -105,26 +106,35 @@ prerequisites() {
     case "$PKG" in
         (apk)
             # alpine - no package format yet, use generic
-            apk add ${PREREQUISITES}
+            if [ ${CT_DRY_RUN} -ne 0 ]; then
+                CT_PREREQ_DRY_RUN="--simulate"
+            fi
+            apk add ${CT_PREREQ_DRY_RUN} ${PREREQUISITES}
             ;;
         (deb)
             # debian based
+            if [ ${CT_DRY_RUN} -ne 0 ]; then
+                CT_PREREQ_DRY_RUN="--dry-run"
+            fi
             if [ -f /.dockerenv ]; then
                 apt-get update
             fi
-            apt-get install --no-install-recommends --yes ${PREREQUISITES}
+            apt-get install --no-install-recommends --yes ${CT_PREREQ_DRY_RUN} ${PREREQUISITES}
             if [ -f /.dockerenv ]; then
                 apt-get purge
             fi
             ;;
         (rpm)
             # centos, rhel
-            if [ -n "${CT_DRAFT_RELEASE_ID}" ] && [ $(rpm -E %{rhel}) -eq 7 ]; then
+            if [ ${CT_DRY_RUN} -ne 0 ]; then
+                CT_PREREQ_DRY_RUN="--setopt tsflags=test"
+            fi
+            if [ -n "${CT_DRAFT_RELEASE_ID}" ] && [ "$(rpm -E "%{rhel}")" -eq 7 ]; then
               # jq is needed for draft release parsing, jq is in centos7 epel repository
-              yum -y install epel-release
+              yum -y install ${CT_PREREQ_DRY_RUN} epel-release
               yum repolist
             fi
-            yum install -y ${PREREQUISITES}
+            yum -y install ${CT_PREREQ_DRY_RUN} ${PREREQUISITES}
             ;;
     esac
 }
@@ -140,9 +150,9 @@ if [ -z "${CT_CLI_VERSION}" ]; then
     CT_CLI_VERSION=$(curl --silent "${CT_VER_FILE_URL}" | \
               grep "tag_name" | \
               sed -E 's/.*"([^"]+)".*/\1/')
-    echo "Latest version: ${CT_CLI_VERSION}"
+    echo "[cloudtruth] found latest version: ${CT_CLI_VERSION}"
 else
-    echo "Using version: ${CT_CLI_VERSION}"
+    echo "[cloudtruth] using requested version: ${CT_CLI_VERSION}"
 fi
 
 ### Install       ############################################################
@@ -239,5 +249,5 @@ if [ "${PKG}" = "rpm" ]; then
 fi
 
 if [ ${CT_DRY_RUN} -eq 0 ]; then
-    cloudtruth --version
+    echo "[cloudtruth] installed: $(cloudtruth --version)"
 fi
