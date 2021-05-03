@@ -2,26 +2,6 @@ from testcase import TestCase
 
 
 class TestParameters(TestCase):
-    def __init__(self, *args, **kwargs):
-        self._base_cmd = self.get_cli_base_cmd()
-        super().__init__(*args, **kwargs)
-
-    def _create_project(self, cmd_env, proj_name: str) -> None:
-        result = self.run_cli(cmd_env, self._base_cmd + f"proj set {proj_name}")
-        self.assertEqual(result.return_value, 0)
-
-    def _delete_project(self, cmd_env, proj_name: str) -> None:
-        result = self.run_cli(cmd_env, self._base_cmd + f" proj delete {proj_name} --confirm")
-        self.assertEqual(result.return_value, 0)
-
-    def _set_param(self, cmd_env, proj: str, name: str, value: str, secret: bool = False):
-        result = self.run_cli(cmd_env, self._base_cmd + f"--project {proj} parameters set {name} --value {value} --secret {str(secret).lower()}")
-        self.assertEqual(result.return_value, 0)
-
-    def _delete_param(self, cmd_env, proj: str, name: str):
-        result = self.run_cli(cmd_env, self._base_cmd + f"--project {proj} parameters delete {name} --confirm")
-        self.assertEqual(result.return_value, 0)
-
     def test_parameter_basic(self):
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
@@ -29,7 +9,7 @@ class TestParameters(TestCase):
         # add a new project
         proj_name = "test-param-basic"
         empty_msg = f"No parameters found in project {proj_name}"
-        self._create_project(cmd_env, proj_name)
+        self.create_project(cmd_env, proj_name)
 
         # check that there are no parameters
         sub_cmd = base_cmd + f" --project {proj_name} parameters "
@@ -77,7 +57,7 @@ class TestParameters(TestCase):
         self.assertTrue(result.out_contains_value(empty_msg))
 
         # delete the project
-        self._delete_project(cmd_env, proj_name)
+        self.delete_project(cmd_env, proj_name)
 
     def test_parameter_secret(self):
         base_cmd = self.get_cli_base_cmd()
@@ -86,7 +66,7 @@ class TestParameters(TestCase):
         # add a new project
         proj_name = "test-param-secret"
         empty_msg = f"No parameters found in project {proj_name}"
-        self._create_project(cmd_env, proj_name)
+        self.create_project(cmd_env, proj_name)
 
         # check that there are no parameters
         sub_cmd = base_cmd + f" --project {proj_name} parameters "
@@ -146,7 +126,7 @@ class TestParameters(TestCase):
         self.assertTrue(result.out_contains_value(empty_msg))
 
         # delete the project
-        self._delete_project(cmd_env, proj_name)
+        self.delete_project(cmd_env, proj_name)
 
     def test_project_separation(self):
         base_cmd = self.get_cli_base_cmd()
@@ -155,8 +135,8 @@ class TestParameters(TestCase):
         proj_name1 = "proj-sep1"
         proj_name2 = "proj-sep2"
 
-        self._create_project(cmd_env, proj_name1)
-        self._create_project(cmd_env, proj_name2)
+        self.create_project(cmd_env, proj_name1)
+        self.create_project(cmd_env, proj_name2)
 
         var1_name = "sna"
         var1_value1 = "foo"
@@ -164,10 +144,10 @@ class TestParameters(TestCase):
         var2_name = "sensitive"
         var2_value1 = "classified"
         var2_value2 = "top-secret"
-        self._set_param(cmd_env, proj_name1, var1_name, var1_value1)
-        self._set_param(cmd_env, proj_name1, var2_name, var2_value1, True)
-        self._set_param(cmd_env, proj_name2, var1_name, var1_value2)
-        self._set_param(cmd_env, proj_name2, var2_name, var2_value2, True)
+        self.set_param(cmd_env, proj_name1, var1_name, var1_value1)
+        self.set_param(cmd_env, proj_name1, var2_name, var2_value1, True)
+        self.set_param(cmd_env, proj_name2, var1_name, var1_value2)
+        self.set_param(cmd_env, proj_name2, var2_name, var2_value2, True)
 
         result = self.run_cli(cmd_env, base_cmd + f"--project {proj_name1} param ls -v -s")
         self.assertEqual(result.out(), """\
@@ -189,5 +169,5 @@ class TestParameters(TestCase):
 +-----------+------------+---------+-------------+
 """)
 
-        self._delete_project(cmd_env, proj_name1)
-        self._delete_project(cmd_env, proj_name2)
+        self.delete_project(cmd_env, proj_name1)
+        self.delete_project(cmd_env, proj_name2)

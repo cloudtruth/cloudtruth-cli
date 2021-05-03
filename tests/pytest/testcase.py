@@ -45,13 +45,19 @@ class Result:
     def err_contains_value(self, one: str) -> bool:
         return self._contains_value(self.stderr, one)
 
+    def err(self) -> str:
+        return "\n".join(self.stderr)
+
 
 class TestCase(unittest.TestCase):
     """
     This extends the unittest.TestCase to add some basic functions
     """
-    LOG_COMMANDS = 1
-    LOG_OUTPUT = 0
+    def __init__(self, *args, **kwargs):
+        self._base_cmd = self.get_cli_base_cmd()
+        self.log_commands = 1
+        self.log_output = 0
+        super().__init__(*args, **kwargs)
 
     def get_cli_base_cmd(self) -> str:
         """
@@ -80,7 +86,7 @@ class TestCase(unittest.TestCase):
         return os.environ
 
     def run_cli(self, env: Dict[str, str], cmd) -> Result:
-        if self.LOG_COMMANDS:
+        if self.log_commands:
             print(cmd)
 
         process = subprocess.run(
@@ -92,11 +98,35 @@ class TestCase(unittest.TestCase):
             stderr=process.stderr.decode("utf-8").split("\n"),
         )
 
-        if self.LOG_OUTPUT:
+        if self.log_output:
             if result.stdout:
                 print("\n".join(result.stdout))
             if result.stderr:
                 print("\n".join(result.stderr))
 
         return result
+
+    def create_project(self, cmd_env, proj_name: str) -> None:
+        result = self.run_cli(cmd_env, self._base_cmd + f"proj set {proj_name}")
+        self.assertEqual(result.return_value, 0)
+
+    def delete_project(self, cmd_env, proj_name: str) -> None:
+        result = self.run_cli(cmd_env, self._base_cmd + f" proj delete {proj_name} --confirm")
+        self.assertEqual(result.return_value, 0)
+
+    def create_environment(self, cmd_env, env_name: str) -> None:
+        result = self.run_cli(cmd_env, self._base_cmd + f"env set {env_name}")
+        self.assertEqual(result.return_value, 0)
+
+    def delete_environment(self, cmd_env, env_name: str) -> None:
+        result = self.run_cli(cmd_env, self._base_cmd + f"env del {env_name} --confirm")
+        self.assertEqual(result.return_value, 0)
+
+    def set_param(self, cmd_env, proj: str, name: str, value: str, secret: bool = False):
+        result = self.run_cli(cmd_env, self._base_cmd + f"--project {proj} param set {name} --value {value} --secret {str(secret).lower()}")
+        self.assertEqual(result.return_value, 0)
+
+    def delete_param(self, cmd_env, proj: str, name: str):
+        result = self.run_cli(cmd_env, self._base_cmd + f"--project {proj} param delete {name}")
+        self.assertEqual(result.return_value, 0)
 
