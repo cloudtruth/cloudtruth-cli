@@ -21,7 +21,7 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: ShellCheck
-        uses: ludeeus/action-shellcheck@1
+        uses: ludeeus/action-shellcheck@master
 
       - name: Install Rust
         id: rust
