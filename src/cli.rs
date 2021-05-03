@@ -249,7 +249,7 @@ pub fn build_cli() -> App<'static, 'static> {
         )
         .subcommand(
             SubCommand::with_name("projects")
-                .visible_aliases(&["projects", "proj"])
+                .visible_aliases(&["project", "proj"])
                 .about("Work with CloudTruth projects")
                 .subcommands(vec![
                     SubCommand::with_name("delete")
