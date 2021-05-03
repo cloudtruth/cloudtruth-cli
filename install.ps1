@@ -67,7 +67,7 @@ if (!$releaseId) {
     $base_url = "https://github.com/cloudtruth/cloudtruth-cli/releases/download"
     $download_url = "${base_url}/${version}/${package}.zip"
 } else {
-    # handle a GitHu draft release for integration testing
+    # handle a GitHub draft release for integration testing
     $content = (Invoke-WebRequest -Headers @{Authorization = "token $authToken"} "https://api.github.com/repos/cloudtruth/cloudtruth-cli/releases/${releaseId}/assets").Content
     $assets = $content | ConvertFrom-Json
     $assetId = ($assets | where { $_.Name -eq "${package}.zip" }).id
