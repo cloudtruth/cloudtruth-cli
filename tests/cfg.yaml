@@ -1,0 +1,35 @@
+---
+jobs:
+  alpine:
+    docker: true
+    versions:
+      - "3.13"
+      - "3.12"
+  centos:
+    docker: true
+    versions:
+      - "8"
+      - "7"
+  debian:
+    docker: true
+    versions:
+      - bullseye-slim
+      - buster-slim
+      - jessie-slim
+  macOS:
+    docker: false
+    versions:
+      - latest
+  ubuntu:
+    docker: true
+    versions:
+      - groovy
+      - focal
+      - bionic
+      - xenial
+      - trusty
+  windows:
+    docker: false
+    powershell: true
+    versions:
+      - latest

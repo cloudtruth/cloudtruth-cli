@@ -1,0 +1,610 @@
+# The release steps here pull heavily from the GitHub Actions configuration for the bat and ripgrep projects.
+#
+# bat: https://github.com/sharkdp/bat
+# The MIT License (MIT)
+#
+# Copyright (c) 2018-2020 bat-developers (https://github.com/sharkdp/bat).
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#
+# ripgrep: https://github.com/BurntSushi/ripgrep
+# The MIT License (MIT)
+#
+# Copyright (c) 2015 Andrew Gallant
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
+name: Create Draft Release
+
+on:
+  push:
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+-?**'
+
+env:
+  CI: true
+  PROJECT_NAME: cloudtruth
+  RUST_BACKTRACE: 1
+
+jobs:
+  create-release:
+    name: Create Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Create artifacts directory
+        run: mkdir artifacts
+
+      - name: Get the release version from the tag
+        if: env.CT_VERSION == ''
+        run: |
+          # Apparently, this is the right way to get a tag name. Really?
+          #
+          # See: https://github.community/t5/GitHub-Actions/How-to-get-just-the-tag-name/m-p/32167/highlight/true#M1027
+          echo CT_VERSION=${GITHUB_REF#refs/tags/} >> $GITHUB_ENV
+
+      - name: Create GitHub release
+        id: release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          draft: true
+          tag_name: ${{ env.CT_VERSION }}
+          release_name: ${{ env.CT_VERSION }}
+
+      - name: Save release information to artifacts
+        run: |
+          echo "${{ steps.release.outputs.id }}" > artifacts/release-id
+          echo "${{ steps.release.outputs.upload_url }}" > artifacts/release-upload-url
+          echo "${{ env.CT_VERSION }}" > artifacts/release-version
+
+      - name: Upload artifacts for other jobs to consume
+        uses: actions/upload-artifact@v1
+        with:
+          name: artifacts
+          path: artifacts
+
+  build-release:
+    name: Build Release
+    needs: ['create-release']
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        # Split the "build" attribute off from the others so the GitHub Actions UI only shows the short build name.
+        # The "include" part will add attributes to the corresponding "build" values. The "build" names must match.
+        # If we don't split like this, the GitHub Action UI will show the full set of configuration keys, overwhelming
+        # the UI.
+        build: [linux, linux-arm, linux-aarch64, macos, win-msvc]
+        include:
+          - { build: linux         , os: ubuntu-18.04 , target: x86_64-unknown-linux-musl   , use-cross: true  , toolchain: stable }
+          - { build: linux-arm     , os: ubuntu-18.04 , target: arm-unknown-linux-gnueabihf , use-cross: true  , toolchain: stable }
+          - { build: linux-aarch64 , os: ubuntu-18.04 , target: aarch64-unknown-linux-gnu   , use-cross: true  , toolchain: stable }
+          - { build: macos         , os: macos-latest , target: x86_64-apple-darwin         , use-cross: false , toolchain: stable }
+          - { build: win-msvc      , os: windows-2019 , target: x86_64-pc-windows-msvc      , use-cross: false , toolchain: stable }
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+
+      - name: Get release download URL
+        uses: actions/download-artifact@v1
+        with:
+          name: artifacts
+          path: artifacts
+
+      - name: Install prerequisites
+        shell: bash
+        run: |
+          case ${{ matrix.target }} in
+            arm-unknown-linux-gnueabihf)
+              sudo apt-get -y update
+              sudo apt-get -y install gcc-arm-linux-gnueabihf
+            ;;
+
+            aarch64-unknown-linux-gnu)
+              sudo apt-get -y update
+              sudo apt-get -y install gcc-aarch64-linux-gnu
+            ;;
+          esac
+
+      - name: Initialize workflow variables
+        id: vars
+        shell: bash
+        run: |
+          # Determine EXE suffix.
+          EXE_SUFFIX=""
+
+          case ${{ matrix.target }} in
+            *-pc-windows-*)
+              EXE_SUFFIX=".exe"
+            ;;
+          esac;
+
+          echo EXE_SUFFIX=$EXE_SUFFIX >> $GITHUB_ENV
+
+          # Define the executable for stripping binaries, if one exists.
+          STRIP="strip"
+          case ${{ matrix.target }} in
+            arm-unknown-linux-gnueabihf)
+              STRIP="arm-linux-gnueabihf-strip"
+            ;;
+
+            aarch64-unknown-linux-gnu)
+              STRIP="aarch64-linux-gnu-strip"
+            ;;
+
+            *-pc-windows-msvc)
+              STRIP=""
+            ;;
+          esac;
+
+          echo STRIP=$STRIP >> $GITHUB_ENV
+
+          # Set release upload URL and release version.
+          echo RELEASE_UPLOAD_URL="$(cat artifacts/release-upload-url)" >> $GITHUB_ENV
+          echo RELEASE_VERSION="$(cat artifacts/release-version)" >> $GITHUB_ENV
+
+      - name: Install Rust
+        id: rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.toolchain }}
+          profile: minimal
+          override: true
+          target: ${{ matrix.target }}
+
+      - name: Install cross with OpenSSL support
+        run: cargo install cross --version 0.1.16
+        if: matrix.use-cross
+
+      - name: Install cargo-deb
+        if: contains(matrix.build, 'linux')
+        run: cargo install cargo-deb
+
+      - uses: actions-rs/cargo@v1
+        with:
+          use-cross: ${{ matrix.use-cross }}
+          command: build
+          args: --target ${{ matrix.target }} --release
+
+      - name: Get pre-stripped binary size
+        run: ls -lh target/${{ matrix.target }}/release/
+        if: env.STRIP
+
+      - name: Strip binaries
+        shell: bash
+        run: |
+          "${{ env.STRIP }}" "target/${{ matrix.target }}/release/${{ env.PROJECT_NAME }}${{ env.EXE_SUFFIX }}"
+        if: env.STRIP
+
+      - name: Get post-stripped binary size
+        run: ls -lh target/${{ matrix.target }}/release/
+        if: env.STRIP
+
+      - name: Build archive
+        shell: bash
+        run: |
+          staging="${{ env.PROJECT_NAME }}-${{ env.RELEASE_VERSION }}-${{ matrix.target }}"
+          mkdir -p "$staging"
+
+          # Find where the build script put the generated completions files.
+          src_completions_dir="$(find . -name cloudtruth.bash -print0 | xargs -0 ls -t | head -n 1 | xargs dirname)"
+
+          # Move the generated shell completion files to a location cargo-deb will read from.
+          dst_completions_dir="target/${{ matrix.target }}/release/completions"
+          mv "$src_completions_dir" "$dst_completions_dir"
+
+          cp {README.md,LICENSE} "$staging/"
+          cp -a "$dst_completions_dir" "$staging/"
+          cp "target/${{ matrix.target }}/release/${{ env.PROJECT_NAME }}${{ env.EXE_SUFFIX }}" "$staging/"
+
+          if [ "${{ matrix.os }}" = "windows-2019" ]; then
+            7z a "$staging.zip" "$staging"
+            echo ASSET=$staging.zip >> $GITHUB_ENV
+          else
+            tar -czf "$staging.tar.gz" "$staging"
+            echo ASSET=$staging.tar.gz >> $GITHUB_ENV
+          fi
+
+      - name: Upload release archive
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ env.RELEASE_UPLOAD_URL }}
+          asset_path: ${{ env.ASSET }}
+          asset_name: ${{ env.ASSET }}
+          asset_content_type: application/octet-stream
+
+      - name: Build Debian package
+        if: contains(matrix.build, 'linux')
+        shell: bash
+        run: |
+          cargo deb --no-build --no-strip --target ${{ matrix.target }}
+
+          deb_path=$(ls target/${{ matrix.target }}/debian/*.deb)
+          echo DEB_PATH=$deb_path >> $GITHUB_ENV
+          echo DEB_NAME=$(basename $deb_path) >> $GITHUB_ENV
+
+      - name: Upload Debian package
+        if: contains(matrix.build, 'linux')
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ env.RELEASE_UPLOAD_URL }}
+          asset_path: ${{ env.DEB_PATH }}
+          asset_name: ${{ env.DEB_NAME }}
+          asset_content_type: application/octet-stream
+
+      - name: Install cargo-generate-rpm
+        if: contains(matrix.build, 'linux')
+        run: cargo install cargo-generate-rpm
+
+      - name: Build RPM package
+        if: contains(matrix.build, 'linux')
+        shell: bash
+        run: |
+          sed -i 's/TARGET/${{ matrix.target }}/g' Cargo.rpm.toml
+          cat Cargo.rpm.toml >> Cargo.toml
+          
+          rpm_arch=$(echo "${{ matrix.target }}" | cut -d- -f1)
+          cargo generate-rpm --arch $rpm_arch
+
+          rpm_path=$(ls target/generate-rpm/cloudtruth-*$rpm_arch.rpm)
+          echo RPM_PATH=$rpm_path >> $GITHUB_ENV
+          echo RPM_NAME=$(basename $rpm_path) >> $GITHUB_ENV
+
+      - name: Upload RPM package
+        if: contains(matrix.build, 'linux')
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ env.RELEASE_UPLOAD_URL }}
+          asset_path: ${{ env.RPM_PATH }}
+          asset_name: ${{ env.RPM_NAME }}
+          asset_content_type: application/octet-stream
+
+  ######################
+  ## Jobs below here are the output from the generated tests/ directory.
+  ######################
+  
+  test-alpine:
+    runs-on: ubuntu-latest
+    needs: [ 'build-release' ]
+    env:
+      # Need auth-token to download from draft release
+      CT_DOWNLOAD_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # These values are used for running the CLI command
+      CLOUDTRUTH_API_KEY: ${{ secrets.CI_ACCT_READONLY_CT_API_KEY }}
+      CT_TEST_PROJECT: TruthStrap
+      CT_TEST_PARAM: INTEGRATION_TEST_RESULT
+      CT_TEST_VALUE: Speicla
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+
+      - uses: actions/download-artifact@v1
+        with:
+          name: artifacts
+          path: artifacts
+
+      - name: alpine-3.13
+        run: |
+          CT_DOWNLOAD_RELEASE_ID=$(cat artifacts/release-id)
+          CT_DOWNLOAD_VERSION=$(cat artifacts/release-version)
+          docker build . \
+            --build-arg DOWNLOAD_AUTH_TOKEN="${CT_DOWNLOAD_AUTH_TOKEN}" \
+            --build-arg DOWNLOAD_RELEASE_ID="${CT_DOWNLOAD_RELEASE_ID}" \
+            --build-arg DOWNLOAD_VERSION="${CT_DOWNLOAD_VERSION}" \
+             -f tests/docker/Dockerfile.alpine-3.13 \
+             -t cloudtruth:alpine-3.13
+          docker run -e CLOUDTRUTH_API_KEY -t cloudtruth:alpine-3.13 cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
+
+      - name: alpine-3.12
+        run: |
+          CT_DOWNLOAD_RELEASE_ID=$(cat artifacts/release-id)
+          CT_DOWNLOAD_VERSION=$(cat artifacts/release-version)
+          docker build . \
+            --build-arg DOWNLOAD_AUTH_TOKEN="${CT_DOWNLOAD_AUTH_TOKEN}" \
+            --build-arg DOWNLOAD_RELEASE_ID="${CT_DOWNLOAD_RELEASE_ID}" \
+            --build-arg DOWNLOAD_VERSION="${CT_DOWNLOAD_VERSION}" \
+             -f tests/docker/Dockerfile.alpine-3.12 \
+             -t cloudtruth:alpine-3.12
+          docker run -e CLOUDTRUTH_API_KEY -t cloudtruth:alpine-3.12 cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
+
+  test-centos:
+    runs-on: ubuntu-latest
+    needs: [ 'build-release' ]
+    env:
+      # Need auth-token to download from draft release
+      CT_DOWNLOAD_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # These values are used for running the CLI command
+      CLOUDTRUTH_API_KEY: ${{ secrets.CI_ACCT_READONLY_CT_API_KEY }}
+      CT_TEST_PROJECT: TruthStrap
+      CT_TEST_PARAM: INTEGRATION_TEST_RESULT
+      CT_TEST_VALUE: Speicla
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+
+      - uses: actions/download-artifact@v1
+        with:
+          name: artifacts
+          path: artifacts
+
+      - name: centos-8
+        run: |
+          CT_DOWNLOAD_RELEASE_ID=$(cat artifacts/release-id)
+          CT_DOWNLOAD_VERSION=$(cat artifacts/release-version)
+          docker build . \
+            --build-arg DOWNLOAD_AUTH_TOKEN="${CT_DOWNLOAD_AUTH_TOKEN}" \
+            --build-arg DOWNLOAD_RELEASE_ID="${CT_DOWNLOAD_RELEASE_ID}" \
+            --build-arg DOWNLOAD_VERSION="${CT_DOWNLOAD_VERSION}" \
+             -f tests/docker/Dockerfile.centos-8 \
+             -t cloudtruth:centos-8
+          docker run -e CLOUDTRUTH_API_KEY -t cloudtruth:centos-8 cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
+
+      - name: centos-7
+        run: |
+          CT_DOWNLOAD_RELEASE_ID=$(cat artifacts/release-id)
+          CT_DOWNLOAD_VERSION=$(cat artifacts/release-version)
+          docker build . \
+            --build-arg DOWNLOAD_AUTH_TOKEN="${CT_DOWNLOAD_AUTH_TOKEN}" \
+            --build-arg DOWNLOAD_RELEASE_ID="${CT_DOWNLOAD_RELEASE_ID}" \
+            --build-arg DOWNLOAD_VERSION="${CT_DOWNLOAD_VERSION}" \
+             -f tests/docker/Dockerfile.centos-7 \
+             -t cloudtruth:centos-7
+          docker run -e CLOUDTRUTH_API_KEY -t cloudtruth:centos-7 cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
+
+  test-debian:
+    runs-on: ubuntu-latest
+    needs: [ 'build-release' ]
+    env:
+      # Need auth-token to download from draft release
+      CT_DOWNLOAD_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # These values are used for running the CLI command
+      CLOUDTRUTH_API_KEY: ${{ secrets.CI_ACCT_READONLY_CT_API_KEY }}
+      CT_TEST_PROJECT: TruthStrap
+      CT_TEST_PARAM: INTEGRATION_TEST_RESULT
+      CT_TEST_VALUE: Speicla
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+
+      - uses: actions/download-artifact@v1
+        with:
+          name: artifacts
+          path: artifacts
+
+      - name: debian-bullseye-slim
+        run: |
+          CT_DOWNLOAD_RELEASE_ID=$(cat artifacts/release-id)
+          CT_DOWNLOAD_VERSION=$(cat artifacts/release-version)
+          docker build . \
+            --build-arg DOWNLOAD_AUTH_TOKEN="${CT_DOWNLOAD_AUTH_TOKEN}" \
+            --build-arg DOWNLOAD_RELEASE_ID="${CT_DOWNLOAD_RELEASE_ID}" \
+            --build-arg DOWNLOAD_VERSION="${CT_DOWNLOAD_VERSION}" \
+             -f tests/docker/Dockerfile.debian-bullseye-slim \
+             -t cloudtruth:debian-bullseye-slim
+          docker run -e CLOUDTRUTH_API_KEY -t cloudtruth:debian-bullseye-slim cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
+
+      - name: debian-buster-slim
+        run: |
+          CT_DOWNLOAD_RELEASE_ID=$(cat artifacts/release-id)
+          CT_DOWNLOAD_VERSION=$(cat artifacts/release-version)
+          docker build . \
+            --build-arg DOWNLOAD_AUTH_TOKEN="${CT_DOWNLOAD_AUTH_TOKEN}" \
+            --build-arg DOWNLOAD_RELEASE_ID="${CT_DOWNLOAD_RELEASE_ID}" \
+            --build-arg DOWNLOAD_VERSION="${CT_DOWNLOAD_VERSION}" \
+             -f tests/docker/Dockerfile.debian-buster-slim \
+             -t cloudtruth:debian-buster-slim
+          docker run -e CLOUDTRUTH_API_KEY -t cloudtruth:debian-buster-slim cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
+
+      - name: debian-jessie-slim
+        run: |
+          CT_DOWNLOAD_RELEASE_ID=$(cat artifacts/release-id)
+          CT_DOWNLOAD_VERSION=$(cat artifacts/release-version)
+          docker build . \
+            --build-arg DOWNLOAD_AUTH_TOKEN="${CT_DOWNLOAD_AUTH_TOKEN}" \
+            --build-arg DOWNLOAD_RELEASE_ID="${CT_DOWNLOAD_RELEASE_ID}" \
+            --build-arg DOWNLOAD_VERSION="${CT_DOWNLOAD_VERSION}" \
+             -f tests/docker/Dockerfile.debian-jessie-slim \
+             -t cloudtruth:debian-jessie-slim
+          docker run -e CLOUDTRUTH_API_KEY -t cloudtruth:debian-jessie-slim cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
+
+  test-macOS:
+    runs-on: macOS-latest
+    needs: [ 'build-release' ]
+    env:
+      # Need auth-token to download from draft release
+      CT_DOWNLOAD_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # These values are used for running the CLI command
+      CLOUDTRUTH_API_KEY: ${{ secrets.CI_ACCT_READONLY_CT_API_KEY }}
+      CT_TEST_PROJECT: TruthStrap
+      CT_TEST_PARAM: INTEGRATION_TEST_RESULT
+      CT_TEST_VALUE: Speicla
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+
+      - uses: actions/download-artifact@v1
+        with:
+          name: artifacts
+          path: artifacts
+
+      - name: macOS-latest
+        run: |
+          CT_DOWNLOAD_RELEASE_ID=$(cat artifacts/release-id)
+          CT_DOWNLOAD_VERSION=$(cat artifacts/release-version)
+          sudo ./install.sh --auth-token "${CT_DOWNLOAD_AUTH_TOKEN}" --release-id "${CT_DOWNLOAD_RELEASE_ID}" --version "${CT_DOWNLOAD_VERSION}"
+          cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep "${CT_TEST_PARAM}" | grep "${CT_TEST_VALUE}"
+
+  test-ubuntu:
+    runs-on: ubuntu-latest
+    needs: [ 'build-release' ]
+    env:
+      # Need auth-token to download from draft release
+      CT_DOWNLOAD_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # These values are used for running the CLI command
+      CLOUDTRUTH_API_KEY: ${{ secrets.CI_ACCT_READONLY_CT_API_KEY }}
+      CT_TEST_PROJECT: TruthStrap
+      CT_TEST_PARAM: INTEGRATION_TEST_RESULT
+      CT_TEST_VALUE: Speicla
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+
+      - uses: actions/download-artifact@v1
+        with:
+          name: artifacts
+          path: artifacts
+
+      - name: ubuntu-groovy
+        run: |
+          CT_DOWNLOAD_RELEASE_ID=$(cat artifacts/release-id)
+          CT_DOWNLOAD_VERSION=$(cat artifacts/release-version)
+          docker build . \
+            --build-arg DOWNLOAD_AUTH_TOKEN="${CT_DOWNLOAD_AUTH_TOKEN}" \
+            --build-arg DOWNLOAD_RELEASE_ID="${CT_DOWNLOAD_RELEASE_ID}" \
+            --build-arg DOWNLOAD_VERSION="${CT_DOWNLOAD_VERSION}" \
+             -f tests/docker/Dockerfile.ubuntu-groovy \
+             -t cloudtruth:ubuntu-groovy
+          docker run -e CLOUDTRUTH_API_KEY -t cloudtruth:ubuntu-groovy cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
+
+      - name: ubuntu-focal
+        run: |
+          CT_DOWNLOAD_RELEASE_ID=$(cat artifacts/release-id)
+          CT_DOWNLOAD_VERSION=$(cat artifacts/release-version)
+          docker build . \
+            --build-arg DOWNLOAD_AUTH_TOKEN="${CT_DOWNLOAD_AUTH_TOKEN}" \
+            --build-arg DOWNLOAD_RELEASE_ID="${CT_DOWNLOAD_RELEASE_ID}" \
+            --build-arg DOWNLOAD_VERSION="${CT_DOWNLOAD_VERSION}" \
+             -f tests/docker/Dockerfile.ubuntu-focal \
+             -t cloudtruth:ubuntu-focal
+          docker run -e CLOUDTRUTH_API_KEY -t cloudtruth:ubuntu-focal cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
+
+      - name: ubuntu-bionic
+        run: |
+          CT_DOWNLOAD_RELEASE_ID=$(cat artifacts/release-id)
+          CT_DOWNLOAD_VERSION=$(cat artifacts/release-version)
+          docker build . \
+            --build-arg DOWNLOAD_AUTH_TOKEN="${CT_DOWNLOAD_AUTH_TOKEN}" \
+            --build-arg DOWNLOAD_RELEASE_ID="${CT_DOWNLOAD_RELEASE_ID}" \
+            --build-arg DOWNLOAD_VERSION="${CT_DOWNLOAD_VERSION}" \
+             -f tests/docker/Dockerfile.ubuntu-bionic \
+             -t cloudtruth:ubuntu-bionic
+          docker run -e CLOUDTRUTH_API_KEY -t cloudtruth:ubuntu-bionic cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
+
+      - name: ubuntu-xenial
+        run: |
+          CT_DOWNLOAD_RELEASE_ID=$(cat artifacts/release-id)
+          CT_DOWNLOAD_VERSION=$(cat artifacts/release-version)
+          docker build . \
+            --build-arg DOWNLOAD_AUTH_TOKEN="${CT_DOWNLOAD_AUTH_TOKEN}" \
+            --build-arg DOWNLOAD_RELEASE_ID="${CT_DOWNLOAD_RELEASE_ID}" \
+            --build-arg DOWNLOAD_VERSION="${CT_DOWNLOAD_VERSION}" \
+             -f tests/docker/Dockerfile.ubuntu-xenial \
+             -t cloudtruth:ubuntu-xenial
+          docker run -e CLOUDTRUTH_API_KEY -t cloudtruth:ubuntu-xenial cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
+
+      - name: ubuntu-trusty
+        run: |
+          CT_DOWNLOAD_RELEASE_ID=$(cat artifacts/release-id)
+          CT_DOWNLOAD_VERSION=$(cat artifacts/release-version)
+          docker build . \
+            --build-arg DOWNLOAD_AUTH_TOKEN="${CT_DOWNLOAD_AUTH_TOKEN}" \
+            --build-arg DOWNLOAD_RELEASE_ID="${CT_DOWNLOAD_RELEASE_ID}" \
+            --build-arg DOWNLOAD_VERSION="${CT_DOWNLOAD_VERSION}" \
+             -f tests/docker/Dockerfile.ubuntu-trusty \
+             -t cloudtruth:ubuntu-trusty
+          docker run -e CLOUDTRUTH_API_KEY -t cloudtruth:ubuntu-trusty cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
+
+  test-windows:
+    runs-on: windows-latest
+    needs: [ 'build-release' ]
+    env:
+      # Need auth-token to download from draft release
+      CT_DOWNLOAD_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # These values are used for running the CLI command
+      CLOUDTRUTH_API_KEY: ${{ secrets.CI_ACCT_READONLY_CT_API_KEY }}
+      CT_TEST_PROJECT: TruthStrap
+      CT_TEST_PARAM: INTEGRATION_TEST_RESULT
+      CT_TEST_VALUE: Speicla
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+
+      - uses: actions/download-artifact@v1
+        with:
+          name: artifacts
+          path: artifacts
+
+      - name: set-environment
+        shell: pwsh
+        run: |
+          $ENV:CT_DOWNLOAD_RELEASE_ID = (Get-Content .\artifacts\release-id -Raw).Trim()
+          $ENV:CT_DOWNLOAD_VERSION = (Get-Content .\artifacts\release-version -Raw).Trim()
+          Get-ChildItem -Path Env:\
+
+      - name: windows-latest
+        shell: pwsh
+        run: |
+          $InformationPreference = 'Continue'
+          New-Alias grep findstr
+          $ctExe = .\install.ps1 -authToken "$ENV:CT_DOWNLOAD_AUTH_TOKEN" -releaseId "$ENV:CT_DOWNLOAD_RELEASE_ID" -version "$ENV:CT_DOWNLOAD_VERSION"
+          & $ctExe --project "$ENV:CT_TEST_PROJECT" parameters list -v | grep "$ENV:CT_TEST_PARAM" | grep "$ENV:CT_TEST_VALUE"
