@@ -39,8 +39,8 @@ class Result:
     def out_contains_value(self, one: str) -> bool:
         return self._contains_value(self.stdout, one)
 
-    def out_equals(self, value: str) -> bool:
-        return self._equals(self.stdout, value)
+    def out(self) -> str:
+        return "\n".join(self.stdout)
 
     def err_contains_value(self, one: str) -> bool:
         return self._contains_value(self.stderr, one)

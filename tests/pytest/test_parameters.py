@@ -2,6 +2,25 @@ from testcase import TestCase
 
 
 class TestParameters(TestCase):
+    def __init__(self, *args, **kwargs):
+        self._base_cmd = self.get_cli_base_cmd()
+        super().__init__(*args, **kwargs)
+
+    def _create_project(self, cmd_env, proj_name: str) -> None:
+        result = self.run_cli(cmd_env, self._base_cmd + f"proj set {proj_name}")
+        self.assertEqual(result.return_value, 0)
+
+    def _delete_project(self, cmd_env, proj_name: str) -> None:
+        result = self.run_cli(cmd_env, self._base_cmd + f" proj delete {proj_name} --confirm")
+        self.assertEqual(result.return_value, 0)
+
+    def _set_param(self, cmd_env, proj: str, name: str, value: str, secret: bool = False):
+        result = self.run_cli(cmd_env, self._base_cmd + f"--project {proj} parameters set {name} --value {value} --secret {str(secret).lower()}")
+        self.assertEqual(result.return_value, 0)
+
+    def _delete_param(self, cmd_env, proj: str, name: str):
+        result = self.run_cli(cmd_env, self._base_cmd + f"--project {proj} parameters delete {name} --confirm")
+        self.assertEqual(result.return_value, 0)
 
     def test_parameter_basic(self):
         base_cmd = self.get_cli_base_cmd()
@@ -10,9 +29,7 @@ class TestParameters(TestCase):
         # add a new project
         proj_name = "test-param-basic"
         empty_msg = f"No parameters found in project {proj_name}"
-        result = self.run_cli(cmd_env,
-                              base_cmd + f" projects set {proj_name} -d 'test_parameters_basic() test'")
-        self.assertEqual(result.return_value, 0)
+        self._create_project(cmd_env, proj_name)
 
         # check that there are no parameters
         sub_cmd = base_cmd + f" --project {proj_name} parameters "
@@ -42,13 +59,13 @@ class TestParameters(TestCase):
         result = self.run_cli(cmd_env, sub_cmd + f"ls -v")
         self.assertTrue(result.out_contains_both(key1, value1))
         self.assertTrue(result.out_contains_both(key1, desc1))
-        self.assertTrue(result.out_equals("""\
+        self.assertEqual(result.out(), """\
 +----------+-------------+---------+---------------------------------+
 | Name     | Value       | Source  | Description                     |
 +----------+-------------+---------+---------------------------------+
 | my_param | cRaZy value | default | this is just a test description |
 +----------+-------------+---------+---------------------------------+
-"""))
+""")
 
         # delete the parameter
         result = self.run_cli(cmd_env, sub_cmd + f"delete {key1}")
@@ -60,8 +77,7 @@ class TestParameters(TestCase):
         self.assertTrue(result.out_contains_value(empty_msg))
 
         # delete the project
-        result = self.run_cli(cmd_env, base_cmd + f" projects delete {proj_name} --confirm")
-        self.assertEqual(result.return_value, 0)
+        self._delete_project(cmd_env, proj_name)
 
     def test_parameter_secret(self):
         base_cmd = self.get_cli_base_cmd()
@@ -70,9 +86,7 @@ class TestParameters(TestCase):
         # add a new project
         proj_name = "test-param-secret"
         empty_msg = f"No parameters found in project {proj_name}"
-        result = self.run_cli(cmd_env,
-                              base_cmd + f" projects set {proj_name} -d 'test_parameters_secret() test'")
-        self.assertEqual(result.return_value, 0)
+        self._create_project(cmd_env, proj_name)
 
         # check that there are no parameters
         sub_cmd = base_cmd + f" --project {proj_name} parameters "
@@ -102,25 +116,25 @@ class TestParameters(TestCase):
         result = self.run_cli(cmd_env, sub_cmd + f"ls -v")
         self.assertFalse(result.out_contains_both(key1, value1))
         self.assertTrue(result.out_contains_both(key1, desc1))
-        self.assertTrue(result.out_equals("""\
+        self.assertEqual(result.out(), """\
 +----------+-------+---------+-----------------+
 | Name     | Value | Source  | Description     |
 +----------+-------+---------+-----------------+
 | my_param | ***** | default | my secret value |
 +----------+-------+---------+-----------------+
-"""))
+""")
 
         # now, display with the secrets value
         result = self.run_cli(cmd_env, sub_cmd + f"list --values --secrets")
         self.assertTrue(result.out_contains_both(key1, value1))
         self.assertTrue(result.out_contains_both(key1, desc1))
-        self.assertTrue(result.out_equals("""\
+        self.assertEqual(result.out(), """\
 +----------+-----------------------+---------+-----------------+
 | Name     | Value                 | Source  | Description     |
 +----------+-----------------------+---------+-----------------+
 | my_param | super-SENSITIVE-vAluE | default | my secret value |
 +----------+-----------------------+---------+-----------------+
-"""))
+""")
 
         # delete the parameter
         result = self.run_cli(cmd_env, sub_cmd + f"delete {key1}")
@@ -132,5 +146,48 @@ class TestParameters(TestCase):
         self.assertTrue(result.out_contains_value(empty_msg))
 
         # delete the project
-        result = self.run_cli(cmd_env, base_cmd + f" projects delete {proj_name} --confirm")
-        self.assertEqual(result.return_value, 0)
+        self._delete_project(cmd_env, proj_name)
+
+    def test_project_separation(self):
+        base_cmd = self.get_cli_base_cmd()
+        cmd_env = self.get_cmd_env()
+
+        proj_name1 = "proj-sep1"
+        proj_name2 = "proj-sep2"
+
+        self._create_project(cmd_env, proj_name1)
+        self._create_project(cmd_env, proj_name2)
+
+        var1_name = "sna"
+        var1_value1 = "foo"
+        var1_value2 = "fu"
+        var2_name = "sensitive"
+        var2_value1 = "classified"
+        var2_value2 = "top-secret"
+        self._set_param(cmd_env, proj_name1, var1_name, var1_value1)
+        self._set_param(cmd_env, proj_name1, var2_name, var2_value1, True)
+        self._set_param(cmd_env, proj_name2, var1_name, var1_value2)
+        self._set_param(cmd_env, proj_name2, var2_name, var2_value2, True)
+
+        result = self.run_cli(cmd_env, base_cmd + f"--project {proj_name1} param ls -v -s")
+        self.assertEqual(result.out(), """\
++-----------+------------+---------+-------------+
+| Name      | Value      | Source  | Description |
++-----------+------------+---------+-------------+
+| sensitive | classified | default |             |
+| sna       | foo        | default |             |
++-----------+------------+---------+-------------+
+""")
+
+        result = self.run_cli(cmd_env, base_cmd + f"--project {proj_name2} param ls -v -s")
+        self.assertEqual(result.out(), """\
++-----------+------------+---------+-------------+
+| Name      | Value      | Source  | Description |
++-----------+------------+---------+-------------+
+| sensitive | top-secret | default |             |
+| sna       | fu         | default |             |
++-----------+------------+---------+-------------+
+""")
+
+        self._delete_project(cmd_env, proj_name1)
+        self._delete_project(cmd_env, proj_name2)

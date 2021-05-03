@@ -27,7 +27,7 @@ def parse_args(*args) -> argparse.Namespace:
         "-v",
         "--verbosity",
         type=int,
-        default=1,
+        default=3,
         help="Unittest verbosity level",
     )
     parser.add_argument(
