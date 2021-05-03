@@ -323,7 +323,7 @@ jobs:
       - name: set-environment
         shell: pwsh
         run: |
-          $ENV:CT_DOWNLOAD_RELEASE_ID = (Get-Content) .\artifacts\release-id -Raw).Trim()
+          $ENV:CT_DOWNLOAD_RELEASE_ID = (Get-Content .\artifacts\release-id -Raw).Trim()
           $ENV:CT_DOWNLOAD_VERSION = (Get-Content .\artifacts\release-version -Raw).Trim()
           Get-ChildItem -Path Env:\
 
