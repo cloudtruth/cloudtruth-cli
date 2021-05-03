@@ -33,7 +33,7 @@ class TestParameters(TestCase):
         value1 = "cRaZy value"
         desc1 = "this is just a test description"
         result = self.run_cli(cmd_env,
-                              sub_cmd + f"set {key1} --value \"{value1}\" --desc \"{desc1}\"")
+                              sub_cmd + f"set {key1} --value '{value1}' --desc '{desc1}'")
         self.assertEqual(result.return_value, 0)
 
         result = self.run_cli(cmd_env, sub_cmd + f"ls -v")
@@ -55,10 +55,62 @@ class TestParameters(TestCase):
 Name,Value,Source,Description
 my_param,cRaZy value,default,this is just a test description
 """)
+        # get the parameter
+        result = self.run_cli(cmd_env, sub_cmd + f"get {key1}")
+        self.assertEqual(result.return_value, 0)
+        self.assertIn(f"{value1}", result.out())
 
+        # idempotent -- same value
+        result = self.run_cli(cmd_env, sub_cmd + f"set {key1} --value '{value1}'")
+        self.assertEqual(result.return_value, 0)
+
+        result = self.run_cli(cmd_env, sub_cmd + f"ls -v")
+        self.assertTrue(result.out_contains_both(key1, value1))
+        self.assertTrue(result.out_contains_both(key1, desc1))
+
+        result = self.run_cli(cmd_env, sub_cmd + f"get {key1}")
+        self.assertIn(value1, result.out())
+
+        ########
+        # update the just the value
+        value2 = "new_value"
+        result = self.run_cli(cmd_env, sub_cmd + f"set {key1} --value '{value2}'")
+        self.assertEqual(result.return_value, 0)
+
+        result = self.run_cli(cmd_env, sub_cmd + f"ls -v")
+        self.assertTrue(result.out_contains_both(key1, value2))
+        self.assertTrue(result.out_contains_both(key1, desc1))
+
+        result = self.run_cli(cmd_env, sub_cmd + f"get {key1}")
+        self.assertIn(value2, result.out())
+
+        ########
+        # update the just the description
+        desc2 = "alt description"
+        result = self.run_cli(cmd_env, sub_cmd + f"set {key1} -d '{desc2}'")
+        self.assertEqual(result.return_value, 0)
+
+        result = self.run_cli(cmd_env, sub_cmd + f"ls -v")
+        self.assertTrue(result.out_contains_both(key1, value2))
+        self.assertTrue(result.out_contains_both(key1, desc2))
+
+        result = self.run_cli(cmd_env, sub_cmd + f"get {key1}")
+        self.assertIn(value2, result.out())
+
+        ########
         # delete the parameter
         result = self.run_cli(cmd_env, sub_cmd + f"delete {key1}")
         self.assertEqual(result.return_value, 0)
+
+        # make sure it is gone
+        result = self.run_cli(cmd_env, sub_cmd + "list --values --secrets")
+        self.assertEqual(result.return_value, 0)
+        self.assertTrue(result.out_contains_value(empty_msg))
+
+        # idempotent
+        result = self.run_cli(cmd_env, sub_cmd + f"delete {key1}")
+        self.assertEqual(result.return_value, 0)
+        self.assertIn(f"Failed to remove parameter '{key1}'", result.out())
 
         # make sure it is gone
         result = self.run_cli(cmd_env, sub_cmd + "list --values --secrets")
@@ -99,7 +151,7 @@ my_param,cRaZy value,default,this is just a test description
         value1 = "super-SENSITIVE-vAluE"
         desc1 = "my secret value"
         result = self.run_cli(cmd_env,
-                              sub_cmd + f"set {key1} --secret true --value \"{value1}\" --desc \"{desc1}\"")
+                              sub_cmd + f"set {key1} --secret true --value '{value1}' --desc '{desc1}'")
         self.assertEqual(result.return_value, 0)
 
         result = self.run_cli(cmd_env, sub_cmd + f"ls -v")
@@ -142,9 +194,67 @@ Name,Value,Source,Description
 my_param,super-SENSITIVE-vAluE,default,my secret value
 """)
 
+        # get the parameter
+        result = self.run_cli(cmd_env, sub_cmd + f"get {key1}")
+        self.assertEqual(result.return_value, 0)
+        self.assertIn(f"{value1}", result.out())
+
+        # idempotent -- same value
+        result = self.run_cli(cmd_env, sub_cmd + f"set {key1} --value '{value1}'")
+        self.assertEqual(result.return_value, 0)
+
+        result = self.run_cli(cmd_env, sub_cmd + f"ls -v -s")
+        self.assertTrue(result.out_contains_both(key1, value1))
+        self.assertTrue(result.out_contains_both(key1, desc1))
+
+        # make sure it is still a secret
+        result = self.run_cli(cmd_env, sub_cmd + f"ls -v")
+        self.assertFalse(result.out_contains_both(key1, value1))
+        self.assertTrue(result.out_contains_both(key1, desc1))
+
+        result = self.run_cli(cmd_env, sub_cmd + f"get {key1}")
+        self.assertIn(value1, result.out())
+
+        ########
+        # update the just the value
+        value2 = "new_value"
+        result = self.run_cli(cmd_env, sub_cmd + f"set {key1} --value '{value2}'")
+        self.assertEqual(result.return_value, 0)
+
+        result = self.run_cli(cmd_env, sub_cmd + f"ls -v -s")
+        self.assertTrue(result.out_contains_both(key1, value2))
+        self.assertTrue(result.out_contains_both(key1, desc1))
+
+        result = self.run_cli(cmd_env, sub_cmd + f"get {key1}")
+        self.assertIn(value2, result.out())
+
+        ########
+        # update the just the description
+        desc2 = "alt description"
+        result = self.run_cli(cmd_env, sub_cmd + f"set {key1} -d '{desc2}'")
+        self.assertEqual(result.return_value, 0)
+
+        result = self.run_cli(cmd_env, sub_cmd + f"ls -v -s")
+        self.assertTrue(result.out_contains_both(key1, value2))
+        self.assertTrue(result.out_contains_both(key1, desc2))
+
+        result = self.run_cli(cmd_env, sub_cmd + f"get {key1}")
+        self.assertIn(value2, result.out())
+
+        ########
         # delete the parameter
         result = self.run_cli(cmd_env, sub_cmd + f"delete {key1}")
         self.assertEqual(result.return_value, 0)
+
+        # make sure it is gone
+        result = self.run_cli(cmd_env, sub_cmd + "list --values --secrets")
+        self.assertEqual(result.return_value, 0)
+        self.assertTrue(result.out_contains_value(empty_msg))
+
+        # idempotent
+        result = self.run_cli(cmd_env, sub_cmd + f"delete {key1}")
+        self.assertEqual(result.return_value, 0)
+        self.assertIn(f"Failed to remove parameter '{key1}'", result.out())
 
         # make sure it is gone
         result = self.run_cli(cmd_env, sub_cmd + "list --values --secrets")
