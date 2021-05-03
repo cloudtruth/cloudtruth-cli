@@ -101,7 +101,7 @@ def update_workflow(config_file: str, template_dir: str, workflow_file: str) -> 
 
     with Path(f"{workflow_file}").open("w") as fp:
         fp.write(workflow)
-    print(f"Data from {workflow_file} should be merged into .github/workflows/ files")
+    print(f"Data from {workflow_file} should be manually merged into .github/workflows/ files")
 
 
 def update_dockerfiles(config_file: str, template_dir: str, docker_dir: str) -> None:
