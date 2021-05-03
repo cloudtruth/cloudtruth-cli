@@ -2,6 +2,7 @@ import dataclasses
 import os
 import subprocess
 import unittest
+from copy import deepcopy
 from pathlib import Path
 from typing import List, Optional, Dict
 
@@ -9,6 +10,7 @@ from typing import List, Optional, Dict
 # These are environment variable names used by the application
 CT_API_KEY = "CLOUDTRUTH_API_KEY"
 CT_ENV = "CLOUDTRUTH_ENVIRONMENT"
+CT_PROFILE = "CLOUDTRUTH_PROFILE"
 CT_PROJ = "CLOUDTRUTH_PROJECT"
 CT_URL = "CLOUDTRUTH_SERVER_URL"
 
@@ -92,7 +94,7 @@ class TestCase(unittest.TestCase):
         return str(possible / "cloudtruth ")
 
     def get_cmd_env(self):
-        return os.environ
+        return deepcopy(os.environ)
 
     def run_cli(self, env: Dict[str, str], cmd) -> Result:
         if self.log_commands:
@@ -116,26 +118,26 @@ class TestCase(unittest.TestCase):
         return result
 
     def create_project(self, cmd_env, proj_name: str) -> None:
-        result = self.run_cli(cmd_env, self._base_cmd + f"proj set {proj_name}")
+        result = self.run_cli(cmd_env, self._base_cmd + f"proj set '{proj_name}'")
         self.assertEqual(result.return_value, 0)
 
     def delete_project(self, cmd_env, proj_name: str) -> None:
-        result = self.run_cli(cmd_env, self._base_cmd + f" proj delete {proj_name} --confirm")
+        result = self.run_cli(cmd_env, self._base_cmd + f" proj delete '{proj_name}' --confirm")
         self.assertEqual(result.return_value, 0)
 
     def create_environment(self, cmd_env, env_name: str) -> None:
-        result = self.run_cli(cmd_env, self._base_cmd + f"env set {env_name}")
+        result = self.run_cli(cmd_env, self._base_cmd + f"env set '{env_name}'")
         self.assertEqual(result.return_value, 0)
 
     def delete_environment(self, cmd_env, env_name: str) -> None:
-        result = self.run_cli(cmd_env, self._base_cmd + f"env del {env_name} --confirm")
+        result = self.run_cli(cmd_env, self._base_cmd + f"env del '{env_name}' --confirm")
         self.assertEqual(result.return_value, 0)
 
     def set_param(self, cmd_env, proj: str, name: str, value: str, secret: bool = False):
-        result = self.run_cli(cmd_env, self._base_cmd + f"--project {proj} param set {name} --value {value} --secret {str(secret).lower()}")
+        result = self.run_cli(cmd_env, self._base_cmd + f"--project '{proj}' param set '{name}' --value '{value}' --secret '{str(secret).lower()}'")
         self.assertEqual(result.return_value, 0)
 
     def delete_param(self, cmd_env, proj: str, name: str):
-        result = self.run_cli(cmd_env, self._base_cmd + f"--project {proj} param delete {name}")
+        result = self.run_cli(cmd_env, self._base_cmd + f"--project '{proj}' param delete '{name}'")
         self.assertEqual(result.return_value, 0)
 
