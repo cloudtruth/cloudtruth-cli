@@ -57,6 +57,7 @@ jobs:
 
     env:
       CLOUDTRUTH_API_KEY: ${{ secrets.CI_ACCT_READWRITE_CT_API_KEY }}
+      JOB_ID: ${{ job.id }}
 
     strategy:
       fail-fast: false
@@ -84,8 +85,7 @@ jobs:
       - run: cargo build
       - run: cargo test
       - name: Integration Test
-        env:
-          JOB_ID: ${{ job.id }}
         run: |
+          echo "JOB_ID: $JOB_ID"
           cd tests/pytest
           python3 live_test.py --log-commands --job-id "$JOB_ID"
