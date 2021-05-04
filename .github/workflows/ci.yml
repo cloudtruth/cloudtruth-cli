@@ -88,7 +88,7 @@ jobs:
       - run: cargo test
       - name: Integration Test
         env:
-          JOB_CONTEXT: ${{ toJson(jobs) }}
+          JOB_CONTEXT: ${{ toJson(job) }}
           STEP_CONTEXT: ${{ toJson(steps) }}
         run: |
           echo "JOB_CONTEXT: $JOB_CONTEXT"
