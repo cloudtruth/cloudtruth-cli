@@ -83,7 +83,8 @@ jobs:
 
       - run: cargo build
       - run: cargo test
-      - run: |
+      - name: Integration Test
+        run: |
           cd tests/pytest
-          JOB_ID=${{ job.id }}
-          python3 live_test.py --log-commands --job-id "${JOB_ID}"
+          JOB_ID=${{ job_id }}
+          python3 live_test.py --log-commands --job-id "$JOB_ID"
