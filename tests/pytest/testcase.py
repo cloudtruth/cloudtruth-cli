@@ -94,8 +94,13 @@ class TestCase(unittest.TestCase):
         if not match:
             return "cloudtruth "
 
-        # TODO: make this more accomodating of other platforms
-        return str(possible / "cloudtruth ")
+        for fname in ("cloudtruth", "cloudtruth.exe"):
+            file = possible / fname
+            if file.exists():
+                return str(file) + " "
+
+        # this is a little odd... no executable found
+        return "cloudtruth "
 
     def get_cmd_env(self):
         return deepcopy(os.environ)

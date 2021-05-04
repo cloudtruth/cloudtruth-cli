@@ -51,7 +51,7 @@ def parse_args(*args) -> argparse.Namespace:
         action="store_true",
         help="Stop the test on first error"
     )
-    # TODO: add test case filtering
+    # TODO: Rick Porter 5/21 - add test case filtering
     return parser.parse_args(*args)
 
 

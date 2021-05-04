@@ -1,4 +1,4 @@
-from testcase import CT_URL
+from testcase import CT_URL, DEFAULT_SERVER_URL
 from testcase import TestCase
 
 
@@ -79,7 +79,7 @@ class TestRun(TestCase):
 
         # make sure we have something that normally gets removed
         if CT_URL not in cmd_env:
-            cmd_env[CT_URL] = "https://api.cloudtruth.com/graphql"
+            cmd_env[CT_URL] = DEFAULT_SERVER_URL
         self.create_project(cmd_env, proj_name)
 
         result = self.run_cli(cmd_env, sub_cmd + print_env)

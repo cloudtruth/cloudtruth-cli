@@ -5,9 +5,9 @@ from testcase import DEFAULT_PROJ_NAME, DEFAULT_ENV_NAME
 class TestEnvironments(TestCase):
     def test_environment_basic(self):
         # verify `env_name` does not yet exist
-        base_cmd = self.get_cli_base_cmd()  # TODO: add other args here??
+        base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
-        env_name = "test-env-name" #  TODO: make unique by datetime? 
+        env_name = "test-env-name"
         sub_cmd = base_cmd + "environments "
         result = self.run_cli(cmd_env, sub_cmd + "ls -v")
         self.assertEqual(result.return_value, 0)
