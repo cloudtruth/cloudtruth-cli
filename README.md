@@ -46,6 +46,9 @@ profiles:
   another_profile:
     source_profile: default
     api_key: <Another personal access token>
+    description: Profile for different user
+    # project: <something other than default?>
+    # environment: <something other than default>
 ```
 
 Note that you can have multiple named profiles in your configuration, allowing you to maintain multiple sets of configuration fields in the configuration file.
@@ -59,12 +62,15 @@ If the `--profile` argument is not supplied, the profile named _default_ will be
 
 ### Environment-based Configuration
 
-The CloudTruth CLI utility maps all environment variables with the `CT_` followed by a configuration name to the same settings as would be available in the configuration file format.
+The CloudTruth CLI utility maps all environment variables with the `CLOUDTRUTH_` followed by a configuration name to the same settings as would be available in the configuration file format.
 If a configuration file is found, the configuration values from the environment will be merged with and take precedence over any values from the configuration file.
 
 The available configuration options are:
 
-`$CT_API_KEY` -> Your personal access token
+* `$CLOUDTRUTH_API_KEY` -> Your personal access token
+* `$CLOUDTRUTH_PROFILE` -> Your profile (which can contain API key, project, and environment)
+* `$CLOUDTRUTH_PROJECT` -> Your "default" CloudTruth project
+* `$CLOUDTRUTH_ENVIRONMENT` -> Your "default" CloudTruth environment
 
 
 ### Argument-base Configuration
@@ -112,81 +118,3 @@ To change the target environment, you can supply the global `--env` flag:
 
 `cloudtruth --env production parameters get my_param`
 
-
-Development
------------
-
-The CloudTruth CLI tool is open source.
-You are free to build it yourself, fork it as you see fit, or propose changes via the GitHub Pull Request mechanism.
-
-### Building
-
-The CloudTruth CLI tool is written in Rust, using the Rust 2018 edition.
-While we don't actively pick the latest Rust features to use, we also haven't guaranteed it will build with older versions of Rust either.
-If you have difficulties building, please check to see if a newer Rust will work.
-Our CI configuration indicates which version we're using at the moment.
-
-To build the application, check out the source code and then run:
-
-`cargo build --release`
-
-### Developing
-
-This project uses [rusty-hook](https://github.com/swellaby/rusty-hook) to help ensure commits pass 
-tests and conform to the project's code style.
-These checks are run automatically as a git pre-commit hook to help cut down on "fix formatting" or 
-"address linter" commits.
-You do not need to explicitly write your own git pre-commit hook &mdash; rusty-hook will take care 
-of that for you the first time you build the project.
-The pre-commit checks use `shellcheck` to check the `install.sh`.  You can run `make prerequisites` 
-to install `shellcheck`.
-
-#### Tests
-
-The tests can be run with either:
-
-```
-cargo test
-make test
-```
-
-If you run into test failures, try this remedy:
-
-- unset CHARGEBEE_API_KEY
-- `cargo test`
-
-#### Formatting
-
-The project uses rustfmt to maintain consistency with the prevailing formatting standard.
-It can be invoked with:
-
-`cargo fmt`
-
-#### Linting
-
-The project uses Clippy to catch potentially problematic code patterns and ensure a consistent approach to solving problems.
-It can be invoked with either of the following:
-
-```
-cargo clippy
-make lint
-```
-
-### Debugging
-
-This project makes use of the semi-standard Rust [log crate](https://crates.io/crates/log) to provide runtime logging.
-In order to see the log, you can set the `RUST_LOG` environment value to a [standard log level value](https://docs.rs/log/0.4.14/log/enum.Level.html).
-Notably, our HTTP client library will emit a lot of helpful information about the request & response cycle at the _trace_ level.
-
-### Testing Artifact Generation
-
-Generation of build artifacts is done using a GitHub Actions workflow and in many cases cannot be done in a local
-development environment.  To test changes to the artifact output, you can follow this workflow:
-
-1. Make your code changes and push to a branch.
-2. Create a tag for your branch and push following SemVer rules, for example _0.1.3-pre_.
-3. This creates a draft release and you can check the results in the Actions tab.
-   a. The GitHub actions install on several platforms, and verify the `cloudtruth` command can
-      fetch a small set of data using the ci@cloudtruth.com account.
-4. You can delete the draft release and the artifacts after you are done, then submit a pull request
-   to get your changes into the _master_ branch.
