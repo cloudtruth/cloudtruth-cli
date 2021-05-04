@@ -76,3 +76,73 @@ class TestTopLevelArgs(TestCase):
                 result = self.run_cli(cmd_env, base_cmd + alias)
                 self.assertEqual(result.return_value, 0)
                 self.assertIn(f"No '{subcmd}' sub-command executed", result.err())
+
+    def test_resolution(self):
+        base_cmd = self.get_cli_base_cmd()
+        cmd_env = self.get_cmd_env()
+        proj_name = "test-unknown-proj"
+        env_name = "test-env-unknown"
+        checked_commands = ["param ls -v", "templates ls -v", "run -i none -c printenv"]
+        unchecked_commands = ["config ls -v", "proj ls -v", "env ls -v", "completions bash"]
+        missing_proj = f"The '{proj_name}' project could not be found in your account."
+        missing_env = f"The '{env_name}' environment could not be found in your account."
+
+        # ensure not present
+        result = self.run_cli(cmd_env, base_cmd + "proj ls")
+        self.assertNotIn(proj_name, result.out())
+        result = self.run_cli(cmd_env, base_cmd + "env ls")
+        self.assertNotIn(env_name, result.out())
+
+        ##############
+        # Neither present
+        eco_system = f"--project '{proj_name}' --env '{env_name}' "
+        for cmd in checked_commands:
+            result = self.run_cli(cmd_env, base_cmd + eco_system + cmd)
+            self.assertNotEqual(result.return_value, 0)
+            self.assertIn(missing_proj, result.err())
+            self.assertIn(missing_env, result.err())
+
+        for cmd in unchecked_commands:
+            result = self.run_cli(cmd_env, base_cmd + eco_system + cmd)
+            self.assertEqual(result.return_value, 0)
+            self.assertNotIn(missing_proj, result.err())
+            self.assertNotIn(missing_env, result.err())
+
+        ##############
+        # Project present, missing environment
+        self.create_project(cmd_env, proj_name)
+        for cmd in checked_commands:
+            result = self.run_cli(cmd_env, base_cmd + eco_system + cmd)
+            self.assertNotEqual(result.return_value, 0)
+            self.assertNotIn(missing_proj, result.err())
+            self.assertIn(missing_env, result.err())
+
+        ##############
+        # Environment present, missing project
+        self.delete_project(cmd_env, proj_name)
+        self.create_environment(cmd_env, env_name)
+        for cmd in checked_commands:
+            result = self.run_cli(cmd_env, base_cmd + eco_system + cmd)
+            self.assertNotEqual(result.return_value, 0)
+            self.assertIn(missing_proj, result.err())
+            self.assertNotIn(missing_env, result.err())
+
+        ##############
+        # Both present
+        self.create_project(cmd_env, proj_name)
+        self.create_environment(cmd_env, env_name)
+        for cmd in checked_commands:
+            result = self.run_cli(cmd_env, base_cmd + eco_system + cmd)
+            self.assertEqual(result.return_value, 0)
+            self.assertNotIn(missing_proj, result.err())
+            self.assertNotIn(missing_env, result.err())
+
+        for cmd in unchecked_commands:
+            result = self.run_cli(cmd_env, base_cmd + eco_system + cmd)
+            self.assertEqual(result.return_value, 0)
+            self.assertNotIn(missing_proj, result.err())
+            self.assertNotIn(missing_env, result.err())
+
+        # cleanup
+        self.delete_project(cmd_env, proj_name)
+        self.delete_environment(cmd_env, env_name)
