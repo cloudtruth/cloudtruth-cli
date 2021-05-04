@@ -84,7 +84,8 @@ jobs:
       - run: cargo build
       - run: cargo test
       - name: Integration Test
+        env:
+          JOB_ID: ${{ job.id }}
         run: |
           cd tests/pytest
-          JOB_ID=${{ my_job }}
           python3 live_test.py --log-commands --job-id "$JOB_ID"
