@@ -1,5 +1,6 @@
 import dataclasses
 import os
+import shlex
 import subprocess
 import unittest
 from copy import deepcopy
@@ -77,7 +78,28 @@ class TestCase(unittest.TestCase):
         self.log_commands = int(os.environ.get(CT_TEST_LOG_COMMANDS, "0"))
         self.log_output = int(os.environ.get(CT_TEST_LOG_OUTPUT, "0"))
         self.job_id = os.environ.get(CT_TEST_JOB_ID, "")
+        self._projects = None
+        self._environments = None
         super().__init__(*args, **kwargs)
+
+    def setUp(self) -> None:
+        # start each test with empty sets for projects and environments
+        self._projects = set()
+        self._environments = set()
+        super().setUp()
+
+    def tearDown(self) -> None:
+        # tear down any possibly lingering projects -- they should have been deleted
+        for proj in self._projects:
+            cmd = self._base_cmd + f"proj del {proj} --confirm"
+            subprocess.run(cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+        # tear down any possibly lingering environments -- they should have been deleted
+        for env in self._environments:
+            cmd = self._base_cmd + f"env del {env} --confirm"
+            subprocess.run(cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+        super().tearDown()
 
     def make_name(self, name: str) -> str:
         """
@@ -128,6 +150,27 @@ class TestCase(unittest.TestCase):
     def run_cli(self, env: Dict[str, str], cmd) -> Result:
         if self.log_commands:
             print(cmd)
+
+        def _next_part(arg_list: List, key: str) -> str:
+            """Simple function to walk the 'arg_list' and find the item after the 'key'"""
+            for index, value in enumerate(arg_list):
+                if value == key:
+                    return arg_list[index + 1]
+            return None
+
+        # split the command args into something we can work with
+        args = shlex.split(cmd)
+        if "set" in args:
+            # if we're using any of our 'environments' aliases
+            if set(args) & set(["environments", "environment", "envs", "env", "e"]):
+                env_name = _next_part(args, "set")
+                if env_name:
+                    self._environments.add(env_name)
+            # if we're using any of our 'projects' aliases
+            elif set(args) & set(["projects", "project", "proj"]):
+                proj_name = _next_part(args, "set")
+                if proj_name:
+                    self._projects.add(proj_name)
 
         process = subprocess.run(
             cmd, env=env, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
