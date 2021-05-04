@@ -67,10 +67,10 @@ If a configuration file is found, the configuration values from the environment 
 
 The available configuration options are:
 
-`$CLOUDTRUTH_API_KEY` -> Your personal access token
-`$CLOUDTRUTH_PROFILE` -> Your profile (which can contain API key, project, and environment)
-`$CLOUDTRUTH_PROJECT` -> Your "default" CloudTruth project
-`$CLOUDTRUTH_ENVIRONMENT` -> Your "default" CloudTruth environment
+* `$CLOUDTRUTH_API_KEY` -> Your personal access token
+* `$CLOUDTRUTH_PROFILE` -> Your profile (which can contain API key, project, and environment)
+* `$CLOUDTRUTH_PROJECT` -> Your "default" CloudTruth project
+* `$CLOUDTRUTH_ENVIRONMENT` -> Your "default" CloudTruth environment
 
 
 ### Argument-base Configuration
