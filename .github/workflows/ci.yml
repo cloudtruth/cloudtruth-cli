@@ -55,6 +55,9 @@ jobs:
     name: Test
     runs-on: ${{ matrix.os }}
 
+    env:
+      CLOUDTRUTH_API_KEY: ${{ secrets.CI_ACCT_READWRITE_CT_API_KEY }}
+
     strategy:
       fail-fast: false
       matrix:
@@ -80,3 +83,7 @@ jobs:
 
       - run: cargo build
       - run: cargo test
+      - run: |
+          cd tests/pytest
+          JOB_ID=${{ jobs.job_id }}
+          python3 live_test.py --log-commands --job-id "${JOB_ID}"
