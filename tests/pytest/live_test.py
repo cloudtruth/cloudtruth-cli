@@ -6,7 +6,7 @@ import traceback
 import unittest
 
 from testcase import CT_API_KEY, CT_URL
-from testcase import CT_TEST_LOG_COMMANDS, CT_TEST_LOG_OUTPUT
+from testcase import CT_TEST_JOB_ID, CT_TEST_LOG_COMMANDS, CT_TEST_LOG_OUTPUT
 from testcase import DEFAULT_SERVER_URL
 
 
@@ -67,6 +67,12 @@ def parse_args(*args) -> argparse.Namespace:
         action="store_true",
         help="Print the output to stdout."
     )
+    parser.add_argument(
+        "--job-id",
+        type=str,
+        dest="job_id",
+        help="Job Identifier to use as a suffix on project and environment names"
+    )
     # TODO: Rick Porter 5/21 - add test case filtering
     return parser.parse_args(*args)
 
@@ -106,6 +112,8 @@ def live_test(*args):
         env[CT_API_KEY] = args.api_key
     env[CT_TEST_LOG_COMMANDS] = str(int(args.log_commands))
     env[CT_TEST_LOG_OUTPUT] = str(int(args.log_output))
+    if args.job_id:
+        env[CT_TEST_JOB_ID] = args.job_id
 
     test_directory = '.'
     suite = unittest.TestLoader().discover(test_directory, pattern=args.file_filter)

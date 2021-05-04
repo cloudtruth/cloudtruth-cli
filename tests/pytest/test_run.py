@@ -7,7 +7,7 @@ class TestRun(TestCase):
     def test_run_inheritance_env_only(self):
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
-        proj_name = "run-env-proj"
+        proj_name = self.make_name("run-env-proj")
         param_name = "SOME_PARAM_NAME"
         env_value = "env_value"
 
@@ -32,9 +32,9 @@ class TestRun(TestCase):
     def test_run_inheritance_coordination(self):
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
-        proj_name = "run-inherit-proj"
+        proj_name = self.make_name("run-inherit-proj")
         param_name = "SOME_PARAM_NAME"
-        env_value = "env_value"
+        env_value = self.make_name("env_value")
         ct_value="ct_value"
         env_str = f"{param_name}={env_value}"
         ct_str = f"{param_name}={ct_value}"
@@ -73,7 +73,7 @@ class TestRun(TestCase):
     def test_run_permissive(self):
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
-        proj_name = "run-permissive-proj"
+        proj_name = self.make_name("run-permissive-proj")
         sub_cmd = base_cmd + f"--project {proj_name} run "
         print_env = " -- printenv"
 

@@ -22,6 +22,7 @@ AUTO_DESCRIPTION = "Automated testing via `live_test`"
 
 CT_TEST_LOG_COMMANDS = "CT_LIVE_TEST_LOG_COMMANDS"
 CT_TEST_LOG_OUTPUT = "CT_LIVE_TEST_LOG_OUTPUT"
+CT_TEST_JOB_ID = "CT_LIVE_TEST_JOB_ID"
 
 
 @dataclasses.dataclass
@@ -72,19 +73,35 @@ class TestCase(unittest.TestCase):
     This extends the unittest.TestCase to add some basic functions
     """
     def __init__(self, *args, **kwargs):
-        self._base_cmd = self.get_cli_base_cmd()
+        self._base_cmd = self._get_cli_base_cmd()
         self.log_commands = int(os.environ.get(CT_TEST_LOG_COMMANDS, "0"))
         self.log_output = int(os.environ.get(CT_TEST_LOG_OUTPUT, "0"))
+        self.job_id = os.environ.get(CT_TEST_JOB_ID, "")
         super().__init__(*args, **kwargs)
+
+    def make_name(self, name: str) -> str:
+        """
+        Adds the JOB_ID to the name, so multiple tests can run simultaneously.
+        """
+        if not self.job_id:
+            return name
+        return name + "-" + self.job_id
 
     def get_cli_base_cmd(self) -> str:
         """
         Finds where to get the executable image from.
         The result includes an extra space, and whatever other args may be necessary (e.g. api_key)
         """
-        if os.environ.get("CI"):
-            return "cloudtruth "
+        if not self._base_cmd:
+            self._base_cmd = self._get_cli_base_cmd()
+        return self._base_cmd
 
+    def _get_cli_base_cmd(self) -> str:
+        """
+        This is a separate function that does not reference the `self._base_cmd' so it can be called
+        during __init__(). It returns the path to the executable (presumably) with the trailing
+        space to allow for easier consumption.
+        """
         # walk back up looking for top of projects, and goto `target/debug/cloudtruth`
         curr = Path(__file__)
         subdir = Path("target") / "debug"
@@ -102,7 +119,7 @@ class TestCase(unittest.TestCase):
             if file.exists():
                 return str(file) + " "
 
-        # this is a little odd... no executable found
+        # this is a little odd... no executable found in "local" directories
         return "cloudtruth "
 
     def get_cmd_env(self):
@@ -135,7 +152,7 @@ class TestCase(unittest.TestCase):
         self.assertEqual(result.return_value, 0)
 
     def delete_project(self, cmd_env, proj_name: str) -> None:
-        result = self.run_cli(cmd_env, self._base_cmd + f" proj delete '{proj_name}' --confirm")
+        result = self.run_cli(cmd_env, self._base_cmd + f"proj delete '{proj_name}' --confirm")
         self.assertEqual(result.return_value, 0)
 
     def create_environment(self, cmd_env, env_name: str) -> None:

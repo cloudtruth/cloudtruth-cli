@@ -7,7 +7,7 @@ class TestEnvironments(TestCase):
         # verify `env_name` does not yet exist
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
-        env_name = "test-env-name"
+        env_name = self.make_name("test-env-name")
         sub_cmd = base_cmd + "environments "
         result = self.run_cli(cmd_env, sub_cmd + "ls -v")
         self.assertEqual(result.return_value, 0)
