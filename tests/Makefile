@@ -2,9 +2,9 @@
 # Copyright (C) 2021 CloudTruth, Inc.
 #
 
-.PHONY: clean prerequisites workflow-draft workflow-prerelease targets
+.PHONY: clean help live_test prerequisites workflow-draft workflow-prerelease targets
 
-all: workflow-draft workflow-prerelease
+all: workflow-draft workflow-prerelease live_test
 
 clean:
 	rm -f docker/
@@ -20,9 +20,15 @@ workflow-draft:
 workflow-prerelease:
 	python3 gen.py -w prerelease
 
+live_test:
+	python3 pytest/live_test.py
+
+help: targets
+
 targets:
 	@echo ""
 	@echo "clean         - remove generated docker files"
+	@echo "live_test     - run tests against live service"
 	@echo "prerequisites - install prerequisites"
 	@echo "workflow-*    - build workflow files and docker files from templates"
 	@echo ""

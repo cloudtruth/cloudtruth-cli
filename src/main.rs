@@ -552,7 +552,7 @@ fn process_parameters_command(
         let proj_name = resolved.proj_name.clone();
         let mut value = subcmd_args.value_of("value").map(|v| v.to_string());
         let mut description = subcmd_args.value_of("description").map(|v| v.to_string());
-        let mut secret: Option<bool> = match subcmd_args.value_of("secrets") {
+        let mut secret: Option<bool> = match subcmd_args.value_of("secret") {
             Some("false") => Some(false),
             Some("true") => Some(true),
             _ => None,
@@ -623,22 +623,25 @@ fn process_parameters_command(
         let org_id = resolved.org_id.as_deref();
         let env_name = resolved.env_name.as_deref();
         let proj_name = resolved.proj_name.clone();
-        let removed_id = parameters.delete_parameter(org_id, proj_name.clone(), env_name, key)?;
-        if removed_id.is_some() {
-            println!(
-                "Successfully removed parameter '{}' from project '{}' for environment '{}'.",
-                key,
-                proj_name.unwrap_or_else(|| DEFAULT_PROJ_NAME.to_string()),
-                env_name.unwrap_or(DEFAULT_ENV_NAME)
-            );
-        } else {
-            println!(
-                "Failed to remove parameter '{}' from project '{}' for environment '{}'.",
-                key,
-                proj_name.unwrap_or_else(|| DEFAULT_PROJ_NAME.to_string()),
-                env_name.unwrap_or(DEFAULT_ENV_NAME)
-            );
-        }
+        let result = parameters.delete_parameter(org_id, proj_name.clone(), env_name, key);
+        let _ = match result {
+            Ok(Some(_)) => {
+                println!(
+                    "Successfully removed parameter '{}' from project '{}' for environment '{}'.",
+                    key,
+                    proj_name.unwrap_or_else(|| DEFAULT_PROJ_NAME.to_string()),
+                    env_name.unwrap_or(DEFAULT_ENV_NAME)
+                );
+            }
+            _ => {
+                println!(
+                    "Failed to remove parameter '{}' from project '{}' for environment '{}'.",
+                    key,
+                    proj_name.unwrap_or_else(|| DEFAULT_PROJ_NAME.to_string()),
+                    env_name.unwrap_or(DEFAULT_ENV_NAME)
+                );
+            }
+        };
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("export") {
         let org_id = resolved.org_id.as_deref();
         let proj_name = resolved.proj_name.clone();

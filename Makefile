@@ -4,7 +4,7 @@
 
 os_name := $(shell uname -s)
 
-.PHONY: image shell all cargo clean lint precommit prerequisites test lint targets
+.PHONY: help image shell all cargo clean lint precommit prerequisites test lint targets
 
 ### Commands for outside the container
 
@@ -46,6 +46,8 @@ endif
 test:
 	cargo test
 	make -C tests
+
+help: targets
 
 targets:
 	@echo ""

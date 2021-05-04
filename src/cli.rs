@@ -175,8 +175,8 @@ pub fn build_cli() -> App<'static, 'static> {
                             .short("p")
                             .long("prompt")
                             .help("Set the value using unecho'd terminal"))
-                        .arg(Arg::with_name("secrets")
-                            .long("secrets")
+                        .arg(Arg::with_name("secret")
+                            .long("secret")
                             .takes_value(true)
                             .possible_values(&["true", "false"])
                             .help("Flags whether this is a secret parameter"))
@@ -249,7 +249,7 @@ pub fn build_cli() -> App<'static, 'static> {
         )
         .subcommand(
             SubCommand::with_name("projects")
-                .visible_aliases(&["projects", "proj"])
+                .visible_aliases(&["project", "proj"])
                 .about("Work with CloudTruth projects")
                 .subcommands(vec![
                     SubCommand::with_name("delete")
