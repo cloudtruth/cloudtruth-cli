@@ -46,6 +46,9 @@ profiles:
   another_profile:
     source_profile: default
     api_key: <Another personal access token>
+    description: Profile for different user
+    # project: <something other than default?>
+    # environment: <something other than default>
 ```
 
 Note that you can have multiple named profiles in your configuration, allowing you to maintain multiple sets of configuration fields in the configuration file.
@@ -59,12 +62,15 @@ If the `--profile` argument is not supplied, the profile named _default_ will be
 
 ### Environment-based Configuration
 
-The CloudTruth CLI utility maps all environment variables with the `CT_` followed by a configuration name to the same settings as would be available in the configuration file format.
+The CloudTruth CLI utility maps all environment variables with the `CLOUDTRUTH_` followed by a configuration name to the same settings as would be available in the configuration file format.
 If a configuration file is found, the configuration values from the environment will be merged with and take precedence over any values from the configuration file.
 
 The available configuration options are:
 
-`$CT_API_KEY` -> Your personal access token
+`$CLOUDTRUTH_API_KEY` -> Your personal access token
+`$CLOUDTRUTH_PROFILE` -> Your profile (which can contain API key, project, and environment)
+`$CLOUDTRUTH_PROJECT` -> Your "default" CloudTruth project
+`$CLOUDTRUTH_ENVIRONMENT` -> Your "default" CloudTruth environment
 
 
 ### Argument-base Configuration
