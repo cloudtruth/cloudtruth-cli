@@ -1,6 +1,8 @@
 import argparse
 import os
+import pdb
 import sys
+import traceback
 import unittest
 
 from testcase import CT_API_KEY, CT_URL, DEFAULT_SERVER_URL
@@ -44,12 +46,39 @@ def parse_args(*args) -> argparse.Namespace:
         default="test_*.py",
         help="Filter the files run using the specified pattern"
     )
+    parser.add_argument(
+        "--failfast",
+        action="store_true",
+        help="Stop the test on first error"
+    )
     # TODO: add test case filtering
     return parser.parse_args(*args)
 
 
+def debugTestRunner(enable_debug: bool, verbosity: int, failfast: bool):
+    """Overload the TextTestRunner to conditionally drop into pdb on an error/failure."""
+    class DebugTestResult(unittest.TextTestResult):
+        def addError(self, test, err):
+            # called before tearDown()
+            if enable_debug:
+                traceback.print_exception(*err)
+                pdb.post_mortem(err[2])
+            super(DebugTestResult, self).addError(test, err)
+
+        def addFailure(self, test, err):
+            if enable_debug:
+                traceback.print_exception(*err)
+                pdb.post_mortem(err[2])
+            super(DebugTestResult, self).addFailure(test, err)
+
+    return unittest.TextTestRunner(
+        verbosity=verbosity,
+        failfast=failfast,
+        resultclass=DebugTestResult,
+    )
+
+
 def live_test(*args):
-    result = 0
     args = parse_args(*args)
     if args.url is None:
         args.url = os.environ(CT_API_KEY)
@@ -63,10 +92,10 @@ def live_test(*args):
     test_directory = '.'
     suite = unittest.TestLoader().discover(test_directory, pattern=args.file_filter)
 
-    if args.debug:
-        suite.debug()
-    else:
-        unittest.TextTestRunner(verbosity=args.verbosity).run(suite)
+    runner = debugTestRunner(
+        enable_debug=args.debug, verbosity=args.verbosity, failfast=args.failfast
+    )
+    runner.run(suite)
 
 
 if __name__ == "__main__":
