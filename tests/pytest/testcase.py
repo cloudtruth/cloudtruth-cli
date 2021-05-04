@@ -20,6 +20,9 @@ DEFAULT_ENV_NAME = "default"
 
 AUTO_DESCRIPTION = "Automated testing via `live_test`"
 
+CT_TEST_LOG_COMMANDS = "CT_LIVE_TEST_LOG_COMMANDS"
+CT_TEST_LOG_OUTPUT = "CT_LIVE_TEST_LOG_OUTPUT"
+
 
 @dataclasses.dataclass
 class Result:
@@ -70,8 +73,8 @@ class TestCase(unittest.TestCase):
     """
     def __init__(self, *args, **kwargs):
         self._base_cmd = self.get_cli_base_cmd()
-        self.log_commands = 1
-        self.log_output = 0
+        self.log_commands = int(os.environ.get(CT_TEST_LOG_COMMANDS, "0"))
+        self.log_output = int(os.environ.get(CT_TEST_LOG_OUTPUT, "0"))
         super().__init__(*args, **kwargs)
 
     def get_cli_base_cmd(self) -> str:

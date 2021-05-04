@@ -5,7 +5,9 @@ import sys
 import traceback
 import unittest
 
-from testcase import CT_API_KEY, CT_URL, DEFAULT_SERVER_URL
+from testcase import CT_API_KEY, CT_URL
+from testcase import CT_TEST_LOG_COMMANDS, CT_TEST_LOG_OUTPUT
+from testcase import DEFAULT_SERVER_URL
 
 
 def parse_args(*args) -> argparse.Namespace:
@@ -51,6 +53,20 @@ def parse_args(*args) -> argparse.Namespace:
         action="store_true",
         help="Stop the test on first error"
     )
+    parser.add_argument(
+        "-lc",
+        "--log-commands",
+        dest="log_commands",
+        action="store_true",
+        help="Print the commands to stdout."
+    )
+    parser.add_argument(
+        "-lo",
+        "--log-output",
+        dest="log_output",
+        action="store_true",
+        help="Print the output to stdout."
+    )
     # TODO: Rick Porter 5/21 - add test case filtering
     return parser.parse_args(*args)
 
@@ -83,11 +99,13 @@ def live_test(*args):
     if args.url is None:
         args.url = os.environ(CT_API_KEY)
 
-    env = os.environ.copy()
+    env = os.environ
     if args.url:
         env[CT_URL] = args.url
     if args.api_key:
         env[CT_API_KEY] = args.api_key
+    env[CT_TEST_LOG_COMMANDS] = str(int(args.log_commands))
+    env[CT_TEST_LOG_OUTPUT] = str(int(args.log_output))
 
     test_directory = '.'
     suite = unittest.TestLoader().discover(test_directory, pattern=args.file_filter)
