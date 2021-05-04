@@ -70,7 +70,7 @@ make test
 
 If you run into test failures, try this remedy:
 
-- unset `CHARGEBEE_API_KEY`
+- unset `CLOUDTRUTH_API_KEY`
 - `cargo test`
 
 ### Integration Tests
