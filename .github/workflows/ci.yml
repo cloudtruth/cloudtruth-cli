@@ -85,5 +85,5 @@ jobs:
       - run: cargo test
       - run: |
           cd tests/pytest
-          JOB_ID=${{ jobs.job_id }}
+          JOB_ID=${{ job.id }}
           python3 live_test.py --log-commands --job-id "${JOB_ID}"
