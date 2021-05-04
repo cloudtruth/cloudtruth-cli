@@ -59,7 +59,6 @@ jobs:
       CLOUDTRUTH_API_KEY: ${{ secrets.CI_ACCT_READWRITE_CT_API_KEY }}
       # JOB_ID: ${{ job.id }}
       JOB_ID: "fake-jobid"
-      JOB_CONTEXT: ${{ toJson(jobs) }}
       GH_CONTEXT: ${{ toJson(github) }}
 
     strategy:
@@ -88,9 +87,13 @@ jobs:
       - run: cargo build
       - run: cargo test
       - name: Integration Test
+        env:
+          JOB_CONTEXT: ${{ toJson(jobs) }}
+          STEP_CONTEXT: ${{ toJson(steps) }}
         run: |
           echo "JOB_CONTEXT: $JOB_CONTEXT"
           echo "GH_CONTEXT: $GH_CONTEXT"
+          echo "STEP_CONTEXT: $STEP_CONTEXT"
           echo "JOB_ID: $JOB_ID"
           cd tests/pytest
           python3 live_test.py --log-commands --job-id "$JOB_ID"
