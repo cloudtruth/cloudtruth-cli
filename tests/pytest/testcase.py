@@ -19,7 +19,7 @@ DEFAULT_SERVER_URL = "https://api.cloudtruth.com/graphql"
 DEFAULT_PROJ_NAME = "default"
 DEFAULT_ENV_NAME = "default"
 
-AUTO_DESCRIPTION = "Automated testing via `live_test`"
+AUTO_DESCRIPTION = "Automated testing via live_test"
 
 CT_TEST_LOG_COMMANDS = "CT_LIVE_TEST_LOG_COMMANDS"
 CT_TEST_LOG_OUTPUT = "CT_LIVE_TEST_LOG_OUTPUT"
