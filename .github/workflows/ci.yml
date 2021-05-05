@@ -92,8 +92,10 @@ jobs:
           STEP_CONTEXT: ${{ toJson(steps) }}
         run: |
           echo "JOB_CONTEXT: $JOB_CONTEXT"
-          echo "GH_CONTEXT: $GH_CONTEXT"
+          #echo "GH_CONTEXT: $GH_CONTEXT"
           echo "STEP_CONTEXT: $STEP_CONTEXT"
           echo "JOB_ID: $JOB_ID"
+          echo "GITHUB_RUN_ID: $GITHUB_RUN_ID"
+          echo "GITHUB_RUN_NUMBER: $GITHUB_RUN_NUMBER"
           cd tests/pytest
           python3 live_test.py --log-commands --job-id "$JOB_ID"
