@@ -147,6 +147,11 @@ class TestCase(unittest.TestCase):
     def get_cmd_env(self):
         return deepcopy(os.environ)
 
+    def get_display_env_command(self) -> str:
+        if os.name == "nt":
+            return "SET"
+        return "printenv"
+
     def run_cli(self, env: Dict[str, str], cmd) -> Result:
         # WARNING: DOS prompt does not like the single quotes, so use double
         cmd = cmd.replace("'", "\"")

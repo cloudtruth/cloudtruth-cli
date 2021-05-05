@@ -12,7 +12,7 @@ class TestRun(TestCase):
         env_value = "env_value"
 
         sub_cmd = base_cmd + f"--project {proj_name} run "
-        print_env = " -c printenv"
+        print_env = f" -c {self.get_display_env_command()}"
 
         self.create_project(cmd_env, proj_name)
 
@@ -40,7 +40,7 @@ class TestRun(TestCase):
         ct_str = f"{param_name}={ct_value}"
 
         sub_cmd = base_cmd + f"--project {proj_name} run "
-        print_env = " -- printenv"
+        print_env = f" -- {self.get_display_env_command()}"
 
         cmd_env[param_name] = env_value  # add to the run environment
         self.create_project(cmd_env, proj_name)
@@ -75,7 +75,7 @@ class TestRun(TestCase):
         cmd_env = self.get_cmd_env()
         proj_name = self.make_name("run-permissive-proj")
         sub_cmd = base_cmd + f"--project {proj_name} run "
-        print_env = " -- printenv"
+        print_env = f" -- {self.get_display_env_command()}"
 
         # make sure we have something that normally gets removed
         if CT_URL not in cmd_env:
