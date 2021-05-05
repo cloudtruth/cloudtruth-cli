@@ -112,7 +112,6 @@ def live_test(*args):
         env[CT_API_KEY] = args.api_key
     env[CT_TEST_LOG_COMMANDS] = str(int(args.log_commands))
     env[CT_TEST_LOG_OUTPUT] = str(int(args.log_output))
-    env["NO_COLOR"] = "true"  # avoids possible issues on Windows
     if args.job_id:
         env[CT_TEST_JOB_ID] = args.job_id
 
