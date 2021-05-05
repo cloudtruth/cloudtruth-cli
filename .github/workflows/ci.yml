@@ -98,4 +98,4 @@ jobs:
         if: runner.os == 'Windows'
         run: |
           cd tests\pytest
-          py live_test.py --log-commands --log-output --job-id "$ENV:OS-$ENV:GITHUB_RUN_NUMBER"
+          py live_test.py --job-id "$ENV:OS-$ENV:GITHUB_RUN_NUMBER"
