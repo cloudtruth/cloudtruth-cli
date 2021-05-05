@@ -83,10 +83,19 @@ jobs:
 
       - run: cargo build
       - run: cargo test
-      - name: Integration Test
+
+      - name: Integration Test - non-Windows
         env:
           OS: ${{ runner.os }}
         if: runner.os != 'Windows'
         run: |
           cd tests/pytest
           python3 live_test.py --log-commands --job-id "${OS}-${GITHUB_RUN_NUMBER}"
+
+      - name: Integration Test - Windows
+        env:
+          OS: ${{ runner.os }}
+        if: runner.os == 'Windows'
+        run: |
+          cd tests\pytest
+          py live_test.py --log-commands --job-id "$ENV:OS-$ENV:GITHUB_RUN_NUMBER"
