@@ -121,7 +121,13 @@ def live_test(*args):
     runner = debugTestRunner(
         enable_debug=args.debug, verbosity=args.verbosity, failfast=args.failfast
     )
-    runner.run(suite)
+    test_result = runner.run(suite)
+    rval = 0
+    if len(test_result.errors):
+        rval += 1
+    if len(test_result.failures):
+        rval += 2
+    return rval
 
 
 if __name__ == "__main__":
