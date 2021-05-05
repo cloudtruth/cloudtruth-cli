@@ -57,9 +57,6 @@ jobs:
 
     env:
       CLOUDTRUTH_API_KEY: ${{ secrets.CI_ACCT_READWRITE_CT_API_KEY }}
-      # JOB_ID: ${{ job.id }}
-      # JOB_ID: "fake-jobid"
-      GH_CONTEXT: ${{ toJson(github) }}
 
     strategy:
       fail-fast: false
@@ -88,21 +85,8 @@ jobs:
       - run: cargo test
       - name: Integration Test
         env:
-          JOB_CONTEXT: ${{ toJson(job) }}
-          STEP_CONTEXT: ${{ toJson(steps) }}
-          MATRIX_CONTEXT: ${{ toJson(matrix) }}
-          ENV_CONTEXT: ${{ toJson(env) }}
-          RUNNER_CONTEXT: ${{ toJson(runner) }}
+          OS: ${{ runner.os }}
+        if: runner.os != 'Windows'
         run: |
-          echo "JOB_CONTEXT: $JOB_CONTEXT"
-          #echo "JOBS_CONTEXT: $JOBS_CONTEXT"
-          #echo "GH_CONTEXT: $GH_CONTEXT"
-          echo "STEP_CONTEXT: $STEP_CONTEXT"
-          echo "MATRIX_CONTEXT: $MATRIX_CONTEXT"
-          echo "ENV_CONTEXT: $ENV_CONTEXT"
-          echo "RUNNER_CONTEXT: $RUNNER_CONTEXT"
-          echo "JOB_ID: $JOB_ID"
-          echo "GITHUB_RUN_ID: $GITHUB_RUN_ID"
-          echo "GITHUB_RUN_NUMBER: $GITHUB_RUN_NUMBER"
           cd tests/pytest
-          python3 live_test.py --log-commands --job-id "$JOB_ID"
+          python3 live_test.py --log-commands --job-id "${OS}-${GITHUB_RUN_NUMBER}"
