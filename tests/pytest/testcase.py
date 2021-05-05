@@ -91,12 +91,12 @@ class TestCase(unittest.TestCase):
     def tearDown(self) -> None:
         # tear down any possibly lingering projects -- they should have been deleted
         for proj in self._projects:
-            cmd = self._base_cmd + f"proj del {proj} --confirm"
+            cmd = self._base_cmd + f"proj del '{proj}' --confirm"
             subprocess.run(cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
         # tear down any possibly lingering environments -- they should have been deleted
         for env in self._environments:
-            cmd = self._base_cmd + f"env del {env} --confirm"
+            cmd = self._base_cmd + f"env del '{env}' --confirm"
             subprocess.run(cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
         super().tearDown()
