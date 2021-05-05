@@ -1,4 +1,4 @@
-mod env;
+pub(crate) mod env;
 mod file;
 mod profiles;
 
@@ -51,8 +51,11 @@ pub const CT_SERVER_URL: &str = "CLOUDTRUTH_SERVER_URL";
 // Environment variable name used to set the environment name.
 pub const CT_ENVIRONMENT: &str = "CLOUDTRUTH_ENVIRONMENT";
 
-// Environment variable name use to set the project name.
+// Environment variable name used to set the project name.
 pub const CT_PROJECT: &str = "CLOUDTRUTH_PROJECT";
+
+// Environment variable name used to set the profile name.
+pub const CT_PROFILE: &str = "CLOUDTRUTH_PROFILE";
 
 // List of variables to remove to make a clean environment.
 #[allow(dead_code)]

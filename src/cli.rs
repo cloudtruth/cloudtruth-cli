@@ -48,7 +48,6 @@ pub fn build_cli() -> App<'static, 'static> {
                 .long("profile")
                 .help("The configuration profile from the application configuration file to use")
                 .takes_value(true)
-                .default_value("default")
         )
         .arg(
             Arg::with_name("project")

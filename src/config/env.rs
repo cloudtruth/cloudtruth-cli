@@ -2,7 +2,7 @@ use crate::config::profiles::Profile;
 use crate::config::{CT_API_KEY, CT_ENVIRONMENT, CT_OLD_API_KEY, CT_PROJECT, CT_SERVER_URL};
 use std::env;
 
-pub(crate) struct ConfigEnv {}
+pub struct ConfigEnv {}
 
 impl ConfigEnv {
     pub(crate) fn load_profile() -> Profile {
