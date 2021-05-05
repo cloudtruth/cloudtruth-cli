@@ -82,14 +82,14 @@ def debugTestRunner(enable_debug: bool, verbosity: int, failfast: bool):
     class DebugTestResult(unittest.TextTestResult):
         def addError(self, test, err):
             # called before tearDown()
+            traceback.print_exception(*err)
             if enable_debug:
-                traceback.print_exception(*err)
                 pdb.post_mortem(err[2])
             super(DebugTestResult, self).addError(test, err)
 
         def addFailure(self, test, err):
+            traceback.print_exception(*err)
             if enable_debug:
-                traceback.print_exception(*err)
                 pdb.post_mortem(err[2])
             super(DebugTestResult, self).addFailure(test, err)
 
