@@ -58,8 +58,9 @@ jobs:
     env:
       CLOUDTRUTH_API_KEY: ${{ secrets.CI_ACCT_READWRITE_CT_API_KEY }}
       # JOB_ID: ${{ job.id }}
-      JOB_ID: "fake-jobid"
+      # JOB_ID: "fake-jobid"
       GH_CONTEXT: ${{ toJson(github) }}
+      JOBS_CONTEXT: ${{ toJson(jobs) }}
 
     strategy:
       fail-fast: false
@@ -92,6 +93,7 @@ jobs:
           STEP_CONTEXT: ${{ toJson(steps) }}
         run: |
           echo "JOB_CONTEXT: $JOB_CONTEXT"
+          echo "JOBS_CONTEXT: $JOBS_CONTEXT"
           #echo "GH_CONTEXT: $GH_CONTEXT"
           echo "STEP_CONTEXT: $STEP_CONTEXT"
           echo "JOB_ID: $JOB_ID"
