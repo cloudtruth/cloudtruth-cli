@@ -185,8 +185,8 @@ class TestCase(unittest.TestCase):
         )
         result = Result(
             return_value=process.returncode,
-            stdout=process.stdout.decode("utf-8").replace("\r", "").split("\n"),
-            stderr=process.stderr.decode("utf-8").replace("\r", "").split("\n"),
+            stdout=process.stdout.decode("us-ascii", errors="ignore").replace("\r", "").split("\n"),
+            stderr=process.stderr.decode("us-ascii", errors="ignore").replace("\r", "").split("\n"),
         )
 
         if self.log_output:
