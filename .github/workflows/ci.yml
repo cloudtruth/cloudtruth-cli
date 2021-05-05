@@ -60,7 +60,6 @@ jobs:
       # JOB_ID: ${{ job.id }}
       # JOB_ID: "fake-jobid"
       GH_CONTEXT: ${{ toJson(github) }}
-      JOBS_CONTEXT: ${{ toJson(jobs) }}
 
     strategy:
       fail-fast: false
@@ -91,11 +90,17 @@ jobs:
         env:
           JOB_CONTEXT: ${{ toJson(job) }}
           STEP_CONTEXT: ${{ toJson(steps) }}
+          MATRIX_CONTEXT: ${{ toJson(matrix) }}
+          ENV_CONTEXT: ${{ toJson(env) }}
+          RUNNER_CONTEXT: ${{ toJson(runner) }}
         run: |
           echo "JOB_CONTEXT: $JOB_CONTEXT"
-          echo "JOBS_CONTEXT: $JOBS_CONTEXT"
+          #echo "JOBS_CONTEXT: $JOBS_CONTEXT"
           #echo "GH_CONTEXT: $GH_CONTEXT"
           echo "STEP_CONTEXT: $STEP_CONTEXT"
+          echo "MATRIX_CONTEXT: $MATRIX_CONTEXT"
+          echo "ENV_CONTEXT: $ENV_CONTEXT"
+          echo "RUNNER_CONTEXT: $RUNNER_CONTEXT"
           echo "JOB_ID: $JOB_ID"
           echo "GITHUB_RUN_ID: $GITHUB_RUN_ID"
           echo "GITHUB_RUN_NUMBER: $GITHUB_RUN_NUMBER"
