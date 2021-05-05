@@ -148,7 +148,7 @@ class TestCase(unittest.TestCase):
         return deepcopy(os.environ)
 
     def run_cli(self, env: Dict[str, str], cmd) -> Result:
-        # FIXME: this is experimental to try to sneak past Windows
+        # WARNING: DOS prompt does not like the single quotes, so use double
         cmd = cmd.replace("'", "\"")
 
         if self.log_commands:
@@ -180,8 +180,8 @@ class TestCase(unittest.TestCase):
         )
         result = Result(
             return_value=process.returncode,
-            stdout=process.stdout.decode("utf-8").split("\n"),
-            stderr=process.stderr.decode("utf-8").split("\n"),
+            stdout=process.stdout.decode("utf-8").replace("\r", "").split("\n"),
+            stderr=process.stderr.decode("utf-8").replace("\r", "").split("\n"),
         )
 
         if self.log_output:
