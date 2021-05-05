@@ -268,7 +268,7 @@ my_param,super-SENSITIVE-vAluE,default,my secret value
         # delete the project
         self.delete_project(cmd_env, proj_name)
 
-    def test_project_separation(self):
+    def test_parameter_project_separation(self):
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
 
