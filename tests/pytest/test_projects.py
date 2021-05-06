@@ -63,7 +63,7 @@ class TestProjects(TestCase):
         self.assertEqual(result.return_value, 0)
         self.assertTrue(result.err_contains_value(f"Project '{proj_name}' does not exist"))
 
-    def test_cannot_delete_default(self):
+    def test_project_cannot_delete_default(self):
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
         # set the proj/env to 'default', and do not expose secrets

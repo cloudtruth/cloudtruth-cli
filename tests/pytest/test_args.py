@@ -60,7 +60,7 @@ class TestTopLevelArgs(TestCase):
         self.delete_environment(cmd_env, env1)
         self.delete_environment(cmd_env, env2)
 
-    def test_missing_subcommand(self):
+    def test_arg_missing_subcommand(self):
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
 
@@ -77,7 +77,7 @@ class TestTopLevelArgs(TestCase):
                 self.assertEqual(result.return_value, 0)
                 self.assertIn(f"No '{subcmd}' sub-command executed", result.err())
 
-    def test_resolution(self):
+    def test_arg_resolution(self):
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
         proj_name = self.make_name("test-unknown-proj")
