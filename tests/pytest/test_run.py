@@ -1,3 +1,6 @@
+import os
+from pathlib import Path
+
 from testcase import CT_URL, DEFAULT_SERVER_URL
 from testcase import TestCase
 
@@ -90,4 +93,24 @@ class TestRun(TestCase):
         self.assertEqual(result.return_value, 0)
         self.assertIn(CT_URL, result.out())
 
+        self.delete_project(cmd_env, proj_name)
+
+    def test_run_arg_with_spaces(self):
+        base_cmd = self.get_cli_base_cmd()
+        cmd_env = self.get_cmd_env()
+        proj_name = self.make_name("run-spaces")
+        printenv = self.get_display_env_command()
+
+        self.create_project(cmd_env, proj_name)
+
+        # This hits the case where the command may (or may not run)
+        filename = "temp.txt"
+        cmd = base_cmd + f"--project {proj_name} run  -i none -- '{printenv} > {filename}'"
+
+        result = self.run_cli(cmd_env, cmd)
+        self.assertIn("command contains spaces, and may fail", result.err())
+
+        # cleanup
+        file = Path(os.getcwd()) / f"{filename}"
+        file.unlink(missing_ok=True)  # may not have created the file, but just in case we did
         self.delete_project(cmd_env, proj_name)
