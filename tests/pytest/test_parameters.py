@@ -326,7 +326,7 @@ SNA=fu
         self.delete_project(cmd_env, proj_name1)
         self.delete_project(cmd_env, proj_name2)
 
-    def test_environment_separation(self):
+    def test_parameter_environment_separation(self):
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
 
