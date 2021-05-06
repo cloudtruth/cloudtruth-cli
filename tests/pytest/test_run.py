@@ -105,7 +105,7 @@ class TestRun(TestCase):
 
         # This hits the case where the command may (or may not run)
         filename = "temp.txt"
-        cmd = base_cmd + f"--project {proj_name} run  -i none -- '{printenv} > {filename}'"
+        cmd = base_cmd + f"--project {proj_name} run  -i none -- '{printenv} > {filename}' {printenv}"
 
         result = self.run_cli(cmd_env, cmd)
         self.assertIn("command contains spaces, and may fail", result.err())
