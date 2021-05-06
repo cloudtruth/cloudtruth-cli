@@ -202,7 +202,10 @@ fn process_run_command(
             warn_user("command contains spaces, and may fail.".to_string())?;
             let mut reformed = format!("{} {}", command, arguments.join(" "));
             reformed = reformed.replace("$", "\\$");
-            println!("Try using 'cloudtruth run command \"{}\"'", reformed.trim());
+            println!(
+                "Try using 'cloudtruth run --command \"{}\"'",
+                reformed.trim()
+            );
         }
     } else {
         warn_missing_subcommand("run")?;
