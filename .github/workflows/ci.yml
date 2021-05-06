@@ -75,7 +75,7 @@ jobs:
         id: rust
         uses: actions-rs/toolchain@v1
         with:
-          toolchain: $RUST_VERSION
+          toolchain: "${RUST_VERSION}"
           profile: minimal
           override: true
           components: rustfmt, clippy
