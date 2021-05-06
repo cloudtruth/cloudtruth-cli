@@ -442,18 +442,18 @@ fn process_environment_command(
                     "Environment '{}' not updated: same description",
                     env_name.unwrap()
                 ))?;
+            } else if parent_name.is_some() && parent_name.unwrap() != details.parent.as_str() {
+                error_message(format!(
+                    "Environment '{}' parent cannot be updated.",
+                    env_name.unwrap()
+                ))?;
+                process::exit(6);
             } else if description.is_none() {
                 warning_message(format!(
                     "Environment '{}' not updated: no description provided",
                     env_name.unwrap()
                 ))?;
             } else {
-                if parent_name.is_some() && parent_name.unwrap() != details.parent.as_str() {
-                    warning_message(format!(
-                        "Environment '{}' parent cannot be updated.",
-                        env_name.unwrap()
-                    ))?;
-                }
                 environments.update_environment(details.id, description)?;
                 println!("Updated environment '{}'", env_name.unwrap());
             }

@@ -79,3 +79,58 @@ class TestEnvironments(TestCase):
         # make sure we get the same parameter list
         after = self.run_cli(cmd_env, param_cmd)
         self.assertEqual(before, after)
+
+    def test_environment_parents(self):
+        base_cmd = self.get_cli_base_cmd()
+        cmd_env = self.get_cmd_env()
+
+        env_name1 = "cloud"
+        env_name2 = "truth"
+        env_name3 = "cli"
+        env_name4 = "gui"
+
+        self.create_environment(cmd_env, env_name1)
+        self.create_environment(cmd_env, env_name2, parent=env_name1)
+        self.create_environment(cmd_env, env_name3, parent=env_name2)
+        self.create_environment(cmd_env, env_name4, parent=env_name2)
+
+        # Use csv to validate, since the names may be variable
+        result = self.run_cli(cmd_env, base_cmd + "env ls -v -f csv")
+        self.assertEqual(result.return_value, 0)
+        self.assertIn(f"{env_name1},default,", result.out())
+        self.assertIn(f"{env_name2},{env_name1},", result.out())
+        self.assertIn(f"{env_name3},{env_name2},", result.out())
+        self.assertIn(f"{env_name4},{env_name2},", result.out())
+
+        # attempt to delete something that is used elsewhere
+        result = self.run_cli(cmd_env, base_cmd + f"environment delete '{env_name2}' --confirm")
+        self.assertNotEqual(result.return_value, 0)
+        self.assertIn("base Environments with children cannot be deleted", result.err())
+
+        # attempt to create without an existing parent
+        env_name5 = "general"
+        env_name6 = "truthiness"
+        result = self.run_cli(cmd_env, base_cmd + f"environments set '{env_name5}' --parent '{env_name6}'")
+        self.assertNotEqual(result.return_value, 0)
+        self.assertIn(f"No parent environment '{env_name6}' found", result.err())
+
+        # attempt to update parent -- not allowed
+        result = self.run_cli(cmd_env, base_cmd + f"environment set '{env_name4}' --parent '{env_name1}'")
+        self.assertNotEqual(result.return_value, 0)
+        self.assertIn(f"Environment '{env_name4}' parent cannot be updated", result.err())
+
+        # setting to same parent is ignored
+        new_desc = "My new description"
+        result = self.run_cli(cmd_env, base_cmd + f"environment set '{env_name4}' --parent '{env_name2}' --desc '{new_desc}'")
+        self.assertEqual(result.return_value, 0)
+
+        # make sure description was updated, yet parent remains
+        result = self.run_cli(cmd_env, base_cmd + "env ls -v -f csv")
+        self.assertIn(f"{env_name4},{env_name2},{new_desc}", result.out())
+
+        # cleanup -- need to unwind in order
+        self.delete_environment(cmd_env, env_name4)
+        self.delete_environment(cmd_env, env_name3)
+        self.delete_environment(cmd_env, env_name2)
+        self.delete_environment(cmd_env, env_name1)
+
