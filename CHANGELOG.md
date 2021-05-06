@@ -1,3 +1,17 @@
+# 0.5.0 - 2021-05-07
+
+* Breaking changes:
+  * Parameters: `set` must use `--secret` instead of `--secrets` (`-s` option unchanged).
+  * Environments: `set` will error out if trying to change the parent (not just warn and succeed).
+* Added installer scripts for Posix shells, and Windows PowerShell.
+* Can use `CLOUDTRUTH_PROFILE` to set the configuration profile, in addition to `--profile` option.
+* Projects: sub-command can also be accessed with `project`
+* Parameters: `list` uses consistent message for empty parameter list
+* Moved development information out of `README.md` and into `DEVELOPMENT.md`
+* Changed release process to test installer scripts.
+* Changed CI process to run the integration tests (using `tests/pytest/live_test.py`)
+* Updated to Rust version 1.52.0.
+
 # 0.4.1 - 2021-04-30
 
 * Bug fix: use the `--env <env>` argument.
