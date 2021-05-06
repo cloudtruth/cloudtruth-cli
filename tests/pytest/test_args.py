@@ -10,11 +10,11 @@ class TestTopLevelArgs(TestCase):
     def test_arg_priority(self):
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
-        printenv = " run -i none -- printenv"
-        proj1 = "test-arg-project-1"
-        proj2 = "test-arg-proj2"
-        env1 = "dev a"
-        env2 = "dev B"
+        printenv = f" run -i none -- {self.get_display_env_command()}"
+        proj1 = self.make_name("test-arg-project-1")
+        proj2 = self.make_name("test-arg-proj2")
+        env1 = self.make_name("dev a")
+        env2 = self.make_name("dev B")
 
         self.create_project(cmd_env, proj1)
         self.create_project(cmd_env, proj2)
@@ -80,9 +80,13 @@ class TestTopLevelArgs(TestCase):
     def test_resolution(self):
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
-        proj_name = "test-unknown-proj"
-        env_name = "test-env-unknown"
-        checked_commands = ["param ls -v", "templates ls -v", "run -i none -c printenv"]
+        proj_name = self.make_name("test-unknown-proj")
+        env_name = self.make_name("test-env-unknown")
+        checked_commands = [
+            "param ls -v",
+            "templates ls -v",
+            f"run -i none -c {self.get_display_env_command()}",
+        ]
         unchecked_commands = ["config ls -v", "proj ls -v", "env ls -v", "completions bash"]
         missing_proj = f"The '{proj_name}' project could not be found in your account."
         missing_env = f"The '{env_name}' environment could not be found in your account."

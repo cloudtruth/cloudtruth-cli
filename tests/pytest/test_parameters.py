@@ -11,7 +11,7 @@ class TestParameters(TestCase):
         cmd_env = self.get_cmd_env()
 
         # add a new project
-        proj_name = "test-param-basic"
+        proj_name = self.make_name("test-param-basic")
         empty_msg = self._empty_message(proj_name)
         self.create_project(cmd_env, proj_name)
 
@@ -129,7 +129,7 @@ my_param,cRaZy value,default,this is just a test description
         cmd_env = self.get_cmd_env()
 
         # add a new project
-        proj_name = "test-param-secret"
+        proj_name = self.make_name("test-param-secret")
         empty_msg = self._empty_message(proj_name)
         self.create_project(cmd_env, proj_name)
 
@@ -272,8 +272,8 @@ my_param,super-SENSITIVE-vAluE,default,my secret value
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
 
-        proj_name1 = "proj-sep1"
-        proj_name2 = "proj-sep2"
+        proj_name1 = self.make_name("proj-sep1")
+        proj_name2 = self.make_name("proj-sep2")
 
         self.create_project(cmd_env, proj_name1)
         self.create_project(cmd_env, proj_name2)
@@ -331,7 +331,7 @@ SNA=fu
         cmd_env = self.get_cmd_env()
 
         # add a new project
-        proj_name = "test-param-export"
+        proj_name = self.make_name("test-param-export")
         empty_msg = self._empty_message(proj_name)
         self.create_project(cmd_env, proj_name)
 
@@ -449,7 +449,7 @@ FIRST_PARAM=posix_compliant_value
         cmd_env = self.get_cmd_env()
 
         # add a new project
-        proj_name = "test-secret-switch"
+        proj_name = self.make_name("test-secret-switch")
         empty_msg = self._empty_message(proj_name)
         self.create_project(cmd_env, proj_name)
 

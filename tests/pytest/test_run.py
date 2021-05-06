@@ -7,12 +7,12 @@ class TestRun(TestCase):
     def test_run_inheritance_env_only(self):
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
-        proj_name = "run-env-proj"
+        proj_name = self.make_name("run-env-proj")
         param_name = "SOME_PARAM_NAME"
         env_value = "env_value"
 
         sub_cmd = base_cmd + f"--project {proj_name} run "
-        print_env = " -c printenv"
+        print_env = f" -c {self.get_display_env_command()}"
 
         self.create_project(cmd_env, proj_name)
 
@@ -32,15 +32,15 @@ class TestRun(TestCase):
     def test_run_inheritance_coordination(self):
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
-        proj_name = "run-inherit-proj"
+        proj_name = self.make_name("run-inherit-proj")
         param_name = "SOME_PARAM_NAME"
-        env_value = "env_value"
+        env_value = self.make_name("env_value")
         ct_value="ct_value"
         env_str = f"{param_name}={env_value}"
         ct_str = f"{param_name}={ct_value}"
 
         sub_cmd = base_cmd + f"--project {proj_name} run "
-        print_env = " -- printenv"
+        print_env = f" -- {self.get_display_env_command()}"
 
         cmd_env[param_name] = env_value  # add to the run environment
         self.create_project(cmd_env, proj_name)
@@ -73,9 +73,9 @@ class TestRun(TestCase):
     def test_run_permissive(self):
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
-        proj_name = "run-permissive-proj"
+        proj_name = self.make_name("run-permissive-proj")
         sub_cmd = base_cmd + f"--project {proj_name} run "
-        print_env = " -- printenv"
+        print_env = f" -- {self.get_display_env_command()}"
 
         # make sure we have something that normally gets removed
         if CT_URL not in cmd_env:

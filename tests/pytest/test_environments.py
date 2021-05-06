@@ -7,7 +7,7 @@ class TestEnvironments(TestCase):
         # verify `env_name` does not yet exist
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
-        env_name = "test-env-name"
+        env_name = self.make_name("test-env-name")
         sub_cmd = base_cmd + "environments "
         result = self.run_cli(cmd_env, sub_cmd + "ls -v")
         self.assertEqual(result.return_value, 0)
@@ -66,13 +66,13 @@ class TestEnvironments(TestCase):
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
         # set the proj/env to 'default', and do not expose secrets
-        param_cmd = base_cmd + f"--project {DEFAULT_PROJ_NAME} --env {DEFAULT_ENV_NAME} param ls -v"
+        param_cmd = base_cmd + f"--project '{DEFAULT_PROJ_NAME}' --env '{DEFAULT_ENV_NAME}' param ls -v"
 
         # get an original snapshot (do not expose secrets)
         before = self.run_cli(cmd_env, param_cmd)
 
         # attempt to delete the default project and see failure
-        result = self.run_cli(cmd_env, base_cmd + f"environment delete {DEFAULT_ENV_NAME} --confirm")
+        result = self.run_cli(cmd_env, base_cmd + f"environment delete '{DEFAULT_ENV_NAME}' --confirm")
         self.assertNotEqual(result.return_value, 0)
         self.assertIn("Cannot delete the default environment", result.err())
 

@@ -7,7 +7,7 @@ class TestProjects(TestCase):
         # verify `proj_name` does not yet exist
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
-        proj_name = "test-proj-name"
+        proj_name = self.make_name("test-proj-name")
         sub_cmd = base_cmd + "projects "
         result = self.run_cli(cmd_env, sub_cmd + "ls -v")
         self.assertEqual(result.return_value, 0)
