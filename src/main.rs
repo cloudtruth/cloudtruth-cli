@@ -199,10 +199,13 @@ fn process_run_command(
         arguments = subcmd_args.values_of_lossy("arguments").unwrap();
         command = arguments.remove(0);
         if command.contains(' ') {
-            warn_user("command contains spaces, and will likely fail.".to_string())?;
+            warn_user("command contains spaces, and may fail.".to_string())?;
             let mut reformed = format!("{} {}", command, arguments.join(" "));
             reformed = reformed.replace("$", "\\$");
-            println!("Try using 'cloudtruth run command \"{}\"'", reformed.trim());
+            println!(
+                "Try using 'cloudtruth run --command \"{}\"'",
+                reformed.trim()
+            );
         }
     } else {
         warn_missing_subcommand("run")?;
