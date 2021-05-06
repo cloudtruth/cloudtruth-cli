@@ -11,7 +11,7 @@ on:
 env:
   CI: true
   RUST_BACKTRACE: 1
-  # This needs to match the RUST_VERSION in ci.yml.
+  # This needs to match the RUST_VERSION in create-draft-release.yml.
   RUST_VERSION: 1.51.0
 
 jobs:

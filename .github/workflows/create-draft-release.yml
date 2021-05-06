@@ -56,7 +56,7 @@ env:
   CI: true
   PROJECT_NAME: cloudtruth
   RUST_BACKTRACE: 1
-  # This needs to match the RUST_VERSION in create-draft-release.yml.
+  # This needs to match the RUST_VERSION in ci.yml.
   RUST_VERISON: 1.51.0
 
 jobs:
