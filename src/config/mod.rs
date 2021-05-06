@@ -111,11 +111,8 @@ impl From<Profile> for Config {
 impl Config {
     fn config_file() -> Option<PathBuf> {
         // Load settings from the configuration file if it exists.
-        if let Some(project_dirs) = ProjectDirs::from("com", ORGANIZATION_NAME, APPLICATION_NAME) {
-            Some(project_dirs.config_dir().join(CONFIG_FILE_NAME))
-        } else {
-            None
-        }
+        ProjectDirs::from("com", ORGANIZATION_NAME, APPLICATION_NAME)
+            .map(|project_dirs| project_dirs.config_dir().join(CONFIG_FILE_NAME))
     }
 
     fn create_config() -> Result<()> {
