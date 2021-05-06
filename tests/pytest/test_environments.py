@@ -84,10 +84,10 @@ class TestEnvironments(TestCase):
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
 
-        env_name1 = "cloud"
-        env_name2 = "truth"
-        env_name3 = "cli"
-        env_name4 = "gui"
+        env_name1 = self.make_name("cloud")
+        env_name2 = self.make_name("truth")
+        env_name3 = self.make_name("cli")
+        env_name4 = self.make_name("gui")
 
         self.create_environment(cmd_env, env_name1)
         self.create_environment(cmd_env, env_name2, parent=env_name1)
@@ -108,8 +108,8 @@ class TestEnvironments(TestCase):
         self.assertIn("base Environments with children cannot be deleted", result.err())
 
         # attempt to create without an existing parent
-        env_name5 = "general"
-        env_name6 = "truthiness"
+        env_name5 = self.make_name("general")
+        env_name6 = self.make_name("truthiness")
         result = self.run_cli(cmd_env, base_cmd + f"environments set '{env_name5}' --parent '{env_name6}'")
         self.assertNotEqual(result.return_value, 0)
         self.assertIn(f"No parent environment '{env_name6}' found", result.err())

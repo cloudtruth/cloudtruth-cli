@@ -330,13 +330,13 @@ SNA=fu
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
 
-        proj_name = "baseball" # self.make_name("test-prj-env-sep")
+        proj_name = self.make_name("baseball")
         self.create_project(cmd_env, proj_name)
 
         env_name1 = DEFAULT_ENV_NAME  # no job-id variation
-        env_name2 = "test-mets" # self.make_name("test-env-foo")
+        env_name2 = self.make_name("test-mets")
         self.create_environment(cmd_env, env_name2)
-        env_name3 = "test-redsox" # self.make_name("test-env-bar")
+        env_name3 = self.make_name("test-redsox")
         self.create_environment(cmd_env, env_name3, parent=env_name2)
 
         var1_name = "base"
