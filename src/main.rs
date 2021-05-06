@@ -19,7 +19,8 @@ mod projects;
 mod subprocess;
 mod templates;
 
-use crate::config::{Config, DEFAULT_ENV_NAME, DEFAULT_PROJ_NAME};
+use crate::config::env::ConfigEnv;
+use crate::config::{Config, CT_PROFILE, DEFAULT_ENV_NAME, DEFAULT_PROJ_NAME};
 use crate::environments::Environments;
 use crate::graphql::GraphQLError;
 use crate::parameters::export_parameters_query::{
@@ -744,10 +745,13 @@ fn main() -> Result<()> {
     color_eyre::install()?;
     env_logger::init();
 
+    let profile_env = ConfigEnv::get_override(CT_PROFILE);
     let matches = cli::build_cli().get_matches();
 
     let api_key = matches.value_of("api_key");
-    let profile_name = matches.value_of("profile");
+    let profile_name = matches
+        .value_of("profile")
+        .or_else(|| profile_env.as_deref());
     let env_name = matches.value_of("env");
     let proj_name = matches.value_of("project");
 
