@@ -1,4 +1,4 @@
-from testcase import TestCase
+from testcase import TestCase, DEFAULT_ENV_NAME
 
 
 class TestParameters(TestCase):
@@ -325,6 +325,114 @@ SNA=fu
 
         self.delete_project(cmd_env, proj_name1)
         self.delete_project(cmd_env, proj_name2)
+
+    def test_environment_separation(self):
+        base_cmd = self.get_cli_base_cmd()
+        cmd_env = self.get_cmd_env()
+
+        proj_name = "baseball" # self.make_name("test-prj-env-sep")
+        self.create_project(cmd_env, proj_name)
+
+        env_name1 = DEFAULT_ENV_NAME  # no job-id variation
+        env_name2 = "test-mets" # self.make_name("test-env-foo")
+        self.create_environment(cmd_env, env_name2)
+        env_name3 = "test-redsox" # self.make_name("test-env-bar")
+        self.create_environment(cmd_env, env_name3, parent=env_name2)
+
+        var1_name = "base"
+        var1_value1 = "first"
+        var1_value2 = "second"
+        var1_value3 = "thrid"
+        var2_name = "pitch"
+        var2_value1 = "slider"
+        var2_value2 = "split"
+        var2_value3 = "heater"
+        self.set_param(cmd_env, proj_name, var1_name, var1_value1)
+        self.set_param(cmd_env, proj_name, var2_name, var2_value1)
+
+        proj_cmd = base_cmd + f"--project '{proj_name}' "
+        # NOTE: due to environment name in Source column, cannot do an absolute string
+        param_ls = " param ls -v -s -f csv"
+        env1_list = proj_cmd + param_ls
+        env2_list = proj_cmd + f"--env '{env_name2}'" + param_ls
+        env3_list = proj_cmd + f"--env '{env_name3}'" + param_ls
+
+        # see that values are inherited in the different environments
+        result = self.run_cli(cmd_env, env1_list)
+        self.assertIn(f"{var1_name},{var1_value1},{env_name1}", result.out())
+        self.assertIn(f"{var2_name},{var2_value1},{env_name1}", result.out())
+
+        result = self.run_cli(cmd_env, env2_list)
+        self.assertIn(f"{var1_name},{var1_value1},{env_name1}", result.out())
+        self.assertIn(f"{var2_name},{var2_value1},{env_name1}", result.out())
+
+        result = self.run_cli(cmd_env, env3_list)
+        self.assertIn(f"{var1_name},{var1_value1},{env_name1}", result.out())
+        self.assertIn(f"{var2_name},{var2_value1},{env_name1}", result.out())
+
+        # add the parameters for the second environment
+        self.set_param(cmd_env, proj_name, var1_name, var1_value2, env=env_name2)
+        self.set_param(cmd_env, proj_name, var2_name, var2_value2, True, env=env_name2)
+
+        # see that values are inherited in the different environments
+        result = self.run_cli(cmd_env, env1_list)
+        self.assertIn(f"{var1_name},{var1_value1},{env_name1}", result.out())
+        self.assertIn(f"{var2_name},{var2_value1},{env_name1}", result.out())
+
+        result = self.run_cli(cmd_env, env2_list)
+        self.assertIn(f"{var1_name},{var1_value2},{env_name2}", result.out())
+        self.assertIn(f"{var2_name},{var2_value2},{env_name2}", result.out())
+
+        result = self.run_cli(cmd_env, env3_list)
+        self.assertIn(f"{var1_name},{var1_value2},{env_name2}", result.out())
+        self.assertIn(f"{var2_name},{var2_value2},{env_name2}", result.out())
+
+        # add the parameters for the third environment
+        self.set_param(cmd_env, proj_name, var1_name, var1_value3, env=env_name3)
+        self.set_param(cmd_env, proj_name, var2_name, var2_value3, True, env=env_name3)
+
+        # see that values are inherited in the different environments
+        result = self.run_cli(cmd_env, env1_list)
+        self.assertIn(f"{var1_name},{var1_value1},{env_name1}", result.out())
+        self.assertIn(f"{var2_name},{var2_value1},{env_name1}", result.out())
+
+        result = self.run_cli(cmd_env, env2_list)
+        self.assertIn(f"{var1_name},{var1_value2},{env_name2}", result.out())
+        self.assertIn(f"{var2_name},{var2_value2},{env_name2}", result.out())
+
+        result = self.run_cli(cmd_env, env3_list)
+        self.assertIn(f"{var1_name},{var1_value3},{env_name3}", result.out())
+        self.assertIn(f"{var2_name},{var2_value3},{env_name3}", result.out())
+
+        docker_cmd = " param export docker -s"
+        result = self.run_cli(cmd_env, proj_cmd + docker_cmd)
+        self.assertEqual(result.return_value, 0)
+        self.assertEqual(result.out(), f"""\
+{var1_name.upper()}={var1_value1}
+{var2_name.upper()}={var2_value1}
+
+""")
+
+        result = self.run_cli(cmd_env, proj_cmd + f"--env {env_name2}" + docker_cmd)
+        self.assertEqual(result.return_value, 0)
+        self.assertEqual(result.out(), f"""\
+{var1_name.upper()}={var1_value2}
+{var2_name.upper()}={var2_value2}
+
+""")
+
+        result = self.run_cli(cmd_env, proj_cmd + f"--env {env_name3}" + docker_cmd)
+        self.assertEqual(result.return_value, 0)
+        self.assertEqual(result.out(), f"""\
+{var1_name.upper()}={var1_value3}
+{var2_name.upper()}={var2_value3}
+
+""")
+
+        # cleanup -- environments must be in reverse order
+        self.delete_project(cmd_env, proj_name)
+        self.delete_environment(cmd_env, env_name3)
+        self.delete_environment(cmd_env, env_name2)
 
     def test_parameter_export(self):
         base_cmd = self.get_cli_base_cmd()
