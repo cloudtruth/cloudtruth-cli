@@ -3,8 +3,11 @@
 #
 
 os_name := $(shell uname -s)
+rust_intended := 1.52.0
+rust_installed := $(shell rustc -V | cut -d' ' -f2)
+rust_bad_version := $(shell grep "RUST_VERSION:" .github/workflows/*.yml | grep -v "$(rust_intended)")
 
-.PHONY: help image shell all cargo clean lint precommit prerequisites test lint targets
+.PHONY: help image shell all cargo clean lint precommit prerequisites test lint targets version_check
 
 ### Commands for outside the container
 
@@ -34,9 +37,14 @@ lint:
 	cargo clippy --all-features -- -D warnings
 	shellcheck install.sh
 
-precommit: cargo test lint
+precommit: version_check cargo test lint
 
 prerequisites:
+ifneq ($(rust_intended),$(rust_installed))
+	rustup upgrade $(rust_intended)
+else
+	@echo "Already running rustc version: $(rust_intended)"
+endif
 ifeq ($(os_name),Darwin)
 	brew install shellcheck;
 else
@@ -46,6 +54,17 @@ endif
 test:
 	cargo test
 	make -C tests
+
+version_check:
+ifneq ($(rust_intended),$(rust_installed))
+	@echo "Rustc compiler version expected $(rust_intended), got $(rust_installed)"
+	false
+endif
+ifneq ($(rust_bad_version),)
+	@echo "GitHub action uses bad rustc version: $(rust_bad_version)"
+	false
+endif
+	@echo "Using rustc version: $(rust_intended)"
 
 help: targets
 
@@ -59,4 +78,5 @@ targets:
 	@echo "prerequisites - install prerequisites"
 	@echo "shell         - drop into the cloudtruth/cli docker container for development"
 	@echo "test          - runs tests (no linting)"
+	@echo "version_check - checks rustc versions"
 	@echo ""
