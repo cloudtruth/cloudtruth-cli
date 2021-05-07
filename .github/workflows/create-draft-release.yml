@@ -112,11 +112,11 @@ jobs:
         # the UI.
         build: [linux, linux-arm, linux-aarch64, macos, win-msvc]
         include:
-          - { build: linux         , os: ubuntu-18.04 , target: x86_64-unknown-linux-musl   , use-cross: true  , toolchain: "${{ env.RUST_VERSION }}" }
-          - { build: linux-arm     , os: ubuntu-18.04 , target: arm-unknown-linux-gnueabihf , use-cross: true  , toolchain: "${{ env.RUST_VERSION }}" }
-          - { build: linux-aarch64 , os: ubuntu-18.04 , target: aarch64-unknown-linux-gnu   , use-cross: true  , toolchain: "${{ env.RUST_VERSION }}" }
-          - { build: macos         , os: macos-latest , target: x86_64-apple-darwin         , use-cross: false , toolchain: "${{ env.RUST_VERSION }}" }
-          - { build: win-msvc      , os: windows-2019 , target: x86_64-pc-windows-msvc      , use-cross: false , toolchain: "${{ env.RUST_VERSION }}" }
+          - { build: linux         , os: ubuntu-18.04 , target: x86_64-unknown-linux-musl   , use-cross: true  }
+          - { build: linux-arm     , os: ubuntu-18.04 , target: arm-unknown-linux-gnueabihf , use-cross: true  }
+          - { build: linux-aarch64 , os: ubuntu-18.04 , target: aarch64-unknown-linux-gnu   , use-cross: true  }
+          - { build: macos         , os: macos-latest , target: x86_64-apple-darwin         , use-cross: false }
+          - { build: win-msvc      , os: windows-2019 , target: x86_64-pc-windows-msvc      , use-cross: false }
 
     steps:
       - uses: actions/checkout@v2
@@ -185,7 +185,7 @@ jobs:
         id: rust
         uses: actions-rs/toolchain@v1
         with:
-          toolchain: ${{ matrix.toolchain }}
+          toolchain: ${{ env.RUST_VERSION }}
           profile: minimal
           override: true
           target: ${{ matrix.target }}
