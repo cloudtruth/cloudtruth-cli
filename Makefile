@@ -7,7 +7,7 @@ rust_intended := 1.52.0
 rust_installed := $(shell rustc -V | cut -d' ' -f2)
 rust_bad_version := $(shell grep "RUST_VERSION:" .github/workflows/*.yml | grep -v "$(rust_intended)")
 
-.PHONY: help image shell all cargo clean lint precommit prerequisites test lint targets version_check
+.PHONY: help image shell all cargo clean lint precommit precommit_test prerequisites test lint targets version_check
 
 ### Commands for outside the container
 
@@ -37,7 +37,7 @@ lint:
 	cargo clippy --all-features -- -D warnings
 	shellcheck install.sh
 
-precommit: version_check cargo test lint
+precommit: version_check cargo precommit_test lint
 
 prerequisites:
 ifneq ($(rust_intended),$(rust_installed))
@@ -46,13 +46,16 @@ else
 	@echo "Already running rustc version: $(rust_intended)"
 endif
 ifeq ($(os_name),Darwin)
-	brew install shellcheck;
+	brew install shellcheck libyaml;
 else
-	sudo apt-get install shellcheck;
+	sudo apt-get install shellcheck python-yaml;
 endif
+	make -C tests $@
 
-test:
+precommit_test:
 	cargo test
+
+test: precommit_test
 	make -C tests
 
 version_check:
@@ -68,13 +71,14 @@ help: targets
 
 targets:
 	@echo ""
-	@echo "cargo         - builds rust target"
-	@echo "clean         - clean out build targets"
-	@echo "image         - make the cloudtruth/cli docker container for development"
-	@echo "lint          - checks for formatting issues"
-	@echo "precommit     - build rust targets, tests, and lints the files"
-	@echo "prerequisites - install prerequisites"
-	@echo "shell         - drop into the cloudtruth/cli docker container for development"
-	@echo "test          - runs tests (no linting)"
-	@echo "version_check - checks rustc versions"
+	@echo "cargo          - builds rust target"
+	@echo "clean          - clean out build targets"
+	@echo "image          - make the cloudtruth/cli docker container for development"
+	@echo "lint           - checks for formatting issues"
+	@echo "precommit      - build rust targets, tests, and lints the files"
+	@echo "precommit_test - runs "
+	@echo "prerequisites  - install prerequisites"
+	@echo "shell          - drop into the cloudtruth/cli docker container for development"
+	@echo "test           - runs precommit tests, as well as integration tests"
+	@echo "version_check  - checks rustc versions"
 	@echo ""
