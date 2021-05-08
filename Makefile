@@ -57,12 +57,10 @@ test:
 
 version_check:
 ifneq ($(rust_intended),$(rust_installed))
-	@echo "Rustc compiler version expected $(rust_intended), got $(rust_installed)"
-	false
+	$(error "Rustc compiler version expected $(rust_intended), got $(rust_installed)")
 endif
 ifneq ($(rust_bad_version),)
-	@echo "GitHub action uses bad rustc version: $(rust_bad_version)"
-	false
+	$(error "GitHub action uses bad rustc version: $(rust_bad_version)")
 endif
 	@echo "Using rustc version: $(rust_intended)"
 
