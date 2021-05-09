@@ -129,6 +129,12 @@ jobs:
           name: artifacts
           path: artifacts
 
+      - name: Cargo and tag version alignment
+        run: |
+          CARGO_VERSION=$(grep "version = " Cargo.toml | head -n 1 | cut -d'"' -f2)
+          TAG_VERSION=${GITHUB_REF#refs/tags/}
+          echo "${TAG_VERSION}" | grep "${CARGO_VERSION}"
+
       - name: Install prerequisites
         shell: bash
         run: |
