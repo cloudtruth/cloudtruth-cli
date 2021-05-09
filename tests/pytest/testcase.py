@@ -125,7 +125,7 @@ class TestCase(unittest.TestCase):
         space to allow for easier consumption.
         """
         # walk back up looking for top of projects, and goto `target/debug/cloudtruth`
-        curr = Path(__file__)
+        curr = Path(__file__).absolute()
         subdir = Path("target") / "debug"
         match = False
         while not match and curr:

@@ -54,6 +54,7 @@ endif
 
 precommit_test:
 	cargo test
+	make -C tests $@
 
 test: precommit_test
 	make -C tests

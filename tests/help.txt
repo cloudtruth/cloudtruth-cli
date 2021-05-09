@@ -1,0 +1,366 @@
+cloudtruth 0.5.0
+CloudTruth <support@cloudtruth.com>
+A command-line interface to the CloudTruth configuration management service.
+
+USAGE:
+    cloudtruth [OPTIONS] <SUBCOMMAND>
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+OPTIONS:
+    -k, --api-key <api_key>    CloudTruth API key
+    -e, --env <env>            The CloudTruth environment to work with
+        --profile <profile>    The configuration profile from the application configuration file to use
+        --project <project>    The CloudTruth project to work with
+
+SUBCOMMANDS:
+    completions     Generate shell completions for this application
+    config          Configuration options for this application [aliases: configuration]
+    environments    Work with CloudTruth environments [aliases: environment, envs, env, e]
+    help            Prints this message or the help of the given subcommand(s)
+    parameters      Work with CloudTruth parameters [aliases: parameter, params, param, p]
+    projects        Work with CloudTruth projects [aliases: project, proj]
+    run             Run a shell with the parameters in place [aliases: run, r]
+    templates       Work with CloudTruth templates [aliases: template, t]
+============================================================
+cloudtruth-completions 
+Generate shell completions for this application
+
+USAGE:
+    cloudtruth completions <SHELL>
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+ARGS:
+    <SHELL>     [possible values: zsh, bash, fish, powershell, elvish]
+============================================================
+cloudtruth-config 
+Configuration options for this application
+
+USAGE:
+    cloudtruth config [SUBCOMMAND]
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+SUBCOMMANDS:
+    edit    Edit your configuration data for this application
+    help    Prints this message or the help of the given subcommand(s)
+    list    List CloudTruth profiles in the local config file [aliases: ls]
+========================================
+cloudtruth-config-edit 
+Edit your configuration data for this application
+
+USAGE:
+    cloudtruth config edit
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+========================================
+cloudtruth-config-list 
+List CloudTruth profiles in the local config file
+
+USAGE:
+    cloudtruth config list [FLAGS] [OPTIONS]
+
+FLAGS:
+    -h, --help       Prints help information
+    -s, --secrets    Display API key values
+    -v, --values     Display profile information/values
+    -V, --version    Prints version information
+
+OPTIONS:
+    -f, --format <format>    Display profile value info format [default: table]  [possible values: table, csv]
+============================================================
+cloudtruth-environments 
+Work with CloudTruth environments
+
+USAGE:
+    cloudtruth environments [SUBCOMMAND]
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+SUBCOMMANDS:
+    delete    Delete specified CloudTruth environment [aliases: del]
+    help      Prints this message or the help of the given subcommand(s)
+    list      List CloudTruth environments [aliases: ls]
+    set       Create/update a CloudTruth environment
+========================================
+cloudtruth-environments-delete 
+Delete specified CloudTruth environment
+
+USAGE:
+    cloudtruth environments delete [FLAGS] <NAME>
+
+FLAGS:
+        --confirm    Avoid confirmation prompt
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+ARGS:
+    <NAME>    Environment name
+========================================
+cloudtruth-environments-list 
+List CloudTruth environments
+
+USAGE:
+    cloudtruth environments list [FLAGS] [OPTIONS]
+
+FLAGS:
+    -h, --help       Prints help information
+    -v, --values     Display environment information/values
+    -V, --version    Prints version information
+
+OPTIONS:
+    -f, --format <format>    Format for environment values data [default: table]  [possible values: table, csv]
+========================================
+cloudtruth-environments-set 
+Create/update a CloudTruth environment
+
+USAGE:
+    cloudtruth environments set [OPTIONS] <NAME>
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+OPTIONS:
+    -d, --desc <description>    Environment's description
+    -p, --parent <parent>       Environment's parent name (only used for create)
+
+ARGS:
+    <NAME>    Environment name
+============================================================
+cloudtruth-parameters 
+Work with CloudTruth parameters
+
+USAGE:
+    cloudtruth parameters [SUBCOMMAND]
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+SUBCOMMANDS:
+    delete    Delete the parameter from the project [aliases: del]
+    export    Export selected parameters to a known output format. Exported parameters are limited to alphanumeric
+              and underscore  in key names. Formats available are: dotenv, docker, and shell.
+    get       Gets value for parameter in the selected environment
+    help      Prints this message or the help of the given subcommand(s)
+    list      List CloudTruth parameters [aliases: ls]
+    set       Set a static value in the selected project/environment for an existing parameter or creates a new one
+              if needed
+========================================
+cloudtruth-parameters-delete 
+Delete the parameter from the project
+
+USAGE:
+    cloudtruth parameters delete <KEY>
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+ARGS:
+    <KEY>    
+========================================
+cloudtruth-parameters-export 
+Export selected parameters to a known output format. Exported parameters are limited to alphanumeric and underscore  in
+key names. Formats available are: dotenv, docker, and shell.
+
+USAGE:
+    cloudtruth parameters export [FLAGS] [OPTIONS] <FORMAT>
+
+FLAGS:
+        --export     Add 'export' to each declaration
+    -h, --help       Prints help information
+    -s, --secrets    Display the secret parameter values
+    -V, --version    Prints version information
+
+OPTIONS:
+        --contains <contains>          Return parameters with keys containing search
+        --ends-with <ends_with>        Return parameters with keys ending with search
+        --starts-with <starts_with>    Return parameters starting with search
+
+ARGS:
+    <FORMAT>     [possible values: docker, dotenv, shell]
+========================================
+cloudtruth-parameters-get 
+Gets value for parameter in the selected environment
+
+USAGE:
+    cloudtruth parameters get <KEY>
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+ARGS:
+    <KEY>    
+========================================
+cloudtruth-parameters-list 
+List CloudTruth parameters
+
+USAGE:
+    cloudtruth parameters list [FLAGS] [OPTIONS]
+
+FLAGS:
+    -h, --help       Prints help information
+    -s, --secrets    Display the secret parameter values
+    -v, --values     Display parameter information/values
+    -V, --version    Prints version information
+
+OPTIONS:
+    -f, --format <format>    Format for parameter values data [default: table]  [possible values: table, csv]
+========================================
+cloudtruth-parameters-set 
+Set a static value in the selected project/environment for an existing parameter or creates a new one if needed
+
+USAGE:
+    cloudtruth parameters set [FLAGS] [OPTIONS] <KEY>
+
+FLAGS:
+    -h, --help       Prints help information
+    -p, --prompt     Set the value using unecho'd terminal
+    -V, --version    Prints version information
+
+OPTIONS:
+    -d, --desc <description>    Parameter description
+    -i, --input <input-file>    Read the value from the input file
+        --secret <secret>       Flags whether this is a secret parameter [possible values: true, false]
+    -v, --value <value>         Parameter value
+
+ARGS:
+    <KEY>    
+============================================================
+cloudtruth-projects 
+Work with CloudTruth projects
+
+USAGE:
+    cloudtruth projects [SUBCOMMAND]
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+SUBCOMMANDS:
+    delete    Delete specified CloudTruth project [aliases: del]
+    help      Prints this message or the help of the given subcommand(s)
+    list      List CloudTruth projects [aliases: ls]
+    set       Create/update a CloudTruth project
+========================================
+cloudtruth-projects-delete 
+Delete specified CloudTruth project
+
+USAGE:
+    cloudtruth projects delete [FLAGS] <NAME>
+
+FLAGS:
+        --confirm    Avoid confirmation prompt
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+ARGS:
+    <NAME>    Project name
+========================================
+cloudtruth-projects-list 
+List CloudTruth projects
+
+USAGE:
+    cloudtruth projects list [FLAGS] [OPTIONS]
+
+FLAGS:
+    -h, --help       Prints help information
+    -v, --values     Display project information/values
+    -V, --version    Prints version information
+
+OPTIONS:
+    -f, --format <format>    Format for project values data [default: table]  [possible values: table, csv]
+========================================
+cloudtruth-projects-set 
+Create/update a CloudTruth project
+
+USAGE:
+    cloudtruth projects set [OPTIONS] <NAME>
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+OPTIONS:
+    -d, --desc <description>    Project's description
+
+ARGS:
+    <NAME>    Project name
+============================================================
+cloudtruth-run 
+Run a shell with the parameters in place
+
+USAGE:
+    cloudtruth run [FLAGS] [OPTIONS] [-- <arguments>...]
+
+FLAGS:
+    -h, --help          Prints help information
+    -p, --permissive    Allow CloudTruth application variables through
+    -V, --version       Prints version information
+
+OPTIONS:
+    -c, --command <command>        Run this command
+    -i, --inherit <inheritance>    Handle the relationship between local and CloudTruth environments [default: overlay]
+                                   [possible values: none, underlay, overlay, exclusive]
+    -r, --remove <remove>...       Remove the variables from the CloudTruth environment for this run
+    -s, --set <set>...             Set the variables in this run, even possibly overriding the CloudTruth environment
+
+ARGS:
+    <arguments>...    Treat the rest of the arguments as the command
+============================================================
+cloudtruth-templates 
+Work with CloudTruth templates
+
+USAGE:
+    cloudtruth templates [SUBCOMMAND]
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+SUBCOMMANDS:
+    get     Get an evaluated template from CloudTruth
+    help    Prints this message or the help of the given subcommand(s)
+    list    List CloudTruth templates [aliases: ls]
+========================================
+cloudtruth-templates-get 
+Get an evaluated template from CloudTruth
+
+USAGE:
+    cloudtruth templates get <KEY>
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+ARGS:
+    <KEY>    
+========================================
+cloudtruth-templates-list 
+List CloudTruth templates
+
+USAGE:
+    cloudtruth templates list [FLAGS] [OPTIONS]
+
+FLAGS:
+    -h, --help       Prints help information
+    -v, --values     Display template information/values
+    -V, --version    Prints version information
+
+OPTIONS:
+    -f, --format <format>    Format for template values data [default: table]  [possible values: table, csv]
+
