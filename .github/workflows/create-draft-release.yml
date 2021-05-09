@@ -134,6 +134,8 @@ jobs:
         run: |
           CARGO_VERSION=$(grep "version = " Cargo.toml | head -n 1 | cut -d'"' -f2)
           TAG_VERSION=${GITHUB_REF#refs/tags/}
+          echo "CARGO_VERSION=${CARGO_VERSION}"
+          echo "TAG_VERSION=${TAG_VERSION}"
           echo "${TAG_VERSION}" | grep "${CARGO_VERSION}"
 
       - name: Install prerequisites
