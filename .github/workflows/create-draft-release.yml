@@ -130,6 +130,7 @@ jobs:
           path: artifacts
 
       - name: Cargo and tag version alignment
+        if: runner.os != 'Windows'
         run: |
           CARGO_VERSION=$(grep "version = " Cargo.toml | head -n 1 | cut -d'"' -f2)
           TAG_VERSION=${GITHUB_REF#refs/tags/}
