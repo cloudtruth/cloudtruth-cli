@@ -76,7 +76,7 @@ targets:
 	@echo "image          - make the cloudtruth/cli docker container for development"
 	@echo "lint           - checks for formatting issues"
 	@echo "precommit      - build rust targets, tests, and lints the files"
-	@echo "precommit_test - runs "
+	@echo "precommit_test - runs the cargo tests"
 	@echo "prerequisites  - install prerequisites"
 	@echo "shell          - drop into the cloudtruth/cli docker container for development"
 	@echo "test           - runs precommit tests, as well as integration tests"
