@@ -98,6 +98,19 @@ jobs:
           name: artifacts
           path: artifacts
 
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+
+      - name: Cargo and tag version alignment
+        env:
+          TAG_VERSION: ${{ env.CT_VERSION }}
+        run: |
+          CARGO_VERSION=$(grep "version = " Cargo.toml | head -n 1 | cut -d'"' -f2)
+          echo "CARGO_VERSION=${CARGO_VERSION}"
+          echo "TAG_VERSION=${TAG_VERSION}"
+          echo "${TAG_VERSION}" | grep "${CARGO_VERSION}"
+
   build-release:
     name: Build Release
     needs: ['create-release']
