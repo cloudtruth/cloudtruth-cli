@@ -226,7 +226,7 @@ if [ "${PKG}" = "deb" ]; then
     fi
     # debian package names strip build information off the release version name
     # this is typical in a draft build, like 0.3.0_mytest.1 => 0.3.0
-    CT_CLI_VERSION_STUB=$(echo "${CT_CLI_VERSION}" | cut -d'-' -f1)
+    CT_CLI_VERSION_STUB=$(echo "${CT_CLI_VERSION}" | sed 's/[^0-9.]*\([0-9.]*\).*/\1/')
     PACKAGE=cloudtruth_${CT_CLI_VERSION_STUB}_${ARCH}.deb
     download "${PACKAGE}"
     if [ ${CT_DRY_RUN} -ne 0 ]; then
@@ -240,7 +240,7 @@ fi
 if [ "${PKG}" = "rpm" ]; then
     # rpm package names strip build information off the release version name
     # this is typical in a draft build, like 0.3.0_mytest.1 => 0.3.0
-    CT_CLI_VERSION_STUB=$(echo "${CT_CLI_VERSION}" | cut -d'-' -f1)
+    CT_CLI_VERSION_STUB=$(echo "${CT_CLI_VERSION}" | sed 's/[^0-9.]*\([0-9.]*\).*/\1/')
     PACKAGE=cloudtruth-${CT_CLI_VERSION_STUB}-1.${ARCH}.rpm
     download "${PACKAGE}"
     if [ ${CT_DRY_RUN} -ne 0 ]; then
