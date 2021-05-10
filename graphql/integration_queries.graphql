@@ -1,0 +1,19 @@
+query IntegrationsQuery($organizationId: ID) {
+  viewer {
+    id
+    organization(id: $organizationId) {
+      integrations {
+        nodes {
+          __typename
+          id
+          fqn
+          name
+          parent {
+            __typename
+            name
+          }
+        }
+      }
+    }
+  }
+}

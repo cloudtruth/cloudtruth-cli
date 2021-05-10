@@ -14,6 +14,7 @@ extern crate rpassword;
 mod cli;
 mod config;
 mod environments;
+mod integrations;
 mod parameters;
 mod projects;
 mod subprocess;
@@ -23,6 +24,7 @@ use crate::config::env::ConfigEnv;
 use crate::config::{Config, CT_PROFILE, DEFAULT_ENV_NAME, DEFAULT_PROJ_NAME};
 use crate::environments::Environments;
 use crate::graphql::GraphQLError;
+use crate::integrations::{Integrations, IntegrationsIntf};
 use crate::parameters::export_parameters_query::{
     ExportParametersFormatEnum, ExportParametersOptions,
 };
@@ -476,6 +478,54 @@ fn process_environment_command(
     Ok(())
 }
 
+/// Process the 'integrations' sub-command
+fn process_integrations_command(
+    subcmd_args: &ArgMatches,
+    integrations: &impl IntegrationsIntf,
+    org_id: Option<&str>,
+) -> Result<()> {
+    if let Some(subcmd_args) = subcmd_args.subcommand_matches("list") {
+        let details = integrations.get_integration_details(org_id)?;
+        if details.is_empty() {
+            println!("No integrations found");
+        } else if !subcmd_args.is_present("values") {
+            let list = details
+                .iter()
+                .map(|d| d.name.clone())
+                .collect::<Vec<String>>();
+            println!("{}", list.join("\n"))
+        } else {
+            let fmt = subcmd_args.value_of("format").unwrap();
+            let mut table = Table::new();
+            table.set_titles(Row::new(vec![
+                Cell::new("Name").with_style(Attr::Bold),
+                Cell::new("Type").with_style(Attr::Bold),
+                Cell::new("FQN").with_style(Attr::Bold),
+                Cell::new("Parent").with_style(Attr::Bold),
+            ]));
+            for entry in details {
+                table.add_row(row![
+                    entry.name,
+                    entry.integration_type,
+                    entry.fqn,
+                    entry.parent,
+                ]);
+            }
+            table.set_format(*format::consts::FORMAT_NO_LINESEP_WITH_TITLE);
+
+            if fmt == "csv" {
+                table.to_csv(stdout())?;
+            } else {
+                assert_eq!(fmt, "table");
+                table.printstd();
+            }
+        }
+    } else {
+        warn_missing_subcommand("integrations")?;
+    }
+    Ok(())
+}
+
 /// Process the 'parameters' sub-command
 fn process_parameters_command(
     subcmd_args: &ArgMatches,
@@ -792,6 +842,12 @@ fn main() -> Result<()> {
         process::exit(0)
     }
 
+    if let Some(matches) = matches.subcommand_matches("integrations") {
+        let integrations = Integrations::new();
+        process_integrations_command(matches, &integrations, org_id)?;
+        process::exit(0)
+    }
+
     // Everything below here requires resolved environment/project values
     let resolved = resolve_ids(org_id, Config::global())?;
 
@@ -875,6 +931,7 @@ mod main_test {
         let commands = &[
             vec!["parameters", "list"],
             vec!["environments", "list"],
+            vec!["integrations", "list"],
             vec!["templates", "list"],
             vec!["--env", "non-default", "templates", "list"],
             vec!["run", "--command", "printenv"],
@@ -899,6 +956,7 @@ mod main_test {
             vec!["config"],
             vec!["projects"],
             vec!["environments"],
+            vec!["integrations"],
             /*
             TODO: Rick Porter 3/2021: add more tests once we can get a valid environment, (e.g.
                environment, run)

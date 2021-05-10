@@ -113,6 +113,18 @@ pub fn build_cli() -> App<'static, 'static> {
                 ])
         )
         .subcommand(
+            SubCommand::with_name("integrations")
+                .visible_aliases(&["integration", "integrate", "integ", "int"])
+                .about("Work with CloudTruth integrations")
+                .subcommands(vec![
+                    SubCommand::with_name("list")
+                        .visible_alias("ls")
+                        .about("List CloudTruth integrations")
+                        .arg(values_flag().help("Display integration information/values"))
+                        .arg(table_format_options().help("Format for integration values data")),
+                ])
+        )
+        .subcommand(
             SubCommand::with_name("parameters")
                 .visible_aliases(&["parameter", "params", "param", "p"])
                 .about("Work with CloudTruth parameters")
