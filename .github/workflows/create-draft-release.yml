@@ -316,6 +316,39 @@ jobs:
           asset_name: ${{ env.RPM_NAME }}
           asset_content_type: application/octet-stream
 
+      - name: Upload Release Notes
+        if: matrix.build == 'linux'
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ env.RELEASE_UPLOAD_URL }}
+          asset_path: CHANGELOG.md
+          asset_name: CHANGELOG.md
+          asset_content_type: application/octet-stream
+
+      - name: Upload POSIX Install
+        if: matrix.build == 'linux'
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ env.RELEASE_UPLOAD_URL }}
+          asset_path: install.sh
+          asset_name: install.sh
+          asset_content_type: application/octet-stream
+
+      - name: Upload Windows Install
+        if: matrix.build == 'linux'
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ env.RELEASE_UPLOAD_URL }}
+          asset_path: install.ps1
+          asset_name: install.ps1
+          asset_content_type: application/octet-stream
+
   ########################################################################
   ## AUTOMATICALLY GENERATED JOBS BELOW (cd tests; make workflow-draft) ##
   ########################################################################
