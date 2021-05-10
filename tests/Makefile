@@ -23,12 +23,16 @@ workflow-prerelease:
 live_test:
 	python3 pytest/live_test.py
 
+precommit_test:
+	python3 cli_walk.py check
+
 help: targets
 
 targets:
 	@echo ""
-	@echo "clean         - remove generated docker files"
-	@echo "live_test     - run tests against live service"
-	@echo "prerequisites - install prerequisites"
-	@echo "workflow-*    - build workflow files and docker files from templates"
+	@echo "clean          - remove generated docker files"
+	@echo "live_test      - run tests against live service"
+	@echo "precommit_test - makes sure cli parameters have not changed"
+	@echo "prerequisites  - install prerequisites"
+	@echo "workflow-*     - build workflow files and docker files from templates"
 	@echo ""
