@@ -1,3 +1,10 @@
+# 0.5.1 - 2021-05-10
+
+* Upload install.sh, install.ps1, and CHANGELOG.md as release assets.
+* Enhance install.sh to be more tolerant of non-standard release tags. 
+* Improve error checking on release tag names.
+* Improve pre-commit checks for Rust version, and CLI command changes.
+
 # 0.5.0 - 2021-05-07
 
 * Breaking changes:
