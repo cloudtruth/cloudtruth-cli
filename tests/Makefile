@@ -2,7 +2,16 @@
 # Copyright (C) 2021 CloudTruth, Inc.
 #
 
-.PHONY: clean help live_test prerequisites workflow-draft workflow-prerelease targets
+.PHONY = all
+.PHONY += clean
+.PHONY += help
+.PHONY += live_test
+.PHONY += prerequisites
+.PHONY += precommit_test
+.PHONY += regen
+.PHONY += targets
+.PHONY += workflow-draft
+.PHONY += workflow-prerelease
 
 all: workflow-draft workflow-prerelease live_test
 
@@ -26,6 +35,9 @@ live_test:
 precommit_test:
 	python3 cli_walk.py check
 
+regen: workflow-draft workflow-prerelease
+	python3 cli_walk.py generate
+
 help: targets
 
 targets:
@@ -34,5 +46,6 @@ targets:
 	@echo "live_test      - run tests against live service"
 	@echo "precommit_test - makes sure cli parameters have not changed"
 	@echo "prerequisites  - install prerequisites"
+	@echo "regen          - regenerates the help.txt, GH action files, and docker files"
 	@echo "workflow-*     - build workflow files and docker files from templates"
 	@echo ""

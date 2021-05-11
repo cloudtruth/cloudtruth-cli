@@ -7,7 +7,19 @@ rust_intended := 1.52.0
 rust_installed := $(shell rustc -V | cut -d' ' -f2)
 rust_bad_version := $(shell grep "RUST_VERSION:" .github/workflows/*.yml | grep -v "$(rust_intended)")
 
-.PHONY: help image shell all cargo clean lint precommit precommit_test prerequisites test lint targets version_check
+.PHONY = all
+.PHONY += cargo
+.PHONY += clean
+.PHONY += help
+.PHONY += image
+.PHONY += lint
+.PHONY += precommit
+.PHONY += precommit_test
+.PHONY += prerequisites
+.PHONY += shell
+.PHONY += targets
+.PHONY += test
+.PHONY += version_check
 
 ### Commands for outside the container
 
@@ -68,6 +80,9 @@ ifneq ($(rust_bad_version),)
 endif
 	@echo "Using rustc version: $(rust_intended)"
 
+regen:
+	make -C tests $@
+
 help: targets
 
 targets:
@@ -79,6 +94,7 @@ targets:
 	@echo "precommit      - build rust targets, tests, and lints the files"
 	@echo "precommit_test - runs the cargo tests"
 	@echo "prerequisites  - install prerequisites"
+	@echo "regen          - regenerate non-build artifacts"
 	@echo "shell          - drop into the cloudtruth/cli docker container for development"
 	@echo "test           - runs precommit tests, as well as integration tests"
 	@echo "version_check  - checks rustc versions"
