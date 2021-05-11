@@ -1,5 +1,5 @@
 use crate::graphql::prelude::graphql_request;
-use crate::graphql::{GraphQLError, GraphQLResult};
+use crate::graphql::{GraphQLError, GraphQLResult, NO_ORG_ERROR};
 use crate::integrations::integrations_query::IntegrationsQueryViewerOrganizationIntegrationsNodesOn;
 use graphql_client::*;
 
@@ -67,7 +67,7 @@ impl IntegrationsIntf for Integrations {
             let nodes = data
                 .viewer
                 .organization
-                .expect("Primary organization not found")
+                .expect(NO_ORG_ERROR)
                 .integrations
                 .nodes;
             let mut integrations: Vec<IntegrationDetails> = Vec::new();
