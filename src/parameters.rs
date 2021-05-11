@@ -1,6 +1,6 @@
 use crate::config::DEFAULT_PROJ_NAME;
 use crate::graphql::prelude::graphql_request;
-use crate::graphql::{GraphQLError, GraphQLResult, Operation, Resource};
+use crate::graphql::{GraphQLError, GraphQLResult, Operation, Resource, NO_ORG_ERROR};
 use crate::parameters::export_parameters_query::ExportParametersFormatEnum;
 use graphql_client::*;
 use std::collections::HashMap;
@@ -158,12 +158,7 @@ impl Parameters {
         if let Some(errors) = response_body.errors {
             Err(GraphQLError::ResponseError(errors))
         } else if let Some(data) = response_body.data {
-            if let Some(project) = data
-                .viewer
-                .organization
-                .expect("Primary organization not found")
-                .project
-            {
+            if let Some(project) = data.viewer.organization.expect(NO_ORG_ERROR).project {
                 Ok(project.export_parameters.and_then(|v| v.evaluated))
             } else {
                 Err(GraphQLError::ProjectNotFoundError(
@@ -240,12 +235,7 @@ impl Parameters {
         if let Some(errors) = response_body.errors {
             Err(GraphQLError::ResponseError(errors))
         } else if let Some(data) = response_body.data {
-            if let Some(project) = data
-                .viewer
-                .organization
-                .expect("Primary organization not found")
-                .project
-            {
+            if let Some(project) = data.viewer.organization.expect(NO_ORG_ERROR).project {
                 Ok(project.parameter)
             } else {
                 Err(GraphQLError::ProjectNotFoundError(
@@ -274,12 +264,7 @@ impl Parameters {
             Err(GraphQLError::ResponseError(errors))
         } else if let Some(data) = response_body.data {
             let mut env_vars = HashMap::new();
-            if let Some(project) = data
-                .viewer
-                .organization
-                .expect("Primary organization not found")
-                .project
-            {
+            if let Some(project) = data.viewer.organization.expect(NO_ORG_ERROR).project {
                 for p in project.parameters.nodes {
                     if let Some(env_value) = p.environment_value {
                         if let Some(param_value) = env_value.parameter_value {
@@ -313,12 +298,7 @@ impl Parameters {
         if let Some(errors) = response_body.errors {
             Err(GraphQLError::ResponseError(errors))
         } else if let Some(data) = response_body.data {
-            if let Some(project) = data
-                .viewer
-                .organization
-                .expect("Primary organization not found")
-                .project
-            {
+            if let Some(project) = data.viewer.organization.expect(NO_ORG_ERROR).project {
                 let mut env_vars: Vec<ParameterDetails> = Vec::new();
                 for p in project.parameters.nodes {
                     let mut param_value: String = "".to_string();

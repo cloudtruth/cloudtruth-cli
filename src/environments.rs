@@ -1,5 +1,5 @@
 use crate::graphql::prelude::graphql_request;
-use crate::graphql::{GraphQLError, GraphQLResult, Operation, Resource};
+use crate::graphql::{GraphQLError, GraphQLResult, Operation, Resource, NO_ORG_ERROR};
 use graphql_client::*;
 
 pub struct Environments {}
@@ -76,7 +76,7 @@ impl Environments {
             Ok(data
                 .viewer
                 .organization
-                .expect("Primary organization not found")
+                .expect(NO_ORG_ERROR)
                 .environment
                 .map(|env| EnvironmentDetails {
                     id: env.id,
@@ -126,7 +126,7 @@ impl Environments {
             Ok(data
                 .viewer
                 .organization
-                .expect("Primary organization not found")
+                .expect(NO_ORG_ERROR)
                 .environments
                 .nodes)
         } else {

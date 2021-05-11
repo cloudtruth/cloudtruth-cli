@@ -1,5 +1,5 @@
 use crate::graphql::prelude::graphql_request;
-use crate::graphql::{GraphQLError, GraphQLResult, Operation, Resource};
+use crate::graphql::{GraphQLError, GraphQLResult, Operation, Resource, NO_ORG_ERROR};
 use graphql_client::*;
 
 pub struct Projects {}
@@ -106,12 +106,7 @@ impl Projects {
         if let Some(errors) = response_body.errors {
             Err(GraphQLError::ResponseError(errors))
         } else if let Some(data) = response_body.data {
-            Ok(data
-                .viewer
-                .organization
-                .expect("Primary organization not found")
-                .projects
-                .nodes)
+            Ok(data.viewer.organization.expect(NO_ORG_ERROR).projects.nodes)
         } else {
             Err(GraphQLError::MissingDataError)
         }
@@ -136,7 +131,7 @@ impl ProjectsIntf for Projects {
             Ok(data
                 .viewer
                 .organization
-                .expect("Primary organization not found")
+                .expect(NO_ORG_ERROR)
                 .project
                 .map(|proj| ProjectDetails {
                     id: proj.id,

@@ -1,6 +1,8 @@
 use core::fmt;
 use std::sync::Arc;
 
+pub const NO_ORG_ERROR: &str = "Primary organization not found";
+
 pub mod prelude {
     use crate::config::Config;
     use crate::graphql::GraphQLError;
