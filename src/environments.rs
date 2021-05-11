@@ -57,7 +57,7 @@ impl Environments {
         Self {}
     }
 
-    pub fn get_id_details(
+    pub fn get_details_by_name(
         &self,
         org_id: Option<&str>,
         env_name: Option<&str>,
@@ -103,7 +103,7 @@ impl Environments {
         org_id: Option<&str>,
         env_name: Option<&str>,
     ) -> GraphQLResult<Option<String>> {
-        if let Some(details) = self.get_id_details(org_id, env_name)? {
+        if let Some(details) = self.get_details_by_name(org_id, env_name)? {
             Ok(Some(details.id))
         } else {
             Ok(None)

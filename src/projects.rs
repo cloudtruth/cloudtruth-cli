@@ -60,7 +60,7 @@ pub trait ProjectsIntf {
     ) -> GraphQLResult<Option<String>>;
 
     /// Get the details for `proj_name`
-    fn get_id_details(
+    fn get_details_by_name(
         &self,
         org_id: Option<&str>,
         proj_name: Option<&str>,
@@ -114,7 +114,7 @@ impl Projects {
 }
 
 impl ProjectsIntf for Projects {
-    fn get_id_details(
+    fn get_details_by_name(
         &self,
         org_id: Option<&str>,
         proj_name: Option<&str>,
@@ -149,7 +149,7 @@ impl ProjectsIntf for Projects {
         org_id: Option<&str>,
         proj_name: Option<&str>,
     ) -> GraphQLResult<Option<String>> {
-        if let Some(details) = self.get_id_details(org_id, proj_name)? {
+        if let Some(details) = self.get_details_by_name(org_id, proj_name)? {
             Ok(Some(details.id))
         } else {
             Ok(None)
