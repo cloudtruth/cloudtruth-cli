@@ -501,15 +501,9 @@ fn process_integrations_command(
                 Cell::new("Name").with_style(Attr::Bold),
                 Cell::new("Type").with_style(Attr::Bold),
                 Cell::new("FQN").with_style(Attr::Bold),
-                Cell::new("Parent").with_style(Attr::Bold),
             ]));
             for entry in details {
-                table.add_row(row![
-                    entry.name,
-                    entry.integration_type,
-                    entry.fqn,
-                    entry.parent,
-                ]);
+                table.add_row(row![entry.name, entry.integration_type, entry.fqn,]);
             }
             table.set_format(*format::consts::FORMAT_NO_LINESEP_WITH_TITLE);
 

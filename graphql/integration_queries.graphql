@@ -8,10 +8,6 @@ query IntegrationsQuery($organizationId: ID) {
           id
           fqn
           name
-          parent {
-            __typename
-            name
-          }
         }
       }
     }

@@ -18,7 +18,6 @@ pub struct IntegrationDetails {
     pub id: String,
     pub integration_type: String,
     pub name: String,
-    pub parent: String,
 }
 
 /// This is the interface that is implemented to retrieve integration information.
@@ -73,16 +72,11 @@ impl IntegrationsIntf for Integrations {
             let mut integrations: Vec<IntegrationDetails> = Vec::new();
 
             for n in nodes.iter() {
-                let mut parent_name = "None".to_string();
-                if let Some(parent) = &n.parent {
-                    parent_name = parent.name.clone();
-                }
                 integrations.push(IntegrationDetails {
                     fqn: n.fqn.clone(),
                     id: n.id.clone(),
                     integration_type: n.on.to_string(),
                     name: n.name.clone(),
-                    parent: parent_name,
                 });
             }
             Ok(integrations)
