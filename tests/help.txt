@@ -151,8 +151,27 @@ FLAGS:
     -V, --version    Prints version information
 
 SUBCOMMANDS:
-    help    Prints this message or the help of the given subcommand(s)
-    list    List CloudTruth integrations [aliases: ls]
+    delete    Delete specified CloudTruth integration [aliases: del]
+    help      Prints this message or the help of the given subcommand(s)
+    list      List CloudTruth integrations [aliases: ls]
+========================================
+cloudtruth-integrations-delete 
+Delete specified CloudTruth integration
+
+USAGE:
+    cloudtruth integrations delete [FLAGS] [OPTIONS] <NAME>
+
+FLAGS:
+        --confirm    Avoid confirmation prompt
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+OPTIONS:
+    -t, --type <TYPE>    Integration type, only needed to disambiguate integrations with the same name [possible values:
+                         aws, github]
+
+ARGS:
+    <NAME>    Integration name
 ========================================
 cloudtruth-integrations-list 
 List CloudTruth integrations
