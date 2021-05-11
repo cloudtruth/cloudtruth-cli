@@ -235,7 +235,7 @@ fn process_project_command(
 ) -> Result<()> {
     if let Some(subcmd_args) = subcmd_args.subcommand_matches("delete") {
         let proj_name = subcmd_args.value_of("NAME");
-        let details = projects.get_id_details(org_id, proj_name)?;
+        let details = projects.get_details_by_name(org_id, proj_name)?;
 
         if let Some(details) = details {
             // NOTE: the server is responsible for checking if children exist
@@ -283,7 +283,7 @@ fn process_project_command(
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("set") {
         let proj_name = subcmd_args.value_of("NAME");
         let description = subcmd_args.value_of("description");
-        let details = projects.get_id_details(org_id, proj_name)?;
+        let details = projects.get_details_by_name(org_id, proj_name)?;
 
         if let Some(details) = details {
             if description == Some(details.description.as_str()) {
@@ -384,7 +384,7 @@ fn process_environment_command(
 ) -> Result<()> {
     if let Some(subcmd_args) = subcmd_args.subcommand_matches("delete") {
         let env_name = subcmd_args.value_of("NAME");
-        let details = environments.get_id_details(org_id, env_name)?;
+        let details = environments.get_details_by_name(org_id, env_name)?;
 
         if let Some(details) = details {
             // NOTE: the server is responsible for checking if children exist
@@ -437,7 +437,7 @@ fn process_environment_command(
         let env_name = subcmd_args.value_of("NAME");
         let parent_name = subcmd_args.value_of("parent");
         let description = subcmd_args.value_of("description");
-        let details = environments.get_id_details(org_id, env_name)?;
+        let details = environments.get_details_by_name(org_id, env_name)?;
 
         if let Some(details) = details {
             if description == Some(details.description.as_str()) {

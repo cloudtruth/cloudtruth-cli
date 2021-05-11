@@ -1,6 +1,6 @@
 use crate::config::DEFAULT_PROJ_NAME;
 use crate::graphql::prelude::graphql_request;
-use crate::graphql::{GraphQLError, GraphQLResult};
+use crate::graphql::{GraphQLError, GraphQLResult, NO_ORG_ERROR};
 use graphql_client::*;
 
 pub struct Templates {}
@@ -50,12 +50,7 @@ impl Templates {
         if let Some(errors) = response_body.errors {
             Err(GraphQLError::ResponseError(errors))
         } else if let Some(data) = response_body.data {
-            if let Some(project) = data
-                .viewer
-                .organization
-                .expect("Primary organization not found")
-                .project
-            {
+            if let Some(project) = data.viewer.organization.expect(NO_ORG_ERROR).project {
                 Ok(project.template.and_then(|t| t.evaluated))
             } else {
                 Err(GraphQLError::ProjectNotFoundError(
@@ -81,12 +76,7 @@ impl Templates {
         if let Some(errors) = response_body.errors {
             Err(GraphQLError::ResponseError(errors))
         } else if let Some(data) = response_body.data {
-            if let Some(project) = data
-                .viewer
-                .organization
-                .expect("Primary organization not found")
-                .project
-            {
+            if let Some(project) = data.viewer.organization.expect(NO_ORG_ERROR).project {
                 let mut list: Vec<TemplateDetails> = project
                     .templates
                     .nodes

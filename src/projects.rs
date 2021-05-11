@@ -1,5 +1,5 @@
 use crate::graphql::prelude::graphql_request;
-use crate::graphql::{GraphQLError, GraphQLResult, Operation, Resource};
+use crate::graphql::{GraphQLError, GraphQLResult, Operation, Resource, NO_ORG_ERROR};
 use graphql_client::*;
 
 pub struct Projects {}
@@ -60,7 +60,7 @@ pub trait ProjectsIntf {
     ) -> GraphQLResult<Option<String>>;
 
     /// Get the details for `proj_name`
-    fn get_id_details(
+    fn get_details_by_name(
         &self,
         org_id: Option<&str>,
         proj_name: Option<&str>,
@@ -106,12 +106,7 @@ impl Projects {
         if let Some(errors) = response_body.errors {
             Err(GraphQLError::ResponseError(errors))
         } else if let Some(data) = response_body.data {
-            Ok(data
-                .viewer
-                .organization
-                .expect("Primary organization not found")
-                .projects
-                .nodes)
+            Ok(data.viewer.organization.expect(NO_ORG_ERROR).projects.nodes)
         } else {
             Err(GraphQLError::MissingDataError)
         }
@@ -119,7 +114,7 @@ impl Projects {
 }
 
 impl ProjectsIntf for Projects {
-    fn get_id_details(
+    fn get_details_by_name(
         &self,
         org_id: Option<&str>,
         proj_name: Option<&str>,
@@ -136,7 +131,7 @@ impl ProjectsIntf for Projects {
             Ok(data
                 .viewer
                 .organization
-                .expect("Primary organization not found")
+                .expect(NO_ORG_ERROR)
                 .project
                 .map(|proj| ProjectDetails {
                     id: proj.id,
@@ -154,7 +149,7 @@ impl ProjectsIntf for Projects {
         org_id: Option<&str>,
         proj_name: Option<&str>,
     ) -> GraphQLResult<Option<String>> {
-        if let Some(details) = self.get_id_details(org_id, proj_name)? {
+        if let Some(details) = self.get_details_by_name(org_id, proj_name)? {
             Ok(Some(details.id))
         } else {
             Ok(None)

@@ -1,5 +1,5 @@
 use crate::graphql::prelude::graphql_request;
-use crate::graphql::{GraphQLError, GraphQLResult, Operation, Resource};
+use crate::graphql::{GraphQLError, GraphQLResult, Operation, Resource, NO_ORG_ERROR};
 use graphql_client::*;
 
 pub struct Environments {}
@@ -57,7 +57,7 @@ impl Environments {
         Self {}
     }
 
-    pub fn get_id_details(
+    pub fn get_details_by_name(
         &self,
         org_id: Option<&str>,
         env_name: Option<&str>,
@@ -76,7 +76,7 @@ impl Environments {
             Ok(data
                 .viewer
                 .organization
-                .expect("Primary organization not found")
+                .expect(NO_ORG_ERROR)
                 .environment
                 .map(|env| EnvironmentDetails {
                     id: env.id,
@@ -103,7 +103,7 @@ impl Environments {
         org_id: Option<&str>,
         env_name: Option<&str>,
     ) -> GraphQLResult<Option<String>> {
-        if let Some(details) = self.get_id_details(org_id, env_name)? {
+        if let Some(details) = self.get_details_by_name(org_id, env_name)? {
             Ok(Some(details.id))
         } else {
             Ok(None)
@@ -126,7 +126,7 @@ impl Environments {
             Ok(data
                 .viewer
                 .organization
-                .expect("Primary organization not found")
+                .expect(NO_ORG_ERROR)
                 .environments
                 .nodes)
         } else {
