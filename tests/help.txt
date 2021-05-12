@@ -20,6 +20,7 @@ SUBCOMMANDS:
     config          Configuration options for this application [aliases: configuration]
     environments    Work with CloudTruth environments [aliases: environment, envs, env, e]
     help            Prints this message or the help of the given subcommand(s)
+    integrations    Work with CloudTruth integrations [aliases: integration, integrate, integ, int]
     parameters      Work with CloudTruth parameters [aliases: parameter, params, param, p]
     projects        Work with CloudTruth projects [aliases: project, proj]
     run             Run a shell with the parameters in place [aliases: run, r]
@@ -138,6 +139,34 @@ OPTIONS:
 
 ARGS:
     <NAME>    Environment name
+============================================================
+cloudtruth-integrations 
+Work with CloudTruth integrations
+
+USAGE:
+    cloudtruth integrations [SUBCOMMAND]
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+SUBCOMMANDS:
+    help    Prints this message or the help of the given subcommand(s)
+    list    List CloudTruth integrations [aliases: ls]
+========================================
+cloudtruth-integrations-list 
+List CloudTruth integrations
+
+USAGE:
+    cloudtruth integrations list [FLAGS] [OPTIONS]
+
+FLAGS:
+    -h, --help       Prints help information
+    -v, --values     Display integration information/values
+    -V, --version    Prints version information
+
+OPTIONS:
+    -f, --format <format>    Format for integration values data [default: table]  [possible values: table, csv]
 ============================================================
 cloudtruth-parameters 
 Work with CloudTruth parameters

@@ -67,6 +67,7 @@ class TestTopLevelArgs(TestCase):
         for (subcmd, aliases) in {
             "config": ["configuration"],
             "environments": ["environment", "envs", "env", "e"],
+            "integrations": ["integration", "integrate", "int"],
             "parameters": ["parameter", "params", "param", "p"],
             "projects": ["project", "proj"],
             "run": ["r"],
