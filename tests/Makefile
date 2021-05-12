@@ -4,6 +4,8 @@
 
 .PHONY = all
 .PHONY += clean
+.PHONY += cli-check
+.PHONY += cli-gen
 .PHONY += help
 .PHONY += live_test
 .PHONY += prerequisites
@@ -32,17 +34,23 @@ workflow-prerelease:
 live_test:
 	python3 pytest/live_test.py
 
-precommit_test:
+precommit_test: cli-check
+
+cli-check:
 	python3 cli_walk.py check
 
-regen: workflow-draft workflow-prerelease
+cli-gen:
 	python3 cli_walk.py generate
+
+regen: workflow-draft workflow-prerelease cli-gen
 
 help: targets
 
 targets:
 	@echo ""
 	@echo "clean          - remove generated docker files"
+	@echo "cli-check      - makes sure help from latest build is unchanged"
+	@echo "cli-gen        - generates the cli help.txt"
 	@echo "live_test      - run tests against live service"
 	@echo "precommit_test - makes sure cli parameters have not changed"
 	@echo "prerequisites  - install prerequisites"
