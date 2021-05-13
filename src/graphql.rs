@@ -51,6 +51,7 @@ pub enum Operation {
 #[derive(Clone, Debug)]
 pub enum Resource {
     Environment,
+    Integration,
     Parameter,
     Project,
     Template,
@@ -60,7 +61,9 @@ pub type GraphQLResult<T> = std::result::Result<T, GraphQLError>;
 
 #[derive(Clone, Debug)]
 pub enum GraphQLError {
+    AmbiguousIntegrationError(String, String),
     EnvironmentNotFoundError(String),
+    IntegrationTypeError(String),
     MissingDataError,
     NetworkError(Arc<reqwest::Error>),
     ParameterNotFoundError(String),
@@ -117,8 +120,14 @@ impl GraphQLError {
 impl fmt::Display for GraphQLError {
     fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
         match self {
+            GraphQLError::AmbiguousIntegrationError(name, integration_types) => {
+                write!(f, "Found integration named '{}' for types: {}", name, integration_types)
+            }
             GraphQLError::EnvironmentNotFoundError(name) => {
                 write!(f, "Unable to find environment '{}'.", name)
+            }
+            GraphQLError::IntegrationTypeError(type_name) => {
+                write!(f, "Unable to process integration type '{}'.", type_name)
             }
             GraphQLError::MissingDataError => write!(
                 f,

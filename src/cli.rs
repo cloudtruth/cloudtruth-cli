@@ -117,6 +117,23 @@ pub fn build_cli() -> App<'static, 'static> {
                 .visible_aliases(&["integration", "integrate", "integ", "int"])
                 .about("Work with CloudTruth integrations")
                 .subcommands(vec![
+                    SubCommand::with_name("delete")
+                        .visible_alias("del")
+                        .about("Delete specified CloudTruth integration")
+                        .arg(Arg::with_name("NAME")
+                            .index(1)
+                            .required(true)
+                            .help("Integration name"))
+                        .arg(Arg::with_name("confirm")
+                            .long("confirm")
+                            .help("Avoid confirmation prompt"))
+                        .arg(Arg::with_name("TYPE")
+                            .short("t")
+                            .long("type")
+                            .takes_value(true)
+                            .possible_values(&["aws", "github"])
+                            .help(concat!("Integration type, only needed to disambiguate ",
+                                "integrations with the same name"))),
                     SubCommand::with_name("list")
                         .visible_alias("ls")
                         .about("List CloudTruth integrations")
