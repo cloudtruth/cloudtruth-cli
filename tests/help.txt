@@ -151,9 +151,10 @@ FLAGS:
     -V, --version    Prints version information
 
 SUBCOMMANDS:
-    delete    Delete specified CloudTruth integration [aliases: del]
-    help      Prints this message or the help of the given subcommand(s)
-    list      List CloudTruth integrations [aliases: ls]
+    delete     Delete specified CloudTruth integration [aliases: del]
+    explore    Explore specific integration options [aliases: exp, ex, e]
+    help       Prints this message or the help of the given subcommand(s)
+    list       List CloudTruth integrations [aliases: ls]
 ========================================
 cloudtruth-integrations-delete 
 Delete specified CloudTruth integration
@@ -167,11 +168,29 @@ FLAGS:
     -V, --version    Prints version information
 
 OPTIONS:
-    -t, --type <TYPE>    Integration type, only needed to disambiguate integrations with the same name [possible values:
-                         aws, github]
+    -t, --type <TYPE>    Integration type, only used to disambiguate duplicate names [possible values: aws, github]
 
 ARGS:
     <NAME>    Integration name
+========================================
+cloudtruth-integrations-explore 
+Explore specific integration options
+
+USAGE:
+    cloudtruth integrations explore [FLAGS] [OPTIONS] <NAME> [PATH]
+
+FLAGS:
+    -h, --help       Prints help information
+    -v, --values     Display integration values
+    -V, --version    Prints version information
+
+OPTIONS:
+    -t, --type <TYPE>        Integration type, only used to disambiguate duplicate names [possible values: aws, github]
+    -f, --format <format>    Format integration values data. [default: table]  [possible values: table, csv]
+
+ARGS:
+    <NAME>    Integration name
+    <PATH>    Path within the integration
 ========================================
 cloudtruth-integrations-list 
 List CloudTruth integrations

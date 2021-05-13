@@ -507,6 +507,82 @@ fn process_integrations_command(
                 int_name.unwrap()
             ))?;
         }
+    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("explore") {
+        let int_name = subcmd_args.value_of("NAME");
+        let int_type = subcmd_args.value_of("TYPE");
+        let path = subcmd_args.value_of("PATH");
+        let names: Vec<&str> = if let Some(rpath) = path {
+            rpath.split("::").collect::<Vec<&str>>()
+        } else {
+            vec![]
+        };
+
+        let details = integrations.get_details_by_name(org_id, int_name, int_type)?;
+        if let Some(details) = details {
+            let mut last_fqn = details.fqn.clone();
+            let mut node = integrations.get_integration_node(details.id)?;
+            if node.is_none() {
+                warning_message(format!("Failed to find initial node for {}", last_fqn))?;
+            } else {
+                for name in names {
+                    let next_id = node.unwrap().get_id_for_name(name.to_string());
+                    if next_id.is_none() {
+                        error_message(format!("No entry named '{}' in '{}'", name, last_fqn))?;
+                        node = None;
+                        break;
+                    } else if let Some(next_node) =
+                        integrations.get_integration_node(next_id.unwrap().clone())?
+                    {
+                        last_fqn = next_node.fqn.clone();
+                        node = Some(next_node);
+                    } else {
+                        error_message(format!("No node found for {}::{}", last_fqn, name))?;
+                        node = None;
+                        break;
+                    }
+                }
+            }
+
+            if let Some(node) = node {
+                let indent = "  ";
+                if !subcmd_args.is_present("values") {
+                    println!("{}", node.name);
+                    for entry in node.entries {
+                        println!("{}{}", indent, entry.name);
+                    }
+                } else {
+                    let fmt = subcmd_args.value_of("format").unwrap();
+                    let mut table = Table::new();
+                    table.set_titles(Row::new(vec![
+                        Cell::new("Name").with_style(Attr::Bold),
+                        Cell::new("FQN").with_style(Attr::Bold),
+                    ]));
+                    // add the node itself
+                    table.add_row(row![node.name, node.fqn]);
+                    for entry in node.entries {
+                        // indent the entries to indicated children
+                        let entry_name = format!("{}{}", indent, entry.name);
+                        table.add_row(row![entry_name, entry.fqn]);
+                    }
+                    table.set_format(*format::consts::FORMAT_NO_LINESEP_WITH_TITLE);
+
+                    if fmt == "csv" {
+                        table.to_csv(stdout())?;
+                    } else {
+                        assert_eq!(fmt, "table");
+                        table.printstd();
+                    }
+                }
+            } else {
+                process::exit(3);
+            }
+        } else {
+            error_message(format!(
+                "Integration '{}' does not exist!",
+                int_name.unwrap()
+            ))?;
+            process::exit(4);
+        }
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("list") {
         let details = integrations.get_integration_details(org_id)?;
         if details.is_empty() {

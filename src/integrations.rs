@@ -1,7 +1,14 @@
 use crate::graphql::prelude::graphql_request;
 use crate::graphql::{GraphQLError, GraphQLResult, Operation, Resource, NO_ORG_ERROR};
+use crate::integrations::integration_node_query::*;
 use crate::integrations::integrations_query::IntegrationsQueryViewerOrganizationIntegrationsNodesOn;
+use crate::integrations::IntegrationNodeQueryNodeOn::AwsIntegration;
+use crate::integrations::IntegrationNodeQueryNodeOn::GithubIntegration;
+use crate::integrations::IntegrationNodeQueryNodeOn::IntegrationFile;
+use crate::integrations::IntegrationNodeQueryNodeOn::IntegrationFileTree;
+use crate::integrations::IntegrationNodeQueryNodeOn::IntegrationServiceTree;
 use graphql_client::*;
+use std::fmt::Debug;
 
 #[derive(GraphQLQuery)]
 #[graphql(
@@ -27,13 +34,39 @@ pub struct DeleteGithubIntegrationMutation;
 )]
 pub struct IntegrationsQuery;
 
-/// This holds the common information for Integrations, including an `integration_type` that
-/// indicates the provider.
+#[derive(GraphQLQuery)]
+#[graphql(
+    schema_path = "graphql/schema.graphql",
+    query_path = "graphql/integration_queries.graphql",
+    response_derives = "Debug"
+)]
+pub struct IntegrationNodeQuery;
+
+/// This holds the common information for Integrations.
+#[derive(Debug)]
 pub struct IntegrationDetails {
     pub fqn: String,
     pub id: String,
     pub integration_type: String,
     pub name: String,
+}
+
+/// Provides basic information about the integration entries
+#[derive(Debug)]
+pub struct IntegrationEntry {
+    pub fqn: String,
+    pub id: String,
+    pub name: String,
+}
+
+/// Provides information about the current node, and its' children
+#[derive(Debug)]
+pub struct IntegrationNode {
+    pub fqn: String,
+    pub id: String,
+    pub name: String,
+    /// `entries` are a list of "children" in the integration.
+    pub entries: Vec<IntegrationEntry>,
 }
 
 /// This is the interface that is implemented to retrieve integration information.
@@ -61,6 +94,9 @@ pub trait IntegrationsIntf {
         integration_id: String,
         integration_type: String,
     ) -> GraphQLResult<Option<String>>;
+
+    /// Get the integration node by ID
+    fn get_integration_node(&self, entry_id: String) -> GraphQLResult<Option<IntegrationNode>>;
 }
 
 /// Converts the typename into a String value without the trailing `Integration`
@@ -68,6 +104,132 @@ impl ToString for IntegrationsQueryViewerOrganizationIntegrationsNodesOn {
     fn to_string(&self) -> String {
         let result = format!("{:?}", self);
         result.replace("Integration", "")
+    }
+}
+
+impl From<&IntegrationNodeQueryNodeOnAwsIntegration> for IntegrationNode {
+    fn from(node: &IntegrationNodeQueryNodeOnAwsIntegration) -> Self {
+        let mut entries: Vec<IntegrationEntry> = Vec::new();
+        for e in node.entries.iter() {
+            entries.push(IntegrationEntry::from(e));
+        }
+        IntegrationNode {
+            fqn: node.fqn.clone(),
+            id: node.id.clone(),
+            name: node.name.clone(),
+            entries,
+        }
+    }
+}
+
+impl From<&IntegrationNodeQueryNodeOnGithubIntegration> for IntegrationNode {
+    fn from(node: &IntegrationNodeQueryNodeOnGithubIntegration) -> Self {
+        let mut entries: Vec<IntegrationEntry> = Vec::new();
+        for e in node.entries.iter() {
+            entries.push(IntegrationEntry::from(e));
+        }
+        IntegrationNode {
+            fqn: node.fqn.clone(),
+            id: node.id.clone(),
+            name: node.name.clone(),
+            entries,
+        }
+    }
+}
+
+impl From<&IntegrationNodeQueryNodeOnIntegrationServiceTree> for IntegrationNode {
+    fn from(node: &IntegrationNodeQueryNodeOnIntegrationServiceTree) -> Self {
+        let mut entries: Vec<IntegrationEntry> = Vec::new();
+        for e in node.entries.iter() {
+            entries.push(IntegrationEntry::from(e));
+        }
+        IntegrationNode {
+            fqn: node.fqn.clone(),
+            id: node.id.clone(),
+            name: node.name.clone(),
+            entries,
+        }
+    }
+}
+
+impl From<&IntegrationNodeQueryNodeOnIntegrationFileTree> for IntegrationNode {
+    fn from(node: &IntegrationNodeQueryNodeOnIntegrationFileTree) -> Self {
+        let mut entries: Vec<IntegrationEntry> = Vec::new();
+        for e in node.entries.iter() {
+            entries.push(IntegrationEntry::from(e));
+        }
+        IntegrationNode {
+            fqn: node.fqn.clone(),
+            id: node.id.clone(),
+            name: node.name.clone(),
+            entries,
+        }
+    }
+}
+
+impl From<&IntegrationNodeQueryNodeOnIntegrationFile> for IntegrationNode {
+    fn from(node: &IntegrationNodeQueryNodeOnIntegrationFile) -> Self {
+        IntegrationNode {
+            fqn: node.fqn.clone(),
+            id: node.id.clone(),
+            name: node.name.clone(),
+            // IntegrationFile's do NOT have entries...TODO: use json?
+            entries: vec![],
+        }
+    }
+}
+
+impl From<&IntegrationNodeQueryNodeOnAwsIntegrationEntries> for IntegrationEntry {
+    fn from(entry: &IntegrationNodeQueryNodeOnAwsIntegrationEntries) -> Self {
+        IntegrationEntry {
+            fqn: entry.fqn.clone(),
+            id: entry.id.clone(),
+            name: entry.name.clone(),
+        }
+    }
+}
+
+impl From<&IntegrationNodeQueryNodeOnGithubIntegrationEntries> for IntegrationEntry {
+    fn from(entry: &IntegrationNodeQueryNodeOnGithubIntegrationEntries) -> Self {
+        IntegrationEntry {
+            fqn: entry.fqn.clone(),
+            id: entry.id.clone(),
+            name: entry.name.clone(),
+        }
+    }
+}
+
+impl From<&IntegrationNodeQueryNodeOnIntegrationServiceTreeEntries> for IntegrationEntry {
+    fn from(entry: &IntegrationNodeQueryNodeOnIntegrationServiceTreeEntries) -> Self {
+        IntegrationEntry {
+            fqn: entry.fqn.clone(),
+            id: entry.id.clone(),
+            name: entry.name.clone(),
+        }
+    }
+}
+
+impl From<&IntegrationNodeQueryNodeOnIntegrationFileTreeEntries> for IntegrationEntry {
+    fn from(entry: &IntegrationNodeQueryNodeOnIntegrationFileTreeEntries) -> Self {
+        IntegrationEntry {
+            fqn: entry.fqn.clone(),
+            id: entry.id.clone(),
+            name: entry.name.clone(),
+        }
+    }
+}
+
+impl IntegrationNode {
+    /// Method to get a potential match in this node, for an entry matching the name.
+    pub fn get_id_for_name(&self, name: String) -> Option<String> {
+        let mut result = None;
+        for e in self.entries.iter() {
+            if name == e.name {
+                result = Some(e.id.clone());
+                break;
+            }
+        }
+        result
     }
 }
 
@@ -185,6 +347,7 @@ impl IntegrationsIntf for Integrations {
         let all_entries = self.get_integration_details(org_id)?;
         let mut found: Option<IntegrationDetails> = None;
         let mut integration_types: Vec<String> = Vec::new();
+        let int_type_name = int_type.unwrap_or_default();
 
         // walk the list of integration details looking for matches (and duplicates)
         for entry in all_entries {
@@ -192,10 +355,10 @@ impl IntegrationsIntf for Integrations {
                 continue;
             }
 
-            if int_type.is_none() {
+            if int_type_name.is_empty() {
                 integration_types.push(entry.integration_type.clone());
                 found = Some(entry);
-            } else if int_type == Some(entry.integration_type.as_str()) {
+            } else if int_type_name.to_lowercase() == entry.integration_type.to_lowercase() {
                 found = Some(entry);
                 break;
             }
@@ -223,6 +386,37 @@ impl IntegrationsIntf for Integrations {
             self.delete_github_integration(integration_id)
         } else {
             Err(GraphQLError::IntegrationTypeError(integration_type))
+        }
+    }
+
+    fn get_integration_node(&self, entry_id: String) -> GraphQLResult<Option<IntegrationNode>> {
+        let query =
+            IntegrationNodeQuery::build_query(integration_node_query::Variables { entry_id });
+        let response_body = graphql_request::<_, integration_node_query::ResponseData>(&query)?;
+
+        if let Some(errors) = response_body.errors {
+            Err(GraphQLError::ResponseError(errors))
+        } else if let Some(data) = response_body.data {
+            if let Some(node) = data.node {
+                if let AwsIntegration(aws) = &node.on {
+                    Ok(Some(IntegrationNode::from(aws)))
+                } else if let GithubIntegration(gh) = &node.on {
+                    Ok(Some(IntegrationNode::from(gh)))
+                } else if let IntegrationServiceTree(st) = &node.on {
+                    Ok(Some(IntegrationNode::from(st)))
+                } else if let IntegrationFileTree(st) = &node.on {
+                    Ok(Some(IntegrationNode::from(st)))
+                } else if let IntegrationFile(f) = &node.on {
+                    Ok(Some(IntegrationNode::from(f)))
+                } else {
+                    dbg!(&node);
+                    panic!("Unhandled type")
+                }
+            } else {
+                Ok(None)
+            }
+        } else {
+            Err(GraphQLError::MissingDataError)
         }
     }
 }
