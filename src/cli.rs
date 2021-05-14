@@ -3,6 +3,11 @@ use clap::{
     Arg, Shell, SubCommand,
 };
 
+pub const CONFIRM_FLAG: &str = "confirm";
+pub const FORMAT_OPT: &str = "format";
+pub const VALUES_FLAG: &str = "values";
+pub const SECRETS_FLAG: &str = "secrets";
+
 pub fn binary_name() -> String {
     option_env!("CARGO_PKG_NAME")
         .unwrap_or("cloudtruth")
@@ -10,25 +15,27 @@ pub fn binary_name() -> String {
 }
 
 fn table_format_options() -> Arg<'static, 'static> {
-    Arg::with_name("format")
+    Arg::with_name(FORMAT_OPT)
         .short("f")
-        .long("format")
+        .long(FORMAT_OPT)
         .takes_value(true)
         .default_value("table")
         .possible_values(&["table", "csv"])
 }
 
 fn values_flag() -> Arg<'static, 'static> {
-    Arg::with_name("values").short("v").long("values")
+    Arg::with_name(VALUES_FLAG).short("v").long(VALUES_FLAG)
 }
 
 fn secrets_display_flag() -> Arg<'static, 'static> {
-    Arg::with_name("secrets").short("s").long("secrets")
+    Arg::with_name(SECRETS_FLAG).short("s").long(SECRETS_FLAG)
 }
 
 fn confirm_flag() -> Arg<'static, 'static> {
-    Arg::with_name("confirm")
-        .long("confirm")
+    Arg::with_name(CONFIRM_FLAG)
+        .alias(CONFIRM_FLAG)
+        .short("y")
+        .long("yes")
         .help("Avoid confirmation prompt")
 }
 

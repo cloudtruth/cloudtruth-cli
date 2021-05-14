@@ -20,6 +20,7 @@ mod projects;
 mod subprocess;
 mod templates;
 
+use crate::cli::{CONFIRM_FLAG, FORMAT_OPT, SECRETS_FLAG, VALUES_FLAG};
 use crate::config::env::ConfigEnv;
 use crate::config::{Config, CT_PROFILE, DEFAULT_ENV_NAME, DEFAULT_PROJ_NAME};
 use crate::environments::Environments;
@@ -241,7 +242,7 @@ fn process_project_command(
 
         if let Some(details) = details {
             // NOTE: the server is responsible for checking if children exist
-            let mut confirmed = subcmd_args.is_present("confirm");
+            let mut confirmed = subcmd_args.is_present(CONFIRM_FLAG);
             if !confirmed {
                 confirmed = user_confirm(format!("Delete project '{}'", proj_name.unwrap()));
             }
@@ -258,14 +259,14 @@ fn process_project_command(
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("list") {
         let details = projects.get_project_details(org_id)?;
         // NOTE: should always have at least the default project
-        if !subcmd_args.is_present("values") {
+        if !subcmd_args.is_present(VALUES_FLAG) {
             let list = details
                 .iter()
                 .map(|v| v.name.clone())
                 .collect::<Vec<String>>();
             println!("{}", list.join("\n"));
         } else {
-            let fmt = subcmd_args.value_of("format").unwrap();
+            let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
             let mut table = Table::new();
             table.set_titles(Row::new(vec![
                 Cell::new("Name").with_style(Attr::Bold),
@@ -332,12 +333,12 @@ fn process_config_command(subcmd_args: &ArgMatches) -> Result<()> {
         let details = Config::get_profile_details()?;
         if details.is_empty() {
             println!("No profiles exist in config.");
-        } else if !subcmd_args.is_present("values") {
+        } else if !subcmd_args.is_present(VALUES_FLAG) {
             let profile_names: Vec<String> = details.iter().map(|v| v.name.clone()).collect();
             println!("{}", profile_names.join("\n"));
         } else {
-            let show_secrets = subcmd_args.is_present("secrets");
-            let fmt = subcmd_args.value_of("format").unwrap();
+            let show_secrets = subcmd_args.is_present(SECRETS_FLAG);
+            let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
             let mut table = Table::new();
             table.set_titles(Row::new(vec![
                 Cell::new("Name").with_style(Attr::Bold),
@@ -390,7 +391,7 @@ fn process_environment_command(
 
         if let Some(details) = details {
             // NOTE: the server is responsible for checking if children exist
-            let mut confirmed = subcmd_args.is_present("confirm");
+            let mut confirmed = subcmd_args.is_present(CONFIRM_FLAG);
             if !confirmed {
                 confirmed = user_confirm(format!("Delete environment '{}'", env_name.unwrap()));
             }
@@ -410,14 +411,14 @@ fn process_environment_command(
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("list") {
         let details = environments.get_environment_details(org_id)?;
         // NOTE: should always have at least the default environment
-        if !subcmd_args.is_present("values") {
+        if !subcmd_args.is_present(VALUES_FLAG) {
             let list = details
                 .iter()
                 .map(|v| v.name.clone())
                 .collect::<Vec<String>>();
             println!("{}", list.join("\n"));
         } else {
-            let fmt = subcmd_args.value_of("format").unwrap();
+            let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
             let mut table = Table::new();
             table.set_titles(Row::new(vec![
                 Cell::new("Name").with_style(Attr::Bold),
@@ -490,7 +491,7 @@ fn process_integrations_command(
         let details = integrations.get_details_by_name(org_id, int_name, int_type)?;
 
         if let Some(details) = details {
-            let mut confirmed = subcmd_args.is_present("confirm");
+            let mut confirmed = subcmd_args.is_present(CONFIRM_FLAG);
             if !confirmed {
                 confirmed = user_confirm(format!("Delete integration '{}'", int_name.unwrap()));
             }
@@ -587,14 +588,14 @@ fn process_integrations_command(
         let details = integrations.get_integration_details(org_id)?;
         if details.is_empty() {
             println!("No integrations found");
-        } else if !subcmd_args.is_present("values") {
+        } else if !subcmd_args.is_present(VALUES_FLAG) {
             let list = details
                 .iter()
                 .map(|d| d.name.clone())
                 .collect::<Vec<String>>();
             println!("{}", list.join("\n"))
         } else {
-            let fmt = subcmd_args.value_of("format").unwrap();
+            let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
             let mut table = Table::new();
             table.set_titles(Row::new(vec![
                 Cell::new("Name").with_style(Attr::Bold),
@@ -636,15 +637,15 @@ fn process_parameters_command(
                 "No parameters found in project {}",
                 resolved.proj_name.clone().unwrap()
             );
-        } else if !subcmd_args.is_present("values") {
+        } else if !subcmd_args.is_present(VALUES_FLAG) {
             let list = details
                 .iter()
                 .map(|d| d.key.clone())
                 .collect::<Vec<String>>();
             println!("{}", list.join("\n"))
         } else {
-            let fmt = subcmd_args.value_of("format").unwrap();
-            let show_secrets = subcmd_args.is_present("secrets");
+            let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
+            let show_secrets = subcmd_args.is_present(SECRETS_FLAG);
             let mut table = Table::new();
             table.set_titles(Row::new(vec![
                 Cell::new("Name").with_style(Attr::Bold),
@@ -797,7 +798,7 @@ fn process_parameters_command(
         let contains = subcmd_args.value_of("contains");
         let template_format = subcmd_args.value_of("FORMAT").unwrap();
         let export = subcmd_args.is_present("export");
-        let secrets = subcmd_args.is_present("secrets");
+        let secrets = subcmd_args.is_present(SECRETS_FLAG);
         let env_name = resolved.env_name.as_deref();
         let format = ExportParametersFormatEnum::from_str(template_format).unwrap();
         let options = ExportParametersOptions {
@@ -841,14 +842,14 @@ fn process_templates_command(
                 "There are no templates in project `{}`.",
                 proj_name.unwrap_or_else(|| DEFAULT_PROJ_NAME.to_string())
             );
-        } else if !subcmd_args.is_present("values") {
+        } else if !subcmd_args.is_present(VALUES_FLAG) {
             let list = details
                 .iter()
                 .map(|n| n.name.clone())
                 .collect::<Vec<String>>();
             println!("{}", list.join("\n"))
         } else {
-            let fmt = subcmd_args.value_of("format").unwrap();
+            let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
             let mut table = Table::new();
             table.set_titles(Row::new(vec![
                 Cell::new("Name").with_style(Attr::Bold),
