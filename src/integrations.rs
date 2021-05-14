@@ -1,3 +1,4 @@
+extern crate serde_json;
 use crate::graphql::prelude::graphql_request;
 use crate::graphql::{GraphQLError, GraphQLResult, Operation, Resource, NO_ORG_ERROR};
 use crate::integrations::integration_node_query::*;
@@ -8,6 +9,8 @@ use crate::integrations::IntegrationNodeQueryNodeOn::IntegrationFile;
 use crate::integrations::IntegrationNodeQueryNodeOn::IntegrationFileTree;
 use crate::integrations::IntegrationNodeQueryNodeOn::IntegrationServiceTree;
 use graphql_client::*;
+use serde_json::value::Value::Object;
+use serde_json::Value;
 use std::fmt::Debug;
 
 #[derive(GraphQLQuery)]
@@ -167,14 +170,48 @@ impl From<&IntegrationNodeQueryNodeOnIntegrationFileTree> for IntegrationNode {
     }
 }
 
+/// Walks a Json Value and (recursively) creates a list of keys using "dot" notation.
+///
+/// As an example:
+///    { "a": ["an", "array"], "b": { "an": "object" } }
+/// turns into [ a, b.an }
+fn get_keys(v: Value) -> Vec<String> {
+    let mut keys: Vec<String> = Vec::new();
+    if let Object(map) = v {
+        for (key, value) in map {
+            if !value.is_object() {
+                keys.push(key);
+            } else {
+                let sub_keys = get_keys(value);
+                for sk in sub_keys {
+                    keys.push(format!("{}.{}", key, sk));
+                }
+            }
+        }
+    }
+    keys
+}
+
 impl From<&IntegrationNodeQueryNodeOnIntegrationFile> for IntegrationNode {
     fn from(node: &IntegrationNodeQueryNodeOnIntegrationFile) -> Self {
+        let mut entries: Vec<IntegrationEntry> = Vec::new();
+        if let Some(json) = &node.json {
+            if let Ok(v) = serde_json::from_str::<Value>(&json.as_str()) {
+                let key_names = get_keys(v);
+                for k in key_names {
+                    entries.push(IntegrationEntry {
+                        fqn: node.fqn.clone(),
+                        id: "".to_string(),
+                        name: format!("{{{{ {} }}}}", k),
+                    })
+                }
+            }
+        }
         IntegrationNode {
             fqn: node.fqn.clone(),
             id: node.id.clone(),
             name: node.name.clone(),
-            // IntegrationFile's do NOT have entries...TODO: use json?
-            entries: vec![],
+            entries,
         }
     }
 }
@@ -431,5 +468,45 @@ mod test {
         assert_eq!("Aws".to_string(), format!("{}", value.to_string()));
         value = IntegrationsQueryViewerOrganizationIntegrationsNodesOn::GithubIntegration;
         assert_eq!("Github".to_string(), format!("{}", value.to_string()));
+    }
+
+    #[test]
+    fn get_keys_empty() {
+        let json = "{}";
+        let value = serde_json::from_str::<Value>(&json).unwrap();
+        let expected: Vec<String> = Vec::new();
+        assert_eq!(get_keys(value), expected);
+    }
+
+    #[test]
+    fn get_keys_simple() {
+        let json = r#"{"a":"b", "c":"d", "e":1}"#;
+        let value = serde_json::from_str::<Value>(&json).unwrap();
+        let expected: Vec<String> = vec!["a".to_string(), "c".to_string(), "e".to_string()];
+        assert_eq!(get_keys(value), expected);
+    }
+
+    #[test]
+    fn get_keys_moderate() {
+        let json = r#"{ "a": ["an", "array"], "b": { "an": "object" } }"#;
+        let value = serde_json::from_str::<Value>(&json).unwrap();
+        let expected: Vec<String> = vec!["a".to_string(), "b.an".to_string()];
+        assert_eq!(get_keys(value), expected);
+    }
+    #[test]
+    fn get_keys_complex() {
+        let json =
+            r#"{"a":"b", "c":"d", "e": {"f":"g", "h": {"i":"j", "k":"l"}, "m":"n"}, "o":"p"}"#;
+        let value = serde_json::from_str::<Value>(&json).unwrap();
+        let expected: Vec<String> = vec![
+            "a".to_string(),
+            "c".to_string(),
+            "e.f".to_string(),
+            "e.h.i".to_string(),
+            "e.h.k".to_string(),
+            "e.m".to_string(),
+            "o".to_string(),
+        ];
+        assert_eq!(get_keys(value), expected);
     }
 }
