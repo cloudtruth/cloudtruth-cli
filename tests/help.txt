@@ -102,7 +102,7 @@ USAGE:
     cloudtruth environments delete [FLAGS] <NAME>
 
 FLAGS:
-        --confirm    Avoid confirmation prompt
+    -y, --yes        Avoid confirmation prompt
     -h, --help       Prints help information
     -V, --version    Prints version information
 
@@ -163,7 +163,7 @@ USAGE:
     cloudtruth integrations delete [FLAGS] [OPTIONS] <NAME>
 
 FLAGS:
-        --confirm    Avoid confirmation prompt
+    -y, --yes        Avoid confirmation prompt
     -h, --help       Prints help information
     -V, --version    Prints version information
 
@@ -331,7 +331,7 @@ USAGE:
     cloudtruth projects delete [FLAGS] <NAME>
 
 FLAGS:
-        --confirm    Avoid confirmation prompt
+    -y, --yes        Avoid confirmation prompt
     -h, --help       Prints help information
     -V, --version    Prints version information
 

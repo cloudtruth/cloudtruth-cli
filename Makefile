@@ -80,7 +80,7 @@ ifneq ($(rust_bad_version),)
 endif
 	@echo "Using rustc version: $(rust_intended)"
 
-regen:
+regen: cargo
 	make -C tests $@
 
 help: targets
