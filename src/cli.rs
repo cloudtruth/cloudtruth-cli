@@ -26,6 +26,22 @@ fn secrets_display_flag() -> Arg<'static, 'static> {
     Arg::with_name("secrets").short("s").long("secrets")
 }
 
+fn confirm_flag() -> Arg<'static, 'static> {
+    Arg::with_name("confirm")
+        .long("confirm")
+        .help("Avoid confirmation prompt")
+}
+
+fn integration_type_option() -> Arg<'static, 'static> {
+    Arg::with_name("TYPE")
+        .short("t")
+        .long("type")
+        .takes_value(true)
+        .case_insensitive(true)
+        .possible_values(&["aws", "github"])
+        .help("Integration type, only used to disambiguate duplicate names")
+}
+
 pub fn build_cli() -> App<'static, 'static> {
     app_from_crate!()
         .setting(AppSettings::SubcommandRequiredElseHelp)
@@ -86,9 +102,7 @@ pub fn build_cli() -> App<'static, 'static> {
                             .index(1)
                             .required(true)
                             .help("Environment name"))
-                        .arg(Arg::with_name("confirm")
-                            .long("confirm")
-                            .help("Avoid confirmation prompt")),
+                        .arg(confirm_flag()),
                     SubCommand::with_name("list")
                         .visible_alias("ls")
                         .about("List CloudTruth environments")
@@ -124,16 +138,25 @@ pub fn build_cli() -> App<'static, 'static> {
                             .index(1)
                             .required(true)
                             .help("Integration name"))
-                        .arg(Arg::with_name("confirm")
-                            .long("confirm")
-                            .help("Avoid confirmation prompt"))
-                        .arg(Arg::with_name("TYPE")
-                            .short("t")
-                            .long("type")
+                        .arg(confirm_flag())
+                        .arg(integration_type_option()),
+                    SubCommand::with_name("explore")
+                        .visible_aliases(&["exp", "ex", "e"])
+                        .about("Explore specific integration options")
+                        .arg(Arg::with_name("NAME")
+                            .index(1)
                             .takes_value(true)
-                            .possible_values(&["aws", "github"])
-                            .help(concat!("Integration type, only needed to disambiguate ",
-                                "integrations with the same name"))),
+                            .required(true)
+                            .help("Integration name"))
+                        .arg(Arg::with_name("PATH")
+                            .index(2)
+                            .takes_value(true)
+                            .required(false)
+                            .help("Path within the integration")
+                        )
+                        .arg(table_format_options().help("Format integration values data."))
+                        .arg(values_flag().help("Display integration values"))
+                        .arg(integration_type_option()),
                     SubCommand::with_name("list")
                         .visible_alias("ls")
                         .about("List CloudTruth integrations")
@@ -287,9 +310,7 @@ pub fn build_cli() -> App<'static, 'static> {
                             .index(1)
                             .required(true)
                             .help("Project name"))
-                        .arg(Arg::with_name("confirm")
-                            .long("confirm")
-                            .help("Avoid confirmation prompt")),
+                        .arg(confirm_flag()),
                     SubCommand::with_name("list")
                         .visible_alias("ls")
                         .about("List CloudTruth projects")

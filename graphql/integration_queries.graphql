@@ -1,6 +1,5 @@
 query IntegrationsQuery($organizationId: ID) {
   viewer {
-    id
     organization(id: $organizationId) {
       integrations {
         nodes {
@@ -34,6 +33,63 @@ mutation DeleteGithubIntegrationMutation($integrationId: ID!) {
     errors {
       path
       message
+    }
+  }
+}
+
+query IntegrationNodeQuery($entryId: ID!) {
+  node(id: $entryId) {
+    __typename
+    ... on GithubIntegration {
+      id
+      name
+      fqn
+      entries {
+        __typename
+        id
+        name
+        fqn
+      }
+    }
+    ... on AwsIntegration {
+      id
+      name
+      fqn
+      entries {
+        __typename
+        id
+        name
+        fqn
+      }
+    }
+    ... on IntegrationFileTree {
+      id
+      name
+      fqn
+      entries {
+        __typename
+        id
+        name
+        fqn
+      }
+    }
+    ... on IntegrationFile {
+      id
+      name
+      fqn
+      mimeType
+      json
+    }
+    ... on IntegrationServiceTree {
+      id
+      name
+      fqn
+      entries {
+        __typename
+        id
+        name
+        fqn
+      }
     }
   }
 }
