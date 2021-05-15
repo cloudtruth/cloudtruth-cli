@@ -13,30 +13,6 @@ query IntegrationsQuery($organizationId: ID) {
   }
 }
 
-mutation DeleteAwsIntegrationMutation($integrationId: ID!) {
-  deleteAwsIntegration(input: { id: $integrationId }) {
-    clientMutationId
-    deletedAwsIntegrationId
-
-    errors {
-      path
-      message
-    }
-  }
-}
-
-mutation DeleteGithubIntegrationMutation($integrationId: ID!) {
-  deleteGithubIntegration(input: { id: $integrationId }) {
-    clientMutationId
-    deletedGithubIntegrationId
-
-    errors {
-      path
-      message
-    }
-  }
-}
-
 query IntegrationNodeQuery($entryId: ID!) {
   node(id: $entryId) {
     __typename

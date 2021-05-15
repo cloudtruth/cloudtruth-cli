@@ -1,6 +1,6 @@
 extern crate serde_json;
 use crate::graphql::prelude::graphql_request;
-use crate::graphql::{GraphQLError, GraphQLResult, Operation, Resource, NO_ORG_ERROR};
+use crate::graphql::{GraphQLError, GraphQLResult, NO_ORG_ERROR};
 use crate::integrations::integration_node_query::*;
 use crate::integrations::integrations_query::IntegrationsQueryViewerOrganizationIntegrationsNodesOn;
 use crate::integrations::IntegrationNodeQueryNodeOn::AwsIntegration;
@@ -12,22 +12,6 @@ use graphql_client::*;
 use serde_json::value::Value::Object;
 use serde_json::Value;
 use std::fmt::Debug;
-
-#[derive(GraphQLQuery)]
-#[graphql(
-    schema_path = "graphql/schema.graphql",
-    query_path = "graphql/integration_queries.graphql",
-    response_derives = "Debug"
-)]
-pub struct DeleteAwsIntegrationMutation;
-
-#[derive(GraphQLQuery)]
-#[graphql(
-    schema_path = "graphql/schema.graphql",
-    query_path = "graphql/integration_queries.graphql",
-    response_derives = "Debug"
-)]
-pub struct DeleteGithubIntegrationMutation;
 
 #[derive(GraphQLQuery)]
 #[graphql(
@@ -90,13 +74,6 @@ pub trait IntegrationsIntf {
         int_name: Option<&str>,
         int_type: Option<&str>,
     ) -> GraphQLResult<Option<IntegrationDetails>>;
-
-    /// Deletes the integration by ID.
-    fn delete_integration(
-        &self,
-        integration_id: String,
-        integration_type: String,
-    ) -> GraphQLResult<Option<String>>;
 
     /// Get the integration node by ID
     fn get_integration_node(&self, entry_id: String) -> GraphQLResult<Option<IntegrationNode>>;
@@ -278,64 +255,6 @@ impl Integrations {
     pub fn new() -> Self {
         Self {}
     }
-
-    pub fn delete_aws_integration(&self, integration_id: String) -> GraphQLResult<Option<String>> {
-        let query =
-            DeleteAwsIntegrationMutation::build_query(delete_aws_integration_mutation::Variables {
-                integration_id,
-            });
-        let response_body =
-            graphql_request::<_, delete_aws_integration_mutation::ResponseData>(&query)?;
-
-        if let Some(errors) = response_body.errors {
-            Err(GraphQLError::build_query_error(
-                errors,
-                Resource::Integration,
-                Operation::Delete,
-            ))
-        } else if let Some(data) = response_body.data {
-            let logical_errors = data.delete_aws_integration.errors;
-            if !logical_errors.is_empty() {
-                Err(GraphQLError::build_logical_error(to_user_errors!(
-                    logical_errors
-                )))
-            } else {
-                Ok(data.delete_aws_integration.deleted_aws_integration_id)
-            }
-        } else {
-            Err(GraphQLError::MissingDataError)
-        }
-    }
-
-    pub fn delete_github_integration(
-        &self,
-        integration_id: String,
-    ) -> GraphQLResult<Option<String>> {
-        let query = DeleteGithubIntegrationMutation::build_query(
-            delete_github_integration_mutation::Variables { integration_id },
-        );
-        let response_body =
-            graphql_request::<_, delete_github_integration_mutation::ResponseData>(&query)?;
-
-        if let Some(errors) = response_body.errors {
-            Err(GraphQLError::build_query_error(
-                errors,
-                Resource::Integration,
-                Operation::Delete,
-            ))
-        } else if let Some(data) = response_body.data {
-            let logical_errors = data.delete_github_integration.errors;
-            if !logical_errors.is_empty() {
-                Err(GraphQLError::build_logical_error(to_user_errors!(
-                    logical_errors
-                )))
-            } else {
-                Ok(data.delete_github_integration.deleted_github_integration_id)
-            }
-        } else {
-            Err(GraphQLError::MissingDataError)
-        }
-    }
 }
 
 impl IntegrationsIntf for Integrations {
@@ -409,20 +328,6 @@ impl IntegrationsIntf for Integrations {
             ))
         } else {
             Ok(found)
-        }
-    }
-
-    fn delete_integration(
-        &self,
-        integration_id: String,
-        integration_type: String,
-    ) -> GraphQLResult<Option<String>> {
-        if integration_type.to_lowercase() == "aws" {
-            self.delete_aws_integration(integration_id)
-        } else if integration_type.to_lowercase() == "github" {
-            self.delete_github_integration(integration_id)
-        } else {
-            Err(GraphQLError::IntegrationTypeError(integration_type))
         }
     }
 

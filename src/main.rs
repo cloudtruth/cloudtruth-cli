@@ -485,30 +485,7 @@ fn process_integrations_command(
     integrations: &impl IntegrationsIntf,
     org_id: Option<&str>,
 ) -> Result<()> {
-    if let Some(subcmd_args) = subcmd_args.subcommand_matches("delete") {
-        let int_name = subcmd_args.value_of("NAME");
-        let int_type = subcmd_args.value_of("TYPE");
-        let details = integrations.get_details_by_name(org_id, int_name, int_type)?;
-
-        if let Some(details) = details {
-            let mut confirmed = subcmd_args.is_present(CONFIRM_FLAG);
-            if !confirmed {
-                confirmed = user_confirm(format!("Delete integration '{}'", int_name.unwrap()));
-            }
-
-            if !confirmed {
-                warning_message(format!("Integration '{}' not deleted!", int_name.unwrap()))?;
-            } else {
-                integrations.delete_integration(details.id, details.integration_type)?;
-                println!("Deleted integration '{}'", int_name.unwrap());
-            }
-        } else {
-            warning_message(format!(
-                "Integration '{}' does not exist!",
-                int_name.unwrap()
-            ))?;
-        }
-    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("explore") {
+    if let Some(subcmd_args) = subcmd_args.subcommand_matches("explore") {
         let int_name = subcmd_args.value_of("NAME");
         let int_type = subcmd_args.value_of("TYPE");
         let path = subcmd_args.value_of("PATH");
