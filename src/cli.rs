@@ -138,15 +138,6 @@ pub fn build_cli() -> App<'static, 'static> {
                 .visible_aliases(&["integration", "integrate", "integ", "int"])
                 .about("Work with CloudTruth integrations")
                 .subcommands(vec![
-                    SubCommand::with_name("delete")
-                        .visible_alias("del")
-                        .about("Delete specified CloudTruth integration")
-                        .arg(Arg::with_name("NAME")
-                            .index(1)
-                            .required(true)
-                            .help("Integration name"))
-                        .arg(confirm_flag())
-                        .arg(integration_type_option()),
                     SubCommand::with_name("explore")
                         .visible_aliases(&["exp", "ex", "e"])
                         .about("Explore specific integration options")

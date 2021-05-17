@@ -63,7 +63,6 @@ pub type GraphQLResult<T> = std::result::Result<T, GraphQLError>;
 pub enum GraphQLError {
     AmbiguousIntegrationError(String, String),
     EnvironmentNotFoundError(String),
-    IntegrationTypeError(String),
     MissingDataError,
     NetworkError(Arc<reqwest::Error>),
     ParameterNotFoundError(String),
@@ -125,9 +124,6 @@ impl fmt::Display for GraphQLError {
             }
             GraphQLError::EnvironmentNotFoundError(name) => {
                 write!(f, "Unable to find environment '{}'.", name)
-            }
-            GraphQLError::IntegrationTypeError(type_name) => {
-                write!(f, "Unable to process integration type '{}'.", type_name)
             }
             GraphQLError::MissingDataError => write!(
                 f,
