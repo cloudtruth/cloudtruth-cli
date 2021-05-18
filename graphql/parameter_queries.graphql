@@ -14,8 +14,8 @@ query ExportParametersQuery($organizationId: ID, $environmentName: String, $proj
   viewer {
     organization(id: $organizationId) {
       project(name: $projectName) {
-        exportParameters(format: $format, options: $options) {
-          evaluated(environmentName: $environmentName)
+        exportParameters(format: $format, options: $options, environmentName: $environmentName) {
+          evaluated
         }
       }
     }
