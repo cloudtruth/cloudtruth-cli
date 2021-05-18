@@ -30,10 +30,15 @@ query GetParameterByNameQuery($organizationId: ID, $envName: String, $projectNam
           id
           environmentValue(environmentName: $envName) {
             parameterValue
+            jmesPath
+            integrationFile {
+              fqn
+            }
           }
           keyName
           isSecret
           description
+          hasDynamicValue
         }
       }
     }
@@ -73,6 +78,11 @@ query ParametersDetailQuery($organizationId: ID, $environmentId: ID, $projectNam
             description
             environmentValue(environmentId: $environmentId) {
               parameterValue
+              jmesPath
+              integrationFile {
+                name
+                fqn
+              }
               inheritedFrom {
                 name
               }
@@ -80,6 +90,7 @@ query ParametersDetailQuery($organizationId: ID, $environmentId: ID, $projectNam
                 name
               }
             }
+            hasDynamicValue
           }
         }
       }
@@ -87,8 +98,8 @@ query ParametersDetailQuery($organizationId: ID, $environmentId: ID, $projectNam
   }
 }
 
-mutation UpsertParameterMutation($projectId: ID, $environmentName: String, $keyName: String!, $value: String, $secret: Boolean, $description: String) {
-  upsertParameter(input: { keyName: $keyName, value: $value, environmentName: $environmentName, projectId: $projectId, isSecret: $secret , description: $description}) {
+mutation UpsertParameterMutation($projectId: ID, $environmentName: String, $keyName: String!, $value: String, $secret: Boolean, $description: String, $fqn: String, $jmesPath: String) {
+  upsertParameter(input: { keyName: $keyName, value: $value, environmentName: $environmentName, projectId: $projectId, isSecret: $secret , description: $description, jmesPath: $jmesPath, integrationFileFqn: $fqn}) {
     clientMutationId
     parameter {
       id

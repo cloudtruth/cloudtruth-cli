@@ -207,7 +207,7 @@ pub fn build_cli() -> App<'static, 'static> {
                         .arg(table_format_options().help("Format for parameter values data"))
                         .arg(secrets_display_flag().help("Display the secret parameter values")),
                     SubCommand::with_name("set")
-                        .about(concat!("Set a static value in the selected project/environment for ",
+                        .about(concat!("Set a value in the selected project/environment for ",
                             "an existing parameter or creates a new one if needed"))
                         .arg(Arg::with_name("KEY").required(true).index(1))
                         .arg(Arg::with_name("description")
@@ -215,15 +215,25 @@ pub fn build_cli() -> App<'static, 'static> {
                             .short("d")
                             .long("desc")
                             .help("Parameter description"))
+                        .arg(Arg::with_name("FQN")
+                            .short("f")
+                            .long("fqn")
+                            .takes_value(true)
+                            .help("Fully Qualified Name (FQN) reference for dynamic parameter."))
                         .arg(Arg::with_name("input-file")
                             .short("i")
                             .long("input")
                             .takes_value(true)
-                            .help("Read the value from the input file"))
+                            .help("Read the static value from the local input file"))
+                        .arg(Arg::with_name("JMES")
+                            .short("j")
+                            .long("jmes")
+                            .takes_value(true)
+                            .help("JMES path within FQN for dynamic parameter"))
                         .arg(Arg::with_name("prompt")
                             .short("p")
                             .long("prompt")
-                            .help("Set the value using unecho'd terminal"))
+                            .help("Set the static value using unecho'd terminal"))
                         .arg(Arg::with_name("secret")
                             .long("secret")
                             .takes_value(true)
@@ -233,7 +243,7 @@ pub fn build_cli() -> App<'static, 'static> {
                             .short("v")
                             .long("value")
                             .takes_value(true)
-                            .help("Parameter value")),
+                            .help("Static parameter value")),
                 ]),
         )
         .subcommand(SubCommand::with_name("templates")

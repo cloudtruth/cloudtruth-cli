@@ -63,6 +63,8 @@ pub struct ParameterDetails {
     pub secret: bool,
     pub description: String,
     pub source: String,
+    pub fqn: String,
+    pub jmes_path: String,
 }
 
 /// Converts to ExportParametersFormatEnum from a &str.
@@ -301,6 +303,8 @@ impl Parameters {
             if let Some(project) = data.viewer.organization.expect(NO_ORG_ERROR).project {
                 let mut env_vars: Vec<ParameterDetails> = Vec::new();
                 for p in project.parameters.nodes {
+                    let mut fqn = "".to_string();
+                    let mut jmes_path = "".to_string();
                     let mut param_value: String = "".to_string();
                     let mut source: String = "".to_string();
 
@@ -310,7 +314,11 @@ impl Parameters {
                         } else {
                             source = env_value.environment.name;
                         }
+                        if let Some(file) = env_value.integration_file {
+                            fqn = file.fqn;
+                        }
                         param_value = env_value.parameter_value.unwrap_or_default();
+                        jmes_path = env_value.jmes_path.unwrap_or_default();
                     }
 
                     // Add an entry for every parameter, even if it has no value or source
@@ -321,6 +329,8 @@ impl Parameters {
                         secret: p.is_secret,
                         description: p.description.unwrap_or_default(),
                         source,
+                        jmes_path,
+                        fqn,
                     });
                 }
                 Ok(env_vars)
@@ -334,6 +344,7 @@ impl Parameters {
         }
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn set_parameter(
         &self,
         proj_id: Option<String>,
@@ -342,6 +353,8 @@ impl Parameters {
         value: Option<&str>,
         description: Option<&str>,
         secret: Option<bool>,
+        fqn: Option<&str>,
+        jmes_path: Option<&str>,
     ) -> GraphQLResult<Option<String>> {
         let query = UpsertParameterMutation::build_query(upsert_parameter_mutation::Variables {
             project_id: proj_id,
@@ -350,6 +363,8 @@ impl Parameters {
             value: value.map(|v| v.to_string()),
             description: description.map(|v| v.to_string()),
             secret,
+            fqn: fqn.map(|f| f.to_string()),
+            jmes_path: jmes_path.map(|j| j.to_string()),
         });
         let response_body = graphql_request::<_, upsert_parameter_mutation::ResponseData>(&query)?;
 

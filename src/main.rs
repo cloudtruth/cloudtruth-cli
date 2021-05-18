@@ -675,6 +675,10 @@ fn process_parameters_command(
         let org_id = resolved.org_id.as_deref();
         let env_name = resolved.env_name.as_deref();
         let proj_name = resolved.proj_name.clone();
+        let prompt_user = subcmd_args.is_present("prompt");
+        let filename = subcmd_args.value_of("input-file");
+        let mut fqn = subcmd_args.value_of("FQN").map(|f| f.to_string());
+        let mut jmes_path = subcmd_args.value_of("JMES").map(|j| j.to_string());
         let mut value = subcmd_args.value_of("value").map(|v| v.to_string());
         let mut description = subcmd_args.value_of("description").map(|v| v.to_string());
         let mut secret: Option<bool> = match subcmd_args.value_of("secret") {
@@ -683,31 +687,58 @@ fn process_parameters_command(
             _ => None,
         };
 
+        // make sure the user did not over-specify
+        if (jmes_path.is_some() || fqn.is_some())
+            && (value.is_some() || prompt_user || filename.is_some())
+        {
+            error_message(
+                concat!(
+                    "Conflicting arguments: cannot specify prompt/input-file/value, ",
+                    "and fqn/jmes-path"
+                )
+                .to_string(),
+            )?;
+            process::exit(7);
+        }
+
         // if user asked to be prompted
-        if subcmd_args.is_present("prompt") {
+        if prompt_user {
             println!("Please enter the '{}' value: ", key);
             value = Some(read_password()?);
-        } else if let Some(filename) = subcmd_args.value_of("input-file") {
+        } else if let Some(filename) = filename {
             value = Some(fs::read_to_string(filename).expect("Failed to read value from file."));
         }
 
         // make sure there is at least one parameter to updated
-        if description.is_none() && secret.is_none() && value.is_none() {
+        if description.is_none()
+            && secret.is_none()
+            && value.is_none()
+            && jmes_path.is_none()
+            && fqn.is_none()
+        {
             warn_user(
                 concat!(
                     "Nothing changed. Please provide at least one of: ",
-                    "description, secret, or value."
+                    "description, secret, or value/fqn/jmes-path."
                 )
                 .to_string(),
             )?;
         } else {
-            // get the original value, so that is not lost
+            // get the original values, so that is not lost
             if let Ok(Some(original)) =
                 parameters.get_parameter_full(org_id, env_name, proj_name.clone(), &key)
             {
-                if value.is_none() {
+                // use original values
+                if value.is_none() && jmes_path.is_none() && fqn.is_none() {
                     if let Some(env_value) = original.environment_value {
-                        value = env_value.parameter_value;
+                        if original.has_dynamic_value {
+                            jmes_path = env_value.jmes_path;
+                            if let Some(file) = env_value.integration_file {
+                                fqn = Some(file.fqn);
+                            }
+                        } else {
+                            value = env_value.parameter_value;
+                        }
                     }
                 }
                 if description.is_none() {
@@ -725,6 +756,8 @@ fn process_parameters_command(
                 value.as_deref(),
                 description.as_deref(),
                 secret,
+                fqn.as_deref(),
+                jmes_path.as_deref(),
             )?;
 
             if updated_id.is_some() {

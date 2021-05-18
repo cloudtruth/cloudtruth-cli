@@ -205,8 +205,8 @@ SUBCOMMANDS:
     get       Gets value for parameter in the selected environment
     help      Prints this message or the help of the given subcommand(s)
     list      List CloudTruth parameters [aliases: ls]
-    set       Set a static value in the selected project/environment for an existing parameter or creates a new one
-              if needed
+    set       Set a value in the selected project/environment for an existing parameter or creates a new one if
+              needed
 ========================================
 cloudtruth-parameters-delete 
 Delete the parameter from the project
@@ -271,21 +271,23 @@ OPTIONS:
     -f, --format <format>    Format for parameter values data [default: table]  [possible values: table, csv]
 ========================================
 cloudtruth-parameters-set 
-Set a static value in the selected project/environment for an existing parameter or creates a new one if needed
+Set a value in the selected project/environment for an existing parameter or creates a new one if needed
 
 USAGE:
     cloudtruth parameters set [FLAGS] [OPTIONS] <KEY>
 
 FLAGS:
     -h, --help       Prints help information
-    -p, --prompt     Set the value using unecho'd terminal
+    -p, --prompt     Set the static value using unecho'd terminal
     -V, --version    Prints version information
 
 OPTIONS:
+    -f, --fqn <FQN>             Fully Qualified Name (FQN) reference for dynamic parameter.
+    -j, --jmes <JMES>           JMES path within FQN for dynamic parameter
     -d, --desc <description>    Parameter description
-    -i, --input <input-file>    Read the value from the input file
+    -i, --input <input-file>    Read the static value from the local input file
         --secret <secret>       Flags whether this is a secret parameter [possible values: true, false]
-    -v, --value <value>         Parameter value
+    -v, --value <value>         Static parameter value
 
 ARGS:
     <KEY>    
