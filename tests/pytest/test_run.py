@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 
-from testcase import CT_URL, DEFAULT_SERVER_URL
+from testcase import CT_PROFILE, CT_API_KEY
 from testcase import TestCase
 
 
@@ -81,17 +81,20 @@ class TestRun(TestCase):
         print_env = f" -- {self.get_display_env_command()}"
 
         # make sure we have something that normally gets removed
-        if CT_URL not in cmd_env:
-            cmd_env[CT_URL] = DEFAULT_SERVER_URL
+        if CT_API_KEY not in cmd_env:
+            prof_name = cmd_env.get(CT_PROFILE, "default")
+            profile = self.get_profile(cmd_env, prof_name)
+            cmd_env[CT_API_KEY] = profile.get("API")
+
         self.create_project(cmd_env, proj_name)
 
         result = self.run_cli(cmd_env, sub_cmd + print_env)
         self.assertEqual(result.return_value, 0)
-        self.assertNotIn(CT_URL, result.out())
+        self.assertNotIn(CT_API_KEY, result.out())
 
         result = self.run_cli(cmd_env, sub_cmd + "--permissive" + print_env)
         self.assertEqual(result.return_value, 0)
-        self.assertIn(CT_URL, result.out())
+        self.assertIn(CT_API_KEY, result.out())
 
         self.delete_project(cmd_env, proj_name)
 

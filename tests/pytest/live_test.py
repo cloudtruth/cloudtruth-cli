@@ -25,7 +25,6 @@ def parse_args(*args) -> argparse.Namespace:
         "--url",
         type=str,
         help="CloudTruth server URL",
-        default=DEFAULT_SERVER_URL,
     )
     parser.add_argument(
         "-v",
@@ -102,9 +101,6 @@ def debugTestRunner(enable_debug: bool, verbosity: int, failfast: bool):
 
 def live_test(*args):
     args = parse_args(*args)
-    if args.url is None:
-        args.url = os.environ(CT_API_KEY)
-
     env = os.environ
     if args.url:
         env[CT_URL] = args.url

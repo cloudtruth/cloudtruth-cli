@@ -309,16 +309,18 @@ my_param,super-SENSITIVE-vAluE,default,my secret value
 +-----------+------------+---------+-------------+
 """)
 
-        result = self.run_cli(cmd_env, base_cmd + f"--project {proj_name1} param export docker")
+        result = self.run_cli(cmd_env, base_cmd + f"--project {proj_name1} param export docker -s")
         self.assertEqual(result.return_value, 0)
         self.assertEqual(result.out(), """\
+SENSITIVE=classified
 SNA=foo
 
 """)
 
-        result = self.run_cli(cmd_env, base_cmd + f"--project {proj_name2} param export docker")
+        result = self.run_cli(cmd_env, base_cmd + f"--project {proj_name2} param export docker -s")
         self.assertEqual(result.return_value, 0)
         self.assertEqual(result.out(), """\
+SENSITIVE=top-secret
 SNA=fu
 
 """)
@@ -404,8 +406,6 @@ SNA=fu
         self.assertIn(f"{var1_name},{var1_value3},{env_name3}", result.out())
         self.assertIn(f"{var2_name},{var2_value3},{env_name3}", result.out())
 
-        '''
-        # FIX_PARAM_EXPORT_SECRETS
         docker_cmd = " param export docker -s"
         result = self.run_cli(cmd_env, proj_cmd + docker_cmd)
         self.assertEqual(result.return_value, 0)
@@ -430,7 +430,6 @@ SNA=fu
 {var2_name.upper()}={var2_value3}
 
 """)
-        '''
 
         # cleanup -- environments must be in reverse order
         self.delete_project(cmd_env, proj_name)
@@ -484,49 +483,51 @@ SNA=fu
         result = self.run_cli(cmd_env, docker_cmd)
         self.assertEqual(result.return_value, 0)
         self.assertEqual(result.out(), """\
-SECOND_PARAM=a value with spaces
 FIRST_PARAM=posix_compliant_value
+FIRST_PARAM_SECRET=*****
+SECOND_PARAM=a value with spaces
+SECOND_SECRET=*****
 
 """)
 
-        '''
-        # FIX_PARAM_EXPORT_SECRETS
         result = self.run_cli(cmd_env, docker_cmd + "--secrets")
         self.assertEqual(result.out(), """\
+FIRST_PARAM=posix_compliant_value
 FIRST_PARAM_SECRET=top-secret-sci
 SECOND_PARAM=a value with spaces
-FIRST_PARAM=posix_compliant_value
 SECOND_SECRET=sensitive value with spaces
 
 """)
-        '''
 
         result = self.run_cli(cmd_env, docker_cmd + "--secrets --starts-with SECOND")
         self.assertEqual(result.out(), """\
 SECOND_PARAM=a value with spaces
+SECOND_SECRET=sensitive value with spaces
 
 """)
 
         # use uppercase key without secrets
         result = self.run_cli(cmd_env, docker_cmd + "--starts-with FIRST")
         self.assertEqual(result.out(), """\
+FIRST_PARAM=posix_compliant_value
+FIRST_PARAM_SECRET=*****
 
 """)
 
-        '''
-        # FIX_PARAM_EXPORT_SECRETS
         # use uppercase key with secrets
         result = self.run_cli(cmd_env, docker_cmd + "--starts-with FIRST -s")
         self.assertEqual(result.out(), """\
+FIRST_PARAM=posix_compliant_value
 FIRST_PARAM_SECRET=top-secret-sci
 
 """)
-        '''
 
         # use lowercase key with secrets
         result = self.run_cli(cmd_env, docker_cmd + "--contains param -s")
         self.assertEqual(result.out(), """\
 FIRST_PARAM=posix_compliant_value
+FIRST_PARAM_SECRET=top-secret-sci
+SECOND_PARAM=a value with spaces
 
 """)
 
@@ -542,19 +543,44 @@ FIRST_PARAM=posix_compliant_value
         result = self.run_cli(cmd_env, dotenv_cmd)
         self.assertEqual(result.return_value, 0)
         self.assertEqual(result.out(), """\
-SECOND_PARAM="a value with spaces"
 FIRST_PARAM="posix_compliant_value"
+FIRST_PARAM_SECRET="*****"
+SECOND_PARAM="a value with spaces"
+SECOND_SECRET="*****"
 
 """)
 
+        dotenv_cmd = base_cmd + f"--project {proj_name} param export dotenv -s"
+        result = self.run_cli(cmd_env, dotenv_cmd)
+        self.assertEqual(result.return_value, 0)
+        self.assertEqual(result.out(), """\
+FIRST_PARAM="posix_compliant_value"
+FIRST_PARAM_SECRET="top-secret-sci"
+SECOND_PARAM="a value with spaces"
+SECOND_SECRET="sensitive value with spaces"
+
+""")
         #####################
         # Shell
         shell_cmd = base_cmd + f"--project {proj_name} param export shell "
         result = self.run_cli(cmd_env, shell_cmd)
         self.assertEqual(result.return_value, 0)
         self.assertEqual(result.out(), """\
-SECOND_PARAM=a\ value\ with\ spaces
 FIRST_PARAM=posix_compliant_value
+FIRST_PARAM_SECRET=\*\*\*\*\*
+SECOND_PARAM=a\ value\ with\ spaces
+SECOND_SECRET=\*\*\*\*\*
+
+""")
+
+        shell_cmd = base_cmd + f"--project {proj_name} param export shell -s"
+        result = self.run_cli(cmd_env, shell_cmd)
+        self.assertEqual(result.return_value, 0)
+        self.assertEqual(result.out(), """\
+FIRST_PARAM=posix_compliant_value
+FIRST_PARAM_SECRET=top-secret-sci
+SECOND_PARAM=a\ value\ with\ spaces
+SECOND_SECRET=sensitive\ value\ with\ spaces
 
 """)
 

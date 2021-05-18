@@ -197,6 +197,22 @@ class TestCase(unittest.TestCase):
 
         return result
 
+    def get_profile(self, cmd_env, prof_name: str) -> Optional[Dict]:
+        result = self.run_cli(cmd_env, self._base_cmd + "config list --values --format csv -s")
+        self.assertEqual(result.return_value, 0)
+        needle = f"{prof_name},"
+        for line in result.stdout:
+            if line.startswith(needle):
+                values = line.split(",")
+                return {
+                    "Name": values[0],
+                    "API": values[1],
+                    "Environment": values[2],
+                    "Project": values[3],
+                    "Description": values[4],
+                }
+        return None
+
     def create_project(self, cmd_env, proj_name: str) -> None:
         result = self.run_cli(cmd_env,
                               self._base_cmd + f"proj set '{proj_name}' -d '{AUTO_DESCRIPTION}'")

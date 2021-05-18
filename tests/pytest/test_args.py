@@ -22,14 +22,24 @@ class TestTopLevelArgs(TestCase):
         self.create_environment(cmd_env, env2)
 
         # remote things to make sure we have a "clean" environment
-        cmd_env.pop(CT_PROFILE, 'No profile')
         cmd_env.pop(CT_PROJ, 'No project')
         cmd_env.pop(CT_ENV, 'No environment')
 
+        # the CLOUDTRUTH_PROFILE cannot be removed, since it may change the server-url/api-key, but
+        # need to accommodate for the profile also setting the project/environment variables
+        def_proj = "default"
+        def_env = "default"
+        prof_name = cmd_env.get(CT_PROFILE, None)
+        if prof_name:
+            profile = self.get_profile(cmd_env, prof_name)
+            if profile:
+                def_proj = profile.get("Project", None) or "default"
+                def_env = profile.get("Environment", None) or "default"
+
         # check defaults are used
         result = self.run_cli(cmd_env, base_cmd + printenv)
-        self.assertIn(f"{CT_PROJ}=default", result.out())
-        self.assertIn(f"{CT_ENV}=default", result.out())
+        self.assertIn(f"{CT_PROJ}={def_proj}", result.out())
+        self.assertIn(f"{CT_ENV}={def_env}", result.out())
 
         # set project/environment in environment
         cmd_env[CT_PROJ] = proj1
