@@ -1,3 +1,4 @@
+import os
 from testcase import TestCase, DEFAULT_ENV_NAME
 
 
@@ -658,4 +659,79 @@ SECOND_SECRET=sensitive\ value\ with\ spaces
 +----------+-------------+---------+---------------------------------+
 """)
 
+        self.delete_project(cmd_env, proj_name)
+
+    def test_local_file(self):
+        base_cmd = self.get_cli_base_cmd()
+        cmd_env = self.get_cmd_env()
+
+        # create the file with the value
+        filename = self.make_name("value")
+        value1 = "static val from file"
+        file = open(filename, "w")
+        file.write(value1)
+        file.close()
+
+        # add a new project
+        proj_name = self.make_name("test-local-file")
+        empty_msg = self._empty_message(proj_name)
+        self.create_project(cmd_env, proj_name)
+
+        # check that there are no parameters
+        sub_cmd = base_cmd + f" --project {proj_name} parameters "
+        result = self.run_cli(cmd_env, sub_cmd + "list --values --secrets")
+        self.assertEqual(result.return_value, 0), "Initial empty parameters"
+        self.assertTrue(result.out_contains_value(empty_msg))
+
+        ########
+        # add first, non-secret parameter from file
+        key1 = "my_param"
+        desc1 = "param set from file input"
+        result = self.run_cli(cmd_env,
+                              sub_cmd + f"set {key1} --input '{filename}' --desc '{desc1}'")
+        self.assertEqual(result.return_value, 0)
+
+        result = self.run_cli(cmd_env, sub_cmd + f"ls -v")
+        self.assertEqual(result.out(), """\
++----------+----------------------+---------+---------------------------+
+| Name     | Value                | Source  | Description               |
++----------+----------------------+---------+---------------------------+
+| my_param | static val from file | default | param set from file input |
++----------+----------------------+---------+---------------------------+
+""")
+
+        # change value from `--value` flag from CLI
+        value2 = "update-from-value"
+        result = self.run_cli(cmd_env, sub_cmd + f"set '{key1}' --value '{value2}'")
+        self.assertEqual(result.return_value, 0)
+
+        result = self.run_cli(cmd_env, sub_cmd + f"ls -v")
+        self.assertEqual(result.out(), """\
++----------+-------------------+---------+---------------------------+
+| Name     | Value             | Source  | Description               |
++----------+-------------------+---------+---------------------------+
+| my_param | update-from-value | default | param set from file input |
++----------+-------------------+---------+---------------------------+
+""")
+
+        # update with a different value from file
+        value3 = "another-static-file"
+        file = open(filename, "w")
+        file.write(value3)
+        file.close()
+
+        result = self.run_cli(cmd_env, sub_cmd + f"set {key1} --input '{filename}'")
+        self.assertEqual(result.return_value, 0)
+
+        result = self.run_cli(cmd_env, sub_cmd + f"ls -v")
+        self.assertEqual(result.out(), """\
++----------+---------------------+---------+---------------------------+
+| Name     | Value               | Source  | Description               |
++----------+---------------------+---------+---------------------------+
+| my_param | another-static-file | default | param set from file input |
++----------+---------------------+---------+---------------------------+
+""")
+
+        # cleanup
+        os.remove(filename)
         self.delete_project(cmd_env, proj_name)
