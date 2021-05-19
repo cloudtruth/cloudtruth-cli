@@ -242,6 +242,7 @@ pub fn build_cli() -> App<'static, 'static> {
             .subcommands(vec![
                 SubCommand::with_name("get")
                     .about("Get an evaluated template from CloudTruth")
+                    .arg(secrets_display_flag())
                     .arg(Arg::with_name("KEY").required(true).index(1)),
                 SubCommand::with_name("list")
                     .visible_alias("ls")

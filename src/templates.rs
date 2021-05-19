@@ -38,12 +38,14 @@ impl Templates {
         project_name: Option<String>,
         environment_name: Option<&str>,
         template_name: &str,
+        show_secrets: bool,
     ) -> GraphQLResult<Option<String>> {
         let query = GetTemplateByNameQuery::build_query(get_template_by_name_query::Variables {
             organization_id: organization_id.map(|id| id.to_string()),
             project_name: project_name.clone(),
             environment_name: environment_name.map(|name| name.to_string()),
             template_name: template_name.to_string(),
+            show_secrets,
         });
         let response_body = graphql_request::<_, get_template_by_name_query::ResponseData>(&query)?;
 

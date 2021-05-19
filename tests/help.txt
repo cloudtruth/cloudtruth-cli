@@ -390,10 +390,11 @@ cloudtruth-templates-get
 Get an evaluated template from CloudTruth
 
 USAGE:
-    cloudtruth templates get <KEY>
+    cloudtruth templates get [FLAGS] <KEY>
 
 FLAGS:
     -h, --help       Prints help information
+    -s, --secrets    
     -V, --version    Prints version information
 
 ARGS:
