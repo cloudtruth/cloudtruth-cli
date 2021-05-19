@@ -741,7 +741,17 @@ fn process_parameters_command(
                     } else {
                         value = Some(original.value)
                     }
+                } else if value.is_none() {
+                    // no value was specified, but at least one of fqn/jmes was... allows individual
+                    // FQN/JMES to be set.
+                    if fqn.is_none() {
+                        fqn = Some(original.fqn)
+                    }
+                    if jmes_path.is_none() {
+                        jmes_path = Some(original.jmes_path)
+                    }
                 }
+
                 if description.is_none() {
                     description = Some(original.description);
                 }
