@@ -1,4 +1,4 @@
-use crate::config::DEFAULT_PROJ_NAME;
+use crate::config::{DEFAULT_ENV_NAME, DEFAULT_PROJ_NAME};
 use crate::graphql::prelude::graphql_request;
 use crate::graphql::{GraphQLError, GraphQLResult, Operation, Resource, NO_ORG_ERROR};
 use crate::parameters::export_parameters_query::ExportParametersFormatEnum;
@@ -56,6 +56,7 @@ pub struct ParametersDetailQuery;
 )]
 pub struct UpsertParameterMutation;
 
+#[derive(Debug)]
 pub struct ParameterDetails {
     pub id: String,
     pub key: String,
@@ -63,6 +64,7 @@ pub struct ParameterDetails {
     pub secret: bool,
     pub description: String,
     pub source: String,
+    pub dynamic: bool,
     pub fqn: String,
     pub jmes_path: String,
 }
@@ -127,7 +129,7 @@ impl Parameters {
         key_name: &str,
     ) -> GraphQLResult<Option<String>> {
         // The only delete mechanism is by parameter ID, so start by querying the parameter info.
-        let parameter = self.get_parameter_full(org_id, env_name, proj_name, key_name)?;
+        let parameter = self.get_details_by_name(org_id, env_name, proj_name, key_name)?;
 
         if let Some(parameter) = parameter {
             self.delete_param_by_id(parameter.id)
@@ -172,59 +174,17 @@ impl Parameters {
         }
     }
 
-    /// Returns `Some(value)` if a value is configured for (parameter, environment) tuple or the
-    /// environment's ancestry chain has a value configured at some level.
+    /// Fetches the `ParameterDetails` for the specified project/environment/key_name.
     ///
-    /// Return `None` if a parameter exists but does not have a value configured for the given
-    /// environment and the environment's ancestry chain does not have a value configured at any
-    /// level.
-    pub fn get_body(
+    /// It will return `None` if the parameter does not exist. Other errors will be returned
+    /// if project/environments are not found.
+    pub fn get_details_by_name(
         &self,
         org_id: Option<&str>,
         env_name: Option<&str>,
         proj_name: Option<String>,
         key_name: &str,
-    ) -> GraphQLResult<Option<String>> {
-        let parameter = self.get_parameter_full(org_id, env_name, proj_name, key_name)?;
-
-        // The query response can take multiple shapes depending on the state of the CloudTruth
-        // parameter store.
-        //
-        // 1) parameter = None -> Parameter does not exist
-        // 2) parameter.environment_value = None -> Environment does not exist
-        // 3) parameter.environment_value.parameter_value = None -> The parameter and the
-        // environment both exist, but the (parameter, environment) combination either does not have
-        // a configured value or inherits from an environment that does not have a configured value
-        // 4) parameter.environment_value.parameter_value = Some -> The parameter and the
-        // environment both exist and there is a value set or inherited in the (parameter, environment)
-        // combination.
-
-        if let Some(parameter) = parameter {
-            if let Some(environment_value) = parameter.environment_value {
-                Ok(environment_value.parameter_value)
-            } else {
-                Err(GraphQLError::EnvironmentNotFoundError(
-                    env_name
-                        .expect("The default environment should always be found")
-                        .to_string(),
-                ))
-            }
-        } else {
-            Err(GraphQLError::ParameterNotFoundError(key_name.to_string()))
-        }
-    }
-
-    pub fn get_parameter_full(
-        &self,
-        org_id: Option<&str>,
-        env_name: Option<&str>,
-        proj_name: Option<String>,
-        key_name: &str,
-    ) -> GraphQLResult<
-        Option<
-            get_parameter_by_name_query::GetParameterByNameQueryViewerOrganizationProjectParameter,
-        >,
-    > {
+    ) -> GraphQLResult<Option<ParameterDetails>> {
         let query = GetParameterByNameQuery::build_query(get_parameter_by_name_query::Variables {
             organization_id: org_id.map(|id| id.to_string()),
             env_name: env_name.map(|name| name.to_string()),
@@ -238,7 +198,38 @@ impl Parameters {
             Err(GraphQLError::ResponseError(errors))
         } else if let Some(data) = response_body.data {
             if let Some(project) = data.viewer.organization.expect(NO_ORG_ERROR).project {
-                Ok(project.parameter)
+                if let Some(param) = project.parameter {
+                    if let Some(env_value) = param.environment_value {
+                        let source: String;
+                        let mut fqn = "".to_string();
+                        if let Some(inherit) = env_value.inherited_from {
+                            source = inherit.name;
+                        } else {
+                            source = env_value.environment.name;
+                        }
+                        if let Some(file) = env_value.integration_file {
+                            fqn = file.fqn;
+                        }
+                        let param_value = env_value.parameter_value.unwrap_or_default();
+                        let jmes_path = env_value.jmes_path.unwrap_or_default();
+                        Ok(Some(ParameterDetails {
+                            id: param.id.clone(),
+                            key: param.key_name.clone(),
+                            value: param_value,
+                            secret: param.is_secret,
+                            description: param.description.unwrap_or_default(),
+                            source,
+                            dynamic: param.has_dynamic_value,
+                            fqn,
+                            jmes_path,
+                        }))
+                    } else {
+                        let name = env_name.unwrap_or(DEFAULT_ENV_NAME).to_string();
+                        Err(GraphQLError::EnvironmentNotFoundError(name))
+                    }
+                } else {
+                    Err(GraphQLError::ParameterNotFoundError(key_name.to_string()))
+                }
             } else {
                 Err(GraphQLError::ProjectNotFoundError(
                     proj_name.unwrap_or_else(|| DEFAULT_PROJ_NAME.to_string()),
@@ -329,6 +320,7 @@ impl Parameters {
                         secret: p.is_secret,
                         description: p.description.unwrap_or_default(),
                         source,
+                        dynamic: p.has_dynamic_value,
                         jmes_path,
                         fqn,
                     });

@@ -651,12 +651,17 @@ fn process_parameters_command(
         let key = subcmd_args.value_of("KEY").unwrap();
         let env_name = resolved.env_name.as_deref();
         let org_id = resolved.org_id.as_deref();
-        let parameter = parameters.get_body(org_id, env_name, resolved.proj_name.clone(), key);
+        let parameter =
+            parameters.get_details_by_name(org_id, env_name, resolved.proj_name.clone(), key);
 
-        if let Ok(parameter) = parameter {
+        if let Ok(details) = parameter {
             // Treat parameters without values set as if the value were simply empty, since
             // we need to display something sensible to the user.
-            println!("{}", parameter.unwrap_or_else(|| "".to_string()));
+            let mut param_value = "".to_string();
+            if let Some(param) = details {
+                param_value = param.value;
+            }
+            println!("{}", param_value);
         } else {
             match parameter.unwrap_err() {
                 GraphQLError::EnvironmentNotFoundError(name) => println!(
@@ -726,26 +731,22 @@ fn process_parameters_command(
         } else {
             // get the original values, so that is not lost
             if let Ok(Some(original)) =
-                parameters.get_parameter_full(org_id, env_name, proj_name.clone(), &key)
+                parameters.get_details_by_name(org_id, env_name, proj_name.clone(), &key)
             {
                 // use original values
                 if value.is_none() && jmes_path.is_none() && fqn.is_none() {
-                    if let Some(env_value) = original.environment_value {
-                        if original.has_dynamic_value {
-                            jmes_path = env_value.jmes_path;
-                            if let Some(file) = env_value.integration_file {
-                                fqn = Some(file.fqn);
-                            }
-                        } else {
-                            value = env_value.parameter_value;
-                        }
+                    if original.dynamic {
+                        fqn = Some(original.fqn);
+                        jmes_path = Some(original.jmes_path);
+                    } else {
+                        value = Some(original.value)
                     }
                 }
                 if description.is_none() {
-                    description = original.description;
+                    description = Some(original.description);
                 }
                 if secret.is_none() {
-                    secret = Some(original.is_secret);
+                    secret = Some(original.secret);
                 }
             }
 
