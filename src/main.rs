@@ -628,6 +628,8 @@ fn process_parameters_command(
                 Cell::new("Name").with_style(Attr::Bold),
                 Cell::new("Value").with_style(Attr::Bold),
                 Cell::new("Source").with_style(Attr::Bold),
+                Cell::new("Type").with_style(Attr::Bold),
+                Cell::new("Secret").with_style(Attr::Bold),
                 Cell::new("Description").with_style(Attr::Bold),
             ]));
             for entry in details {
@@ -636,7 +638,16 @@ fn process_parameters_command(
                 } else {
                     entry.value
                 };
-                table.add_row(row![entry.key, out_val, entry.source, entry.description]);
+                let type_str = if entry.dynamic { "dynamic" } else { "static" };
+                let secret_str = if entry.secret { "true" } else { "false" };
+                table.add_row(row![
+                    entry.key,
+                    out_val,
+                    entry.source,
+                    type_str,
+                    secret_str,
+                    entry.description
+                ]);
             }
             table.set_format(*format::consts::FORMAT_NO_LINESEP_WITH_TITLE);
 
