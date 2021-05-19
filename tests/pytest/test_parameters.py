@@ -661,7 +661,7 @@ SECOND_SECRET=sensitive\ value\ with\ spaces
 
         self.delete_project(cmd_env, proj_name)
 
-    def test_local_file(self):
+    def test_parameter_local_file(self):
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
 
@@ -734,4 +734,68 @@ SECOND_SECRET=sensitive\ value\ with\ spaces
 
         # cleanup
         os.remove(filename)
+        self.delete_project(cmd_env, proj_name)
+
+    def test_parameter_integration_errors(self):
+        base_cmd = self.get_cli_base_cmd()
+        cmd_env = self.get_cmd_env()
+
+        # add a new project
+        proj_name = self.make_name("test-local-file")
+        empty_msg = self._empty_message(proj_name)
+        self.create_project(cmd_env, proj_name)
+
+        # check that there are no parameters
+        sub_cmd = base_cmd + f" --project {proj_name} parameters "
+        result = self.run_cli(cmd_env, sub_cmd + "list --values --secrets")
+        self.assertEqual(result.return_value, 0), "Initial empty parameters"
+        self.assertTrue(result.out_contains_value(empty_msg))
+
+        key1 = "param1"
+        value1 = "value"
+        fqn = "GitHub::bogus::repo::directory::file"
+        jmes = "foo.bar"
+        conflict_msg = "Conflicting arguments: cannot specify"
+        invalid_fqn_msg = "There was a problem with a value you supplied: "
+
+        #####################
+        # verify over specifying
+        result = self.run_cli(cmd_env, sub_cmd + f"set '{key1}' -v '{value1}' --fqn '{fqn}'")
+        self.assertNotEqual(result.return_value, 0)
+        self.assertIn(conflict_msg, result.err())
+
+        result = self.run_cli(cmd_env, sub_cmd + f"set '{key1}' --prompt --fqn '{fqn}'")
+        self.assertNotEqual(result.return_value, 0)
+        self.assertIn(conflict_msg, result.err())
+        
+        result = self.run_cli(cmd_env, sub_cmd + f"set '{key1}' --input 'missing.txt' --fqn '{fqn}'")
+        self.assertNotEqual(result.return_value, 0)
+        self.assertIn(conflict_msg, result.err())
+
+        result = self.run_cli(cmd_env, sub_cmd + f"set '{key1}' --prompt --jmes '{jmes}'")
+        self.assertNotEqual(result.return_value, 0)
+        self.assertIn(conflict_msg, result.err())
+
+        # check that nothing was added
+        sub_cmd = base_cmd + f" --project {proj_name} parameters "
+        result = self.run_cli(cmd_env, sub_cmd + "list --values --secrets")
+        self.assertTrue(result.out_contains_value(empty_msg))
+
+        #####################
+        # no such FQN
+        result = self.run_cli(cmd_env, sub_cmd + f"set '{key1}' --fqn '{fqn}'")
+        self.assertNotEqual(result.return_value, 0)
+        self.assertIn(invalid_fqn_msg, result.err())
+
+        # again, with a JMES path
+        result = self.run_cli(cmd_env, sub_cmd + f"set '{key1}' --fqn '{fqn}' --jmes '{jmes}'")
+        self.assertNotEqual(result.return_value, 0)
+        self.assertIn(invalid_fqn_msg, result.err())
+
+        # check that nothing was added
+        sub_cmd = base_cmd + f" --project {proj_name} parameters "
+        result = self.run_cli(cmd_env, sub_cmd + "list --values --secrets")
+        self.assertTrue(result.out_contains_value(empty_msg))
+
+        # cleanup
         self.delete_project(cmd_env, proj_name)

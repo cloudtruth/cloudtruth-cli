@@ -2552,7 +2552,9 @@ input UpsertParameterInput {
   clientMutationId: String
   description: String
   environmentName: String
+  integrationFileFqn: String
   isSecret: Boolean
+  jmesPath: String
   keyName: String!
   organizationId: ID @deprecated(reason: "Use project_id instead")
   projectId: ID
