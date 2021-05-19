@@ -1,9 +1,9 @@
-query GetTemplateByNameQuery($organizationId: ID, $projectName: String, $environmentName: String, $templateName: String!) {
+query GetTemplateByNameQuery($organizationId: ID, $projectName: String, $environmentName: String, $templateName: String!, $showSecrets: Boolean!) {
   viewer {
     organization(id: $organizationId) {
       project(name: $projectName) {
         template(name: $templateName) {
-          evaluated(environmentName: $environmentName)
+          evaluated(environmentName: $environmentName, showSecret: $showSecrets)
         }
       }
     }

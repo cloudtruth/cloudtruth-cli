@@ -848,7 +848,9 @@ fn process_templates_command(
         let proj_name = resolved.proj_name.clone();
         let template_name = subcmd_args.value_of("KEY").unwrap();
         let env_name = resolved.env_name.as_deref();
-        let body = templates.get_body_by_name(org_id, proj_name, env_name, template_name)?;
+        let show_secrets = subcmd_args.is_present(SECRETS_FLAG);
+        let body =
+            templates.get_body_by_name(org_id, proj_name, env_name, template_name, show_secrets)?;
 
         if let Some(body) = body {
             println!("{}", body)
