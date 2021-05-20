@@ -224,7 +224,7 @@ jobs:
       - name: Set Windows CT_VERSION variable
         run: |
           # NOTE: the '${GITHUB_REF#refs/tags}' string manipulation does NOT work in PowerShell
-          echo CT_VERSION=$("${ENV:GITHUB_REF}".TrimStart("refs/tags/")) >> $GITHUB_ENV
+          echo CT_VERSION=$("${ENV:GITHUB_REF}".TrimStart("refs/tags/")) >> "${ENV:GITHUB_ENV}"
 
       - name: windows-latest
         shell: pwsh
