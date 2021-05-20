@@ -1,13 +1,11 @@
 
       - name: Set Windows CT_VERSION variable
-        id: win_ct_ver
         run: |
-            echo ::set-output name=ct_version::"${ENV:GITHUB_REF}".TrimStart("refs/tags/")
+          # NOTE: the '${GITHUB_REF#refs/tags}' string manipulation does NOT work in PowerShell
+          echo CT_VERSION=$("${ENV:GITHUB_REF}".TrimStart("refs/tags/")) >> $GITHUB_ENV
 
       - name: windows-latest
         shell: pwsh
-        env:
-          CT_VERSION: {{ '${{ steps.win_ct_ver.output.ct_version }}' }}
         run: |
           $InformationPreference = 'Continue'
           New-Alias grep findstr
