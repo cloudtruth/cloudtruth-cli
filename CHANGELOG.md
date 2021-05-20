@@ -4,7 +4,8 @@
   * Templates: must use `--secrets` or `-s` to display secret values.
   * Parameters: 
       * `list --values` display has new `Type` and `Secret` columns.
-      * `export` filtering and sorts are now case-insensitive.
+      * `export` filtering and sorts are now case-insensitive, secret parameters included in normal
+        export with redacted value.
 * Prefer to use `-y/--yes` instead of `--confirm` to avoid confirmation prompts.
 * Integrations: new sub-command with `list` and `explore`.
 * Parameters: added `--fqn` and `--jmes` options to set references to dynamic values.
