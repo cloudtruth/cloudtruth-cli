@@ -643,17 +643,12 @@ jobs:
           name: artifacts
           path: artifacts
 
-      - name: set-environment
-        shell: pwsh
-        run: |
-          $ENV:CT_DOWNLOAD_RELEASE_ID = (Get-Content .\artifacts\release-id -Raw).Trim()
-          $ENV:CT_DOWNLOAD_VERSION = (Get-Content .\artifacts\release-version -Raw).Trim()
-          Get-ChildItem -Path Env:\
-
       - name: windows-latest
         shell: pwsh
         run: |
           $InformationPreference = 'Continue'
           New-Alias grep findstr
+          $ENV:CT_DOWNLOAD_RELEASE_ID = (Get-Content .\artifacts\release-id -Raw).Trim()
+          $ENV:CT_DOWNLOAD_VERSION = (Get-Content .\artifacts\release-version -Raw).Trim()
           $ctExe = .\install.ps1 -authToken "$ENV:CT_DOWNLOAD_AUTH_TOKEN" -releaseId "$ENV:CT_DOWNLOAD_RELEASE_ID" -version "$ENV:CT_DOWNLOAD_VERSION"
           & $ctExe --project "$ENV:CT_TEST_PROJECT" parameters list -v | grep "$ENV:CT_TEST_PARAM" | grep "$ENV:CT_TEST_VALUE"
