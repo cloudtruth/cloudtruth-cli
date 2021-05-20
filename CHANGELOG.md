@@ -1,14 +1,26 @@
+# 0.5.2 - 20210-05-20
+
+* Important changes:
+  * Templates: must use `--secrets` or `-s` to display secret values.
+  * Parameters: 
+      * `list --values` display has new `Type` and `Secret` columns.
+      * `export` filtering and sorts are now case-insensitive, secret parameters included in normal
+        export with redacted value.
+* Prefer to use `-y/--yes` instead of `--confirm` to avoid confirmation prompts.
+* Integrations: new sub-command with `list` and `explore`.
+* Parameters: added `--fqn` and `--jmes` options to set references to dynamic values.
+
 # 0.5.1 - 2021-05-10
 
 * Upload install.sh, install.ps1, and CHANGELOG.md as release assets.
-* Enhance install.sh to be more tolerant of non-standard release tags. 
+* Enhance install.sh to be more tolerant of non-standard release tags.
 * Improve error checking on release tag names.
 * Improve pre-commit checks for Rust version, and CLI command changes.
 
 # 0.5.0 - 2021-05-07
 
 * Breaking changes:
-  * Parameters: `set` must use `--secret` instead of `--secrets` (`-s` option unchanged).
+  * Parameters: `set` must use `--secret` instead of `--secrets`.
   * Environments: `set` will error out if trying to change the parent (not just warn and succeed).
 * Added installer scripts for Posix shells, and Windows PowerShell.
 * Can use `CLOUDTRUTH_PROFILE` to set the configuration profile, in addition to `--profile` option.
