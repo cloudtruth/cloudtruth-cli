@@ -203,9 +203,16 @@ pub fn build_cli() -> App<'static, 'static> {
                     SubCommand::with_name("list")
                         .visible_alias("ls")
                         .about("List CloudTruth parameters")
+                        .arg(Arg::with_name("dynamic")
+                            .long("dynamic")
+                            .help("Display the dynamic values and FQN/JMES path."))
                         .arg(values_flag().help("Display parameter information/values"))
                         .arg(table_format_options().help("Format for parameter values data"))
                         .arg(secrets_display_flag().help("Display the secret parameter values")),
+                    SubCommand::with_name("references")
+                        .visible_alias("ref")
+                        .about("Display dynamic parameters and FQN/JMES values")
+                        .arg(table_format_options()),
                     SubCommand::with_name("set")
                         .about(concat!("Set a value in the selected project/environment for ",
                             "an existing parameter or creates a new one if needed"))

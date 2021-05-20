@@ -199,14 +199,15 @@ FLAGS:
     -V, --version    Prints version information
 
 SUBCOMMANDS:
-    delete    Delete the parameter from the project [aliases: del]
-    export    Export selected parameters to a known output format. Exported parameters are limited to alphanumeric
-              and underscore  in key names. Formats available are: dotenv, docker, and shell.
-    get       Gets value for parameter in the selected environment
-    help      Prints this message or the help of the given subcommand(s)
-    list      List CloudTruth parameters [aliases: ls]
-    set       Set a value in the selected project/environment for an existing parameter or creates a new one if
-              needed
+    delete        Delete the parameter from the project [aliases: del]
+    export        Export selected parameters to a known output format. Exported parameters are limited to
+                  alphanumeric and underscore  in key names. Formats available are: dotenv, docker, and shell.
+    get           Gets value for parameter in the selected environment
+    help          Prints this message or the help of the given subcommand(s)
+    list          List CloudTruth parameters [aliases: ls]
+    references    Display dynamic parameters and FQN/JMES values [aliases: ref]
+    set           Set a value in the selected project/environment for an existing parameter or creates a new one if
+                  needed
 ========================================
 cloudtruth-parameters-delete 
 Delete the parameter from the project
@@ -262,6 +263,7 @@ USAGE:
     cloudtruth parameters list [FLAGS] [OPTIONS]
 
 FLAGS:
+        --dynamic    Display the dynamic values and FQN/JMES path.
     -h, --help       Prints help information
     -s, --secrets    Display the secret parameter values
     -v, --values     Display parameter information/values
@@ -269,6 +271,19 @@ FLAGS:
 
 OPTIONS:
     -f, --format <format>    Format for parameter values data [default: table]  [possible values: table, csv]
+========================================
+cloudtruth-parameters-references 
+Display dynamic parameters and FQN/JMES values
+
+USAGE:
+    cloudtruth parameters references [OPTIONS]
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+OPTIONS:
+    -f, --format <format>     [default: table]  [possible values: table, csv]
 ========================================
 cloudtruth-parameters-set 
 Set a value in the selected project/environment for an existing parameter or creates a new one if needed

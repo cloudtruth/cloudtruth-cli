@@ -604,14 +604,21 @@ fn process_parameters_command(
     resolved: &ResolvedIds,
 ) -> Result<()> {
     if let Some(subcmd_args) = subcmd_args.subcommand_matches("list") {
-        let details = parameters.get_parameter_details(
+        let mut details = parameters.get_parameter_details(
             resolved.org_id.as_deref(),
             resolved.env_id.clone(),
             resolved.proj_name.clone(),
         )?;
+        let references = subcmd_args.is_present("dynamic");
+        let extra = if references { "dynamic " } else { "" };
+        if references {
+            details.retain(|x| x.dynamic)
+        }
+
         if details.is_empty() {
             println!(
-                "No parameters found in project {}",
+                "No {}parameters found in project {}",
+                extra,
                 resolved.proj_name.clone().unwrap()
             );
         } else if !subcmd_args.is_present(VALUES_FLAG) {
@@ -624,30 +631,43 @@ fn process_parameters_command(
             let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
             let show_secrets = subcmd_args.is_present(SECRETS_FLAG);
             let mut table = Table::new();
-            table.set_titles(Row::new(vec![
-                Cell::new("Name").with_style(Attr::Bold),
-                Cell::new("Value").with_style(Attr::Bold),
-                Cell::new("Source").with_style(Attr::Bold),
-                Cell::new("Type").with_style(Attr::Bold),
-                Cell::new("Secret").with_style(Attr::Bold),
-                Cell::new("Description").with_style(Attr::Bold),
-            ]));
+            if !references {
+                table.set_titles(Row::new(vec![
+                    Cell::new("Name").with_style(Attr::Bold),
+                    Cell::new("Value").with_style(Attr::Bold),
+                    Cell::new("Source").with_style(Attr::Bold),
+                    Cell::new("Type").with_style(Attr::Bold),
+                    Cell::new("Secret").with_style(Attr::Bold),
+                    Cell::new("Description").with_style(Attr::Bold),
+                ]));
+            } else {
+                table.set_titles(Row::new(vec![
+                    Cell::new("Name").with_style(Attr::Bold),
+                    Cell::new("FQN").with_style(Attr::Bold),
+                    Cell::new("JMES").with_style(Attr::Bold),
+                ]));
+            }
+
             for entry in details {
-                let out_val = if entry.secret && !show_secrets {
-                    REDACTED.to_string()
+                if !references {
+                    let out_val = if entry.secret && !show_secrets {
+                        REDACTED.to_string()
+                    } else {
+                        entry.value
+                    };
+                    let type_str = if entry.dynamic { "dynamic" } else { "static" };
+                    let secret_str = if entry.secret { "true" } else { "false" };
+                    table.add_row(row![
+                        entry.key,
+                        out_val,
+                        entry.source,
+                        type_str,
+                        secret_str,
+                        entry.description
+                    ]);
                 } else {
-                    entry.value
-                };
-                let type_str = if entry.dynamic { "dynamic" } else { "static" };
-                let secret_str = if entry.secret { "true" } else { "false" };
-                table.add_row(row![
-                    entry.key,
-                    out_val,
-                    entry.source,
-                    type_str,
-                    secret_str,
-                    entry.description
-                ]);
+                    table.add_row(row![entry.key, entry.fqn, entry.jmes_path]);
+                }
             }
             table.set_format(*format::consts::FORMAT_NO_LINESEP_WITH_TITLE);
 
@@ -852,6 +872,38 @@ fn process_parameters_command(
                 proj_name.unwrap_or_else(|| DEFAULT_PROJ_NAME.to_string()),
                 env_name.unwrap_or(DEFAULT_ENV_NAME)
             )
+        }
+    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("references") {
+        let mut details = parameters.get_parameter_details(
+            resolved.org_id.as_deref(),
+            resolved.env_id.clone(),
+            resolved.proj_name.clone(),
+        )?;
+        details.retain(|e| e.dynamic);
+        if details.is_empty() {
+            println!(
+                "No dynamic parameters found in project {}",
+                resolved.proj_name.clone().unwrap()
+            );
+        } else {
+            let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
+            let mut table = Table::new();
+            table.set_titles(Row::new(vec![
+                Cell::new("Name").with_style(Attr::Bold),
+                Cell::new("FQN").with_style(Attr::Bold),
+                Cell::new("JMES path").with_style(Attr::Bold),
+            ]));
+            for entry in details {
+                table.add_row(row![entry.key, entry.fqn, entry.jmes_path,]);
+            }
+            table.set_format(*format::consts::FORMAT_NO_LINESEP_WITH_TITLE);
+
+            if fmt == "csv" {
+                table.to_csv(stdout())?;
+            } else {
+                assert_eq!(fmt, "table");
+                table.printstd();
+            }
         }
     } else {
         warn_missing_subcommand("parameters")?;
