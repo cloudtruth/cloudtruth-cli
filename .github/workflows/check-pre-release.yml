@@ -221,8 +221,15 @@ jobs:
         run: |
           echo CT_VERSION=${GITHUB_REF#refs/tags/} >> $GITHUB_ENV
 
+      - name: Set Windows CT_VERSION variable
+        id: win_ct_ver
+        run: |
+            echo "::set-output name=ct_version::${GITHUB_REF#refs/tags/}"
+
       - name: windows-latest
         shell: pwsh
+        env:
+          CT_VERSION: ${{ steps.win_ct_ver.output.ct_version }}
         run: |
           $InformationPreference = 'Continue'
           New-Alias grep findstr
