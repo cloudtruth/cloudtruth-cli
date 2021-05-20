@@ -224,7 +224,7 @@ jobs:
       - name: Set Windows CT_VERSION variable
         id: win_ct_ver
         run: |
-            echo "::set-output name=ct_version::${GITHUB_REF#refs/tags/}"
+            echo ::set-output name=ct_version::"${ENV:GITHUB_REF}".TrimStart("refs/tags/")
 
       - name: windows-latest
         shell: pwsh
