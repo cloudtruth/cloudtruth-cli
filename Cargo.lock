@@ -198,7 +198,7 @@ dependencies = [
 
 [[package]]
 name = "cloudtruth"
-version = "0.5.3"
+version = "0.5.2"
 dependencies = [
  "assert_cmd",
  "assert_matches",
