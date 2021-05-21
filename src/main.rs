@@ -7,8 +7,6 @@ mod graphql;
 #[macro_use]
 mod macros;
 
-#[macro_use]
-extern crate prettytable;
 extern crate rpassword;
 
 mod cli;
@@ -18,6 +16,7 @@ mod integrations;
 mod parameters;
 mod projects;
 mod subprocess;
+mod table;
 mod templates;
 
 use crate::cli::{CONFIRM_FLAG, FORMAT_OPT, SECRETS_FLAG, VALUES_FLAG};
@@ -32,10 +31,10 @@ use crate::parameters::export_parameters_query::{
 use crate::parameters::Parameters;
 use crate::projects::{Projects, ProjectsIntf};
 use crate::subprocess::{Inheritance, SubProcess, SubProcessIntf};
+use crate::table::Table;
 use crate::templates::Templates;
 use clap::ArgMatches;
 use color_eyre::eyre::Result;
-use prettytable::{format, Attr, Cell, Row, Table};
 use rpassword::read_password;
 use std::io::{self, stdin, stdout, Write};
 use std::str::FromStr;
@@ -268,20 +267,11 @@ fn process_project_command(
         } else {
             let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
             let mut table = Table::new();
-            table.set_titles(Row::new(vec![
-                Cell::new("Name").with_style(Attr::Bold),
-                Cell::new("Description").with_style(Attr::Bold),
-            ]));
+            table.set_header(&["Name", "Description"]);
             for entry in details {
-                table.add_row(row![entry.name, entry.description]);
+                table.add_row(vec![entry.name, entry.description]);
             }
-            table.set_format(*format::consts::FORMAT_NO_LINESEP_WITH_TITLE);
-            if fmt == "csv" {
-                table.to_csv(stdout())?;
-            } else {
-                assert_eq!(fmt, "table");
-                table.printstd();
-            }
+            table.render(fmt)?;
         }
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("set") {
         let proj_name = subcmd_args.value_of("NAME");
@@ -340,13 +330,7 @@ fn process_config_command(subcmd_args: &ArgMatches) -> Result<()> {
             let show_secrets = subcmd_args.is_present(SECRETS_FLAG);
             let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
             let mut table = Table::new();
-            table.set_titles(Row::new(vec![
-                Cell::new("Name").with_style(Attr::Bold),
-                Cell::new("API").with_style(Attr::Bold),
-                Cell::new("Environment").with_style(Attr::Bold),
-                Cell::new("Project").with_style(Attr::Bold),
-                Cell::new("Description").with_style(Attr::Bold),
-            ]));
+            table.set_header(&["Name", "API", "Environment", "Project", "Description"]);
             for entry in details {
                 let mut api_value = "".to_string();
                 if let Some(api_key) = entry.api_key {
@@ -356,7 +340,7 @@ fn process_config_command(subcmd_args: &ArgMatches) -> Result<()> {
                         api_value = REDACTED.to_string();
                     }
                 }
-                table.add_row(row![
+                table.add_row(vec![
                     entry.name,
                     api_value,
                     entry.environment.unwrap_or_default(),
@@ -364,14 +348,7 @@ fn process_config_command(subcmd_args: &ArgMatches) -> Result<()> {
                     entry.description.unwrap_or_default(),
                 ]);
             }
-            table.set_format(*format::consts::FORMAT_NO_LINESEP_WITH_TITLE);
-
-            if fmt == "csv" {
-                table.to_csv(stdout())?;
-            } else {
-                assert_eq!(fmt, "table");
-                table.printstd();
-            }
+            table.render(fmt)?;
         }
     } else {
         warn_missing_subcommand("config")?;
@@ -420,21 +397,11 @@ fn process_environment_command(
         } else {
             let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
             let mut table = Table::new();
-            table.set_titles(Row::new(vec![
-                Cell::new("Name").with_style(Attr::Bold),
-                Cell::new("Parent").with_style(Attr::Bold),
-                Cell::new("Description").with_style(Attr::Bold),
-            ]));
+            table.set_header(&["Name", "Parent", "Description"]);
             for entry in details {
-                table.add_row(row![entry.name, entry.parent, entry.description]);
+                table.add_row(vec![entry.name, entry.parent, entry.description]);
             }
-            table.set_format(*format::consts::FORMAT_NO_LINESEP_WITH_TITLE);
-            if fmt == "csv" {
-                table.to_csv(stdout())?;
-            } else {
-                assert_eq!(fmt, "table");
-                table.printstd();
-            }
+            table.render(fmt)?;
         }
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("set") {
         let env_name = subcmd_args.value_of("NAME");
@@ -531,25 +498,15 @@ fn process_integrations_command(
                 } else {
                     let fmt = subcmd_args.value_of("format").unwrap();
                     let mut table = Table::new();
-                    table.set_titles(Row::new(vec![
-                        Cell::new("Name").with_style(Attr::Bold),
-                        Cell::new("FQN").with_style(Attr::Bold),
-                    ]));
+                    table.set_header(&["Name", "FQN"]);
                     // add the node itself
-                    table.add_row(row![node.name, node.fqn]);
+                    table.add_row(vec![node.name, node.fqn]);
                     for entry in node.entries {
                         // indent the entries to indicated children
                         let entry_name = format!("{}{}", indent, entry.name);
-                        table.add_row(row![entry_name, entry.fqn]);
+                        table.add_row(vec![entry_name, entry.fqn]);
                     }
-                    table.set_format(*format::consts::FORMAT_NO_LINESEP_WITH_TITLE);
-
-                    if fmt == "csv" {
-                        table.to_csv(stdout())?;
-                    } else {
-                        assert_eq!(fmt, "table");
-                        table.printstd();
-                    }
+                    table.render(fmt)?;
                 }
             } else {
                 process::exit(3);
@@ -574,22 +531,11 @@ fn process_integrations_command(
         } else {
             let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
             let mut table = Table::new();
-            table.set_titles(Row::new(vec![
-                Cell::new("Name").with_style(Attr::Bold),
-                Cell::new("Type").with_style(Attr::Bold),
-                Cell::new("FQN").with_style(Attr::Bold),
-            ]));
+            table.set_header(&["Name", "Type", "FQN"]);
             for entry in details {
-                table.add_row(row![entry.name, entry.integration_type, entry.fqn,]);
+                table.add_row(vec![entry.name, entry.integration_type, entry.fqn]);
             }
-            table.set_format(*format::consts::FORMAT_NO_LINESEP_WITH_TITLE);
-
-            if fmt == "csv" {
-                table.to_csv(stdout())?;
-            } else {
-                assert_eq!(fmt, "table");
-                table.printstd();
-            }
+            table.render(fmt)?;
         }
     } else {
         warn_missing_subcommand("integrations")?;
@@ -624,14 +570,7 @@ fn process_parameters_command(
             let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
             let show_secrets = subcmd_args.is_present(SECRETS_FLAG);
             let mut table = Table::new();
-            table.set_titles(Row::new(vec![
-                Cell::new("Name").with_style(Attr::Bold),
-                Cell::new("Value").with_style(Attr::Bold),
-                Cell::new("Source").with_style(Attr::Bold),
-                Cell::new("Type").with_style(Attr::Bold),
-                Cell::new("Secret").with_style(Attr::Bold),
-                Cell::new("Description").with_style(Attr::Bold),
-            ]));
+            table.set_header(&["Name", "Value", "Source", "Type", "Secret", "Description"]);
             for entry in details {
                 let out_val = if entry.secret && !show_secrets {
                     REDACTED.to_string()
@@ -640,23 +579,16 @@ fn process_parameters_command(
                 };
                 let type_str = if entry.dynamic { "dynamic" } else { "static" };
                 let secret_str = if entry.secret { "true" } else { "false" };
-                table.add_row(row![
+                table.add_row(vec![
                     entry.key,
                     out_val,
                     entry.source,
-                    type_str,
-                    secret_str,
-                    entry.description
+                    type_str.to_string(),
+                    secret_str.to_string(),
+                    entry.description,
                 ]);
             }
-            table.set_format(*format::consts::FORMAT_NO_LINESEP_WITH_TITLE);
-
-            if fmt == "csv" {
-                table.to_csv(stdout())?;
-            } else {
-                assert_eq!(fmt, "table");
-                table.printstd();
-            }
+            table.render(fmt)?;
         }
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("get") {
         let key = subcmd_args.value_of("KEY").unwrap();
@@ -883,20 +815,11 @@ fn process_templates_command(
         } else {
             let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
             let mut table = Table::new();
-            table.set_titles(Row::new(vec![
-                Cell::new("Name").with_style(Attr::Bold),
-                Cell::new("Description").with_style(Attr::Bold),
-            ]));
+            table.set_header(&["Name", "Description"]);
             for entry in details {
-                table.add_row(row![entry.name, entry.description]);
+                table.add_row(vec![entry.name, entry.description]);
             }
-            table.set_format(*format::consts::FORMAT_NO_LINESEP_WITH_TITLE);
-            if fmt == "csv" {
-                table.to_csv(stdout())?;
-            } else {
-                assert_eq!(fmt, "table");
-                table.printstd();
-            }
+            table.render(fmt)?;
         }
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("get") {
         let org_id = resolved.org_id.as_deref();
