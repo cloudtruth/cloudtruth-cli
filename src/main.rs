@@ -13,6 +13,7 @@ mod cli;
 mod config;
 mod environments;
 mod integrations;
+mod lib;
 mod parameters;
 mod projects;
 mod subprocess;
@@ -266,7 +267,7 @@ fn process_project_command(
             println!("{}", list.join("\n"));
         } else {
             let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
-            let mut table = Table::new();
+            let mut table = Table::new("project");
             table.set_header(&["Name", "Description"]);
             for entry in details {
                 table.add_row(vec![entry.name, entry.description]);
@@ -329,7 +330,7 @@ fn process_config_command(subcmd_args: &ArgMatches) -> Result<()> {
         } else {
             let show_secrets = subcmd_args.is_present(SECRETS_FLAG);
             let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
-            let mut table = Table::new();
+            let mut table = Table::new("profile");
             table.set_header(&["Name", "API", "Environment", "Project", "Description"]);
             for entry in details {
                 let mut api_value = "".to_string();
@@ -396,7 +397,7 @@ fn process_environment_command(
             println!("{}", list.join("\n"));
         } else {
             let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
-            let mut table = Table::new();
+            let mut table = Table::new("environment");
             table.set_header(&["Name", "Parent", "Description"]);
             for entry in details {
                 table.add_row(vec![entry.name, entry.parent, entry.description]);
@@ -497,7 +498,7 @@ fn process_integrations_command(
                     }
                 } else {
                     let fmt = subcmd_args.value_of("format").unwrap();
-                    let mut table = Table::new();
+                    let mut table = Table::new("integration");
                     table.set_header(&["Name", "FQN"]);
                     // add the node itself
                     table.add_row(vec![node.name, node.fqn]);
@@ -530,7 +531,7 @@ fn process_integrations_command(
             println!("{}", list.join("\n"))
         } else {
             let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
-            let mut table = Table::new();
+            let mut table = Table::new("integration");
             table.set_header(&["Name", "Type", "FQN"]);
             for entry in details {
                 table.add_row(vec![entry.name, entry.integration_type, entry.fqn]);
@@ -569,7 +570,7 @@ fn process_parameters_command(
         } else {
             let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
             let show_secrets = subcmd_args.is_present(SECRETS_FLAG);
-            let mut table = Table::new();
+            let mut table = Table::new("parameter");
             table.set_header(&["Name", "Value", "Source", "Type", "Secret", "Description"]);
             for entry in details {
                 let out_val = if entry.secret && !show_secrets {
@@ -814,7 +815,7 @@ fn process_templates_command(
             println!("{}", list.join("\n"))
         } else {
             let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
-            let mut table = Table::new();
+            let mut table = Table::new("template");
             table.set_header(&["Name", "Description"]);
             for entry in details {
                 table.add_row(vec![entry.name, entry.description]);

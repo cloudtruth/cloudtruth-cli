@@ -77,7 +77,8 @@ FLAGS:
     -V, --version    Prints version information
 
 OPTIONS:
-    -f, --format <format>    Display profile value info format [default: table]  [possible values: table, csv]
+    -f, --format <format>    Display profile value info format [default: table]  [possible values: table, csv, json,
+                             yaml]
 ============================================================
 cloudtruth-environments 
 Work with CloudTruth environments
@@ -121,7 +122,8 @@ FLAGS:
     -V, --version    Prints version information
 
 OPTIONS:
-    -f, --format <format>    Format for environment values data [default: table]  [possible values: table, csv]
+    -f, --format <format>    Format for environment values data [default: table]  [possible values: table, csv, json,
+                             yaml]
 ========================================
 cloudtruth-environments-set 
 Create/update a CloudTruth environment
@@ -168,7 +170,7 @@ FLAGS:
 
 OPTIONS:
     -t, --type <TYPE>        Integration type, only used to disambiguate duplicate names [possible values: aws, github]
-    -f, --format <format>    Format integration values data. [default: table]  [possible values: table, csv]
+    -f, --format <format>    Format integration values data. [default: table]  [possible values: table, csv, json, yaml]
 
 ARGS:
     <NAME>    Integration name
@@ -186,7 +188,8 @@ FLAGS:
     -V, --version    Prints version information
 
 OPTIONS:
-    -f, --format <format>    Format for integration values data [default: table]  [possible values: table, csv]
+    -f, --format <format>    Format for integration values data [default: table]  [possible values: table, csv, json,
+                             yaml]
 ============================================================
 cloudtruth-parameters 
 Work with CloudTruth parameters
@@ -268,7 +271,8 @@ FLAGS:
     -V, --version    Prints version information
 
 OPTIONS:
-    -f, --format <format>    Format for parameter values data [default: table]  [possible values: table, csv]
+    -f, --format <format>    Format for parameter values data [default: table]  [possible values: table, csv, json,
+                             yaml]
 ========================================
 cloudtruth-parameters-set 
 Set a value in the selected project/environment for an existing parameter or creates a new one if needed
@@ -334,7 +338,7 @@ FLAGS:
     -V, --version    Prints version information
 
 OPTIONS:
-    -f, --format <format>    Format for project values data [default: table]  [possible values: table, csv]
+    -f, --format <format>    Format for project values data [default: table]  [possible values: table, csv, json, yaml]
 ========================================
 cloudtruth-projects-set 
 Create/update a CloudTruth project
@@ -414,5 +418,5 @@ FLAGS:
     -V, --version    Prints version information
 
 OPTIONS:
-    -f, --format <format>    Format for template values data [default: table]  [possible values: table, csv]
+    -f, --format <format>    Format for template values data [default: table]  [possible values: table, csv, json, yaml]
 
