@@ -265,6 +265,7 @@ USAGE:
     cloudtruth parameters list [FLAGS] [OPTIONS]
 
 FLAGS:
+        --dynamic    Display the dynamic values and FQN/JMES path.
     -h, --help       Prints help information
     -s, --secrets    Display the secret parameter values
     -v, --values     Display parameter information/values

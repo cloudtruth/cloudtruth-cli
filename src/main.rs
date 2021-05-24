@@ -551,14 +551,22 @@ fn process_parameters_command(
     resolved: &ResolvedIds,
 ) -> Result<()> {
     if let Some(subcmd_args) = subcmd_args.subcommand_matches("list") {
-        let details = parameters.get_parameter_details(
+        let mut details = parameters.get_parameter_details(
             resolved.org_id.as_deref(),
             resolved.env_id.clone(),
             resolved.proj_name.clone(),
         )?;
+        let references = subcmd_args.is_present("dynamic");
+        let qualifier = if references { "dynamic " } else { "" };
+        if references {
+            // when displaying dynamic parameters, only show the dynamic ones
+            details.retain(|x| x.dynamic)
+        }
+
         if details.is_empty() {
             println!(
-                "No parameters found in project {}",
+                "No {}parameters found in project {}",
+                qualifier,
                 resolved.proj_name.clone().unwrap()
             );
         } else if !subcmd_args.is_present(VALUES_FLAG) {
@@ -571,23 +579,33 @@ fn process_parameters_command(
             let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
             let show_secrets = subcmd_args.is_present(SECRETS_FLAG);
             let mut table = Table::new("parameter");
-            table.set_header(&["Name", "Value", "Source", "Type", "Secret", "Description"]);
+
+            if !references {
+                table.set_header(&["Name", "Value", "Source", "Type", "Secret", "Description"]);
+            } else {
+                table.set_header(&["Name", "FQN", "JMES"]);
+            }
+
             for entry in details {
-                let out_val = if entry.secret && !show_secrets {
-                    REDACTED.to_string()
+                if !references {
+                    let out_val = if entry.secret && !show_secrets {
+                        REDACTED.to_string()
+                    } else {
+                        entry.value
+                    };
+                    let type_str = if entry.dynamic { "dynamic" } else { "static" };
+                    let secret_str = if entry.secret { "true" } else { "false" };
+                    table.add_row(vec![
+                        entry.key,
+                        out_val,
+                        entry.source,
+                        type_str.to_string(),
+                        secret_str.to_string(),
+                        entry.description,
+                    ]);
                 } else {
-                    entry.value
-                };
-                let type_str = if entry.dynamic { "dynamic" } else { "static" };
-                let secret_str = if entry.secret { "true" } else { "false" };
-                table.add_row(vec![
-                    entry.key,
-                    out_val,
-                    entry.source,
-                    type_str.to_string(),
-                    secret_str.to_string(),
-                    entry.description,
-                ]);
+                    table.add_row(vec![entry.key, entry.fqn, entry.jmes_path]);
+                }
             }
             table.render(fmt)?;
         }

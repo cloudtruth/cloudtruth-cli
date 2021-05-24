@@ -798,6 +798,18 @@ SECOND_SECRET=sensitive\ value\ with\ spaces
         result = self.run_cli(cmd_env, sub_cmd + "list --values --secrets")
         self.assertTrue(result.out_contains_value(empty_msg))
 
+        # verify `--dynamic` flag causes specialized warning
+        sub_cmd = base_cmd + f" --project {proj_name} parameters "
+        empty_msg = f"No dynamic parameters found in project {proj_name}"
+        result = self.run_cli(cmd_env, sub_cmd + "list --dynamic")
+        self.assertTrue(result.out_contains_value(empty_msg))
+
+        result = self.run_cli(cmd_env, sub_cmd + "list --dynamic -v")
+        self.assertTrue(result.out_contains_value(empty_msg))
+
+        result = self.run_cli(cmd_env, sub_cmd + "list --dynamic -v -s")
+        self.assertTrue(result.out_contains_value(empty_msg))
+
         # cleanup
         self.delete_project(cmd_env, proj_name)
 
