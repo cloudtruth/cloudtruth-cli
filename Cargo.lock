@@ -204,6 +204,7 @@ dependencies = [
  "assert_matches",
  "clap",
  "color-eyre",
+ "csv",
  "directories",
  "edit",
  "env_logger",
