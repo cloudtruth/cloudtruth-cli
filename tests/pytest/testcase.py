@@ -242,11 +242,14 @@ class TestCase(unittest.TestCase):
             value: str,
             secret: bool=False,
             env: Optional[str]=None,
+            desc: Optional[str]=None,
     ) -> None:
         cmd = self._base_cmd + f"--project '{proj}' "
         if env:
             cmd += f"--env '{env}' "
         cmd += f"param set '{name}' --value '{value}' --secret '{str(secret).lower()}'"
+        if desc:
+            cmd += f" --desc '{desc}'"
         result = self.run_cli(cmd_env, cmd)
         self.assertEqual(result.return_value, 0)
 

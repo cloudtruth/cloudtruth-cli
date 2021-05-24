@@ -20,7 +20,7 @@ fn table_format_options() -> Arg<'static, 'static> {
         .long(FORMAT_OPT)
         .takes_value(true)
         .default_value("table")
-        .possible_values(&["table", "csv"])
+        .possible_values(&["table", "csv", "json", "yaml"])
 }
 
 fn values_flag() -> Arg<'static, 'static> {

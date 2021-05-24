@@ -800,3 +800,160 @@ SECOND_SECRET=sensitive\ value\ with\ spaces
 
         # cleanup
         self.delete_project(cmd_env, proj_name)
+
+    def test_parameter_table_formats(self):
+        base_cmd = self.get_cli_base_cmd()
+        cmd_env = self.get_cmd_env()
+
+        # add a new project
+        proj_name = self.make_name("test-param-tables")
+        empty_msg = self._empty_message(proj_name)
+        self.create_project(cmd_env, proj_name)
+
+        # check that there are no parameters
+        sub_cmd = base_cmd + f" --project {proj_name} parameters "
+        result = self.run_cli(cmd_env, sub_cmd + "list")
+        self.assertEqual(result.return_value, 0)
+        self.assertTrue(result.out_contains_value(empty_msg))
+
+        ########
+        # add a couple parameters
+        key1 = "speicla3"
+        value1 = "beef brocolli, pork fried rice"
+        desc1 = "Jade lunch"
+
+        key2 = "speicla14"
+        value2 = "cueey-chicken"
+        desc2 = "Jade secret"
+
+        self.set_param(cmd_env, proj_name, key1, value1, desc=desc1)
+        self.set_param(cmd_env, proj_name, key2, value2, secret=True, desc=desc2)
+
+        #################
+        # table format
+        result = self.run_cli(cmd_env, sub_cmd + f"ls -v")
+        self.assertEqual(result.out(), """\
++-----------+--------------------------------+---------+--------+--------+-------------+
+| Name      | Value                          | Source  | Type   | Secret | Description |
++-----------+--------------------------------+---------+--------+--------+-------------+
+| speicla14 | *****                          | default | static | true   | Jade secret |
+| speicla3  | beef brocolli, pork fried rice | default | static | false  | Jade lunch  |
++-----------+--------------------------------+---------+--------+--------+-------------+
+""")
+
+        result = self.run_cli(cmd_env, sub_cmd + f"ls -v -s")
+        self.assertEqual(result.out(), """\
++-----------+--------------------------------+---------+--------+--------+-------------+
+| Name      | Value                          | Source  | Type   | Secret | Description |
++-----------+--------------------------------+---------+--------+--------+-------------+
+| speicla14 | cueey-chicken                  | default | static | true   | Jade secret |
+| speicla3  | beef brocolli, pork fried rice | default | static | false  | Jade lunch  |
++-----------+--------------------------------+---------+--------+--------+-------------+
+""")
+
+        #################
+        # CSV format
+        result = self.run_cli(cmd_env, sub_cmd + f"ls -v -f csv")
+        self.assertEqual(result.out(), """\
+Name,Value,Source,Type,Secret,Description
+speicla14,*****,default,static,true,Jade secret
+speicla3,"beef brocolli, pork fried rice",default,static,false,Jade lunch
+""")
+
+        result = self.run_cli(cmd_env, sub_cmd + f"ls -v -f csv -s")
+        self.assertEqual(result.out(), """\
+Name,Value,Source,Type,Secret,Description
+speicla14,cueey-chicken,default,static,true,Jade secret
+speicla3,"beef brocolli, pork fried rice",default,static,false,Jade lunch
+""")
+
+        #################
+        # JSON format
+        result = self.run_cli(cmd_env, sub_cmd + f"ls -v -f json")
+        self.assertEqual(result.out(), """\
+{
+  "parameter": [
+    {
+      "Description": "Jade secret",
+      "Name": "speicla14",
+      "Secret": "true",
+      "Source": "default",
+      "Type": "static",
+      "Value": "*****"
+    },
+    {
+      "Description": "Jade lunch",
+      "Name": "speicla3",
+      "Secret": "false",
+      "Source": "default",
+      "Type": "static",
+      "Value": "beef brocolli, pork fried rice"
+    }
+  ]
+}
+""")
+
+        result = self.run_cli(cmd_env, sub_cmd + f"ls -v -f json -s")
+        self.assertEqual(result.out(), """\
+{
+  "parameter": [
+    {
+      "Description": "Jade secret",
+      "Name": "speicla14",
+      "Secret": "true",
+      "Source": "default",
+      "Type": "static",
+      "Value": "cueey-chicken"
+    },
+    {
+      "Description": "Jade lunch",
+      "Name": "speicla3",
+      "Secret": "false",
+      "Source": "default",
+      "Type": "static",
+      "Value": "beef brocolli, pork fried rice"
+    }
+  ]
+}
+""")
+
+        #################
+        # YAML format
+        result = self.run_cli(cmd_env, sub_cmd + f"ls -v -f yaml")
+        self.assertEqual(result.out(), """\
+---
+parameter:
+  - Description: Jade secret
+    Name: speicla14
+    Secret: "true"
+    Source: default
+    Type: static
+    Value: "*****"
+  - Description: Jade lunch
+    Name: speicla3
+    Secret: "false"
+    Source: default
+    Type: static
+    Value: "beef brocolli, pork fried rice"
+""")
+
+        result = self.run_cli(cmd_env, sub_cmd + f"ls -v -f yaml -s")
+        self.assertEqual(result.out(), """\
+---
+parameter:
+  - Description: Jade secret
+    Name: speicla14
+    Secret: "true"
+    Source: default
+    Type: static
+    Value: cueey-chicken
+  - Description: Jade lunch
+    Name: speicla3
+    Secret: "false"
+    Source: default
+    Type: static
+    Value: "beef brocolli, pork fried rice"
+""")
+
+        # delete the project
+        self.delete_project(cmd_env, proj_name)
