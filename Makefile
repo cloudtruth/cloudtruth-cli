@@ -12,6 +12,7 @@ rust_bad_version := $(shell grep "RUST_VERSION:" .github/workflows/*.yml | grep 
 .PHONY += clean
 .PHONY += help
 .PHONY += image
+.PHONY += integration
 .PHONY += lint
 .PHONY += precommit
 .PHONY += precommit_test
@@ -71,6 +72,9 @@ precommit_test:
 test: precommit_test
 	make -C tests
 
+integration: cargo
+	make -C $@
+
 version_check:
 ifneq ($(rust_intended),$(rust_installed))
 	$(error "Rustc compiler version expected $(rust_intended), got $(rust_installed)")
@@ -90,6 +94,7 @@ targets:
 	@echo "cargo          - builds rust target"
 	@echo "clean          - clean out build targets"
 	@echo "image          - make the cloudtruth/cli docker container for development"
+	@echo "integration    - runs the integration test against the live server"
 	@echo "lint           - checks for formatting issues"
 	@echo "precommit      - build rust targets, tests, and lints the files"
 	@echo "precommit_test - runs the cargo tests"
