@@ -58,7 +58,7 @@ ifeq ($(rustup_exists),'')
 	curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 endif
 ifeq ($(rustup_exists),'')
-	@echo "You need to add ~/.cargo/bin to your PATH"
+	$(error "You need to add ~/.cargo/bin to your PATH")
 endif
 ifneq ($(rust_intended),$(rust_installed))
 	rustup upgrade $(rust_intended)
