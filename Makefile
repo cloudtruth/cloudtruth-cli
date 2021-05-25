@@ -3,7 +3,8 @@
 #
 
 os_name := $(shell uname -s)
-rust_intended := 1.52.0
+rustup_exists := $(shell which rustup)
+rust_intended := 1.52.1
 rust_installed := $(shell rustc -V | cut -d' ' -f2)
 rust_bad_version := $(shell grep "RUST_VERSION:" .github/workflows/*.yml | grep -v "$(rust_intended)")
 
@@ -22,6 +23,8 @@ rust_bad_version := $(shell grep "RUST_VERSION:" .github/workflows/*.yml | grep 
 .PHONY += test
 .PHONY += version_check
 
+all: precommit
+
 ### Commands for outside the container
 
 image:
@@ -37,8 +40,6 @@ shell:
 
 ### Commands for either outside or inside the container
 
-all: precommit
-
 cargo:
 	cargo build
 
@@ -53,6 +54,12 @@ lint:
 precommit: version_check cargo precommit_test lint
 
 prerequisites:
+ifeq ($(rustup_exists),'')
+	curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+endif
+ifeq ($(rustup_exists),'')
+	$(error "You need to add ~/.cargo/bin to your PATH")
+endif
 ifneq ($(rust_intended),$(rust_installed))
 	rustup upgrade $(rust_intended)
 else
@@ -61,7 +68,7 @@ endif
 ifeq ($(os_name),Darwin)
 	brew install shellcheck libyaml;
 else
-	sudo apt-get install shellcheck python-yaml;
+	sudo apt-get install shellcheck python-yaml pkg-config;
 endif
 	make -C tests $@
 
@@ -73,7 +80,7 @@ test: precommit_test
 	make -C tests
 
 integration: cargo
-	make -C $@
+	make -C tests $@
 
 version_check:
 ifneq ($(rust_intended),$(rust_installed))

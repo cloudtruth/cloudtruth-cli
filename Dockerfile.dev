@@ -12,7 +12,7 @@ FROM rust:alpine
 ENV APP_USER="dev"
 ENV APP_DIR="/home/$APP_USER/cli"
 ENV CROSS_DOCKER_IN_DOCKER=true
-ENV OS_DEPS="bash docker-cli make musl-dev openssl-dev"
+ENV OS_DEPS="bash docker-cli make musl-dev openssl-dev python3"
 
 RUN apk add --no-cache $OS_DEPS
 
