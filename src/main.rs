@@ -11,6 +11,7 @@ extern crate rpassword;
 
 mod cli;
 mod config;
+mod crypto;
 mod environments;
 mod integrations;
 mod lib;
