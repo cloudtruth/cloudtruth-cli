@@ -127,14 +127,13 @@ fn decode(encoded: &str) -> Result<SecretWrapper, Error> {
 
 /// Derives the key from the JWT.
 ///
-/// Takes the base64 encoded master key (as source) that is used to derive the output key.
+/// Takes the master key (as source) that is used to derive the output key.
 fn generate_key(
-    source: &str,
+    source: &[u8],
     salt: Option<&[u8]>,
     key_len: Option<usize>,
 ) -> Result<Vec<u8>, Error> {
-    let decoded_src = base64::decode(source)?;
-    let kdf = Hkdf::<Sha512>::new(salt, &decoded_src);
+    let kdf = Hkdf::<Sha512>::new(salt, &source);
     let mut key = vec![0; key_len.unwrap_or(32)];
     let result = kdf.expand(&[], &mut key);
     match result {
@@ -288,7 +287,6 @@ mod test {
         //   https://cryptography.io/en/3.4.7/development/custom-vectors/hkdf.html
         // with modifications to use SHA-512 with 128 bytes
         let icm = hex::decode("0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b").unwrap();
-        let icm_str = base64::encode(icm);
         let expected = hex::decode(concat!(
             "f5fa02b18298a72a8c23898a8703472c6eb179dc204c03425c970e3b164bf90f",
             "ff22d04836d0e2343bacc4e7cb6045faaa698e0e3b3eb91331306def1db8319e",
@@ -297,25 +295,14 @@ mod test {
         ))
         .unwrap();
 
-        assert_eq!(
-            expected,
-            generate_key(icm_str.as_str(), None, Some(128)).unwrap()
-        );
+        assert_eq!(expected, generate_key(&icm, None, Some(128)).unwrap());
     }
 
     #[test]
     fn key_derivation_error() {
-        let icm_str = "ThisContains!non-base65#characters";
-        // NOTE: following error message may change with new base64 versions, but needed to match
-        //       the Error text.
-        let err_msg = "Invalid byte 33, offset 12.".to_string();
-        let result = generate_key(icm_str, None, None).unwrap_err();
-        assert_eq!(result, Error::Base64(err_msg));
-
         let icm = hex::decode("0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b").unwrap();
-        let icm_str = base64::encode(icm);
         let err_msg = "invalid number of blocks, too large output".to_string();
-        let result = generate_key(icm_str.as_str(), None, Some(65535)).unwrap_err();
+        let result = generate_key(&icm, None, Some(65535)).unwrap_err();
         assert_eq!(result, Error::KeyDerivation(err_msg));
     }
 }
