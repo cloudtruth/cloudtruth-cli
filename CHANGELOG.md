@@ -1,4 +1,12 @@
-# 0.5.2 - 20210-05-20
+# 0.5.3 - 2021-05-27
+
+* Parameters: added `--dynamic` flag to `parameter list --values` view FQN/JMES path values.
+* Added `yaml` and `json` table formatting options to tables.
+* Fixed issue with Windows pre-release GitHub action.
+* Upgrade to Rust compiler 1.52.1.
+* Added `make integration` target to facilitate easier integration testing.
+
+# 0.5.2 - 2021-05-20
 
 * Important changes:
   * Templates: must use `--secrets` or `-s` to display secret values.
