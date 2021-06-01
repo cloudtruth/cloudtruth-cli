@@ -275,6 +275,7 @@ fn unwrap_aes_gcm(jwt: &[u8], wrapper: &SecretWrapper) -> Result<Vec<u8>, Error>
 }
 
 /// Use the JWT to wrap the plaintext string in the specified algorithm
+#[allow(dead_code)]
 pub fn wrap(algorithm: Algorithm, jwt: &[u8], plaintext: &[u8]) -> Result<String, Error> {
     match algorithm {
         Algorithm::AesGcm => wrap_aes_gcm(jwt, plaintext),
@@ -284,6 +285,7 @@ pub fn wrap(algorithm: Algorithm, jwt: &[u8], plaintext: &[u8]) -> Result<String
 }
 
 /// Uses the JWT to unwrap the encrypted string
+#[allow(dead_code)]
 pub fn unwrap(jwt: &[u8], encoded: &str) -> Result<Vec<u8>, Error> {
     let wrapper = decode(encoded)?;
     match wrapper.algorithm {
