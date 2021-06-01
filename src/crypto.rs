@@ -1,6 +1,6 @@
 use base64::{self, DecodeError as Base64Error};
 use chacha20poly1305::aead::{AeadInPlace, NewAead};
-use chacha20poly1305::{ChaCha20Poly1305, Key, Nonce, Tag};
+use chacha20poly1305::ChaCha20Poly1305;
 use hkdf::Hkdf;
 use rand_core::RngCore;
 use sha2::{Digest, Sha512};
@@ -175,13 +175,13 @@ fn generate_key(
 fn wrap_chacha20_poly1305(jwt: &[u8], plaintext: &[u8]) -> Result<String, Error> {
     // derive the key from the JWT
     let derived = generate_key(&jwt, None, None)?;
-    let key = Key::from_slice(&derived);
+    let key = chacha20poly1305::Key::from_slice(&derived);
 
     // generate a new Nonce
     let mut rand_bytes = [0u8; NONCE_LEN];
     let mut rng = rand_core::OsRng;
     rng.fill_bytes(&mut rand_bytes);
-    let nonce = Nonce::from_slice(&rand_bytes);
+    let nonce = chacha20poly1305::Nonce::from_slice(&rand_bytes);
 
     let cipher = ChaCha20Poly1305::new(key);
     let mut in_out = vec![0; plaintext.len()];
@@ -208,13 +208,13 @@ fn wrap_chacha20_poly1305(jwt: &[u8], plaintext: &[u8]) -> Result<String, Error>
 /// to generate the key, and returns the plaintext on success.
 fn unwrap_chacha20_poly1305(jwt: &[u8], wrapper: &SecretWrapper) -> Result<Vec<u8>, Error> {
     let derived = generate_key(jwt, None, None)?;
-    let key = Key::from_slice(&derived);
+    let key = chacha20poly1305::Key::from_slice(&derived);
     let cipher = ChaCha20Poly1305::new(key);
     let nonce_bytes = base64::decode(&wrapper.nonce)?;
-    let nonce = Nonce::from_slice(&nonce_bytes);
+    let nonce = chacha20poly1305::Nonce::from_slice(&nonce_bytes);
     let mut in_out = base64::decode(wrapper.cipher_text.as_str())?;
     let tag_bytes = base64::decode(&wrapper.tag)?;
-    let tag = Tag::from_slice(&tag_bytes);
+    let tag = chacha20poly1305::Tag::from_slice(&tag_bytes);
     let result = cipher.decrypt_in_place_detached(&nonce, &[], &mut in_out, tag);
     match result {
         Ok(_) => Ok(in_out),
