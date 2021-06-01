@@ -1,6 +1,9 @@
 use base64::{self, DecodeError as Base64Error};
+use chacha20poly1305::aead::{AeadInPlace, NewAead};
+use chacha20poly1305::{ChaCha20Poly1305, Key, Nonce, Tag};
 use hkdf::Hkdf;
-use sha2::Sha512;
+use rand_core::RngCore;
+use sha2::{Digest, Sha512};
 use std::fmt;
 use std::fmt::{Display, Formatter};
 use std::str::FromStr;
@@ -12,21 +15,27 @@ const CHA_CHA_20_STR: &str = "chacha20";
 const UNKNOWN_STR: &str = "unknown";
 
 const ENCODED_PART_COUNT: usize = 5;
+const KEY_LEN: usize = 32;
+//const TAG_LEN: usize = 16;
+const NONCE_LEN: usize = 12;
 
 #[derive(PartialEq, Eq, Hash, Debug)]
-enum Algorithm {
+pub enum Algorithm {
     AesGcm = 1,
     ChaCha20 = 2,
     Unknown = 99,
 }
 
 #[derive(PartialEq, Eq, Clone, Debug)]
-enum Error {
+pub enum Error {
     Base64(String),
+    Decrypt(String),
+    Encrypt(String),
     InvalidAlgorithm(String),
     InvalidEncoding(usize),
     InvalidPrefix(String),
     KeyDerivation(String),
+    UnsupportedAlgorithm(String),
 }
 
 #[derive(PartialEq, Eq, Debug)]
@@ -69,6 +78,12 @@ impl Display for Error {
             Error::Base64(details) => {
                 write!(f, "Base64 error: {}", details)
             }
+            Error::Decrypt(details) => {
+                write!(f, "Decryption error: {}", details)
+            }
+            Error::Encrypt(details) => {
+                write!(f, "Encryption error: {}", details)
+            }
             Error::InvalidAlgorithm(name) => {
                 write!(f, "Invalid encryption algorithm: {}", name)
             }
@@ -84,6 +99,9 @@ impl Display for Error {
             }
             Error::KeyDerivation(details) => {
                 write!(f, "Key derivation error: {}", details)
+            }
+            Error::UnsupportedAlgorithm(details) => {
+                write!(f, "Unsupported algorithm: {}", details)
             }
         }
     }
@@ -133,8 +151,18 @@ fn generate_key(
     salt: Option<&[u8]>,
     key_len: Option<usize>,
 ) -> Result<Vec<u8>, Error> {
-    let kdf = Hkdf::<Sha512>::new(salt, &source);
-    let mut key = vec![0; key_len.unwrap_or(32)];
+    let digest_result;
+    let binary_salt = match salt {
+        Some(s) => s,
+        None => {
+            let mut digest = Sha512::new();
+            digest.update(source);
+            digest_result = digest.finalize();
+            digest_result.as_slice()
+        }
+    };
+    let kdf = Hkdf::<Sha512>::new(Some(binary_salt), &source);
+    let mut key = vec![0; key_len.unwrap_or(KEY_LEN)];
     let result = kdf.expand(&[], &mut key);
     match result {
         Ok(_) => Ok(key),
@@ -142,10 +170,98 @@ fn generate_key(
     }
 }
 
+/// Wraps the plaintext using the ChaCha20 algorithm with the `jwt` to generate the key, and returns
+/// an encoded string.
+fn wrap_chacha20_poly1305(jwt: &[u8], plaintext: &[u8]) -> Result<String, Error> {
+    // derive the key from the JWT
+    let derived = generate_key(&jwt, None, None)?;
+    let key = Key::from_slice(&derived);
+
+    // generate a new Nonce
+    let mut rand_bytes = [0u8; NONCE_LEN];
+    let mut rng = rand_core::OsRng;
+    rng.fill_bytes(&mut rand_bytes);
+    let nonce = Nonce::from_slice(&rand_bytes);
+
+    let cipher = ChaCha20Poly1305::new(key);
+    let mut in_out = vec![0; plaintext.len()];
+    in_out.copy_from_slice(&plaintext);
+    let result = cipher.encrypt_in_place_detached(&nonce, &[], &mut in_out);
+    if let Ok(tag) = result {
+        let cipher_str = base64::encode(in_out);
+        let nonce_str = base64::encode(nonce);
+        let tag_str = base64::encode(tag);
+        let encoded = encode(
+            Algorithm::ChaCha20,
+            nonce_str.as_str(),
+            cipher_str.as_str(),
+            tag_str.as_str(),
+        );
+        Ok(encoded)
+    } else {
+        let err = result.unwrap_err();
+        Err(Error::Encrypt(err.to_string()))
+    }
+}
+
+/// Unwraps the ciphertext (inside the `SecretWrapper`) using the ChaCha20 algorithm with the `jwt`
+/// to generate the key, and returns the plaintext on success.
+fn unwrap_chacha20_poly1305(jwt: &[u8], wrapper: &SecretWrapper) -> Result<Vec<u8>, Error> {
+    let derived = generate_key(jwt, None, None)?;
+    let key = Key::from_slice(&derived);
+    let cipher = ChaCha20Poly1305::new(key);
+    let nonce_bytes = base64::decode(&wrapper.nonce)?;
+    let nonce = Nonce::from_slice(&nonce_bytes);
+    let mut in_out = base64::decode(wrapper.cipher_text.as_str())?;
+    let tag_bytes = base64::decode(&wrapper.tag)?;
+    let tag = Tag::from_slice(&tag_bytes);
+    let result = cipher.decrypt_in_place_detached(&nonce, &[], &mut in_out, tag);
+    match result {
+        Ok(_) => Ok(in_out),
+        Err(err) => Err(Error::Decrypt(err.to_string())),
+    }
+}
+
+/// Use the JWT to wrap the plaintext string in the specified algorithm
+pub fn wrap(algorithm: Algorithm, jwt: &[u8], plaintext: &[u8]) -> Result<String, Error> {
+    match algorithm {
+        Algorithm::ChaCha20 => wrap_chacha20_poly1305(jwt, plaintext),
+        _ => Err(Error::UnsupportedAlgorithm(format!("{}", algorithm))),
+    }
+}
+
+/// Uses the JWT to unwrap the encrypted string
+pub fn unwrap(jwt: &[u8], encoded: &str) -> Result<Vec<u8>, Error> {
+    let wrapper = decode(encoded)?;
+    match wrapper.algorithm {
+        Algorithm::ChaCha20 => unwrap_chacha20_poly1305(jwt, &wrapper),
+        _ => Err(Error::UnsupportedAlgorithm(format!(
+            "{}",
+            wrapper.algorithm
+        ))),
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
     use std::collections::HashMap;
+
+    const TEST_JWT: &str = concat!(
+        "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJ0ZXN0ZXJfYnJvL3VzZXJpbmZvIiwi",
+        "ZW1haWwiOiJ0ZXN0ZXJAdGVzdG1lLmJybyIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJleHAiOjE2M",
+        "TkxMjYyNjIsImZhbWlseV9uYW1lIjoiRXIiLCJnaXZlbl9uYW1lIjoiVGVzdCIsImh0dHBzOi8vY2",
+        "xvdWR0cnV0aC5jb20vb3JnaWQiOiJteV9vcmciLCJodHRwczovL2Nsb3VkdHJ1dGguY29tL3VzZXJ",
+        "pZCI6Im15X3VzZXIiLCJpYXQiOjE2MTkwMzk4NjIsImlzcyI6Imh0dHBzOi8vbG9jYWxob3N0Iiwi",
+        "anRpIjoiaWsySDVIVFhPQzNJRnFhNFppZHVmUSIsImxvY2FsZSI6ImVuIiwibmFtZSI6IlRlc3QgR",
+        "XIiLCJuYmYiOjE2MTkwMzk4NjIsIm5pY2tuYW1lIjoidGVzdGVyIiwic2NvcGUiOiJvcGVuaWQgcH",
+        "JvZmlsZSBlbWFpbCIsInN1YiI6InRlc3RlcmJyb3wxMDY3ODcxNjg2NTQ1MTI2OTQ5NTcifQ.puCu",
+        "W4V24yX1rl7EPhyGitUYQSIKpiRApC90BA3rXnYTM_QWCN0c4Z6UEmYam0qkw8zMxDm7HzxnW_5xZ",
+        "K8tVuhZ2N8hWfOhnPzS54GYaFCT2K39jbqSLf8OvNdGtyr2TayiL2MVXS02Wkyt3HWZnxSJ0NH_sB",
+        "jjFboQFGSF6IKIMRxSr9yuj3g9YDZ6riCFJ8mz8kxEDKUa7XPPfLYCJflcTxnfbINVEWU3foDExse",
+        "cL9Vdf_wY_Swv7hOltmRczguEkna0v00vj0p7bGHqhX2uKpuavRGsdgNs1A0CgvaAKnt49NFm9iyt",
+        "Cjq3vm0Rmcu_Eg84ZY01LA828WZIcQ",
+    );
 
     #[test]
     fn algorithm_to_string() {
@@ -294,8 +410,9 @@ mod test {
             "9eb138da69d5bea1e09a39ea99a341c00b2c9ee0d4ba632115aec516bb71e922",
         ))
         .unwrap();
+        let salt: &[u8] = &[];
 
-        assert_eq!(expected, generate_key(&icm, None, Some(128)).unwrap());
+        assert_eq!(expected, generate_key(&icm, Some(salt), Some(128)).unwrap());
     }
 
     #[test]
@@ -304,5 +421,52 @@ mod test {
         let err_msg = "invalid number of blocks, too large output".to_string();
         let result = generate_key(&icm, None, Some(65535)).unwrap_err();
         assert_eq!(result, Error::KeyDerivation(err_msg));
+    }
+
+    #[test]
+    fn wrap_unsupported() {
+        let jwt = b"fake-jwt-key";
+        let plaintext = "this is sample plaintext";
+        let result = wrap(Algorithm::AesGcm, jwt, plaintext.as_bytes()).unwrap_err();
+        assert_eq!(result, Error::UnsupportedAlgorithm(AES_GCM_STR.to_string()));
+
+        let result = wrap(Algorithm::Unknown, jwt, plaintext.as_bytes()).unwrap_err();
+        assert_eq!(result, Error::UnsupportedAlgorithm(UNKNOWN_STR.to_string()));
+    }
+
+    #[test]
+    fn unwrap_unsupported() {
+        let jwt = b"fake-jwt-key";
+        let nonce = "sample_nonce";
+        let ciphertext = "cipher_text_goes_here";
+        let tag = "tag_value_goes_here";
+        let algo_str = AES_GCM_STR.to_string();
+        let encoded_string = format!("smaash:{}:{}:{}:{}", algo_str, nonce, ciphertext, tag);
+        let result = unwrap(jwt, encoded_string.as_str()).unwrap_err();
+        assert_eq!(result, Error::UnsupportedAlgorithm(algo_str));
+
+        let algo_str = UNKNOWN_STR.to_string();
+        let encoded_string = format!("smaash:{}:{}:{}:{}", algo_str, nonce, ciphertext, tag);
+        let result = unwrap(jwt, encoded_string.as_str()).unwrap_err();
+        assert_eq!(result, Error::UnsupportedAlgorithm(algo_str));
+    }
+
+    #[test]
+    fn chacha20_known_answer() {
+        let secret = "shhh - I'm hunting rabbits!";
+        // this was generated by vaas server code, so make sure we can decrypt it
+        let wrapped = "smaash:chacha20:ynDA/nRqArJnn6Jo:dogot5FHY7AFGe6CjAJbqzGFb9mOpEUUk8w2TyRmzKBOYj6O:pzoMYaFOqzRXFo2ToaMEGA==";
+        let unwrapped = unwrap(TEST_JWT.as_bytes(), wrapped).unwrap();
+        let decoded = base64::decode(&unwrapped).unwrap();
+        assert_eq!(secret.as_bytes(), decoded);
+    }
+
+    #[test]
+    fn chacha20_wrap_and_unwrap() {
+        let secret = "shhh - I'm hunting rabbits!";
+        let wrapped = wrap(Algorithm::ChaCha20, TEST_JWT.as_bytes(), secret.as_bytes()).unwrap();
+        let unwrapped = unwrap(TEST_JWT.as_bytes(), wrapped.as_str()).unwrap();
+        let result = std::str::from_utf8(&unwrapped).unwrap();
+        assert_eq!(secret, result);
     }
 }
