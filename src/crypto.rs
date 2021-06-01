@@ -187,20 +187,20 @@ fn wrap_chacha20_poly1305(jwt: &[u8], plaintext: &[u8]) -> Result<String, Error>
     let mut in_out = vec![0; plaintext.len()];
     in_out.copy_from_slice(&plaintext);
     let result = cipher.encrypt_in_place_detached(&nonce, &[], &mut in_out);
-    if let Ok(tag) = result {
-        let cipher_str = base64::encode(in_out);
-        let nonce_str = base64::encode(nonce);
-        let tag_str = base64::encode(tag);
-        let encoded = encode(
-            Algorithm::ChaCha20,
-            nonce_str.as_str(),
-            cipher_str.as_str(),
-            tag_str.as_str(),
-        );
-        Ok(encoded)
-    } else {
-        let err = result.unwrap_err();
-        Err(Error::Encrypt(err.to_string()))
+    match result {
+        Ok(tag) => {
+            let cipher_str = base64::encode(in_out);
+            let nonce_str = base64::encode(nonce);
+            let tag_str = base64::encode(tag);
+            let encoded = encode(
+                Algorithm::ChaCha20,
+                nonce_str.as_str(),
+                cipher_str.as_str(),
+                tag_str.as_str(),
+            );
+            Ok(encoded)
+        }
+        Err(err) => Err(Error::Encrypt(err.to_string())),
     }
 }
 
