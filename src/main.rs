@@ -568,7 +568,10 @@ fn process_parameters_command(
             println!(
                 "No {}parameters found in project {}",
                 qualifier,
-                resolved.proj_name.clone().unwrap()
+                resolved
+                    .proj_name
+                    .clone()
+                    .unwrap_or_else(|| DEFAULT_PROJ_NAME.to_string())
             );
         } else if !subcmd_args.is_present(VALUES_FLAG) {
             let list = details
