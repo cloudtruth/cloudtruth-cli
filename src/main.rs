@@ -882,13 +882,6 @@ fn main() -> Result<()> {
     let env_name = matches.value_of("env");
     let proj_name = matches.value_of("project");
 
-    Config::init_global(Config::load_config(
-        api_key,
-        profile_name,
-        env_name,
-        proj_name,
-    )?);
-
     if let Some(matches) = matches.subcommand_matches("completions") {
         process_completion_command(matches);
         process::exit(0)
@@ -900,6 +893,15 @@ fn main() -> Result<()> {
     }
 
     let org_id: Option<&str> = None;
+
+    // wait until after processing the config command to load the config -- if we fail to load the
+    // config, we would not be able to edit!
+    Config::init_global(Config::load_config(
+        api_key,
+        profile_name,
+        env_name,
+        proj_name,
+    )?);
 
     // Check the basic config (api-key, server-url) -- don't worry about valid env/proj, yet
     check_config()?;

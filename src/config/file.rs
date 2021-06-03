@@ -220,6 +220,35 @@ mod tests {
     }
 
     #[test]
+    fn get_request_timeout_from_profile() {
+        let config = indoc!(
+            r#"
+        profiles:
+            default:
+                request_timeout: 50
+        "#
+        );
+
+        let profile = ConfigFile::load_profile(config, "default").unwrap();
+        assert_eq!(Some(50), profile.request_timeout)
+    }
+
+    #[test]
+    fn invalid_request_timeout_from_profile() {
+        let config = indoc!(
+            r#"
+        profiles:
+            default:
+                request_timeout: not an integer
+        "#
+        );
+
+        let error = ConfigFile::load_profile(config, "default").unwrap_err();
+        let err_msg = format!("{}", error);
+        assert!(err_msg.contains("Your configuration file is not syntactically valid YAML."));
+    }
+
+    #[test]
     fn load_profile_with_bad_name() {
         let config = indoc!(
             r#"
