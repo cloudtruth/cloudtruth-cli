@@ -12,6 +12,7 @@ use indoc::formatdoc;
 use once_cell::sync::OnceCell;
 use std::fs;
 use std::path::{Path, PathBuf};
+use std::time::Duration;
 
 static INSTANCE: OnceCell<Config> = OnceCell::new();
 
@@ -19,6 +20,9 @@ const CONFIG_FILE_NAME: &str = "cli.yml";
 
 // Default GraphQL server URL
 pub const DEFAULT_SERVER_URL: &str = "https://api.cloudtruth.com/graphql";
+
+// Default GraphQL server request timeout
+pub const DEFAULT_REQUEST_TIMEOUT: u64 = 30;
 
 // Default environment name.
 pub const DEFAULT_ENV_NAME: &str = "default";
@@ -47,6 +51,9 @@ pub const CT_OLD_API_KEY: &str = "CT_API_KEY";
 
 // Environment variable name used to override the default server URL.
 pub const CT_SERVER_URL: &str = "CLOUDTRUTH_SERVER_URL";
+
+// Environment variable name used to override the default server URL.
+pub const CT_REQ_TIMEOUT: &str = "CLOUDTRUTH_REQUEST_TIMEOUT";
 
 // Environment variable name used to set the environment name.
 pub const CT_ENVIRONMENT: &str = "CLOUDTRUTH_ENVIRONMENT";
@@ -81,6 +88,7 @@ pub struct Config {
     pub environment: Option<String>,
     pub project: Option<String>,
     pub server_url: String,
+    pub request_timeout: Option<Duration>,
 }
 
 pub struct ValidationError {
@@ -104,6 +112,10 @@ impl From<Profile> for Config {
             server_url: profile
                 .server_url
                 .unwrap_or_else(|| DEFAULT_SERVER_URL.to_string()),
+            request_timeout: Some(Duration::new(
+                profile.request_timeout.unwrap_or(DEFAULT_REQUEST_TIMEOUT),
+                0,
+            )),
         }
     }
 }

@@ -12,11 +12,12 @@ pub mod prelude {
     pub fn graphql_request<T: Serialize, R: DeserializeOwned>(
         json: &T,
     ) -> Result<graphql_client::Response<R>, GraphQLError> {
+        let config = Config::global();
         let client = reqwest::blocking::Client::builder()
+            .timeout(config.request_timeout)
             .connection_verbose(true)
             .user_agent(concat!("CloudTruth CLI/", env!("CARGO_PKG_VERSION")))
             .build()?;
-        let config = Config::global();
 
         let res = client
             .post(&config.server_url)

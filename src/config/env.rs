@@ -1,5 +1,7 @@
 use crate::config::profiles::Profile;
-use crate::config::{CT_API_KEY, CT_ENVIRONMENT, CT_OLD_API_KEY, CT_PROJECT, CT_SERVER_URL};
+use crate::config::{
+    CT_API_KEY, CT_ENVIRONMENT, CT_OLD_API_KEY, CT_PROJECT, CT_REQ_TIMEOUT, CT_SERVER_URL,
+};
 use std::env;
 
 pub struct ConfigEnv {}
@@ -12,6 +14,7 @@ impl ConfigEnv {
             description: None,
             environment: ConfigEnv::get_override(CT_ENVIRONMENT),
             project: ConfigEnv::get_override(CT_PROJECT),
+            request_timeout: ConfigEnv::get_duration_override(),
             server_url: ConfigEnv::get_override(CT_SERVER_URL),
             source_profile: None,
         }
@@ -26,22 +29,29 @@ impl ConfigEnv {
             None
         }
     }
+
+    pub fn get_duration_override() -> Option<u64> {
+        let mut result = None;
+        if let Some(dur_str) = ConfigEnv::get_override(CT_REQ_TIMEOUT) {
+            if let Ok(dur_val) = dur_str.parse::<u64>() {
+                result = Some(dur_val);
+            }
+        }
+        result
+    }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::config::profiles::Profile;
-    use crate::config::{
-        ConfigEnv, CT_API_KEY, CT_ENVIRONMENT, CT_OLD_API_KEY, CT_PROJECT, CT_SERVER_URL,
-    };
+    use super::*;
     use serial_test::serial;
-    use std::env;
 
     fn remove_env_vars() {
         env::remove_var(CT_API_KEY);
         env::remove_var(CT_ENVIRONMENT);
         env::remove_var(CT_OLD_API_KEY);
         env::remove_var(CT_PROJECT);
+        env::remove_var(CT_REQ_TIMEOUT);
         env::remove_var(CT_SERVER_URL);
     }
 
@@ -51,12 +61,7 @@ mod tests {
         remove_env_vars();
         assert_eq!(
             Profile {
-                api_key: None,
-                description: None,
-                environment: None,
-                project: None,
-                server_url: None,
-                source_profile: None
+                ..Profile::default()
             },
             ConfigEnv::load_profile()
         );
@@ -69,6 +74,7 @@ mod tests {
         env::set_var(CT_API_KEY, "new_key");
         env::set_var(CT_ENVIRONMENT, "my_environment");
         env::set_var(CT_PROJECT, "skunkworks");
+        env::set_var(CT_REQ_TIMEOUT, "500");
         env::set_var(CT_SERVER_URL, "http://localhost:7001/graphql");
 
         assert_eq!(
@@ -77,6 +83,7 @@ mod tests {
                 description: None,
                 environment: Some("my_environment".to_string()),
                 project: Some("skunkworks".to_string()),
+                request_timeout: Some(500),
                 server_url: Some("http://localhost:7001/graphql".to_string()),
                 source_profile: None
             },
@@ -92,6 +99,7 @@ mod tests {
         env::set_var(CT_ENVIRONMENT, "my_env");
         env::set_var(CT_OLD_API_KEY, "old_key");
         env::set_var(CT_PROJECT, "skunkworks");
+        env::set_var(CT_REQ_TIMEOUT, "10");
         env::set_var(CT_SERVER_URL, "http://localhost:7001/graphql");
 
         assert_eq!(
@@ -100,6 +108,7 @@ mod tests {
                 description: None,
                 environment: Some("my_env".to_string()),
                 project: Some("skunkworks".to_string()),
+                request_timeout: Some(10),
                 server_url: Some("http://localhost:7001/graphql".to_string()),
                 source_profile: None
             },
@@ -114,6 +123,7 @@ mod tests {
         env::set_var(CT_ENVIRONMENT, "my_environ");
         env::set_var(CT_PROJECT, "skunkworks");
         env::set_var(CT_OLD_API_KEY, "old_key");
+        env::set_var(CT_REQ_TIMEOUT, "28");
         env::set_var(CT_SERVER_URL, "http://localhost:7001/graphql");
 
         assert_eq!(
@@ -122,6 +132,7 @@ mod tests {
                 description: None,
                 environment: Some("my_environ".to_string()),
                 project: Some("skunkworks".to_string()),
+                request_timeout: Some(28),
                 server_url: Some("http://localhost:7001/graphql".to_string()),
                 source_profile: None
             },
