@@ -2,7 +2,7 @@
 Tests precedence of command line arguments, profiles(?), and environment variables.
 """
 from testcase import TestCase
-from testcase import CT_ENV, CT_PROFILE, CT_PROJ
+from testcase import CT_ENV, CT_PROFILE, CT_PROJ, CT_TIMEOUT, CT_URL
 
 
 class TestTopLevelArgs(TestCase):
@@ -161,3 +161,30 @@ class TestTopLevelArgs(TestCase):
         # cleanup
         self.delete_project(cmd_env, proj_name)
         self.delete_environment(cmd_env, env_name)
+
+    def test_arg_configurable_timeout(self):
+        # NOTE: request_timeout is configurable via profile, but profiles are not integration tested
+        base_cmd = self.get_cli_base_cmd()
+        cmd_env = self.get_cmd_env()
+        printenv = f" run -i none -- {self.get_display_env_command()}"
+
+        cmd_env[CT_TIMEOUT] = "0"
+        result = self.run_cli(cmd_env, base_cmd + printenv)
+        self.assertNotEqual(0, result.return_value)
+        self.assertIn("operation timed out", result.err())
+
+    def test_arg_invalid_server(self):
+        # NOTE: server_url is configurable via profile, but profiles are not integration tested
+        base_cmd = self.get_cli_base_cmd()
+        cmd_env = self.get_cmd_env()
+        printenv = f" run -i none -- {self.get_display_env_command()}"
+
+        cmd_env[CT_URL] = "0.0.0.0:0"
+        result = self.run_cli(cmd_env, base_cmd + printenv)
+        self.assertNotEqual(0, result.return_value)
+        self.assertIn("relative URL without a base", result.err())
+
+        cmd_env[CT_URL] = "https://0.0.0.0:0/graphql"
+        result = self.run_cli(cmd_env, base_cmd + printenv)
+        self.assertNotEqual(0, result.return_value)
+        self.assertIn("tcp connect error", result.err())
