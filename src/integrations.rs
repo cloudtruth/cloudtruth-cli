@@ -41,6 +41,7 @@ pub struct IntegrationDetails {
 /// Provides basic information about the integration entries
 #[derive(Debug)]
 pub struct IntegrationEntry {
+    pub decoded_id: String,
     pub fqn: String,
     pub id: String,
     pub name: String,
@@ -49,6 +50,7 @@ pub struct IntegrationEntry {
 /// Provides information about the current node, and its' children
 #[derive(Debug)]
 pub struct IntegrationNode {
+    pub decoded_id: String,
     pub fqn: String,
     pub id: String,
     pub name: String,
@@ -94,6 +96,7 @@ impl From<&IntegrationNodeQueryNodeOnAwsIntegration> for IntegrationNode {
             entries.push(IntegrationEntry::from(e));
         }
         IntegrationNode {
+            decoded_id: decode_id(node.id.as_str()),
             fqn: node.fqn.clone(),
             id: node.id.clone(),
             name: node.name.clone(),
@@ -109,6 +112,7 @@ impl From<&IntegrationNodeQueryNodeOnGithubIntegration> for IntegrationNode {
             entries.push(IntegrationEntry::from(e));
         }
         IntegrationNode {
+            decoded_id: decode_id(node.id.as_str()),
             fqn: node.fqn.clone(),
             id: node.id.clone(),
             name: node.name.clone(),
@@ -124,6 +128,7 @@ impl From<&IntegrationNodeQueryNodeOnIntegrationServiceTree> for IntegrationNode
             entries.push(IntegrationEntry::from(e));
         }
         IntegrationNode {
+            decoded_id: decode_id(node.id.as_str()),
             fqn: node.fqn.clone(),
             id: node.id.clone(),
             name: node.name.clone(),
@@ -139,6 +144,7 @@ impl From<&IntegrationNodeQueryNodeOnIntegrationFileTree> for IntegrationNode {
             entries.push(IntegrationEntry::from(e));
         }
         IntegrationNode {
+            decoded_id: decode_id(node.id.as_str()),
             fqn: node.fqn.clone(),
             id: node.id.clone(),
             name: node.name.clone(),
@@ -169,6 +175,17 @@ fn get_keys(v: Value) -> Vec<String> {
     keys
 }
 
+/// Take the base64 encoded identifier, decode it, and return the string
+fn decode_id(id: &str) -> String {
+    let mut result = "".to_string();
+    if let Ok(id_bytes) = base64::decode(id) {
+        if let Ok(decoded_id) = std::str::from_utf8(&id_bytes) {
+            result = decoded_id.to_string()
+        }
+    }
+    result
+}
+
 impl From<&IntegrationNodeQueryNodeOnIntegrationFile> for IntegrationNode {
     fn from(node: &IntegrationNodeQueryNodeOnIntegrationFile) -> Self {
         let mut entries: Vec<IntegrationEntry> = Vec::new();
@@ -177,6 +194,7 @@ impl From<&IntegrationNodeQueryNodeOnIntegrationFile> for IntegrationNode {
                 let key_names = get_keys(v);
                 for k in key_names {
                     entries.push(IntegrationEntry {
+                        decoded_id: decode_id(node.id.as_str()),
                         fqn: node.fqn.clone(),
                         id: "".to_string(),
                         name: format!("{{{{ {} }}}}", k),
@@ -185,6 +203,7 @@ impl From<&IntegrationNodeQueryNodeOnIntegrationFile> for IntegrationNode {
             }
         }
         IntegrationNode {
+            decoded_id: decode_id(node.id.as_str()),
             fqn: node.fqn.clone(),
             id: node.id.clone(),
             name: node.name.clone(),
@@ -196,6 +215,7 @@ impl From<&IntegrationNodeQueryNodeOnIntegrationFile> for IntegrationNode {
 impl From<&IntegrationNodeQueryNodeOnAwsIntegrationEntries> for IntegrationEntry {
     fn from(entry: &IntegrationNodeQueryNodeOnAwsIntegrationEntries) -> Self {
         IntegrationEntry {
+            decoded_id: decode_id(entry.id.as_str()),
             fqn: entry.fqn.clone(),
             id: entry.id.clone(),
             name: entry.name.clone(),
@@ -206,6 +226,7 @@ impl From<&IntegrationNodeQueryNodeOnAwsIntegrationEntries> for IntegrationEntry
 impl From<&IntegrationNodeQueryNodeOnGithubIntegrationEntries> for IntegrationEntry {
     fn from(entry: &IntegrationNodeQueryNodeOnGithubIntegrationEntries) -> Self {
         IntegrationEntry {
+            decoded_id: decode_id(entry.id.as_str()),
             fqn: entry.fqn.clone(),
             id: entry.id.clone(),
             name: entry.name.clone(),
@@ -216,6 +237,7 @@ impl From<&IntegrationNodeQueryNodeOnGithubIntegrationEntries> for IntegrationEn
 impl From<&IntegrationNodeQueryNodeOnIntegrationServiceTreeEntries> for IntegrationEntry {
     fn from(entry: &IntegrationNodeQueryNodeOnIntegrationServiceTreeEntries) -> Self {
         IntegrationEntry {
+            decoded_id: decode_id(entry.id.as_str()),
             fqn: entry.fqn.clone(),
             id: entry.id.clone(),
             name: entry.name.clone(),
@@ -226,6 +248,7 @@ impl From<&IntegrationNodeQueryNodeOnIntegrationServiceTreeEntries> for Integrat
 impl From<&IntegrationNodeQueryNodeOnIntegrationFileTreeEntries> for IntegrationEntry {
     fn from(entry: &IntegrationNodeQueryNodeOnIntegrationFileTreeEntries) -> Self {
         IntegrationEntry {
+            decoded_id: decode_id(entry.id.as_str()),
             fqn: entry.fqn.clone(),
             id: entry.id.clone(),
             name: entry.name.clone(),
@@ -413,5 +436,32 @@ mod test {
             "o".to_string(),
         ];
         assert_eq!(get_keys(value), expected);
+    }
+
+    #[test]
+    fn decode_id_good() {
+        let encoded = concat!(
+            "SW50ZWdyYXRpb25GaWxlLVsiSW50ZWdyYXRpb25zOjpHaXRodWI6OkZpbGUiLCJjNjBiMDdkNy0w",
+            "ZGFlLTQxNWQtODc0Yy1lMTgyZjY3YzIzNDMiLDM2NjE5MzE1NCwicmlja3BvcnRlci10dW9uby9j",
+            "bG91ZHRydXRoX3Rlc3QiLCJtYWluIiwidGVzdF92YWx1ZS50eHQiXQ==",
+        );
+        let expected = concat!(
+            "IntegrationFile-[\"Integrations::Github::File\",",
+            "\"c60b07d7-0dae-415d-874c-e182f67c2343\",366193154,",
+            "\"rickporter-tuono/cloudtruth_test\",\"main\",\"test_value.txt\"]",
+        );
+        assert_eq!(expected.to_string(), decode_id(encoded));
+    }
+
+    #[test]
+    fn decode_id_bad() {
+        let bad_chars = "this-contains-non-base64 characters !@#$%^&*()";
+        assert_eq!("".to_string(), decode_id(bad_chars));
+
+        let binary_data = concat!(
+            "AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBIJw+B7hqwIJ2lQpTQ1FWwAt",
+            "v8h+/2cU2OzhMLPNhm7yPz3UipLE+EsiA8P534NtJuVU+TWObao3ykFZwx3UmnU=",
+        );
+        assert_eq!("".to_string(), decode_id(binary_data));
     }
 }
