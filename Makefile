@@ -8,9 +8,11 @@ rust_intended := 1.52.1
 rust_installed := $(shell rustc -V | cut -d' ' -f2)
 rust_bad_version := $(shell grep "RUST_VERSION:" .github/workflows/*.yml | grep -v "$(rust_intended)")
 
+.DEFAULT = all
 .PHONY = all
 .PHONY += cargo
 .PHONY += clean
+.PHONY += clientgen
 .PHONY += help
 .PHONY += image
 .PHONY += integration
@@ -45,6 +47,14 @@ cargo:
 
 clean:
 	rm -rf target/
+
+clientgen:
+	docker run --rm -v "$(shell pwd):/local" --user "$(shell id -u):$(shell id -g)" openapitools/openapi-generator-cli generate \
+		-i /local/openapi.yml \
+		-g rust \
+		-o /local/client \
+		--additional-properties=packageName=cloudtruth-restapi,supportAsync=false
+	cd client && cargo build
 
 lint:
 	cargo fmt --all -- --check
@@ -100,6 +110,7 @@ targets:
 	@echo ""
 	@echo "cargo          - builds rust target"
 	@echo "clean          - clean out build targets"
+	@echo "clientgen      - generate and build the cloudtruth-restapi library"
 	@echo "image          - make the cloudtruth/cli docker container for development"
 	@echo "integration    - runs the integration test against the live server"
 	@echo "lint           - checks for formatting issues"

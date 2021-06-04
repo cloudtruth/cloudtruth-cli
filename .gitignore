@@ -1,3 +1,7 @@
+# Generated REST Client Code
+/client
+
+# Build Artifacts
 /target
 
 # Installing Python libraries
