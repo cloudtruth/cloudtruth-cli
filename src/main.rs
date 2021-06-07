@@ -768,6 +768,14 @@ fn process_parameters_command(
                     env_name.unwrap_or(DEFAULT_ENV_NAME)
                 );
             }
+            Err(GraphQLError::ParameterNotFoundError(_)) => {
+                println!(
+                    "Did not find parameter '{}' to delete from project '{}' for environment '{}'.",
+                    key,
+                    proj_name.unwrap_or_else(|| DEFAULT_PROJ_NAME.to_string()),
+                    env_name.unwrap_or(DEFAULT_ENV_NAME),
+                );
+            }
             _ => {
                 println!(
                     "Failed to remove parameter '{}' from project '{}' for environment '{}'.",
