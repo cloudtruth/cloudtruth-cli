@@ -115,7 +115,7 @@ my_param,cRaZy value,default,static,false,this is just a test description
         # idempotent
         result = self.run_cli(cmd_env, sub_cmd + f"delete {key1}")
         self.assertEqual(result.return_value, 0)
-        self.assertIn(f"Failed to remove parameter '{key1}'", result.out())
+        self.assertIn(f"Did not find parameter '{key1}'", result.out())
 
         # make sure it is gone
         result = self.run_cli(cmd_env, sub_cmd + "list --values --secrets")
@@ -260,7 +260,7 @@ my_param,super-SENSITIVE-vAluE,default,static,true,my secret value
         # idempotent
         result = self.run_cli(cmd_env, sub_cmd + f"delete {key1}")
         self.assertEqual(result.return_value, 0)
-        self.assertIn(f"Failed to remove parameter '{key1}'", result.out())
+        self.assertIn(f"Did not find parameter '{key1}'", result.out())
 
         # make sure it is gone
         result = self.run_cli(cmd_env, sub_cmd + "list --values --secrets")
