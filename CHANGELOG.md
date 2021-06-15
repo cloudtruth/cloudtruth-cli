@@ -1,3 +1,13 @@
+# 0.5.4 - 2021-06-15
+
+* Fix display issue for no parameters in default project.
+* Allow configuration file to be edited, even when it is invalid YAML.
+* Improved error message when attempting to delete a parameter that does not exist. 
+* Allow request_timeout to be set in profile or environment variable. 
+* Improved integration tests with timeouts and server_url settings.
+* Add wrap()/unwrap() functions to secure secrets (tested but not used).
+* Initial work for REST interface to CTAAS.
+
 # 0.5.3 - 2021-05-27
 
 * Parameters: added `--dynamic` flag to `parameter list --values` view FQN/JMES path values.
