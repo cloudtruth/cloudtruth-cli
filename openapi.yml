@@ -129,8 +129,6 @@ paths:
       - api
       security:
       - jwtAuth: []
-      - cookieAuth: []
-      - basicAuth: []
       - {}
       responses:
         '200':
@@ -175,8 +173,6 @@ paths:
       - environments
       security:
       - jwtAuth: []
-      - cookieAuth: []
-      - basicAuth: []
       responses:
         '200':
           content:
@@ -193,18 +189,16 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Environment'
+              $ref: '#/components/schemas/EnvironmentCreate'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/Environment'
+              $ref: '#/components/schemas/EnvironmentCreate'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/Environment'
+              $ref: '#/components/schemas/EnvironmentCreate'
         required: true
       security:
       - jwtAuth: []
-      - cookieAuth: []
-      - basicAuth: []
       responses:
         '201':
           content:
@@ -228,8 +222,6 @@ paths:
       - environments
       security:
       - jwtAuth: []
-      - cookieAuth: []
-      - basicAuth: []
       responses:
         '200':
           content:
@@ -264,8 +256,6 @@ paths:
         required: true
       security:
       - jwtAuth: []
-      - cookieAuth: []
-      - basicAuth: []
       responses:
         '200':
           content:
@@ -299,8 +289,6 @@ paths:
               $ref: '#/components/schemas/PatchedEnvironment'
       security:
       - jwtAuth: []
-      - cookieAuth: []
-      - basicAuth: []
       responses:
         '200':
           content:
@@ -323,16 +311,22 @@ paths:
       - environments
       security:
       - jwtAuth: []
-      - cookieAuth: []
-      - basicAuth: []
       responses:
         '204':
           description: No response body
-  /api/v1/key/:
+  /api/v1/integrations/aws/:
     get:
-      operationId: key_list
-      description: Lists encryption keys
+      operationId: integrations_aws_list
+      description: ''
       parameters:
+      - in: query
+        name: aws_account_id
+        schema:
+          type: string
+      - in: query
+        name: aws_role_name
+        schema:
+          type: string
       - name: page
         required: false
         in: query
@@ -340,100 +334,466 @@ paths:
         schema:
           type: integer
       tags:
-      - key
+      - integrations
       security:
       - jwtAuth: []
-      - cookieAuth: []
-      - basicAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedKeyModelList'
+                $ref: '#/components/schemas/PaginatedAwsIntegrationList'
           description: ''
     post:
-      operationId: key_create
-      description: Creates your encryption key
+      operationId: integrations_aws_create
+      description: |-
+        ### Description ###
+
+        Establishes an AWS Integration for your CloudTruth organization.
+
+        ### Pre-Conditions ###
+
+        - An AWS Integration for the account and role cannot already exist.
+      summary: Establishes an AWS Integration.
       tags:
-      - key
+      - integrations
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/KeyModel'
+              $ref: '#/components/schemas/AwsIntegrationCreate'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/KeyModel'
+              $ref: '#/components/schemas/AwsIntegrationCreate'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/KeyModel'
+              $ref: '#/components/schemas/AwsIntegrationCreate'
         required: true
       security:
       - jwtAuth: []
-      - cookieAuth: []
-      - basicAuth: []
       responses:
         '201':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/KeyModel'
+                $ref: '#/components/schemas/AwsIntegration'
           description: ''
-  /api/v1/key/{id}/:
-    patch:
-      operationId: key_partial_update
-      description: Given plaintext, encrypt with key.  Given ciphertext, decrypt with
-        key
+  /api/v1/integrations/aws/{id}/:
+    get:
+      operationId: integrations_aws_retrieve
+      description: ''
       parameters:
       - in: path
         name: id
         schema:
           type: string
           format: uuid
-        description: A UUID string identifying this key.
+          description: The unique identifier for the integration.
         required: true
       tags:
-      - key
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PatchedKeyEncryption'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/PatchedKeyEncryption'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/PatchedKeyEncryption'
+      - integrations
       security:
       - jwtAuth: []
-      - cookieAuth: []
-      - basicAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/KeyEncryption'
+                $ref: '#/components/schemas/AwsIntegration'
           description: ''
-    delete:
-      operationId: key_destroy
-      description: Deletes your encryption key
+    put:
+      operationId: integrations_aws_update
+      description: ''
       parameters:
       - in: path
         name: id
         schema:
           type: string
           format: uuid
-        description: A UUID string identifying this key.
+          description: The unique identifier for the integration.
         required: true
       tags:
-      - key
+      - integrations
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AwsIntegration'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AwsIntegration'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AwsIntegration'
+        required: true
       security:
       - jwtAuth: []
-      - cookieAuth: []
-      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AwsIntegration'
+          description: ''
+    patch:
+      operationId: integrations_aws_partial_update
+      description: ''
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+          description: The unique identifier for the integration.
+        required: true
+      tags:
+      - integrations
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAwsIntegration'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAwsIntegration'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAwsIntegration'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AwsIntegration'
+          description: ''
+    delete:
+      operationId: integrations_aws_destroy
+      description: ''
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+          description: The unique identifier for the integration.
+        required: true
+      tags:
+      - integrations
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/integrations/explore/:
+    get:
+      operationId: integrations_explore_list
+      description: |
+        ### Description ###
+
+        Queries a third-party integration to retrieve the data specified by the FQN.
+
+        You can start exploring by not specifying an 'fqn', which will return a list of FQNs for the existing third-party integrations. Third-party integrations can be configured via the Integrations section of the web application.
+      summary: Retrieve third-party integrations data for the specified FQN.
+      parameters:
+      - in: query
+        name: fqn
+        schema:
+          type: string
+          format: uri
+        description: FQN (URL-like) for third-party integration.
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - integrations
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedIntegrationExplorerList'
+          description: The content at the FQN.
+        '400':
+          description: Invalid FQN requested.
+        '403':
+          description: Unable to contact the third-party integration.
+  /api/v1/integrations/github/:
+    get:
+      operationId: integrations_github_list
+      description: ''
+      parameters:
+      - in: query
+        name: gh_organization_slug
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - integrations
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedGitHubIntegrationList'
+          description: ''
+    post:
+      operationId: integrations_github_create
+      description: "### Description ###\n\nEstablishes a GitHub Integration in your\
+        \ CloudTruth organization.\n\n### Pre-Conditions ###\n\n- The user must be\
+        \ an Administrator or Owner of your organization.\n- A GitHub Integration\
+        \ with the `installation_id` cannot \nalready exist in this organization.\n\
+        - The user must first install the CloudTruth GitHub Application in \ntheir\
+        \ GitHub organization and obtain the `installation_id` of the \napplication\
+        \ in order to create the integration.\n\n### Initiating the GitHub Application\
+        \ Installation ###\n\n- Go to `https://github.com/apps/cloudtruth-local/installations/new?state=<bearer_token>`\n\
+        - On successful installation the browser will return to \n`https://app.localhost/app_setup/github`\
+        \ \nand provide the `installation_id` in the URI.\n- POST to this api to verify\
+        \ and establish the integration."
+      summary: Establishes a GitHub Integration.
+      tags:
+      - integrations
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GitHubIntegrationCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/GitHubIntegrationCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/GitHubIntegrationCreate'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GitHubIntegration'
+          description: ''
+  /api/v1/integrations/github/{id}/:
+    get:
+      operationId: integrations_github_retrieve
+      description: ''
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+          description: The unique identifier for the integration.
+        required: true
+      tags:
+      - integrations
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GitHubIntegration'
+          description: ''
+    delete:
+      operationId: integrations_github_destroy
+      description: ''
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+          description: The unique identifier for the integration.
+        required: true
+      tags:
+      - integrations
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/memberships/:
+    get:
+      operationId: memberships_list
+      description: ''
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: query
+        name: role
+        schema:
+          type: string
+          enum:
+          - ADMIN
+          - CONTRIB
+          - OWNER
+          - VIEWER
+      - in: query
+        name: user
+        schema:
+          type: string
+      tags:
+      - memberships
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedMembershipList'
+          description: ''
+    post:
+      operationId: memberships_create
+      description: ''
+      tags:
+      - memberships
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MembershipCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MembershipCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MembershipCreate'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Membership'
+          description: ''
+  /api/v1/memberships/{id}/:
+    get:
+      operationId: memberships_retrieve
+      description: ''
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this membership.
+        required: true
+      tags:
+      - memberships
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Membership'
+          description: ''
+    put:
+      operationId: memberships_update
+      description: ''
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this membership.
+        required: true
+      tags:
+      - memberships
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Membership'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Membership'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Membership'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Membership'
+          description: ''
+    patch:
+      operationId: memberships_partial_update
+      description: ''
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this membership.
+        required: true
+      tags:
+      - memberships
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedMembership'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedMembership'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedMembership'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Membership'
+          description: ''
+    delete:
+      operationId: memberships_destroy
+      description: ''
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this membership.
+        required: true
+      tags:
+      - memberships
+      security:
+      - jwtAuth: []
       responses:
         '204':
           description: No response body
@@ -456,8 +816,6 @@ paths:
       - organizations
       security:
       - jwtAuth: []
-      - cookieAuth: []
-      - basicAuth: []
       responses:
         '200':
           content:
@@ -474,18 +832,16 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Organization'
+              $ref: '#/components/schemas/OrganizationCreate'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/Organization'
+              $ref: '#/components/schemas/OrganizationCreate'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/Organization'
+              $ref: '#/components/schemas/OrganizationCreate'
         required: true
       security:
       - jwtAuth: []
-      - cookieAuth: []
-      - basicAuth: []
       responses:
         '201':
           content:
@@ -493,197 +849,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/Organization'
           description: ''
-  /api/v1/organizations/{organization_pk}/memberships/:
-    get:
-      operationId: organizations_memberships_list
-      description: ''
-      parameters:
-      - in: path
-        name: organization_pk
-        schema:
-          type: string
-        required: true
-      - name: page
-        required: false
-        in: query
-        description: A page number within the paginated result set.
-        schema:
-          type: integer
-      tags:
-      - organizations
-      security:
-      - jwtAuth: []
-      - cookieAuth: []
-      - basicAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PaginatedOrgMembershipList'
-          description: ''
-    post:
-      operationId: organizations_memberships_create
-      description: ''
-      parameters:
-      - in: path
-        name: organization_pk
-        schema:
-          type: string
-        required: true
-      tags:
-      - organizations
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/OrgMembership'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/OrgMembership'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/OrgMembership'
-        required: true
-      security:
-      - jwtAuth: []
-      - cookieAuth: []
-      - basicAuth: []
-      responses:
-        '201':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/OrgMembership'
-          description: ''
-  /api/v1/organizations/{organization_pk}/memberships/{id}/:
-    get:
-      operationId: organizations_memberships_retrieve
-      description: ''
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-        required: true
-      - in: path
-        name: organization_pk
-        schema:
-          type: string
-        required: true
-      tags:
-      - organizations
-      security:
-      - jwtAuth: []
-      - cookieAuth: []
-      - basicAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/OrgMembership'
-          description: ''
-    put:
-      operationId: organizations_memberships_update
-      description: ''
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-        required: true
-      - in: path
-        name: organization_pk
-        schema:
-          type: string
-        required: true
-      tags:
-      - organizations
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/OrgMembership'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/OrgMembership'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/OrgMembership'
-        required: true
-      security:
-      - jwtAuth: []
-      - cookieAuth: []
-      - basicAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/OrgMembership'
-          description: ''
-    patch:
-      operationId: organizations_memberships_partial_update
-      description: ''
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-        required: true
-      - in: path
-        name: organization_pk
-        schema:
-          type: string
-        required: true
-      tags:
-      - organizations
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PatchedOrgMembership'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/PatchedOrgMembership'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/PatchedOrgMembership'
-      security:
-      - jwtAuth: []
-      - cookieAuth: []
-      - basicAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/OrgMembership'
-          description: ''
-    delete:
-      operationId: organizations_memberships_destroy
-      description: ''
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-        required: true
-      - in: path
-        name: organization_pk
-        schema:
-          type: string
-        required: true
-      tags:
-      - organizations
-      security:
-      - jwtAuth: []
-      - cookieAuth: []
-      - basicAuth: []
-      responses:
-        '204':
-          description: No response body
   /api/v1/organizations/{id}/:
     get:
       operationId: organizations_retrieve
@@ -693,14 +858,12 @@ paths:
         name: id
         schema:
           type: string
-        description: A unique value identifying this organization.
+          description: The organization unique identifier.
         required: true
       tags:
       - organizations
       security:
       - jwtAuth: []
-      - cookieAuth: []
-      - basicAuth: []
       responses:
         '200':
           content:
@@ -716,7 +879,7 @@ paths:
         name: id
         schema:
           type: string
-        description: A unique value identifying this organization.
+          description: The organization unique identifier.
         required: true
       tags:
       - organizations
@@ -734,8 +897,6 @@ paths:
         required: true
       security:
       - jwtAuth: []
-      - cookieAuth: []
-      - basicAuth: []
       responses:
         '200':
           content:
@@ -751,7 +912,7 @@ paths:
         name: id
         schema:
           type: string
-        description: A unique value identifying this organization.
+          description: The organization unique identifier.
         required: true
       tags:
       - organizations
@@ -768,8 +929,6 @@ paths:
               $ref: '#/components/schemas/PatchedOrganization'
       security:
       - jwtAuth: []
-      - cookieAuth: []
-      - basicAuth: []
       responses:
         '200':
           content:
@@ -785,14 +944,12 @@ paths:
         name: id
         schema:
           type: string
-        description: A unique value identifying this organization.
+          description: The organization unique identifier.
         required: true
       tags:
       - organizations
       security:
       - jwtAuth: []
-      - cookieAuth: []
-      - basicAuth: []
       responses:
         '204':
           description: No response body
@@ -815,8 +972,6 @@ paths:
       - projects
       security:
       - jwtAuth: []
-      - cookieAuth: []
-      - basicAuth: []
       responses:
         '200':
           content:
@@ -833,18 +988,16 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Project'
+              $ref: '#/components/schemas/ProjectCreate'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/Project'
+              $ref: '#/components/schemas/ProjectCreate'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/Project'
+              $ref: '#/components/schemas/ProjectCreate'
         required: true
       security:
       - jwtAuth: []
-      - cookieAuth: []
-      - basicAuth: []
       responses:
         '201':
           content:
@@ -868,8 +1021,6 @@ paths:
       - projects
       security:
       - jwtAuth: []
-      - cookieAuth: []
-      - basicAuth: []
       responses:
         '200':
           content:
@@ -904,8 +1055,6 @@ paths:
         required: true
       security:
       - jwtAuth: []
-      - cookieAuth: []
-      - basicAuth: []
       responses:
         '200':
           content:
@@ -939,8 +1088,6 @@ paths:
               $ref: '#/components/schemas/PatchedProject'
       security:
       - jwtAuth: []
-      - cookieAuth: []
-      - basicAuth: []
       responses:
         '200':
           content:
@@ -963,8 +1110,741 @@ paths:
       - projects
       security:
       - jwtAuth: []
-      - cookieAuth: []
-      - basicAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/projects/{project_pk}/parameters/:
+    get:
+      operationId: projects_parameters_list
+      description: ''
+      parameters:
+      - in: query
+        name: environment
+        schema:
+          type: string
+          format: uuid
+        description: (Optional) ID of the environment to get parameter values for
+      - in: query
+        name: mask_secrets
+        schema:
+          type: boolean
+        description: If true, masks all secrets (defaults to false)
+      - in: query
+        name: name
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: path
+        name: project_pk
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - projects
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedParameterList'
+          description: ''
+    post:
+      operationId: projects_parameters_create
+      description: ''
+      parameters:
+      - in: path
+        name: project_pk
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - projects
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ParameterCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ParameterCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ParameterCreate'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Parameter'
+          description: ''
+  /api/v1/projects/{project_pk}/parameters/{parameter_pk}/values/:
+    get:
+      operationId: projects_parameters_values_list
+      description: ''
+      parameters:
+      - in: query
+        name: environment
+        schema:
+          type: string
+        description: The name of the environment to get values for.  If this is not
+          specified then the result will contain any value for any environment that
+          is set.
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: path
+        name: parameter_pk
+        schema:
+          type: string
+          format: uuid
+        description: The parameter id.
+        required: true
+      - in: path
+        name: project_pk
+        schema:
+          type: string
+          format: uuid
+        description: The project id.
+        required: true
+      tags:
+      - projects
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedValueList'
+          description: ''
+    post:
+      operationId: projects_parameters_values_create
+      description: ''
+      parameters:
+      - in: path
+        name: parameter_pk
+        schema:
+          type: string
+          format: uuid
+        description: The parameter id.
+        required: true
+      - in: path
+        name: project_pk
+        schema:
+          type: string
+          format: uuid
+        description: The project id.
+        required: true
+      tags:
+      - projects
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ValueCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ValueCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ValueCreate'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Value'
+          description: ''
+  /api/v1/projects/{project_pk}/parameters/{parameter_pk}/values/{id}/:
+    get:
+      operationId: projects_parameters_values_retrieve
+      description: ''
+      parameters:
+      - in: query
+        name: environment
+        schema:
+          type: string
+        description: The name of the environment to get values for.  If this is not
+          specified then the result will contain any value for any environment that
+          is set.
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this value.
+        required: true
+      - in: path
+        name: parameter_pk
+        schema:
+          type: string
+          format: uuid
+        description: The parameter id.
+        required: true
+      - in: path
+        name: project_pk
+        schema:
+          type: string
+          format: uuid
+        description: The project id.
+        required: true
+      tags:
+      - projects
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Value'
+          description: ''
+    put:
+      operationId: projects_parameters_values_update
+      description: ''
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this value.
+        required: true
+      - in: path
+        name: parameter_pk
+        schema:
+          type: string
+          format: uuid
+        description: The parameter id.
+        required: true
+      - in: path
+        name: project_pk
+        schema:
+          type: string
+          format: uuid
+        description: The project id.
+        required: true
+      tags:
+      - projects
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Value'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Value'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Value'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Value'
+          description: ''
+    patch:
+      operationId: projects_parameters_values_partial_update
+      description: ''
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this value.
+        required: true
+      - in: path
+        name: parameter_pk
+        schema:
+          type: string
+          format: uuid
+        description: The parameter id.
+        required: true
+      - in: path
+        name: project_pk
+        schema:
+          type: string
+          format: uuid
+        description: The project id.
+        required: true
+      tags:
+      - projects
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedValue'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedValue'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedValue'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Value'
+          description: ''
+    delete:
+      operationId: projects_parameters_values_destroy
+      description: ''
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this value.
+        required: true
+      - in: path
+        name: parameter_pk
+        schema:
+          type: string
+          format: uuid
+        description: The parameter id.
+        required: true
+      - in: path
+        name: project_pk
+        schema:
+          type: string
+          format: uuid
+        description: The project id.
+        required: true
+      tags:
+      - projects
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/projects/{project_pk}/parameters/{id}/:
+    get:
+      operationId: projects_parameters_retrieve
+      description: ''
+      parameters:
+      - in: query
+        name: environment
+        schema:
+          type: string
+          format: uuid
+        description: (Optional) ID of the environment to get parameter values for
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this parameter.
+        required: true
+      - in: query
+        name: mask_secrets
+        schema:
+          type: boolean
+        description: If true, masks all secrets (defaults to false)
+      - in: path
+        name: project_pk
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - projects
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Parameter'
+          description: ''
+    put:
+      operationId: projects_parameters_update
+      description: ''
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this parameter.
+        required: true
+      - in: path
+        name: project_pk
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - projects
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Parameter'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Parameter'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Parameter'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Parameter'
+          description: ''
+    patch:
+      operationId: projects_parameters_partial_update
+      description: ''
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this parameter.
+        required: true
+      - in: path
+        name: project_pk
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - projects
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedParameter'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedParameter'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedParameter'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Parameter'
+          description: ''
+    delete:
+      operationId: projects_parameters_destroy
+      description: ''
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this parameter.
+        required: true
+      - in: path
+        name: project_pk
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - projects
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/projects/{project_pk}/template-preview/:
+    post:
+      operationId: projects_template_preview_create
+      description: Endpoint for previewing a template.
+      parameters:
+      - in: query
+        name: environment
+        schema:
+          type: string
+          format: uuid
+        description: (Optional) ID of the environment to use to instantiate this template
+      - in: query
+        name: mask_secrets
+        schema:
+          type: boolean
+        description: If true, masks all secrets in the template (defaults to false)
+      - in: path
+        name: project_pk
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - projects
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TemplatePreview'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TemplatePreview'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TemplatePreview'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TemplatePreview'
+          description: ''
+  /api/v1/projects/{project_pk}/templates/:
+    get:
+      operationId: projects_templates_list
+      description: ''
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: query
+        name: name
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: path
+        name: project_pk
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - projects
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedTemplateList'
+          description: ''
+    post:
+      operationId: projects_templates_create
+      description: ''
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: project_pk
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - projects
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TemplateCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TemplateCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TemplateCreate'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TemplateCreate'
+          description: ''
+  /api/v1/projects/{project_pk}/templates/{id}/:
+    get:
+      operationId: projects_templates_retrieve
+      description: ''
+      parameters:
+      - in: query
+        name: environment
+        schema:
+          type: string
+          format: uuid
+        description: (Optional) ID of the environment to use to instantiate this template
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: query
+        name: mask_secrets
+        schema:
+          type: boolean
+        description: If true, masks all secrets in the template (defaults to false)
+      - in: path
+        name: project_pk
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - projects
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Template'
+          description: ''
+    put:
+      operationId: projects_templates_update
+      description: ''
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: project_pk
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - projects
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Template'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Template'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Template'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Template'
+          description: ''
+    patch:
+      operationId: projects_templates_partial_update
+      description: ''
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: project_pk
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - projects
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedTemplate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedTemplate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedTemplate'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Template'
+          description: ''
+    delete:
+      operationId: projects_templates_destroy
+      description: ''
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: project_pk
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - projects
+      security:
+      - jwtAuth: []
       responses:
         '204':
           description: No response body
@@ -992,8 +1872,6 @@ paths:
       - secrets
       security:
       - jwtAuth: []
-      - cookieAuth: []
-      - basicAuth: []
       responses:
         '200':
           content:
@@ -1027,8 +1905,6 @@ paths:
         required: true
       security:
       - jwtAuth: []
-      - cookieAuth: []
-      - basicAuth: []
       responses:
         '201':
           content:
@@ -1058,8 +1934,6 @@ paths:
       - secrets
       security:
       - jwtAuth: []
-      - cookieAuth: []
-      - basicAuth: []
       responses:
         '200':
           content:
@@ -1100,8 +1974,6 @@ paths:
         required: true
       security:
       - jwtAuth: []
-      - cookieAuth: []
-      - basicAuth: []
       responses:
         '200':
           content:
@@ -1141,8 +2013,6 @@ paths:
               $ref: '#/components/schemas/PatchedSecret'
       security:
       - jwtAuth: []
-      - cookieAuth: []
-      - basicAuth: []
       responses:
         '200':
           content:
@@ -1165,20 +2035,14 @@ paths:
       - secrets
       security:
       - jwtAuth: []
-      - cookieAuth: []
-      - basicAuth: []
       responses:
         '204':
           description: No response body
-  /api/v1/users/:
+  /api/v1/serviceaccounts/:
     get:
-      operationId: users_list
+      operationId: serviceaccounts_list
       description: ''
       parameters:
-      - in: query
-        name: name
-        schema:
-          type: string
       - name: page
         required: false
         in: query
@@ -1186,11 +2050,177 @@ paths:
         schema:
           type: integer
       tags:
-      - users
+      - serviceaccounts
       security:
       - jwtAuth: []
-      - cookieAuth: []
-      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedServiceAccountList'
+          description: ''
+    post:
+      operationId: serviceaccounts_create
+      description: "\n            Creates a new ServiceAccount.  A ServiceAccount\
+        \ is a user record intended\n            for machine use (such as a build\
+        \ system).  It does not have a username/password\n            but is instead\
+        \ accessed using an API key.\n\n            On creation, the API key will\
+        \ be returned.  This key will only be shown once,\n            is not stored\
+        \ on any CloudTruth system, and should be treated as a secret.  Should\n \
+        \           the key be lost, you will need to delete and recreate the ServiceAccount\
+        \ in order\n            to generate a new API key.\n            "
+      summary: Create a ServiceAccount user.
+      tags:
+      - serviceaccounts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServiceAccountCreateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ServiceAccountCreateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ServiceAccountCreateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceAccountCreateResponse'
+          description: ''
+  /api/v1/serviceaccounts/{id}/:
+    get:
+      operationId: serviceaccounts_retrieve
+      description: ''
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        description: A unique value identifying this service account.
+        required: true
+      tags:
+      - serviceaccounts
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceAccount'
+          description: ''
+    put:
+      operationId: serviceaccounts_update
+      description: ''
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        description: A unique value identifying this service account.
+        required: true
+      tags:
+      - serviceaccounts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServiceAccount'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ServiceAccount'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ServiceAccount'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceAccount'
+          description: ''
+    patch:
+      operationId: serviceaccounts_partial_update
+      description: ''
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        description: A unique value identifying this service account.
+        required: true
+      tags:
+      - serviceaccounts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedServiceAccount'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedServiceAccount'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedServiceAccount'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceAccount'
+          description: ''
+    delete:
+      operationId: serviceaccounts_destroy
+      description: ''
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        description: A unique value identifying this service account.
+        required: true
+      tags:
+      - serviceaccounts
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/serviceaccounts/{serviceaccount_pk}/users/:
+    get:
+      operationId: serviceaccounts_users_list
+      description: ''
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: path
+        name: serviceaccount_pk
+        schema:
+          type: string
+        required: true
+      - in: query
+        name: type
+        schema:
+          type: string
+      tags:
+      - serviceaccounts
+      security:
+      - jwtAuth: []
       responses:
         '200':
           content:
@@ -1198,33 +2228,107 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedUserList'
           description: ''
-    post:
-      operationId: users_create
+  /api/v1/serviceaccounts/{serviceaccount_pk}/users/{id}/:
+    get:
+      operationId: serviceaccounts_users_retrieve
       description: ''
-      tags:
-      - users
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UserCreate'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/UserCreate'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/UserCreate'
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        description: A unique value identifying this user.
         required: true
+      - in: path
+        name: serviceaccount_pk
+        schema:
+          type: string
+        required: true
+      tags:
+      - serviceaccounts
       security:
       - jwtAuth: []
-      - cookieAuth: []
-      - basicAuth: []
       responses:
-        '201':
+        '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserCreate'
+                $ref: '#/components/schemas/User'
+          description: ''
+    delete:
+      operationId: serviceaccounts_users_destroy
+      description: |
+        ### Description ###
+
+        Delete the specified user.  This removes all access the User may have to any Organization.
+
+        ### Pre-Conditions ###
+
+        - The user cannot be the only owner of any Organization.
+        - The bearer token must belong to the user being deleted.
+        - All of the memberships related to the User will be deleted, so all the membership deletion pre-conditions must also be met.
+      summary: Delete the specified user.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        description: A unique value identifying this user.
+        required: true
+      - in: path
+        name: serviceaccount_pk
+        schema:
+          type: string
+        required: true
+      tags:
+      - serviceaccounts
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: User deleted. The client should behave as if the user logged
+            out.
+        '400':
+          description: |-
+            Bad Request
+
+            - Is the user the only owner of any organization?
+            - Were all required fields provided?
+        '403':
+          description: |-
+            Forbidden
+
+            - Did the Bearer token belong to the User being deleted?
+  /api/v1/users/:
+    get:
+      operationId: users_list
+      description: ''
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: path
+        name: serviceaccount_pk
+        schema:
+          type: string
+        required: true
+      - in: query
+        name: type
+        schema:
+          type: string
+      tags:
+      - users
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedUserList'
           description: ''
   /api/v1/users/{id}/:
     get:
@@ -1235,80 +2339,17 @@ paths:
         name: id
         schema:
           type: string
+        description: A unique value identifying this user.
         required: true
-      tags:
-      - users
-      security:
-      - jwtAuth: []
-      - cookieAuth: []
-      - basicAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-          description: ''
-    put:
-      operationId: users_update
-      description: ''
-      parameters:
       - in: path
-        name: id
+        name: serviceaccount_pk
         schema:
           type: string
         required: true
       tags:
       - users
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/User'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/User'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/User'
-        required: true
       security:
       - jwtAuth: []
-      - cookieAuth: []
-      - basicAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-          description: ''
-    patch:
-      operationId: users_partial_update
-      description: ''
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-        required: true
-      tags:
-      - users
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PatchedUser'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/PatchedUser'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/PatchedUser'
-      security:
-      - jwtAuth: []
-      - cookieAuth: []
-      - basicAuth: []
       responses:
         '200':
           content:
@@ -1318,10 +2359,26 @@ paths:
           description: ''
     delete:
       operationId: users_destroy
-      description: ''
+      description: |
+        ### Description ###
+
+        Delete the specified user.  This removes all access the User may have to any Organization.
+
+        ### Pre-Conditions ###
+
+        - The user cannot be the only owner of any Organization.
+        - The bearer token must belong to the user being deleted.
+        - All of the memberships related to the User will be deleted, so all the membership deletion pre-conditions must also be met.
+      summary: Delete the specified user.
       parameters:
       - in: path
         name: id
+        schema:
+          type: string
+        description: A unique value identifying this user.
+        required: true
+      - in: path
+        name: serviceaccount_pk
         schema:
           type: string
         required: true
@@ -1329,32 +2386,192 @@ paths:
       - users
       security:
       - jwtAuth: []
-      - cookieAuth: []
-      - basicAuth: []
       responses:
         '204':
-          description: No response body
-  /api/v1/vault/:
-    post:
-      operationId: vault_create
-      description: Creates an organization vault
-      tags:
-      - vault
-      security:
-      - jwtAuth: []
-      - cookieAuth: []
-      - basicAuth: []
-      responses:
-        '201':
-          description: No response body
+          description: User deleted. The client should behave as if the user logged
+            out.
+        '400':
+          description: |-
+            Bad Request
+
+            - Is the user the only owner of any organization?
+            - Were all required fields provided?
+        '403':
+          description: |-
+            Forbidden
+
+            - Did the Bearer token belong to the User being deleted?
 components:
   schemas:
+    AwsEnabledRegionsEnum:
+      enum:
+      - af-south-1
+      - ap-east-1
+      - ap-northeast-1
+      - ap-northeast-2
+      - ap-northeast-3
+      - ap-south-1
+      - ap-southeast-1
+      - ap-southeast-2
+      - ca-central-1
+      - cn-north-1
+      - cn-northwest-1
+      - eu-central-1
+      - eu-north-1
+      - eu-south-1
+      - eu-west-1
+      - eu-west-2
+      - eu-west-3
+      - me-south-1
+      - sa-east-1
+      - us-east-1
+      - us-east-2
+      - us-gov-east-1
+      - us-gov-west-1
+      - us-west-1
+      - us-west-2
+      type: string
+    AwsEnabledServicesEnum:
+      enum:
+      - s3
+      - secretsmanager
+      - ssm
+      type: string
+    AwsIntegration:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+          readOnly: true
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+          description: The unique identifier for the integration.
+        description:
+          type: string
+          description: The optional description for the integration.
+        status:
+          type: string
+          readOnly: true
+          description: The status of the integration connection with the third-party
+            provider as of the `status_last_checked_at` field.  The status is updated
+            automatically by the server when the integration is modified.
+        status_detail:
+          type: string
+          readOnly: true
+          description: If an error occurs, more details will be available in this
+            field.
+        status_last_checked_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: The last time the status was evaluated.
+        type:
+          type: string
+          readOnly: true
+          description: The type of integration.
+        fqn:
+          type: string
+          readOnly: true
+        aws_account_id:
+          type: string
+          description: The AWS Account ID.
+          pattern: ^[0-9]+$
+          maxLength: 12
+          minLength: 12
+        aws_enabled_regions:
+          allOf:
+          - $ref: '#/components/schemas/AwsEnabledRegionsEnum'
+          description: The AWS regions to integrate with.  This can be specified as
+            a comma-separated list.
+        aws_enabled_services:
+          allOf:
+          - $ref: '#/components/schemas/AwsEnabledServicesEnum'
+          description: The AWS services to integrate with.  This can be specified
+            as a comma-separated list.
+        aws_external_id:
+          type: string
+          description: This is a shared secret between the AWS Administrator who set
+            up your IAM trust relationship and your CloudTruth AWS Integration.  If
+            your AWS Administrator provided you with a value use it, otherwise we
+            will generate a random value for you to give to your AWS Administrator.
+          minLength: 2
+          pattern: ^[\w+=,.@:\/-]*$
+          maxLength: 1224
+        aws_role_name:
+          type: string
+          description: The role that CloudTruth will assume when interacting with
+            your AWS Account through this integration.  The role is configured by
+            your AWS Account Administrator.  If your AWS Administrator provided you
+            with a value use it, otherwise make your own role name and give it to
+            your AWS Administrator.
+          pattern: ^[\w+=,.@-]+$
+          maxLength: 64
+      required:
+      - aws_account_id
+      - aws_role_name
+      - fqn
+      - id
+      - status
+      - status_detail
+      - status_last_checked_at
+      - type
+      - url
+    AwsIntegrationCreate:
+      type: object
+      properties:
+        description:
+          type: string
+          description: The optional description for the integration.
+        aws_account_id:
+          type: string
+          description: The AWS Account ID.
+          pattern: ^[0-9]+$
+          maxLength: 12
+          minLength: 12
+        aws_enabled_regions:
+          allOf:
+          - $ref: '#/components/schemas/AwsEnabledRegionsEnum'
+          description: The AWS regions to integrate with.  This can be specified as
+            a comma-separated list.
+        aws_enabled_services:
+          allOf:
+          - $ref: '#/components/schemas/AwsEnabledServicesEnum'
+          description: The AWS services to integrate with.  This can be specified
+            as a comma-separated list.
+        aws_external_id:
+          type: string
+          description: This is a shared secret between the AWS Administrator who set
+            up your IAM trust relationship and your CloudTruth AWS Integration.  If
+            your AWS Administrator provided you with a value use it, otherwise we
+            will generate a random value for you to give to your AWS Administrator.
+          minLength: 2
+          pattern: ^[\w+=,.@:\/-]*$
+          maxLength: 1224
+        aws_role_name:
+          type: string
+          description: The role that CloudTruth will assume when interacting with
+            your AWS Account through this integration.  The role is configured by
+            your AWS Account Administrator.  If your AWS Administrator provided you
+            with a value use it, otherwise make your own role name and give it to
+            your AWS Administrator.
+          pattern: ^[\w+=,.@-]+$
+          maxLength: 64
+      required:
+      - aws_account_id
+      - aws_role_name
     Environment:
       type: object
       properties:
         url:
           type: string
           format: uri
+          readOnly: true
+        id:
+          type: string
+          format: uuid
           readOnly: true
         name:
           type: string
@@ -1366,36 +2583,24 @@ components:
           format: uri
           nullable: true
       required:
+      - id
       - name
       - url
-    KeyEncryption:
+    EnvironmentCreate:
       type: object
-      description: |-
-        For serializing encryption/decryption requests.  Either plaintext
-        OR encrypted must be provided.
       properties:
-        url:
-          type: string
-          format: uri
-          readOnly: true
-        id:
-          type: string
-          format: uuid
-          readOnly: true
         name:
           type: string
           maxLength: 256
-        plaintext:
+        description:
           type: string
-        ciphertext:
+        parent:
           type: string
+          format: uri
+          nullable: true
       required:
-      - ciphertext
-      - id
       - name
-      - plaintext
-      - url
-    KeyModel:
+    GitHubIntegration:
       type: object
       properties:
         url:
@@ -1406,41 +2611,127 @@ components:
           type: string
           format: uuid
           readOnly: true
+          description: The unique identifier for the integration.
+        description:
+          type: string
+          description: The optional description for the integration.
+        status:
+          type: string
+          readOnly: true
+          description: The status of the integration connection with the third-party
+            provider as of the `status_last_checked_at` field.  The status is updated
+            automatically by the server when the integration is modified.
+        status_detail:
+          type: string
+          readOnly: true
+          description: If an error occurs, more details will be available in this
+            field.
+        status_last_checked_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: The last time the status was evaluated.
+        type:
+          type: string
+          readOnly: true
+          description: The type of integration.
+        fqn:
+          type: string
+          readOnly: true
+        gh_installation_id:
+          type: integer
+        gh_organization_slug:
+          type: string
+          readOnly: true
+      required:
+      - fqn
+      - gh_installation_id
+      - gh_organization_slug
+      - id
+      - status
+      - status_detail
+      - status_last_checked_at
+      - type
+      - url
+    GitHubIntegrationCreate:
+      type: object
+      properties:
+        description:
+          type: string
+          description: The optional description for the integration.
+        gh_installation_id:
+          type: integer
+      required:
+      - gh_installation_id
+    IntegrationExplorer:
+      type: object
+      description: Describes the content available at a given location.
+      properties:
+        fqn:
+          type: string
+        node_type:
+          $ref: '#/components/schemas/NodeTypeEnum'
+        secret:
+          type: boolean
         name:
           type: string
-          maxLength: 256
+        content_type:
+          type: string
+          nullable: true
+        content_data:
+          type: string
+          nullable: true
+        content_size:
+          type: integer
+        content_keys:
+          type: array
+          items:
+            type: string
+          nullable: true
       required:
-      - id
-      - name
-      - url
-    OrgMembership:
+      - fqn
+      - node_type
+    Membership:
       type: object
-      description: |-
-        A type of `ModelSerializer` that uses hyperlinked relationships with compound keys instead
-        of primary key relationships.  Specifically:
-
-        * A 'url' field is included instead of the 'id' field.
-        * Relationships to other instances are hyperlinks, instead of primary keys.
-
-        NOTE: this only works with DRF 3.1.0 and above.
       properties:
         url:
           type: string
           format: uri
           readOnly: true
-        role:
-          $ref: '#/components/schemas/RoleEnum'
+        id:
+          type: string
+          format: uuid
+          readOnly: true
         user:
           type: string
           format: uri
         organization:
           type: string
           format: uri
+        role:
+          $ref: '#/components/schemas/RoleEnum'
       required:
+      - id
       - organization
       - role
       - url
       - user
+    MembershipCreate:
+      type: object
+      properties:
+        user:
+          type: string
+          format: uri
+        role:
+          $ref: '#/components/schemas/RoleEnum'
+      required:
+      - role
+      - user
+    NodeTypeEnum:
+      enum:
+      - directory
+      - file
+      type: string
     Organization:
       type: object
       properties:
@@ -1451,13 +2742,68 @@ components:
         id:
           type: string
           readOnly: true
+          description: The organization unique identifier.
         name:
           type: string
+          description: The organization name.
           maxLength: 256
+        current:
+          type: boolean
+          readOnly: true
+          description: Indicates if this Organization is the one currently targeted
+            by the Bearer token used by the client to authorize.
+        subscription_expires_at:
+          type: string
+          format: date-time
+          nullable: true
+          readOnly: true
+        subscription_id:
+          type: string
+          readOnly: true
+        subscription_plan_id:
+          type: string
+          readOnly: true
+        subscription_plan_name:
+          type: string
+          readOnly: true
       required:
+      - current
       - id
       - name
+      - subscription_expires_at
+      - subscription_id
+      - subscription_plan_id
+      - subscription_plan_name
       - url
+    OrganizationCreate:
+      type: object
+      properties:
+        name:
+          type: string
+          description: The organization name.
+          maxLength: 256
+      required:
+      - name
+    PaginatedAwsIntegrationList:
+      type: object
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/AwsIntegration'
     PaginatedEnvironmentList:
       type: object
       properties:
@@ -1478,7 +2824,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Environment'
-    PaginatedKeyModelList:
+    PaginatedGitHubIntegrationList:
       type: object
       properties:
         count:
@@ -1497,8 +2843,8 @@ components:
         results:
           type: array
           items:
-            $ref: '#/components/schemas/KeyModel'
-    PaginatedOrgMembershipList:
+            $ref: '#/components/schemas/GitHubIntegration'
+    PaginatedIntegrationExplorerList:
       type: object
       properties:
         count:
@@ -1517,7 +2863,27 @@ components:
         results:
           type: array
           items:
-            $ref: '#/components/schemas/OrgMembership'
+            $ref: '#/components/schemas/IntegrationExplorer'
+    PaginatedMembershipList:
+      type: object
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Membership'
     PaginatedOrganizationList:
       type: object
       properties:
@@ -1538,6 +2904,26 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Organization'
+    PaginatedParameterList:
+      type: object
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Parameter'
     PaginatedProjectList:
       type: object
       properties:
@@ -1578,6 +2964,46 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SecretModel'
+    PaginatedServiceAccountList:
+      type: object
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceAccount'
+    PaginatedTemplateList:
+      type: object
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Template'
     PaginatedUserList:
       type: object
       properties:
@@ -1598,27 +3024,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/User'
-    PatchedEnvironment:
+    PaginatedValueList:
       type: object
       properties:
-        url:
+        count:
+          type: integer
+          example: 123
+        next:
           type: string
-          format: uri
-          readOnly: true
-        name:
-          type: string
-          maxLength: 256
-        description:
-          type: string
-        parent:
-          type: string
-          format: uri
           nullable: true
-    PatchedKeyEncryption:
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Value'
+    Parameter:
       type: object
-      description: |-
-        For serializing encryption/decryption requests.  Either plaintext
-        OR encrypted must be provided.
+      description: A single parameter inside of a project.
       properties:
         url:
           type: string
@@ -1631,33 +3059,150 @@ components:
         name:
           type: string
           maxLength: 256
-        plaintext:
+        description:
           type: string
-        ciphertext:
-          type: string
-    PatchedOrgMembership:
+        secret:
+          type: boolean
+        templates:
+          type: array
+          items:
+            type: string
+            format: uri
+          readOnly: true
+        values:
+          type: array
+          items: {}
+          readOnly: true
+      required:
+      - id
+      - name
+      - templates
+      - url
+      - values
+    ParameterCreate:
       type: object
-      description: |-
-        A type of `ModelSerializer` that uses hyperlinked relationships with compound keys instead
-        of primary key relationships.  Specifically:
-
-        * A 'url' field is included instead of the 'id' field.
-        * Relationships to other instances are hyperlinks, instead of primary keys.
-
-        NOTE: this only works with DRF 3.1.0 and above.
+      description: A single parameter inside of a project.
+      properties:
+        name:
+          type: string
+          maxLength: 256
+        description:
+          type: string
+        secret:
+          type: boolean
+      required:
+      - name
+    PatchedAwsIntegration:
+      type: object
       properties:
         url:
           type: string
           format: uri
           readOnly: true
-        role:
-          $ref: '#/components/schemas/RoleEnum'
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+          description: The unique identifier for the integration.
+        description:
+          type: string
+          description: The optional description for the integration.
+        status:
+          type: string
+          readOnly: true
+          description: The status of the integration connection with the third-party
+            provider as of the `status_last_checked_at` field.  The status is updated
+            automatically by the server when the integration is modified.
+        status_detail:
+          type: string
+          readOnly: true
+          description: If an error occurs, more details will be available in this
+            field.
+        status_last_checked_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: The last time the status was evaluated.
+        type:
+          type: string
+          readOnly: true
+          description: The type of integration.
+        fqn:
+          type: string
+          readOnly: true
+        aws_account_id:
+          type: string
+          description: The AWS Account ID.
+          pattern: ^[0-9]+$
+          maxLength: 12
+          minLength: 12
+        aws_enabled_regions:
+          allOf:
+          - $ref: '#/components/schemas/AwsEnabledRegionsEnum'
+          description: The AWS regions to integrate with.  This can be specified as
+            a comma-separated list.
+        aws_enabled_services:
+          allOf:
+          - $ref: '#/components/schemas/AwsEnabledServicesEnum'
+          description: The AWS services to integrate with.  This can be specified
+            as a comma-separated list.
+        aws_external_id:
+          type: string
+          description: This is a shared secret between the AWS Administrator who set
+            up your IAM trust relationship and your CloudTruth AWS Integration.  If
+            your AWS Administrator provided you with a value use it, otherwise we
+            will generate a random value for you to give to your AWS Administrator.
+          minLength: 2
+          pattern: ^[\w+=,.@:\/-]*$
+          maxLength: 1224
+        aws_role_name:
+          type: string
+          description: The role that CloudTruth will assume when interacting with
+            your AWS Account through this integration.  The role is configured by
+            your AWS Account Administrator.  If your AWS Administrator provided you
+            with a value use it, otherwise make your own role name and give it to
+            your AWS Administrator.
+          pattern: ^[\w+=,.@-]+$
+          maxLength: 64
+    PatchedEnvironment:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+          readOnly: true
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 256
+        description:
+          type: string
+        parent:
+          type: string
+          format: uri
+          nullable: true
+    PatchedMembership:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+          readOnly: true
+        id:
+          type: string
+          format: uuid
+          readOnly: true
         user:
           type: string
           format: uri
         organization:
           type: string
           format: uri
+        role:
+          $ref: '#/components/schemas/RoleEnum'
     PatchedOrganization:
       type: object
       properties:
@@ -1668,15 +3213,69 @@ components:
         id:
           type: string
           readOnly: true
+          description: The organization unique identifier.
+        name:
+          type: string
+          description: The organization name.
+          maxLength: 256
+        current:
+          type: boolean
+          readOnly: true
+          description: Indicates if this Organization is the one currently targeted
+            by the Bearer token used by the client to authorize.
+        subscription_expires_at:
+          type: string
+          format: date-time
+          nullable: true
+          readOnly: true
+        subscription_id:
+          type: string
+          readOnly: true
+        subscription_plan_id:
+          type: string
+          readOnly: true
+        subscription_plan_name:
+          type: string
+          readOnly: true
+    PatchedParameter:
+      type: object
+      description: A single parameter inside of a project.
+      properties:
+        url:
+          type: string
+          format: uri
+          readOnly: true
+        id:
+          type: string
+          format: uuid
+          readOnly: true
         name:
           type: string
           maxLength: 256
+        description:
+          type: string
+        secret:
+          type: boolean
+        templates:
+          type: array
+          items:
+            type: string
+            format: uri
+          readOnly: true
+        values:
+          type: array
+          items: {}
+          readOnly: true
     PatchedProject:
       type: object
       properties:
         url:
           type: string
           format: uri
+          readOnly: true
+        id:
+          type: string
+          format: uuid
           readOnly: true
         name:
           type: string
@@ -1706,22 +3305,88 @@ components:
           readOnly: true
         value:
           type: string
-    PatchedUser:
+    PatchedServiceAccount:
       type: object
       properties:
         url:
           type: string
           format: uri
           readOnly: true
+        id:
+          type: string
+          readOnly: true
+        user:
+          allOf:
+          - $ref: '#/components/schemas/User'
+          readOnly: true
+        description:
+          type: string
+          description: An optional description of the process or system using the
+            service account.
+    PatchedTemplate:
+      type: object
+      description: A parameter template in a given project, optionally instantiated
+        against an environment.
+      properties:
+        url:
+          type: string
+          format: uri
+          readOnly: true
+        id:
+          type: string
+          format: uuid
+          readOnly: true
         name:
           type: string
           maxLength: 256
         description:
           type: string
-        picture_url:
+        body:
+          type: string
+        parameters:
+          type: array
+          items:
+            type: string
+            format: uri
+          readOnly: true
+    PatchedValue:
+      type: object
+      description: A value for a given parameter in a given environment.
+      properties:
+        url:
           type: string
           format: uri
-          maxLength: 200
+          readOnly: true
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        environment:
+          type: string
+          format: uri
+        dynamic:
+          type: boolean
+          description: A dynamic parameter leverages a CloudTruth integration to retrieve
+            content on-demand from an external source.  When this is `false` the value
+            is stored by CloudTruth.  When this is `true`, the `fqn` field must be
+            set.
+        value:
+          type: string
+          description: This *is* the value you are looking for.
+          maxLength: 1024
+        fqn:
+          type: string
+          description: The FQN, or Fully-Qualified Name, is the path through the integration
+            to get to the desired content.  This must be present and reference a valid
+            integration when the value is `dynamic`.
+          maxLength: 1024
+        filter:
+          type: string
+          description: If `dynamic`, the content returned by the integration can be
+            reduced by applying a JMESpath expression.  This is valid as long as the
+            content is structured and of a supported format.  We support JMESpath
+            expressions on `json`, `yaml`, and `dotenv` content.
+          maxLength: 1024
     Project:
       type: object
       properties:
@@ -1729,6 +3394,22 @@ components:
           type: string
           format: uri
           readOnly: true
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 256
+        description:
+          type: string
+      required:
+      - id
+      - name
+      - url
+    ProjectCreate:
+      type: object
+      properties:
         name:
           type: string
           maxLength: 256
@@ -1736,7 +3417,6 @@ components:
           type: string
       required:
       - name
-      - url
     RoleEnum:
       enum:
       - OWNER
@@ -1806,6 +3486,120 @@ components:
           type: string
       required:
       - value
+    ServiceAccount:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+          readOnly: true
+        id:
+          type: string
+          readOnly: true
+        user:
+          allOf:
+          - $ref: '#/components/schemas/User'
+          readOnly: true
+        description:
+          type: string
+          description: An optional description of the process or system using the
+            service account.
+      required:
+      - id
+      - url
+      - user
+    ServiceAccountCreateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          description: The name of the process or system using the service account.
+          maxLength: 128
+        description:
+          type: string
+          description: An optional description of the process or system using the
+            service account.
+      required:
+      - name
+    ServiceAccountCreateResponse:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+          readOnly: true
+        id:
+          type: string
+          readOnly: true
+        user:
+          allOf:
+          - $ref: '#/components/schemas/User'
+          readOnly: true
+        description:
+          type: string
+          description: An optional description of the process or system using the
+            service account.
+        apikey:
+          type: string
+          readOnly: true
+          description: The API Key to use as a Bearer token for the service account.
+      required:
+      - apikey
+      - id
+      - url
+      - user
+    Template:
+      type: object
+      description: A parameter template in a given project, optionally instantiated
+        against an environment.
+      properties:
+        url:
+          type: string
+          format: uri
+          readOnly: true
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 256
+        description:
+          type: string
+        body:
+          type: string
+        parameters:
+          type: array
+          items:
+            type: string
+            format: uri
+          readOnly: true
+      required:
+      - id
+      - name
+      - parameters
+      - url
+    TemplateCreate:
+      type: object
+      description: A parameter template in a given project, optionally instantiated
+        against an environment.
+      properties:
+        name:
+          type: string
+          maxLength: 256
+        description:
+          type: string
+        body:
+          type: string
+      required:
+      - name
+    TemplatePreview:
+      type: object
+      properties:
+        body:
+          type: string
+      required:
+      - body
     User:
       type: object
       properties:
@@ -1813,49 +3607,105 @@ components:
           type: string
           format: uri
           readOnly: true
-        name:
+        id:
           type: string
           maxLength: 256
-        description:
+        type:
           type: string
+          maxLength: 12
+        name:
+          type: string
+          nullable: true
+          readOnly: true
+        email:
+          type: string
+          nullable: true
+          readOnly: true
         picture_url:
           type: string
-          format: uri
-          maxLength: 200
+          nullable: true
+          readOnly: true
       required:
+      - email
+      - id
       - name
+      - picture_url
       - url
-    UserCreate:
+    Value:
       type: object
+      description: A value for a given parameter in a given environment.
       properties:
         url:
           type: string
           format: uri
           readOnly: true
-        auth0_id:
+        id:
           type: string
-          maxLength: 256
-        name:
-          type: string
-          maxLength: 256
-        description:
-          type: string
-        picture_url:
+          format: uuid
+          readOnly: true
+        environment:
           type: string
           format: uri
-          maxLength: 200
+        dynamic:
+          type: boolean
+          description: A dynamic parameter leverages a CloudTruth integration to retrieve
+            content on-demand from an external source.  When this is `false` the value
+            is stored by CloudTruth.  When this is `true`, the `fqn` field must be
+            set.
+        value:
+          type: string
+          description: This *is* the value you are looking for.
+          maxLength: 1024
+        fqn:
+          type: string
+          description: The FQN, or Fully-Qualified Name, is the path through the integration
+            to get to the desired content.  This must be present and reference a valid
+            integration when the value is `dynamic`.
+          maxLength: 1024
+        filter:
+          type: string
+          description: If `dynamic`, the content returned by the integration can be
+            reduced by applying a JMESpath expression.  This is valid as long as the
+            content is structured and of a supported format.  We support JMESpath
+            expressions on `json`, `yaml`, and `dotenv` content.
+          maxLength: 1024
       required:
-      - auth0_id
-      - name
+      - environment
+      - id
       - url
+    ValueCreate:
+      type: object
+      description: A value for a given parameter in a given environment.
+      properties:
+        environment:
+          type: string
+          format: uri
+        dynamic:
+          type: boolean
+          description: A dynamic parameter leverages a CloudTruth integration to retrieve
+            content on-demand from an external source.  When this is `false` the value
+            is stored by CloudTruth.  When this is `true`, the `fqn` field must be
+            set.
+        value:
+          type: string
+          description: This *is* the value you are looking for.
+          maxLength: 1024
+        fqn:
+          type: string
+          description: The FQN, or Fully-Qualified Name, is the path through the integration
+            to get to the desired content.  This must be present and reference a valid
+            integration when the value is `dynamic`.
+          maxLength: 1024
+        filter:
+          type: string
+          description: If `dynamic`, the content returned by the integration can be
+            reduced by applying a JMESpath expression.  This is valid as long as the
+            content is structured and of a supported format.  We support JMESpath
+            expressions on `json`, `yaml`, and `dotenv` content.
+          maxLength: 1024
+      required:
+      - environment
   securitySchemes:
-    basicAuth:
-      type: http
-      scheme: basic
-    cookieAuth:
-      type: apiKey
-      in: cookie
-      name: Session
     jwtAuth:
       type: http
       scheme: bearer
