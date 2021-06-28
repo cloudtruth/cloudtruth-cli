@@ -42,19 +42,25 @@ shell:
 
 ### Commands for either outside or inside the container
 
-cargo:
+# the client must be generated before building the Rust program that uses it
+cargo: client
 	cargo build
 
 clean:
 	rm -rf target/
+	rm -rf client/
 
-clientgen:
+# the clientgen target creates the client directory
+client: clientgen
+
+# clientgen needs to re-run when the openapi.yaml changes
+clientgen: openapi.yml
 	docker run --rm -v "$(shell pwd):/local" --user "$(shell id -u):$(shell id -g)" openapitools/openapi-generator-cli generate \
 		-i /local/openapi.yml \
 		-g rust \
 		-o /local/client \
 		--additional-properties=packageName=cloudtruth-restapi,supportAsync=false
-	cd client && cargo build
+	cd client && mv src/lib.rs tmp && echo "#![allow(non_snake_case)]\n\n" > src/lib.rs && cat tmp >> src/lib.rs && cargo fmt && cargo build
 
 lint:
 	cargo fmt --all -- --check
