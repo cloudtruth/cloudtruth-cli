@@ -15,6 +15,7 @@ mod crypto;
 mod environments;
 mod integrations;
 mod lib;
+mod openapi;
 mod parameters;
 mod projects;
 mod subprocess;
