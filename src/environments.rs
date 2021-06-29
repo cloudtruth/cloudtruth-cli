@@ -1,55 +1,31 @@
-use crate::graphql::prelude::graphql_request;
-use crate::graphql::{GraphQLError, GraphQLResult, Operation, Resource, NO_ORG_ERROR};
-use graphql_client::*;
+use crate::openapi::open_api_config;
+
+use cloudtruth_restapi::apis::environments_api::*;
+use cloudtruth_restapi::apis::Error;
+use cloudtruth_restapi::models::{Environment, EnvironmentCreate, PatchedEnvironment};
 
 pub struct Environments {}
 
-#[derive(GraphQLQuery)]
-#[graphql(
-    schema_path = "graphql/schema.graphql",
-    query_path = "graphql/environment_queries.graphql",
-    response_derives = "Debug"
-)]
-pub struct CreateEnvironmentMutation;
-
-#[derive(GraphQLQuery)]
-#[graphql(
-    schema_path = "graphql/schema.graphql",
-    query_path = "graphql/environment_queries.graphql",
-    response_derives = "Debug"
-)]
-pub struct DeleteEnvironmentMutation;
-
-#[derive(GraphQLQuery)]
-#[graphql(
-    schema_path = "graphql/schema.graphql",
-    query_path = "graphql/environment_queries.graphql",
-    response_derives = "Debug"
-)]
-pub struct GetEnvironmentByNameQuery;
-
-#[derive(GraphQLQuery)]
-#[graphql(
-    schema_path = "graphql/schema.graphql",
-    query_path = "graphql/environment_queries.graphql",
-    response_derives = "Debug"
-)]
-pub struct EnvironmentsQuery;
-
-#[derive(GraphQLQuery)]
-#[graphql(
-    schema_path = "graphql/schema.graphql",
-    query_path = "graphql/environment_queries.graphql",
-    response_derives = "Debug"
-)]
-pub struct UpdateEnvironmentMutation;
-
+#[derive(Debug)]
 pub struct EnvironmentDetails {
     pub id: String,
     pub name: String,
     pub description: String,
     pub parent: String,
-    pub ancestors: Vec<String>,
+}
+
+/// Converts the OpenApi `Environment` reference into a CloudTruth `EnvironmentDetails` object.
+impl From<&Environment> for EnvironmentDetails {
+    fn from(api_env: &Environment) -> Self {
+        let description = api_env.description.clone();
+        let parent = api_env.parent.clone();
+        EnvironmentDetails {
+            id: api_env.id.clone(),
+            name: api_env.name.clone(),
+            description: description.unwrap_or_else(|| "".to_string()),
+            parent: parent.unwrap_or_else(|| "".to_string()),
+        }
+    }
 }
 
 impl Environments {
@@ -59,42 +35,18 @@ impl Environments {
 
     pub fn get_details_by_name(
         &self,
-        org_id: Option<&str>,
+        _org_id: Option<&str>,
         env_name: Option<&str>,
-    ) -> GraphQLResult<Option<EnvironmentDetails>> {
-        let query =
-            GetEnvironmentByNameQuery::build_query(get_environment_by_name_query::Variables {
-                organization_id: org_id.map(|id| id.to_string()),
-                environment_name: env_name.map(|name| name.to_string()),
-            });
-        let response_body =
-            graphql_request::<_, get_environment_by_name_query::ResponseData>(&query)?;
+    ) -> Result<Option<EnvironmentDetails>, Error<EnvironmentsListError>> {
+        let rest_cfg = open_api_config();
+        let response = environments_list(&rest_cfg, env_name, None, None)?;
 
-        if let Some(errors) = response_body.errors {
-            Err(GraphQLError::ResponseError(errors))
-        } else if let Some(data) = response_body.data {
-            Ok(data
-                .viewer
-                .organization
-                .expect(NO_ORG_ERROR)
-                .environment
-                .map(|env| EnvironmentDetails {
-                    id: env.id,
-                    name: env.name,
-                    description: env.description.unwrap_or_default(),
-                    parent: if let Some(p) = env.parent {
-                        p.name
-                    } else {
-                        "".to_string()
-                    },
-                    ancestors: env
-                        .ancestors
-                        .iter()
-                        .map(|a| a.name.clone())
-                        .collect::<Vec<String>>(),
-                }))
+        if let Some(resp_env) = response.results {
+            // TODO: handle more than one??
+            let env = &resp_env[0];
+            Ok(Some(EnvironmentDetails::from(env)))
         } else {
-            Err(GraphQLError::MissingDataError)
+            Ok(None)
         }
     }
 
@@ -102,57 +54,26 @@ impl Environments {
         &self,
         org_id: Option<&str>,
         env_name: Option<&str>,
-    ) -> GraphQLResult<Option<String>> {
-        if let Some(details) = self.get_details_by_name(org_id, env_name)? {
+    ) -> Result<Option<String>, Error<EnvironmentsListError>> {
+        if let Ok(Some(details)) = self.get_details_by_name(org_id, env_name) {
             Ok(Some(details.id))
         } else {
             Ok(None)
         }
     }
 
-    fn get_environments_full(
-        &self,
-        org_id: Option<&str>,
-    ) -> GraphQLResult<Vec<environments_query::EnvironmentsQueryViewerOrganizationEnvironmentsNodes>>
-    {
-        let query = EnvironmentsQuery::build_query(environments_query::Variables {
-            organization_id: org_id.map(|id| id.to_string()),
-        });
-        let response_body = graphql_request::<_, environments_query::ResponseData>(&query)?;
-
-        if let Some(errors) = response_body.errors {
-            Err(GraphQLError::ResponseError(errors))
-        } else if let Some(data) = response_body.data {
-            Ok(data
-                .viewer
-                .organization
-                .expect(NO_ORG_ERROR)
-                .environments
-                .nodes)
-        } else {
-            Err(GraphQLError::MissingDataError)
-        }
-    }
-
     pub fn get_environment_details(
         &self,
-        org_id: Option<&str>,
-    ) -> GraphQLResult<Vec<EnvironmentDetails>> {
-        let environments = self.get_environments_full(org_id)?;
+        _org_id: Option<&str>,
+    ) -> Result<Vec<EnvironmentDetails>, Error<EnvironmentsListError>> {
+        let rest_cfg = open_api_config();
+        let response = environments_list(&rest_cfg, None, None, None)?;
         let mut env_info: Vec<EnvironmentDetails> = Vec::new();
-        for e in environments {
-            let ancestors = e.ancestors.iter().map(|v| v.name.clone()).collect();
-            let mut parent: String = "".to_string();
-            if let Some(p) = e.parent {
-                parent = p.name;
+
+        if let Some(resp_env) = response.results {
+            for env in resp_env {
+                env_info.push(EnvironmentDetails::from(&env));
             }
-            env_info.push(EnvironmentDetails {
-                id: e.id,
-                name: e.name,
-                description: e.description.unwrap_or_default(),
-                ancestors,
-                parent,
-            })
         }
         env_info.sort_by(|l, r| l.name.cmp(&r.name));
         Ok(env_info)
@@ -160,101 +81,46 @@ impl Environments {
 
     pub fn create_environment(
         &self,
-        org_id: Option<&str>,
+        _org_id: Option<&str>,
         env_name: Option<&str>,
         description: Option<&str>,
         parent_id: String,
-    ) -> GraphQLResult<Option<String>> {
-        let query =
-            CreateEnvironmentMutation::build_query(create_environment_mutation::Variables {
-                organization_id: org_id.map(|o| o.to_string()),
-                environment_name: env_name.unwrap().to_string(),
-                parent_id,
-                description: description.map(|d| d.to_string()),
-            });
-        let response_body =
-            graphql_request::<_, create_environment_mutation::ResponseData>(&query)?;
-
-        if let Some(errors) = response_body.errors {
-            Err(GraphQLError::build_query_error(
-                errors,
-                Resource::Environment,
-                Operation::Create,
-            ))
-        } else if let Some(data) = response_body.data {
-            let logical_errors = data.create_environment.errors;
-
-            if !logical_errors.is_empty() {
-                Err(GraphQLError::build_logical_error(to_user_errors!(
-                    logical_errors
-                )))
-            } else {
-                Ok(data.create_environment.environment.map(|p| p.id))
-            }
-        } else {
-            Err(GraphQLError::MissingDataError)
-        }
+    ) -> Result<Option<String>, Error<EnvironmentsCreateError>> {
+        let rest_cfg = open_api_config();
+        let new_env = EnvironmentCreate {
+            name: env_name.unwrap().to_string(),
+            description: description.map(String::from),
+            parent: Some(parent_id), // TODO: id or name?
+        };
+        let response = environments_create(&rest_cfg, new_env)?;
+        // return the id of the new environment (likely same as the old)
+        Ok(Some(response.id))
     }
 
-    pub fn delete_environment(&self, environment_id: String) -> GraphQLResult<Option<String>> {
-        let query =
-            DeleteEnvironmentMutation::build_query(delete_environment_mutation::Variables {
-                environment_id,
-            });
-        let response_body =
-            graphql_request::<_, delete_environment_mutation::ResponseData>(&query)?;
-
-        if let Some(errors) = response_body.errors {
-            Err(GraphQLError::build_query_error(
-                errors,
-                Resource::Environment,
-                Operation::Delete,
-            ))
-        } else if let Some(data) = response_body.data {
-            let logical_errors = data.delete_environment.errors;
-            if !logical_errors.is_empty() {
-                Err(GraphQLError::build_logical_error(to_user_errors!(
-                    logical_errors
-                )))
-            } else {
-                Ok(data.delete_environment.deleted_environment_id)
-            }
-        } else {
-            Err(GraphQLError::MissingDataError)
-        }
+    pub fn delete_environment(
+        &self,
+        environment_id: String,
+    ) -> Result<String, Error<EnvironmentsDestroyError>> {
+        let rest_cfg = open_api_config();
+        environments_destroy(&rest_cfg, &environment_id)?;
+        Ok(environment_id)
     }
 
     pub fn update_environment(
         &self,
         environment_id: String,
         description: Option<&str>,
-    ) -> GraphQLResult<Option<String>> {
-        let query =
-            UpdateEnvironmentMutation::build_query(update_environment_mutation::Variables {
-                environment_id,
-                description: description.map(|d| d.to_string()),
-            });
-        let response_body =
-            graphql_request::<_, update_environment_mutation::ResponseData>(&query)?;
-
-        if let Some(errors) = response_body.errors {
-            Err(GraphQLError::build_query_error(
-                errors,
-                Resource::Environment,
-                Operation::Update,
-            ))
-        } else if let Some(data) = response_body.data {
-            let logical_errors = data.update_environment.errors;
-
-            if !logical_errors.is_empty() {
-                Err(GraphQLError::build_logical_error(to_user_errors!(
-                    logical_errors
-                )))
-            } else {
-                Ok(data.update_environment.environment.map(|p| p.id))
-            }
-        } else {
-            Err(GraphQLError::MissingDataError)
-        }
+    ) -> Result<Option<String>, Error<EnvironmentsPartialUpdateError>> {
+        // TODO: allow setting other fields (e.g. name)
+        let rest_cfg = open_api_config();
+        let env = PatchedEnvironment {
+            url: None,
+            id: None,
+            name: None,
+            description: description.map(String::from),
+            parent: None,
+        };
+        let response = environments_partial_update(&rest_cfg, environment_id.as_str(), Some(env))?;
+        Ok(Some(response.id))
     }
 }
