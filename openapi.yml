@@ -3176,7 +3176,8 @@ components:
             set.
         value:
           type: string
-          readOnly: true
+          description: This *is* the value you are looking for.
+          maxLength: 1024
         fqn:
           type: string
           description: The FQN, or Fully-Qualified Name, is the path through the integration
@@ -3395,7 +3396,8 @@ components:
             set.
         value:
           type: string
-          readOnly: true
+          description: This *is* the value you are looking for.
+          maxLength: 1024
         fqn:
           type: string
           description: The FQN, or Fully-Qualified Name, is the path through the integration
@@ -3413,7 +3415,6 @@ components:
       - environment
       - id
       - url
-      - value
     ValueCreate:
       type: object
       description: A value for a given parameter in a given environment.
@@ -3429,7 +3430,8 @@ components:
             set.
         value:
           type: string
-          readOnly: true
+          description: This *is* the value you are looking for.
+          maxLength: 1024
         fqn:
           type: string
           description: The FQN, or Fully-Qualified Name, is the path through the integration
@@ -3445,7 +3447,6 @@ components:
           maxLength: 1024
       required:
       - environment
-      - value
   securitySchemes:
     jwtAuth:
       type: http
