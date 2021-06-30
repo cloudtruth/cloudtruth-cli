@@ -1,30 +1,26 @@
-use crate::config::DEFAULT_PROJ_NAME;
-use crate::graphql::prelude::graphql_request;
-use crate::graphql::{GraphQLError, GraphQLResult, NO_ORG_ERROR};
-use graphql_client::*;
+use crate::openapi::open_api_config;
+
+use cloudtruth_restapi::apis::projects_api::*;
+use cloudtruth_restapi::apis::Error;
+use cloudtruth_restapi::models::Template;
 
 pub struct Templates {}
-
-#[derive(GraphQLQuery)]
-#[graphql(
-    schema_path = "graphql/schema.graphql",
-    query_path = "graphql/template_queries.graphql",
-    response_derives = "Debug"
-)]
-pub struct GetTemplateByNameQuery;
-
-#[derive(GraphQLQuery)]
-#[graphql(
-    schema_path = "graphql/schema.graphql",
-    query_path = "graphql/template_queries.graphql",
-    response_derives = "Debug"
-)]
-pub struct TemplatesQuery;
 
 pub struct TemplateDetails {
     pub id: String,
     pub name: String,
     pub description: String,
+}
+
+impl From<&Template> for TemplateDetails {
+    fn from(api_temp: &Template) -> Self {
+        let description = api_temp.description.clone();
+        TemplateDetails {
+            id: api_temp.id.clone(),
+            name: api_temp.name.clone(),
+            description: description.unwrap_or_default(),
+        }
+    }
 }
 
 impl Templates {
@@ -39,65 +35,73 @@ impl Templates {
         environment_name: Option<&str>,
         template_name: &str,
         show_secrets: bool,
-    ) -> GraphQLResult<Option<String>> {
-        let query = GetTemplateByNameQuery::build_query(get_template_by_name_query::Variables {
-            organization_id: organization_id.map(|id| id.to_string()),
-            project_name: project_name.clone(),
-            environment_name: environment_name.map(|name| name.to_string()),
-            template_name: template_name.to_string(),
-            show_secrets,
-        });
-        let response_body = graphql_request::<_, get_template_by_name_query::ResponseData>(&query)?;
+    ) -> Result<Option<String>, Error<ProjectsTemplatesRetrieveError>> {
+        // TODO: convert template name to template id outside??
+        // TODO: project name or id? environment name or id?
+        let response =
+            self.get_details_by_name(organization_id, project_name.clone(), Some(template_name));
 
-        if let Some(errors) = response_body.errors {
-            Err(GraphQLError::ResponseError(errors))
-        } else if let Some(data) = response_body.data {
-            if let Some(project) = data.viewer.organization.expect(NO_ORG_ERROR).project {
-                Ok(project.template.and_then(|t| t.evaluated))
-            } else {
-                Err(GraphQLError::ProjectNotFoundError(
-                    project_name.unwrap_or_else(|| DEFAULT_PROJ_NAME.to_string()),
-                ))
-            }
+        if let Ok(Some(details)) = response {
+            let rest_cfg = open_api_config();
+            let response = projects_templates_retrieve(
+                &rest_cfg,
+                &details.id,
+                project_name.as_deref().unwrap_or_default(),
+                environment_name,
+                Some(show_secrets),
+            )?;
+            Ok(response.body)
         } else {
-            Err(GraphQLError::MissingDataError)
+            // TODO: handle template not found??
+            Ok(None)
+        }
+    }
+
+    pub fn get_details_by_name(
+        &self,
+        _organization_id: Option<&str>,
+        project_name: Option<String>,
+        template_name: Option<&str>,
+    ) -> Result<Option<TemplateDetails>, Error<ProjectsTemplatesListError>> {
+        // TODO: project name or id?
+        let rest_cfg = open_api_config();
+        let response = projects_templates_list(
+            &rest_cfg,
+            project_name.unwrap_or_default().as_str(),
+            template_name,
+            None,
+        )?;
+
+        if let Some(templates) = response.results {
+            // TODO: handle more than one?
+            let template = &templates[0];
+            Ok(Some(TemplateDetails::from(template)))
+        } else {
+            Ok(None)
         }
     }
 
     pub fn get_template_details(
         &self,
-        organization_id: Option<&str>,
+        _organization_id: Option<&str>,
         project_name: Option<String>,
-    ) -> GraphQLResult<Vec<TemplateDetails>> {
-        let query = TemplatesQuery::build_query(templates_query::Variables {
-            organization_id: organization_id.map(|id| id.to_string()),
-            project_name: project_name.clone(),
-        });
-        let response_body = graphql_request::<_, templates_query::ResponseData>(&query)?;
+    ) -> Result<Vec<TemplateDetails>, Error<ProjectsTemplatesListError>> {
+        // TODO: project name or id?
+        let rest_cfg = open_api_config();
+        let response = projects_templates_list(
+            &rest_cfg,
+            project_name.unwrap_or_default().as_str(),
+            None,
+            None,
+        )?;
+        let mut list: Vec<TemplateDetails> = Vec::new();
 
-        if let Some(errors) = response_body.errors {
-            Err(GraphQLError::ResponseError(errors))
-        } else if let Some(data) = response_body.data {
-            if let Some(project) = data.viewer.organization.expect(NO_ORG_ERROR).project {
-                let mut list: Vec<TemplateDetails> = project
-                    .templates
-                    .nodes
-                    .into_iter()
-                    .map(|n| TemplateDetails {
-                        id: n.id,
-                        name: n.name,
-                        description: n.description.unwrap_or_default(),
-                    })
-                    .collect();
-                list.sort_by(|l, r| l.name.cmp(&r.name));
-                Ok(list)
-            } else {
-                Err(GraphQLError::ProjectNotFoundError(
-                    project_name.unwrap_or_else(|| DEFAULT_PROJ_NAME.to_string()),
-                ))
+        if let Some(templates) = response.results {
+            for template in templates {
+                list.push(TemplateDetails::from(&template));
             }
-        } else {
-            Err(GraphQLError::MissingDataError)
+            list.sort_by(|l, r| l.name.cmp(&r.name));
         }
+        Ok(list)
     }
 }
