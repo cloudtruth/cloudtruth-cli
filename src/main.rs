@@ -947,7 +947,13 @@ fn main() -> Result<()> {
     }
 
     if let Some(matches) = matches.subcommand_matches("run") {
-        let mut sub_proc = SubProcess::new();
+        let parameters = Parameters::new();
+        let ct_vars = parameters.get_parameter_values(
+            org_id,
+            resolved.env_id.clone(),
+            resolved.proj_name.clone(),
+        )?;
+        let mut sub_proc = SubProcess::new(ct_vars);
         process_run_command(matches, &mut sub_proc, &resolved)?;
     }
 

@@ -1,8 +1,6 @@
 use crate::config::{
     CT_APP_REMOVABLE_VARS, CT_ENVIRONMENT, CT_PROJECT, DEFAULT_ENV_NAME, DEFAULT_PROF_NAME,
 };
-use crate::graphql::GraphQLError;
-use crate::parameters::Parameters;
 use crate::{warn_user, ResolvedIds};
 use color_eyre::eyre::{ErrReport, Result};
 use color_eyre::Report;
@@ -49,7 +47,6 @@ pub type SubProcessResult<T> = std::result::Result<T, SubProcessError>;
 #[derive(Clone, Debug)]
 pub enum SubProcessError {
     EnvironmentCollisions(Vec<String>),
-    GraphQLError(GraphQLError),
     ProcessRunError(String),
     ProcessOutputError(String),
 }
@@ -69,19 +66,10 @@ impl fmt::Display for SubProcessError {
             SubProcessError::ProcessRunError(details) => {
                 write!(f, "Process run error: {}", details)
             }
-            SubProcessError::GraphQLError(err) => {
-                write!(f, "Problem querying the server: {}", err.to_string())
-            }
             SubProcessError::ProcessOutputError(details) => {
                 write!(f, "Problem writing output: {}", details)
             }
         }
-    }
-}
-
-impl From<GraphQLError> for SubProcessError {
-    fn from(err: GraphQLError) -> Self {
-        SubProcessError::GraphQLError(err)
     }
 }
 
@@ -115,12 +103,14 @@ pub trait SubProcessIntf {
 }
 
 pub struct SubProcess {
+    ct_vars: EnvSettings,
     env_vars: EnvSettings,
 }
 
 impl SubProcess {
-    pub fn new() -> Self {
+    pub fn new(ct_vars: EnvSettings) -> Self {
         Self {
+            ct_vars,
             env_vars: Default::default(),
         }
     }
@@ -132,21 +122,6 @@ impl SubProcess {
         env::vars()
             .filter(|(ref k, _)| !exclude.contains(&k.as_str()))
             .collect()
-    }
-
-    fn get_ct_vars(
-        &self,
-        org_id: Option<&str>,
-        resolved: &ResolvedIds,
-    ) -> SubProcessResult<EnvSettings> {
-        // Create EnvSettings with all the CloudTruth environment values for this environment.
-        let parameters = Parameters::new();
-        let ct_vars = parameters.get_parameter_values(
-            org_id,
-            resolved.env_id.clone(),
-            resolved.proj_name.clone(),
-        )?;
-        Ok(ct_vars)
     }
 
     fn process_overrides(&self, overrides: &[String]) -> Result<EnvSettings> {
@@ -167,7 +142,7 @@ impl SubProcess {
 impl SubProcessIntf for SubProcess {
     fn set_environment(
         &mut self,
-        org_id: Option<&str>,
+        _org_id: Option<&str>,
         resolved: &ResolvedIds,
         inherit: Inheritance,
         overrides: &[String],
@@ -197,9 +172,10 @@ impl SubProcessIntf for SubProcess {
 
         // Add in the items from the CloudTruth environment (looking for collisions)
         let mut collisions: Vec<String> = vec![];
-        let ct_vars = self.get_ct_vars(org_id, &resolved)?;
         let empty = "".to_string();
-        for (key, value) in ct_vars {
+        for (k, v) in &self.ct_vars {
+            let key = k.clone();
+            let value = v.clone();
             if !self.env_vars.contains_key(&key) {
                 // when not already, insert it
                 self.env_vars.entry(key).or_insert(value);
