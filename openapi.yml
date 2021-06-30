@@ -354,6 +354,9 @@ paths:
         ### Pre-Conditions ###
 
         - An AWS Integration for the account and role cannot already exist.
+        ### Post-Conditions ###
+
+        - You must establish an IAM role and trust relationship based on the Role Name and the External ID.
       summary: Establishes an AWS Integration.
       tags:
       - integrations
@@ -495,7 +498,7 @@ paths:
         Queries a third-party integration to retrieve the data specified by the FQN.
 
         You can start exploring by not specifying an 'fqn', which will return a list of FQNs for the existing third-party integrations. Third-party integrations can be configured via the Integrations section of the web application.
-      summary: Retrieve third-party integrations data for the specified FQN.
+      summary: Retrieve third-party integration data for the specified FQN.
       parameters:
       - in: query
         name: fqn
@@ -520,10 +523,16 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedIntegrationExplorerList'
           description: The content at the FQN.
+        '204':
+          description: No content found at FQN.
         '400':
           description: Invalid FQN requested.
         '403':
           description: Unable to contact the third-party integration.
+        '415':
+          description: Unsupported content type (usually this means it is binary).
+        '507':
+          description: Content exceeds internal size limit of 1MB.
   /api/v1/integrations/github/:
     get:
       operationId: integrations_github_list
@@ -1201,6 +1210,11 @@ paths:
         description: The name of the environment to get values for.  If this is not
           specified then the result will contain any value for any environment that
           is set.
+      - in: query
+        name: mask_secrets
+        schema:
+          type: boolean
+        description: If true, mask secret values (defaults to false).
       - name: page
         required: false
         in: query
@@ -1221,6 +1235,12 @@ paths:
           format: uuid
         description: The project id.
         required: true
+      - in: query
+        name: wrap
+        schema:
+          type: boolean
+        description: If this is a secret, indicates the provided value is wrapped.  Ignored
+          if not a secret.  Defaults to false.
       tags:
       - projects
       security:
@@ -1250,6 +1270,12 @@ paths:
           format: uuid
         description: The project id.
         required: true
+      - in: query
+        name: wrap
+        schema:
+          type: boolean
+        description: If this is a secret, indicates the provided value is wrapped.  Ignored
+          if not a secret.  Defaults to false.
       tags:
       - projects
       requestBody:
@@ -1292,6 +1318,11 @@ paths:
           format: uuid
         description: A UUID string identifying this value.
         required: true
+      - in: query
+        name: mask_secrets
+        schema:
+          type: boolean
+        description: If true, mask secret values (defaults to false).
       - in: path
         name: parameter_pk
         schema:
@@ -1306,6 +1337,12 @@ paths:
           format: uuid
         description: The project id.
         required: true
+      - in: query
+        name: wrap
+        schema:
+          type: boolean
+        description: If this is a secret, indicates the provided value is wrapped.  Ignored
+          if not a secret.  Defaults to false.
       tags:
       - projects
       security:
@@ -1342,6 +1379,12 @@ paths:
           format: uuid
         description: The project id.
         required: true
+      - in: query
+        name: wrap
+        schema:
+          type: boolean
+        description: If this is a secret, indicates the provided value is wrapped.  Ignored
+          if not a secret.  Defaults to false.
       tags:
       - projects
       requestBody:
@@ -1390,6 +1433,12 @@ paths:
           format: uuid
         description: The project id.
         required: true
+      - in: query
+        name: wrap
+        schema:
+          type: boolean
+        description: If this is a secret, indicates the provided value is wrapped.  Ignored
+          if not a secret.  Defaults to false.
       tags:
       - projects
       requestBody:
@@ -1437,6 +1486,12 @@ paths:
           format: uuid
         description: The project id.
         required: true
+      - in: query
+        name: wrap
+        schema:
+          type: boolean
+        description: If this is a secret, indicates the provided value is wrapped.  Ignored
+          if not a secret.  Defaults to false.
       tags:
       - projects
       security:
@@ -1637,6 +1692,12 @@ paths:
       operationId: projects_templates_list
       description: ''
       parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
       - in: query
         name: name
         schema:
@@ -1668,6 +1729,12 @@ paths:
       operationId: projects_templates_create
       description: ''
       parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
       - in: path
         name: project_pk
         schema:
@@ -1831,196 +1898,6 @@ paths:
         required: true
       tags:
       - projects
-      security:
-      - jwtAuth: []
-      responses:
-        '204':
-          description: No response body
-  /api/v1/secrets/:
-    get:
-      operationId: secrets_list
-      description: Lists secrets (without values), optionally filtered by project
-        or project and environment
-      parameters:
-      - in: query
-        name: environment
-        schema:
-          type: string
-      - name: page
-        required: false
-        in: query
-        description: A page number within the paginated result set.
-        schema:
-          type: integer
-      - in: query
-        name: project
-        schema:
-          type: string
-      tags:
-      - secrets
-      security:
-      - jwtAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PaginatedSecretModelList'
-          description: ''
-    post:
-      operationId: secrets_create
-      description: Creates a new secret
-      parameters:
-      - in: query
-        name: wrapped
-        schema:
-          type: boolean
-        description: Indicates if the provided secret value is wrapped.  Default is
-          false.
-      tags:
-      - secrets
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Secret'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/Secret'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/Secret'
-        required: true
-      security:
-      - jwtAuth: []
-      responses:
-        '201':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SecretModel'
-          description: ''
-  /api/v1/secrets/{id}/:
-    get:
-      operationId: secrets_retrieve
-      description: Retrieves the value for the secret from Vault
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-          format: uuid
-        description: A UUID string identifying this secret.
-        required: true
-      - in: query
-        name: wrap
-        schema:
-          type: boolean
-        description: Indicates if the returned secret should be wrapped.  Default
-          is false.
-      tags:
-      - secrets
-      security:
-      - jwtAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SecretValue'
-          description: ''
-    put:
-      operationId: secrets_update
-      description: Updates a secret, only the value may be changed
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-          format: uuid
-        description: A UUID string identifying this secret.
-        required: true
-      - in: query
-        name: wrapped
-        schema:
-          type: boolean
-        description: Indicates if the provided secret value is wrapped.  Default is
-          false.
-      tags:
-      - secrets
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Secret'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/Secret'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/Secret'
-        required: true
-      security:
-      - jwtAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SecretModel'
-          description: ''
-    patch:
-      operationId: secrets_partial_update
-      description: Updates a secret, only the value may be changed
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-          format: uuid
-        description: A UUID string identifying this secret.
-        required: true
-      - in: query
-        name: wrapped
-        schema:
-          type: boolean
-        description: Indicates if the provided secret value is wrapped.  Default is
-          false.
-      tags:
-      - secrets
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PatchedSecret'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/PatchedSecret'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/PatchedSecret'
-      security:
-      - jwtAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SecretModel'
-          description: ''
-    delete:
-      operationId: secrets_destroy
-      description: Deletes a secret from Vault
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-          format: uuid
-        description: A UUID string identifying this secret.
-        required: true
-      tags:
-      - secrets
       security:
       - jwtAuth: []
       responses:
@@ -2298,6 +2175,11 @@ paths:
         description: A page number within the paginated result set.
         schema:
           type: integer
+      - in: path
+        name: serviceaccount_pk
+        schema:
+          type: string
+        required: true
       - in: query
         name: type
         schema:
@@ -2323,6 +2205,11 @@ paths:
         schema:
           type: string
         description: A unique value identifying this user.
+        required: true
+      - in: path
+        name: serviceaccount_pk
+        schema:
+          type: string
         required: true
       tags:
       - users
@@ -2354,6 +2241,11 @@ paths:
         schema:
           type: string
         description: A unique value identifying this user.
+        required: true
+      - in: path
+        name: serviceaccount_pk
+        schema:
+          type: string
         required: true
       tags:
       - users
@@ -2399,8 +2291,6 @@ components:
       - sa-east-1
       - us-east-1
       - us-east-2
-      - us-gov-east-1
-      - us-gov-west-1
       - us-west-1
       - us-west-2
       type: string
@@ -2422,6 +2312,9 @@ components:
           format: uuid
           readOnly: true
           description: The unique identifier for the integration.
+        name:
+          type: string
+          readOnly: true
         description:
           type: string
           description: The optional description for the integration.
@@ -2457,8 +2350,8 @@ components:
         aws_enabled_regions:
           allOf:
           - $ref: '#/components/schemas/AwsEnabledRegionsEnum'
-          description: The AWS regions to integrate with.  This can be specified as
-            a comma-separated list.
+          description: The AWS regions to integrate with.  This is specified as a
+            comma-separated list.
         aws_enabled_services:
           allOf:
           - $ref: '#/components/schemas/AwsEnabledServicesEnum'
@@ -2487,6 +2380,7 @@ components:
       - aws_role_name
       - fqn
       - id
+      - name
       - status
       - status_detail
       - status_last_checked_at
@@ -2507,8 +2401,8 @@ components:
         aws_enabled_regions:
           allOf:
           - $ref: '#/components/schemas/AwsEnabledRegionsEnum'
-          description: The AWS regions to integrate with.  This can be specified as
-            a comma-separated list.
+          description: The AWS regions to integrate with.  This is specified as a
+            comma-separated list.
         aws_enabled_services:
           allOf:
           - $ref: '#/components/schemas/AwsEnabledServicesEnum'
@@ -2585,6 +2479,9 @@ components:
           format: uuid
           readOnly: true
           description: The unique identifier for the integration.
+        name:
+          type: string
+          readOnly: true
         description:
           type: string
           description: The optional description for the integration.
@@ -2621,6 +2518,7 @@ components:
       - gh_installation_id
       - gh_organization_slug
       - id
+      - name
       - status
       - status_detail
       - status_last_checked_at
@@ -2917,26 +2815,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Project'
-    PaginatedSecretModelList:
-      type: object
-      properties:
-        count:
-          type: integer
-          example: 123
-        next:
-          type: string
-          nullable: true
-          format: uri
-          example: http://api.example.org/accounts/?page=4
-        previous:
-          type: string
-          nullable: true
-          format: uri
-          example: http://api.example.org/accounts/?page=2
-        results:
-          type: array
-          items:
-            $ref: '#/components/schemas/SecretModel'
     PaginatedServiceAccountList:
       type: object
       properties:
@@ -3077,6 +2955,9 @@ components:
           format: uuid
           readOnly: true
           description: The unique identifier for the integration.
+        name:
+          type: string
+          readOnly: true
         description:
           type: string
           description: The optional description for the integration.
@@ -3112,8 +2993,8 @@ components:
         aws_enabled_regions:
           allOf:
           - $ref: '#/components/schemas/AwsEnabledRegionsEnum'
-          description: The AWS regions to integrate with.  This can be specified as
-            a comma-separated list.
+          description: The AWS regions to integrate with.  This is specified as a
+            comma-separated list.
         aws_enabled_services:
           allOf:
           - $ref: '#/components/schemas/AwsEnabledServicesEnum'
@@ -3255,29 +3136,6 @@ components:
           maxLength: 256
         description:
           type: string
-    PatchedSecret:
-      type: object
-      properties:
-        url:
-          type: string
-          format: uri
-          readOnly: true
-        project:
-          type: string
-          maxLength: 256
-        environment:
-          type: string
-          maxLength: 256
-        name:
-          type: string
-          pattern: ^[A-Za-z][A-Za-z0-9_-]*$
-          maxLength: 256
-        id:
-          type: string
-          format: uuid
-          readOnly: true
-        value:
-          type: string
     PatchedServiceAccount:
       type: object
       properties:
@@ -3345,8 +3203,7 @@ components:
             set.
         value:
           type: string
-          description: This *is* the value you are looking for.
-          maxLength: 1024
+          readOnly: true
         fqn:
           type: string
           description: The FQN, or Fully-Qualified Name, is the path through the integration
@@ -3397,68 +3254,6 @@ components:
       - CONTRIB
       - VIEWER
       type: string
-    Secret:
-      type: object
-      properties:
-        url:
-          type: string
-          format: uri
-          readOnly: true
-        project:
-          type: string
-          maxLength: 256
-        environment:
-          type: string
-          maxLength: 256
-        name:
-          type: string
-          pattern: ^[A-Za-z][A-Za-z0-9_-]*$
-          maxLength: 256
-        id:
-          type: string
-          format: uuid
-          readOnly: true
-        value:
-          type: string
-      required:
-      - id
-      - name
-      - project
-      - url
-      - value
-    SecretModel:
-      type: object
-      properties:
-        url:
-          type: string
-          format: uri
-          readOnly: true
-        project:
-          type: string
-          maxLength: 256
-        environment:
-          type: string
-          maxLength: 256
-        name:
-          type: string
-          pattern: ^[A-Za-z][A-Za-z0-9_-]*$
-          maxLength: 256
-        id:
-          type: string
-          format: uuid
-          readOnly: true
-      required:
-      - id
-      - name
-      - project
-      - url
-    SecretValue:
-      type: object
-      properties:
-        value:
-          type: string
-      required:
-      - value
     ServiceAccount:
       type: object
       properties:
@@ -3627,8 +3422,7 @@ components:
             set.
         value:
           type: string
-          description: This *is* the value you are looking for.
-          maxLength: 1024
+          readOnly: true
         fqn:
           type: string
           description: The FQN, or Fully-Qualified Name, is the path through the integration
@@ -3646,6 +3440,7 @@ components:
       - environment
       - id
       - url
+      - value
     ValueCreate:
       type: object
       description: A value for a given parameter in a given environment.
@@ -3661,8 +3456,7 @@ components:
             set.
         value:
           type: string
-          description: This *is* the value you are looking for.
-          maxLength: 1024
+          readOnly: true
         fqn:
           type: string
           description: The FQN, or Fully-Qualified Name, is the path through the integration
@@ -3678,6 +3472,7 @@ components:
           maxLength: 1024
       required:
       - environment
+      - value
   securitySchemes:
     jwtAuth:
       type: http
