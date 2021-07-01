@@ -1,86 +1,93 @@
-use crate::config::{DEFAULT_ENV_NAME, DEFAULT_PROJ_NAME};
-use crate::graphql::prelude::graphql_request;
-use crate::graphql::{GraphQLError, GraphQLResult, Operation, Resource, NO_ORG_ERROR};
-use crate::parameters::export_parameters_query::ExportParametersFormatEnum;
-use graphql_client::*;
+use crate::openapi::open_api_config;
+use cloudtruth_restapi::apis::projects_api::*;
+use cloudtruth_restapi::apis::Error;
+use cloudtruth_restapi::models::{Parameter, ParameterCreate, PatchedValue, Value, ValueCreate};
 use std::collections::HashMap;
+use std::result::Result;
 use std::str::FromStr;
 
 pub struct Parameters {}
 
-#[derive(GraphQLQuery)]
-#[graphql(
-    schema_path = "graphql/schema.graphql",
-    query_path = "graphql/parameter_queries.graphql",
-    response_derives = "Debug"
-)]
-pub struct DeleteParameterMutation;
-
-#[derive(GraphQLQuery)]
-#[graphql(
-    schema_path = "graphql/schema.graphql",
-    query_path = "graphql/parameter_queries.graphql",
-    response_derives = "Debug"
-)]
-pub struct ExportParametersQuery;
-
-#[derive(GraphQLQuery)]
-#[graphql(
-    schema_path = "graphql/schema.graphql",
-    query_path = "graphql/parameter_queries.graphql",
-    response_derives = "Debug"
-)]
-pub struct GetParameterByNameQuery;
-
-#[derive(GraphQLQuery)]
-#[graphql(
-    schema_path = "graphql/schema.graphql",
-    query_path = "graphql/parameter_queries.graphql",
-    response_derives = "Debug"
-)]
-pub struct ParametersQuery;
-
-#[derive(GraphQLQuery)]
-#[graphql(
-    schema_path = "graphql/schema.graphql",
-    query_path = "graphql/parameter_queries.graphql",
-    response_derives = "Debug"
-)]
-pub struct ParametersDetailQuery;
-
-#[derive(GraphQLQuery)]
-#[graphql(
-    schema_path = "graphql/schema.graphql",
-    query_path = "graphql/parameter_queries.graphql",
-    response_derives = "Debug"
-)]
-pub struct UpsertParameterMutation;
+const MASK_SECRETS: Option<bool> = Some(false); // TODO: tie usage to a new parameter
 
 #[derive(Debug)]
 pub struct ParameterDetails {
+    // the top few are the parameter, across all environments
     pub id: String,
     pub key: String,
-    pub value: String,
-    pub secret: bool,
     pub description: String,
+    pub secret: bool,
+
+    // these come from the value for the specified environment
+    pub val_id: String,
+    pub value: String,
     pub source: String,
     pub dynamic: bool,
     pub fqn: String,
     pub jmes_path: String,
 }
 
-/// Converts to ExportParametersFormatEnum from a &str.
-impl FromStr for ExportParametersFormatEnum {
+impl From<&Parameter> for ParameterDetails {
+    fn from(api_param: &Parameter) -> Self {
+        let description = api_param.description.clone();
+        let bogus = Value {
+            url: "".to_string(),
+            id: "".to_string(),
+            environment: "".to_string(),
+            dynamic: None,
+            value: None,
+            fqn: None,
+            filter: None,
+        };
+        let env_value = &bogus;
+        // TODO: PARM_VALUE_ISSUE
+        //let env_value: &Value = &api_param.values[0];
+
+        ParameterDetails {
+            id: api_param.id.clone(),
+            key: api_param.name.clone(),
+            secret: api_param.secret.unwrap_or(false),
+            description: description.unwrap_or_default(),
+
+            val_id: env_value.id.clone(),
+            value: env_value.value.clone().unwrap_or_default(),
+            source: env_value.environment.clone(),
+            dynamic: env_value.dynamic.unwrap_or(false),
+            fqn: env_value.fqn.clone().unwrap_or_default(),
+            jmes_path: env_value.filter.clone().unwrap_or_default(),
+        }
+    }
+}
+
+#[derive(Debug)]
+pub enum ParamExportFormat {
+    DOCKER,
+    DOTENV,
+    SHELL,
+}
+
+/// Converts to ParamExportFormat from a &str.
+impl FromStr for ParamExportFormat {
     type Err = ();
 
-    fn from_str(input: &str) -> Result<ExportParametersFormatEnum, Self::Err> {
+    fn from_str(input: &str) -> Result<ParamExportFormat, Self::Err> {
         match input {
-            "docker" => Ok(ExportParametersFormatEnum::DOCKER),
-            "dotenv" => Ok(ExportParametersFormatEnum::DOTENV),
-            "shell" => Ok(ExportParametersFormatEnum::SHELL),
+            "docker" => Ok(ParamExportFormat::DOCKER),
+            "dotenv" => Ok(ParamExportFormat::DOTENV),
+            "shell" => Ok(ParamExportFormat::SHELL),
             _ => Err(()),
         }
     }
+}
+
+#[derive(Debug)]
+pub struct ParamExportOptions {
+    pub format: ParamExportFormat,
+    pub starts_with: Option<String>,
+    pub ends_with: Option<String>,
+    pub contains: Option<String>,
+    pub export: Option<bool>,
+    pub secrets: Option<bool>,
 }
 
 impl Parameters {
@@ -90,36 +97,19 @@ impl Parameters {
 
     /// Deletes the specified parameter by ID
     ///
-    /// On success, it returns the deleted parameter ID. On failure, it returns a GraphQLError.
-    fn delete_param_by_id(&self, param_id: String) -> GraphQLResult<Option<String>> {
-        let query = DeleteParameterMutation::build_query(delete_parameter_mutation::Variables {
-            parameter_id: param_id,
-        });
-        let response_body = graphql_request::<_, delete_parameter_mutation::ResponseData>(&query)?;
-
-        if let Some(errors) = response_body.errors {
-            Err(GraphQLError::build_query_error(
-                errors,
-                Resource::Parameter,
-                Operation::Delete,
-            ))
-        } else if let Some(data) = response_body.data {
-            let logical_errors = data.delete_parameter.errors;
-            if !logical_errors.is_empty() {
-                Err(GraphQLError::build_logical_error(to_user_errors!(
-                    logical_errors
-                )))
-            } else {
-                Ok(data.delete_parameter.deleted_parameter_id)
-            }
-        } else {
-            Err(GraphQLError::MissingDataError)
-        }
+    /// On success, it returns the deleted parameter ID. On failure, it returns an Error.
+    fn delete_param_by_id(
+        &self,
+        param_id: String,
+    ) -> Result<Option<String>, Error<ProjectsParametersDestroyError>> {
+        let rest_cfg = open_api_config();
+        projects_parameters_destroy(&rest_cfg, param_id.as_str(), "")?;
+        Ok(Some(param_id))
     }
 
     /// Deletes the specified parameter from the specified project/environment.
     ///
-    /// On success, it returns the ID of the deleted value. On failure, it returns a GraphQlError
+    /// On success, it returns the ID of the deleted value. On failure, it returns an Error
     /// with more failure information.
     pub fn delete_parameter(
         &self,
@@ -127,14 +117,14 @@ impl Parameters {
         proj_name: Option<String>,
         env_name: Option<&str>,
         key_name: &str,
-    ) -> GraphQLResult<Option<String>> {
+    ) -> Result<Option<String>, Error<ProjectsParametersDestroyError>> {
         // The only delete mechanism is by parameter ID, so start by querying the parameter info.
-        let parameter = self.get_details_by_name(org_id, env_name, proj_name, key_name)?;
+        let response = self.get_details_by_name(org_id, env_name, proj_name, key_name);
 
-        if let Some(parameter) = parameter {
-            self.delete_param_by_id(parameter.id)
+        if let Ok(Some(details)) = response {
+            self.delete_param_by_id(details.id)
         } else {
-            Err(GraphQLError::ParameterNotFoundError(key_name.to_string()))
+            Ok(None) // TODO: this should return an error
         }
     }
 
@@ -144,34 +134,15 @@ impl Parameters {
     /// the specified output format.
     pub fn export_parameters(
         &self,
-        organization_id: Option<&str>,
-        project_name: Option<String>,
-        environment_name: Option<&str>,
-        options: export_parameters_query::ExportParametersOptions,
-        format: ExportParametersFormatEnum,
-    ) -> GraphQLResult<Option<String>> {
-        let query = ExportParametersQuery::build_query(export_parameters_query::Variables {
-            organization_id: organization_id.map(|id| id.to_string()),
-            project_name: project_name.clone(),
-            environment_name: environment_name.map(|name| name.to_string()),
-            format,
-            options,
-        });
-        let response_body = graphql_request::<_, export_parameters_query::ResponseData>(&query)?;
+        _organization_id: Option<&str>,
+        _project_name: Option<String>,
+        _environment_name: Option<&str>,
+        _options: ParamExportOptions,
+    ) -> Result<Option<String>, Error<ProjectsParametersListError>> {
+        // let rest_cfg = open_api_config();
 
-        if let Some(errors) = response_body.errors {
-            Err(GraphQLError::ResponseError(errors))
-        } else if let Some(data) = response_body.data {
-            if let Some(project) = data.viewer.organization.expect(NO_ORG_ERROR).project {
-                Ok(project.export_parameters.and_then(|v| v.evaluated))
-            } else {
-                Err(GraphQLError::ProjectNotFoundError(
-                    project_name.unwrap_or_else(|| DEFAULT_PROJ_NAME.to_string()),
-                ))
-            }
-        } else {
-            Err(GraphQLError::MissingDataError)
-        }
+        // TODO: implement this
+        Ok(None)
     }
 
     /// Fetches the `ParameterDetails` for the specified project/environment/key_name.
@@ -180,159 +151,103 @@ impl Parameters {
     /// if project/environments are not found.
     pub fn get_details_by_name(
         &self,
-        org_id: Option<&str>,
+        _org_id: Option<&str>,
         env_name: Option<&str>,
         proj_name: Option<String>,
         key_name: &str,
-    ) -> GraphQLResult<Option<ParameterDetails>> {
-        let query = GetParameterByNameQuery::build_query(get_parameter_by_name_query::Variables {
-            organization_id: org_id.map(|id| id.to_string()),
-            env_name: env_name.map(|name| name.to_string()),
-            project_name: proj_name.clone(),
-            key_name: key_name.to_string(),
-        });
-        let response_body =
-            graphql_request::<_, get_parameter_by_name_query::ResponseData>(&query)?;
-
-        if let Some(errors) = response_body.errors {
-            Err(GraphQLError::ResponseError(errors))
-        } else if let Some(data) = response_body.data {
-            if let Some(project) = data.viewer.organization.expect(NO_ORG_ERROR).project {
-                if let Some(param) = project.parameter {
-                    if let Some(env_value) = param.environment_value {
-                        let source: String;
-                        let mut fqn = "".to_string();
-                        if let Some(inherit) = env_value.inherited_from {
-                            source = inherit.name;
-                        } else {
-                            source = env_value.environment.name;
-                        }
-                        if let Some(file) = env_value.integration_file {
-                            fqn = file.fqn;
-                        }
-                        let param_value = env_value.parameter_value.unwrap_or_default();
-                        let jmes_path = env_value.jmes_path.unwrap_or_default();
-                        Ok(Some(ParameterDetails {
-                            id: param.id.clone(),
-                            key: param.key_name.clone(),
-                            value: param_value,
-                            secret: param.is_secret,
-                            description: param.description.unwrap_or_default(),
-                            source,
-                            dynamic: param.has_dynamic_value,
-                            fqn,
-                            jmes_path,
-                        }))
-                    } else {
-                        let name = env_name.unwrap_or(DEFAULT_ENV_NAME).to_string();
-                        Err(GraphQLError::EnvironmentNotFoundError(name))
-                    }
-                } else {
-                    Err(GraphQLError::ParameterNotFoundError(key_name.to_string()))
-                }
-            } else {
-                Err(GraphQLError::ProjectNotFoundError(
-                    proj_name.unwrap_or_else(|| DEFAULT_PROJ_NAME.to_string()),
-                ))
-            }
+    ) -> Result<Option<ParameterDetails>, Error<ProjectsParametersListError>> {
+        let rest_cfg = open_api_config();
+        // TODO: project_pk id or name? environment id or name?
+        let response = projects_parameters_list(
+            &rest_cfg,
+            proj_name.unwrap().as_str(),
+            env_name,
+            MASK_SECRETS,
+            Some(key_name),
+            None,
+        )?;
+        if let Some(parameters) = response.results {
+            // TODO: handle more than one??
+            let param = &parameters[0];
+            Ok(Some(ParameterDetails::from(param)))
         } else {
-            Err(GraphQLError::MissingDataError)
+            Ok(None)
         }
     }
 
+    /// Fetches a "dictionary" of environment variable name/values for the specified project and
+    /// environment.
     pub fn get_parameter_values(
         &self,
         org_id: Option<&str>,
         env_id: Option<String>,
         proj_name: Option<String>,
-    ) -> GraphQLResult<HashMap<String, String>> {
-        let query = ParametersQuery::build_query(parameters_query::Variables {
-            organization_id: org_id.map(|id| id.to_string()),
-            environment_id: env_id,
-            project_name: proj_name.clone(),
-        });
-        let response_body = graphql_request::<_, parameters_query::ResponseData>(&query)?;
+    ) -> Result<HashMap<String, String>, Error<ProjectsParametersListError>> {
+        let parameters = self.get_parameter_details(org_id, env_id, proj_name)?;
+        let mut env_vars = HashMap::new();
 
-        if let Some(errors) = response_body.errors {
-            Err(GraphQLError::ResponseError(errors))
-        } else if let Some(data) = response_body.data {
-            let mut env_vars = HashMap::new();
-            if let Some(project) = data.viewer.organization.expect(NO_ORG_ERROR).project {
-                for p in project.parameters.nodes {
-                    if let Some(env_value) = p.environment_value {
-                        if let Some(param_value) = env_value.parameter_value {
-                            env_vars.insert(p.key_name, param_value);
-                        }
-                    }
-                }
-                Ok(env_vars)
-            } else {
-                Err(GraphQLError::ProjectNotFoundError(
-                    proj_name.unwrap_or_else(|| DEFAULT_PROJ_NAME.to_string()),
-                ))
-            }
-        } else {
-            Err(GraphQLError::MissingDataError)
+        for param in parameters {
+            env_vars.insert(param.key, param.value);
         }
+        Ok(env_vars)
     }
 
+    /// Fetches the `ParameterDetails` for the specified project and environment.
     pub fn get_parameter_details(
         &self,
-        org_id: Option<&str>,
+        _org_id: Option<&str>,
         env_id: Option<String>,
         proj_name: Option<String>,
-    ) -> GraphQLResult<Vec<ParameterDetails>> {
-        let query = ParametersDetailQuery::build_query(parameters_detail_query::Variables {
-            organization_id: org_id.map(|id| id.to_string()),
-            environment_id: env_id,
-            project_name: proj_name.clone(),
-        });
-        let response_body = graphql_request::<_, parameters_detail_query::ResponseData>(&query)?;
-        if let Some(errors) = response_body.errors {
-            Err(GraphQLError::ResponseError(errors))
-        } else if let Some(data) = response_body.data {
-            if let Some(project) = data.viewer.organization.expect(NO_ORG_ERROR).project {
-                let mut env_vars: Vec<ParameterDetails> = Vec::new();
-                for p in project.parameters.nodes {
-                    let mut fqn = "".to_string();
-                    let mut jmes_path = "".to_string();
-                    let mut param_value: String = "".to_string();
-                    let mut source: String = "".to_string();
-
-                    if let Some(env_value) = p.environment_value {
-                        if let Some(inherit) = env_value.inherited_from {
-                            source = inherit.name;
-                        } else {
-                            source = env_value.environment.name;
-                        }
-                        if let Some(file) = env_value.integration_file {
-                            fqn = file.fqn;
-                        }
-                        param_value = env_value.parameter_value.unwrap_or_default();
-                        jmes_path = env_value.jmes_path.unwrap_or_default();
-                    }
-
-                    // Add an entry for every parameter, even if it has no value or source
-                    env_vars.push(ParameterDetails {
-                        id: p.id,
-                        key: p.key_name,
-                        value: param_value,
-                        secret: p.is_secret,
-                        description: p.description.unwrap_or_default(),
-                        source,
-                        dynamic: p.has_dynamic_value,
-                        jmes_path,
-                        fqn,
-                    });
-                }
-                Ok(env_vars)
-            } else {
-                Err(GraphQLError::ProjectNotFoundError(
-                    proj_name.unwrap_or_else(|| DEFAULT_PROJ_NAME.to_string()),
-                ))
+    ) -> Result<Vec<ParameterDetails>, Error<ProjectsParametersListError>> {
+        let rest_cfg = open_api_config();
+        let response = projects_parameters_list(
+            &rest_cfg,
+            proj_name.unwrap_or_default().as_str(),
+            env_id.as_deref(),
+            MASK_SECRETS,
+            None,
+            None,
+        )?;
+        let mut list: Vec<ParameterDetails> = Vec::new();
+        if let Some(parameters) = response.results {
+            for param in parameters {
+                list.push(ParameterDetails::from(&param));
             }
+            list.sort_by(|l, r| l.key.cmp(&r.key));
+        }
+        Ok(list)
+    }
+
+    fn create_parameter_value(
+        &self,
+        proj_id: Option<String>,
+        param_id: String,
+        env_name: Option<&str>,
+        value: Option<&str>,
+        fqn: Option<&str>,
+        jmes_path: Option<&str>,
+    ) -> Result<Option<String>, Error<ProjectsParametersValuesCreateError>> {
+        let rest_cfg = open_api_config();
+        let dynamic = value.is_none() || fqn.is_some();
+
+        let value_new = ValueCreate {
+            environment: env_name.unwrap().to_string(),
+            dynamic: Some(dynamic),
+            value: value.map(|v| v.to_string()),
+            fqn: fqn.map(|v| v.to_string()),
+            filter: jmes_path.map(|v| v.to_string()),
+        };
+        let response = projects_parameters_values_create(
+            &rest_cfg,
+            param_id.as_str(),
+            proj_id.unwrap().as_str(),
+            value_new,
+            None,
+        );
+        if let Ok(result) = response {
+            Ok(Some(result.id))
         } else {
-            Err(GraphQLError::MissingDataError)
+            Ok(None)
         }
     }
 
@@ -347,37 +262,111 @@ impl Parameters {
         secret: Option<bool>,
         fqn: Option<&str>,
         jmes_path: Option<&str>,
-    ) -> GraphQLResult<Option<String>> {
-        let query = UpsertParameterMutation::build_query(upsert_parameter_mutation::Variables {
-            project_id: proj_id,
-            environment_name: env_name.map(|env| env.to_string()),
-            key_name: key_name.to_string(),
-            value: value.map(|v| v.to_string()),
-            description: description.map(|v| v.to_string()),
-            secret,
-            fqn: fqn.map(|f| f.to_string()),
-            jmes_path: jmes_path.map(|j| j.to_string()),
-        });
-        let response_body = graphql_request::<_, upsert_parameter_mutation::ResponseData>(&query)?;
+    ) -> Result<Option<String>, Error<ProjectsParametersUpdateError>> {
+        let mut result: Option<String> = None;
+        let project_id = proj_id.as_ref().unwrap().as_str();
+        let rest_cfg = open_api_config();
+        let response = projects_parameters_list(
+            &rest_cfg,
+            project_id,
+            env_name,
+            MASK_SECRETS,
+            Some(key_name),
+            None,
+        );
+        if let Ok(paged_results) = response {
+            if let Some(list) = paged_results.results {
+                let mut param: Parameter = list[0].clone();
+                let mut param_changed = false;
+                if let Some(desc_str) = description {
+                    param.description = Some(desc_str.to_string());
+                    param_changed = true;
+                }
+                if secret.is_some() {
+                    param.secret = secret;
+                    param_changed = true;
+                }
+                if !param.values.is_empty() {
+                    let dynamic = value.is_none() || fqn.is_some();
+                    let bogus = Value {
+                        url: "".to_string(),
+                        id: "".to_string(),
+                        environment: "".to_string(),
+                        dynamic: None,
+                        value: None,
+                        fqn: None,
+                        filter: None,
+                    };
+                    let env_value = &bogus;
+                    // TODO: PARM_VALUE_ISSUE
+                    // let env_value: &Value = &param.values[0];
 
-        if let Some(errors) = response_body.errors {
-            Err(GraphQLError::build_query_error(
-                errors,
-                Resource::Parameter,
-                Operation::Upsert,
-            ))
-        } else if let Some(data) = response_body.data {
-            let logical_errors = data.upsert_parameter.errors;
+                    if value.is_none() && fqn.is_none() && jmes_path.is_none() {
+                        // nothing to set here, no need for updates
+                    } else if env_value.environment.as_str() == env_name.unwrap() {
+                        // update
+                        let value_up = PatchedValue {
+                            url: None,
+                            id: None,
+                            environment: None,
+                            dynamic: Some(dynamic),
+                            value: value.map(|v| v.to_string()),
+                            fqn: fqn.map(|v| v.to_string()),
+                            filter: jmes_path.map(|v| v.to_string()),
+                        };
+                        let response = projects_parameters_values_partial_update(
+                            &rest_cfg,
+                            env_value.id.as_str(),
+                            param.id.as_str(),
+                            project_id,
+                            None,
+                            Some(value_up),
+                        );
+                        if let Ok(value) = response {
+                            result = Some(format!("{}/{}", param.id, value.id));
+                        }
+                    } else {
+                        let response = self.create_parameter_value(
+                            proj_id.clone(),
+                            param.id.clone(),
+                            env_name,
+                            value,
+                            fqn,
+                            jmes_path,
+                        );
+                        if let Ok(Some(value_id)) = response {
+                            result = Some(format!("{}/{}", param.id, value_id));
+                        }
+                    }
+                }
 
-            if !logical_errors.is_empty() {
-                Err(GraphQLError::build_logical_error(to_user_errors!(
-                    logical_errors
-                )))
+                if param_changed {
+                    let param_id = param.id.clone();
+                    projects_parameters_update(&rest_cfg, param_id.as_str(), project_id, param)?;
+                }
             } else {
-                Ok(data.upsert_parameter.parameter.map(|p| p.id))
+                let param_new = ParameterCreate {
+                    name: key_name.to_string(),
+                    description: description.map(|x| x.to_string()),
+                    secret,
+                };
+                let response = projects_parameters_create(&rest_cfg, project_id, param_new);
+                if let Ok(param) = response {
+                    let response = self.create_parameter_value(
+                        proj_id,
+                        param.id.clone(),
+                        env_name,
+                        value,
+                        fqn,
+                        jmes_path,
+                    );
+                    if let Ok(Some(value_id)) = response {
+                        result = Some(format!("{}/{}", param.id, value_id))
+                    }
+                }
             }
-        } else {
-            Err(GraphQLError::MissingDataError)
         }
+
+        Ok(result)
     }
 }

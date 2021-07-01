@@ -1,3 +1,5 @@
+#![allow(unused_macros)]
+
 // Intended to be used in partial handling of errors. Assuming an enum is used as the error object,
 // a local handler can match against the enum and handle the variants that require special error-
 // handling. This macro can be used in the catch-all branch to propagate the error out of the caller

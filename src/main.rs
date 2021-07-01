@@ -26,12 +26,8 @@ use crate::cli::{CONFIRM_FLAG, FORMAT_OPT, SECRETS_FLAG, VALUES_FLAG};
 use crate::config::env::ConfigEnv;
 use crate::config::{Config, CT_PROFILE, DEFAULT_ENV_NAME, DEFAULT_PROJ_NAME};
 use crate::environments::Environments;
-use crate::graphql::GraphQLError;
 use crate::integrations::{Integrations, IntegrationsIntf};
-use crate::parameters::export_parameters_query::{
-    ExportParametersFormatEnum, ExportParametersOptions,
-};
-use crate::parameters::Parameters;
+use crate::parameters::{ParamExportFormat, ParamExportOptions, Parameters};
 use crate::projects::{Projects, ProjectsIntf};
 use crate::subprocess::{Inheritance, SubProcess, SubProcessIntf};
 use crate::table::Table;
@@ -630,17 +626,10 @@ fn process_parameters_command(
             }
             println!("{}", param_value);
         } else {
-            match parameter.unwrap_err() {
-                GraphQLError::EnvironmentNotFoundError(name) => println!(
-                    "The '{}' environment could not be found in your organization.",
-                    name
-                ),
-                GraphQLError::ParameterNotFoundError(key) => println!(
-                    "The parameter '{}' could not be found in your organization.",
-                    key
-                ),
-                err => propagate_error!(err),
-            };
+            println!(
+                "The parameter '{}' could not be found in your organization.",
+                key
+            );
         }
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("set") {
         let key = subcmd_args.value_of("KEY").unwrap();
@@ -769,14 +758,6 @@ fn process_parameters_command(
                     env_name.unwrap_or(DEFAULT_ENV_NAME)
                 );
             }
-            Err(GraphQLError::ParameterNotFoundError(_)) => {
-                println!(
-                    "Did not find parameter '{}' to delete from project '{}' for environment '{}'.",
-                    key,
-                    proj_name.unwrap_or_else(|| DEFAULT_PROJ_NAME.to_string()),
-                    env_name.unwrap_or(DEFAULT_ENV_NAME),
-                );
-            }
             _ => {
                 println!(
                     "Failed to remove parameter '{}' from project '{}' for environment '{}'.",
@@ -796,16 +777,15 @@ fn process_parameters_command(
         let export = subcmd_args.is_present("export");
         let secrets = subcmd_args.is_present(SECRETS_FLAG);
         let env_name = resolved.env_name.as_deref();
-        let format = ExportParametersFormatEnum::from_str(template_format).unwrap();
-        let options = ExportParametersOptions {
+        let options = ParamExportOptions {
+            format: ParamExportFormat::from_str(template_format).unwrap(),
             starts_with: starts_with.map(|s| s.to_string()),
             ends_with: ends_with.map(|s| s.to_string()),
             contains: contains.map(|s| s.to_string()),
             export: Some(export),
             secrets: Some(secrets),
         };
-        let body =
-            parameters.export_parameters(org_id, proj_name.clone(), env_name, options, format)?;
+        let body = parameters.export_parameters(org_id, proj_name.clone(), env_name, options)?;
 
         if let Some(body) = body {
             println!("{}", body)

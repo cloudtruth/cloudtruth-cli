@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use core::fmt;
 use std::sync::Arc;
 
@@ -39,7 +41,6 @@ pub struct UserError {
     pub path: Option<Vec<String>>,
 }
 
-#[allow(dead_code)]
 #[derive(Clone, Debug)]
 pub enum Operation {
     Create,
@@ -48,7 +49,6 @@ pub enum Operation {
     Upsert,
 }
 
-#[allow(dead_code)]
 #[derive(Clone, Debug)]
 pub enum Resource {
     Environment,
