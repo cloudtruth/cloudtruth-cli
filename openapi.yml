@@ -216,7 +216,7 @@ paths:
         schema:
           type: string
           format: uuid
-        description: A UUID string identifying this environment.
+          description: A unique identifier for the environment.
         required: true
       tags:
       - environments
@@ -238,7 +238,7 @@ paths:
         schema:
           type: string
           format: uuid
-        description: A UUID string identifying this environment.
+          description: A unique identifier for the environment.
         required: true
       tags:
       - environments
@@ -272,7 +272,7 @@ paths:
         schema:
           type: string
           format: uuid
-        description: A UUID string identifying this environment.
+          description: A unique identifier for the environment.
         required: true
       tags:
       - environments
@@ -305,7 +305,7 @@ paths:
         schema:
           type: string
           format: uuid
-        description: A UUID string identifying this environment.
+          description: A unique identifier for the environment.
         required: true
       tags:
       - environments
@@ -385,6 +385,7 @@ paths:
     get:
       operationId: integrations_aws_retrieve
       description: ''
+      summary: Get details of an AWS Integration.
       parameters:
       - in: path
         name: id
@@ -393,6 +394,11 @@ paths:
           format: uuid
           description: The unique identifier for the integration.
         required: true
+      - in: query
+        name: refresh_status
+        schema:
+          type: boolean
+        description: Refresh the integration status before returning the details.
       tags:
       - integrations
       security:
@@ -600,6 +606,7 @@ paths:
     get:
       operationId: integrations_github_retrieve
       description: ''
+      summary: Get details of a GitHub Integration.
       parameters:
       - in: path
         name: id
@@ -608,6 +615,11 @@ paths:
           format: uuid
           description: The unique identifier for the integration.
         required: true
+      - in: query
+        name: refresh_status
+        schema:
+          type: boolean
+        description: Refresh the integration status before returning the details.
       tags:
       - integrations
       security:
@@ -661,6 +673,7 @@ paths:
         name: user
         schema:
           type: string
+        description: The unique identifier of a user.
       tags:
       - memberships
       security:
@@ -867,7 +880,7 @@ paths:
         name: id
         schema:
           type: string
-          description: The organization unique identifier.
+          description: A unique identifier for the organization.
         required: true
       tags:
       - organizations
@@ -888,7 +901,7 @@ paths:
         name: id
         schema:
           type: string
-          description: The organization unique identifier.
+          description: A unique identifier for the organization.
         required: true
       tags:
       - organizations
@@ -921,7 +934,7 @@ paths:
         name: id
         schema:
           type: string
-          description: The organization unique identifier.
+          description: A unique identifier for the organization.
         required: true
       tags:
       - organizations
@@ -953,7 +966,7 @@ paths:
         name: id
         schema:
           type: string
-          description: The organization unique identifier.
+          description: A unique identifier for the organization.
         required: true
       tags:
       - organizations
@@ -1024,7 +1037,7 @@ paths:
         schema:
           type: string
           format: uuid
-        description: A UUID string identifying this project.
+          description: A unique identifier for the project.
         required: true
       tags:
       - projects
@@ -1046,7 +1059,7 @@ paths:
         schema:
           type: string
           format: uuid
-        description: A UUID string identifying this project.
+          description: A unique identifier for the project.
         required: true
       tags:
       - projects
@@ -1080,7 +1093,7 @@ paths:
         schema:
           type: string
           format: uuid
-        description: A UUID string identifying this project.
+          description: A unique identifier for the project.
         required: true
       tags:
       - projects
@@ -1113,7 +1126,7 @@ paths:
         schema:
           type: string
           format: uuid
-        description: A UUID string identifying this project.
+          description: A unique identifier for the project.
         required: true
       tags:
       - projects
@@ -1132,12 +1145,12 @@ paths:
         schema:
           type: string
           format: uuid
-        description: (Optional) ID of the environment to get parameter values for
+        description: (Optional) ID of the environment to get parameter values for.
       - in: query
         name: mask_secrets
         schema:
           type: boolean
-        description: If true, masks all secrets (defaults to false)
+        description: If true, masks all secrets (defaults to false).
       - in: query
         name: name
         schema:
@@ -1154,6 +1167,12 @@ paths:
           type: string
           format: uuid
         required: true
+      - in: query
+        name: wrap
+        schema:
+          type: boolean
+        description: If true, wraps all secrets (defaults to false) - see documentation
+          for more details.
       tags:
       - projects
       security:
@@ -1208,8 +1227,8 @@ paths:
         schema:
           type: string
         description: The name of the environment to get values for.  If this is not
-          specified then the result will contain any value for any environment that
-          is set.
+          specified then the result will contain content for any environment in which
+          it is set.
       - in: query
         name: mask_secrets
         schema:
@@ -1309,14 +1328,14 @@ paths:
         schema:
           type: string
         description: The name of the environment to get values for.  If this is not
-          specified then the result will contain any value for any environment that
-          is set.
+          specified then the result will contain content for any environment in which
+          it is set.
       - in: path
         name: id
         schema:
           type: string
           format: uuid
-        description: A UUID string identifying this value.
+          description: A unique identifier for the value.
         required: true
       - in: query
         name: mask_secrets
@@ -1363,7 +1382,7 @@ paths:
         schema:
           type: string
           format: uuid
-        description: A UUID string identifying this value.
+          description: A unique identifier for the value.
         required: true
       - in: path
         name: parameter_pk
@@ -1417,7 +1436,7 @@ paths:
         schema:
           type: string
           format: uuid
-        description: A UUID string identifying this value.
+          description: A unique identifier for the value.
         required: true
       - in: path
         name: parameter_pk
@@ -1470,7 +1489,7 @@ paths:
         schema:
           type: string
           format: uuid
-        description: A UUID string identifying this value.
+          description: A unique identifier for the value.
         required: true
       - in: path
         name: parameter_pk
@@ -1509,25 +1528,31 @@ paths:
         schema:
           type: string
           format: uuid
-        description: (Optional) ID of the environment to get parameter values for
+        description: (Optional) ID of the environment to get parameter values for.
       - in: path
         name: id
         schema:
           type: string
           format: uuid
-        description: A UUID string identifying this parameter.
+          description: A unique identifier for the parameter.
         required: true
       - in: query
         name: mask_secrets
         schema:
           type: boolean
-        description: If true, masks all secrets (defaults to false)
+        description: If true, masks all secrets (defaults to false).
       - in: path
         name: project_pk
         schema:
           type: string
           format: uuid
         required: true
+      - in: query
+        name: wrap
+        schema:
+          type: boolean
+        description: If true, wraps all secrets (defaults to false) - see documentation
+          for more details.
       tags:
       - projects
       security:
@@ -1548,7 +1573,7 @@ paths:
         schema:
           type: string
           format: uuid
-        description: A UUID string identifying this parameter.
+          description: A unique identifier for the parameter.
         required: true
       - in: path
         name: project_pk
@@ -1588,7 +1613,7 @@ paths:
         schema:
           type: string
           format: uuid
-        description: A UUID string identifying this parameter.
+          description: A unique identifier for the parameter.
         required: true
       - in: path
         name: project_pk
@@ -1627,7 +1652,7 @@ paths:
         schema:
           type: string
           format: uuid
-        description: A UUID string identifying this parameter.
+          description: A unique identifier for the parameter.
         required: true
       - in: path
         name: project_pk
@@ -1640,8 +1665,12 @@ paths:
       security:
       - jwtAuth: []
       responses:
-        '204':
-          description: No response body
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Parameter'
+          description: ''
   /api/v1/projects/{project_pk}/template-preview/:
     post:
       operationId: projects_template_preview_create
@@ -1692,6 +1721,12 @@ paths:
       operationId: projects_templates_list
       description: ''
       parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
       - in: query
         name: name
         schema:
@@ -1723,6 +1758,12 @@ paths:
       operationId: projects_templates_create
       description: ''
       parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
       - in: path
         name: project_pk
         schema:
@@ -2090,7 +2131,7 @@ paths:
         name: id
         schema:
           type: string
-        description: A unique value identifying this user.
+          description: The unique identifier of a user.
         required: true
       - in: path
         name: serviceaccount_pk
@@ -2126,7 +2167,7 @@ paths:
         name: id
         schema:
           type: string
-        description: A unique value identifying this user.
+          description: The unique identifier of a user.
         required: true
       - in: path
         name: serviceaccount_pk
@@ -2163,6 +2204,11 @@ paths:
         description: A page number within the paginated result set.
         schema:
           type: integer
+      - in: path
+        name: serviceaccount_pk
+        schema:
+          type: string
+        required: true
       - in: query
         name: type
         schema:
@@ -2187,7 +2233,12 @@ paths:
         name: id
         schema:
           type: string
-        description: A unique value identifying this user.
+          description: The unique identifier of a user.
+        required: true
+      - in: path
+        name: serviceaccount_pk
+        schema:
+          type: string
         required: true
       tags:
       - users
@@ -2218,7 +2269,12 @@ paths:
         name: id
         schema:
           type: string
-        description: A unique value identifying this user.
+          description: The unique identifier of a user.
+        required: true
+      - in: path
+        name: serviceaccount_pk
+        schema:
+          type: string
         required: true
       tags:
       - users
@@ -2311,6 +2367,14 @@ components:
           type: string
           readOnly: true
           description: The type of integration.
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        modified_at:
+          type: string
+          format: date-time
+          readOnly: true
         fqn:
           type: string
           readOnly: true
@@ -2351,8 +2415,10 @@ components:
       required:
       - aws_account_id
       - aws_role_name
+      - created_at
       - fqn
       - id
+      - modified_at
       - name
       - status
       - status_detail
@@ -2413,17 +2479,36 @@ components:
           type: string
           format: uuid
           readOnly: true
+          description: A unique identifier for the environment.
         name:
           type: string
+          description: The environment name.
           maxLength: 256
         description:
           type: string
+          description: A description of the environment.  You may find it helpful
+            to document how this environment is used to assist others when they need
+            to maintain software that uses this content.
         parent:
           type: string
           format: uri
           nullable: true
+          description: Environments can inherit from a single parent environment which
+            provides values for parameters when specific environments do not have
+            a value set.  Every organization has one default environment that is required
+            to have a value for every parameter in every project.
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        modified_at:
+          type: string
+          format: date-time
+          readOnly: true
       required:
+      - created_at
       - id
+      - modified_at
       - name
       - url
     EnvironmentCreate:
@@ -2431,13 +2516,21 @@ components:
       properties:
         name:
           type: string
+          description: The environment name.
           maxLength: 256
         description:
           type: string
+          description: A description of the environment.  You may find it helpful
+            to document how this environment is used to assist others when they need
+            to maintain software that uses this content.
         parent:
           type: string
           format: uri
           nullable: true
+          description: Environments can inherit from a single parent environment which
+            provides values for parameters when specific environments do not have
+            a value set.  Every organization has one default environment that is required
+            to have a value for every parameter in every project.
       required:
       - name
     GitHubIntegration:
@@ -2478,6 +2571,14 @@ components:
           type: string
           readOnly: true
           description: The type of integration.
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        modified_at:
+          type: string
+          format: date-time
+          readOnly: true
         fqn:
           type: string
           readOnly: true
@@ -2487,10 +2588,12 @@ components:
           type: string
           readOnly: true
       required:
+      - created_at
       - fqn
       - gh_installation_id
       - gh_organization_slug
       - id
+      - modified_at
       - name
       - status
       - status_detail
@@ -2554,8 +2657,18 @@ components:
           format: uri
         role:
           $ref: '#/components/schemas/RoleEnum'
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        modified_at:
+          type: string
+          format: date-time
+          readOnly: true
       required:
+      - created_at
       - id
+      - modified_at
       - organization
       - role
       - url
@@ -2586,7 +2699,7 @@ components:
         id:
           type: string
           readOnly: true
-          description: The organization unique identifier.
+          description: A unique identifier for the organization.
         name:
           type: string
           description: The organization name.
@@ -2610,9 +2723,19 @@ components:
         subscription_plan_name:
           type: string
           readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        modified_at:
+          type: string
+          format: date-time
+          readOnly: true
       required:
+      - created_at
       - current
       - id
+      - modified_at
       - name
       - subscription_expires_at
       - subscription_id
@@ -2880,28 +3003,53 @@ components:
           type: string
           format: uuid
           readOnly: true
+          description: A unique identifier for the parameter.
         name:
           type: string
+          description: The parameter name.
           maxLength: 256
         description:
           type: string
+          description: A description of the parameter.  You may find it helpful to
+            document how this parameter is used to assist others when they need to
+            maintain software that uses this content.
         secret:
           type: boolean
+          description: Indicates if this content is secret or not.  When a parameter
+            is considered to be a secret, any static values are stored in a dedicated
+            vault for your organization for maximum security.  Dynamic values are
+            inspected on-demand to ensure they align with the parameter's secret setting
+            and if they do not, those dymamic values are not allowed to be used.
         templates:
           type: array
           items:
             type: string
             format: uri
           readOnly: true
+        uses_dynamic_values:
+          type: boolean
+          readOnly: true
+          description: If `true` then at least one of the values is dynamic.
         values:
-          type: array
-          items: {}
+          allOf:
+          - $ref: '#/components/schemas/Value'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        modified_at:
+          type: string
+          format: date-time
           readOnly: true
       required:
+      - created_at
       - id
+      - modified_at
       - name
       - templates
       - url
+      - uses_dynamic_values
       - values
     ParameterCreate:
       type: object
@@ -2909,11 +3057,20 @@ components:
       properties:
         name:
           type: string
+          description: The parameter name.
           maxLength: 256
         description:
           type: string
+          description: A description of the parameter.  You may find it helpful to
+            document how this parameter is used to assist others when they need to
+            maintain software that uses this content.
         secret:
           type: boolean
+          description: Indicates if this content is secret or not.  When a parameter
+            is considered to be a secret, any static values are stored in a dedicated
+            vault for your organization for maximum security.  Dynamic values are
+            inspected on-demand to ensure they align with the parameter's secret setting
+            and if they do not, those dymamic values are not allowed to be used.
       required:
       - name
     PatchedAwsIntegration:
@@ -2954,6 +3111,14 @@ components:
           type: string
           readOnly: true
           description: The type of integration.
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        modified_at:
+          type: string
+          format: date-time
+          readOnly: true
         fqn:
           type: string
           readOnly: true
@@ -3002,15 +3167,32 @@ components:
           type: string
           format: uuid
           readOnly: true
+          description: A unique identifier for the environment.
         name:
           type: string
+          description: The environment name.
           maxLength: 256
         description:
           type: string
+          description: A description of the environment.  You may find it helpful
+            to document how this environment is used to assist others when they need
+            to maintain software that uses this content.
         parent:
           type: string
           format: uri
           nullable: true
+          description: Environments can inherit from a single parent environment which
+            provides values for parameters when specific environments do not have
+            a value set.  Every organization has one default environment that is required
+            to have a value for every parameter in every project.
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        modified_at:
+          type: string
+          format: date-time
+          readOnly: true
     PatchedMembership:
       type: object
       properties:
@@ -3030,6 +3212,14 @@ components:
           format: uri
         role:
           $ref: '#/components/schemas/RoleEnum'
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        modified_at:
+          type: string
+          format: date-time
+          readOnly: true
     PatchedOrganization:
       type: object
       properties:
@@ -3040,7 +3230,7 @@ components:
         id:
           type: string
           readOnly: true
-          description: The organization unique identifier.
+          description: A unique identifier for the organization.
         name:
           type: string
           description: The organization name.
@@ -3064,6 +3254,14 @@ components:
         subscription_plan_name:
           type: string
           readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        modified_at:
+          type: string
+          format: date-time
+          readOnly: true
     PatchedParameter:
       type: object
       description: A single parameter inside of a project.
@@ -3076,22 +3274,44 @@ components:
           type: string
           format: uuid
           readOnly: true
+          description: A unique identifier for the parameter.
         name:
           type: string
+          description: The parameter name.
           maxLength: 256
         description:
           type: string
+          description: A description of the parameter.  You may find it helpful to
+            document how this parameter is used to assist others when they need to
+            maintain software that uses this content.
         secret:
           type: boolean
+          description: Indicates if this content is secret or not.  When a parameter
+            is considered to be a secret, any static values are stored in a dedicated
+            vault for your organization for maximum security.  Dynamic values are
+            inspected on-demand to ensure they align with the parameter's secret setting
+            and if they do not, those dymamic values are not allowed to be used.
         templates:
           type: array
           items:
             type: string
             format: uri
           readOnly: true
+        uses_dynamic_values:
+          type: boolean
+          readOnly: true
+          description: If `true` then at least one of the values is dynamic.
         values:
-          type: array
-          items: {}
+          allOf:
+          - $ref: '#/components/schemas/Value'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        modified_at:
+          type: string
+          format: date-time
           readOnly: true
     PatchedProject:
       type: object
@@ -3104,11 +3324,24 @@ components:
           type: string
           format: uuid
           readOnly: true
+          description: A unique identifier for the project.
         name:
           type: string
+          description: The project name.
           maxLength: 256
         description:
           type: string
+          description: A description of the project.  You may find it helpful to document
+            how this project is used to assist others when they need to maintain software
+            that uses this content.
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        modified_at:
+          type: string
+          format: date-time
+          readOnly: true
     PatchedServiceAccount:
       type: object
       properties:
@@ -3127,6 +3360,14 @@ components:
           type: string
           description: An optional description of the process or system using the
             service account.
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        modified_at:
+          type: string
+          format: date-time
+          readOnly: true
     PatchedTemplate:
       type: object
       description: A parameter template in a given project, optionally instantiated
@@ -3140,18 +3381,34 @@ components:
           type: string
           format: uuid
           readOnly: true
+          description: A unique identifier for the environment.
         name:
           type: string
+          description: The environment name.
           maxLength: 256
         description:
           type: string
+          description: A description of the template.  You may find it helpful to
+            document how this template is used to assist others when they need to
+            maintain software that uses this content.
         body:
           type: string
+          description: The content of the template.  Use mustache-style templating
+            delimiters of `{{` and `}}` to reference parameter values by name for
+            substitution into the template result.
         parameters:
           type: array
           items:
             type: string
             format: uri
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        modified_at:
+          type: string
+          format: date-time
           readOnly: true
     PatchedValue:
       type: object
@@ -3165,6 +3422,7 @@ components:
           type: string
           format: uuid
           readOnly: true
+          description: A unique identifier for the value.
         environment:
           type: string
           format: uri
@@ -3174,23 +3432,46 @@ components:
             content on-demand from an external source.  When this is `false` the value
             is stored by CloudTruth.  When this is `true`, the `fqn` field must be
             set.
-        value:
+        static_value:
           type: string
-          description: This *is* the value you are looking for.
+          description: This is the content to use when resolving the Value for a static
+            non-secret.
           maxLength: 1024
-        fqn:
+        dynamic_fqn:
           type: string
           description: The FQN, or Fully-Qualified Name, is the path through the integration
             to get to the desired content.  This must be present and reference a valid
             integration when the value is `dynamic`.
           maxLength: 1024
-        filter:
+        dynamic_filter:
           type: string
           description: If `dynamic`, the content returned by the integration can be
             reduced by applying a JMESpath expression.  This is valid as long as the
             content is structured and of a supported format.  We support JMESpath
             expressions on `json`, `yaml`, and `dotenv` content.
           maxLength: 1024
+        value:
+          type: string
+          nullable: true
+          readOnly: true
+          description: |-
+            This is the actual content of the Value for the given parameter in the given environment.  Depending on the settings in the Value, the following things occur to calculate the `value`:
+
+            For values that are not `dynamic` and parameters that are not `secret`, the system will use the content in `static_value` to satisfy the request.
+
+            For values that are not `dynamic` and parameters that are `secret`, the system will retrieve the content from your organization's dedicated vault.
+
+            For values that are `dynamic`, the system will retrieve the content from the integration on-demand.  If the content from the integration is `secret` and the parameter is not, or if the parameter is `secret` and the content from the integration is not, an error response will be given.  If a `dynamic_filter` is present then the content will have a JMESpath query applied, and that becomes the resulting value.
+
+            If you request secret masking, no secret content will be included in the result and instead a series of asterisks will be used instead for the value.  If you request wrapping, the secret content will be wrapped in an envelope that is bound to your JWT token.  For more information about secret wrapping, see the docs.
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        modified_at:
+          type: string
+          format: date-time
+          readOnly: true
     Project:
       type: object
       properties:
@@ -3202,13 +3483,28 @@ components:
           type: string
           format: uuid
           readOnly: true
+          description: A unique identifier for the project.
         name:
           type: string
+          description: The project name.
           maxLength: 256
         description:
           type: string
+          description: A description of the project.  You may find it helpful to document
+            how this project is used to assist others when they need to maintain software
+            that uses this content.
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        modified_at:
+          type: string
+          format: date-time
+          readOnly: true
       required:
+      - created_at
       - id
+      - modified_at
       - name
       - url
     ProjectCreate:
@@ -3216,9 +3512,13 @@ components:
       properties:
         name:
           type: string
+          description: The project name.
           maxLength: 256
         description:
           type: string
+          description: A description of the project.  You may find it helpful to document
+            how this project is used to assist others when they need to maintain software
+            that uses this content.
       required:
       - name
     RoleEnum:
@@ -3246,8 +3546,18 @@ components:
           type: string
           description: An optional description of the process or system using the
             service account.
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        modified_at:
+          type: string
+          format: date-time
+          readOnly: true
       required:
+      - created_at
       - id
+      - modified_at
       - url
       - user
     ServiceAccountCreateRequest:
@@ -3281,13 +3591,23 @@ components:
           type: string
           description: An optional description of the process or system using the
             service account.
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        modified_at:
+          type: string
+          format: date-time
+          readOnly: true
         apikey:
           type: string
           readOnly: true
           description: The API Key to use as a Bearer token for the service account.
       required:
       - apikey
+      - created_at
       - id
+      - modified_at
       - url
       - user
     Template:
@@ -3303,21 +3623,39 @@ components:
           type: string
           format: uuid
           readOnly: true
+          description: A unique identifier for the environment.
         name:
           type: string
+          description: The environment name.
           maxLength: 256
         description:
           type: string
+          description: A description of the template.  You may find it helpful to
+            document how this template is used to assist others when they need to
+            maintain software that uses this content.
         body:
           type: string
+          description: The content of the template.  Use mustache-style templating
+            delimiters of `{{` and `}}` to reference parameter values by name for
+            substitution into the template result.
         parameters:
           type: array
           items:
             type: string
             format: uri
           readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        modified_at:
+          type: string
+          format: date-time
+          readOnly: true
       required:
+      - created_at
       - id
+      - modified_at
       - name
       - parameters
       - url
@@ -3328,11 +3666,18 @@ components:
       properties:
         name:
           type: string
+          description: The environment name.
           maxLength: 256
         description:
           type: string
+          description: A description of the template.  You may find it helpful to
+            document how this template is used to assist others when they need to
+            maintain software that uses this content.
         body:
           type: string
+          description: The content of the template.  Use mustache-style templating
+            delimiters of `{{` and `}}` to reference parameter values by name for
+            substitution into the template result.
       required:
       - name
     TemplatePreview:
@@ -3351,9 +3696,11 @@ components:
           readOnly: true
         id:
           type: string
+          description: The unique identifier of a user.
           maxLength: 256
         type:
           type: string
+          description: The type of user record.
           maxLength: 12
         name:
           type: string
@@ -3367,9 +3714,19 @@ components:
           type: string
           nullable: true
           readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        modified_at:
+          type: string
+          format: date-time
+          readOnly: true
       required:
+      - created_at
       - email
       - id
+      - modified_at
       - name
       - picture_url
       - url
@@ -3385,6 +3742,7 @@ components:
           type: string
           format: uuid
           readOnly: true
+          description: A unique identifier for the value.
         environment:
           type: string
           format: uri
@@ -3394,27 +3752,53 @@ components:
             content on-demand from an external source.  When this is `false` the value
             is stored by CloudTruth.  When this is `true`, the `fqn` field must be
             set.
-        value:
+        static_value:
           type: string
-          description: This *is* the value you are looking for.
+          description: This is the content to use when resolving the Value for a static
+            non-secret.
           maxLength: 1024
-        fqn:
+        dynamic_fqn:
           type: string
           description: The FQN, or Fully-Qualified Name, is the path through the integration
             to get to the desired content.  This must be present and reference a valid
             integration when the value is `dynamic`.
           maxLength: 1024
-        filter:
+        dynamic_filter:
           type: string
           description: If `dynamic`, the content returned by the integration can be
             reduced by applying a JMESpath expression.  This is valid as long as the
             content is structured and of a supported format.  We support JMESpath
             expressions on `json`, `yaml`, and `dotenv` content.
           maxLength: 1024
+        value:
+          type: string
+          nullable: true
+          readOnly: true
+          description: |-
+            This is the actual content of the Value for the given parameter in the given environment.  Depending on the settings in the Value, the following things occur to calculate the `value`:
+
+            For values that are not `dynamic` and parameters that are not `secret`, the system will use the content in `static_value` to satisfy the request.
+
+            For values that are not `dynamic` and parameters that are `secret`, the system will retrieve the content from your organization's dedicated vault.
+
+            For values that are `dynamic`, the system will retrieve the content from the integration on-demand.  If the content from the integration is `secret` and the parameter is not, or if the parameter is `secret` and the content from the integration is not, an error response will be given.  If a `dynamic_filter` is present then the content will have a JMESpath query applied, and that becomes the resulting value.
+
+            If you request secret masking, no secret content will be included in the result and instead a series of asterisks will be used instead for the value.  If you request wrapping, the secret content will be wrapped in an envelope that is bound to your JWT token.  For more information about secret wrapping, see the docs.
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        modified_at:
+          type: string
+          format: date-time
+          readOnly: true
       required:
+      - created_at
       - environment
       - id
+      - modified_at
       - url
+      - value
     ValueCreate:
       type: object
       description: A value for a given parameter in a given environment.
@@ -3428,17 +3812,18 @@ components:
             content on-demand from an external source.  When this is `false` the value
             is stored by CloudTruth.  When this is `true`, the `fqn` field must be
             set.
-        value:
+        static_value:
           type: string
-          description: This *is* the value you are looking for.
+          description: This is the content to use when resolving the Value for a static
+            non-secret.
           maxLength: 1024
-        fqn:
+        dynamic_fqn:
           type: string
           description: The FQN, or Fully-Qualified Name, is the path through the integration
             to get to the desired content.  This must be present and reference a valid
             integration when the value is `dynamic`.
           maxLength: 1024
-        filter:
+        dynamic_filter:
           type: string
           description: If `dynamic`, the content returned by the integration can be
             reduced by applying a JMESpath expression.  This is valid as long as the
