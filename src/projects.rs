@@ -27,18 +27,18 @@ impl From<&Project> for ProjectDetails {
 
 pub trait ProjectsIntf {
     /// Resolve the `proj_name` to a String
-    fn get_id(&self, proj_name: Option<&str>) -> Result<Option<String>, Error<ProjectsListError>>;
+    fn get_id(&self, proj_name: &str) -> Result<Option<String>, Error<ProjectsListError>>;
 
     /// Get the details for `proj_name`
     fn get_details_by_name(
         &self,
-        proj_name: Option<&str>,
+        proj_name: &str,
     ) -> Result<Option<ProjectDetails>, Error<ProjectsListError>>;
 
     /// Create a project with the specified name/description
     fn create_project(
         &self,
-        proj_name: Option<&str>,
+        proj_name: &str,
         description: Option<&str>,
     ) -> Result<Option<String>, Error<ProjectsCreateError>>;
 
@@ -69,10 +69,10 @@ impl Projects {
 impl ProjectsIntf for Projects {
     fn get_details_by_name(
         &self,
-        proj_name: Option<&str>,
+        proj_name: &str,
     ) -> Result<Option<ProjectDetails>, Error<ProjectsListError>> {
         let rest_cfg = open_api_config();
-        let response = projects_list(&rest_cfg, proj_name, None)?;
+        let response = projects_list(&rest_cfg, Some(proj_name), None)?;
 
         if let Some(projects) = response.results {
             // TODO: handle more than one??
@@ -83,7 +83,7 @@ impl ProjectsIntf for Projects {
         }
     }
 
-    fn get_id(&self, proj_name: Option<&str>) -> Result<Option<String>, Error<ProjectsListError>> {
+    fn get_id(&self, proj_name: &str) -> Result<Option<String>, Error<ProjectsListError>> {
         if let Some(details) = self.get_details_by_name(proj_name)? {
             Ok(Some(details.id))
         } else {
@@ -94,28 +94,25 @@ impl ProjectsIntf for Projects {
     fn get_project_details(&self) -> Result<Vec<ProjectDetails>, Error<ProjectsListError>> {
         let rest_cfg = open_api_config();
         let response = projects_list(&rest_cfg, None, None)?;
+        let mut list: Vec<ProjectDetails> = Vec::new();
 
         if let Some(projects) = response.results {
-            // TODO: handle more than one??
-            let mut list: Vec<ProjectDetails> = projects
-                .into_iter()
-                .map(|v| ProjectDetails::from(&v))
-                .collect();
+            for proj in projects {
+                list.push(ProjectDetails::from(&proj))
+            }
             list.sort_by(|l, r| l.name.cmp(&r.name));
-            Ok(list)
-        } else {
-            Ok(vec![])
         }
+        Ok(list)
     }
 
     fn create_project(
         &self,
-        proj_name: Option<&str>,
+        proj_name: &str,
         description: Option<&str>,
     ) -> Result<Option<String>, Error<ProjectsCreateError>> {
         let rest_cfg = open_api_config();
         let proj = ProjectCreate {
-            name: proj_name.unwrap().to_string(),
+            name: proj_name.to_string(),
             description: description.map(String::from),
         };
         let response = projects_create(&rest_cfg, proj)?;

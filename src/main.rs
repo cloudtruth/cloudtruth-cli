@@ -183,7 +183,7 @@ fn resolve_ids(config: &Config) -> Result<ResolvedIds> {
     }
 
     let projects = Projects::new();
-    let proj_id = projects.get_id(proj)?;
+    let proj_id = projects.get_id(proj.unwrap_or(DEFAULT_PROJ_NAME))?;
     if proj_id.is_none() {
         error_message(format!(
             "The '{}' project could not be found in your account.",
@@ -250,24 +250,24 @@ fn process_run_command(
 /// Process the 'project' sub-command
 fn process_project_command(subcmd_args: &ArgMatches, projects: &impl ProjectsIntf) -> Result<()> {
     if let Some(subcmd_args) = subcmd_args.subcommand_matches("delete") {
-        let proj_name = subcmd_args.value_of("NAME");
+        let proj_name = subcmd_args.value_of("NAME").unwrap();
         let details = projects.get_details_by_name(proj_name)?;
 
         if let Some(details) = details {
             // NOTE: the server is responsible for checking if children exist
             let mut confirmed = subcmd_args.is_present(CONFIRM_FLAG);
             if !confirmed {
-                confirmed = user_confirm(format!("Delete project '{}'", proj_name.unwrap()));
+                confirmed = user_confirm(format!("Delete project '{}'", proj_name));
             }
 
             if !confirmed {
-                warning_message(format!("Project '{}' not deleted!", proj_name.unwrap()))?;
+                warning_message(format!("Project '{}' not deleted!", proj_name))?;
             } else {
                 projects.delete_project(details.id)?;
-                println!("Deleted project '{}'", proj_name.unwrap());
+                println!("Deleted project '{}'", proj_name);
             }
         } else {
-            warning_message(format!("Project '{}' does not exist!", proj_name.unwrap()))?;
+            warning_message(format!("Project '{}' does not exist!", proj_name))?;
         }
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("list") {
         let details = projects.get_project_details()?;
@@ -288,7 +288,7 @@ fn process_project_command(subcmd_args: &ArgMatches, projects: &impl ProjectsInt
             table.render(fmt)?;
         }
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("set") {
-        let proj_name = subcmd_args.value_of("NAME");
+        let proj_name = subcmd_args.value_of("NAME").unwrap();
         let description = subcmd_args.value_of("description");
         let details = projects.get_details_by_name(proj_name)?;
 
@@ -296,20 +296,20 @@ fn process_project_command(subcmd_args: &ArgMatches, projects: &impl ProjectsInt
             if description == Some(details.description.as_str()) {
                 warning_message(format!(
                     "Project '{}' not updated: same description",
-                    proj_name.unwrap()
+                    proj_name
                 ))?;
             } else if description.is_none() {
                 warning_message(format!(
                     "Project '{}' not updated: no description provided",
-                    proj_name.unwrap()
+                    proj_name
                 ))?;
             } else {
                 projects.update_project(details.name, details.id, description)?;
-                println!("Updated project '{}'", proj_name.unwrap());
+                println!("Updated project '{}'", proj_name);
             }
         } else {
             projects.create_project(proj_name, description)?;
-            println!("Created project '{}'", proj_name.unwrap());
+            println!("Created project '{}'", proj_name);
         }
     } else {
         warn_missing_subcommand("projects")?;
