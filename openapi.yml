@@ -2358,15 +2358,15 @@ components:
           maxLength: 12
           minLength: 12
         aws_enabled_regions:
-          allOf:
-          - $ref: '#/components/schemas/AwsEnabledRegionsEnum'
-          description: The AWS regions to integrate with.  This is specified as a
-            comma-separated list.
+          type: array
+          items:
+            $ref: '#/components/schemas/AwsEnabledRegionsEnum'
+          description: The AWS regions to integrate with.
         aws_enabled_services:
-          allOf:
-          - $ref: '#/components/schemas/AwsEnabledServicesEnum'
-          description: The AWS services to integrate with.  This can be specified
-            as a comma-separated list.
+          type: array
+          items:
+            $ref: '#/components/schemas/AwsEnabledServicesEnum'
+          description: The AWS services to integrate with.
         aws_external_id:
           type: string
           description: This is a shared secret between the AWS Administrator who set
@@ -2387,6 +2387,8 @@ components:
           maxLength: 64
       required:
       - aws_account_id
+      - aws_enabled_regions
+      - aws_enabled_services
       - aws_role_name
       - created_at
       - fqn
@@ -2411,15 +2413,15 @@ components:
           maxLength: 12
           minLength: 12
         aws_enabled_regions:
-          allOf:
-          - $ref: '#/components/schemas/AwsEnabledRegionsEnum'
-          description: The AWS regions to integrate with.  This is specified as a
-            comma-separated list.
+          type: array
+          items:
+            $ref: '#/components/schemas/AwsEnabledRegionsEnum'
+          description: The AWS regions to integrate with.
         aws_enabled_services:
-          allOf:
-          - $ref: '#/components/schemas/AwsEnabledServicesEnum'
-          description: The AWS services to integrate with.  This can be specified
-            as a comma-separated list.
+          type: array
+          items:
+            $ref: '#/components/schemas/AwsEnabledServicesEnum'
+          description: The AWS services to integrate with.
         aws_external_id:
           type: string
           description: This is a shared secret between the AWS Administrator who set
@@ -2440,6 +2442,8 @@ components:
           maxLength: 64
       required:
       - aws_account_id
+      - aws_enabled_regions
+      - aws_enabled_services
       - aws_role_name
     Environment:
       type: object
@@ -3004,8 +3008,9 @@ components:
           readOnly: true
           description: If `true` then at least one of the values is dynamic.
         values:
-          allOf:
-          - $ref: '#/components/schemas/Value'
+          type: array
+          items:
+            $ref: '#/components/schemas/Value'
           readOnly: true
         created_at:
           type: string
@@ -3102,15 +3107,15 @@ components:
           maxLength: 12
           minLength: 12
         aws_enabled_regions:
-          allOf:
-          - $ref: '#/components/schemas/AwsEnabledRegionsEnum'
-          description: The AWS regions to integrate with.  This is specified as a
-            comma-separated list.
+          type: array
+          items:
+            $ref: '#/components/schemas/AwsEnabledRegionsEnum'
+          description: The AWS regions to integrate with.
         aws_enabled_services:
-          allOf:
-          - $ref: '#/components/schemas/AwsEnabledServicesEnum'
-          description: The AWS services to integrate with.  This can be specified
-            as a comma-separated list.
+          type: array
+          items:
+            $ref: '#/components/schemas/AwsEnabledServicesEnum'
+          description: The AWS services to integrate with.
         aws_external_id:
           type: string
           description: This is a shared secret between the AWS Administrator who set
@@ -3275,8 +3280,9 @@ components:
           readOnly: true
           description: If `true` then at least one of the values is dynamic.
         values:
-          allOf:
-          - $ref: '#/components/schemas/Value'
+          type: array
+          items:
+            $ref: '#/components/schemas/Value'
           readOnly: true
         created_at:
           type: string
