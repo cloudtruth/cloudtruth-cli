@@ -534,8 +534,9 @@ fn process_parameters_command(
     resolved: &ResolvedIds,
 ) -> Result<()> {
     if let Some(subcmd_args) = subcmd_args.subcommand_matches("list") {
-        let mut details = parameters
-            .get_parameter_details(resolved.env_id.clone(), resolved.proj_name.clone())?;
+        let proj_id = resolved.project_id();
+        let env_id = resolved.environment_id();
+        let mut details = parameters.get_parameter_details(proj_id, env_id)?;
         let references = subcmd_args.is_present("dynamic");
         let qualifier = if references { "dynamic " } else { "" };
         if references {
@@ -547,10 +548,7 @@ fn process_parameters_command(
             println!(
                 "No {}parameters found in project {}",
                 qualifier,
-                resolved
-                    .proj_name
-                    .clone()
-                    .unwrap_or_else(|| DEFAULT_PROJ_NAME.to_string())
+                resolved.project_display_name()
             );
         } else if !subcmd_args.is_present(VALUES_FLAG) {
             let list = details
@@ -594,8 +592,9 @@ fn process_parameters_command(
         }
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("get") {
         let key = subcmd_args.value_of("KEY").unwrap();
-        let env_name = resolved.env_name.as_deref();
-        let parameter = parameters.get_details_by_name(env_name, resolved.proj_name.clone(), key);
+        let proj_id = resolved.project_id();
+        let env_id = resolved.environment_id();
+        let parameter = parameters.get_details_by_name(proj_id, env_id, key);
 
         if let Ok(details) = parameter {
             // Treat parameters without values set as if the value were simply empty, since
@@ -613,8 +612,8 @@ fn process_parameters_command(
         }
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("set") {
         let key = subcmd_args.value_of("KEY").unwrap();
-        let env_name = resolved.env_name.as_deref();
-        let proj_name = resolved.proj_name.clone();
+        let proj_id = resolved.project_id();
+        let env_id = resolved.environment_id();
         let prompt_user = subcmd_args.is_present("prompt");
         let filename = subcmd_args.value_of("input-file");
         let mut fqn = subcmd_args.value_of("FQN").map(|f| f.to_string());
@@ -665,9 +664,7 @@ fn process_parameters_command(
             )?;
         } else {
             // get the original values, so that is not lost
-            if let Ok(Some(original)) =
-                parameters.get_details_by_name(env_name, proj_name.clone(), &key)
-            {
+            if let Ok(Some(original)) = parameters.get_details_by_name(proj_id, env_id, &key) {
                 // use original values
                 if value.is_none() && jmes_path.is_none() && fqn.is_none() {
                     if original.dynamic {
@@ -696,8 +693,8 @@ fn process_parameters_command(
             }
 
             let updated_id = parameters.set_parameter(
-                resolved.proj_id.clone(),
-                env_name,
+                proj_id,
+                env_id,
                 key,
                 value.as_deref(),
                 description.as_deref(),
@@ -710,50 +707,50 @@ fn process_parameters_command(
                 println!(
                     "Successfully updated parameter '{}' in project '{}' for environment '{}'.",
                     key,
-                    proj_name.unwrap_or_else(|| DEFAULT_PROJ_NAME.to_string()),
-                    env_name.unwrap_or(DEFAULT_ENV_NAME)
+                    resolved.project_display_name(),
+                    resolved.environment_display_name(),
                 );
             } else {
                 println!(
                     "Failed to update parameter '{}' in project '{}' for environment '{}'.",
                     key,
-                    proj_name.unwrap_or_else(|| DEFAULT_PROJ_NAME.to_string()),
-                    env_name.unwrap_or(DEFAULT_ENV_NAME)
+                    resolved.project_display_name(),
+                    resolved.environment_display_name()
                 );
             }
         }
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("delete") {
         let key = subcmd_args.value_of("KEY").unwrap();
-        let env_name = resolved.env_name.as_deref();
-        let proj_name = resolved.proj_name.clone();
-        let result = parameters.delete_parameter(proj_name.clone(), env_name, key);
+        let proj_id = resolved.project_id();
+        let env_id = resolved.environment_id();
+        let result = parameters.delete_parameter(proj_id, env_id, key);
         let _ = match result {
             Ok(Some(_)) => {
                 println!(
                     "Successfully removed parameter '{}' from project '{}' for environment '{}'.",
                     key,
-                    proj_name.unwrap_or_else(|| DEFAULT_PROJ_NAME.to_string()),
-                    env_name.unwrap_or(DEFAULT_ENV_NAME)
+                    resolved.project_display_name(),
+                    resolved.environment_display_name()
                 );
             }
             _ => {
                 println!(
                     "Failed to remove parameter '{}' from project '{}' for environment '{}'.",
                     key,
-                    proj_name.unwrap_or_else(|| DEFAULT_PROJ_NAME.to_string()),
-                    env_name.unwrap_or(DEFAULT_ENV_NAME)
+                    resolved.project_display_name(),
+                    resolved.environment_display_name()
                 );
             }
         };
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("export") {
-        let proj_name = resolved.proj_name.clone();
+        let proj_id = resolved.project_id();
+        let env_id = resolved.environment_id();
         let starts_with = subcmd_args.value_of("starts_with");
         let ends_with = subcmd_args.value_of("ends_with");
         let contains = subcmd_args.value_of("contains");
         let template_format = subcmd_args.value_of("FORMAT").unwrap();
         let export = subcmd_args.is_present("export");
         let secrets = subcmd_args.is_present(SECRETS_FLAG);
-        let env_name = resolved.env_name.as_deref();
         let options = ParamExportOptions {
             format: ParamExportFormat::from_str(template_format).unwrap(),
             starts_with: starts_with.map(|s| s.to_string()),
@@ -762,7 +759,7 @@ fn process_parameters_command(
             export: Some(export),
             secrets: Some(secrets),
         };
-        let body = parameters.export_parameters(proj_name.clone(), env_name, options)?;
+        let body = parameters.export_parameters(proj_id, env_id, options)?;
 
         if let Some(body) = body {
             println!("{}", body)
@@ -770,8 +767,8 @@ fn process_parameters_command(
             println!(
                 "Could not export parameters format '{}' from project '{}' in environment '{}'.",
                 template_format,
-                proj_name.unwrap_or_else(|| DEFAULT_PROJ_NAME.to_string()),
-                env_name.unwrap_or(DEFAULT_ENV_NAME)
+                resolved.project_display_name(),
+                resolved.environment_display_name()
             )
         }
     } else {
@@ -900,7 +897,7 @@ fn main() -> Result<()> {
     if let Some(matches) = matches.subcommand_matches("run") {
         let parameters = Parameters::new();
         let ct_vars =
-            parameters.get_parameter_values(resolved.env_id.clone(), resolved.proj_name.clone())?;
+            parameters.get_parameter_values(resolved.project_id(), resolved.environment_id())?;
         let mut sub_proc = SubProcess::new(ct_vars);
         process_run_command(matches, &mut sub_proc, &resolved)?;
     }

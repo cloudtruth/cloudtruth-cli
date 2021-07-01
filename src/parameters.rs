@@ -88,11 +88,12 @@ impl Parameters {
     /// On success, it returns the deleted parameter ID. On failure, it returns an Error.
     fn delete_param_by_id(
         &self,
-        param_id: String,
+        proj_id: &str,
+        param_id: &str,
     ) -> Result<Option<String>, Error<ProjectsParametersDestroyError>> {
         let rest_cfg = open_api_config();
-        projects_parameters_destroy(&rest_cfg, param_id.as_str(), "")?;
-        Ok(Some(param_id))
+        projects_parameters_destroy(&rest_cfg, param_id, proj_id)?;
+        Ok(Some(param_id.to_string()))
     }
 
     /// Deletes the specified parameter from the specified project/environment.
@@ -101,15 +102,15 @@ impl Parameters {
     /// with more failure information.
     pub fn delete_parameter(
         &self,
-        proj_name: Option<String>,
-        env_name: Option<&str>,
+        proj_id: &str,
+        env_id: &str,
         key_name: &str,
     ) -> Result<Option<String>, Error<ProjectsParametersDestroyError>> {
         // The only delete mechanism is by parameter ID, so start by querying the parameter info.
-        let response = self.get_details_by_name(env_name, proj_name, key_name);
+        let response = self.get_details_by_name(proj_id, env_id, key_name);
 
         if let Ok(Some(details)) = response {
-            self.delete_param_by_id(details.id)
+            self.delete_param_by_id(proj_id, details.id.as_str())
         } else {
             Ok(None) // TODO: this should return an error
         }
@@ -121,8 +122,8 @@ impl Parameters {
     /// the specified output format.
     pub fn export_parameters(
         &self,
-        _project_name: Option<String>,
-        _environment_name: Option<&str>,
+        _proj_id: &str,
+        _env_id: &str,
         _options: ParamExportOptions,
     ) -> Result<Option<String>, Error<ProjectsParametersListError>> {
         // let rest_cfg = open_api_config();
@@ -137,16 +138,15 @@ impl Parameters {
     /// if project/environments are not found.
     pub fn get_details_by_name(
         &self,
-        env_name: Option<&str>,
-        proj_name: Option<String>,
+        proj_id: &str,
+        env_id: &str,
         key_name: &str,
     ) -> Result<Option<ParameterDetails>, Error<ProjectsParametersListError>> {
         let rest_cfg = open_api_config();
-        // TODO: project_pk id or name? environment id or name?
         let response = projects_parameters_list(
             &rest_cfg,
-            proj_name.unwrap().as_str(),
-            env_name,
+            proj_id,
+            Some(env_id),
             MASK_SECRETS,
             Some(key_name),
             None,
@@ -165,10 +165,10 @@ impl Parameters {
     /// environment.
     pub fn get_parameter_values(
         &self,
-        env_id: Option<String>,
-        proj_name: Option<String>,
+        proj_id: &str,
+        env_id: &str,
     ) -> Result<HashMap<String, String>, Error<ProjectsParametersListError>> {
-        let parameters = self.get_parameter_details(env_id, proj_name)?;
+        let parameters = self.get_parameter_details(proj_id, env_id)?;
         let mut env_vars = HashMap::new();
 
         for param in parameters {
@@ -180,14 +180,14 @@ impl Parameters {
     /// Fetches the `ParameterDetails` for the specified project and environment.
     pub fn get_parameter_details(
         &self,
-        env_id: Option<String>,
-        proj_name: Option<String>,
+        proj_id: &str,
+        env_id: &str,
     ) -> Result<Vec<ParameterDetails>, Error<ProjectsParametersListError>> {
         let rest_cfg = open_api_config();
         let response = projects_parameters_list(
             &rest_cfg,
-            proj_name.unwrap_or_default().as_str(),
-            env_id.as_deref(),
+            proj_id,
+            Some(env_id),
             MASK_SECRETS,
             None,
             None,
@@ -205,9 +205,9 @@ impl Parameters {
 
     fn create_parameter_value(
         &self,
-        proj_id: Option<String>,
+        proj_id: &str,
+        env_id: &str,
         param_id: String,
-        env_name: Option<&str>,
         value: Option<&str>,
         fqn: Option<&str>,
         jmes_path: Option<&str>,
@@ -216,7 +216,7 @@ impl Parameters {
         let dynamic = value.is_none() || fqn.is_some();
 
         let value_new = ValueCreate {
-            environment: env_name.unwrap().to_string(),
+            environment: env_id.to_string(),
             dynamic: Some(dynamic),
             static_value: value.map(|v| v.to_string()),
             dynamic_fqn: fqn.map(|v| v.to_string()),
@@ -225,7 +225,7 @@ impl Parameters {
         let response = projects_parameters_values_create(
             &rest_cfg,
             param_id.as_str(),
-            proj_id.unwrap().as_str(),
+            proj_id,
             value_new,
             None,
         );
@@ -239,8 +239,8 @@ impl Parameters {
     #[allow(clippy::too_many_arguments)]
     pub fn set_parameter(
         &self,
-        proj_id: Option<String>,
-        env_name: Option<&str>,
+        proj_id: &str,
+        env_id: &str,
         key_name: &str,
         value: Option<&str>,
         description: Option<&str>,
@@ -249,12 +249,11 @@ impl Parameters {
         jmes_path: Option<&str>,
     ) -> Result<Option<String>, Error<ProjectsParametersUpdateError>> {
         let mut result: Option<String> = None;
-        let project_id = proj_id.as_ref().unwrap().as_str();
         let rest_cfg = open_api_config();
         let response = projects_parameters_list(
             &rest_cfg,
-            project_id,
-            env_name,
+            proj_id,
+            Some(env_id),
             MASK_SECRETS,
             Some(key_name),
             None,
@@ -278,7 +277,7 @@ impl Parameters {
 
                 if value.is_none() && fqn.is_none() && jmes_path.is_none() {
                     // nothing to set here, no need for updates
-                } else if env_value.environment.as_str() == env_name.unwrap() {
+                } else if env_value.environment.as_str() == env_id {
                     // update
                     let value_up = PatchedValue {
                         url: None,
@@ -296,7 +295,7 @@ impl Parameters {
                         &rest_cfg,
                         env_value.id.as_str(),
                         param.id.as_str(),
-                        project_id,
+                        proj_id,
                         None,
                         Some(value_up),
                     );
@@ -305,9 +304,9 @@ impl Parameters {
                     }
                 } else {
                     let response = self.create_parameter_value(
-                        proj_id.clone(),
+                        proj_id,
+                        env_id,
                         param.id.clone(),
-                        env_name,
                         value,
                         fqn,
                         jmes_path,
@@ -319,7 +318,7 @@ impl Parameters {
 
                 if param_changed {
                     let param_id = param.id.clone();
-                    projects_parameters_update(&rest_cfg, param_id.as_str(), project_id, param)?;
+                    projects_parameters_update(&rest_cfg, param_id.as_str(), proj_id, param)?;
                 }
             } else {
                 let param_new = ParameterCreate {
@@ -327,12 +326,12 @@ impl Parameters {
                     description: description.map(|x| x.to_string()),
                     secret,
                 };
-                let response = projects_parameters_create(&rest_cfg, project_id, param_new);
+                let response = projects_parameters_create(&rest_cfg, proj_id, param_new);
                 if let Ok(param) = response {
                     let response = self.create_parameter_value(
                         proj_id,
+                        env_id,
                         param.id.clone(),
-                        env_name,
                         value,
                         fqn,
                         jmes_path,
