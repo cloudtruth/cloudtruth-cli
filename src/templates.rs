@@ -29,22 +29,21 @@ impl Templates {
 
     pub fn get_body_by_name(
         &self,
-        project_name: Option<String>,
-        environment_name: Option<&str>,
+        proj_id: &str,
+        env_id: &str,
         template_name: &str,
         show_secrets: bool,
     ) -> Result<Option<String>, Error<ProjectsTemplatesRetrieveError>> {
         // TODO: convert template name to template id outside??
-        // TODO: project name or id? environment name or id?
-        let response = self.get_details_by_name(project_name.clone(), Some(template_name));
+        let response = self.get_details_by_name(proj_id, template_name);
 
         if let Ok(Some(details)) = response {
             let rest_cfg = open_api_config();
             let response = projects_templates_retrieve(
                 &rest_cfg,
                 &details.id,
-                project_name.as_deref().unwrap_or_default(),
-                environment_name,
+                proj_id,
+                Some(env_id),
                 Some(show_secrets),
             )?;
             Ok(response.body)
@@ -56,17 +55,11 @@ impl Templates {
 
     pub fn get_details_by_name(
         &self,
-        project_name: Option<String>,
-        template_name: Option<&str>,
+        proj_id: &str,
+        template_name: &str,
     ) -> Result<Option<TemplateDetails>, Error<ProjectsTemplatesListError>> {
-        // TODO: project name or id?
         let rest_cfg = open_api_config();
-        let response = projects_templates_list(
-            &rest_cfg,
-            project_name.unwrap_or_default().as_str(),
-            template_name,
-            None,
-        )?;
+        let response = projects_templates_list(&rest_cfg, proj_id, Some(template_name), None)?;
 
         if let Some(templates) = response.results {
             // TODO: handle more than one?
@@ -79,16 +72,10 @@ impl Templates {
 
     pub fn get_template_details(
         &self,
-        project_name: Option<String>,
+        proj_id: &str,
     ) -> Result<Vec<TemplateDetails>, Error<ProjectsTemplatesListError>> {
-        // TODO: project name or id?
         let rest_cfg = open_api_config();
-        let response = projects_templates_list(
-            &rest_cfg,
-            project_name.unwrap_or_default().as_str(),
-            None,
-            None,
-        )?;
+        let response = projects_templates_list(&rest_cfg, proj_id, None, None)?;
         let mut list: Vec<TemplateDetails> = Vec::new();
 
         if let Some(templates) = response.results {

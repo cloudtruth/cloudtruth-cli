@@ -49,6 +49,28 @@ pub struct ResolvedIds {
     pub proj_id: Option<String>,
 }
 
+impl ResolvedIds {
+    fn environment_display_name(&self) -> String {
+        self.env_name
+            .clone()
+            .unwrap_or_else(|| DEFAULT_ENV_NAME.to_string())
+    }
+
+    fn project_display_name(&self) -> String {
+        self.proj_name
+            .clone()
+            .unwrap_or_else(|| DEFAULT_PROJ_NAME.to_string())
+    }
+
+    fn project_id(&self) -> &str {
+        self.proj_id.as_deref().unwrap()
+    }
+
+    fn environment_id(&self) -> &str {
+        self.env_id.as_deref().unwrap()
+    }
+}
+
 /// Print a message to stderr in the specified color.
 fn stderr_message(message: String, color: Color) -> Result<()> {
     let mut stderr = StandardStream::stderr(ColorChoice::Auto);
@@ -765,13 +787,11 @@ fn process_templates_command(
     resolved: &ResolvedIds,
 ) -> Result<()> {
     if let Some(subcmd_args) = subcmd_args.subcommand_matches("list") {
-        let proj_name = resolved.proj_name.clone();
-        let details = templates.get_template_details(proj_name.clone())?;
+        let proj_name = resolved.project_display_name();
+        let proj_id = resolved.project_id();
+        let details = templates.get_template_details(proj_id)?;
         if details.is_empty() {
-            println!(
-                "There are no templates in project `{}`.",
-                proj_name.unwrap_or_else(|| DEFAULT_PROJ_NAME.to_string())
-            );
+            println!("There are no templates in project `{}`.", proj_name);
         } else if !subcmd_args.is_present(VALUES_FLAG) {
             let list = details
                 .iter()
@@ -788,19 +808,20 @@ fn process_templates_command(
             table.render(fmt)?;
         }
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("get") {
-        let proj_name = resolved.proj_name.clone();
+        let proj_name = resolved.project_display_name();
+        let env_name = resolved.environment_display_name();
+        let proj_id = resolved.project_id();
+        let env_id = resolved.environment_id();
         let template_name = subcmd_args.value_of("KEY").unwrap();
-        let env_name = resolved.env_name.as_deref();
         let show_secrets = subcmd_args.is_present(SECRETS_FLAG);
-        let body = templates.get_body_by_name(proj_name, env_name, template_name, show_secrets)?;
+        let body = templates.get_body_by_name(proj_id, env_id, template_name, show_secrets)?;
 
         if let Some(body) = body {
             println!("{}", body)
         } else {
             println!(
-                "Could not find a template with name '{}' in environment '{}'.",
-                template_name,
-                env_name.unwrap_or(DEFAULT_ENV_NAME)
+                "Could not find a template with name '{}' in project '{}' environment '{}'.",
+                template_name, proj_name, env_name
             )
         }
     } else {
