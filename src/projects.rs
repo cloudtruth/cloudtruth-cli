@@ -17,11 +17,10 @@ pub struct ProjectDetails {
 /// Converts from the OpenApi `Project` model to the CloudTruth `ProjectDetails`
 impl From<&Project> for ProjectDetails {
     fn from(api_proj: &Project) -> Self {
-        let description = api_proj.description.clone();
         ProjectDetails {
             id: api_proj.id.clone(),
             name: api_proj.name.clone(),
-            description: description.unwrap_or_else(|| "".to_string()),
+            description: api_proj.description.clone().unwrap_or_default(),
         }
     }
 }

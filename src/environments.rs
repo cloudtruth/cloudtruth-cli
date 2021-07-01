@@ -17,13 +17,11 @@ pub struct EnvironmentDetails {
 /// Converts the OpenApi `Environment` reference into a CloudTruth `EnvironmentDetails` object.
 impl From<&Environment> for EnvironmentDetails {
     fn from(api_env: &Environment) -> Self {
-        let description = api_env.description.clone();
-        let parent = api_env.parent.clone();
         EnvironmentDetails {
             id: api_env.id.clone(),
             name: api_env.name.clone(),
-            description: description.unwrap_or_else(|| "".to_string()),
-            parent: parent.unwrap_or_else(|| "".to_string()),
+            description: api_env.description.clone().unwrap_or_default(),
+            parent: api_env.parent.clone().unwrap_or_default(),
         }
     }
 }

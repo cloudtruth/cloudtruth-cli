@@ -14,11 +14,10 @@ pub struct TemplateDetails {
 
 impl From<&Template> for TemplateDetails {
     fn from(api_temp: &Template) -> Self {
-        let description = api_temp.description.clone();
         TemplateDetails {
             id: api_temp.id.clone(),
             name: api_temp.name.clone(),
-            description: description.unwrap_or_default(),
+            description: api_temp.description.clone().unwrap_or_default(),
         }
     }
 }
