@@ -30,7 +30,6 @@ impl Templates {
 
     pub fn get_body_by_name(
         &self,
-        organization_id: Option<&str>,
         project_name: Option<String>,
         environment_name: Option<&str>,
         template_name: &str,
@@ -38,8 +37,7 @@ impl Templates {
     ) -> Result<Option<String>, Error<ProjectsTemplatesRetrieveError>> {
         // TODO: convert template name to template id outside??
         // TODO: project name or id? environment name or id?
-        let response =
-            self.get_details_by_name(organization_id, project_name.clone(), Some(template_name));
+        let response = self.get_details_by_name(project_name.clone(), Some(template_name));
 
         if let Ok(Some(details)) = response {
             let rest_cfg = open_api_config();
@@ -59,7 +57,6 @@ impl Templates {
 
     pub fn get_details_by_name(
         &self,
-        _organization_id: Option<&str>,
         project_name: Option<String>,
         template_name: Option<&str>,
     ) -> Result<Option<TemplateDetails>, Error<ProjectsTemplatesListError>> {
@@ -83,7 +80,6 @@ impl Templates {
 
     pub fn get_template_details(
         &self,
-        _organization_id: Option<&str>,
         project_name: Option<String>,
     ) -> Result<Vec<TemplateDetails>, Error<ProjectsTemplatesListError>> {
         // TODO: project name or id?

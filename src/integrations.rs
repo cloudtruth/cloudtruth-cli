@@ -88,7 +88,6 @@ pub trait IntegrationsIntf {
     /// Gets a list of `IntegrationDetails` for all integration types.
     fn get_integration_details(
         &self,
-        org_id: Option<&str>,
     ) -> Result<Vec<IntegrationDetails>, Error<IntegrationsGithubListError>>;
 
     /// Get the integration node by FQN
@@ -111,7 +110,6 @@ impl Integrations {
 impl IntegrationsIntf for Integrations {
     fn get_integration_details(
         &self,
-        _org_id: Option<&str>,
     ) -> Result<Vec<IntegrationDetails>, Error<IntegrationsGithubListError>> {
         let mut result: Vec<IntegrationDetails> = Vec::new();
         let rest_cfg = open_api_config();

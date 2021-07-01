@@ -90,7 +90,6 @@ impl From<ErrReport> for SubProcessError {
 pub trait SubProcessIntf {
     fn set_environment(
         &mut self,
-        org_id: Option<&str>,
         resolved: &ResolvedIds,
         inherit: Inheritance,
         overrides: &[String],
@@ -142,7 +141,6 @@ impl SubProcess {
 impl SubProcessIntf for SubProcess {
     fn set_environment(
         &mut self,
-        _org_id: Option<&str>,
         resolved: &ResolvedIds,
         inherit: Inheritance,
         overrides: &[String],

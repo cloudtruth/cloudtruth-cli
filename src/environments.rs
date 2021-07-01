@@ -35,7 +35,6 @@ impl Environments {
 
     pub fn get_details_by_name(
         &self,
-        _org_id: Option<&str>,
         env_name: Option<&str>,
     ) -> Result<Option<EnvironmentDetails>, Error<EnvironmentsListError>> {
         let rest_cfg = open_api_config();
@@ -52,10 +51,9 @@ impl Environments {
 
     pub fn get_id(
         &self,
-        org_id: Option<&str>,
         env_name: Option<&str>,
     ) -> Result<Option<String>, Error<EnvironmentsListError>> {
-        if let Ok(Some(details)) = self.get_details_by_name(org_id, env_name) {
+        if let Ok(Some(details)) = self.get_details_by_name(env_name) {
             Ok(Some(details.id))
         } else {
             Ok(None)
@@ -64,7 +62,6 @@ impl Environments {
 
     pub fn get_environment_details(
         &self,
-        _org_id: Option<&str>,
     ) -> Result<Vec<EnvironmentDetails>, Error<EnvironmentsListError>> {
         let rest_cfg = open_api_config();
         let response = environments_list(&rest_cfg, None, None, None)?;
@@ -81,7 +78,6 @@ impl Environments {
 
     pub fn create_environment(
         &self,
-        _org_id: Option<&str>,
         env_name: Option<&str>,
         description: Option<&str>,
         parent_id: String,

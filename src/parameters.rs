@@ -113,13 +113,12 @@ impl Parameters {
     /// with more failure information.
     pub fn delete_parameter(
         &self,
-        org_id: Option<&str>,
         proj_name: Option<String>,
         env_name: Option<&str>,
         key_name: &str,
     ) -> Result<Option<String>, Error<ProjectsParametersDestroyError>> {
         // The only delete mechanism is by parameter ID, so start by querying the parameter info.
-        let response = self.get_details_by_name(org_id, env_name, proj_name, key_name);
+        let response = self.get_details_by_name(env_name, proj_name, key_name);
 
         if let Ok(Some(details)) = response {
             self.delete_param_by_id(details.id)
@@ -134,7 +133,6 @@ impl Parameters {
     /// the specified output format.
     pub fn export_parameters(
         &self,
-        _organization_id: Option<&str>,
         _project_name: Option<String>,
         _environment_name: Option<&str>,
         _options: ParamExportOptions,
@@ -151,7 +149,6 @@ impl Parameters {
     /// if project/environments are not found.
     pub fn get_details_by_name(
         &self,
-        _org_id: Option<&str>,
         env_name: Option<&str>,
         proj_name: Option<String>,
         key_name: &str,
@@ -179,11 +176,10 @@ impl Parameters {
     /// environment.
     pub fn get_parameter_values(
         &self,
-        org_id: Option<&str>,
         env_id: Option<String>,
         proj_name: Option<String>,
     ) -> Result<HashMap<String, String>, Error<ProjectsParametersListError>> {
-        let parameters = self.get_parameter_details(org_id, env_id, proj_name)?;
+        let parameters = self.get_parameter_details(env_id, proj_name)?;
         let mut env_vars = HashMap::new();
 
         for param in parameters {
@@ -195,7 +191,6 @@ impl Parameters {
     /// Fetches the `ParameterDetails` for the specified project and environment.
     pub fn get_parameter_details(
         &self,
-        _org_id: Option<&str>,
         env_id: Option<String>,
         proj_name: Option<String>,
     ) -> Result<Vec<ParameterDetails>, Error<ProjectsParametersListError>> {

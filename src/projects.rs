@@ -28,23 +28,17 @@ impl From<&Project> for ProjectDetails {
 
 pub trait ProjectsIntf {
     /// Resolve the `proj_name` to a String
-    fn get_id(
-        &self,
-        org_id: Option<&str>,
-        proj_name: Option<&str>,
-    ) -> Result<Option<String>, Error<ProjectsListError>>;
+    fn get_id(&self, proj_name: Option<&str>) -> Result<Option<String>, Error<ProjectsListError>>;
 
     /// Get the details for `proj_name`
     fn get_details_by_name(
         &self,
-        org_id: Option<&str>,
         proj_name: Option<&str>,
     ) -> Result<Option<ProjectDetails>, Error<ProjectsListError>>;
 
     /// Create a project with the specified name/description
     fn create_project(
         &self,
-        org_id: Option<&str>,
         proj_name: Option<&str>,
         description: Option<&str>,
     ) -> Result<Option<String>, Error<ProjectsCreateError>>;
@@ -64,10 +58,7 @@ pub trait ProjectsIntf {
     ) -> Result<Option<String>, Error<ProjectsDestroyError>>;
 
     /// Get a complete list of projects for this organization.
-    fn get_project_details(
-        &self,
-        org_id: Option<&str>,
-    ) -> Result<Vec<ProjectDetails>, Error<ProjectsListError>>;
+    fn get_project_details(&self) -> Result<Vec<ProjectDetails>, Error<ProjectsListError>>;
 }
 
 impl Projects {
@@ -79,7 +70,6 @@ impl Projects {
 impl ProjectsIntf for Projects {
     fn get_details_by_name(
         &self,
-        _org_id: Option<&str>,
         proj_name: Option<&str>,
     ) -> Result<Option<ProjectDetails>, Error<ProjectsListError>> {
         let rest_cfg = open_api_config();
@@ -94,22 +84,15 @@ impl ProjectsIntf for Projects {
         }
     }
 
-    fn get_id(
-        &self,
-        org_id: Option<&str>,
-        proj_name: Option<&str>,
-    ) -> Result<Option<String>, Error<ProjectsListError>> {
-        if let Some(details) = self.get_details_by_name(org_id, proj_name)? {
+    fn get_id(&self, proj_name: Option<&str>) -> Result<Option<String>, Error<ProjectsListError>> {
+        if let Some(details) = self.get_details_by_name(proj_name)? {
             Ok(Some(details.id))
         } else {
             Ok(None)
         }
     }
 
-    fn get_project_details(
-        &self,
-        _org_id: Option<&str>,
-    ) -> Result<Vec<ProjectDetails>, Error<ProjectsListError>> {
+    fn get_project_details(&self) -> Result<Vec<ProjectDetails>, Error<ProjectsListError>> {
         let rest_cfg = open_api_config();
         let response = projects_list(&rest_cfg, None, None)?;
 
@@ -128,7 +111,6 @@ impl ProjectsIntf for Projects {
 
     fn create_project(
         &self,
-        _org_id: Option<&str>,
         proj_name: Option<&str>,
         description: Option<&str>,
     ) -> Result<Option<String>, Error<ProjectsCreateError>> {
