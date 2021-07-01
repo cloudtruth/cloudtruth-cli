@@ -115,6 +115,8 @@ impl Environments {
             name: None,
             description: description.map(String::from),
             parent: None,
+            created_at: None,
+            modified_at: None,
         };
         let response = environments_partial_update(&rest_cfg, environment_id.as_str(), Some(env))?;
         Ok(Some(response.id))

@@ -146,6 +146,8 @@ impl ProjectsIntf for Projects {
             id: None,
             name: Some(project_name),
             description: description.map(|d| d.to_string()),
+            created_at: None,
+            modified_at: None,
         };
         let response = projects_partial_update(&rest_cfg, project_id.as_str(), Some(proj))?;
         Ok(Some(response.id))

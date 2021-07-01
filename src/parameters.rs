@@ -29,32 +29,20 @@ pub struct ParameterDetails {
 
 impl From<&Parameter> for ParameterDetails {
     fn from(api_param: &Parameter) -> Self {
-        let description = api_param.description.clone();
-        let bogus = Value {
-            url: "".to_string(),
-            id: "".to_string(),
-            environment: "".to_string(),
-            dynamic: None,
-            value: None,
-            fqn: None,
-            filter: None,
-        };
-        let env_value = &bogus;
-        // TODO: PARM_VALUE_ISSUE
-        //let env_value: &Value = &api_param.values[0];
+        let env_value: &Value = &api_param.values;
 
         ParameterDetails {
             id: api_param.id.clone(),
             key: api_param.name.clone(),
             secret: api_param.secret.unwrap_or(false),
-            description: description.unwrap_or_default(),
+            description: api_param.description.clone().unwrap_or_default(),
 
             val_id: env_value.id.clone(),
             value: env_value.value.clone().unwrap_or_default(),
             source: env_value.environment.clone(),
             dynamic: env_value.dynamic.unwrap_or(false),
-            fqn: env_value.fqn.clone().unwrap_or_default(),
-            jmes_path: env_value.filter.clone().unwrap_or_default(),
+            fqn: env_value.dynamic_fqn.clone().unwrap_or_default(),
+            jmes_path: env_value.dynamic_filter.clone().unwrap_or_default(),
         }
     }
 }
@@ -162,6 +150,7 @@ impl Parameters {
             MASK_SECRETS,
             Some(key_name),
             None,
+            None,
         )?;
         if let Some(parameters) = response.results {
             // TODO: handle more than one??
@@ -202,6 +191,7 @@ impl Parameters {
             MASK_SECRETS,
             None,
             None,
+            None,
         )?;
         let mut list: Vec<ParameterDetails> = Vec::new();
         if let Some(parameters) = response.results {
@@ -228,9 +218,9 @@ impl Parameters {
         let value_new = ValueCreate {
             environment: env_name.unwrap().to_string(),
             dynamic: Some(dynamic),
-            value: value.map(|v| v.to_string()),
-            fqn: fqn.map(|v| v.to_string()),
-            filter: jmes_path.map(|v| v.to_string()),
+            static_value: value.map(|v| v.to_string()),
+            dynamic_fqn: fqn.map(|v| v.to_string()),
+            dynamic_filter: jmes_path.map(|v| v.to_string()),
         };
         let response = projects_parameters_values_create(
             &rest_cfg,
@@ -268,6 +258,7 @@ impl Parameters {
             MASK_SECRETS,
             Some(key_name),
             None,
+            None,
         );
         if let Ok(paged_results) = response {
             if let Some(list) = paged_results.results {
@@ -281,57 +272,48 @@ impl Parameters {
                     param.secret = secret;
                     param_changed = true;
                 }
-                if !param.values.is_empty() {
-                    let dynamic = value.is_none() || fqn.is_some();
-                    let bogus = Value {
-                        url: "".to_string(),
-                        id: "".to_string(),
-                        environment: "".to_string(),
-                        dynamic: None,
-                        value: None,
-                        fqn: None,
-                        filter: None,
-                    };
-                    let env_value = &bogus;
-                    // TODO: PARM_VALUE_ISSUE
-                    // let env_value: &Value = &param.values[0];
 
-                    if value.is_none() && fqn.is_none() && jmes_path.is_none() {
-                        // nothing to set here, no need for updates
-                    } else if env_value.environment.as_str() == env_name.unwrap() {
-                        // update
-                        let value_up = PatchedValue {
-                            url: None,
-                            id: None,
-                            environment: None,
-                            dynamic: Some(dynamic),
-                            value: value.map(|v| v.to_string()),
-                            fqn: fqn.map(|v| v.to_string()),
-                            filter: jmes_path.map(|v| v.to_string()),
-                        };
-                        let response = projects_parameters_values_partial_update(
-                            &rest_cfg,
-                            env_value.id.as_str(),
-                            param.id.as_str(),
-                            project_id,
-                            None,
-                            Some(value_up),
-                        );
-                        if let Ok(value) = response {
-                            result = Some(format!("{}/{}", param.id, value.id));
-                        }
-                    } else {
-                        let response = self.create_parameter_value(
-                            proj_id.clone(),
-                            param.id.clone(),
-                            env_name,
-                            value,
-                            fqn,
-                            jmes_path,
-                        );
-                        if let Ok(Some(value_id)) = response {
-                            result = Some(format!("{}/{}", param.id, value_id));
-                        }
+                let dynamic = value.is_none() || fqn.is_some();
+                let env_value: &Value = &param.values;
+
+                if value.is_none() && fqn.is_none() && jmes_path.is_none() {
+                    // nothing to set here, no need for updates
+                } else if env_value.environment.as_str() == env_name.unwrap() {
+                    // update
+                    let value_up = PatchedValue {
+                        url: None,
+                        id: None,
+                        environment: None,
+                        dynamic: Some(dynamic),
+                        static_value: value.map(|v| v.to_string()),
+                        dynamic_fqn: fqn.map(|v| v.to_string()),
+                        dynamic_filter: jmes_path.map(|v| v.to_string()),
+                        value: None,
+                        created_at: None,
+                        modified_at: None,
+                    };
+                    let response = projects_parameters_values_partial_update(
+                        &rest_cfg,
+                        env_value.id.as_str(),
+                        param.id.as_str(),
+                        project_id,
+                        None,
+                        Some(value_up),
+                    );
+                    if let Ok(value) = response {
+                        result = Some(format!("{}/{}", param.id, value.id));
+                    }
+                } else {
+                    let response = self.create_parameter_value(
+                        proj_id.clone(),
+                        param.id.clone(),
+                        env_name,
+                        value,
+                        fqn,
+                        jmes_path,
+                    );
+                    if let Ok(Some(value_id)) = response {
+                        result = Some(format!("{}/{}", param.id, value_id));
                     }
                 }
 

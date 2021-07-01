@@ -1721,12 +1721,6 @@ paths:
       operationId: projects_templates_list
       description: ''
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-          format: uuid
-        required: true
       - in: query
         name: name
         schema:
@@ -1758,12 +1752,6 @@ paths:
       operationId: projects_templates_create
       description: ''
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-          format: uuid
-        required: true
       - in: path
         name: project_pk
         schema:
@@ -2204,11 +2192,6 @@ paths:
         description: A page number within the paginated result set.
         schema:
           type: integer
-      - in: path
-        name: serviceaccount_pk
-        schema:
-          type: string
-        required: true
       - in: query
         name: type
         schema:
@@ -2234,11 +2217,6 @@ paths:
         schema:
           type: string
           description: The unique identifier of a user.
-        required: true
-      - in: path
-        name: serviceaccount_pk
-        schema:
-          type: string
         required: true
       tags:
       - users
@@ -2270,11 +2248,6 @@ paths:
         schema:
           type: string
           description: The unique identifier of a user.
-        required: true
-      - in: path
-        name: serviceaccount_pk
-        schema:
-          type: string
         required: true
       tags:
       - users
