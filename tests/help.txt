@@ -153,15 +153,15 @@ FLAGS:
     -V, --version    Prints version information
 
 SUBCOMMANDS:
-    explore    Explore specific integration options [aliases: exp, ex, e]
+    explore    Explore integrations by Fully Qualified Name (FQN). [aliases: exp, ex, e]
     help       Prints this message or the help of the given subcommand(s)
     list       List CloudTruth integrations [aliases: ls]
 ========================================
 cloudtruth-integrations-explore 
-Explore specific integration options
+Explore integrations by Fully Qualified Name (FQN).
 
 USAGE:
-    cloudtruth integrations explore [FLAGS] [OPTIONS] <NAME> [PATH]
+    cloudtruth integrations explore [FLAGS] [OPTIONS] [FQN]
 
 FLAGS:
     -h, --help       Prints help information
@@ -169,12 +169,10 @@ FLAGS:
     -V, --version    Prints version information
 
 OPTIONS:
-    -t, --type <TYPE>        Integration type, only used to disambiguate duplicate names [possible values: aws, github]
     -f, --format <format>    Format integration values data. [default: table]  [possible values: table, csv, json, yaml]
 
 ARGS:
-    <NAME>    Integration name
-    <PATH>    Path within the integration
+    <FQN>    Integration FQN
 ========================================
 cloudtruth-integrations-list 
 List CloudTruth integrations

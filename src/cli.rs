@@ -39,16 +39,6 @@ fn confirm_flag() -> Arg<'static, 'static> {
         .help("Avoid confirmation prompt")
 }
 
-fn integration_type_option() -> Arg<'static, 'static> {
-    Arg::with_name("TYPE")
-        .short("t")
-        .long("type")
-        .takes_value(true)
-        .case_insensitive(true)
-        .possible_values(&["aws", "github"])
-        .help("Integration type, only used to disambiguate duplicate names")
-}
-
 pub fn build_cli() -> App<'static, 'static> {
     app_from_crate!()
         .setting(AppSettings::SubcommandRequiredElseHelp)
@@ -140,21 +130,13 @@ pub fn build_cli() -> App<'static, 'static> {
                 .subcommands(vec![
                     SubCommand::with_name("explore")
                         .visible_aliases(&["exp", "ex", "e"])
-                        .about("Explore specific integration options")
-                        .arg(Arg::with_name("NAME")
+                        .about("Explore integrations by Fully Qualified Name (FQN).")
+                        .arg(Arg::with_name("FQN")
                             .index(1)
                             .takes_value(true)
-                            .required(true)
-                            .help("Integration name"))
-                        .arg(Arg::with_name("PATH")
-                            .index(2)
-                            .takes_value(true)
-                            .required(false)
-                            .help("Path within the integration")
-                        )
+                            .help("Integration FQN"))
                         .arg(table_format_options().help("Format integration values data."))
-                        .arg(values_flag().help("Display integration values"))
-                        .arg(integration_type_option()),
+                        .arg(values_flag().help("Display integration values")),
                     SubCommand::with_name("list")
                         .visible_alias("ls")
                         .about("List CloudTruth integrations")
