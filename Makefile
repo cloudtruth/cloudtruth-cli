@@ -56,7 +56,7 @@ client: openapi.yml
 		-g rust \
 		-o /local/client \
 		--additional-properties=packageName=cloudtruth-restapi,supportAsync=false
-	cd client && mv src/lib.rs tmp && echo "#![allow(non_snake_case)]\n\n" > src/lib.rs && cat tmp >> src/lib.rs && cargo fmt && cargo build
+	python3 patch_client.py && cd client && cargo fmt && cargo build
 
 lint:
 	cargo fmt --all -- --check

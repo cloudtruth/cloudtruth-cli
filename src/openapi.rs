@@ -1,6 +1,6 @@
 use crate::config::Config as CloudTruthConfig;
 
-use cloudtruth_restapi::apis::configuration::Configuration;
+use cloudtruth_restapi::apis::configuration::{ApiKey, Configuration};
 use once_cell::sync::OnceCell;
 use std::env;
 
@@ -32,8 +32,11 @@ fn create_openapi_config(ct_cfg: &CloudTruthConfig) -> OpenApiConfig {
             .unwrap(),
         basic_auth: None,
         oauth_access_token: None,
-        bearer_access_token: Some(ct_cfg.api_key.clone()),
-        api_key: None,
+        bearer_access_token: None,
+        api_key: Some(ApiKey {
+            prefix: None,
+            key: ct_cfg.api_key.clone(),
+        }),
     }
 }
 
@@ -66,11 +69,9 @@ mod tests {
         };
         let openapi_cfg = create_openapi_config(&ct_cfg);
         assert_eq!(openapi_cfg.base_path, url.to_string());
-        assert_eq!(
-            openapi_cfg.bearer_access_token.unwrap(),
-            api_key.to_string()
-        );
+        assert_eq!(openapi_cfg.api_key.unwrap().key, api_key.to_string());
         assert_eq!(openapi_cfg.user_agent.unwrap(), user_agent_name());
+        assert_eq!(openapi_cfg.bearer_access_token, None);
         // unfortunately, no means to interrogate the client to find the timeout
     }
 
@@ -88,10 +89,11 @@ mod tests {
         let openapi_cfg = open_api_config();
         assert_eq!(openapi_cfg.base_path, url.to_string());
         assert_eq!(
-            openapi_cfg.bearer_access_token.clone().unwrap(),
+            openapi_cfg.api_key.clone().unwrap().key,
             api_key.to_string()
         );
         assert_eq!(openapi_cfg.user_agent.clone().unwrap(), user_agent_name());
+        assert_eq!(openapi_cfg.bearer_access_token, None);
 
         env::remove_var(CT_API_KEY);
         env::remove_var(CT_SERVER_URL);

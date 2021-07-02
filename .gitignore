@@ -6,6 +6,7 @@
 
 # Installing Python libraries
 /tests/pytest/__pycache__
+/__pycache__
 
 # Eclipse settings stuff
 .project
