@@ -49,9 +49,9 @@ impl From<&Parameter> for ParameterDetails {
 
 #[derive(Debug)]
 pub enum ParamExportFormat {
-    DOCKER,
-    DOTENV,
-    SHELL,
+    Docker,
+    Dotenv,
+    Shell,
 }
 
 /// Converts to ParamExportFormat from a &str.
@@ -60,9 +60,9 @@ impl FromStr for ParamExportFormat {
 
     fn from_str(input: &str) -> Result<ParamExportFormat, Self::Err> {
         match input {
-            "docker" => Ok(ParamExportFormat::DOCKER),
-            "dotenv" => Ok(ParamExportFormat::DOTENV),
-            "shell" => Ok(ParamExportFormat::SHELL),
+            "docker" => Ok(ParamExportFormat::Docker),
+            "dotenv" => Ok(ParamExportFormat::Dotenv),
+            "shell" => Ok(ParamExportFormat::Shell),
             _ => Err(()),
         }
     }

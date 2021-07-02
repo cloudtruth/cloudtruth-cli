@@ -1,12 +1,3 @@
-// Ignore the upper-case acronym warning from clippy for the whole module, since the GraphQLXxxx
-// pattern tends to be liked by the team.
-#![allow(clippy::upper_case_acronyms)]
-
-mod graphql;
-
-#[macro_use]
-mod macros;
-
 extern crate rpassword;
 
 mod cli;
