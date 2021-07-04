@@ -16,6 +16,11 @@ API_KEY_TEXT = """
 """
 
 def allow_snake(srcdir: str) -> None:
+    """
+    The generated code produces a `parent__name` variable that causes warnings. This stops the
+    compiler from complaining about that sort of issue. The notation is added at the top of lib.rs
+    to disable for the entire package.
+    """
     filename = f"{srcdir}/lib.rs"
     f = open(filename, "r")
     temp = f.read()
@@ -29,6 +34,14 @@ def allow_snake(srcdir: str) -> None:
         f.close()
 
 def support_api_key(srcdir: str) -> None:
+    """
+    The generated code does not do anything with the `api_key` value that is added to the
+    api::Configuration.  This code adds the `API_KEY_TEXT` to the generated code whenever it
+    finds the `BEARER_TEXT`.
+
+    The API_KEY_TEXT adds an AUTHORIZATION header containing the api_key, when the api_key is
+    populated.
+    """
     filelist = glob.glob(f"{srcdir}/**/*.rs")
     for filename in filelist:
         f = open(filename, 'r')
@@ -36,11 +49,9 @@ def support_api_key(srcdir: str) -> None:
         f.close()
 
         if BEARER_TEXT not in temp:
-            # print(f"No bearer text in {filename}")
             continue
 
         if API_KEY_TEXT in temp:
-            # print(f"Already added apk-key in {filename}")
             continue
 
         print(f"Updating {filename} with Api-Key text")
