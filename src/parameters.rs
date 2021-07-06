@@ -153,9 +153,13 @@ impl Parameters {
             None,
         )?;
         if let Some(parameters) = response.results {
-            // TODO: handle more than one??
-            let param = &parameters[0];
-            Ok(Some(ParameterDetails::from(param)))
+            if parameters.is_empty() {
+                Ok(None)
+            } else {
+                // TODO: handle more than one??
+                let param = &parameters[0];
+                Ok(Some(ParameterDetails::from(param)))
+            }
         } else {
             Ok(None)
         }

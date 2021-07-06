@@ -75,9 +75,13 @@ impl ProjectsIntf for Projects {
         let response = projects_list(&rest_cfg, Some(proj_name), None)?;
 
         if let Some(projects) = response.results {
-            // TODO: handle more than one??
-            let proj = &projects[0];
-            Ok(Some(ProjectDetails::from(proj)))
+            if projects.is_empty() {
+                Ok(None)
+            } else {
+                // TODO: handle more than one??
+                let proj = &projects[0];
+                Ok(Some(ProjectDetails::from(proj)))
+            }
         } else {
             Ok(None)
         }

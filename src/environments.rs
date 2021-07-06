@@ -38,10 +38,14 @@ impl Environments {
         let rest_cfg = open_api_config();
         let response = environments_list(&rest_cfg, env_name, None, None)?;
 
-        if let Some(resp_env) = response.results {
-            // TODO: handle more than one??
-            let env = &resp_env[0];
-            Ok(Some(EnvironmentDetails::from(env)))
+        if let Some(environments) = response.results {
+            if environments.is_empty() {
+                Ok(None)
+            } else {
+                // TODO: handle more than one??
+                let env = &environments[0];
+                Ok(Some(EnvironmentDetails::from(env)))
+            }
         } else {
             Ok(None)
         }

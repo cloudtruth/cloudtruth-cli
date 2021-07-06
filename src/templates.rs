@@ -62,9 +62,13 @@ impl Templates {
         let response = projects_templates_list(&rest_cfg, proj_id, Some(template_name), None)?;
 
         if let Some(templates) = response.results {
-            // TODO: handle more than one?
-            let template = &templates[0];
-            Ok(Some(TemplateDetails::from(template)))
+            if template_name.is_empty() {
+                Ok(None)
+            } else {
+                // TODO: handle more than one?
+                let template = &templates[0];
+                Ok(Some(TemplateDetails::from(template)))
+            }
         } else {
             Ok(None)
         }
