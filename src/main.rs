@@ -324,6 +324,12 @@ fn process_completion_command(subcmd_args: &ArgMatches) {
 fn process_config_command(subcmd_args: &ArgMatches) -> Result<()> {
     if subcmd_args.subcommand_matches("edit").is_some() {
         Config::edit()?;
+        let filepath = Config::config_file()
+            .unwrap()
+            .into_os_string()
+            .into_string()
+            .unwrap();
+        println!("Edited {}", filepath);
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("list") {
         let details = Config::get_profile_details()?;
         if details.is_empty() {

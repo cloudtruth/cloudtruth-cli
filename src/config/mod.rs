@@ -118,7 +118,7 @@ impl From<Profile> for Config {
 }
 
 impl Config {
-    fn config_file() -> Option<PathBuf> {
+    pub fn config_file() -> Option<PathBuf> {
         // Load settings from the configuration file if it exists.
         ProjectDirs::from("com", ORGANIZATION_NAME, APPLICATION_NAME)
             .map(|project_dirs| project_dirs.config_dir().join(CONFIG_FILE_NAME))
