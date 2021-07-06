@@ -8,10 +8,14 @@ BEARER_TEXT = """
         local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
 """
-API_KEY_TEXT = """
+API_KEY_TEXT = """\
     if let Some(ref local_var_apikey) = configuration.api_key {
-        let header_value = format!("Api-Key {}", local_var_apikey.key);
-        local_var_req_builder = local_var_req_builder.header(reqwest::header::AUTHORIZATION, header_value);
+        let local_var_key = local_var_apikey.key.clone();
+        let local_var_value = match local_var_apikey.prefix {
+            Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
+            None => local_var_key,
+        };
+        local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
 """
 
@@ -35,27 +39,24 @@ def allow_snake(srcdir: str) -> None:
 
 def support_api_key(srcdir: str) -> None:
     """
-    The generated code does not do anything with the `api_key` value that is added to the
-    api::Configuration.  This code adds the `API_KEY_TEXT` to the generated code whenever it
-    finds the `BEARER_TEXT`.
+    The generated code incorrectly adds 2 authorization headers if `api_key` is populated and
+    never uses the `bearer_access_token`.
 
     The API_KEY_TEXT adds an AUTHORIZATION header containing the api_key, when the api_key is
     populated.
     """
+    double = API_KEY_TEXT + API_KEY_TEXT
     filelist = glob.glob(f"{srcdir}/**/*.rs")
     for filename in filelist:
         f = open(filename, 'r')
         temp = f.read()
         f.close()
 
-        if BEARER_TEXT not in temp:
+        if double not in temp:
             continue
 
-        if API_KEY_TEXT in temp:
-            continue
-
-        print(f"Updating {filename} with Api-Key text")
-        temp = temp.replace(BEARER_TEXT, BEARER_TEXT + API_KEY_TEXT)
+        print(f"Updating {filename} with Bearer/Api-Key text")
+        temp = temp.replace(double, BEARER_TEXT + API_KEY_TEXT)
         f = open(filename, 'w')
         f.write(temp)
         f.close()

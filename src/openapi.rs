@@ -34,7 +34,7 @@ fn create_openapi_config(ct_cfg: &CloudTruthConfig) -> OpenApiConfig {
         oauth_access_token: None,
         bearer_access_token: None,
         api_key: Some(ApiKey {
-            prefix: None,
+            prefix: Some("Api-Key".to_owned()),
             key: ct_cfg.api_key.clone(),
         }),
     }
