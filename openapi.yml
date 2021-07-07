@@ -2418,111 +2418,6 @@ paths:
       responses:
         '204':
           description: No response body
-  /api/v1/serviceaccounts/{serviceaccount_pk}/users/:
-    get:
-      operationId: serviceaccounts_users_list
-      description: ''
-      parameters:
-      - name: page
-        required: false
-        in: query
-        description: A page number within the paginated result set.
-        schema:
-          type: integer
-      - in: path
-        name: serviceaccount_pk
-        schema:
-          type: string
-        required: true
-      - in: query
-        name: type
-        schema:
-          type: string
-      tags:
-      - serviceaccounts
-      security:
-      - JWTAuth: []
-      - ApiKeyAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PaginatedUserList'
-          description: ''
-  /api/v1/serviceaccounts/{serviceaccount_pk}/users/{id}/:
-    get:
-      operationId: serviceaccounts_users_retrieve
-      description: ''
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-          description: The unique identifier of a user.
-        required: true
-      - in: path
-        name: serviceaccount_pk
-        schema:
-          type: string
-        required: true
-      tags:
-      - serviceaccounts
-      security:
-      - JWTAuth: []
-      - ApiKeyAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-          description: ''
-    delete:
-      operationId: serviceaccounts_users_destroy
-      description: |
-        ### Description ###
-
-        Delete the specified user.  This removes all access the User may have to any Organization.
-
-        ### Pre-Conditions ###
-
-        - The user cannot be the only owner of any Organization.
-        - The bearer token must belong to the user being deleted.
-        - All of the memberships related to the User will be deleted, so all the membership deletion pre-conditions must also be met.
-      summary: Delete the specified user.
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-          description: The unique identifier of a user.
-        required: true
-      - in: path
-        name: serviceaccount_pk
-        schema:
-          type: string
-        required: true
-      tags:
-      - serviceaccounts
-      security:
-      - JWTAuth: []
-      - ApiKeyAuth: []
-      responses:
-        '204':
-          description: User deleted. The client should behave as if the user logged
-            out.
-        '400':
-          description: |-
-            Bad Request
-
-            - Is the user the only owner of any organization?
-            - Were all required fields provided?
-        '403':
-          description: |-
-            Forbidden
-
-            - Did the Bearer token belong to the User being deleted?
   /api/v1/users/:
     get:
       operationId: users_list
@@ -3446,10 +3341,23 @@ components:
           readOnly: true
           description: If `true` then at least one of the values is dynamic.
         values:
-          type: array
-          items:
+          type: object
+          additionalProperties:
             $ref: '#/components/schemas/Value'
           readOnly: true
+          description: "\n            Environments inherit from a single parent to\
+            \ form a tree, as a result\n            a single parameter may have different\
+            \ values present for each environment.\n            When a value is not\
+            \ explicitly set in an environment, the parent environment\n         \
+            \   is consulted to see if it has a value defined, and so on.\n\n    \
+            \        The dictionary of values has an environment url as the key, and\
+            \ the optional\n            Value record that it resolves to.  If the\
+            \ Value.environment matches the key,\n            then it is an explicit\
+            \ value set for that environment.  If they differ, the\n            value\
+            \ was obtained from a parent environment (directly or indirectly).  If\
+            \ the\n            value is None then no value has ever been set in any\
+            \ environment for this\n            parameter.\n\n            key: Environment\
+            \ url\n            value: optional Value record\n        "
         created_at:
           type: string
           format: date-time
@@ -3763,10 +3671,23 @@ components:
           readOnly: true
           description: If `true` then at least one of the values is dynamic.
         values:
-          type: array
-          items:
+          type: object
+          additionalProperties:
             $ref: '#/components/schemas/Value'
           readOnly: true
+          description: "\n            Environments inherit from a single parent to\
+            \ form a tree, as a result\n            a single parameter may have different\
+            \ values present for each environment.\n            When a value is not\
+            \ explicitly set in an environment, the parent environment\n         \
+            \   is consulted to see if it has a value defined, and so on.\n\n    \
+            \        The dictionary of values has an environment url as the key, and\
+            \ the optional\n            Value record that it resolves to.  If the\
+            \ Value.environment matches the key,\n            then it is an explicit\
+            \ value set for that environment.  If they differ, the\n            value\
+            \ was obtained from a parent environment (directly or indirectly).  If\
+            \ the\n            value is None then no value has ever been set in any\
+            \ environment for this\n            parameter.\n\n            key: Environment\
+            \ url\n            value: optional Value record\n        "
         created_at:
           type: string
           format: date-time
@@ -3888,6 +3809,7 @@ components:
         environment:
           type: string
           format: uri
+          description: The environment this value is set in.
         dynamic:
           type: boolean
           description: A dynamic parameter leverages a CloudTruth integration to retrieve
@@ -4211,6 +4133,7 @@ components:
         environment:
           type: string
           format: uri
+          description: The environment this value is set in.
         dynamic:
           type: boolean
           description: A dynamic parameter leverages a CloudTruth integration to retrieve
@@ -4274,6 +4197,7 @@ components:
         environment:
           type: string
           format: uri
+          description: The environment this value is set in.
         dynamic:
           type: boolean
           description: A dynamic parameter leverages a CloudTruth integration to retrieve

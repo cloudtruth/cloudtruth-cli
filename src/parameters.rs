@@ -29,7 +29,7 @@ pub struct ParameterDetails {
 
 impl From<&Parameter> for ParameterDetails {
     fn from(api_param: &Parameter) -> Self {
-        let env_value: &Value = &api_param.values[0];
+        let env_value = api_param.values.values().next().unwrap();
 
         ParameterDetails {
             id: api_param.id.clone(),
@@ -277,7 +277,7 @@ impl Parameters {
                 }
 
                 let dynamic = value.is_none() || fqn.is_some();
-                let env_value: &Value = &param.values[0];
+                let env_value: &Value = param.values.values().next().unwrap();
 
                 if value.is_none() && fqn.is_none() && jmes_path.is_none() {
                     // nothing to set here, no need for updates
