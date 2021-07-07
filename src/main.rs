@@ -15,7 +15,7 @@ mod templates;
 
 use crate::cli::{CONFIRM_FLAG, FORMAT_OPT, SECRETS_FLAG, VALUES_FLAG};
 use crate::config::env::ConfigEnv;
-use crate::config::{Config, CT_PROFILE, DEFAULT_ENV_NAME, DEFAULT_PROJ_NAME};
+use crate::config::{Config, CT_PROFILE, DEFAULT_ENV_NAME};
 use crate::environments::Environments;
 use crate::integrations::{Integrations, IntegrationsIntf};
 use crate::parameters::{ParamExportFormat, ParamExportOptions, Parameters};
@@ -48,9 +48,7 @@ impl ResolvedIds {
     }
 
     fn project_display_name(&self) -> String {
-        self.proj_name
-            .clone()
-            .unwrap_or_else(|| DEFAULT_PROJ_NAME.to_string())
+        self.proj_name.clone().unwrap_or_default()
     }
 
     fn project_id(&self) -> &str {
@@ -161,25 +159,31 @@ fn user_confirm(message: String) -> bool {
 fn resolve_ids(config: &Config) -> Result<ResolvedIds> {
     // The `err` value is used to allow accumulation of multiple errors to the user.
     let mut err = false;
-    let env = config.environment.as_deref();
+    let env = config.environment.as_deref().unwrap_or(DEFAULT_ENV_NAME);
     let proj = config.project.as_deref();
     let environments = Environments::new();
     let env_id = environments.get_id(env)?;
     if env_id.is_none() {
         error_message(format!(
             "The '{}' environment could not be found in your account.",
-            env.unwrap_or(DEFAULT_ENV_NAME),
+            env,
         ))?;
         err = true;
     }
 
-    let projects = Projects::new();
-    let proj_id = projects.get_id(proj.unwrap_or(DEFAULT_PROJ_NAME))?;
-    if proj_id.is_none() {
-        error_message(format!(
-            "The '{}' project could not be found in your account.",
-            proj.unwrap_or(DEFAULT_PROJ_NAME)
-        ))?;
+    let mut proj_id = None;
+    if let Some(proj_str) = proj {
+        let projects = Projects::new();
+        proj_id = projects.get_id(proj_str)?;
+        if proj_id.is_none() {
+            error_message(format!(
+                "The '{}' project could not be found in your account.",
+                proj_str,
+            ))?;
+            err = true;
+        }
+    } else {
+        error_message("No project name was provided!".to_owned())?;
         err = true;
     }
 
@@ -189,7 +193,7 @@ fn resolve_ids(config: &Config) -> Result<ResolvedIds> {
     }
 
     Ok(ResolvedIds {
-        env_name: env.map(String::from),
+        env_name: Some(env.to_string()),
         env_id,
         proj_name: proj.map(String::from),
         proj_id,
@@ -373,27 +377,24 @@ fn process_environment_command(
     environments: &Environments,
 ) -> Result<()> {
     if let Some(subcmd_args) = subcmd_args.subcommand_matches("delete") {
-        let env_name = subcmd_args.value_of("NAME");
+        let env_name = subcmd_args.value_of("NAME").unwrap();
         let details = environments.get_details_by_name(env_name)?;
 
         if let Some(details) = details {
             // NOTE: the server is responsible for checking if children exist
             let mut confirmed = subcmd_args.is_present(CONFIRM_FLAG);
             if !confirmed {
-                confirmed = user_confirm(format!("Delete environment '{}'", env_name.unwrap()));
+                confirmed = user_confirm(format!("Delete environment '{}'", env_name));
             }
 
             if !confirmed {
-                warning_message(format!("Environment '{}' not deleted!", env_name.unwrap()))?;
+                warning_message(format!("Environment '{}' not deleted!", env_name))?;
             } else {
                 environments.delete_environment(details.id)?;
-                println!("Deleted environment '{}'", env_name.unwrap());
+                println!("Deleted environment '{}'", env_name);
             }
         } else {
-            warning_message(format!(
-                "Environment '{}' does not exist!",
-                env_name.unwrap()
-            ))?;
+            warning_message(format!("Environment '{}' does not exist!", env_name))?;
         }
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("list") {
         let details = environments.get_environment_details()?;
@@ -409,12 +410,12 @@ fn process_environment_command(
             let mut table = Table::new("environment");
             table.set_header(&["Name", "Parent", "Description"]);
             for entry in details {
-                table.add_row(vec![entry.name, entry.parent, entry.description]);
+                table.add_row(vec![entry.name, entry.parent_name, entry.description]);
             }
             table.render(fmt)?;
         }
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("set") {
-        let env_name = subcmd_args.value_of("NAME");
+        let env_name = subcmd_args.value_of("NAME").unwrap();
         let parent_name = subcmd_args.value_of("parent");
         let description = subcmd_args.value_of("description");
         let details = environments.get_details_by_name(env_name)?;
@@ -423,28 +424,33 @@ fn process_environment_command(
             if description == Some(details.description.as_str()) {
                 warning_message(format!(
                     "Environment '{}' not updated: same description",
-                    env_name.unwrap()
+                    env_name
                 ))?;
-            } else if parent_name.is_some() && parent_name.unwrap() != details.parent.as_str() {
+            } else if parent_name.is_some() && parent_name.unwrap() != details.parent_name.as_str()
+            {
                 error_message(format!(
                     "Environment '{}' parent cannot be updated.",
-                    env_name.unwrap()
+                    env_name
                 ))?;
                 process::exit(6);
             } else if description.is_none() {
                 warning_message(format!(
                     "Environment '{}' not updated: no description provided",
-                    env_name.unwrap()
+                    env_name
                 ))?;
             } else {
                 environments.update_environment(details.id, description)?;
-                println!("Updated environment '{}'", env_name.unwrap());
+                println!("Updated environment '{}'", env_name);
             }
         } else {
             let parent_name = parent_name.unwrap_or(DEFAULT_ENV_NAME);
-            if let Some(parent_id) = environments.get_id(Some(parent_name))? {
-                environments.create_environment(env_name, description, parent_id)?;
-                println!("Created environment '{}'", env_name.unwrap());
+            if let Some(parent_details) = environments.get_details_by_name(parent_name)? {
+                environments.create_environment(
+                    env_name,
+                    description,
+                    parent_details.url.as_str(),
+                )?;
+                println!("Created environment '{}'", env_name);
             } else {
                 error_message(format!("No parent environment '{}' found", parent_name))?;
                 process::exit(5);

@@ -16,9 +16,8 @@ CT_PROJ = "CLOUDTRUTH_PROJECT"
 CT_URL = "CLOUDTRUTH_SERVER_URL"
 CT_TIMEOUT = "CLOUDTRUTH_REQUEST_TIMEOUT"
 
-DEFAULT_SERVER_URL = "https://api.cloudtruth.com/graphql"
-DEFAULT_PROJ_NAME = "default"
-DEFAULT_ENV_NAME = "default"
+DEFAULT_SERVER_URL = "https://localhost:8000"
+DEFAULT_ENV_NAME = "base"
 
 AUTO_DESCRIPTION = "Automated testing via live_test"
 

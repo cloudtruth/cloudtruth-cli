@@ -26,13 +26,10 @@ pub const DEFAULT_SERVER_URL: &str = "https://localhost:8000";
 pub const DEFAULT_REQUEST_TIMEOUT: u64 = 30;
 
 /// Default environment name.
-pub const DEFAULT_ENV_NAME: &str = "default";
+pub const DEFAULT_ENV_NAME: &str = "base";
 
 /// Default profile name.
 pub const DEFAULT_PROF_NAME: &str = "default";
-
-/// Default project name.
-pub const DEFAULT_PROJ_NAME: &str = "default";
 
 /*************************************************************************
  Environment variables.

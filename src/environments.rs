@@ -3,15 +3,18 @@ use crate::openapi::open_api_config;
 use cloudtruth_restapi::apis::environments_api::*;
 use cloudtruth_restapi::apis::Error;
 use cloudtruth_restapi::models::{Environment, EnvironmentCreate, PatchedEnvironment};
+use std::collections::HashMap;
 
 pub struct Environments {}
 
 #[derive(Debug)]
 pub struct EnvironmentDetails {
     pub id: String,
+    pub url: String,
     pub name: String,
     pub description: String,
-    pub parent: String,
+    pub parent_url: String,
+    pub parent_name: String,
 }
 
 /// Converts the OpenApi `Environment` reference into a CloudTruth `EnvironmentDetails` object.
@@ -19,9 +22,11 @@ impl From<&Environment> for EnvironmentDetails {
     fn from(api_env: &Environment) -> Self {
         EnvironmentDetails {
             id: api_env.id.clone(),
+            url: api_env.url.clone(),
             name: api_env.name.clone(),
             description: api_env.description.clone().unwrap_or_default(),
-            parent: api_env.parent.clone().unwrap_or_default(),
+            parent_url: api_env.parent.clone().unwrap_or_default(),
+            parent_name: "".to_owned(),
         }
     }
 }
@@ -31,12 +36,31 @@ impl Environments {
         Self {}
     }
 
+    fn _get_name_from_url(&self, url: &str) -> String {
+        let rest_cfg = open_api_config();
+        let id = url
+            .split('/')
+            .filter(|&x| !x.is_empty())
+            .last()
+            .unwrap_or_default();
+        if id.is_empty() {
+            "".to_owned()
+        } else {
+            let response = environments_retrieve(rest_cfg, id);
+            if let Ok(environment) = response {
+                environment.name
+            } else {
+                "".to_owned()
+            }
+        }
+    }
+
     pub fn get_details_by_name(
         &self,
-        env_name: Option<&str>,
+        env_name: &str,
     ) -> Result<Option<EnvironmentDetails>, Error<EnvironmentsListError>> {
         let rest_cfg = open_api_config();
-        let response = environments_list(&rest_cfg, env_name, None, None)?;
+        let response = environments_list(&rest_cfg, Some(env_name), None, None)?;
 
         if let Some(environments) = response.results {
             if environments.is_empty() {
@@ -44,17 +68,16 @@ impl Environments {
             } else {
                 // TODO: handle more than one??
                 let env = &environments[0];
-                Ok(Some(EnvironmentDetails::from(env)))
+                let mut details = EnvironmentDetails::from(env);
+                details.parent_name = self._get_name_from_url(details.parent_url.as_str());
+                Ok(Some(details))
             }
         } else {
             Ok(None)
         }
     }
 
-    pub fn get_id(
-        &self,
-        env_name: Option<&str>,
-    ) -> Result<Option<String>, Error<EnvironmentsListError>> {
+    pub fn get_id(&self, env_name: &str) -> Result<Option<String>, Error<EnvironmentsListError>> {
         if let Ok(Some(details)) = self.get_details_by_name(env_name) {
             Ok(Some(details.id))
         } else {
@@ -68,10 +91,20 @@ impl Environments {
         let rest_cfg = open_api_config();
         let response = environments_list(&rest_cfg, None, None, None)?;
         let mut env_info: Vec<EnvironmentDetails> = Vec::new();
+        let mut url_map: HashMap<String, String> = HashMap::new(); // maps URL to name
 
         if let Some(resp_env) = response.results {
             for env in resp_env {
-                env_info.push(EnvironmentDetails::from(&env));
+                let details = EnvironmentDetails::from(&env);
+                url_map.insert(details.url.clone(), details.name.clone());
+                env_info.push(details);
+            }
+        }
+
+        // now, fill in the names
+        for details in &mut env_info {
+            if !details.parent_url.is_empty() {
+                details.parent_name = url_map.get(&details.parent_url).unwrap().clone();
             }
         }
         env_info.sort_by(|l, r| l.name.cmp(&r.name));
@@ -80,15 +113,15 @@ impl Environments {
 
     pub fn create_environment(
         &self,
-        env_name: Option<&str>,
+        env_name: &str,
         description: Option<&str>,
-        parent_id: String,
+        parent_url: &str,
     ) -> Result<Option<String>, Error<EnvironmentsCreateError>> {
         let rest_cfg = open_api_config();
         let new_env = EnvironmentCreate {
-            name: env_name.unwrap().to_string(),
+            name: env_name.to_string(),
             description: description.map(String::from),
-            parent: Some(parent_id), // TODO: id or name?
+            parent: Some(parent_url.to_string()),
         };
         let response = environments_create(&rest_cfg, new_env)?;
         // return the id of the new environment (likely same as the old)
