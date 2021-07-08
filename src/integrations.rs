@@ -1,6 +1,7 @@
 use crate::openapi::open_api_config;
 use cloudtruth_restapi::apis::integrations_api::*;
 use cloudtruth_restapi::apis::Error;
+use cloudtruth_restapi::apis::Error::ResponseError;
 use cloudtruth_restapi::models::{AwsIntegration, GitHubIntegration, IntegrationExplorer};
 
 #[derive(Debug)]
@@ -149,21 +150,42 @@ impl IntegrationsIntf for Integrations {
                 }
                 results.sort_by(|l, r| l.fqn.cmp(&r.fqn));
             }
-        } else if let Some(_fqn) = fqn {
-            // TODO: handle 415, and 507
-            /*
-            let no_name = None;
-            results.push(IntegrationNode{
-                fqn: fqn.to_string(),
-                node_type: "File".to_string(),
-                secret: false,
-                name: get_name(&no_name, &fqn.to_string()),
-                content_type: "".to_string(),
-                content_size: 0,
-                content_data: "".to_string(),
-                content_keys: vec![]
-            })
-             */
+        } else if let Some(fqn) = fqn {
+            if let Err(ResponseError(content)) = response {
+                let name = fqn
+                    .split('/')
+                    .filter(|&x| !x.is_empty())
+                    .last()
+                    .unwrap_or_default();
+                let err_msg = if let Some(entity) = content.entity {
+                    format!("{:?}", entity)
+                } else {
+                    "".to_owned()
+                };
+                if content.status == 415 {
+                    results.push(IntegrationNode {
+                        fqn: fqn.to_string(),
+                        node_type: "FILE".to_owned(),
+                        secret: false,
+                        name: name.to_string(),
+                        content_type: "application/binary".to_owned(),
+                        content_size: 0,
+                        content_data: err_msg,
+                        content_keys: vec![],
+                    })
+                } else if content.status == 507 {
+                    results.push(IntegrationNode {
+                        fqn: fqn.to_string(),
+                        node_type: "FILE".to_owned(),
+                        secret: false,
+                        name: name.to_string(),
+                        content_type: "".to_owned(),
+                        content_size: 0,
+                        content_data: err_msg,
+                        content_keys: vec![],
+                    });
+                }
+            }
         }
         Ok(results)
     }
