@@ -122,14 +122,37 @@ impl Parameters {
     /// the specified output format.
     pub fn export_parameters(
         &self,
-        _proj_id: &str,
-        _env_id: &str,
-        _options: ParamExportOptions,
-    ) -> Result<Option<String>, Error<ProjectsParametersListError>> {
-        // let rest_cfg = open_api_config();
-
-        // TODO: implement this
-        Ok(None)
+        proj_id: &str,
+        env_id: &str,
+        options: ParamExportOptions,
+    ) -> Result<Option<String>, Error<ProjectsParameterExportListError>> {
+        let rest_cfg = open_api_config();
+        let out_fmt = format!("{:?}", options.format).to_lowercase();
+        let mask_secrets = Some(!options.secrets.unwrap_or(false));
+        let response = projects_parameter_export_list(
+            &rest_cfg,
+            proj_id,
+            options.contains.as_deref(),
+            options.ends_with.as_deref(),
+            Some(env_id),
+            options.export,
+            mask_secrets,
+            Some(out_fmt.as_str()),
+            None,
+            options.starts_with.as_deref(),
+            None,
+        )?;
+        if let Some(exports) = response.results {
+            if exports.is_empty() {
+                Ok(None)
+            } else {
+                // TODO: protect against more than one?
+                let result = exports[0].body.clone();
+                Ok(Some(result))
+            }
+        } else {
+            Ok(None)
+        }
     }
 
     /// Fetches the `ParameterDetails` for the specified project/environment/key_name.
@@ -287,6 +310,7 @@ impl Parameters {
                         url: None,
                         id: None,
                         environment: None,
+                        parameter: None,
                         dynamic: Some(dynamic),
                         static_value: value.map(|v| v.to_string()),
                         dynamic_fqn: fqn.map(|v| v.to_string()),

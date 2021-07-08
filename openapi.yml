@@ -1398,6 +1398,88 @@ paths:
       responses:
         '204':
           description: No response body
+  /api/v1/projects/{project_pk}/parameter-export/:
+    get:
+      operationId: projects_parameter_export_list
+      description: |-
+        Exports all parameters in this project in the requested format.
+
+        Parameter names and values will be coerced to the proper format (e.g. for a
+        dotenv export, my_parameter will be capitalized to MY_PARAMETER and its value
+        will be in a quoted string).  Note that capitalization is the only name coercion
+        that will be performed on parameter names, names that are invalid for a given
+        format will be omitted.
+      parameters:
+      - in: query
+        name: contains
+        schema:
+          type: string
+        description: (Optional) Only include parameters whose names contain the provided
+          string.
+      - in: query
+        name: endswith
+        schema:
+          type: string
+        description: (Optional) Only include parameters whose names end with the provided
+          string.
+      - in: query
+        name: environment
+        schema:
+          type: string
+          format: uuid
+        description: (Optional) ID of the environment to use to instantiate this template
+      - in: query
+        name: explicit_export
+        schema:
+          type: boolean
+        description: If true, explicitly marks parameters with export, e.g. export
+          FOO=bar.  Defaults to false.
+      - in: query
+        name: mask_secrets
+        schema:
+          type: boolean
+        description: If true, masks all secrets in the template (defaults to false)
+      - in: query
+        name: output
+        schema:
+          type: string
+        description: 'Format to output: One of ''docker'', ''dotenv'', ''shell''.'
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: path
+        name: project_pk
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: query
+        name: startswith
+        schema:
+          type: string
+        description: (Optional) Only include parameters whose names start with the
+          provided string.
+      - in: query
+        name: wrap
+        schema:
+          type: boolean
+        description: Indicates all secrets are wrapped.  For more information on secret
+          wrapping, see the documentation.
+      tags:
+      - projects
+      security:
+      - JWTAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedParameterExportList'
+          description: ''
   /api/v1/projects/{project_pk}/parameters/:
     get:
       operationId: projects_parameters_list
@@ -2979,6 +3061,19 @@ components:
       - directory
       - file
       type: string
+    ObjectTypeEnum:
+      enum:
+      - Environment
+      - Integration
+      - Invitation
+      - Membership
+      - Organization
+      - Parameter
+      - Project
+      - ServiceAccount
+      - Template
+      - Value
+      type: string
     Organization:
       type: object
       properties:
@@ -3181,6 +3276,26 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Organization'
+    PaginatedParameterExportList:
+      type: object
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ParameterExport'
     PaginatedParameterList:
       type: object
       properties:
@@ -3397,6 +3512,13 @@ components:
             and if they do not, those dynamic values are not allowed to be used.
       required:
       - name
+    ParameterExport:
+      type: object
+      properties:
+        body:
+          type: string
+      required:
+      - body
     PatchedAwsIntegration:
       type: object
       properties:
@@ -3764,10 +3886,10 @@ components:
           type: string
           format: uuid
           readOnly: true
-          description: A unique identifier for the environment.
+          description: A unique identifier for the template.
         name:
           type: string
-          description: The environment name.
+          description: The template name.
           maxLength: 256
         description:
           type: string
@@ -3810,6 +3932,10 @@ components:
           type: string
           format: uri
           description: The environment this value is set in.
+        parameter:
+          type: string
+          format: uri
+          readOnly: true
         dynamic:
           type: boolean
           description: A dynamic parameter leverages a CloudTruth integration to retrieve
@@ -4010,10 +4136,10 @@ components:
           type: string
           format: uuid
           readOnly: true
-          description: A unique identifier for the environment.
+          description: A unique identifier for the template.
         name:
           type: string
-          description: The environment name.
+          description: The template name.
           maxLength: 256
         description:
           type: string
@@ -4053,7 +4179,7 @@ components:
       properties:
         name:
           type: string
-          description: The environment name.
+          description: The template name.
           maxLength: 256
         description:
           type: string
@@ -4134,6 +4260,10 @@ components:
           type: string
           format: uri
           description: The environment this value is set in.
+        parameter:
+          type: string
+          format: uri
+          readOnly: true
         dynamic:
           type: boolean
           description: A dynamic parameter leverages a CloudTruth integration to retrieve
@@ -4188,6 +4318,7 @@ components:
       - environment
       - id
       - modified_at
+      - parameter
       - url
       - value
     ValueCreate:
