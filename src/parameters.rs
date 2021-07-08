@@ -129,7 +129,7 @@ impl Parameters {
         let rest_cfg = open_api_config();
         let out_fmt = format!("{:?}", options.format).to_lowercase();
         let mask_secrets = Some(!options.secrets.unwrap_or(false));
-        let response = projects_parameter_export_list(
+        let export = projects_parameter_export_list(
             &rest_cfg,
             proj_id,
             options.contains.as_deref(),
@@ -142,17 +142,7 @@ impl Parameters {
             options.starts_with.as_deref(),
             None,
         )?;
-        if let Some(exports) = response.results {
-            if exports.is_empty() {
-                Ok(None)
-            } else {
-                // TODO: protect against more than one?
-                let result = exports[0].body.clone();
-                Ok(Some(result))
-            }
-        } else {
-            Ok(None)
-        }
+        Ok(Some(export.body))
     }
 
     /// Fetches the `ParameterDetails` for the specified project/environment/key_name.
