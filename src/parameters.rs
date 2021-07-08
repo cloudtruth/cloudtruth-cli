@@ -1,7 +1,9 @@
+use crate::environments::Environments;
 use crate::openapi::open_api_config;
 use cloudtruth_restapi::apis::projects_api::*;
 use cloudtruth_restapi::apis::Error;
 use cloudtruth_restapi::models::{Parameter, ParameterCreate, PatchedValue, Value, ValueCreate};
+use once_cell::sync::OnceCell;
 use std::collections::HashMap;
 use std::result::Result;
 use std::str::FromStr;
@@ -9,6 +11,8 @@ use std::str::FromStr;
 pub struct Parameters {}
 
 const MASK_SECRETS: Option<bool> = Some(false); // TODO: tie usage to a new parameter
+
+static DEFAULT_PARAM_VALUE: OnceCell<Value> = OnceCell::new();
 
 #[derive(Debug)]
 pub struct ParameterDetails {
@@ -27,9 +31,30 @@ pub struct ParameterDetails {
     pub jmes_path: String,
 }
 
+/// Gets the singleton default `Value`
+fn default_param_value() -> &'static Value {
+    DEFAULT_PARAM_VALUE.get_or_init(|| Value {
+        url: "".to_owned(),
+        id: "".to_owned(),
+        environment: "".to_owned(),
+        parameter: "".to_owned(),
+        dynamic: None,
+        dynamic_fqn: None,
+        dynamic_filter: None,
+        static_value: None,
+        value: Some("----".to_owned()),
+        created_at: "".to_owned(),
+        modified_at: "".to_owned(),
+    })
+}
+
 impl From<&Parameter> for ParameterDetails {
     fn from(api_param: &Parameter) -> Self {
-        let env_value = api_param.values.values().next().unwrap();
+        let env_value = api_param
+            .values
+            .values()
+            .next()
+            .unwrap_or_else(|| default_param_value());
 
         ParameterDetails {
             id: api_param.id.clone(),
@@ -149,6 +174,9 @@ impl Parameters {
     ///
     /// It will return `None` if the parameter does not exist. Other errors will be returned
     /// if project/environments are not found.
+    ///
+    /// NOTE: the `source` will be the URL, so we don't need another trip to the server to
+    ///      change the URL to a name.
     pub fn get_details_by_name(
         &self,
         proj_id: &str,
@@ -200,6 +228,25 @@ impl Parameters {
         proj_id: &str,
         env_id: &str,
     ) -> Result<Vec<ParameterDetails>, Error<ProjectsParametersListError>> {
+        let mut list = self.get_parameter_unresolved_details(proj_id, env_id)?;
+
+        // now, resolve the source URL to the source environment name
+        let environment = Environments::new();
+        let url_map = environment.get_url_name_map();
+        for details in &mut list {
+            details.source = url_map.get(&details.source).unwrap().clone();
+        }
+        Ok(list)
+    }
+
+    /// This internal function gets the `ParameterDetails`, but does not resolve the `source` from
+    /// the URL to the name.
+    fn get_parameter_unresolved_details(
+        &self,
+        proj_id: &str,
+        env_id: &str,
+    ) -> Result<Vec<ParameterDetails>, Error<ProjectsParametersListError>> {
+        let mut list: Vec<ParameterDetails> = Vec::new();
         let rest_cfg = open_api_config();
         let response = projects_parameters_list(
             &rest_cfg,
@@ -210,7 +257,6 @@ impl Parameters {
             None,
             None,
         )?;
-        let mut list: Vec<ParameterDetails> = Vec::new();
         if let Some(parameters) = response.results {
             for param in parameters {
                 list.push(ParameterDetails::from(&param));

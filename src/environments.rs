@@ -18,6 +18,8 @@ pub struct EnvironmentDetails {
 }
 
 /// Converts the OpenApi `Environment` reference into a CloudTruth `EnvironmentDetails` object.
+///
+/// The `parent_name` is filled in later, so it can be done with a map of URLs to names.
 impl From<&Environment> for EnvironmentDetails {
     fn from(api_env: &Environment) -> Self {
         EnvironmentDetails {
@@ -36,7 +38,8 @@ impl Environments {
         Self {}
     }
 
-    fn _get_name_from_url(&self, url: &str) -> String {
+    /// Use the environment URL to get the corresponding name.
+    pub fn get_name_from_url(&self, url: &str) -> String {
         let rest_cfg = open_api_config();
         let id = url
             .split('/')
@@ -55,6 +58,21 @@ impl Environments {
         }
     }
 
+    /// This provides a means to get an entire list of environment URLs to names.
+    pub fn get_url_name_map(&self) -> HashMap<String, String> {
+        let rest_cfg = open_api_config();
+        let response = environments_list(&rest_cfg, None, None, None);
+        let mut result: HashMap<String, String> = HashMap::new();
+        if let Ok(list) = response {
+            if let Some(environments) = list.results {
+                for env in environments {
+                    result.insert(env.url, env.name);
+                }
+            }
+        }
+        result
+    }
+
     pub fn get_details_by_name(
         &self,
         env_name: &str,
@@ -69,7 +87,7 @@ impl Environments {
                 // TODO: handle more than one??
                 let env = &environments[0];
                 let mut details = EnvironmentDetails::from(env);
-                details.parent_name = self._get_name_from_url(details.parent_url.as_str());
+                details.parent_name = self.get_name_from_url(details.parent_url.as_str());
                 Ok(Some(details))
             }
         } else {
