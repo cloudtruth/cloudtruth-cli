@@ -17,7 +17,7 @@ CT_URL = "CLOUDTRUTH_SERVER_URL"
 CT_TIMEOUT = "CLOUDTRUTH_REQUEST_TIMEOUT"
 
 DEFAULT_SERVER_URL = "https://localhost:8000"
-DEFAULT_ENV_NAME = "base"
+DEFAULT_ENV_NAME = "default"
 
 AUTO_DESCRIPTION = "Automated testing via live_test"
 
