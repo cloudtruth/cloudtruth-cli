@@ -12,8 +12,6 @@ use std::str::FromStr;
 
 pub struct Parameters {}
 
-const MASK_SECRETS: Option<bool> = Some(false); // TODO: tie usage to a new parameter
-
 static DEFAULT_PARAM_VALUE: OnceCell<Value> = OnceCell::new();
 
 #[derive(Debug)]
@@ -192,7 +190,7 @@ impl Parameters {
             &rest_cfg,
             proj_id,
             Some(env_id),
-            MASK_SECRETS,
+            Some(false), // get secret value when querying a single parameter
             Some(key_name),
             None,
             None,
@@ -217,7 +215,7 @@ impl Parameters {
         proj_id: &str,
         env_id: &str,
     ) -> Result<HashMap<String, String>, Error<ProjectsParametersListError>> {
-        let parameters = self.get_parameter_details(proj_id, env_id)?;
+        let parameters = self.get_parameter_unresolved_details(proj_id, env_id, false)?;
         let mut env_vars = HashMap::new();
 
         for param in parameters {
@@ -231,8 +229,9 @@ impl Parameters {
         &self,
         proj_id: &str,
         env_id: &str,
+        mask_secrets: bool,
     ) -> Result<Vec<ParameterDetails>, Error<ProjectsParametersListError>> {
-        let mut list = self.get_parameter_unresolved_details(proj_id, env_id)?;
+        let mut list = self.get_parameter_unresolved_details(proj_id, env_id, mask_secrets)?;
 
         // now, resolve the source URL to the source environment name
         let environments = Environments::new();
@@ -253,6 +252,7 @@ impl Parameters {
         &self,
         proj_id: &str,
         env_id: &str,
+        mask_secrets: bool,
     ) -> Result<Vec<ParameterDetails>, Error<ProjectsParametersListError>> {
         let mut list: Vec<ParameterDetails> = Vec::new();
         let rest_cfg = open_api_config();
@@ -260,7 +260,7 @@ impl Parameters {
             &rest_cfg,
             proj_id,
             Some(env_id),
-            MASK_SECRETS,
+            Some(mask_secrets),
             None,
             None,
             None,
@@ -274,6 +274,9 @@ impl Parameters {
         Ok(list)
     }
 
+    /// Creates the `Parameter` entry.
+    ///
+    /// There is no `Value` entry created as part of this -- it is just the `Parameter`.
     pub fn create_parameter(
         &self,
         proj_id: &str,
@@ -291,6 +294,9 @@ impl Parameters {
         Ok(ParameterDetails::from(&api_param))
     }
 
+    /// Updates the `Parameter` entry.
+    ///
+    /// It does not touch any associated `Value` entries.
     pub fn update_parameter(
         &self,
         proj_id: &str,
@@ -317,6 +323,8 @@ impl Parameters {
         Ok(ParameterDetails::from(&api_param))
     }
 
+    /// Creates a `Value` entry associated with the `Parameter` identified by the
+    /// `proj_id`/`param_id`.
     pub fn create_parameter_value(
         &self,
         proj_id: &str,
@@ -340,6 +348,7 @@ impl Parameters {
         Ok(api_value.id)
     }
 
+    /// Updates a `Value` entry identified by `proj_id`/`param_id`/`value_id`.
     pub fn update_parameter_value(
         &self,
         proj_id: &str,

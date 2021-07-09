@@ -539,7 +539,8 @@ fn process_parameters_command(
     if let Some(subcmd_args) = subcmd_args.subcommand_matches("list") {
         let proj_id = resolved.project_id();
         let env_id = resolved.environment_id();
-        let mut details = parameters.get_parameter_details(proj_id, env_id)?;
+        let show_secrets = subcmd_args.is_present(SECRETS_FLAG);
+        let mut details = parameters.get_parameter_details(proj_id, env_id, !show_secrets)?;
         let references = subcmd_args.is_present("dynamic");
         let qualifier = if references { "dynamic " } else { "" };
         if references {
@@ -561,7 +562,6 @@ fn process_parameters_command(
             println!("{}", list.join("\n"))
         } else {
             let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
-            let show_secrets = subcmd_args.is_present(SECRETS_FLAG);
             let mut table = Table::new("parameter");
 
             if !references {
@@ -572,16 +572,11 @@ fn process_parameters_command(
 
             for entry in details {
                 if !references {
-                    let out_val = if entry.secret && !show_secrets {
-                        REDACTED.to_string()
-                    } else {
-                        entry.value
-                    };
                     let type_str = if entry.dynamic { "dynamic" } else { "static" };
                     let secret_str = if entry.secret { "true" } else { "false" };
                     table.add_row(vec![
                         entry.key,
-                        out_val,
+                        entry.value,
                         entry.env_name,
                         type_str.to_string(),
                         secret_str.to_string(),
