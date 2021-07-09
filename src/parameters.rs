@@ -2,7 +2,9 @@ use crate::environments::Environments;
 use crate::openapi::open_api_config;
 use cloudtruth_restapi::apis::projects_api::*;
 use cloudtruth_restapi::apis::Error;
-use cloudtruth_restapi::models::{Parameter, ParameterCreate, PatchedValue, Value, ValueCreate};
+use cloudtruth_restapi::models::{
+    Parameter, ParameterCreate, PatchedParameter, PatchedValue, Value, ValueCreate,
+};
 use once_cell::sync::OnceCell;
 use std::collections::HashMap;
 use std::result::Result;
@@ -43,7 +45,7 @@ fn default_param_value() -> &'static Value {
         dynamic_fqn: None,
         dynamic_filter: None,
         static_value: None,
-        value: Some("----".to_owned()),
+        value: Some("—".to_owned()),
         created_at: "".to_owned(),
         modified_at: "".to_owned(),
     })
@@ -139,7 +141,7 @@ impl Parameters {
         if let Ok(Some(details)) = response {
             self.delete_param_by_id(proj_id, details.id.as_str())
         } else {
-            Ok(None) // TODO: this should return an error
+            Ok(None)
         }
     }
 
@@ -233,10 +235,14 @@ impl Parameters {
         let mut list = self.get_parameter_unresolved_details(proj_id, env_id)?;
 
         // now, resolve the source URL to the source environment name
-        let environment = Environments::new();
-        let url_map = environment.get_url_name_map();
+        let environments = Environments::new();
+        let url_map = environments.get_url_name_map();
+        let default_key = "".to_string();
         for details in &mut list {
-            details.env_name = url_map.get(&details.env_url).unwrap().clone();
+            details.env_name = url_map
+                .get(&details.env_url)
+                .unwrap_or(&default_key)
+                .clone();
         }
         Ok(list)
     }
@@ -268,147 +274,104 @@ impl Parameters {
         Ok(list)
     }
 
-    fn create_parameter_value(
+    pub fn create_parameter(
+        &self,
+        proj_id: &str,
+        key_name: &str,
+        description: Option<&str>,
+        secret: Option<bool>,
+    ) -> Result<ParameterDetails, Error<ProjectsParametersCreateError>> {
+        let rest_cfg = open_api_config();
+        let param_new = ParameterCreate {
+            name: key_name.to_string(),
+            description: description.map(|x| x.to_string()),
+            secret,
+        };
+        let api_param = projects_parameters_create(&rest_cfg, proj_id, param_new)?;
+        Ok(ParameterDetails::from(&api_param))
+    }
+
+    pub fn update_parameter(
+        &self,
+        proj_id: &str,
+        param_id: &str,
+        key_name: &str,
+        description: Option<&str>,
+        secret: Option<bool>,
+    ) -> Result<ParameterDetails, Error<ProjectsParametersPartialUpdateError>> {
+        let rest_cfg = open_api_config();
+        let param_update = PatchedParameter {
+            url: None,
+            id: None,
+            name: Some(key_name.to_string()),
+            description: description.map(String::from),
+            secret,
+            templates: None,
+            uses_dynamic_values: None,
+            values: None,
+            created_at: None,
+            modified_at: None,
+        };
+        let api_param =
+            projects_parameters_partial_update(&rest_cfg, param_id, proj_id, Some(param_update))?;
+        Ok(ParameterDetails::from(&api_param))
+    }
+
+    pub fn create_parameter_value(
         &self,
         proj_id: &str,
         env_id: &str,
-        param_id: String,
+        param_id: &str,
         value: Option<&str>,
         fqn: Option<&str>,
         jmes_path: Option<&str>,
-    ) -> Result<Option<String>, Error<ProjectsParametersValuesCreateError>> {
+    ) -> Result<String, Error<ProjectsParametersValuesCreateError>> {
         let rest_cfg = open_api_config();
         let dynamic = value.is_none() || fqn.is_some();
-
-        let value_new = ValueCreate {
+        let value_create = ValueCreate {
             environment: env_id.to_string(),
             dynamic: Some(dynamic),
             static_value: value.map(|v| v.to_string()),
             dynamic_fqn: fqn.map(|v| v.to_string()),
             dynamic_filter: jmes_path.map(|v| v.to_string()),
         };
-        let response = projects_parameters_values_create(
-            &rest_cfg,
-            param_id.as_str(),
-            proj_id,
-            value_new,
-            None,
-        );
-        if let Ok(result) = response {
-            Ok(Some(result.id))
-        } else {
-            Ok(None)
-        }
+        let api_value =
+            projects_parameters_values_create(&rest_cfg, param_id, proj_id, value_create, None)?;
+        Ok(api_value.id)
     }
 
-    #[allow(clippy::too_many_arguments)]
-    pub fn set_parameter(
+    pub fn update_parameter_value(
         &self,
         proj_id: &str,
-        env_id: &str,
-        key_name: &str,
+        param_id: &str,
+        value_id: &str,
         value: Option<&str>,
-        description: Option<&str>,
-        secret: Option<bool>,
         fqn: Option<&str>,
         jmes_path: Option<&str>,
-    ) -> Result<Option<String>, Error<ProjectsParametersUpdateError>> {
-        let mut result: Option<String> = None;
+    ) -> Result<String, Error<ProjectsParametersValuesPartialUpdateError>> {
         let rest_cfg = open_api_config();
-        let response = projects_parameters_list(
+        let dynamic = fqn.is_some() || jmes_path.is_some();
+        let value_update = PatchedValue {
+            url: None,
+            id: None,
+            environment: None,
+            parameter: None,
+            dynamic: Some(dynamic),
+            dynamic_fqn: fqn.map(String::from),
+            dynamic_filter: jmes_path.map(String::from),
+            static_value: value.map(String::from),
+            value: None,
+            created_at: None,
+            modified_at: None,
+        };
+        let api_value = projects_parameters_values_partial_update(
             &rest_cfg,
+            value_id,
+            param_id,
             proj_id,
-            Some(env_id),
-            MASK_SECRETS,
-            Some(key_name),
             None,
-            None,
-        );
-        if let Ok(paged_results) = response {
-            if let Some(list) = paged_results.results {
-                let mut param: Parameter = list[0].clone();
-                let mut param_changed = false;
-                if let Some(desc_str) = description {
-                    param.description = Some(desc_str.to_string());
-                    param_changed = true;
-                }
-                if secret.is_some() {
-                    param.secret = secret;
-                    param_changed = true;
-                }
-
-                let dynamic = value.is_none() || fqn.is_some();
-                let env_value: &Value = param.values.values().next().unwrap();
-
-                if value.is_none() && fqn.is_none() && jmes_path.is_none() {
-                    // nothing to set here, no need for updates
-                } else if env_value.environment.as_str() == env_id {
-                    // update
-                    let value_up = PatchedValue {
-                        url: None,
-                        id: None,
-                        environment: None,
-                        parameter: None,
-                        dynamic: Some(dynamic),
-                        static_value: value.map(|v| v.to_string()),
-                        dynamic_fqn: fqn.map(|v| v.to_string()),
-                        dynamic_filter: jmes_path.map(|v| v.to_string()),
-                        value: None,
-                        created_at: None,
-                        modified_at: None,
-                    };
-                    let response = projects_parameters_values_partial_update(
-                        &rest_cfg,
-                        env_value.id.as_str(),
-                        param.id.as_str(),
-                        proj_id,
-                        None,
-                        Some(value_up),
-                    );
-                    if let Ok(value) = response {
-                        result = Some(format!("{}/{}", param.id, value.id));
-                    }
-                } else {
-                    let response = self.create_parameter_value(
-                        proj_id,
-                        env_id,
-                        param.id.clone(),
-                        value,
-                        fqn,
-                        jmes_path,
-                    );
-                    if let Ok(Some(value_id)) = response {
-                        result = Some(format!("{}/{}", param.id, value_id));
-                    }
-                }
-
-                if param_changed {
-                    let param_id = param.id.clone();
-                    projects_parameters_update(&rest_cfg, param_id.as_str(), proj_id, param)?;
-                }
-            } else {
-                let param_new = ParameterCreate {
-                    name: key_name.to_string(),
-                    description: description.map(|x| x.to_string()),
-                    secret,
-                };
-                let response = projects_parameters_create(&rest_cfg, proj_id, param_new);
-                if let Ok(param) = response {
-                    let response = self.create_parameter_value(
-                        proj_id,
-                        env_id,
-                        param.id.clone(),
-                        value,
-                        fqn,
-                        jmes_path,
-                    );
-                    if let Ok(Some(value_id)) = response {
-                        result = Some(format!("{}/{}", param.id, value_id))
-                    }
-                }
-            }
-        }
-
-        Ok(result)
+            Some(value_update),
+        )?;
+        Ok(api_value.id)
     }
 }

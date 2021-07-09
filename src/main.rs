@@ -18,7 +18,7 @@ use crate::config::env::ConfigEnv;
 use crate::config::{Config, CT_PROFILE, DEFAULT_ENV_NAME};
 use crate::environments::Environments;
 use crate::integrations::{Integrations, IntegrationsIntf};
-use crate::parameters::{ParamExportFormat, ParamExportOptions, Parameters};
+use crate::parameters::{ParamExportFormat, ParamExportOptions, ParameterDetails, Parameters};
 use crate::projects::{Projects, ProjectsIntf};
 use crate::subprocess::{Inheritance, SubProcess, SubProcessIntf};
 use crate::table::Table;
@@ -31,7 +31,7 @@ use std::str::FromStr;
 use std::{fs, process};
 use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 
-const REDACTED: &str = "*****";
+const REDACTED: &str = "********";
 
 pub struct ResolvedIds {
     pub env_name: Option<String>,
@@ -614,16 +614,17 @@ fn process_parameters_command(
             );
         }
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("set") {
-        let key = subcmd_args.value_of("KEY").unwrap();
+        let key_name = subcmd_args.value_of("KEY").unwrap();
         let proj_id = resolved.project_id();
         let env_id = resolved.environment_id();
         let prompt_user = subcmd_args.is_present("prompt");
         let filename = subcmd_args.value_of("input-file");
-        let mut fqn = subcmd_args.value_of("FQN").map(|f| f.to_string());
-        let mut jmes_path = subcmd_args.value_of("JMES").map(|j| j.to_string());
-        let mut value = subcmd_args.value_of("value").map(|v| v.to_string());
-        let mut description = subcmd_args.value_of("description").map(|v| v.to_string());
-        let mut secret: Option<bool> = match subcmd_args.value_of("secret") {
+        let fqn = subcmd_args.value_of("FQN");
+        let jmes_path = subcmd_args.value_of("JMES");
+        let mut value = subcmd_args.value_of("value");
+        let val_str: String;
+        let description = subcmd_args.value_of("description");
+        let secret: Option<bool> = match subcmd_args.value_of("secret") {
             Some("false") => Some(false),
             Some("true") => Some(true),
             _ => None,
@@ -645,10 +646,12 @@ fn process_parameters_command(
 
         // if user asked to be prompted
         if prompt_user {
-            println!("Please enter the '{}' value: ", key);
-            value = Some(read_password()?);
+            println!("Please enter the '{}' value: ", key_name);
+            val_str = read_password()?;
+            value = Some(val_str.as_str());
         } else if let Some(filename) = filename {
-            value = Some(fs::read_to_string(filename).expect("Failed to read value from file."));
+            val_str = fs::read_to_string(filename).expect("Failed to read value from file.");
+            value = Some(val_str.as_str());
         }
 
         // make sure there is at least one parameter to updated
@@ -667,79 +670,80 @@ fn process_parameters_command(
             )?;
         } else {
             // get the original values, so that is not lost
-            if let Ok(Some(original)) = parameters.get_details_by_name(proj_id, env_id, &key) {
-                // use original values
-                if value.is_none() && jmes_path.is_none() && fqn.is_none() {
-                    if original.dynamic {
-                        fqn = Some(original.fqn);
-                        jmes_path = Some(original.jmes_path);
-                    } else {
-                        value = Some(original.value)
-                    }
-                } else if value.is_none() {
-                    // no value was specified, but at least one of fqn/jmes was... allows individual
-                    // FQN/JMES to be set.
-                    if fqn.is_none() {
-                        fqn = Some(original.fqn)
-                    }
-                    if jmes_path.is_none() {
-                        jmes_path = Some(original.jmes_path)
-                    }
+            let mut updated: ParameterDetails;
+            if let Some(original) = parameters.get_details_by_name(proj_id, env_id, key_name)? {
+                // only update if there is something to update
+                if description.is_some() || secret.is_some() {
+                    updated = parameters.update_parameter(
+                        proj_id,
+                        &original.id,
+                        &original.key,
+                        description,
+                        secret,
+                    )?;
+                    // copy a few fields to insure we detect the correct environment
+                    updated.val_id = original.val_id;
+                    updated.env_url = original.env_url;
+                    updated.env_name = original.env_name;
+                } else {
+                    // nothing to update here, but need to copy details
+                    updated = original;
                 }
-
-                if description.is_none() {
-                    description = Some(original.description);
-                }
-                if secret.is_none() {
-                    secret = Some(original.secret);
-                }
-            }
-
-            let updated_id = parameters.set_parameter(
-                proj_id,
-                env_id,
-                key,
-                value.as_deref(),
-                description.as_deref(),
-                secret,
-                fqn.as_deref(),
-                jmes_path.as_deref(),
-            )?;
-
-            if updated_id.is_some() {
-                println!(
-                    "Successfully updated parameter '{}' in project '{}' for environment '{}'.",
-                    key,
-                    resolved.project_display_name(),
-                    resolved.environment_display_name(),
-                );
             } else {
-                println!(
-                    "Failed to update parameter '{}' in project '{}' for environment '{}'.",
-                    key,
-                    resolved.project_display_name(),
-                    resolved.environment_display_name()
-                );
+                updated = parameters.create_parameter(proj_id, key_name, description, secret)?;
             }
+
+            // don't do anything if there's nothing to do
+            if value.is_some() || fqn.is_some() || jmes_path.is_some() {
+                let param_id = updated.id.as_str();
+                // if any existing environment does not match the desired environemtn
+                if !updated.env_url.contains(env_id) {
+                    parameters
+                        .create_parameter_value(proj_id, env_id, param_id, value, fqn, jmes_path)?;
+                } else {
+                    parameters.update_parameter_value(
+                        proj_id,
+                        param_id,
+                        &updated.val_id,
+                        value,
+                        fqn,
+                        jmes_path,
+                    )?;
+                }
+            }
+            println!(
+                "Successfully updated parameter '{}' in project '{}' for environment '{}'.",
+                key_name,
+                resolved.project_display_name(),
+                resolved.environment_display_name(),
+            );
         }
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("delete") {
-        let key = subcmd_args.value_of("KEY").unwrap();
+        let key_name = subcmd_args.value_of("KEY").unwrap();
         let proj_id = resolved.project_id();
         let env_id = resolved.environment_id();
-        let result = parameters.delete_parameter(proj_id, env_id, key);
+        let result = parameters.delete_parameter(proj_id, env_id, key_name);
         let _ = match result {
             Ok(Some(_)) => {
                 println!(
                     "Successfully removed parameter '{}' from project '{}' for environment '{}'.",
-                    key,
+                    key_name,
                     resolved.project_display_name(),
                     resolved.environment_display_name()
                 );
             }
+            Ok(None) => {
+                println!(
+                    "Did not find parameter '{}' to delete from project '{}' for environment '{}'.",
+                    key_name,
+                    resolved.project_display_name(),
+                    resolved.environment_display_name()
+                )
+            }
             _ => {
                 println!(
                     "Failed to remove parameter '{}' from project '{}' for environment '{}'.",
-                    key,
+                    key_name,
                     resolved.project_display_name(),
                     resolved.environment_display_name()
                 );
