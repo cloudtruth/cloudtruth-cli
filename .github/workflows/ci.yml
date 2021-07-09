@@ -45,6 +45,9 @@ jobs:
       - name: Show Rust version and platform details
         run: rustc --version --verbose
 
+      - name: Generate client
+        run: make client
+
       - run: cargo fmt --all -- --check
 
       - uses: actions-rs/clippy-check@v1
@@ -83,6 +86,7 @@ jobs:
       - name: Show Rust version and platform details
         run: rustc --version --verbose
 
+      - run: make client
       - run: cargo build
       - run: cargo test
 
