@@ -348,7 +348,7 @@ SNA=fu
         var1_name = "base"
         var1_value1 = "first"
         var1_value2 = "second"
-        var1_value3 = "thrid"
+        var1_value3 = "third"
         var2_name = "pitch"
         var2_value1 = "slider"
         var2_value2 = "split"
@@ -440,7 +440,6 @@ SNA=fu
         self.delete_environment(cmd_env, env_name3)
         self.delete_environment(cmd_env, env_name2)
 
-    @unittest.skip("Fix export sort order")
     def test_parameter_export(self):
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
@@ -572,9 +571,9 @@ SECOND_SECRET="sensitive value with spaces"
         self.assertEqual(result.return_value, 0)
         self.assertEqual(result.out(), """\
 FIRST_PARAM=posix_compliant_value
-FIRST_PARAM_SECRET=\*\*\*\*\*
-SECOND_PARAM=a\ value\ with\ spaces
-SECOND_SECRET=\*\*\*\*\*
+FIRST_PARAM_SECRET='********'
+SECOND_PARAM='a value with spaces'
+SECOND_SECRET='********'
 
 """)
 
@@ -584,8 +583,8 @@ SECOND_SECRET=\*\*\*\*\*
         self.assertEqual(result.out(), """\
 FIRST_PARAM=posix_compliant_value
 FIRST_PARAM_SECRET=top-secret-sci
-SECOND_PARAM=a\ value\ with\ spaces
-SECOND_SECRET=sensitive\ value\ with\ spaces
+SECOND_PARAM='a value with spaces'
+SECOND_SECRET='sensitive value with spaces'
 
 """)
 
