@@ -143,6 +143,35 @@ impl Parameters {
         }
     }
 
+    /// Deletes the "override" for the specified environment.
+    pub fn delete_parameter_value(
+        &self,
+        proj_id: &str,
+        env_id: &str,
+        key_name: &str,
+    ) -> Result<Option<String>, Error<ProjectsParametersValuesDestroyError>> {
+        // The only delete mechanism is by parameter ID, so start by querying the parameter info.
+        let response = self.get_details_by_name(proj_id, env_id, key_name);
+
+        if let Ok(Some(details)) = response {
+            if details.env_url.contains(env_id) {
+                let rest_cfg = open_api_config();
+                projects_parameters_values_destroy(
+                    &rest_cfg,
+                    &details.val_id,
+                    &details.id,
+                    proj_id,
+                )?;
+                Ok(Some(details.val_id))
+            } else {
+                // the "discovered" value is not for this environment
+                Ok(None)
+            }
+        } else {
+            Ok(None)
+        }
+    }
+
     /// Exports the specified parameters and values to a well-known output type.
     ///
     /// On success, returns a formatted string containing the specified parameters/values in

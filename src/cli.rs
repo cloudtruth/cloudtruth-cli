@@ -229,6 +229,10 @@ pub fn build_cli() -> App<'static, 'static> {
                             .long("value")
                             .takes_value(true)
                             .help("Static parameter value")),
+                    SubCommand::with_name("unset")
+                        .about(concat!("Remove a value/override from the selected ",
+                            "project/environment and leaves the parameter in place."))
+                        .arg(Arg::with_name("KEY").required(true).index(1)),
                 ]),
         )
         .subcommand(SubCommand::with_name("templates")

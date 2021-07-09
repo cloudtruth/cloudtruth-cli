@@ -208,6 +208,7 @@ SUBCOMMANDS:
     list      List CloudTruth parameters [aliases: ls]
     set       Set a value in the selected project/environment for an existing parameter or creates a new one if
               needed
+    unset     Remove a value/override from the selected project/environment and leaves the parameter in place.
 ========================================
 cloudtruth-parameters-delete 
 Delete the parameter from the project
@@ -291,6 +292,19 @@ OPTIONS:
     -i, --input <input-file>    Read the static value from the local input file
         --secret <secret>       Flags whether this is a secret parameter [possible values: true, false]
     -v, --value <value>         Static parameter value
+
+ARGS:
+    <KEY>    
+========================================
+cloudtruth-parameters-unset 
+Remove a value/override from the selected project/environment and leaves the parameter in place.
+
+USAGE:
+    cloudtruth parameters unset <KEY>
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
 
 ARGS:
     <KEY>    

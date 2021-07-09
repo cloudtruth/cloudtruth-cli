@@ -721,26 +721,23 @@ fn process_parameters_command(
         let _ = match result {
             Ok(Some(_)) => {
                 println!(
-                    "Successfully removed parameter '{}' from project '{}' for environment '{}'.",
+                    "Successfully removed parameter '{}' from project '{}'.",
                     key_name,
                     resolved.project_display_name(),
-                    resolved.environment_display_name()
                 );
             }
             Ok(None) => {
                 println!(
-                    "Did not find parameter '{}' to delete from project '{}' for environment '{}'.",
+                    "Did not find parameter '{}' to delete from project '{}'.",
                     key_name,
                     resolved.project_display_name(),
-                    resolved.environment_display_name()
                 )
             }
             _ => {
                 println!(
-                    "Failed to remove parameter '{}' from project '{}' for environment '{}'.",
+                    "Failed to remove parameter '{}' from project '{}'.",
                     key_name,
                     resolved.project_display_name(),
-                    resolved.environment_display_name()
                 );
             }
         };
@@ -773,6 +770,37 @@ fn process_parameters_command(
                 resolved.environment_display_name()
             )
         }
+    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("unset") {
+        let key_name = subcmd_args.value_of("KEY").unwrap();
+        let proj_id = resolved.project_id();
+        let env_id = resolved.environment_id();
+        let result = parameters.delete_parameter_value(proj_id, env_id, key_name);
+        let _ = match result {
+            Ok(Some(_)) => {
+                println!(
+                    "Successfully removed parameter value '{}' from project '{}' for environment '{}'.",
+                    key_name,
+                    resolved.project_display_name(),
+                    resolved.environment_display_name()
+                );
+            }
+            Ok(None) => {
+                println!(
+                    "Did not find parameter value '{}' to delete from project '{}' for environment '{}'.",
+                    key_name,
+                    resolved.project_display_name(),
+                    resolved.environment_display_name()
+                )
+            }
+            _ => {
+                println!(
+                    "Failed to remove parameter value '{}' from project '{}' for environment '{}'.",
+                    key_name,
+                    resolved.project_display_name(),
+                    resolved.environment_display_name()
+                );
+            }
+        };
     } else {
         warn_missing_subcommand("parameters")?;
     }

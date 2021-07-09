@@ -435,6 +435,37 @@ SNA=fu
 
 """)
 
+        # remove env2 override
+        unset_cmd = f"param unset '{var1_name}'"
+        result = self.run_cli(cmd_env, proj_cmd + f"--env {env_name2} " + unset_cmd)
+        self.assertEqual(result.return_value, 0)
+        self.assertIn(f"Successfully removed parameter value '{var1_name}'", result.out())
+        self.assertIn(f"for environment '{env_name2}'", result.out())
+
+        result = self.run_cli(cmd_env, env3_list)
+        self.assertIn(f"{var1_name},{var1_value3},{env_name3}", result.out())
+
+        result = self.run_cli(cmd_env, env2_list)
+        self.assertIn(f"{var1_name},{var1_value1},{env_name1}", result.out())
+
+        result = self.run_cli(cmd_env, env1_list)
+        self.assertIn(f"{var1_name},{var1_value1},{env_name1}", result.out())
+
+        # remove env3 override
+        result = self.run_cli(cmd_env, proj_cmd + f"--env {env_name3} " + unset_cmd)
+        self.assertEqual(result.return_value, 0)
+        self.assertIn(f"Successfully removed parameter value '{var1_name}'", result.out())
+        self.assertIn(f"for environment '{env_name3}'", result.out())
+
+        result = self.run_cli(cmd_env, env3_list)
+        self.assertIn(f"{var1_name},{var1_value1},{env_name1}", result.out())
+
+        result = self.run_cli(cmd_env, env2_list)
+        self.assertIn(f"{var1_name},{var1_value1},{env_name1}", result.out())
+
+        result = self.run_cli(cmd_env, env1_list)
+        self.assertIn(f"{var1_name},{var1_value1},{env_name1}", result.out())
+
         # cleanup -- environments must be in reverse order
         self.delete_project(cmd_env, proj_name)
         self.delete_environment(cmd_env, env_name3)
