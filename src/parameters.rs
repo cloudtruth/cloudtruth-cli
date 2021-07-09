@@ -25,7 +25,8 @@ pub struct ParameterDetails {
     // these come from the value for the specified environment
     pub val_id: String,
     pub value: String,
-    pub source: String,
+    pub env_url: String,
+    pub env_name: String,
     pub dynamic: bool,
     pub fqn: String,
     pub jmes_path: String,
@@ -64,7 +65,8 @@ impl From<&Parameter> for ParameterDetails {
 
             val_id: env_value.id.clone(),
             value: env_value.value.clone().unwrap_or_default(),
-            source: env_value.environment.clone(),
+            env_url: env_value.environment.clone(),
+            env_name: "".to_owned(),
             dynamic: env_value.dynamic.unwrap_or(false),
             fqn: env_value.dynamic_fqn.clone().unwrap_or_default(),
             jmes_path: env_value.dynamic_filter.clone().unwrap_or_default(),
@@ -234,7 +236,7 @@ impl Parameters {
         let environment = Environments::new();
         let url_map = environment.get_url_name_map();
         for details in &mut list {
-            details.source = url_map.get(&details.source).unwrap().clone();
+            details.env_name = url_map.get(&details.env_url).unwrap().clone();
         }
         Ok(list)
     }

@@ -582,7 +582,7 @@ fn process_parameters_command(
                     table.add_row(vec![
                         entry.key,
                         out_val,
-                        entry.source,
+                        entry.env_name,
                         type_str.to_string(),
                         secret_str.to_string(),
                         entry.description,
