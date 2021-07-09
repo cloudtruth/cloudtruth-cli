@@ -7,7 +7,6 @@ import unittest
 
 from testcase import CT_API_KEY, CT_URL
 from testcase import CT_TEST_JOB_ID, CT_TEST_LOG_COMMANDS, CT_TEST_LOG_OUTPUT
-from testcase import DEFAULT_SERVER_URL
 
 
 def parse_args(*args) -> argparse.Namespace:
