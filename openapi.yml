@@ -151,6 +151,101 @@ paths:
                 type: object
                 additionalProperties: {}
           description: ''
+  /api/v1/audit/:
+    get:
+      operationId: audit_list
+      description: A searchable log of all the actions taken by users and service
+        accounts within the organization.
+      parameters:
+      - in: query
+        name: action
+        schema:
+          type: string
+          enum:
+          - create
+          - delete
+          - update
+        description: The action that was taken.
+      - in: query
+        name: earliest
+        schema:
+          type: string
+          format: date-time
+      - in: query
+        name: latest
+        schema:
+          type: string
+          format: date-time
+      - in: query
+        name: object_id
+        schema:
+          type: string
+      - in: query
+        name: object_type
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: query
+        name: user_id
+        schema:
+          type: string
+      tags:
+      - audit
+      security:
+      - JWTAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAuditTrailList'
+          description: ''
+  /api/v1/audit/{id}/:
+    get:
+      operationId: audit_retrieve
+      description: Retrieve one record from the audit log.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+          description: A unique identifier for the audit record.
+        required: true
+      tags:
+      - audit
+      security:
+      - JWTAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditTrail'
+          description: ''
+  /api/v1/audit/summary/:
+    get:
+      operationId: audit_summary_retrieve
+      description: Summary information about the organization's audit trail.
+      tags:
+      - audit
+      security:
+      - JWTAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditTrailSummary'
+          description: ''
   /api/v1/environments/:
     get:
       operationId: environments_list
@@ -2634,6 +2729,70 @@ paths:
             - Did the Bearer token belong to the User being deleted?
 components:
   schemas:
+    AuditTrail:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+          readOnly: true
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+          description: A unique identifier for the audit record.
+        action:
+          type: string
+          readOnly: true
+          description: The action that was taken.
+        object_id:
+          type: string
+          readOnly: true
+          description: The id of the object associated with the action.
+        object_name:
+          type: string
+          readOnly: true
+          description: The name of the object associated with the action, if applicable.
+        object_type:
+          allOf:
+          - $ref: '#/components/schemas/ObjectTypeEnum'
+          readOnly: true
+          description: The type of object associated with the action.
+        timestamp:
+          type: string
+          format: date-time
+          readOnly: true
+          description: The timestamp of the activity that was audited.
+        user:
+          allOf:
+          - $ref: '#/components/schemas/User'
+          readOnly: true
+          description: Details of the user associated with this change.
+      required:
+      - action
+      - id
+      - object_id
+      - object_name
+      - object_type
+      - timestamp
+      - url
+      - user
+    AuditTrailSummary:
+      type: object
+      properties:
+        earliest:
+          type: string
+          format: date-time
+          nullable: true
+          readOnly: true
+          description: The earliest audit record timestamp available.
+        total:
+          type: integer
+          readOnly: true
+          description: The total number of audit records available.
+      required:
+      - earliest
+      - total
     AwsEnabledRegionsEnum:
       enum:
       - af-south-1
@@ -3178,6 +3337,26 @@ components:
           maxLength: 256
       required:
       - name
+    PaginatedAuditTrailList:
+      type: object
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/AuditTrail'
     PaginatedAwsIntegrationList:
       type: object
       properties:
@@ -3480,21 +3659,26 @@ components:
         values:
           type: object
           additionalProperties:
-            $ref: '#/components/schemas/Value'
+            allOf:
+            - $ref: '#/components/schemas/Value'
+            nullable: true
           readOnly: true
-          description: "\n            Environments inherit from a single parent to\
-            \ form a tree, as a result\n            a single parameter may have different\
-            \ values present for each environment.\n            When a value is not\
-            \ explicitly set in an environment, the parent environment\n         \
-            \   is consulted to see if it has a value defined, and so on.\n\n    \
-            \        The dictionary of values has an environment url as the key, and\
-            \ the optional\n            Value record that it resolves to.  If the\
-            \ Value.environment matches the key,\n            then it is an explicit\
-            \ value set for that environment.  If they differ, the\n            value\
-            \ was obtained from a parent environment (directly or indirectly).  If\
-            \ the\n            value is None then no value has ever been set in any\
-            \ environment for this\n            parameter.\n\n            key: Environment\
-            \ url\n            value: optional Value record\n        "
+          description: "\n            Each parameter has an effective value in every\
+            \ environment based on\n            environment inheritance and which\
+            \ environments have had a value set.\n\n            Environments inherit\
+            \ from a single parent to form a tree, as a result\n            a single\
+            \ parameter may have different values present for each environment.\n\
+            \            When a value is not explicitly set in an environment, the\
+            \ parent environment\n            is consulted to see if it has a value\
+            \ defined, and so on.\n\n            The dictionary of values has an environment\
+            \ url as the key, and the optional\n            Value record that it resolves\
+            \ to.  If the Value.environment matches the key,\n            then it\
+            \ is an explicit value set for that environment.  If they differ, the\n\
+            \            value was obtained from a parent environment (directly or\
+            \ indirectly).  If the\n            value is None then no value has ever\
+            \ been set in any environment for this\n            parameter.\n\n   \
+            \         key: Environment url\n            value: optional Value record\n\
+            \        "
         created_at:
           type: string
           format: date-time
@@ -3817,21 +4001,26 @@ components:
         values:
           type: object
           additionalProperties:
-            $ref: '#/components/schemas/Value'
+            allOf:
+            - $ref: '#/components/schemas/Value'
+            nullable: true
           readOnly: true
-          description: "\n            Environments inherit from a single parent to\
-            \ form a tree, as a result\n            a single parameter may have different\
-            \ values present for each environment.\n            When a value is not\
-            \ explicitly set in an environment, the parent environment\n         \
-            \   is consulted to see if it has a value defined, and so on.\n\n    \
-            \        The dictionary of values has an environment url as the key, and\
-            \ the optional\n            Value record that it resolves to.  If the\
-            \ Value.environment matches the key,\n            then it is an explicit\
-            \ value set for that environment.  If they differ, the\n            value\
-            \ was obtained from a parent environment (directly or indirectly).  If\
-            \ the\n            value is None then no value has ever been set in any\
-            \ environment for this\n            parameter.\n\n            key: Environment\
-            \ url\n            value: optional Value record\n        "
+          description: "\n            Each parameter has an effective value in every\
+            \ environment based on\n            environment inheritance and which\
+            \ environments have had a value set.\n\n            Environments inherit\
+            \ from a single parent to form a tree, as a result\n            a single\
+            \ parameter may have different values present for each environment.\n\
+            \            When a value is not explicitly set in an environment, the\
+            \ parent environment\n            is consulted to see if it has a value\
+            \ defined, and so on.\n\n            The dictionary of values has an environment\
+            \ url as the key, and the optional\n            Value record that it resolves\
+            \ to.  If the Value.environment matches the key,\n            then it\
+            \ is an explicit value set for that environment.  If they differ, the\n\
+            \            value was obtained from a parent environment (directly or\
+            \ indirectly).  If the\n            value is None then no value has ever\
+            \ been set in any environment for this\n            parameter.\n\n   \
+            \         key: Environment url\n            value: optional Value record\n\
+            \        "
         created_at:
           type: string
           format: date-time
