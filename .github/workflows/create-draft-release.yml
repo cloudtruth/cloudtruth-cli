@@ -203,6 +203,9 @@ jobs:
           override: true
           target: ${{ matrix.target }}
 
+      - name: Prerequisites
+        run: make prerequisites
+
       - name: Generate client
         run: make client
 

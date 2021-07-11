@@ -51,10 +51,10 @@ clean:
 
 # client needs to re-generated when the openapi.yaml changes
 client: openapi.yml
-	docker run --rm -v "$(shell pwd):/local" --user "$(shell id -u):$(shell id -g)" openapitools/openapi-generator-cli generate \
-		-i /local/openapi.yml \
+	openapi-generator generate \
+		-i openapi.yml \
 		-g rust \
-		-o /local/client \
+		-o client \
 		--additional-properties=packageName=cloudtruth-restapi,supportAsync=false
 	python3 patch_client.py && cd client && cargo fmt && cargo build
 
@@ -82,6 +82,7 @@ ifeq ($(os_name),Darwin)
 else
 	sudo apt-get install shellcheck python-yaml pkg-config;
 endif
+	python3 -m pip install --user --upgrade -r requirements.txt
 	make -C tests $@
 
 precommit_test:

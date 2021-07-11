@@ -45,6 +45,9 @@ jobs:
       - name: Show Rust version and platform details
         run: rustc --version --verbose
 
+      - name: Prerequisites
+        run: make prerequisites
+
       - name: Generate client
         run: make client
 
@@ -86,6 +89,7 @@ jobs:
       - name: Show Rust version and platform details
         run: rustc --version --verbose
 
+      - run: make prerequisites
       - run: make client
       - run: cargo build
       - run: cargo test
