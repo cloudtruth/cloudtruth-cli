@@ -266,8 +266,9 @@ fn process_project_command(subcmd_args: &ArgMatches, projects: &impl ProjectsInt
         }
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("list") {
         let details = projects.get_project_details()?;
-        // NOTE: should always have at least the default project
-        if !subcmd_args.is_present(VALUES_FLAG) {
+        if details.is_empty() {
+            println!("No projects found.");
+        } else if !subcmd_args.is_present(VALUES_FLAG) {
             let list = details
                 .iter()
                 .map(|v| v.name.clone())
