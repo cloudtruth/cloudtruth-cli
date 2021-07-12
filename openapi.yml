@@ -684,10 +684,10 @@ paths:
         - The user must first install the CloudTruth GitHub Application in \ntheir\
         \ GitHub organization and obtain the `installation_id` of the \napplication\
         \ in order to create the integration.\n\n### Initiating the GitHub Application\
-        \ Installation ###\n\n- Go to `https://github.com/apps/cloudtruth-local/installations/new?state=<bearer_token>`\n\
-        - On successful installation the browser will return to \n`https://app.localhost/app_setup/github`\
-        \ \nand provide the `installation_id` in the URI.\n- POST to this api to verify\
-        \ and establish the integration."
+        \ Installation ###\n\n- Go to `https://github.com/apps/GITHUB_APP_NAME/installations/new?state=<bearer_token>`\n\
+        - On successful installation the browser will return to \n`https://APP_URL/app_setup/github`\
+        \ (configured in ctops/bin/github*) \nand provide the `installation_id` in\
+        \ the URI.\n- POST to this api to verify and establish the integration."
       summary: Establishes a GitHub Integration.
       tags:
       - integrations
