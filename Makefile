@@ -78,11 +78,11 @@ else
 	@echo "Already running rustc version: $(rust_intended)"
 endif
 ifeq ($(os_name),Darwin)
-	brew install shellcheck libyaml;
+	brew install shellcheck libyaml openapi-generator;
 else
 	sudo apt-get install shellcheck python-yaml pkg-config;
+	sudo npm install @openapitools/openapi-generator-cli -g;
 endif
-	python3 -m pip install --user --upgrade -r requirements.txt
 	make -C tests $@
 
 precommit_test:
