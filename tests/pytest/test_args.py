@@ -22,25 +22,26 @@ class TestTopLevelArgs(TestCase):
         self.create_environment(cmd_env, env1)
         self.create_environment(cmd_env, env2)
 
-        # remote things to make sure we have a "clean" environment
+        # remove things to make sure we have a "clean" environment
         cmd_env.pop(CT_PROJ, 'No project')
         cmd_env.pop(CT_ENV, 'No environment')
 
         # the CLOUDTRUTH_PROFILE cannot be removed, since it may change the server-url/api-key, but
         # need to accommodate for the profile also setting the project/environment variables
-        def_proj = "default"
+        def_proj = None
         def_env = "default"
         prof_name = cmd_env.get(CT_PROFILE, None)
         if prof_name:
             profile = self.get_profile(cmd_env, prof_name)
             if profile:
-                def_proj = profile.get("Project", None) or "default"
+                def_proj = profile.get("Project", None)
                 def_env = profile.get("Environment", None) or "default"
 
         # check defaults are used
-        result = self.run_cli(cmd_env, base_cmd + printenv)
-        self.assertIn(f"{CT_PROJ}={def_proj}", result.out())
-        self.assertIn(f"{CT_ENV}={def_env}", result.out())
+        if def_proj:
+            result = self.run_cli(cmd_env, base_cmd + printenv)
+            self.assertIn(f"{CT_PROJ}={def_proj}", result.out())
+            self.assertIn(f"{CT_ENV}={def_env}", result.out())
 
         # set project/environment in environment
         cmd_env[CT_PROJ] = proj1
@@ -74,6 +75,9 @@ class TestTopLevelArgs(TestCase):
     def test_arg_missing_subcommand(self):
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
+        proj_name = self.make_name("missing-subarg")
+        self.create_project(cmd_env, proj_name)
+        cmd_env[CT_PROJ] = proj_name
 
         for (subcmd, aliases) in {
             "config": ["configuration"],
@@ -88,6 +92,8 @@ class TestTopLevelArgs(TestCase):
                 result = self.run_cli(cmd_env, base_cmd + alias)
                 self.assertEqual(result.return_value, 0)
                 self.assertIn(f"No '{subcmd}' sub-command executed", result.err())
+
+        self.delete_project(cmd_env, proj_name)
 
     def test_arg_resolution(self):
         base_cmd = self.get_cli_base_cmd()
@@ -167,10 +173,10 @@ class TestTopLevelArgs(TestCase):
         # NOTE: request_timeout is configurable via profile, but profiles are not integration tested
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
-        printenv = f" run -i none -- {self.get_display_env_command()}"
+        cmd = f" project ls -v"
 
         cmd_env[CT_TIMEOUT] = "0"
-        result = self.run_cli(cmd_env, base_cmd + printenv)
+        result = self.run_cli(cmd_env, base_cmd + cmd)
         self.assertNotEqual(0, result.return_value)
         self.assertIn("timed out", result.err())
 
@@ -178,15 +184,15 @@ class TestTopLevelArgs(TestCase):
         # NOTE: server_url is configurable via profile, but profiles are not integration tested
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
-        printenv = f" run -i none -- {self.get_display_env_command()}"
+        cmd = " projects ls -v"
 
         cmd_env[CT_URL] = "0.0.0.0:0"
-        result = self.run_cli(cmd_env, base_cmd + printenv)
+        result = self.run_cli(cmd_env, base_cmd + cmd)
         self.assertNotEqual(0, result.return_value)
         self.assertIn("relative URL without a base", result.err())
 
         cmd_env[CT_URL] = "https://0.0.0.0:0/graphql"
-        result = self.run_cli(cmd_env, base_cmd + printenv)
+        result = self.run_cli(cmd_env, base_cmd + cmd)
         self.assertNotEqual(0, result.return_value)
         self.assertIn("error trying to connect", result.err())
 
