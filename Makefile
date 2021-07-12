@@ -51,10 +51,10 @@ clean:
 
 # client needs to re-generated when the openapi.yaml changes
 client: openapi.yml
-	openapi-generator generate \
-		-i openapi.yml \
+	docker run --rm -v "$(shell pwd):/local" --user "$(shell id -u):$(shell id -g)" openapitools/openapi-generator-cli generate \
+		-i /local/openapi.yml \
 		-g rust \
-		-o client \
+		-o /local/client \
 		--additional-properties=packageName=cloudtruth-restapi,supportAsync=false
 	python3 patch_client.py && cd client && cargo fmt && cargo build
 
@@ -78,10 +78,9 @@ else
 	@echo "Already running rustc version: $(rust_intended)"
 endif
 ifeq ($(os_name),Darwin)
-	brew install shellcheck libyaml openapi-generator;
+	brew install shellcheck libyaml;
 else
 	sudo apt-get install shellcheck python-yaml pkg-config;
-	sudo npm install @openapitools/openapi-generator-cli -g;
 endif
 	make -C tests $@
 

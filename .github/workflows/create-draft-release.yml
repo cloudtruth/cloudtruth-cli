@@ -203,8 +203,9 @@ jobs:
           override: true
           target: ${{ matrix.target }}
 
-      - name: Prerequisites
-        run: make prerequisites
+      - name: Install Docker
+        uses: docker-practice/actions-setup-docker@master
+        run: docker version
 
       - name: Generate client
         run: make client
