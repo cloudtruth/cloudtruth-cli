@@ -45,8 +45,7 @@ jobs:
       - name: Show Rust version and platform details
         run: rustc --version --verbose
 
-      - name: Install Docker
-        uses: docker-practice/actions-setup-docker@master
+      # NOTE: docker is installed on Ubuntu, so no need to re-install or update it
 
       - name: Generate client
         run: make client
@@ -91,6 +90,11 @@ jobs:
 
       - name: Install Docker
         uses: docker-practice/actions-setup-docker@master
+
+      - name: Update Windows docker
+        if: runner.os == 'Windows'
+        runs: |
+          $Env:ProgramFiles\Docker\Docker\DockerCli.exe -SwitchDaemon
 
       - run: make client
       - run: cargo build

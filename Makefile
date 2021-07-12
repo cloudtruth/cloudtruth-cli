@@ -51,7 +51,7 @@ clean:
 
 # client needs to re-generated when the openapi.yaml changes
 client: openapi.yml
-	DOCKER_CLI_EXPERIMENTAL=enabled docker run --rm \
+	docker run --rm \
 		-v "$(shell pwd):/local" \
 		--user "$(shell id -u):$(shell id -g)" \
 		openapitools/openapi-generator-cli generate \

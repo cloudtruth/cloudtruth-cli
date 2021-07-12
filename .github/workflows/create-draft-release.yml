@@ -206,6 +206,11 @@ jobs:
       - name: Install Docker
         uses: docker-practice/actions-setup-docker@master
 
+      - name: Update Windows docker
+        if: runner.os == 'Windows'
+        runs: |
+          $Env:ProgramFiles\Docker\Docker\DockerCli.exe -SwitchDaemon
+
       - name: Generate client
         run: make client
 
