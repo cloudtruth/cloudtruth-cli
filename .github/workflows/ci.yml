@@ -93,7 +93,7 @@ jobs:
 
       - name: Update Windows docker
         if: runner.os == 'Windows'
-        runs: |
+        run: |
           $Env:ProgramFiles\Docker\Docker\DockerCli.exe -SwitchDaemon
 
       - run: make client
