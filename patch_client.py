@@ -201,9 +201,33 @@ def parameter_null_fix(client_dir: str) -> None:
         f.close()
 
 
+def update_gitpush(client_dir: str) -> None:
+    filename = client_dir + "/git_push.sh"
+    f = open(filename, "r")
+    temp = f.read()
+    f.close()
+
+    orig = temp
+
+    orig_backticks = "git_remote=`git remote`"
+    update_backticks = "git_remote=$(git remote)"
+    temp = temp.replace(orig_backticks, update_backticks)
+
+    orig_need_quotes = ":${GIT_TOKEN}@"
+    update_need_quotes = ":\"${GIT_TOKEN}\"@"
+    temp = temp.replace(orig_need_quotes, update_need_quotes)
+
+    if temp != orig:
+        print(f"Updating {filename} with shell fixes")
+        f = open(filename, "w")
+        f.write(temp)
+        f.close()
+
+
 if __name__ == "__main__":
     client_dir = os.getcwd() + "/client"
     srcdir = client_dir + "/src"
     allow_snake(srcdir)
     support_api_key(srcdir)
     parameter_null_fix(client_dir)
+    update_gitpush(client_dir)
