@@ -20,7 +20,7 @@ static INSTANCE: OnceCell<Config> = OnceCell::new();
 const CONFIG_FILE_NAME: &str = "cli.yml";
 
 /// Default OpenApi server URL
-pub const DEFAULT_SERVER_URL: &str = "https://localhost:8000";
+pub const DEFAULT_SERVER_URL: &str = "https://api.cloudtruth.io:8000";
 
 /// Default OpenApi server request timeout
 pub const DEFAULT_REQUEST_TIMEOUT: u64 = 30;
