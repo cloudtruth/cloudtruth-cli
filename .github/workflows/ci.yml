@@ -45,11 +45,6 @@ jobs:
       - name: Show Rust version and platform details
         run: rustc --version --verbose
 
-      # NOTE: docker is installed on Ubuntu, so no need to re-install or update it
-
-      - name: Generate client
-        run: make client
-
       - run: cargo fmt --all -- --check
 
       - uses: actions-rs/clippy-check@v1
@@ -88,15 +83,6 @@ jobs:
       - name: Show Rust version and platform details
         run: rustc --version --verbose
 
-      - name: Install Docker
-        uses: docker-practice/actions-setup-docker@master
-
-      - name: Update Windows docker
-        if: runner.os == 'Windows'
-        run: |
-          $Env:ProgramFiles\Docker\Docker\DockerCli.exe -SwitchDaemon
-
-      - run: make client
       - run: cargo build
       - run: cargo test
 

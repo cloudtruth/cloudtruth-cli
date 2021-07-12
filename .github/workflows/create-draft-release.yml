@@ -203,17 +203,6 @@ jobs:
           override: true
           target: ${{ matrix.target }}
 
-      - name: Install Docker
-        uses: docker-practice/actions-setup-docker@master
-
-      - name: Update Windows docker
-        if: runner.os == 'Windows'
-        run: |
-          $Env:ProgramFiles\Docker\Docker\DockerCli.exe -SwitchDaemon
-
-      - name: Generate client
-        run: make client
-
       - name: Install cross with OpenSSL support
         run: cargo install cross --version 0.1.16
         if: matrix.use-cross
