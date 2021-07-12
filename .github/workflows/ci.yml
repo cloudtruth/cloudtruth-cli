@@ -47,7 +47,6 @@ jobs:
 
       - name: Install Docker
         uses: docker-practice/actions-setup-docker@master
-        run: docker version
 
       - name: Generate client
         run: make client
@@ -92,7 +91,6 @@ jobs:
 
       - name: Install Docker
         uses: docker-practice/actions-setup-docker@master
-        run: docker version
 
       - run: make client
       - run: cargo build
