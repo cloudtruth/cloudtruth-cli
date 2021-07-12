@@ -511,11 +511,10 @@ fn process_integrations_command(
         } else {
             let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
             let mut table = Table::new("integration");
-            table.set_header(&["Name", "Type", "FQN", "Status", "Updated", "Description"]);
+            table.set_header(&["Name", "FQN", "Status", "Updated", "Description"]);
             for entry in details {
                 table.add_row(vec![
                     entry.name,
-                    entry.provider,
                     entry.fqn,
                     entry.status,
                     entry.status_time,
