@@ -47,7 +47,7 @@ cargo: client
 
 clean:
 	rm -rf target/
-	rm -rf client/
+	rm -rf client/target/
 
 # client needs to re-generated when the openapi.yaml changes
 client: openapi.yml
