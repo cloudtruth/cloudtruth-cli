@@ -157,21 +157,21 @@ impl Environments {
 
     pub fn update_environment(
         &self,
-        environment_id: String,
+        environment_id: &str,
+        environment_name: &str,
         description: Option<&str>,
     ) -> Result<Option<String>, Error<EnvironmentsPartialUpdateError>> {
-        // TODO: allow setting other fields (e.g. name)
         let rest_cfg = open_api_config();
         let env = PatchedEnvironment {
             url: None,
             id: None,
-            name: None,
+            name: Some(environment_name.to_string()),
             description: description.map(String::from),
             parent: None,
             created_at: None,
             modified_at: None,
         };
-        let response = environments_partial_update(&rest_cfg, environment_id.as_str(), Some(env))?;
+        let response = environments_partial_update(&rest_cfg, environment_id, Some(env))?;
         Ok(Some(response.id))
     }
 }

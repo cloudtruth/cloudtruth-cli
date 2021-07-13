@@ -13,7 +13,7 @@ mod subprocess;
 mod table;
 mod templates;
 
-use crate::cli::{CONFIRM_FLAG, FORMAT_OPT, SECRETS_FLAG, VALUES_FLAG};
+use crate::cli::{CONFIRM_FLAG, FORMAT_OPT, RENAME_OPT, SECRETS_FLAG, VALUES_FLAG};
 use crate::config::env::ConfigEnv;
 use crate::config::{Config, CT_PROFILE, DEFAULT_ENV_NAME};
 use crate::environments::Environments;
@@ -258,7 +258,7 @@ fn process_project_command(subcmd_args: &ArgMatches, projects: &impl ProjectsInt
             if !confirmed {
                 warning_message(format!("Project '{}' not deleted!", proj_name))?;
             } else {
-                projects.delete_project(details.id)?;
+                projects.delete_project(&details.id)?;
                 println!("Deleted project '{}'", proj_name);
             }
         } else {
@@ -285,23 +285,20 @@ fn process_project_command(subcmd_args: &ArgMatches, projects: &impl ProjectsInt
         }
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("set") {
         let proj_name = subcmd_args.value_of("NAME").unwrap();
+        let rename = subcmd_args.value_of(RENAME_OPT);
         let description = subcmd_args.value_of("description");
         let details = projects.get_details_by_name(proj_name)?;
 
         if let Some(details) = details {
-            if description == Some(details.description.as_str()) {
+            if description.is_none() && rename.is_none() {
                 warning_message(format!(
-                    "Project '{}' not updated: same description",
-                    proj_name
-                ))?;
-            } else if description.is_none() {
-                warning_message(format!(
-                    "Project '{}' not updated: no description provided",
+                    "Project '{}' not updated: no updated parameters provided",
                     proj_name
                 ))?;
             } else {
-                projects.update_project(details.name, details.id, description)?;
-                println!("Updated project '{}'", proj_name);
+                let name = rename.unwrap_or(&proj_name);
+                projects.update_project(name, &details.id, description)?;
+                println!("Updated project '{}'", name);
             }
         } else {
             projects.create_project(proj_name, description)?;
@@ -419,29 +416,25 @@ fn process_environment_command(
         let env_name = subcmd_args.value_of("NAME").unwrap();
         let parent_name = subcmd_args.value_of("parent");
         let description = subcmd_args.value_of("description");
+        let rename = subcmd_args.value_of(RENAME_OPT);
         let details = environments.get_details_by_name(env_name)?;
 
         if let Some(details) = details {
-            if description == Some(details.description.as_str()) {
-                warning_message(format!(
-                    "Environment '{}' not updated: same description",
-                    env_name
-                ))?;
-            } else if parent_name.is_some() && parent_name.unwrap() != details.parent_name.as_str()
-            {
+            if parent_name.is_some() && parent_name.unwrap() != details.parent_name.as_str() {
                 error_message(format!(
                     "Environment '{}' parent cannot be updated.",
                     env_name
                 ))?;
                 process::exit(6);
-            } else if description.is_none() {
+            } else if description.is_none() && rename.is_none() {
                 warning_message(format!(
-                    "Environment '{}' not updated: no description provided",
+                    "Environment '{}' not updated: no updated parameters provided",
                     env_name
                 ))?;
             } else {
-                environments.update_environment(details.id, description)?;
-                println!("Updated environment '{}'", env_name);
+                let name = rename.unwrap_or(env_name);
+                environments.update_environment(&details.id, name, description)?;
+                println!("Updated environment '{}'", name);
             }
         } else {
             let parent_name = parent_name.unwrap_or(DEFAULT_ENV_NAME);
@@ -619,6 +612,8 @@ fn process_parameters_command(
         let mut value = subcmd_args.value_of("value");
         let val_str: String;
         let description = subcmd_args.value_of("description");
+        let rename = subcmd_args.value_of(RENAME_OPT);
+        let final_name = rename.unwrap_or(key_name);
         let secret: Option<bool> = match subcmd_args.value_of("secret") {
             Some("false") => Some(false),
             Some("true") => Some(true),
@@ -655,11 +650,12 @@ fn process_parameters_command(
             && value.is_none()
             && jmes_path.is_none()
             && fqn.is_none()
+            && rename.is_none()
         {
             warn_user(
                 concat!(
                     "Nothing changed. Please provide at least one of: ",
-                    "description, secret, or value/fqn/jmes-path."
+                    "description, rename, secret, or value/fqn/jmes-path."
                 )
                 .to_string(),
             )?;
@@ -668,11 +664,11 @@ fn process_parameters_command(
             let mut updated: ParameterDetails;
             if let Some(original) = parameters.get_details_by_name(proj_id, env_id, key_name)? {
                 // only update if there is something to update
-                if description.is_some() || secret.is_some() {
+                if description.is_some() || secret.is_some() || rename.is_some() {
                     updated = parameters.update_parameter(
                         proj_id,
                         &original.id,
-                        &original.key,
+                        &final_name,
                         description,
                         secret,
                     )?;
@@ -708,7 +704,7 @@ fn process_parameters_command(
             }
             println!(
                 "Successfully updated parameter '{}' in project '{}' for environment '{}'.",
-                key_name,
+                final_name,
                 resolved.project_display_name(),
                 resolved.environment_display_name(),
             );

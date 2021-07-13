@@ -34,12 +34,21 @@ class TestEnvironments(TestCase):
         # idempotent - do it again
         result = self.run_cli(cmd_env, sub_cmd + f"set {env_name} --desc \"{new_desc}\"")
         self.assertEqual(result.return_value, 0)
-        self.assertTrue(result.err_contains_value(f"Environment '{env_name}' not updated: same description"))
+
+        # rename the environment
+        orig_name = env_name
+        env_name = self.make_name("test-env-rename")
+        result = self.run_cli(cmd_env, sub_cmd + f"set {orig_name} --rename \"{env_name}\"")
+        self.assertEqual(result.return_value, 0)
+        self.assertIn(f"Updated environment '{env_name}'", result.out())
 
         # nothing to update
         result = self.run_cli(cmd_env, sub_cmd + f"set {env_name}")
         self.assertEqual(result.return_value, 0)
-        self.assertTrue(result.err_contains_value(f"Environment '{env_name}' not updated: no description"))
+        self.assertIn(
+            f"Environment '{env_name}' not updated: no updated parameters provided",
+            result.err(),
+        )
 
         # test the list without the table
         result = self.run_cli(cmd_env, sub_cmd + "list")

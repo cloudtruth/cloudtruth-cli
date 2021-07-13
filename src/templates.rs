@@ -6,6 +6,7 @@ use cloudtruth_restapi::models::Template;
 
 pub struct Templates {}
 
+#[derive(Debug)]
 pub struct TemplateDetails {
     pub id: String,
     pub name: String,

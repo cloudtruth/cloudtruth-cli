@@ -7,6 +7,7 @@ pub const CONFIRM_FLAG: &str = "confirm";
 pub const FORMAT_OPT: &str = "format";
 pub const VALUES_FLAG: &str = "values";
 pub const SECRETS_FLAG: &str = "secrets";
+pub const RENAME_OPT: &str = "rename";
 
 pub fn binary_name() -> String {
     option_env!("CARGO_PKG_NAME")
@@ -37,6 +38,13 @@ fn confirm_flag() -> Arg<'static, 'static> {
         .short("y")
         .long("yes")
         .help("Avoid confirmation prompt")
+}
+
+fn rename_option() -> Arg<'static, 'static> {
+    Arg::with_name(RENAME_OPT)
+        .short("r")
+        .long(RENAME_OPT)
+        .takes_value(true)
 }
 
 pub fn build_cli() -> App<'static, 'static> {
@@ -116,6 +124,7 @@ pub fn build_cli() -> App<'static, 'static> {
                             .long("desc")
                             .takes_value(true)
                             .help("Environment's description"))
+                        .arg(rename_option().help("New environment name"))
                         .arg(Arg::with_name("parent")
                             .short("p")
                             .long("parent")
@@ -219,6 +228,7 @@ pub fn build_cli() -> App<'static, 'static> {
                             .short("p")
                             .long("prompt")
                             .help("Set the static value using unecho'd terminal"))
+                        .arg(rename_option().help("New parameter name"))
                         .arg(Arg::with_name("secret")
                             .long("secret")
                             .takes_value(true)
@@ -320,6 +330,7 @@ pub fn build_cli() -> App<'static, 'static> {
                             .index(1)
                             .required(true)
                             .help("Project name"))
+                        .arg(rename_option().help("New project name"))
                         .arg(Arg::with_name("description")
                             .short("d")
                             .long("desc")

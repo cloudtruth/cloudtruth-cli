@@ -174,9 +174,15 @@ class TestCase(unittest.TestCase):
                 env_name = _next_part(args, "set")
                 if env_name:
                     self._environments.add(env_name)
+                env_name = _next_part(args, "--rename") or _next_part(args, "-r")
+                if env_name:
+                    self._environments.add(env_name)
             # if we're using any of our 'projects' aliases
             elif set(args) & set(["projects", "project", "proj"]):
                 proj_name = _next_part(args, "set")
+                if proj_name:
+                    self._projects.add(proj_name)
+                proj_name = _next_part(args, "--rename") or _next_part(args, "-r")
                 if proj_name:
                     self._projects.add(proj_name)
 

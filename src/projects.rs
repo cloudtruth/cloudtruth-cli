@@ -45,16 +45,13 @@ pub trait ProjectsIntf {
     /// Update the specified project
     fn update_project(
         &self,
-        proj_name: String,
-        proj_id: String,
+        proj_name: &str,
+        proj_id: &str,
         description: Option<&str>,
     ) -> Result<Option<String>, Error<ProjectsPartialUpdateError>>;
 
     /// Delete the specified project
-    fn delete_project(
-        &self,
-        proj_id: String,
-    ) -> Result<Option<String>, Error<ProjectsDestroyError>>;
+    fn delete_project(&self, proj_id: &str) -> Result<Option<String>, Error<ProjectsDestroyError>>;
 
     /// Get a complete list of projects for this organization.
     fn get_project_details(&self) -> Result<Vec<ProjectDetails>, Error<ProjectsListError>>;
@@ -126,30 +123,29 @@ impl ProjectsIntf for Projects {
 
     fn delete_project(
         &self,
-        project_id: String,
+        project_id: &str,
     ) -> Result<Option<String>, Error<ProjectsDestroyError>> {
         let rest_cfg = open_api_config();
-        projects_destroy(&rest_cfg, project_id.as_str())?;
-        Ok(Some(project_id))
+        projects_destroy(&rest_cfg, project_id)?;
+        Ok(Some(project_id.to_string()))
     }
 
     fn update_project(
         &self,
-        project_name: String,
-        project_id: String,
+        project_name: &str,
+        project_id: &str,
         description: Option<&str>,
     ) -> Result<Option<String>, Error<ProjectsPartialUpdateError>> {
-        // TODO: allow setting more details?
         let rest_cfg = open_api_config();
         let proj = PatchedProject {
             url: None,
             id: None,
-            name: Some(project_name),
+            name: Some(project_name.to_string()),
             description: description.map(|d| d.to_string()),
             created_at: None,
             modified_at: None,
         };
-        let response = projects_partial_update(&rest_cfg, project_id.as_str(), Some(proj))?;
+        let response = projects_partial_update(&rest_cfg, project_id, Some(proj))?;
         Ok(Some(response.id))
     }
 }

@@ -92,10 +92,24 @@ my_param,cRaZy value,default,static,false,this is just a test description
         self.assertIn(value2, result.out())
 
         ########
+        # rename the parameter
+        orig_name = key1
+        key1 = "renamed_param"
+        result = self.run_cli(cmd_env, sub_cmd + f"set {orig_name} -r {key1}")
+        self.assertEqual(result.return_value, 0)
+        self.assertIn(f"Successfully updated parameter '{key1}'", result.out())
+
+        ########
         # update the just the description
         desc2 = "alt description"
         result = self.run_cli(cmd_env, sub_cmd + f"set {key1} -d '{desc2}'")
         self.assertEqual(result.return_value, 0)
+
+        ########
+        # no updates provided
+        result = self.run_cli(cmd_env, sub_cmd + f"set {key1}")
+        self.assertEqual(result.return_value, 0)
+        self.assertIn("Please provide at least one of", result.err())
 
         result = self.run_cli(cmd_env, sub_cmd + f"ls -v")
         self.assertTrue(result.out_contains_both(key1, value2))

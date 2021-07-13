@@ -5,7 +5,8 @@
 * Integrations:
   * Simplified `explore` interface -- use FQN instead of NAME/PATH/\[TYPE\]
   * Adjusted information displayed for `list -v` -- show Status (and update time), remove Type
-* `config edit` displays edited file path
+* `config edit` displays edited file path.
+* Added `--rename` option for `set` subcommand of `parameters`, `projects`, and `environments`. 
 
 # 0.5.4 - 2021-06-15
 
