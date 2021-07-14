@@ -1,12 +1,15 @@
 use crate::environments::Environments;
 use crate::openapi::open_api_config;
 use cloudtruth_restapi::apis::projects_api::*;
-use cloudtruth_restapi::apis::Error;
+use cloudtruth_restapi::apis::Error::{self, ResponseError};
+use cloudtruth_restapi::apis::ResponseContent;
 use cloudtruth_restapi::models::{
     Parameter, ParameterCreate, PatchedParameter, PatchedValue, Value, ValueCreate,
 };
 use once_cell::sync::OnceCell;
 use std::collections::HashMap;
+use std::error;
+use std::fmt::{self, Formatter};
 use std::result::Result;
 use std::str::FromStr;
 
@@ -104,6 +107,51 @@ pub struct ParamExportOptions {
     pub export: Option<bool>,
     pub secrets: Option<bool>,
 }
+
+/// Simplified (type-agnostic) response data
+#[derive(Clone, Debug)]
+pub struct ResponseData {
+    pub status: reqwest::StatusCode,
+    pub content: String,
+}
+
+/// Convert from OpenApi ResponseContent to local, type-agnostic ResponseData.
+impl<T> From<ResponseContent<T>> for ResponseData {
+    fn from(content: ResponseContent<T>) -> Self {
+        ResponseData {
+            status: content.status,
+            content: content.content,
+        }
+    }
+}
+
+#[derive(Clone, Debug)]
+pub enum ParameterValueError {
+    CreateResponseError(ResponseData),
+    CreateError(String),
+    UpdateResponseError(ResponseData),
+    UpdateError(String),
+    InvalidFqnOrJmesPath(ResponseData),
+    FqnOrJmesPathNotFound(ResponseData),
+}
+
+impl fmt::Display for ParameterValueError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        match self {
+            ParameterValueError::InvalidFqnOrJmesPath(_) => {
+                write!(f, "Invalid FQN or JMES path expression.")
+            }
+            ParameterValueError::FqnOrJmesPathNotFound(_) => {
+                write!(f, "Did not find FQN or JMES path.")
+            }
+            e => {
+                write!(f, "{:?}", e)
+            }
+        }
+    }
+}
+
+impl error::Error for ParameterValueError {}
 
 impl Parameters {
     pub fn new() -> Self {
@@ -362,7 +410,7 @@ impl Parameters {
         value: Option<&str>,
         fqn: Option<&str>,
         jmes_path: Option<&str>,
-    ) -> Result<String, Error<ProjectsParametersValuesCreateError>> {
+    ) -> Result<String, ParameterValueError> {
         let rest_cfg = open_api_config();
         let dynamic = value.is_none() || fqn.is_some();
         let value_create = ValueCreate {
@@ -372,9 +420,23 @@ impl Parameters {
             dynamic_fqn: fqn.map(|v| v.to_string()),
             dynamic_filter: jmes_path.map(|v| v.to_string()),
         };
-        let api_value =
-            projects_parameters_values_create(&rest_cfg, param_id, proj_id, value_create, None)?;
-        Ok(api_value.id)
+        let response =
+            projects_parameters_values_create(&rest_cfg, param_id, proj_id, value_create, None);
+        match response {
+            Ok(api_value) => Ok(api_value.id),
+            Err(ResponseError(content)) => match content.status.as_u16() {
+                400 => Err(ParameterValueError::InvalidFqnOrJmesPath(
+                    ResponseData::from(content),
+                )),
+                404 => Err(ParameterValueError::FqnOrJmesPathNotFound(
+                    ResponseData::from(content),
+                )),
+                _ => Err(ParameterValueError::CreateResponseError(
+                    ResponseData::from(content),
+                )),
+            },
+            Err(e) => Err(ParameterValueError::CreateError(e.to_string())),
+        }
     }
 
     /// Updates a `Value` entry identified by `proj_id`/`param_id`/`value_id`.
@@ -386,7 +448,7 @@ impl Parameters {
         value: Option<&str>,
         fqn: Option<&str>,
         jmes_path: Option<&str>,
-    ) -> Result<String, Error<ProjectsParametersValuesPartialUpdateError>> {
+    ) -> Result<String, ParameterValueError> {
         let rest_cfg = open_api_config();
         let dynamic = fqn.is_some() || jmes_path.is_some();
         let value_update = PatchedValue {
@@ -402,14 +464,28 @@ impl Parameters {
             created_at: None,
             modified_at: None,
         };
-        let api_value = projects_parameters_values_partial_update(
+        let response = projects_parameters_values_partial_update(
             &rest_cfg,
             value_id,
             param_id,
             proj_id,
             None,
             Some(value_update),
-        )?;
-        Ok(api_value.id)
+        );
+        match response {
+            Ok(api_value) => Ok(api_value.id),
+            Err(ResponseError(content)) => match content.status.as_u16() {
+                400 => Err(ParameterValueError::InvalidFqnOrJmesPath(
+                    ResponseData::from(content),
+                )),
+                404 => Err(ParameterValueError::FqnOrJmesPathNotFound(
+                    ResponseData::from(content),
+                )),
+                _ => Err(ParameterValueError::UpdateResponseError(
+                    ResponseData::from(content),
+                )),
+            },
+            Err(e) => Err(ParameterValueError::UpdateError(e.to_string())),
+        }
     }
 }

@@ -687,7 +687,7 @@ fn process_parameters_command(
             // don't do anything if there's nothing to do
             if value.is_some() || fqn.is_some() || jmes_path.is_some() {
                 let param_id = updated.id.as_str();
-                // if any existing environment does not match the desired environemtn
+                // if any existing environment does not match the desired environment
                 if !updated.env_url.contains(env_id) {
                     parameters
                         .create_parameter_value(proj_id, env_id, param_id, value, fqn, jmes_path)?;
