@@ -8,6 +8,22 @@ pub type OpenApiConfig = Configuration;
 
 static INSTANCE: OnceCell<OpenApiConfig> = OnceCell::new();
 
+/// Extracts the "detail" from the content string, where the content string is a JSON object
+/// that contains a "detail" field string value.
+pub fn extract_details(content: &str) -> String {
+    let json_result: Result<serde_json::Value, serde_json::Error> = serde_json::from_str(content);
+    let info = match json_result {
+        Ok(data) => match data.get("detail") {
+            Some(value) => value.to_string(),
+            _ => "No details provided.".to_owned(),
+        },
+        _ => "Did not find details.".to_owned(),
+    };
+    info.trim_start_matches('\"')
+        .trim_end_matches('\"')
+        .to_string()
+}
+
 fn user_agent_name() -> String {
     format!(
         "{}/{}/{}",
@@ -97,5 +113,20 @@ mod tests {
 
         env::remove_var(CT_API_KEY);
         env::remove_var(CT_SERVER_URL);
+    }
+
+    #[test]
+    fn extract_details_test() {
+        let content = "";
+        let expected = "Did not find details.";
+        assert_eq!(expected.to_string(), extract_details(content));
+
+        let content = "{\"speicla\":\"Integration for `github://foo/bar` could not be found.\"}";
+        let expected = "No details provided.";
+        assert_eq!(expected.to_string(), extract_details(content));
+
+        let content = "{\"detail\":\"Integration for `github://foo/bar` could not be found.\"}";
+        let expected = "Integration for `github://foo/bar` could not be found.";
+        assert_eq!(expected.to_string(), extract_details(content));
     }
 }

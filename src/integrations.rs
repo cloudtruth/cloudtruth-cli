@@ -1,8 +1,10 @@
-use crate::openapi::open_api_config;
+use crate::openapi::{extract_details, open_api_config};
 use cloudtruth_restapi::apis::integrations_api::*;
 use cloudtruth_restapi::apis::Error;
 use cloudtruth_restapi::apis::Error::ResponseError;
 use cloudtruth_restapi::models::{AwsIntegration, GitHubIntegration, IntegrationExplorer};
+use std::error;
+use std::fmt::{self, Formatter};
 
 #[derive(Debug)]
 pub struct IntegrationDetails {
@@ -81,6 +83,25 @@ impl From<&IntegrationExplorer> for IntegrationNode {
     }
 }
 
+#[derive(Debug)]
+pub enum IntegrationNodeError {
+    NotFoundError(String),
+    InternalServerError(String),
+    RequestError(Error<IntegrationsExploreListError>),
+}
+
+impl fmt::Display for IntegrationNodeError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        match self {
+            IntegrationNodeError::NotFoundError(msg) => write!(f, "{}", msg),
+            IntegrationNodeError::InternalServerError(msg) => write!(f, "{}", msg),
+            e => write!(f, "{:?}", e),
+        }
+    }
+}
+
+impl error::Error for IntegrationNodeError {}
+
 /// This is the interface that is implemented to retrieve integration information.
 ///
 /// This layer of abstraction is done to allow for mocking in unittest, and to potentially allow
@@ -95,7 +116,42 @@ pub trait IntegrationsIntf {
     fn get_integration_nodes(
         &self,
         fqn: Option<&str>,
-    ) -> Result<Vec<IntegrationNode>, Error<IntegrationsExploreListError>>;
+    ) -> Result<Vec<IntegrationNode>, IntegrationNodeError>;
+}
+
+/// Creates an `IntetgrationNode` for a binary file.
+///
+/// Marks type as `application/binary` even though this should be returned for
+/// any binary type (e.g. jpg, image, mp3). Since an error was thrown, the
+/// size is unknown.
+fn binary_node(fqn: &str, name: &str, err_msg: &str) -> IntegrationNode {
+    IntegrationNode {
+        fqn: fqn.to_string(),
+        node_type: "FILE".to_owned(),
+        secret: false,
+        name: name.to_string(),
+        content_type: "application/binary".to_owned(),
+        content_size: 0,
+        content_data: err_msg.to_string(),
+        content_keys: vec![],
+    }
+}
+
+/// Creates an `IntegrationNode` for a large file.
+///
+/// The `content_type` and `content_size` are undetermined, since the exception
+/// does not contain that information.
+fn large_node(fqn: &str, name: &str, err_msg: &str) -> IntegrationNode {
+    IntegrationNode {
+        fqn: fqn.to_string(),
+        node_type: "FILE".to_owned(),
+        secret: false,
+        name: name.to_string(),
+        content_type: "".to_owned(),
+        content_size: -1,
+        content_data: err_msg.to_string(),
+        content_keys: vec![],
+    }
 }
 
 /// The `Integrations` structure implements the `IntegrationsIntf` to get the information from
@@ -139,54 +195,40 @@ impl IntegrationsIntf for Integrations {
     fn get_integration_nodes(
         &self,
         fqn: Option<&str>,
-    ) -> Result<Vec<IntegrationNode>, Error<IntegrationsExploreListError>> {
+    ) -> Result<Vec<IntegrationNode>, IntegrationNodeError> {
         let rest_cfg = open_api_config();
-        let mut results: Vec<IntegrationNode> = Vec::new();
         let response = integrations_explore_list(&rest_cfg, fqn, None);
         if let Ok(response) = response {
+            let mut results: Vec<IntegrationNode> = Vec::new();
             if let Some(list) = response.results {
                 for item in list {
                     results.push(IntegrationNode::from(&item))
                 }
                 results.sort_by(|l, r| l.fqn.cmp(&r.fqn));
             }
-        } else if let Some(fqn) = fqn {
-            if let Err(ResponseError(content)) = response {
-                let name = fqn
-                    .split('/')
-                    .filter(|&x| !x.is_empty())
-                    .last()
-                    .unwrap_or_default();
-                let err_msg = if let Some(entity) = content.entity {
-                    format!("{:?}", entity)
-                } else {
-                    "".to_owned()
-                };
-                if content.status == 415 {
-                    results.push(IntegrationNode {
-                        fqn: fqn.to_string(),
-                        node_type: "FILE".to_owned(),
-                        secret: false,
-                        name: name.to_string(),
-                        content_type: "application/binary".to_owned(),
-                        content_size: 0,
-                        content_data: err_msg,
-                        content_keys: vec![],
-                    })
-                } else if content.status == 507 {
-                    results.push(IntegrationNode {
-                        fqn: fqn.to_string(),
-                        node_type: "FILE".to_owned(),
-                        secret: false,
-                        name: name.to_string(),
-                        content_type: "".to_owned(),
-                        content_size: 0,
-                        content_data: err_msg,
-                        content_keys: vec![],
-                    });
-                }
+            Ok(results)
+        } else if let Err(ResponseError(ref content)) = response {
+            let fqn = fqn.unwrap_or_default();
+            let name = fqn
+                .split('/')
+                .filter(|&x| !x.is_empty())
+                .last()
+                .unwrap_or_default();
+            let err_msg = extract_details(&content.content);
+            if content.status == 415 {
+                Ok(vec![binary_node(fqn, name, &err_msg)])
+            } else if content.status == 507 {
+                Ok(vec![large_node(fqn, name, &err_msg)])
+            } else if content.status == 404 {
+                Err(IntegrationNodeError::NotFoundError(err_msg))
+            } else if content.status == 500 {
+                let msg = "Internal server error".to_string();
+                Err(IntegrationNodeError::InternalServerError(msg))
+            } else {
+                Err(IntegrationNodeError::RequestError(response.unwrap_err()))
             }
+        } else {
+            Err(IntegrationNodeError::RequestError(response.unwrap_err()))
         }
-        Ok(results)
     }
 }
