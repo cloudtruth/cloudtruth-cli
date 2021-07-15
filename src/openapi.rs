@@ -39,8 +39,10 @@ fn user_agent_name() -> String {
 }
 
 fn create_openapi_config(ct_cfg: &CloudTruthConfig) -> OpenApiConfig {
+    // having a trailing slash confuses the API, so remove any trailing slashes
+    let server_url = ct_cfg.server_url.trim_end_matches('/').to_string();
     OpenApiConfig {
-        base_path: ct_cfg.server_url.clone(),
+        base_path: server_url,
         user_agent: Some(user_agent_name()),
         client: reqwest::Client::builder()
             .timeout(ct_cfg.request_timeout.unwrap())
@@ -75,7 +77,7 @@ mod tests {
     #[serial]
     fn conversion_to_openapi() {
         let api_key = "abc123";
-        let url = "https://bogushost.com";
+        let url = "https://bogushost.com/sna/foo/";
         let ct_cfg = CloudTruthConfig {
             api_key: api_key.to_string(),
             environment: Some("my-env".to_string()),
@@ -84,7 +86,11 @@ mod tests {
             request_timeout: Some(Duration::new(120, 0)),
         };
         let openapi_cfg = create_openapi_config(&ct_cfg);
-        assert_eq!(openapi_cfg.base_path, url.to_string());
+        // check that the trailing slash removed from the URL
+        assert_eq!(
+            openapi_cfg.base_path,
+            "https://bogushost.com/sna/foo".to_string()
+        );
         assert_eq!(openapi_cfg.api_key.unwrap().key, api_key.to_string());
         assert_eq!(openapi_cfg.user_agent.unwrap(), user_agent_name());
         assert_eq!(openapi_cfg.bearer_access_token, None);
