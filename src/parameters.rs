@@ -1,8 +1,7 @@
 use crate::environments::Environments;
-use crate::openapi::open_api_config;
+use crate::openapi::{extract_details, open_api_config};
 use cloudtruth_restapi::apis::projects_api::*;
 use cloudtruth_restapi::apis::Error::{self, ResponseError};
-use cloudtruth_restapi::apis::ResponseContent;
 use cloudtruth_restapi::models::{
     Parameter, ParameterCreate, PatchedParameter, PatchedValue, Value, ValueCreate,
 };
@@ -108,41 +107,26 @@ pub struct ParamExportOptions {
     pub secrets: Option<bool>,
 }
 
-/// Simplified (type-agnostic) response data
-#[derive(Clone, Debug)]
-pub struct ResponseData {
-    pub status: reqwest::StatusCode,
-    pub content: String,
-}
-
-/// Convert from OpenApi ResponseContent to local, type-agnostic ResponseData.
-impl<T> From<ResponseContent<T>> for ResponseData {
-    fn from(content: ResponseContent<T>) -> Self {
-        ResponseData {
-            status: content.status,
-            content: content.content,
-        }
-    }
-}
-
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub enum ParameterValueError {
-    CreateResponseError(ResponseData),
-    CreateError(String),
-    UpdateResponseError(ResponseData),
-    UpdateError(String),
-    InvalidFqnOrJmesPath(ResponseData),
-    FqnOrJmesPathNotFound(ResponseData),
+    CreateError(Error<ProjectsParametersValuesCreateError>),
+    UpdateError(Error<ProjectsParametersValuesPartialUpdateError>),
+    InvalidFqnOrJmesPath(String),
+    FqnOrJmesPathNotFound(String),
+    InternalServerError(String),
 }
 
 impl fmt::Display for ParameterValueError {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
-            ParameterValueError::InvalidFqnOrJmesPath(_) => {
-                write!(f, "Invalid FQN or JMES path expression.")
+            ParameterValueError::InvalidFqnOrJmesPath(msg) => {
+                write!(f, "Invalid FQN or JMES path expression: {}", msg)
             }
-            ParameterValueError::FqnOrJmesPathNotFound(_) => {
-                write!(f, "Did not find FQN or JMES path.")
+            ParameterValueError::FqnOrJmesPathNotFound(msg) => {
+                write!(f, "Did not find FQN or JMES path: {}", msg)
+            }
+            ParameterValueError::InternalServerError(msg) => {
+                write!(f, "Internal server error: {}", msg)
             }
             e => {
                 write!(f, "{:?}", e)
@@ -424,18 +408,19 @@ impl Parameters {
             projects_parameters_values_create(&rest_cfg, param_id, proj_id, value_create, None);
         match response {
             Ok(api_value) => Ok(api_value.id),
-            Err(ResponseError(content)) => match content.status.as_u16() {
-                400 => Err(ParameterValueError::InvalidFqnOrJmesPath(
-                    ResponseData::from(content),
+            Err(ResponseError(ref content)) => match content.status.as_u16() {
+                400 => Err(ParameterValueError::InvalidFqnOrJmesPath(extract_details(
+                    &content.content,
+                ))),
+                404 => Err(ParameterValueError::FqnOrJmesPathNotFound(extract_details(
+                    &content.content,
+                ))),
+                500 => Err(ParameterValueError::InternalServerError(
+                    "Internal server error".to_string(),
                 )),
-                404 => Err(ParameterValueError::FqnOrJmesPathNotFound(
-                    ResponseData::from(content),
-                )),
-                _ => Err(ParameterValueError::CreateResponseError(
-                    ResponseData::from(content),
-                )),
+                _ => Err(ParameterValueError::CreateError(response.unwrap_err())),
             },
-            Err(e) => Err(ParameterValueError::CreateError(e.to_string())),
+            Err(e) => Err(ParameterValueError::CreateError(e)),
         }
     }
 
@@ -474,18 +459,19 @@ impl Parameters {
         );
         match response {
             Ok(api_value) => Ok(api_value.id),
-            Err(ResponseError(content)) => match content.status.as_u16() {
-                400 => Err(ParameterValueError::InvalidFqnOrJmesPath(
-                    ResponseData::from(content),
+            Err(ResponseError(ref content)) => match content.status.as_u16() {
+                400 => Err(ParameterValueError::InvalidFqnOrJmesPath(extract_details(
+                    &content.content,
+                ))),
+                404 => Err(ParameterValueError::FqnOrJmesPathNotFound(extract_details(
+                    &content.content,
+                ))),
+                500 => Err(ParameterValueError::InternalServerError(
+                    "Internal server error".to_string(),
                 )),
-                404 => Err(ParameterValueError::FqnOrJmesPathNotFound(
-                    ResponseData::from(content),
-                )),
-                _ => Err(ParameterValueError::UpdateResponseError(
-                    ResponseData::from(content),
-                )),
+                _ => Err(ParameterValueError::UpdateError(response.unwrap_err())),
             },
-            Err(e) => Err(ParameterValueError::UpdateError(e.to_string())),
+            Err(e) => Err(ParameterValueError::UpdateError(e)),
         }
     }
 }

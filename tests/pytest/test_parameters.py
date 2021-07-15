@@ -1,5 +1,4 @@
 import os
-import unittest
 
 from testcase import TestCase, DEFAULT_ENV_NAME
 
