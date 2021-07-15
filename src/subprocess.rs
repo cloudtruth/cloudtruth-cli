@@ -87,20 +87,6 @@ impl From<ErrReport> for SubProcessError {
     }
 }
 
-pub trait SubProcessIntf {
-    fn set_environment(
-        &mut self,
-        resolved: &ResolvedIds,
-        inherit: Inheritance,
-        overrides: &[String],
-        removals: &[String],
-    ) -> SubProcessResult<()>;
-
-    fn remove_ct_app_vars(&mut self);
-
-    fn run_command(&self, command: &str, arguments: &[String]) -> SubProcessResult<()>;
-}
-
 pub struct SubProcess {
     ct_vars: EnvSettings,
     env_vars: EnvSettings,
@@ -136,10 +122,8 @@ impl SubProcess {
         }
         Ok(over_vars)
     }
-}
 
-impl SubProcessIntf for SubProcess {
-    fn set_environment(
+    pub fn set_environment(
         &mut self,
         resolved: &ResolvedIds,
         inherit: Inheritance,
@@ -215,13 +199,13 @@ impl SubProcessIntf for SubProcess {
         }
     }
 
-    fn remove_ct_app_vars(&mut self) {
+    pub fn remove_ct_app_vars(&mut self) {
         for app_var in CT_APP_REMOVABLE_VARS {
             self.env_vars.remove(*app_var);
         }
     }
 
-    fn run_command(&self, command: &str, arguments: &[String]) -> SubProcessResult<()> {
+    pub fn run_command(&self, command: &str, arguments: &[String]) -> SubProcessResult<()> {
         let mut sub_proc: Exec;
 
         if arguments.is_empty() {

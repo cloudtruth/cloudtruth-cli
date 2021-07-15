@@ -25,46 +25,13 @@ impl From<&Project> for ProjectDetails {
     }
 }
 
-pub trait ProjectsIntf {
-    /// Resolve the `proj_name` to a String
-    fn get_id(&self, proj_name: &str) -> Result<Option<String>, Error<ProjectsListError>>;
-
-    /// Get the details for `proj_name`
-    fn get_details_by_name(
-        &self,
-        proj_name: &str,
-    ) -> Result<Option<ProjectDetails>, Error<ProjectsListError>>;
-
-    /// Create a project with the specified name/description
-    fn create_project(
-        &self,
-        proj_name: &str,
-        description: Option<&str>,
-    ) -> Result<Option<String>, Error<ProjectsCreateError>>;
-
-    /// Update the specified project
-    fn update_project(
-        &self,
-        proj_name: &str,
-        proj_id: &str,
-        description: Option<&str>,
-    ) -> Result<Option<String>, Error<ProjectsPartialUpdateError>>;
-
-    /// Delete the specified project
-    fn delete_project(&self, proj_id: &str) -> Result<Option<String>, Error<ProjectsDestroyError>>;
-
-    /// Get a complete list of projects for this organization.
-    fn get_project_details(&self) -> Result<Vec<ProjectDetails>, Error<ProjectsListError>>;
-}
-
 impl Projects {
     pub fn new() -> Self {
         Self {}
     }
-}
 
-impl ProjectsIntf for Projects {
-    fn get_details_by_name(
+    /// Get the details for `proj_name`
+    pub fn get_details_by_name(
         &self,
         proj_name: &str,
     ) -> Result<Option<ProjectDetails>, Error<ProjectsListError>> {
@@ -84,7 +51,8 @@ impl ProjectsIntf for Projects {
         }
     }
 
-    fn get_id(&self, proj_name: &str) -> Result<Option<String>, Error<ProjectsListError>> {
+    /// Resolve the `proj_name` to a String
+    pub fn get_id(&self, proj_name: &str) -> Result<Option<String>, Error<ProjectsListError>> {
         if let Some(details) = self.get_details_by_name(proj_name)? {
             Ok(Some(details.id))
         } else {
@@ -92,7 +60,8 @@ impl ProjectsIntf for Projects {
         }
     }
 
-    fn get_project_details(&self) -> Result<Vec<ProjectDetails>, Error<ProjectsListError>> {
+    /// Get a complete list of projects for this organization.
+    pub fn get_project_details(&self) -> Result<Vec<ProjectDetails>, Error<ProjectsListError>> {
         let rest_cfg = open_api_config();
         let response = projects_list(&rest_cfg, None, None)?;
         let mut list: Vec<ProjectDetails> = Vec::new();
@@ -106,7 +75,8 @@ impl ProjectsIntf for Projects {
         Ok(list)
     }
 
-    fn create_project(
+    /// Create a project with the specified name/description
+    pub fn create_project(
         &self,
         proj_name: &str,
         description: Option<&str>,
@@ -121,7 +91,8 @@ impl ProjectsIntf for Projects {
         Ok(Some(response.id))
     }
 
-    fn delete_project(
+    /// Delete the specified project
+    pub fn delete_project(
         &self,
         project_id: &str,
     ) -> Result<Option<String>, Error<ProjectsDestroyError>> {
@@ -130,7 +101,8 @@ impl ProjectsIntf for Projects {
         Ok(Some(project_id.to_string()))
     }
 
-    fn update_project(
+    /// Update the specified project
+    pub fn update_project(
         &self,
         project_name: &str,
         project_id: &str,

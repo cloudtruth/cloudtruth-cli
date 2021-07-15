@@ -17,10 +17,10 @@ use crate::cli::{CONFIRM_FLAG, FORMAT_OPT, RENAME_OPT, SECRETS_FLAG, VALUES_FLAG
 use crate::config::env::ConfigEnv;
 use crate::config::{Config, CT_PROFILE, DEFAULT_ENV_NAME};
 use crate::environments::Environments;
-use crate::integrations::{Integrations, IntegrationsIntf};
+use crate::integrations::Integrations;
 use crate::parameters::{ParamExportFormat, ParamExportOptions, ParameterDetails, Parameters};
-use crate::projects::{Projects, ProjectsIntf};
-use crate::subprocess::{Inheritance, SubProcess, SubProcessIntf};
+use crate::projects::Projects;
+use crate::subprocess::{Inheritance, SubProcess};
 use crate::table::Table;
 use crate::templates::Templates;
 use clap::ArgMatches;
@@ -203,7 +203,7 @@ fn resolve_ids(config: &Config) -> Result<ResolvedIds> {
 /// Process the 'run' sub-command
 fn process_run_command(
     subcmd_args: &ArgMatches,
-    sub_proc: &mut impl SubProcessIntf,
+    sub_proc: &mut SubProcess,
     resolved: &ResolvedIds,
 ) -> Result<()> {
     let mut arguments: Vec<String>;
@@ -243,7 +243,7 @@ fn process_run_command(
 }
 
 /// Process the 'project' sub-command
-fn process_project_command(subcmd_args: &ArgMatches, projects: &impl ProjectsIntf) -> Result<()> {
+fn process_project_command(subcmd_args: &ArgMatches, projects: &Projects) -> Result<()> {
     if let Some(subcmd_args) = subcmd_args.subcommand_matches("delete") {
         let proj_name = subcmd_args.value_of("NAME").unwrap();
         let details = projects.get_details_by_name(proj_name)?;
@@ -459,7 +459,7 @@ fn process_environment_command(
 /// Process the 'integrations' sub-command
 fn process_integrations_command(
     subcmd_args: &ArgMatches,
-    integrations: &impl IntegrationsIntf,
+    integrations: &Integrations,
 ) -> Result<()> {
     if let Some(subcmd_args) = subcmd_args.subcommand_matches("explore") {
         let fqn = subcmd_args.value_of("FQN");

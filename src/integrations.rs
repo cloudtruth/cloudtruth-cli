@@ -102,23 +102,6 @@ impl fmt::Display for IntegrationNodeError {
 
 impl error::Error for IntegrationNodeError {}
 
-/// This is the interface that is implemented to retrieve integration information.
-///
-/// This layer of abstraction is done to allow for mocking in unittest, and to potentially allow
-/// for future implementations.
-pub trait IntegrationsIntf {
-    /// Gets a list of `IntegrationDetails` for all integration types.
-    fn get_integration_details(
-        &self,
-    ) -> Result<Vec<IntegrationDetails>, Error<IntegrationsGithubListError>>;
-
-    /// Get the integration node by FQN
-    fn get_integration_nodes(
-        &self,
-        fqn: Option<&str>,
-    ) -> Result<Vec<IntegrationNode>, IntegrationNodeError>;
-}
-
 /// Creates an `IntetgrationNode` for a binary file.
 ///
 /// Marks type as `application/binary` even though this should be returned for
@@ -162,10 +145,9 @@ impl Integrations {
     pub fn new() -> Self {
         Self {}
     }
-}
 
-impl IntegrationsIntf for Integrations {
-    fn get_integration_details(
+    /// Gets a list of `IntegrationDetails` for all integration types.
+    pub fn get_integration_details(
         &self,
     ) -> Result<Vec<IntegrationDetails>, Error<IntegrationsGithubListError>> {
         let mut result: Vec<IntegrationDetails> = Vec::new();
@@ -192,7 +174,8 @@ impl IntegrationsIntf for Integrations {
         Ok(result)
     }
 
-    fn get_integration_nodes(
+    /// Get the integration node by FQN
+    pub fn get_integration_nodes(
         &self,
         fqn: Option<&str>,
     ) -> Result<Vec<IntegrationNode>, IntegrationNodeError> {
