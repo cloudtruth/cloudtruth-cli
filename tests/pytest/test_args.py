@@ -196,19 +196,22 @@ class TestTopLevelArgs(TestCase):
         self.assertNotEqual(0, result.return_value)
         self.assertIn("error trying to connect", result.err())
 
-    @unittest.skip("Fix auth errors")
     def test_arg_authentication_errors(self):
         # NOTE: invalid key arguments override any profile or environment values.
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
-        printenv = f" run -i none -- {self.get_display_env_command()}"
+        commands = [
+            "env ls -v",
+            "param ls -v",
+            "proj ls -v",
+            "int ex -v",
+            "int ls -v",
+            f"run -i none -- {self.get_display_env_command()}",
+        ]
 
-        # test bogus key (means unauthenticated)
-        result = self.run_cli(cmd_env, base_cmd + "--api-key abc123" + printenv)
-        self.assertNotEqual(result.return_value, 0)
-        self.assertIn("Not Authenticated", result.err())
-
-        # use a bogus service account token (starts with 'ct_') yields a different message
-        result = self.run_cli(cmd_env, base_cmd + "-k ct_abc123" + printenv)
-        self.assertNotEqual(result.return_value, 0)
-        self.assertIn("This access token is invalid", result.err())
+        for user_cmd in commands:
+            # test bogus key (means unauthenticated)
+            result = self.run_cli(cmd_env, base_cmd + "--api-key abc123 " + user_cmd)
+            self.assertNotEqual(result.return_value, 0)
+            self.assertIn("Not Authenticated", result.err())
+            self.assertIn("Incorrect authentication credentials", result.err())

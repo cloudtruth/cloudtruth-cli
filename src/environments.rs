@@ -1,9 +1,12 @@
-use crate::openapi::open_api_config;
+use crate::openapi::{extract_details, open_api_config};
 
 use cloudtruth_restapi::apis::environments_api::*;
 use cloudtruth_restapi::apis::Error;
+use cloudtruth_restapi::apis::Error::ResponseError;
 use cloudtruth_restapi::models::{Environment, EnvironmentCreate, PatchedEnvironment};
 use std::collections::HashMap;
+use std::error;
+use std::fmt::{self, Formatter};
 
 pub struct Environments {}
 
@@ -32,6 +35,27 @@ impl From<&Environment> for EnvironmentDetails {
         }
     }
 }
+
+#[derive(Debug)]
+pub enum EnvironmentError {
+    ListError(Error<EnvironmentsListError>),
+    AuthError(String),
+}
+
+impl fmt::Display for EnvironmentError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        match self {
+            EnvironmentError::AuthError(msg) => {
+                write!(f, "Not Authenticated: {}", msg)
+            }
+            EnvironmentError::ListError(e) => {
+                write!(f, "{}", e.to_string())
+            }
+        }
+    }
+}
+
+impl error::Error for EnvironmentError {}
 
 impl Environments {
     pub fn new() -> Self {
@@ -76,57 +100,82 @@ impl Environments {
     pub fn get_details_by_name(
         &self,
         env_name: &str,
-    ) -> Result<Option<EnvironmentDetails>, Error<EnvironmentsListError>> {
+    ) -> Result<Option<EnvironmentDetails>, EnvironmentError> {
         let rest_cfg = open_api_config();
-        let response = environments_list(&rest_cfg, Some(env_name), None, None)?;
+        let response = environments_list(&rest_cfg, Some(env_name), None, None);
 
-        if let Some(environments) = response.results {
-            if environments.is_empty() {
-                Ok(None)
-            } else {
-                // TODO: handle more than one??
-                let env = &environments[0];
-                let mut details = EnvironmentDetails::from(env);
-                details.parent_name = self.get_name_from_url(details.parent_url.as_str());
-                Ok(Some(details))
-            }
-        } else {
-            Ok(None)
+        match response {
+            Ok(data) => match data.results {
+                Some(list) => {
+                    if list.is_empty() {
+                        Ok(None)
+                    } else {
+                        let env = &list[0];
+                        let mut details = EnvironmentDetails::from(env);
+                        details.parent_name = self.get_name_from_url(details.parent_url.as_str());
+                        Ok(Some(details))
+                    }
+                }
+                None => Ok(None),
+            },
+            Err(ResponseError(ref content)) => match content.status.as_u16() {
+                401 => Err(EnvironmentError::AuthError(extract_details(
+                    &content.content,
+                ))),
+                403 => Err(EnvironmentError::AuthError(extract_details(
+                    &content.content,
+                ))),
+                _ => Err(EnvironmentError::ListError(response.unwrap_err())),
+            },
+            Err(e) => Err(EnvironmentError::ListError(e)),
         }
     }
 
-    pub fn get_id(&self, env_name: &str) -> Result<Option<String>, Error<EnvironmentsListError>> {
-        if let Ok(Some(details)) = self.get_details_by_name(env_name) {
+    pub fn get_id(&self, env_name: &str) -> Result<Option<String>, EnvironmentError> {
+        if let Some(details) = self.get_details_by_name(env_name)? {
             Ok(Some(details.id))
         } else {
             Ok(None)
         }
     }
 
-    pub fn get_environment_details(
-        &self,
-    ) -> Result<Vec<EnvironmentDetails>, Error<EnvironmentsListError>> {
+    pub fn get_environment_details(&self) -> Result<Vec<EnvironmentDetails>, EnvironmentError> {
         let rest_cfg = open_api_config();
-        let response = environments_list(&rest_cfg, None, None, None)?;
-        let mut env_info: Vec<EnvironmentDetails> = Vec::new();
-        let mut url_map: HashMap<String, String> = HashMap::new(); // maps URL to name
+        let response = environments_list(&rest_cfg, None, None, None);
 
-        if let Some(resp_env) = response.results {
-            for env in resp_env {
-                let details = EnvironmentDetails::from(&env);
-                url_map.insert(details.url.clone(), details.name.clone());
-                env_info.push(details);
-            }
-        }
+        match response {
+            Ok(data) => match data.results {
+                Some(list) => {
+                    let mut env_info: Vec<EnvironmentDetails> = Vec::new();
+                    let mut url_map: HashMap<String, String> = HashMap::new(); // maps URL to name
+                    for env in list {
+                        let details = EnvironmentDetails::from(&env);
+                        url_map.insert(details.url.clone(), details.name.clone());
+                        env_info.push(details);
+                    }
 
-        // now, fill in the names
-        for details in &mut env_info {
-            if !details.parent_url.is_empty() {
-                details.parent_name = url_map.get(&details.parent_url).unwrap().clone();
-            }
+                    // now, fill in the names
+                    for details in &mut env_info {
+                        if !details.parent_url.is_empty() {
+                            details.parent_name = url_map.get(&details.parent_url).unwrap().clone();
+                        }
+                    }
+                    env_info.sort_by(|l, r| l.name.cmp(&r.name));
+                    Ok(env_info)
+                }
+                None => Ok(vec![]),
+            },
+            Err(ResponseError(ref content)) => match content.status.as_u16() {
+                401 => Err(EnvironmentError::AuthError(extract_details(
+                    &content.content,
+                ))),
+                403 => Err(EnvironmentError::AuthError(extract_details(
+                    &content.content,
+                ))),
+                _ => Err(EnvironmentError::ListError(response.unwrap_err())),
+            },
+            Err(e) => Err(EnvironmentError::ListError(e)),
         }
-        env_info.sort_by(|l, r| l.name.cmp(&r.name));
-        Ok(env_info)
     }
 
     pub fn create_environment(

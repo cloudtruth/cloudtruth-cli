@@ -84,23 +84,27 @@ impl From<&IntegrationExplorer> for IntegrationNode {
 }
 
 #[derive(Debug)]
-pub enum IntegrationNodeError {
+pub enum IntegrationError {
     NotFoundError(String),
-    InternalServerError(String),
-    RequestError(Error<IntegrationsExploreListError>),
+    AuthError(String),
+    ExploreListError(Error<IntegrationsExploreListError>),
+    AwsListError(Error<IntegrationsAwsListError>),
+    GitHubListError(Error<IntegrationsGithubListError>),
 }
 
-impl fmt::Display for IntegrationNodeError {
+impl fmt::Display for IntegrationError {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
-            IntegrationNodeError::NotFoundError(msg) => write!(f, "{}", msg),
-            IntegrationNodeError::InternalServerError(msg) => write!(f, "{}", msg),
-            e => write!(f, "{:?}", e),
+            IntegrationError::NotFoundError(msg) => write!(f, "{}", msg),
+            IntegrationError::AuthError(msg) => write!(f, "Not Authenticated: {}", msg),
+            IntegrationError::ExploreListError(e) => write!(f, "{}", e.to_string()),
+            IntegrationError::AwsListError(e) => write!(f, "{}", e.to_string()),
+            IntegrationError::GitHubListError(e) => write!(f, "{}", e.to_string()),
         }
     }
 }
 
-impl error::Error for IntegrationNodeError {}
+impl error::Error for IntegrationError {}
 
 /// Creates an `IntetgrationNode` for a binary file.
 ///
@@ -147,9 +151,7 @@ impl Integrations {
     }
 
     /// Gets a list of `IntegrationDetails` for all integration types.
-    pub fn get_integration_details(
-        &self,
-    ) -> Result<Vec<IntegrationDetails>, Error<IntegrationsGithubListError>> {
+    pub fn get_integration_details(&self) -> Result<Vec<IntegrationDetails>, IntegrationError> {
         let mut result: Vec<IntegrationDetails> = Vec::new();
         let rest_cfg = open_api_config();
 
@@ -160,6 +162,18 @@ impl Integrations {
                     result.push(IntegrationDetails::from(&gh));
                 }
             }
+        } else if let Err(ResponseError(ref content)) = response {
+            return match content.status.as_u16() {
+                401 => Err(IntegrationError::AuthError(extract_details(
+                    &content.content,
+                ))),
+                403 => Err(IntegrationError::AuthError(extract_details(
+                    &content.content,
+                ))),
+                _ => Err(IntegrationError::GitHubListError(response.unwrap_err())),
+            };
+        } else {
+            return Err(IntegrationError::GitHubListError(response.unwrap_err()));
         }
 
         let response = integrations_aws_list(&rest_cfg, None, None, None);
@@ -169,6 +183,18 @@ impl Integrations {
                     result.push(IntegrationDetails::from(&aws));
                 }
             }
+        } else if let Err(ResponseError(ref content)) = response {
+            return match content.status.as_u16() {
+                401 => Err(IntegrationError::AuthError(extract_details(
+                    &content.content,
+                ))),
+                403 => Err(IntegrationError::AuthError(extract_details(
+                    &content.content,
+                ))),
+                _ => Err(IntegrationError::AwsListError(response.unwrap_err())),
+            };
+        } else {
+            return Err(IntegrationError::AwsListError(response.unwrap_err()));
         }
 
         Ok(result)
@@ -178,7 +204,7 @@ impl Integrations {
     pub fn get_integration_nodes(
         &self,
         fqn: Option<&str>,
-    ) -> Result<Vec<IntegrationNode>, IntegrationNodeError> {
+    ) -> Result<Vec<IntegrationNode>, IntegrationError> {
         let rest_cfg = open_api_config();
         let response = integrations_explore_list(&rest_cfg, fqn, None);
         if let Ok(response) = response {
@@ -202,16 +228,15 @@ impl Integrations {
                 Ok(vec![binary_node(fqn, name, &err_msg)])
             } else if content.status == 507 {
                 Ok(vec![large_node(fqn, name, &err_msg)])
+            } else if content.status == 401 || content.status == 403 {
+                Err(IntegrationError::AuthError(err_msg))
             } else if content.status == 404 {
-                Err(IntegrationNodeError::NotFoundError(err_msg))
-            } else if content.status == 500 {
-                let msg = "Internal server error".to_string();
-                Err(IntegrationNodeError::InternalServerError(msg))
+                Err(IntegrationError::NotFoundError(err_msg))
             } else {
-                Err(IntegrationNodeError::RequestError(response.unwrap_err()))
+                Err(IntegrationError::ExploreListError(response.unwrap_err()))
             }
         } else {
-            Err(IntegrationNodeError::RequestError(response.unwrap_err()))
+            Err(IntegrationError::ExploreListError(response.unwrap_err()))
         }
     }
 }

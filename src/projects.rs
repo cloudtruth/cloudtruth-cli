@@ -1,8 +1,10 @@
-use crate::openapi::open_api_config;
+use crate::openapi::{extract_details, open_api_config};
 
 use cloudtruth_restapi::apis::projects_api::*;
-use cloudtruth_restapi::apis::Error;
+use cloudtruth_restapi::apis::Error::{self, ResponseError};
 use cloudtruth_restapi::models::{PatchedProject, Project, ProjectCreate};
+use std::error;
+use std::fmt::{self, Formatter};
 use std::result::Result;
 
 pub struct Projects {}
@@ -25,6 +27,23 @@ impl From<&Project> for ProjectDetails {
     }
 }
 
+#[derive(Debug)]
+pub enum ProjectError {
+    AuthError(String),
+    ListError(Error<ProjectsListError>),
+}
+
+impl fmt::Display for ProjectError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        match self {
+            ProjectError::AuthError(msg) => write!(f, "Not Authenticated: {}", msg),
+            ProjectError::ListError(e) => write!(f, "{}", e.to_string()),
+        }
+    }
+}
+
+impl error::Error for ProjectError {}
+
 impl Projects {
     pub fn new() -> Self {
         Self {}
@@ -34,25 +53,34 @@ impl Projects {
     pub fn get_details_by_name(
         &self,
         proj_name: &str,
-    ) -> Result<Option<ProjectDetails>, Error<ProjectsListError>> {
+    ) -> Result<Option<ProjectDetails>, ProjectError> {
         let rest_cfg = open_api_config();
-        let response = projects_list(&rest_cfg, Some(proj_name), None)?;
+        let response = projects_list(&rest_cfg, Some(proj_name), None);
 
-        if let Some(projects) = response.results {
-            if projects.is_empty() {
-                Ok(None)
-            } else {
-                // TODO: handle more than one??
-                let proj = &projects[0];
-                Ok(Some(ProjectDetails::from(proj)))
-            }
-        } else {
-            Ok(None)
+        match response {
+            Ok(data) => match data.results {
+                Some(list) => {
+                    if list.is_empty() {
+                        Ok(None)
+                    } else {
+                        // TODO: handle more than one??
+                        let proj = &list[0];
+                        Ok(Some(ProjectDetails::from(proj)))
+                    }
+                }
+                _ => Ok(None),
+            },
+            Err(ResponseError(ref content)) => match content.status.as_u16() {
+                401 => Err(ProjectError::AuthError(extract_details(&content.content))),
+                403 => Err(ProjectError::AuthError(extract_details(&content.content))),
+                _ => Err(ProjectError::ListError(response.unwrap_err())),
+            },
+            Err(e) => Err(ProjectError::ListError(e)),
         }
     }
 
     /// Resolve the `proj_name` to a String
-    pub fn get_id(&self, proj_name: &str) -> Result<Option<String>, Error<ProjectsListError>> {
+    pub fn get_id(&self, proj_name: &str) -> Result<Option<String>, ProjectError> {
         if let Some(details) = self.get_details_by_name(proj_name)? {
             Ok(Some(details.id))
         } else {
@@ -61,18 +89,27 @@ impl Projects {
     }
 
     /// Get a complete list of projects for this organization.
-    pub fn get_project_details(&self) -> Result<Vec<ProjectDetails>, Error<ProjectsListError>> {
+    pub fn get_project_details(&self) -> Result<Vec<ProjectDetails>, ProjectError> {
         let rest_cfg = open_api_config();
-        let response = projects_list(&rest_cfg, None, None)?;
-        let mut list: Vec<ProjectDetails> = Vec::new();
+        let response = projects_list(&rest_cfg, None, None);
 
-        if let Some(projects) = response.results {
-            for proj in projects {
-                list.push(ProjectDetails::from(&proj))
-            }
-            list.sort_by(|l, r| l.name.cmp(&r.name));
+        match response {
+            Ok(data) => match data.results {
+                Some(list) => {
+                    let mut details: Vec<ProjectDetails> =
+                        list.iter().map(ProjectDetails::from).collect();
+                    details.sort_by(|l, r| l.name.cmp(&r.name));
+                    Ok(details)
+                }
+                None => Ok(vec![]),
+            },
+            Err(ResponseError(ref content)) => match content.status.as_u16() {
+                401 => Err(ProjectError::AuthError(extract_details(&content.content))),
+                403 => Err(ProjectError::AuthError(extract_details(&content.content))),
+                _ => Err(ProjectError::ListError(response.unwrap_err())),
+            },
+            Err(e) => Err(ProjectError::ListError(e)),
         }
-        Ok(list)
     }
 
     /// Create a project with the specified name/description

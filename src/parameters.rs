@@ -113,7 +113,6 @@ pub enum ParameterValueError {
     UpdateError(Error<ProjectsParametersValuesPartialUpdateError>),
     InvalidFqnOrJmesPath(String),
     FqnOrJmesPathNotFound(String),
-    InternalServerError(String),
 }
 
 impl fmt::Display for ParameterValueError {
@@ -125,11 +124,11 @@ impl fmt::Display for ParameterValueError {
             ParameterValueError::FqnOrJmesPathNotFound(msg) => {
                 write!(f, "Did not find FQN or JMES path: {}", msg)
             }
-            ParameterValueError::InternalServerError(msg) => {
-                write!(f, "Internal server error: {}", msg)
+            ParameterValueError::CreateError(e) => {
+                write!(f, "{}", e.to_string())
             }
-            e => {
-                write!(f, "{:?}", e)
+            ParameterValueError::UpdateError(e) => {
+                write!(f, "{}", e.to_string())
             }
         }
     }
@@ -415,9 +414,6 @@ impl Parameters {
                 404 => Err(ParameterValueError::FqnOrJmesPathNotFound(extract_details(
                     &content.content,
                 ))),
-                500 => Err(ParameterValueError::InternalServerError(
-                    "Internal server error".to_string(),
-                )),
                 _ => Err(ParameterValueError::CreateError(response.unwrap_err())),
             },
             Err(e) => Err(ParameterValueError::CreateError(e)),
@@ -466,9 +462,6 @@ impl Parameters {
                 404 => Err(ParameterValueError::FqnOrJmesPathNotFound(extract_details(
                     &content.content,
                 ))),
-                500 => Err(ParameterValueError::InternalServerError(
-                    "Internal server error".to_string(),
-                )),
                 _ => Err(ParameterValueError::UpdateError(response.unwrap_err())),
             },
             Err(e) => Err(ParameterValueError::UpdateError(e)),
