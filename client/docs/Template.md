@@ -10,6 +10,7 @@ Name | Type | Description | Notes
 **description** | Option<**String**> | A description of the template.  You may find it helpful to document how this template is used to assist others when they need to maintain software that uses this content. | [optional]
 **body** | Option<**String**> | The content of the template.  Use mustache-style templating delimiters of `{{` and `}}` to reference parameter values by name for substitution into the template result. | [optional]
 **parameters** | **Vec<String>** |  | [readonly]
+**has_secret** | **bool** | If True, this template contains secrets. | [readonly]
 **created_at** | **String** |  | [readonly]
 **modified_at** | **String** |  | [readonly]
 

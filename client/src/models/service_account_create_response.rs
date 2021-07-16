@@ -23,6 +23,9 @@ pub struct ServiceAccountCreateResponse {
     pub created_at: String,
     #[serde(rename = "modified_at")]
     pub modified_at: String,
+    /// The most recent date and time the service account was used.
+    #[serde(rename = "last_used_at")]
+    pub last_used_at: String,
     /// The API Key to use as a Bearer token for the service account.
     #[serde(rename = "apikey")]
     pub apikey: String,
@@ -35,6 +38,7 @@ impl ServiceAccountCreateResponse {
         user: crate::models::User,
         created_at: String,
         modified_at: String,
+        last_used_at: String,
         apikey: String,
     ) -> ServiceAccountCreateResponse {
         ServiceAccountCreateResponse {
@@ -44,6 +48,7 @@ impl ServiceAccountCreateResponse {
             description: None,
             created_at,
             modified_at,
+            last_used_at,
             apikey,
         }
     }

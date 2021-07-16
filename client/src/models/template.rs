@@ -28,6 +28,9 @@ pub struct Template {
     pub body: Option<String>,
     #[serde(rename = "parameters")]
     pub parameters: Vec<String>,
+    /// If True, this template contains secrets.
+    #[serde(rename = "has_secret")]
+    pub has_secret: bool,
     #[serde(rename = "created_at")]
     pub created_at: String,
     #[serde(rename = "modified_at")]
@@ -41,6 +44,7 @@ impl Template {
         id: String,
         name: String,
         parameters: Vec<String>,
+        has_secret: bool,
         created_at: String,
         modified_at: String,
     ) -> Template {
@@ -51,6 +55,7 @@ impl Template {
             description: None,
             body: None,
             parameters,
+            has_secret,
             created_at,
             modified_at,
         }

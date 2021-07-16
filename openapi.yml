@@ -631,6 +631,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - {}
       responses:
         '200':
           content:
@@ -3130,6 +3131,7 @@ components:
           nullable: true
         content_size:
           type: integer
+          nullable: true
         content_keys:
           type: array
           items:
@@ -4084,6 +4086,11 @@ components:
           type: string
           format: date-time
           readOnly: true
+        last_used_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: The most recent date and time the service account was used.
     PatchedTemplate:
       type: object
       description: A parameter template in a given project, optionally instantiated
@@ -4118,6 +4125,10 @@ components:
             type: string
             format: uri
           readOnly: true
+        has_secret:
+          type: boolean
+          readOnly: true
+          description: If True, this template contains secrets.
         created_at:
           type: string
           format: date-time
@@ -4280,9 +4291,15 @@ components:
           type: string
           format: date-time
           readOnly: true
+        last_used_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: The most recent date and time the service account was used.
       required:
       - created_at
       - id
+      - last_used_at
       - modified_at
       - url
       - user
@@ -4325,6 +4342,11 @@ components:
           type: string
           format: date-time
           readOnly: true
+        last_used_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: The most recent date and time the service account was used.
         apikey:
           type: string
           readOnly: true
@@ -4333,6 +4355,7 @@ components:
       - apikey
       - created_at
       - id
+      - last_used_at
       - modified_at
       - url
       - user
@@ -4370,6 +4393,10 @@ components:
             type: string
             format: uri
           readOnly: true
+        has_secret:
+          type: boolean
+          readOnly: true
+          description: If True, this template contains secrets.
         created_at:
           type: string
           format: date-time
@@ -4380,6 +4407,7 @@ components:
           readOnly: true
       required:
       - created_at
+      - has_secret
       - id
       - modified_at
       - name
@@ -4577,10 +4605,11 @@ components:
       name: Authorization
       type: apiKey
       description: "\nUse your CloudTruth API Key to authenticate to the API.  You\
-        \ can get\nan API Key by creating a Service Account in the UI.  During setup\
-        \ of the Service\nAccount you will generate a long-lived API key intended\
-        \ for use by automation\nand API clients.\n\nIf you are just trying to use\
-        \ the API in a normal workflow, this is likely the\nauthentication mechanism\
+        \ can get\nan API Key by creating a Service Account.  During setup of the\
+        \ Service\nAccount you will generate a long-lived API key intended for use\
+        \ by automation\nand API clients.  Access through the service account will\
+        \ be audited separately\nfrom any other user.\n\nIf you are just trying to\
+        \ use the API in a normal workflow, this is likely the\nauthentication mechanism\
         \ you want to use.\n\nTo use the API Key, place your API Key in the Authorization\
         \ header as 'Api-Key APIKEY', where\nAPIKEY is your CloudTruth API Key.  For\
         \ example:\n\n    Authorization: Api-Key fskur.ghlsiudhrg84so938r5u\n    \

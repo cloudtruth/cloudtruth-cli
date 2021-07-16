@@ -28,6 +28,9 @@ pub struct PatchedTemplate {
     pub body: Option<String>,
     #[serde(rename = "parameters", skip_serializing_if = "Option::is_none")]
     pub parameters: Option<Vec<String>>,
+    /// If True, this template contains secrets.
+    #[serde(rename = "has_secret", skip_serializing_if = "Option::is_none")]
+    pub has_secret: Option<bool>,
     #[serde(rename = "created_at", skip_serializing_if = "Option::is_none")]
     pub created_at: Option<String>,
     #[serde(rename = "modified_at", skip_serializing_if = "Option::is_none")]
@@ -44,6 +47,7 @@ impl PatchedTemplate {
             description: None,
             body: None,
             parameters: None,
+            has_secret: None,
             created_at: None,
             modified_at: None,
         }

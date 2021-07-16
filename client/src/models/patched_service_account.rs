@@ -23,6 +23,9 @@ pub struct PatchedServiceAccount {
     pub created_at: Option<String>,
     #[serde(rename = "modified_at", skip_serializing_if = "Option::is_none")]
     pub modified_at: Option<String>,
+    /// The most recent date and time the service account was used.
+    #[serde(rename = "last_used_at", skip_serializing_if = "Option::is_none")]
+    pub last_used_at: Option<String>,
 }
 
 impl PatchedServiceAccount {
@@ -34,6 +37,7 @@ impl PatchedServiceAccount {
             description: None,
             created_at: None,
             modified_at: None,
+            last_used_at: None,
         }
     }
 }

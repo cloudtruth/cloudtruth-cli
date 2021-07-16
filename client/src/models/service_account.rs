@@ -23,6 +23,9 @@ pub struct ServiceAccount {
     pub created_at: String,
     #[serde(rename = "modified_at")]
     pub modified_at: String,
+    /// The most recent date and time the service account was used.
+    #[serde(rename = "last_used_at")]
+    pub last_used_at: String,
 }
 
 impl ServiceAccount {
@@ -32,6 +35,7 @@ impl ServiceAccount {
         user: crate::models::User,
         created_at: String,
         modified_at: String,
+        last_used_at: String,
     ) -> ServiceAccount {
         ServiceAccount {
             url,
@@ -40,6 +44,7 @@ impl ServiceAccount {
             description: None,
             created_at,
             modified_at,
+            last_used_at,
         }
     }
 }
