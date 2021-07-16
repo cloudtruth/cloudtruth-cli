@@ -188,7 +188,7 @@ Name | Type | Description  | Required | Notes
 
 ## projects_parameters_destroy
 
-> crate::models::Parameter projects_parameters_destroy(id, project_pk)
+> projects_parameters_destroy(id, project_pk)
 
 
 ### Parameters
@@ -201,7 +201,7 @@ Name | Type | Description  | Required | Notes
 
 ### Return type
 
-[**crate::models::Parameter**](Parameter.md)
+ (empty response body)
 
 ### Authorization
 
@@ -210,7 +210,7 @@ Name | Type | Description  | Required | Notes
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: application/json
+- **Accept**: Not defined
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
