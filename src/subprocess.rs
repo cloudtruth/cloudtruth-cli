@@ -44,11 +44,11 @@ impl FromStr for Inheritance {
 
 pub type SubProcessResult<T> = std::result::Result<T, SubProcessError>;
 
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub enum SubProcessError {
     EnvironmentCollisions(Vec<String>),
-    ProcessRunError(String),
-    ProcessOutputError(String),
+    ProcessRunError(PopenError),
+    ProcessOutputError(ErrReport),
 }
 
 impl error::Error for SubProcessError {}
@@ -63,27 +63,25 @@ impl fmt::Display for SubProcessError {
                     collisions.join(", ")
                 )
             }
-            SubProcessError::ProcessRunError(details) => {
-                write!(f, "Process run error: {}", details)
+            SubProcessError::ProcessRunError(e) => {
+                write!(f, "Process run error: {}", e.to_string())
             }
-            SubProcessError::ProcessOutputError(details) => {
-                write!(f, "Problem writing output: {}", details)
+            SubProcessError::ProcessOutputError(e) => {
+                write!(f, "Problem writing output: {}", e.to_string())
             }
         }
     }
 }
 
-// NOTE: PopenError does not implement the Clone trait, so just pass through a String
 impl From<PopenError> for SubProcessError {
     fn from(err: PopenError) -> Self {
-        SubProcessError::ProcessRunError(format!("{}", err))
+        SubProcessError::ProcessRunError(err)
     }
 }
 
-// NOTE: ErrReport does not implement the Clone trait, so just pass through a String
 impl From<ErrReport> for SubProcessError {
     fn from(err: Report) -> Self {
-        SubProcessError::ProcessOutputError(format!("{}", err))
+        SubProcessError::ProcessOutputError(err)
     }
 }
 
