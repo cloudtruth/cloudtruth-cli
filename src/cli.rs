@@ -7,6 +7,7 @@ pub const CONFIRM_FLAG: &str = "confirm";
 pub const FORMAT_OPT: &str = "format";
 pub const VALUES_FLAG: &str = "values";
 pub const SECRETS_FLAG: &str = "secrets";
+pub const RENAME_OPT: &str = "rename";
 
 pub fn binary_name() -> String {
     option_env!("CARGO_PKG_NAME")
@@ -39,14 +40,11 @@ fn confirm_flag() -> Arg<'static, 'static> {
         .help("Avoid confirmation prompt")
 }
 
-fn integration_type_option() -> Arg<'static, 'static> {
-    Arg::with_name("TYPE")
-        .short("t")
-        .long("type")
+fn rename_option() -> Arg<'static, 'static> {
+    Arg::with_name(RENAME_OPT)
+        .short("r")
+        .long(RENAME_OPT)
         .takes_value(true)
-        .case_insensitive(true)
-        .possible_values(&["aws", "github"])
-        .help("Integration type, only used to disambiguate duplicate names")
 }
 
 pub fn build_cli() -> App<'static, 'static> {
@@ -126,6 +124,7 @@ pub fn build_cli() -> App<'static, 'static> {
                             .long("desc")
                             .takes_value(true)
                             .help("Environment's description"))
+                        .arg(rename_option().help("New environment name"))
                         .arg(Arg::with_name("parent")
                             .short("p")
                             .long("parent")
@@ -140,21 +139,13 @@ pub fn build_cli() -> App<'static, 'static> {
                 .subcommands(vec![
                     SubCommand::with_name("explore")
                         .visible_aliases(&["exp", "ex", "e"])
-                        .about("Explore specific integration options")
-                        .arg(Arg::with_name("NAME")
+                        .about("Explore integrations by Fully Qualified Name (FQN).")
+                        .arg(Arg::with_name("FQN")
                             .index(1)
                             .takes_value(true)
-                            .required(true)
-                            .help("Integration name"))
-                        .arg(Arg::with_name("PATH")
-                            .index(2)
-                            .takes_value(true)
-                            .required(false)
-                            .help("Path within the integration")
-                        )
+                            .help("Integration FQN"))
                         .arg(table_format_options().help("Format integration values data."))
-                        .arg(values_flag().help("Display integration values"))
-                        .arg(integration_type_option()),
+                        .arg(values_flag().help("Display integration values")),
                     SubCommand::with_name("list")
                         .visible_alias("ls")
                         .about("List CloudTruth integrations")
@@ -237,6 +228,7 @@ pub fn build_cli() -> App<'static, 'static> {
                             .short("p")
                             .long("prompt")
                             .help("Set the static value using unecho'd terminal"))
+                        .arg(rename_option().help("New parameter name"))
                         .arg(Arg::with_name("secret")
                             .long("secret")
                             .takes_value(true)
@@ -247,6 +239,10 @@ pub fn build_cli() -> App<'static, 'static> {
                             .long("value")
                             .takes_value(true)
                             .help("Static parameter value")),
+                    SubCommand::with_name("unset")
+                        .about(concat!("Remove a value/override from the selected ",
+                            "project/environment and leaves the parameter in place."))
+                        .arg(Arg::with_name("KEY").required(true).index(1)),
                 ]),
         )
         .subcommand(SubCommand::with_name("templates")
@@ -334,6 +330,7 @@ pub fn build_cli() -> App<'static, 'static> {
                             .index(1)
                             .required(true)
                             .help("Project name"))
+                        .arg(rename_option().help("New project name"))
                         .arg(Arg::with_name("description")
                             .short("d")
                             .long("desc")

@@ -7,7 +7,6 @@ import unittest
 
 from testcase import CT_API_KEY, CT_URL
 from testcase import CT_TEST_JOB_ID, CT_TEST_LOG_COMMANDS, CT_TEST_LOG_OUTPUT
-from testcase import DEFAULT_SERVER_URL
 
 
 def parse_args(*args) -> argparse.Namespace:
@@ -35,10 +34,16 @@ def parse_args(*args) -> argparse.Namespace:
     )
     parser.add_argument(
         "--pdb",
+        dest="pdb",
+        action='store_true',
+        help="Open the debugger when a test fails"
+    )
+
+    parser.add_argument(
         "--debug",
         dest="debug",
         action='store_true',
-        help="Open the debugger when a test fails"
+        help="Equivalent of --pdb --failfast"
     )
     parser.add_argument(
         "--file",
@@ -111,11 +116,16 @@ def live_test(*args):
     if args.job_id:
         env[CT_TEST_JOB_ID] = args.job_id
 
+    # propagate the debug flags
+    if args.debug:
+        args.pdb = True
+        args.failfast = True
+
     test_directory = '.'
     suite = unittest.TestLoader().discover(test_directory, pattern=args.file_filter)
 
     runner = debugTestRunner(
-        enable_debug=args.debug, verbosity=args.verbosity, failfast=args.failfast
+        enable_debug=args.pdb, verbosity=args.verbosity, failfast=args.failfast
     )
     test_result = runner.run(suite)
     rval = 0

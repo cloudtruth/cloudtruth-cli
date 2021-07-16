@@ -1,11 +1,9 @@
-# Generated REST Client Code
-/client
-
 # Build Artifacts
 /target
 
 # Installing Python libraries
 /tests/pytest/__pycache__
+/__pycache__
 
 # Eclipse settings stuff
 .project

@@ -12,7 +12,6 @@ rust_bad_version := $(shell grep "RUST_VERSION:" .github/workflows/*.yml | grep 
 .PHONY = all
 .PHONY += cargo
 .PHONY += clean
-.PHONY += clientgen
 .PHONY += help
 .PHONY += image
 .PHONY += integration
@@ -42,19 +41,25 @@ shell:
 
 ### Commands for either outside or inside the container
 
-cargo:
+# the client must be generated before building the Rust program that uses it
+cargo: client
 	cargo build
 
 clean:
 	rm -rf target/
+	rm -rf client/target/
 
-clientgen:
-	docker run --rm -v "$(shell pwd):/local" --user "$(shell id -u):$(shell id -g)" openapitools/openapi-generator-cli generate \
+# client needs to re-generated when the openapi.yaml changes
+client: openapi.yml
+	docker run --rm \
+		-v "$(shell pwd):/local" \
+		--user "$(shell id -u):$(shell id -g)" \
+		openapitools/openapi-generator-cli generate \
 		-i /local/openapi.yml \
 		-g rust \
 		-o /local/client \
 		--additional-properties=packageName=cloudtruth-restapi,supportAsync=false
-	cd client && cargo build
+	python3 patch_client.py && cd client && cargo fmt && cargo build
 
 lint:
 	cargo fmt --all -- --check
@@ -110,7 +115,7 @@ targets:
 	@echo ""
 	@echo "cargo          - builds rust target"
 	@echo "clean          - clean out build targets"
-	@echo "clientgen      - generate and build the cloudtruth-restapi library"
+	@echo "client         - generate and build the cloudtruth-restapi library"
 	@echo "image          - make the cloudtruth/cli docker container for development"
 	@echo "integration    - runs the integration test against the live server"
 	@echo "lint           - checks for formatting issues"

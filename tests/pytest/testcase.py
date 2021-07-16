@@ -16,8 +16,7 @@ CT_PROJ = "CLOUDTRUTH_PROJECT"
 CT_URL = "CLOUDTRUTH_SERVER_URL"
 CT_TIMEOUT = "CLOUDTRUTH_REQUEST_TIMEOUT"
 
-DEFAULT_SERVER_URL = "https://api.cloudtruth.com/graphql"
-DEFAULT_PROJ_NAME = "default"
+DEFAULT_SERVER_URL = "https://api.cloudtruth.io"
 DEFAULT_ENV_NAME = "default"
 
 AUTO_DESCRIPTION = "Automated testing via live_test"
@@ -175,9 +174,15 @@ class TestCase(unittest.TestCase):
                 env_name = _next_part(args, "set")
                 if env_name:
                     self._environments.add(env_name)
+                env_name = _next_part(args, "--rename") or _next_part(args, "-r")
+                if env_name:
+                    self._environments.add(env_name)
             # if we're using any of our 'projects' aliases
             elif set(args) & set(["projects", "project", "proj"]):
                 proj_name = _next_part(args, "set")
+                if proj_name:
+                    self._projects.add(proj_name)
+                proj_name = _next_part(args, "--rename") or _next_part(args, "-r")
                 if proj_name:
                     self._projects.add(proj_name)
 

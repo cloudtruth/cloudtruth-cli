@@ -1,30 +1,26 @@
-use crate::config::DEFAULT_PROJ_NAME;
-use crate::graphql::prelude::graphql_request;
-use crate::graphql::{GraphQLError, GraphQLResult, NO_ORG_ERROR};
-use graphql_client::*;
+use crate::openapi::open_api_config;
+
+use cloudtruth_restapi::apis::projects_api::*;
+use cloudtruth_restapi::apis::Error;
+use cloudtruth_restapi::models::Template;
 
 pub struct Templates {}
 
-#[derive(GraphQLQuery)]
-#[graphql(
-    schema_path = "graphql/schema.graphql",
-    query_path = "graphql/template_queries.graphql",
-    response_derives = "Debug"
-)]
-pub struct GetTemplateByNameQuery;
-
-#[derive(GraphQLQuery)]
-#[graphql(
-    schema_path = "graphql/schema.graphql",
-    query_path = "graphql/template_queries.graphql",
-    response_derives = "Debug"
-)]
-pub struct TemplatesQuery;
-
+#[derive(Debug)]
 pub struct TemplateDetails {
     pub id: String,
     pub name: String,
     pub description: String,
+}
+
+impl From<&Template> for TemplateDetails {
+    fn from(api_temp: &Template) -> Self {
+        TemplateDetails {
+            id: api_temp.id.clone(),
+            name: api_temp.name.clone(),
+            description: api_temp.description.clone().unwrap_or_default(),
+        }
+    }
 }
 
 impl Templates {
@@ -34,70 +30,65 @@ impl Templates {
 
     pub fn get_body_by_name(
         &self,
-        organization_id: Option<&str>,
-        project_name: Option<String>,
-        environment_name: Option<&str>,
+        proj_id: &str,
+        env_id: &str,
         template_name: &str,
         show_secrets: bool,
-    ) -> GraphQLResult<Option<String>> {
-        let query = GetTemplateByNameQuery::build_query(get_template_by_name_query::Variables {
-            organization_id: organization_id.map(|id| id.to_string()),
-            project_name: project_name.clone(),
-            environment_name: environment_name.map(|name| name.to_string()),
-            template_name: template_name.to_string(),
-            show_secrets,
-        });
-        let response_body = graphql_request::<_, get_template_by_name_query::ResponseData>(&query)?;
+    ) -> Result<Option<String>, Error<ProjectsTemplatesRetrieveError>> {
+        // TODO: convert template name to template id outside??
+        let response = self.get_details_by_name(proj_id, template_name);
 
-        if let Some(errors) = response_body.errors {
-            Err(GraphQLError::ResponseError(errors))
-        } else if let Some(data) = response_body.data {
-            if let Some(project) = data.viewer.organization.expect(NO_ORG_ERROR).project {
-                Ok(project.template.and_then(|t| t.evaluated))
+        if let Ok(Some(details)) = response {
+            let rest_cfg = open_api_config();
+            let response = projects_templates_retrieve(
+                &rest_cfg,
+                &details.id,
+                proj_id,
+                Some(env_id),
+                Some(show_secrets),
+            )?;
+            Ok(response.body)
+        } else {
+            // TODO: handle template not found??
+            Ok(None)
+        }
+    }
+
+    pub fn get_details_by_name(
+        &self,
+        proj_id: &str,
+        template_name: &str,
+    ) -> Result<Option<TemplateDetails>, Error<ProjectsTemplatesListError>> {
+        let rest_cfg = open_api_config();
+        let response = projects_templates_list(&rest_cfg, proj_id, Some(template_name), None)?;
+
+        if let Some(templates) = response.results {
+            if template_name.is_empty() {
+                Ok(None)
             } else {
-                Err(GraphQLError::ProjectNotFoundError(
-                    project_name.unwrap_or_else(|| DEFAULT_PROJ_NAME.to_string()),
-                ))
+                // TODO: handle more than one?
+                let template = &templates[0];
+                Ok(Some(TemplateDetails::from(template)))
             }
         } else {
-            Err(GraphQLError::MissingDataError)
+            Ok(None)
         }
     }
 
     pub fn get_template_details(
         &self,
-        organization_id: Option<&str>,
-        project_name: Option<String>,
-    ) -> GraphQLResult<Vec<TemplateDetails>> {
-        let query = TemplatesQuery::build_query(templates_query::Variables {
-            organization_id: organization_id.map(|id| id.to_string()),
-            project_name: project_name.clone(),
-        });
-        let response_body = graphql_request::<_, templates_query::ResponseData>(&query)?;
+        proj_id: &str,
+    ) -> Result<Vec<TemplateDetails>, Error<ProjectsTemplatesListError>> {
+        let rest_cfg = open_api_config();
+        let response = projects_templates_list(&rest_cfg, proj_id, None, None)?;
+        let mut list: Vec<TemplateDetails> = Vec::new();
 
-        if let Some(errors) = response_body.errors {
-            Err(GraphQLError::ResponseError(errors))
-        } else if let Some(data) = response_body.data {
-            if let Some(project) = data.viewer.organization.expect(NO_ORG_ERROR).project {
-                let mut list: Vec<TemplateDetails> = project
-                    .templates
-                    .nodes
-                    .into_iter()
-                    .map(|n| TemplateDetails {
-                        id: n.id,
-                        name: n.name,
-                        description: n.description.unwrap_or_default(),
-                    })
-                    .collect();
-                list.sort_by(|l, r| l.name.cmp(&r.name));
-                Ok(list)
-            } else {
-                Err(GraphQLError::ProjectNotFoundError(
-                    project_name.unwrap_or_else(|| DEFAULT_PROJ_NAME.to_string()),
-                ))
+        if let Some(templates) = response.results {
+            for template in templates {
+                list.push(TemplateDetails::from(&template));
             }
-        } else {
-            Err(GraphQLError::MissingDataError)
+            list.sort_by(|l, r| l.name.cmp(&r.name));
         }
+        Ok(list)
     }
 }

@@ -1,12 +1,3 @@
-// Ignore the upper-case acronym warning from clippy for the whole module, since the GraphQLXxxx
-// pattern tends to be liked by the team.
-#![allow(clippy::upper_case_acronyms)]
-
-mod graphql;
-
-#[macro_use]
-mod macros;
-
 extern crate rpassword;
 
 mod cli;
@@ -15,24 +6,21 @@ mod crypto;
 mod environments;
 mod integrations;
 mod lib;
+mod openapi;
 mod parameters;
 mod projects;
 mod subprocess;
 mod table;
 mod templates;
 
-use crate::cli::{CONFIRM_FLAG, FORMAT_OPT, SECRETS_FLAG, VALUES_FLAG};
+use crate::cli::{CONFIRM_FLAG, FORMAT_OPT, RENAME_OPT, SECRETS_FLAG, VALUES_FLAG};
 use crate::config::env::ConfigEnv;
-use crate::config::{Config, CT_PROFILE, DEFAULT_ENV_NAME, DEFAULT_PROJ_NAME};
+use crate::config::{Config, CT_PROFILE, DEFAULT_ENV_NAME};
 use crate::environments::Environments;
-use crate::graphql::GraphQLError;
-use crate::integrations::{Integrations, IntegrationsIntf};
-use crate::parameters::export_parameters_query::{
-    ExportParametersFormatEnum, ExportParametersOptions,
-};
-use crate::parameters::Parameters;
-use crate::projects::{Projects, ProjectsIntf};
-use crate::subprocess::{Inheritance, SubProcess, SubProcessIntf};
+use crate::integrations::Integrations;
+use crate::parameters::{ParamExportFormat, ParamExportOptions, ParameterDetails, Parameters};
+use crate::projects::Projects;
+use crate::subprocess::{Inheritance, SubProcess};
 use crate::table::Table;
 use crate::templates::Templates;
 use clap::ArgMatches;
@@ -43,14 +31,33 @@ use std::str::FromStr;
 use std::{fs, process};
 use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 
-const REDACTED: &str = "*****";
+const REDACTED: &str = "********";
 
 pub struct ResolvedIds {
     pub env_name: Option<String>,
     pub env_id: Option<String>,
-    pub org_id: Option<String>,
     pub proj_name: Option<String>,
     pub proj_id: Option<String>,
+}
+
+impl ResolvedIds {
+    fn environment_display_name(&self) -> String {
+        self.env_name
+            .clone()
+            .unwrap_or_else(|| DEFAULT_ENV_NAME.to_string())
+    }
+
+    fn project_display_name(&self) -> String {
+        self.proj_name.clone().unwrap_or_default()
+    }
+
+    fn project_id(&self) -> &str {
+        self.proj_id.as_deref().unwrap()
+    }
+
+    fn environment_id(&self) -> &str {
+        self.env_id.as_deref().unwrap()
+    }
 }
 
 /// Print a message to stderr in the specified color.
@@ -149,28 +156,34 @@ fn user_confirm(message: String) -> bool {
 /// If either fails, it prints an error and exits.
 /// On success, it returns a `ResolvedIds` structure that contains ids to avoid needing to resolve
 /// the names again.
-fn resolve_ids(org_id: Option<&str>, config: &Config) -> Result<ResolvedIds> {
+fn resolve_ids(config: &Config) -> Result<ResolvedIds> {
     // The `err` value is used to allow accumulation of multiple errors to the user.
     let mut err = false;
-    let env = config.environment.as_deref();
+    let env = config.environment.as_deref().unwrap_or(DEFAULT_ENV_NAME);
     let proj = config.project.as_deref();
     let environments = Environments::new();
-    let env_id = environments.get_id(org_id, env)?;
+    let env_id = environments.get_id(env)?;
     if env_id.is_none() {
         error_message(format!(
             "The '{}' environment could not be found in your account.",
-            env.unwrap_or(DEFAULT_ENV_NAME),
+            env,
         ))?;
         err = true;
     }
 
-    let projects = Projects::new();
-    let proj_id = projects.get_id(org_id, proj)?;
-    if proj_id.is_none() {
-        error_message(format!(
-            "The '{}' project could not be found in your account.",
-            proj.unwrap_or(DEFAULT_PROJ_NAME)
-        ))?;
+    let mut proj_id = None;
+    if let Some(proj_str) = proj {
+        let projects = Projects::new();
+        proj_id = projects.get_id(proj_str)?;
+        if proj_id.is_none() {
+            error_message(format!(
+                "The '{}' project could not be found in your account.",
+                proj_str,
+            ))?;
+            err = true;
+        }
+    } else {
+        error_message("No project name was provided!".to_owned())?;
         err = true;
     }
 
@@ -180,9 +193,8 @@ fn resolve_ids(org_id: Option<&str>, config: &Config) -> Result<ResolvedIds> {
     }
 
     Ok(ResolvedIds {
-        env_name: env.map(String::from),
+        env_name: Some(env.to_string()),
         env_id,
-        org_id: org_id.map(String::from),
         proj_name: proj.map(String::from),
         proj_id,
     })
@@ -191,7 +203,7 @@ fn resolve_ids(org_id: Option<&str>, config: &Config) -> Result<ResolvedIds> {
 /// Process the 'run' sub-command
 fn process_run_command(
     subcmd_args: &ArgMatches,
-    sub_proc: &mut impl SubProcessIntf,
+    sub_proc: &mut SubProcess,
     resolved: &ResolvedIds,
 ) -> Result<()> {
     let mut arguments: Vec<String>;
@@ -217,12 +229,11 @@ fn process_run_command(
     }
 
     // Setup the environment for the sub-process.
-    let org_id = resolved.org_id.as_deref();
     let inherit = Inheritance::from_str(subcmd_args.value_of("inheritance").unwrap()).unwrap();
     let overrides = subcmd_args.values_of_lossy("set").unwrap_or_default();
     let removals = subcmd_args.values_of_lossy("remove").unwrap_or_default();
     let permissive = subcmd_args.is_present("permissive");
-    sub_proc.set_environment(org_id, resolved, inherit, &overrides, &removals)?;
+    sub_proc.set_environment(resolved, inherit, &overrides, &removals)?;
     if !permissive {
         sub_proc.remove_ct_app_vars();
     }
@@ -232,35 +243,32 @@ fn process_run_command(
 }
 
 /// Process the 'project' sub-command
-fn process_project_command(
-    subcmd_args: &ArgMatches,
-    projects: &impl ProjectsIntf,
-    org_id: Option<&str>,
-) -> Result<()> {
+fn process_project_command(subcmd_args: &ArgMatches, projects: &Projects) -> Result<()> {
     if let Some(subcmd_args) = subcmd_args.subcommand_matches("delete") {
-        let proj_name = subcmd_args.value_of("NAME");
-        let details = projects.get_details_by_name(org_id, proj_name)?;
+        let proj_name = subcmd_args.value_of("NAME").unwrap();
+        let details = projects.get_details_by_name(proj_name)?;
 
         if let Some(details) = details {
             // NOTE: the server is responsible for checking if children exist
             let mut confirmed = subcmd_args.is_present(CONFIRM_FLAG);
             if !confirmed {
-                confirmed = user_confirm(format!("Delete project '{}'", proj_name.unwrap()));
+                confirmed = user_confirm(format!("Delete project '{}'", proj_name));
             }
 
             if !confirmed {
-                warning_message(format!("Project '{}' not deleted!", proj_name.unwrap()))?;
+                warning_message(format!("Project '{}' not deleted!", proj_name))?;
             } else {
-                projects.delete_project(details.id)?;
-                println!("Deleted project '{}'", proj_name.unwrap());
+                projects.delete_project(&details.id)?;
+                println!("Deleted project '{}'", proj_name);
             }
         } else {
-            warning_message(format!("Project '{}' does not exist!", proj_name.unwrap()))?;
+            warning_message(format!("Project '{}' does not exist!", proj_name))?;
         }
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("list") {
-        let details = projects.get_project_details(org_id)?;
-        // NOTE: should always have at least the default project
-        if !subcmd_args.is_present(VALUES_FLAG) {
+        let details = projects.get_project_details()?;
+        if details.is_empty() {
+            println!("No projects found.");
+        } else if !subcmd_args.is_present(VALUES_FLAG) {
             let list = details
                 .iter()
                 .map(|v| v.name.clone())
@@ -276,28 +284,25 @@ fn process_project_command(
             table.render(fmt)?;
         }
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("set") {
-        let proj_name = subcmd_args.value_of("NAME");
+        let proj_name = subcmd_args.value_of("NAME").unwrap();
+        let rename = subcmd_args.value_of(RENAME_OPT);
         let description = subcmd_args.value_of("description");
-        let details = projects.get_details_by_name(org_id, proj_name)?;
+        let details = projects.get_details_by_name(proj_name)?;
 
         if let Some(details) = details {
-            if description == Some(details.description.as_str()) {
+            if description.is_none() && rename.is_none() {
                 warning_message(format!(
-                    "Project '{}' not updated: same description",
-                    proj_name.unwrap()
-                ))?;
-            } else if description.is_none() {
-                warning_message(format!(
-                    "Project '{}' not updated: no description provided",
-                    proj_name.unwrap()
+                    "Project '{}' not updated: no updated parameters provided",
+                    proj_name
                 ))?;
             } else {
-                projects.update_project(details.name, details.id, description)?;
-                println!("Updated project '{}'", proj_name.unwrap());
+                let name = rename.unwrap_or(&proj_name);
+                projects.update_project(name, &details.id, description)?;
+                println!("Updated project '{}'", name);
             }
         } else {
-            projects.create_project(org_id, proj_name, description)?;
-            println!("Created project '{}'", proj_name.unwrap());
+            projects.create_project(proj_name, description)?;
+            println!("Created project '{}'", proj_name);
         }
     } else {
         warn_missing_subcommand("projects")?;
@@ -321,6 +326,12 @@ fn process_completion_command(subcmd_args: &ArgMatches) {
 fn process_config_command(subcmd_args: &ArgMatches) -> Result<()> {
     if subcmd_args.subcommand_matches("edit").is_some() {
         Config::edit()?;
+        let filepath = Config::config_file()
+            .unwrap()
+            .into_os_string()
+            .into_string()
+            .unwrap();
+        println!("Edited {}", filepath);
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("list") {
         let details = Config::get_profile_details()?;
         if details.is_empty() {
@@ -362,33 +373,29 @@ fn process_config_command(subcmd_args: &ArgMatches) -> Result<()> {
 fn process_environment_command(
     subcmd_args: &ArgMatches,
     environments: &Environments,
-    org_id: Option<&str>,
 ) -> Result<()> {
     if let Some(subcmd_args) = subcmd_args.subcommand_matches("delete") {
-        let env_name = subcmd_args.value_of("NAME");
-        let details = environments.get_details_by_name(org_id, env_name)?;
+        let env_name = subcmd_args.value_of("NAME").unwrap();
+        let details = environments.get_details_by_name(env_name)?;
 
         if let Some(details) = details {
             // NOTE: the server is responsible for checking if children exist
             let mut confirmed = subcmd_args.is_present(CONFIRM_FLAG);
             if !confirmed {
-                confirmed = user_confirm(format!("Delete environment '{}'", env_name.unwrap()));
+                confirmed = user_confirm(format!("Delete environment '{}'", env_name));
             }
 
             if !confirmed {
-                warning_message(format!("Environment '{}' not deleted!", env_name.unwrap()))?;
+                warning_message(format!("Environment '{}' not deleted!", env_name))?;
             } else {
                 environments.delete_environment(details.id)?;
-                println!("Deleted environment '{}'", env_name.unwrap());
+                println!("Deleted environment '{}'", env_name);
             }
         } else {
-            warning_message(format!(
-                "Environment '{}' does not exist!",
-                env_name.unwrap()
-            ))?;
+            warning_message(format!("Environment '{}' does not exist!", env_name))?;
         }
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("list") {
-        let details = environments.get_environment_details(org_id)?;
+        let details = environments.get_environment_details()?;
         // NOTE: should always have at least the default environment
         if !subcmd_args.is_present(VALUES_FLAG) {
             let list = details
@@ -401,42 +408,43 @@ fn process_environment_command(
             let mut table = Table::new("environment");
             table.set_header(&["Name", "Parent", "Description"]);
             for entry in details {
-                table.add_row(vec![entry.name, entry.parent, entry.description]);
+                table.add_row(vec![entry.name, entry.parent_name, entry.description]);
             }
             table.render(fmt)?;
         }
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("set") {
-        let env_name = subcmd_args.value_of("NAME");
+        let env_name = subcmd_args.value_of("NAME").unwrap();
         let parent_name = subcmd_args.value_of("parent");
         let description = subcmd_args.value_of("description");
-        let details = environments.get_details_by_name(org_id, env_name)?;
+        let rename = subcmd_args.value_of(RENAME_OPT);
+        let details = environments.get_details_by_name(env_name)?;
 
         if let Some(details) = details {
-            if description == Some(details.description.as_str()) {
-                warning_message(format!(
-                    "Environment '{}' not updated: same description",
-                    env_name.unwrap()
-                ))?;
-            } else if parent_name.is_some() && parent_name.unwrap() != details.parent.as_str() {
+            if parent_name.is_some() && parent_name.unwrap() != details.parent_name.as_str() {
                 error_message(format!(
                     "Environment '{}' parent cannot be updated.",
-                    env_name.unwrap()
+                    env_name
                 ))?;
                 process::exit(6);
-            } else if description.is_none() {
+            } else if description.is_none() && rename.is_none() {
                 warning_message(format!(
-                    "Environment '{}' not updated: no description provided",
-                    env_name.unwrap()
+                    "Environment '{}' not updated: no updated parameters provided",
+                    env_name
                 ))?;
             } else {
-                environments.update_environment(details.id, description)?;
-                println!("Updated environment '{}'", env_name.unwrap());
+                let name = rename.unwrap_or(env_name);
+                environments.update_environment(&details.id, name, description)?;
+                println!("Updated environment '{}'", name);
             }
         } else {
             let parent_name = parent_name.unwrap_or(DEFAULT_ENV_NAME);
-            if let Some(parent_id) = environments.get_id(org_id, Some(parent_name))? {
-                environments.create_environment(org_id, env_name, description, parent_id)?;
-                println!("Created environment '{}'", env_name.unwrap());
+            if let Some(parent_details) = environments.get_details_by_name(parent_name)? {
+                environments.create_environment(
+                    env_name,
+                    description,
+                    parent_details.url.as_str(),
+                )?;
+                println!("Created environment '{}'", env_name);
             } else {
                 error_message(format!("No parent environment '{}' found", parent_name))?;
                 process::exit(5);
@@ -451,77 +459,41 @@ fn process_environment_command(
 /// Process the 'integrations' sub-command
 fn process_integrations_command(
     subcmd_args: &ArgMatches,
-    integrations: &impl IntegrationsIntf,
-    org_id: Option<&str>,
+    integrations: &Integrations,
 ) -> Result<()> {
     if let Some(subcmd_args) = subcmd_args.subcommand_matches("explore") {
-        let int_name = subcmd_args.value_of("NAME");
-        let int_type = subcmd_args.value_of("TYPE");
-        let path = subcmd_args.value_of("PATH");
-        let names: Vec<&str> = if let Some(rpath) = path {
-            rpath.split("::").collect::<Vec<&str>>()
-        } else {
-            vec![]
-        };
-
-        let details = integrations.get_details_by_name(org_id, int_name, int_type)?;
-        if let Some(details) = details {
-            let mut last_fqn = details.fqn.clone();
-            let mut node = integrations.get_integration_node(details.id)?;
-            if node.is_none() {
-                warning_message(format!("Failed to find initial node for {}", last_fqn))?;
+        let fqn = subcmd_args.value_of("FQN");
+        let nodes = integrations.get_integration_nodes(fqn)?;
+        let indent = "  ";
+        if nodes.is_empty() {
+            if let Some(fqn) = fqn {
+                error_message(format!("Nothing found for FQN '{}'!", fqn))?;
             } else {
-                for name in names {
-                    let next_id = node.unwrap().get_id_for_name(name.to_string());
-                    if next_id.is_none() {
-                        error_message(format!("No entry named '{}' in '{}'", name, last_fqn))?;
-                        node = None;
-                        break;
-                    } else if let Some(next_node) =
-                        integrations.get_integration_node(next_id.unwrap().clone())?
-                    {
-                        last_fqn = next_node.fqn.clone();
-                        node = Some(next_node);
-                    } else {
-                        error_message(format!("No node found for {}::{}", last_fqn, name))?;
-                        node = None;
-                        break;
-                    }
+                error_message("No integrations found.".to_string())?;
+            }
+        } else if !subcmd_args.is_present("values") {
+            for node in nodes {
+                println!("{}", node.name);
+                for key in node.content_keys {
+                    println!("{}{{{{ {} }}}}", indent, key);
                 }
             }
-
-            if let Some(node) = node {
-                let indent = "  ";
-                if !subcmd_args.is_present("values") {
-                    println!("{}", node.name);
-                    for entry in node.entries {
-                        println!("{}{}", indent, entry.name);
-                    }
-                } else {
-                    let fmt = subcmd_args.value_of("format").unwrap();
-                    let mut table = Table::new("integration");
-                    table.set_header(&["Name", "FQN"]);
-                    // add the node itself
-                    table.add_row(vec![node.name, node.fqn]);
-                    for entry in node.entries {
-                        // indent the entries to indicated children
-                        let entry_name = format!("{}{}", indent, entry.name);
-                        table.add_row(vec![entry_name, entry.fqn]);
-                    }
-                    table.render(fmt)?;
-                }
-            } else {
-                process::exit(3);
-            }
         } else {
-            error_message(format!(
-                "Integration '{}' does not exist!",
-                int_name.unwrap()
-            ))?;
-            process::exit(4);
+            let fmt = subcmd_args.value_of("format").unwrap();
+            let mut table = Table::new("integration");
+            table.set_header(&["Name", "FQN"]);
+            for node in nodes {
+                // add the node itself
+                table.add_row(vec![node.name, node.fqn.clone()]);
+                for key in node.content_keys {
+                    let entry_name = format!("{}{{{{ {} }}}}", indent, key);
+                    table.add_row(vec![entry_name, node.fqn.clone()]);
+                }
+            }
+            table.render(fmt)?;
         }
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("list") {
-        let details = integrations.get_integration_details(org_id)?;
+        let details = integrations.get_integration_details()?;
         if details.is_empty() {
             println!("No integrations found");
         } else if !subcmd_args.is_present(VALUES_FLAG) {
@@ -533,9 +505,15 @@ fn process_integrations_command(
         } else {
             let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
             let mut table = Table::new("integration");
-            table.set_header(&["Name", "Type", "FQN"]);
+            table.set_header(&["Name", "FQN", "Status", "Updated", "Description"]);
             for entry in details {
-                table.add_row(vec![entry.name, entry.integration_type, entry.fqn]);
+                table.add_row(vec![
+                    entry.name,
+                    entry.fqn,
+                    entry.status,
+                    entry.status_time,
+                    entry.description,
+                ]);
             }
             table.render(fmt)?;
         }
@@ -552,11 +530,10 @@ fn process_parameters_command(
     resolved: &ResolvedIds,
 ) -> Result<()> {
     if let Some(subcmd_args) = subcmd_args.subcommand_matches("list") {
-        let mut details = parameters.get_parameter_details(
-            resolved.org_id.as_deref(),
-            resolved.env_id.clone(),
-            resolved.proj_name.clone(),
-        )?;
+        let proj_id = resolved.project_id();
+        let env_id = resolved.environment_id();
+        let show_secrets = subcmd_args.is_present(SECRETS_FLAG);
+        let mut details = parameters.get_parameter_details(proj_id, env_id, !show_secrets)?;
         let references = subcmd_args.is_present("dynamic");
         let qualifier = if references { "dynamic " } else { "" };
         if references {
@@ -568,10 +545,7 @@ fn process_parameters_command(
             println!(
                 "No {}parameters found in project {}",
                 qualifier,
-                resolved
-                    .proj_name
-                    .clone()
-                    .unwrap_or_else(|| DEFAULT_PROJ_NAME.to_string())
+                resolved.project_display_name()
             );
         } else if !subcmd_args.is_present(VALUES_FLAG) {
             let list = details
@@ -581,7 +555,6 @@ fn process_parameters_command(
             println!("{}", list.join("\n"))
         } else {
             let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
-            let show_secrets = subcmd_args.is_present(SECRETS_FLAG);
             let mut table = Table::new("parameter");
 
             if !references {
@@ -592,17 +565,12 @@ fn process_parameters_command(
 
             for entry in details {
                 if !references {
-                    let out_val = if entry.secret && !show_secrets {
-                        REDACTED.to_string()
-                    } else {
-                        entry.value
-                    };
                     let type_str = if entry.dynamic { "dynamic" } else { "static" };
                     let secret_str = if entry.secret { "true" } else { "false" };
                     table.add_row(vec![
                         entry.key,
-                        out_val,
-                        entry.source,
+                        entry.value,
+                        entry.env_name,
                         type_str.to_string(),
                         secret_str.to_string(),
                         entry.description,
@@ -615,10 +583,9 @@ fn process_parameters_command(
         }
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("get") {
         let key = subcmd_args.value_of("KEY").unwrap();
-        let env_name = resolved.env_name.as_deref();
-        let org_id = resolved.org_id.as_deref();
-        let parameter =
-            parameters.get_details_by_name(org_id, env_name, resolved.proj_name.clone(), key);
+        let proj_id = resolved.project_id();
+        let env_id = resolved.environment_id();
+        let parameter = parameters.get_details_by_name(proj_id, env_id, key);
 
         if let Ok(details) = parameter {
             // Treat parameters without values set as if the value were simply empty, since
@@ -629,30 +596,25 @@ fn process_parameters_command(
             }
             println!("{}", param_value);
         } else {
-            match parameter.unwrap_err() {
-                GraphQLError::EnvironmentNotFoundError(name) => println!(
-                    "The '{}' environment could not be found in your organization.",
-                    name
-                ),
-                GraphQLError::ParameterNotFoundError(key) => println!(
-                    "The parameter '{}' could not be found in your organization.",
-                    key
-                ),
-                err => propagate_error!(err),
-            };
+            println!(
+                "The parameter '{}' could not be found in your organization.",
+                key
+            );
         }
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("set") {
-        let key = subcmd_args.value_of("KEY").unwrap();
-        let org_id = resolved.org_id.as_deref();
-        let env_name = resolved.env_name.as_deref();
-        let proj_name = resolved.proj_name.clone();
+        let key_name = subcmd_args.value_of("KEY").unwrap();
+        let proj_id = resolved.project_id();
+        let env_id = resolved.environment_id();
         let prompt_user = subcmd_args.is_present("prompt");
         let filename = subcmd_args.value_of("input-file");
-        let mut fqn = subcmd_args.value_of("FQN").map(|f| f.to_string());
-        let mut jmes_path = subcmd_args.value_of("JMES").map(|j| j.to_string());
-        let mut value = subcmd_args.value_of("value").map(|v| v.to_string());
-        let mut description = subcmd_args.value_of("description").map(|v| v.to_string());
-        let mut secret: Option<bool> = match subcmd_args.value_of("secret") {
+        let fqn = subcmd_args.value_of("FQN");
+        let jmes_path = subcmd_args.value_of("JMES");
+        let mut value = subcmd_args.value_of("value");
+        let val_str: String;
+        let description = subcmd_args.value_of("description");
+        let rename = subcmd_args.value_of(RENAME_OPT);
+        let final_name = rename.unwrap_or(key_name);
+        let secret: Option<bool> = match subcmd_args.value_of("secret") {
             Some("false") => Some(false),
             Some("true") => Some(true),
             _ => None,
@@ -674,10 +636,12 @@ fn process_parameters_command(
 
         // if user asked to be prompted
         if prompt_user {
-            println!("Please enter the '{}' value: ", key);
-            value = Some(read_password()?);
+            println!("Please enter the '{}' value: ", key_name);
+            val_str = read_password()?;
+            value = Some(val_str.as_str());
         } else if let Some(filename) = filename {
-            value = Some(fs::read_to_string(filename).expect("Failed to read value from file."));
+            val_str = fs::read_to_string(filename).expect("Failed to read value from file.");
+            value = Some(val_str.as_str());
         }
 
         // make sure there is at least one parameter to updated
@@ -686,125 +650,111 @@ fn process_parameters_command(
             && value.is_none()
             && jmes_path.is_none()
             && fqn.is_none()
+            && rename.is_none()
         {
             warn_user(
                 concat!(
                     "Nothing changed. Please provide at least one of: ",
-                    "description, secret, or value/fqn/jmes-path."
+                    "description, rename, secret, or value/fqn/jmes-path."
                 )
                 .to_string(),
             )?;
         } else {
             // get the original values, so that is not lost
-            if let Ok(Some(original)) =
-                parameters.get_details_by_name(org_id, env_name, proj_name.clone(), &key)
-            {
-                // use original values
-                if value.is_none() && jmes_path.is_none() && fqn.is_none() {
-                    if original.dynamic {
-                        fqn = Some(original.fqn);
-                        jmes_path = Some(original.jmes_path);
-                    } else {
-                        value = Some(original.value)
-                    }
-                } else if value.is_none() {
-                    // no value was specified, but at least one of fqn/jmes was... allows individual
-                    // FQN/JMES to be set.
-                    if fqn.is_none() {
-                        fqn = Some(original.fqn)
-                    }
-                    if jmes_path.is_none() {
-                        jmes_path = Some(original.jmes_path)
-                    }
+            let mut updated: ParameterDetails;
+            if let Some(original) = parameters.get_details_by_name(proj_id, env_id, key_name)? {
+                // only update if there is something to update
+                if description.is_some() || secret.is_some() || rename.is_some() {
+                    updated = parameters.update_parameter(
+                        proj_id,
+                        &original.id,
+                        &final_name,
+                        description,
+                        secret,
+                    )?;
+                    // copy a few fields to insure we detect the correct environment
+                    updated.val_id = original.val_id;
+                    updated.env_url = original.env_url;
+                    updated.env_name = original.env_name;
+                } else {
+                    // nothing to update here, but need to copy details
+                    updated = original;
                 }
-
-                if description.is_none() {
-                    description = Some(original.description);
-                }
-                if secret.is_none() {
-                    secret = Some(original.secret);
-                }
-            }
-
-            let updated_id = parameters.set_parameter(
-                resolved.proj_id.clone(),
-                env_name,
-                key,
-                value.as_deref(),
-                description.as_deref(),
-                secret,
-                fqn.as_deref(),
-                jmes_path.as_deref(),
-            )?;
-
-            if updated_id.is_some() {
-                println!(
-                    "Successfully updated parameter '{}' in project '{}' for environment '{}'.",
-                    key,
-                    proj_name.unwrap_or_else(|| DEFAULT_PROJ_NAME.to_string()),
-                    env_name.unwrap_or(DEFAULT_ENV_NAME)
-                );
             } else {
-                println!(
-                    "Failed to update parameter '{}' in project '{}' for environment '{}'.",
-                    key,
-                    proj_name.unwrap_or_else(|| DEFAULT_PROJ_NAME.to_string()),
-                    env_name.unwrap_or(DEFAULT_ENV_NAME)
-                );
+                updated = parameters.create_parameter(proj_id, key_name, description, secret)?;
             }
+
+            // don't do anything if there's nothing to do
+            if value.is_some() || fqn.is_some() || jmes_path.is_some() {
+                let param_id = updated.id.as_str();
+                // if any existing environment does not match the desired environment
+                if !updated.env_url.contains(env_id) {
+                    parameters
+                        .create_parameter_value(proj_id, env_id, param_id, value, fqn, jmes_path)?;
+                } else {
+                    parameters.update_parameter_value(
+                        proj_id,
+                        param_id,
+                        &updated.val_id,
+                        value,
+                        fqn,
+                        jmes_path,
+                    )?;
+                }
+            }
+            println!(
+                "Successfully updated parameter '{}' in project '{}' for environment '{}'.",
+                final_name,
+                resolved.project_display_name(),
+                resolved.environment_display_name(),
+            );
         }
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("delete") {
-        let key = subcmd_args.value_of("KEY").unwrap();
-        let org_id = resolved.org_id.as_deref();
-        let env_name = resolved.env_name.as_deref();
-        let proj_name = resolved.proj_name.clone();
-        let result = parameters.delete_parameter(org_id, proj_name.clone(), env_name, key);
+        let key_name = subcmd_args.value_of("KEY").unwrap();
+        let proj_id = resolved.project_id();
+        let env_id = resolved.environment_id();
+        let result = parameters.delete_parameter(proj_id, env_id, key_name);
         let _ = match result {
             Ok(Some(_)) => {
                 println!(
-                    "Successfully removed parameter '{}' from project '{}' for environment '{}'.",
-                    key,
-                    proj_name.unwrap_or_else(|| DEFAULT_PROJ_NAME.to_string()),
-                    env_name.unwrap_or(DEFAULT_ENV_NAME)
+                    "Successfully removed parameter '{}' from project '{}'.",
+                    key_name,
+                    resolved.project_display_name(),
                 );
             }
-            Err(GraphQLError::ParameterNotFoundError(_)) => {
+            Ok(None) => {
                 println!(
-                    "Did not find parameter '{}' to delete from project '{}' for environment '{}'.",
-                    key,
-                    proj_name.unwrap_or_else(|| DEFAULT_PROJ_NAME.to_string()),
-                    env_name.unwrap_or(DEFAULT_ENV_NAME),
-                );
+                    "Did not find parameter '{}' to delete from project '{}'.",
+                    key_name,
+                    resolved.project_display_name(),
+                )
             }
             _ => {
                 println!(
-                    "Failed to remove parameter '{}' from project '{}' for environment '{}'.",
-                    key,
-                    proj_name.unwrap_or_else(|| DEFAULT_PROJ_NAME.to_string()),
-                    env_name.unwrap_or(DEFAULT_ENV_NAME)
+                    "Failed to remove parameter '{}' from project '{}'.",
+                    key_name,
+                    resolved.project_display_name(),
                 );
             }
         };
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("export") {
-        let org_id = resolved.org_id.as_deref();
-        let proj_name = resolved.proj_name.clone();
+        let proj_id = resolved.project_id();
+        let env_id = resolved.environment_id();
         let starts_with = subcmd_args.value_of("starts_with");
         let ends_with = subcmd_args.value_of("ends_with");
         let contains = subcmd_args.value_of("contains");
         let template_format = subcmd_args.value_of("FORMAT").unwrap();
         let export = subcmd_args.is_present("export");
         let secrets = subcmd_args.is_present(SECRETS_FLAG);
-        let env_name = resolved.env_name.as_deref();
-        let format = ExportParametersFormatEnum::from_str(template_format).unwrap();
-        let options = ExportParametersOptions {
+        let options = ParamExportOptions {
+            format: ParamExportFormat::from_str(template_format).unwrap(),
             starts_with: starts_with.map(|s| s.to_string()),
             ends_with: ends_with.map(|s| s.to_string()),
             contains: contains.map(|s| s.to_string()),
             export: Some(export),
             secrets: Some(secrets),
         };
-        let body =
-            parameters.export_parameters(org_id, proj_name.clone(), env_name, options, format)?;
+        let body = parameters.export_parameters(proj_id, env_id, options)?;
 
         if let Some(body) = body {
             println!("{}", body)
@@ -812,10 +762,41 @@ fn process_parameters_command(
             println!(
                 "Could not export parameters format '{}' from project '{}' in environment '{}'.",
                 template_format,
-                proj_name.unwrap_or_else(|| DEFAULT_PROJ_NAME.to_string()),
-                env_name.unwrap_or(DEFAULT_ENV_NAME)
+                resolved.project_display_name(),
+                resolved.environment_display_name()
             )
         }
+    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("unset") {
+        let key_name = subcmd_args.value_of("KEY").unwrap();
+        let proj_id = resolved.project_id();
+        let env_id = resolved.environment_id();
+        let result = parameters.delete_parameter_value(proj_id, env_id, key_name);
+        let _ = match result {
+            Ok(Some(_)) => {
+                println!(
+                    "Successfully removed parameter value '{}' from project '{}' for environment '{}'.",
+                    key_name,
+                    resolved.project_display_name(),
+                    resolved.environment_display_name()
+                );
+            }
+            Ok(None) => {
+                println!(
+                    "Did not find parameter value '{}' to delete from project '{}' for environment '{}'.",
+                    key_name,
+                    resolved.project_display_name(),
+                    resolved.environment_display_name()
+                )
+            }
+            _ => {
+                println!(
+                    "Failed to remove parameter value '{}' from project '{}' for environment '{}'.",
+                    key_name,
+                    resolved.project_display_name(),
+                    resolved.environment_display_name()
+                );
+            }
+        };
     } else {
         warn_missing_subcommand("parameters")?;
     }
@@ -829,14 +810,11 @@ fn process_templates_command(
     resolved: &ResolvedIds,
 ) -> Result<()> {
     if let Some(subcmd_args) = subcmd_args.subcommand_matches("list") {
-        let org_id = resolved.org_id.as_deref();
-        let proj_name = resolved.proj_name.clone();
-        let details = templates.get_template_details(org_id, proj_name.clone())?;
+        let proj_name = resolved.project_display_name();
+        let proj_id = resolved.project_id();
+        let details = templates.get_template_details(proj_id)?;
         if details.is_empty() {
-            println!(
-                "There are no templates in project `{}`.",
-                proj_name.unwrap_or_else(|| DEFAULT_PROJ_NAME.to_string())
-            );
+            println!("There are no templates in project `{}`.", proj_name);
         } else if !subcmd_args.is_present(VALUES_FLAG) {
             let list = details
                 .iter()
@@ -853,21 +831,20 @@ fn process_templates_command(
             table.render(fmt)?;
         }
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("get") {
-        let org_id = resolved.org_id.as_deref();
-        let proj_name = resolved.proj_name.clone();
+        let proj_name = resolved.project_display_name();
+        let env_name = resolved.environment_display_name();
+        let proj_id = resolved.project_id();
+        let env_id = resolved.environment_id();
         let template_name = subcmd_args.value_of("KEY").unwrap();
-        let env_name = resolved.env_name.as_deref();
         let show_secrets = subcmd_args.is_present(SECRETS_FLAG);
-        let body =
-            templates.get_body_by_name(org_id, proj_name, env_name, template_name, show_secrets)?;
+        let body = templates.get_body_by_name(proj_id, env_id, template_name, show_secrets)?;
 
         if let Some(body) = body {
             println!("{}", body)
         } else {
             println!(
-                "Could not find a template with name '{}' in environment '{}'.",
-                template_name,
-                env_name.unwrap_or(DEFAULT_ENV_NAME)
+                "Could not find a template with name '{}' in project '{}' environment '{}'.",
+                template_name, proj_name, env_name
             )
         }
     } else {
@@ -900,8 +877,6 @@ fn main() -> Result<()> {
         process::exit(0)
     }
 
-    let org_id: Option<&str> = None;
-
     // wait until after processing the config command to load the config -- if we fail to load the
     // config, we would not be able to edit!
     Config::init_global(Config::load_config(
@@ -916,24 +891,24 @@ fn main() -> Result<()> {
 
     if let Some(matches) = matches.subcommand_matches("environments") {
         let environments = Environments::new();
-        process_environment_command(matches, &environments, org_id)?;
+        process_environment_command(matches, &environments)?;
         process::exit(0)
     }
 
     if let Some(matches) = matches.subcommand_matches("projects") {
         let projects = Projects::new();
-        process_project_command(matches, &projects, org_id)?;
+        process_project_command(matches, &projects)?;
         process::exit(0)
     }
 
     if let Some(matches) = matches.subcommand_matches("integrations") {
         let integrations = Integrations::new();
-        process_integrations_command(matches, &integrations, org_id)?;
+        process_integrations_command(matches, &integrations)?;
         process::exit(0)
     }
 
     // Everything below here requires resolved environment/project values
-    let resolved = resolve_ids(org_id, Config::global())?;
+    let resolved = resolve_ids(Config::global())?;
 
     if let Some(matches) = matches.subcommand_matches("parameters") {
         let parameters = Parameters::new();
@@ -946,7 +921,10 @@ fn main() -> Result<()> {
     }
 
     if let Some(matches) = matches.subcommand_matches("run") {
-        let mut sub_proc = SubProcess::new();
+        let parameters = Parameters::new();
+        let ct_vars =
+            parameters.get_parameter_values(resolved.project_id(), resolved.environment_id())?;
+        let mut sub_proc = SubProcess::new(ct_vars);
         process_run_command(matches, &mut sub_proc, &resolved)?;
     }
 

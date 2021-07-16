@@ -1,3 +1,13 @@
+# 1.0.0 - 2021-07-14
+
+* Update to use REST API server (replaces GraphQL).
+* Added `parameters unset` to support removing override for a specific environment.
+* Integrations:
+  * Simplified `explore` interface -- use FQN instead of NAME/PATH/\[TYPE\]
+  * Adjusted information displayed for `list -v` -- show Status (and update time), remove Type
+* `config edit` displays edited file path.
+* Added `--rename` option for `set` subcommand of `parameters`, `projects`, and `environments`. 
+
 # 0.5.4 - 2021-06-15
 
 * Fix display issue for no parameters in default project.
