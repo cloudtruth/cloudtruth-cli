@@ -54,11 +54,6 @@ pub enum ProjectsParametersCreateError {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum ProjectsParametersDestroyError {
-    Status400(),
-    Status404(),
-    Status422(),
-    Status415(),
-    Status507(),
     UnknownValue(serde_json::Value),
 }
 
@@ -517,7 +512,7 @@ pub fn projects_parameters_destroy(
     configuration: &configuration::Configuration,
     id: &str,
     project_pk: &str,
-) -> Result<crate::models::Parameter, Error<ProjectsParametersDestroyError>> {
+) -> Result<(), Error<ProjectsParametersDestroyError>> {
     let local_var_client = &configuration.client;
 
     let local_var_uri_str = format!(
@@ -552,7 +547,7 @@ pub fn projects_parameters_destroy(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&remove_null_values(&local_var_content)).map_err(Error::from)
+        Ok(())
     } else {
         let local_var_entity: Option<ProjectsParametersDestroyError> =
             serde_json::from_str(&local_var_content).ok();

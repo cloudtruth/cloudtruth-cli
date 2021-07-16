@@ -2190,29 +2190,8 @@ paths:
       - JWTAuth: []
       - ApiKeyAuth: []
       responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Parameter'
-          description: ''
-        '400':
-          description: While checking pre-conditions, a dynamic value was encountered
-            that could not be resolved.
-        '404':
-          description: While checking pre-conditions, a dynamic value was encountered
-            that could not be resolved.
-        '422':
-          description: 'A pre-condition to modifying the `secret` setting of the parameter
-            failed, for example setting `secret: false` and having a dynamic value
-            that resolves to a value that is a secret.  In this case it would be unsafe
-            to allow the `secret` setting to change.'
-        '415':
-          description: While checking pre-conditions, a dynamic value was encountered
-            that has an invalid content type.
-        '507':
-          description: While checking pre-conditions, a dynamic value was encountered
-            that was too large to process.
+        '204':
+          description: No response body
   /api/v1/projects/{project_pk}/template-preview/:
     post:
       operationId: projects_template_preview_create

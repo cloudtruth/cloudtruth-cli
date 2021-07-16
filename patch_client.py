@@ -147,6 +147,11 @@ def add_remove_null_call(content: str, func_name: str) -> str:
         "serde_json::from_str(&remove_null_values(&local_var_content)).map_err(Error::from)",
         1,
     )
+
+    # this insures we're not trying to change something that does not exist
+    if "remove_null_values" not in new_func:
+        raise Exception(f"Did not find 'remove_null_values()' call in {func_name}" )
+
     if orig_func != new_func:
         print(f"Updating {func_name} with call to 'remove_null_values()'")
     return content.replace(orig_func, new_func)
@@ -185,7 +190,6 @@ def parameter_null_fix(client_dir: str) -> None:
     temp = add_function(filename, temp, "remove_null_value()", REMOVE_NULL_FUNCTION)
     for function in (
         "projects_parameters_create",
-        "projects_parameters_destroy",
         "projects_parameters_list",
         "projects_parameters_partial_update",
         "projects_parameters_retrieve",
