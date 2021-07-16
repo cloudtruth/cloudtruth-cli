@@ -714,7 +714,7 @@ fn process_parameters_command(
         let proj_id = resolved.project_id();
         let env_id = resolved.environment_id();
         let result = parameters.delete_parameter(proj_id, env_id, key_name);
-        let _ = match result {
+        match result {
             Ok(Some(_)) => {
                 println!(
                     "Successfully removed parameter '{}' from project '{}'.",
@@ -771,7 +771,7 @@ fn process_parameters_command(
         let proj_id = resolved.project_id();
         let env_id = resolved.environment_id();
         let result = parameters.delete_parameter_value(proj_id, env_id, key_name);
-        let _ = match result {
+        match result {
             Ok(Some(_)) => {
                 println!(
                     "Successfully removed parameter value '{}' from project '{}' for environment '{}'.",
