@@ -639,8 +639,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedIntegrationExplorerList'
           description: The content at the FQN.
-        '204':
-          description: No content found at FQN.
         '400':
           description: Invalid FQN requested.
         '403':
