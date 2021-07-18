@@ -88,8 +88,7 @@ class TestEnvironments(TestCase):
         # attempt to delete the default project and see failure
         result = self.run_cli(cmd_env, base_cmd + f"environment delete '{DEFAULT_ENV_NAME}' --confirm")
         self.assertNotEqual(result.return_value, 0)
-        # TODO: fix error message
-        # self.assertIn("Cannot delete the default environment", result.err())
+        self.assertIn("Cannot delete the default environment", result.err())
 
         # make sure we get the same parameter list
         after = self.run_cli(cmd_env, param_cmd)
@@ -123,8 +122,7 @@ class TestEnvironments(TestCase):
         # attempt to delete something that is used elsewhere
         result = self.run_cli(cmd_env, base_cmd + f"environment delete '{env_name2}' --confirm")
         self.assertNotEqual(result.return_value, 0)
-        # TODO: fix error message
-        # self.assertIn("base Environments with children cannot be deleted", result.err())
+        self.assertIn("Environments with children cannot be deleted", result.err())
 
         # attempt to create without an existing parent
         env_name5 = self.make_name("general")
