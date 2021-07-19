@@ -267,3 +267,20 @@ class TestCase(unittest.TestCase):
         result = self.run_cli(cmd_env, cmd)
         self.assertEqual(result.return_value, 0)
 
+    def verify_param(
+            self,
+            cmd_env,
+            proj: str,
+            name: str,
+            value: str,
+            secret: Optional[bool] = None,
+            env: Optional[str] = None,
+            desc: Optional[str] = None):
+        cmd = self._base_cmd + f"--project '{proj}' "
+        if env:
+            cmd += f"--env '{env}' "
+        cmd += f"param "
+
+        # check the 'get' output
+        result = self.run_cli(cmd_env, cmd + f"get '{name}'")
+        self.assertIn(value, result.out())

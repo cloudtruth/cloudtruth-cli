@@ -1020,3 +1020,46 @@ parameter:
 
         # delete the project
         self.delete_project(cmd_env, proj_name)
+
+    def test_parameter_names(self):
+        base_cmd = self.get_cli_base_cmd()
+        cmd_env = self.get_cmd_env()
+
+        # add a new project
+        proj_name = self.make_name("test-param-names")
+        empty_msg = self._empty_message(proj_name)
+        self.create_project(cmd_env, proj_name)
+
+        # check that there are no parameters
+        sub_cmd = base_cmd + f"--project '{proj_name}' param "
+        show_cmd = sub_cmd + "list -vsf csv"
+        result = self.run_cli(cmd_env, show_cmd)
+        self.assertEqual(result.return_value, 0)
+        self.assertTrue(result.out_contains_value(empty_msg))
+
+        param_value = "something"
+        names = [
+            "simple_underscore",
+            "simple.dot",
+            "simple/slash",
+            "simple space",
+            "MixCase",
+        ]
+        for param_name in names:
+            # create the initial parameter
+            self.set_param(cmd_env, proj_name, param_name, param_value)
+            self.verify_param(cmd_env, proj_name, param_name, param_value, secret=False)
+
+            # rename it
+            temp_name = "foo"
+            self.run_cli(cmd_env, sub_cmd + f"set -r '{temp_name}' '{param_name}'")
+            self.verify_param(cmd_env, proj_name, temp_name, param_value)
+
+            # back to the original name
+            self.run_cli(cmd_env, sub_cmd + f"set -r '{param_name}' '{temp_name}'")
+            self.verify_param(cmd_env, proj_name, param_name, param_value)
+
+            self.delete_param(cmd_env, proj_name, param_name)
+
+        # cleanup
+        self.delete_project(cmd_env, proj_name)
