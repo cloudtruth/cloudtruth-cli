@@ -38,7 +38,7 @@ class TestRun(TestCase):
         proj_name = self.make_name("run-inherit-proj")
         param_name = "SOME_PARAM_NAME"
         env_value = self.make_name("env_value")
-        ct_value="ct_value"
+        ct_value = "ct_value"
         env_str = f"{param_name}={env_value}"
         ct_str = f"{param_name}={ct_value}"
 

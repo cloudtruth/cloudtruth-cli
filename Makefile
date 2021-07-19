@@ -65,6 +65,7 @@ lint:
 	cargo fmt --all -- --check
 	cargo clippy --all-features -- -D warnings
 	shellcheck install.sh
+	flake8
 
 precommit: version_check cargo precommit_test lint
 

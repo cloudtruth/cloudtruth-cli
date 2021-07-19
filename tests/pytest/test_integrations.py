@@ -1,5 +1,6 @@
 from testcase import TestCase
 
+
 class TestIntegrations(TestCase):
     def test_integration_explore_errors(self):
         base_cmd = self.get_cli_base_cmd()
@@ -24,4 +25,3 @@ class TestIntegrations(TestCase):
 
         # cleanup
         self.delete_project(cmd_env, proj_name)
-

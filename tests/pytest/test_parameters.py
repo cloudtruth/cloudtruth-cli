@@ -42,7 +42,7 @@ class TestParameters(TestCase):
                               sub_cmd + f"set {key1} --value '{value1}' --desc '{desc1}'")
         self.assertEqual(result.return_value, 0)
 
-        result = self.run_cli(cmd_env, sub_cmd + f"ls -v")
+        result = self.run_cli(cmd_env, sub_cmd + "ls -v")
         self.assertTrue(result.out_contains_both(key1, value1))
         self.assertTrue(result.out_contains_both(key1, desc1))
         self.assertEqual(result.out(), """\
@@ -54,7 +54,7 @@ class TestParameters(TestCase):
 """)
 
         # use CSV
-        result = self.run_cli(cmd_env, sub_cmd + f"ls -v -f csv")
+        result = self.run_cli(cmd_env, sub_cmd + "ls -v -f csv")
         self.assertTrue(result.out_contains_both(key1, value1))
         self.assertTrue(result.out_contains_both(key1, desc1))
         self.assertEqual(result.out(), """\
@@ -70,7 +70,7 @@ my_param,cRaZy value,default,static,false,this is just a test description
         result = self.run_cli(cmd_env, sub_cmd + f"set {key1} --value '{value1}'")
         self.assertEqual(result.return_value, 0)
 
-        result = self.run_cli(cmd_env, sub_cmd + f"ls -v")
+        result = self.run_cli(cmd_env, sub_cmd + "ls -v")
         self.assertTrue(result.out_contains_both(key1, value1))
         self.assertTrue(result.out_contains_both(key1, desc1))
 
@@ -83,11 +83,11 @@ my_param,cRaZy value,default,static,false,this is just a test description
         result = self.run_cli(cmd_env, sub_cmd + f"set {key1} --value '{value2}'")
         self.assertEqual(result.return_value, 0)
 
-        result = self.run_cli(cmd_env, sub_cmd + f"ls -v")
+        result = self.run_cli(cmd_env, sub_cmd + "ls -v")
         self.assertTrue(result.out_contains_both(key1, value2))
         self.assertTrue(result.out_contains_both(key1, desc1))
 
-        result = self.run_cli(cmd_env, sub_cmd + f"get {key1}")
+        result = self.run_cli(cmd_env, sub_cmd + "get {key1}")
         self.assertIn(value2, result.out())
 
         ########
@@ -110,7 +110,7 @@ my_param,cRaZy value,default,static,false,this is just a test description
         self.assertEqual(result.return_value, 0)
         self.assertIn("Please provide at least one of", result.err())
 
-        result = self.run_cli(cmd_env, sub_cmd + f"ls -v")
+        result = self.run_cli(cmd_env, sub_cmd + "ls -v")
         self.assertTrue(result.out_contains_both(key1, value2))
         self.assertTrue(result.out_contains_both(key1, desc2))
 
@@ -175,7 +175,7 @@ my_param,cRaZy value,default,static,false,this is just a test description
                               sub_cmd + f"set {key1} --secret true --value '{value1}' --desc '{desc1}'")
         self.assertEqual(result.return_value, 0)
 
-        result = self.run_cli(cmd_env, sub_cmd + f"ls -v")
+        result = self.run_cli(cmd_env, sub_cmd + "ls -v")
         self.assertFalse(result.out_contains_both(key1, value1))
         self.assertTrue(result.out_contains_both(key1, desc1))
         self.assertEqual(result.out(), """\
@@ -187,7 +187,7 @@ my_param,cRaZy value,default,static,false,this is just a test description
 """)
 
         # use CSV
-        result = self.run_cli(cmd_env, sub_cmd + f"ls -v -f csv")
+        result = self.run_cli(cmd_env, sub_cmd + "ls -v -f csv")
         self.assertFalse(result.out_contains_both(key1, value1))
         self.assertTrue(result.out_contains_both(key1, desc1))
         self.assertEqual(result.out(), """\
@@ -196,7 +196,7 @@ my_param,********,default,static,true,my secret value
 """)
 
         # now, display with the secrets value
-        result = self.run_cli(cmd_env, sub_cmd + f"list --values --secrets")
+        result = self.run_cli(cmd_env, sub_cmd + "list --values --secrets")
         self.assertTrue(result.out_contains_both(key1, value1))
         self.assertTrue(result.out_contains_both(key1, desc1))
         self.assertEqual(result.out(), """\
@@ -208,7 +208,7 @@ my_param,********,default,static,true,my secret value
 """)
 
         # use CSV
-        result = self.run_cli(cmd_env, sub_cmd + f"list --values --secrets --format csv")
+        result = self.run_cli(cmd_env, sub_cmd + "list --values --secrets --format csv")
         self.assertTrue(result.out_contains_both(key1, value1))
         self.assertTrue(result.out_contains_both(key1, desc1))
         self.assertEqual(result.out(), """\
@@ -225,12 +225,12 @@ my_param,super-SENSITIVE-vAluE,default,static,true,my secret value
         result = self.run_cli(cmd_env, sub_cmd + f"set {key1} --value '{value1}'")
         self.assertEqual(result.return_value, 0)
 
-        result = self.run_cli(cmd_env, sub_cmd + f"ls -v -s")
+        result = self.run_cli(cmd_env, sub_cmd + "ls -v -s")
         self.assertTrue(result.out_contains_both(key1, value1))
         self.assertTrue(result.out_contains_both(key1, desc1))
 
         # make sure it is still a secret
-        result = self.run_cli(cmd_env, sub_cmd + f"ls -v")
+        result = self.run_cli(cmd_env, sub_cmd + "ls -v")
         self.assertFalse(result.out_contains_both(key1, value1))
         self.assertTrue(result.out_contains_both(key1, desc1))
 
@@ -243,7 +243,7 @@ my_param,super-SENSITIVE-vAluE,default,static,true,my secret value
         result = self.run_cli(cmd_env, sub_cmd + f"set {key1} --value '{value2}'")
         self.assertEqual(result.return_value, 0)
 
-        result = self.run_cli(cmd_env, sub_cmd + f"ls -v -s")
+        result = self.run_cli(cmd_env, sub_cmd + "ls -v -s")
         self.assertTrue(result.out_contains_both(key1, value2))
         self.assertTrue(result.out_contains_both(key1, desc1))
 
@@ -256,7 +256,7 @@ my_param,super-SENSITIVE-vAluE,default,static,true,my secret value
         result = self.run_cli(cmd_env, sub_cmd + f"set {key1} -d '{desc2}'")
         self.assertEqual(result.return_value, 0)
 
-        result = self.run_cli(cmd_env, sub_cmd + f"ls -v -s")
+        result = self.run_cli(cmd_env, sub_cmd + "ls -v -s")
         self.assertTrue(result.out_contains_both(key1, value2))
         self.assertTrue(result.out_contains_both(key1, desc2))
 
@@ -661,7 +661,7 @@ SECOND_SECRET='sensitive value with spaces'
                               sub_cmd + f"set {key1} --value '{value1}' --desc '{desc1}'")
         self.assertEqual(result.return_value, 0)
 
-        result = self.run_cli(cmd_env, sub_cmd + f"ls -v")
+        result = self.run_cli(cmd_env, sub_cmd + "ls -v")
         self.assertEqual(result.out(), """\
 +----------+-------------+---------+--------+--------+---------------------------------+
 | Name     | Value       | Source  | Type   | Secret | Description                     |
@@ -675,7 +675,7 @@ SECOND_SECRET='sensitive value with spaces'
         self.assertEqual(result.return_value, 0)
 
         # see that it has been changed to a secret (redacted in cli)
-        result = self.run_cli(cmd_env, sub_cmd + f"ls -v")
+        result = self.run_cli(cmd_env, sub_cmd + "ls -v")
         self.assertEqual(result.out(), """\
 +----------+----------+---------+--------+--------+---------------------------------+
 | Name     | Value    | Source  | Type   | Secret | Description                     |
@@ -685,7 +685,7 @@ SECOND_SECRET='sensitive value with spaces'
 """)
 
         # verify value has not changed
-        result = self.run_cli(cmd_env, sub_cmd + f"ls -v -s")
+        result = self.run_cli(cmd_env, sub_cmd + "ls -v -s")
         self.assertEqual(result.out(), """\
 +----------+-------------+---------+--------+--------+---------------------------------+
 | Name     | Value       | Source  | Type   | Secret | Description                     |
@@ -699,7 +699,7 @@ SECOND_SECRET='sensitive value with spaces'
         self.assertEqual(result.return_value, 0)
 
         # see that it is no longer redacted
-        result = self.run_cli(cmd_env, sub_cmd + f"ls -v")
+        result = self.run_cli(cmd_env, sub_cmd + "ls -v")
         self.assertEqual(result.out(), """\
 +----------+-------------+---------+--------+--------+---------------------------------+
 | Name     | Value       | Source  | Type   | Secret | Description                     |
@@ -740,7 +740,7 @@ SECOND_SECRET='sensitive value with spaces'
                               sub_cmd + f"set {key1} --input '{filename}' --desc '{desc1}'")
         self.assertEqual(result.return_value, 0)
 
-        result = self.run_cli(cmd_env, sub_cmd + f"ls -v")
+        result = self.run_cli(cmd_env, sub_cmd + "ls -v")
         self.assertEqual(result.out(), """\
 +----------+----------------------+---------+--------+--------+---------------------------+
 | Name     | Value                | Source  | Type   | Secret | Description               |
@@ -754,7 +754,7 @@ SECOND_SECRET='sensitive value with spaces'
         result = self.run_cli(cmd_env, sub_cmd + f"set '{key1}' --value '{value2}'")
         self.assertEqual(result.return_value, 0)
 
-        result = self.run_cli(cmd_env, sub_cmd + f"ls -v")
+        result = self.run_cli(cmd_env, sub_cmd + "ls -v")
         self.assertEqual(result.out(), """\
 +----------+-------------------+---------+--------+--------+---------------------------+
 | Name     | Value             | Source  | Type   | Secret | Description               |
@@ -772,7 +772,7 @@ SECOND_SECRET='sensitive value with spaces'
         result = self.run_cli(cmd_env, sub_cmd + f"set {key1} --input '{filename}'")
         self.assertEqual(result.return_value, 0)
 
-        result = self.run_cli(cmd_env, sub_cmd + f"ls -v")
+        result = self.run_cli(cmd_env, sub_cmd + "ls -v")
         self.assertEqual(result.out(), """\
 +----------+---------------------+---------+--------+--------+---------------------------+
 | Name     | Value               | Source  | Type   | Secret | Description               |
@@ -816,7 +816,7 @@ SECOND_SECRET='sensitive value with spaces'
         result = self.run_cli(cmd_env, sub_cmd + f"set '{key1}' --prompt --fqn '{fqn}'")
         self.assertNotEqual(result.return_value, 0)
         self.assertIn(conflict_msg, result.err())
-        
+
         result = self.run_cli(cmd_env, sub_cmd + f"set '{key1}' --input 'missing.txt' --fqn '{fqn}'")
         self.assertNotEqual(result.return_value, 0)
         self.assertIn(conflict_msg, result.err())
@@ -894,7 +894,7 @@ SECOND_SECRET='sensitive value with spaces'
 
         #################
         # table format
-        result = self.run_cli(cmd_env, sub_cmd + f"ls -v")
+        result = self.run_cli(cmd_env, sub_cmd + "ls -v")
         self.assertEqual(result.out(), """\
 +-----------+--------------------------------+---------+--------+--------+-------------+
 | Name      | Value                          | Source  | Type   | Secret | Description |
@@ -904,7 +904,7 @@ SECOND_SECRET='sensitive value with spaces'
 +-----------+--------------------------------+---------+--------+--------+-------------+
 """)
 
-        result = self.run_cli(cmd_env, sub_cmd + f"ls -v -s")
+        result = self.run_cli(cmd_env, sub_cmd + "ls -v -s")
         self.assertEqual(result.out(), """\
 +-----------+--------------------------------+---------+--------+--------+-------------+
 | Name      | Value                          | Source  | Type   | Secret | Description |
@@ -916,14 +916,14 @@ SECOND_SECRET='sensitive value with spaces'
 
         #################
         # CSV format
-        result = self.run_cli(cmd_env, sub_cmd + f"ls -v -f csv")
+        result = self.run_cli(cmd_env, sub_cmd + "ls -v -f csv")
         self.assertEqual(result.out(), """\
 Name,Value,Source,Type,Secret,Description
 speicla14,********,default,static,true,Jade secret
 speicla3,"beef brocolli, pork fried rice",default,static,false,Jade lunch
 """)
 
-        result = self.run_cli(cmd_env, sub_cmd + f"ls -v -f csv -s")
+        result = self.run_cli(cmd_env, sub_cmd + "ls -v -f csv -s")
         self.assertEqual(result.out(), """\
 Name,Value,Source,Type,Secret,Description
 speicla14,cueey-chicken,default,static,true,Jade secret
@@ -932,7 +932,7 @@ speicla3,"beef brocolli, pork fried rice",default,static,false,Jade lunch
 
         #################
         # JSON format
-        result = self.run_cli(cmd_env, sub_cmd + f"ls -v -f json")
+        result = self.run_cli(cmd_env, sub_cmd + "ls -v -f json")
         self.assertEqual(result.out(), """\
 {
   "parameter": [
@@ -956,7 +956,7 @@ speicla3,"beef brocolli, pork fried rice",default,static,false,Jade lunch
 }
 """)
 
-        result = self.run_cli(cmd_env, sub_cmd + f"ls -v -f json -s")
+        result = self.run_cli(cmd_env, sub_cmd + "ls -v -f json -s")
         self.assertEqual(result.out(), """\
 {
   "parameter": [
@@ -982,7 +982,7 @@ speicla3,"beef brocolli, pork fried rice",default,static,false,Jade lunch
 
         #################
         # YAML format
-        result = self.run_cli(cmd_env, sub_cmd + f"ls -v -f yaml")
+        result = self.run_cli(cmd_env, sub_cmd + "ls -v -f yaml")
         self.assertEqual(result.out(), """\
 ---
 parameter:
@@ -1000,7 +1000,7 @@ parameter:
     Value: "beef brocolli, pork fried rice"
 """)
 
-        result = self.run_cli(cmd_env, sub_cmd + f"ls -v -f yaml -s")
+        result = self.run_cli(cmd_env, sub_cmd + "ls -v -f yaml -s")
         self.assertEqual(result.out(), """\
 ---
 parameter:

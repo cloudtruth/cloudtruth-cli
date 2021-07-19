@@ -1,5 +1,4 @@
 from testcase import TestCase
-from testcase import DEFAULT_ENV_NAME
 
 
 class TestProjects(TestCase):
@@ -43,7 +42,10 @@ class TestProjects(TestCase):
         # nothing to update
         result = self.run_cli(cmd_env, sub_cmd + f"set {proj_name}")
         self.assertEqual(result.return_value, 0)
-        self.assertTrue(result.err_contains_value(f"Project '{proj_name}' not updated: no updated parameters provided"))
+        self.assertIn(
+            f"Project '{proj_name}' not updated: no updated parameters provided",
+            result.err(),
+        )
 
         # test the list without the table
         result = self.run_cli(cmd_env, sub_cmd + "list")
@@ -63,7 +65,7 @@ class TestProjects(TestCase):
         result = self.run_cli(cmd_env, sub_cmd + "ls -v")
         self.assertEqual(result.return_value, 0)
         self.assertFalse(result.out_contains_value(proj_name))
-    
+
         # do it again, see we have success and a warning
         result = self.run_cli(cmd_env, sub_cmd + f"delete {proj_name} --confirm")
         self.assertEqual(result.return_value, 0)
