@@ -32,8 +32,7 @@ pub const DEFAULT_ENV_NAME: &str = "default";
 pub const DEFAULT_PROF_NAME: &str = "default";
 
 /*************************************************************************
- Environment variables.
- All should start with (CLOUDTRUTH_xxx), with the exception of the old API key.
+ Environment variables - all should start with (CLOUDTRUTH_).
 ************************************************************************/
 /// Environment variable name used to specify the CloudTruth API value, so it does not need to be
 /// specified on the command line.
