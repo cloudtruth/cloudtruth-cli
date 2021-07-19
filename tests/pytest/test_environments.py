@@ -1,5 +1,3 @@
-import unittest
-
 from testcase import TestCase
 from testcase import DEFAULT_ENV_NAME
 
@@ -67,7 +65,7 @@ class TestEnvironments(TestCase):
         result = self.run_cli(cmd_env, sub_cmd + "ls -v")
         self.assertEqual(result.return_value, 0)
         self.assertFalse(result.out_contains_value(env_name))
-    
+
         # do it again, see we have success and a warning
         result = self.run_cli(cmd_env, sub_cmd + f"delete {env_name} --confirm")
         self.assertEqual(result.return_value, 0)
@@ -138,7 +136,8 @@ class TestEnvironments(TestCase):
 
         # setting to same parent is ignored
         new_desc = "My new description"
-        result = self.run_cli(cmd_env, base_cmd + f"environment set '{env_name4}' --parent '{env_name2}' --desc '{new_desc}'")
+        cmd = base_cmd + f"environment set '{env_name4}' --parent '{env_name2}' --desc '{new_desc}'"
+        result = self.run_cli(cmd_env, cmd)
         self.assertEqual(result.return_value, 0)
 
         # make sure description was updated, yet parent remains
@@ -150,4 +149,3 @@ class TestEnvironments(TestCase):
         self.delete_environment(cmd_env, env_name3)
         self.delete_environment(cmd_env, env_name2)
         self.delete_environment(cmd_env, env_name1)
-

@@ -76,7 +76,7 @@ def find_subcommands(help_str: str) -> List[str]:
             subsection = SUBCOMMANDS in line
             continue
 
-        match  = SUBCOMMAND_RE.search(line)
+        match = SUBCOMMAND_RE.search(line)
         if match:
             subcommands.append(match.group("subcommand"))
 

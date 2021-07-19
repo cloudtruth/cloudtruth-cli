@@ -1,7 +1,6 @@
 """
 Tests precedence of command line arguments, profiles(?), and environment variables.
 """
-import unittest
 from testcase import TestCase
 from testcase import CT_ENV, CT_PROFILE, CT_PROJ, CT_TIMEOUT, CT_URL
 
@@ -173,7 +172,7 @@ class TestTopLevelArgs(TestCase):
         # NOTE: request_timeout is configurable via profile, but profiles are not integration tested
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
-        cmd = f" project ls -v"
+        cmd = " project ls -v"
 
         cmd_env[CT_TIMEOUT] = "0"
         result = self.run_cli(cmd_env, base_cmd + cmd)

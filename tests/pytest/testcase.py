@@ -228,7 +228,7 @@ class TestCase(unittest.TestCase):
         result = self.run_cli(cmd_env, self._base_cmd + f"proj delete '{proj_name}' --confirm")
         self.assertEqual(result.return_value, 0)
 
-    def create_environment(self, cmd_env, env_name: str, parent: Optional[str]=None) -> None:
+    def create_environment(self, cmd_env, env_name: str, parent: Optional[str] = None) -> None:
         cmd = self._base_cmd + f"env set '{env_name}' "
         if parent:
             cmd += f"-p '{parent}' "
@@ -246,9 +246,9 @@ class TestCase(unittest.TestCase):
             proj: str,
             name: str,
             value: str,
-            secret: bool=False,
-            env: Optional[str]=None,
-            desc: Optional[str]=None,
+            secret: bool = False,
+            env: Optional[str] = None,
+            desc: Optional[str] = None,
     ) -> None:
         cmd = self._base_cmd + f"--project '{proj}' "
         if env:
@@ -259,7 +259,7 @@ class TestCase(unittest.TestCase):
         result = self.run_cli(cmd_env, cmd)
         self.assertEqual(result.return_value, 0)
 
-    def delete_param(self, cmd_env, proj: str, name: str, env: Optional[str]=None) -> None:
+    def delete_param(self, cmd_env, proj: str, name: str, env: Optional[str] = None) -> None:
         cmd = self._base_cmd + f"--project '{proj}' "
         if env:
             cmd += f"--env '{env}' "
@@ -279,7 +279,7 @@ class TestCase(unittest.TestCase):
         cmd = self._base_cmd + f"--project '{proj}' "
         if env:
             cmd += f"--env '{env}' "
-        cmd += f"param "
+        cmd += "param "
 
         # check the 'get' output
         result = self.run_cli(cmd_env, cmd + f"get '{name}'")

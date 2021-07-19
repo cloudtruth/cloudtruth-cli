@@ -25,7 +25,7 @@ fn remove_null_values(input: &str) -> String {
     let re = Regex::new(r#"\"values\":\{\"https://\S+/\":null\}\"#).unwrap();
     re.replace_all(input, "\\\"values\\\":{}").to_string()
 }
-"""
+"""  # noqa: W605  - ignore invalid escape sequences, since Rust likes these
 
 
 def allow_snake(srcdir: str) -> None:
@@ -128,7 +128,7 @@ def get_function(content: str, func_name: str) -> str:
        1. Public function (starts with 'pub fn {func_name}`
        2. Ends with a left justified '}'
     """
-    start_re = re.compile(r"\npub fn " + func_name + "\S+")
+    start_re = re.compile(r"\npub fn " + func_name)
     start = start_re.search(content)
     assert start, f"Could not find start of {func_name}"
     end_re = re.compile("\n}\n")
@@ -150,7 +150,7 @@ def add_remove_null_call(content: str, func_name: str) -> str:
 
     # this insures we're not trying to change something that does not exist
     if "remove_null_values" not in new_func:
-        raise Exception(f"Did not find 'remove_null_values()' call in {func_name}" )
+        raise Exception(f"Did not find 'remove_null_values()' call in {func_name}")
 
     if orig_func != new_func:
         print(f"Updating {func_name} with call to 'remove_null_values()'")

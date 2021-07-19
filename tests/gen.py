@@ -94,12 +94,12 @@ def update_workflow(config_file: str, template_dir: str, workflow_name: str) -> 
                 break
         assert existing_workflow, "marker not found in create-draft-release?"
         existing_workflow += new_workflow
-        with Path(f"../.github/workflows/create-draft-release.yml").open("w") as fp:
+        with Path("../.github/workflows/create-draft-release.yml").open("w") as fp:
             fp.write(existing_workflow)
 
     elif workflow_name == "prerelease":
         # we can replace it
-        with Path(f"../.github/workflows/check-pre-release.yml").open("w") as fp:
+        with Path("../.github/workflows/check-pre-release.yml").open("w") as fp:
             fp.write(new_workflow)
 
 
