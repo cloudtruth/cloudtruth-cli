@@ -39,7 +39,9 @@ impl From<&Environment> for EnvironmentDetails {
 #[derive(Debug)]
 pub enum EnvironmentError {
     ListError(Error<EnvironmentsListError>),
+    DeleteError(Error<EnvironmentsDestroyError>),
     AuthError(String),
+    DeleteNotAllowed(String),
 }
 
 impl fmt::Display for EnvironmentError {
@@ -47,6 +49,12 @@ impl fmt::Display for EnvironmentError {
         match self {
             EnvironmentError::AuthError(msg) => {
                 write!(f, "Not Authenticated: {}", msg)
+            }
+            EnvironmentError::DeleteNotAllowed(msg) => {
+                write!(f, "Delete not allowed: {}", msg)
+            }
+            EnvironmentError::DeleteError(e) => {
+                write!(f, "{}", e.to_string())
             }
             EnvironmentError::ListError(e) => {
                 write!(f, "{}", e.to_string())
@@ -56,6 +64,16 @@ impl fmt::Display for EnvironmentError {
 }
 
 impl error::Error for EnvironmentError {}
+
+/// The `BadRequest` content seems to be a list (instead of structured data like many other
+/// `ResponseError` cases). This handles what appears to be a list of string, instead of structured
+/// data handled in `extract_details()`.
+fn bad_request_details(content: &str) -> String {
+    content
+        .trim_start_matches("[\"")
+        .trim_end_matches("\"]")
+        .to_string()
+}
 
 impl Environments {
     pub fn new() -> Self {
@@ -195,13 +213,19 @@ impl Environments {
         Ok(Some(response.id))
     }
 
-    pub fn delete_environment(
-        &self,
-        environment_id: String,
-    ) -> Result<String, Error<EnvironmentsDestroyError>> {
+    pub fn delete_environment(&self, environment_id: String) -> Result<String, EnvironmentError> {
         let rest_cfg = open_api_config();
-        environments_destroy(&rest_cfg, &environment_id)?;
-        Ok(environment_id)
+        let response = environments_destroy(&rest_cfg, &environment_id);
+        match response {
+            Ok(_) => Ok(environment_id),
+            Err(ResponseError(ref content)) => match content.status.as_u16() {
+                400 => Err(EnvironmentError::DeleteNotAllowed(bad_request_details(
+                    &content.content,
+                ))),
+                _ => Err(EnvironmentError::DeleteError(response.unwrap_err())),
+            },
+            Err(e) => Err(EnvironmentError::DeleteError(e)),
+        }
     }
 
     pub fn update_environment(
