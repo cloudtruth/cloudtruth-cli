@@ -1,7 +1,5 @@
 use crate::config::profiles::Profile;
-use crate::config::{
-    CT_API_KEY, CT_ENVIRONMENT, CT_OLD_API_KEY, CT_PROJECT, CT_REQ_TIMEOUT, CT_SERVER_URL,
-};
+use crate::config::{CT_API_KEY, CT_ENVIRONMENT, CT_PROJECT, CT_REQ_TIMEOUT, CT_SERVER_URL};
 use std::env;
 
 pub struct ConfigEnv {}
@@ -9,8 +7,7 @@ pub struct ConfigEnv {}
 impl ConfigEnv {
     pub(crate) fn load_profile() -> Profile {
         Profile {
-            api_key: ConfigEnv::get_override(CT_API_KEY)
-                .or_else(|| ConfigEnv::get_override(CT_OLD_API_KEY)),
+            api_key: ConfigEnv::get_override(CT_API_KEY),
             description: None,
             environment: ConfigEnv::get_override(CT_ENVIRONMENT),
             project: ConfigEnv::get_override(CT_PROJECT),
@@ -49,7 +46,6 @@ mod tests {
     fn remove_env_vars() {
         env::remove_var(CT_API_KEY);
         env::remove_var(CT_ENVIRONMENT);
-        env::remove_var(CT_OLD_API_KEY);
         env::remove_var(CT_PROJECT);
         env::remove_var(CT_REQ_TIMEOUT);
         env::remove_var(CT_SERVER_URL);
@@ -84,55 +80,6 @@ mod tests {
                 environment: Some("my_environment".to_string()),
                 project: Some("skunkworks".to_string()),
                 request_timeout: Some(500),
-                server_url: Some("http://localhost:7001/graphql".to_string()),
-                source_profile: None
-            },
-            ConfigEnv::load_profile()
-        );
-    }
-
-    #[test]
-    #[serial]
-    fn create_profile_new_env_takes_precedence() {
-        remove_env_vars();
-        env::set_var(CT_API_KEY, "new_key");
-        env::set_var(CT_ENVIRONMENT, "my_env");
-        env::set_var(CT_OLD_API_KEY, "old_key");
-        env::set_var(CT_PROJECT, "skunkworks");
-        env::set_var(CT_REQ_TIMEOUT, "10");
-        env::set_var(CT_SERVER_URL, "http://localhost:7001/graphql");
-
-        assert_eq!(
-            Profile {
-                api_key: Some("new_key".to_string()),
-                description: None,
-                environment: Some("my_env".to_string()),
-                project: Some("skunkworks".to_string()),
-                request_timeout: Some(10),
-                server_url: Some("http://localhost:7001/graphql".to_string()),
-                source_profile: None
-            },
-            ConfigEnv::load_profile()
-        );
-    }
-
-    #[test]
-    #[serial]
-    fn create_profile_from_old_env() {
-        remove_env_vars();
-        env::set_var(CT_ENVIRONMENT, "my_environ");
-        env::set_var(CT_PROJECT, "skunkworks");
-        env::set_var(CT_OLD_API_KEY, "old_key");
-        env::set_var(CT_REQ_TIMEOUT, "28");
-        env::set_var(CT_SERVER_URL, "http://localhost:7001/graphql");
-
-        assert_eq!(
-            Profile {
-                api_key: Some("old_key".to_string()),
-                description: None,
-                environment: Some("my_environ".to_string()),
-                project: Some("skunkworks".to_string()),
-                request_timeout: Some(28),
                 server_url: Some("http://localhost:7001/graphql".to_string()),
                 source_profile: None
             },
