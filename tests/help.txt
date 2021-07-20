@@ -50,9 +50,24 @@ FLAGS:
     -V, --version    Prints version information
 
 SUBCOMMANDS:
-    edit    Edit your configuration data for this application
-    help    Prints this message or the help of the given subcommand(s)
-    list    List CloudTruth profiles in the local config file [aliases: ls]
+    current    Show the current arguments and their sources.
+    edit       Edit your configuration data for this application
+    help       Prints this message or the help of the given subcommand(s)
+    list       List CloudTruth profiles in the local config file [aliases: ls]
+========================================
+cloudtruth-config-current 
+Show the current arguments and their sources.
+
+USAGE:
+    cloudtruth config current [FLAGS] [OPTIONS]
+
+FLAGS:
+    -h, --help       Prints help information
+    -s, --secrets    Display API key values
+    -V, --version    Prints version information
+
+OPTIONS:
+    -f, --format <format>    Display table format [default: table]  [possible values: table, csv, json, yaml]
 ========================================
 cloudtruth-config-edit 
 Edit your configuration data for this application

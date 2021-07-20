@@ -109,6 +109,27 @@ impl From<Profile> for Config {
     }
 }
 
+const SRC_DEFAULT: &str = "default";
+const SRC_ARG: &str = "argument";
+const SRC_ENV: &str = "shell";
+const SRC_PROFILE: &str = "profile";
+
+const PARAM_PROFILE: &str = "Profile";
+const PARAM_API_KEY: &str = "API key";
+const PARAM_PROJECT: &str = "Project";
+const PARAM_ENVIRONMENT: &str = "Environment";
+const PARAM_SERVER_URL: &str = "Server URL";
+const PARAM_REQUEST_TIMEOUT: &str = "Request timeout";
+
+#[derive(Clone, Debug)]
+pub struct ConfigValue {
+    pub name: String,
+    pub value: String,
+    pub source: String,
+    pub secret: bool,
+    pub extension: bool,
+}
+
 impl Config {
     pub fn config_file() -> Option<PathBuf> {
         // Load settings from the configuration file if it exists.
@@ -194,6 +215,7 @@ impl Config {
         }
         Ok(profiles)
     }
+
     pub fn edit() -> Result<()> {
         if let Some(config_file) = Self::config_file() {
             if !config_file.exists() {
@@ -232,18 +254,207 @@ impl Config {
             })
         }
     }
+
+    fn profile_details_for(profile_name: &str) -> Vec<ProfileDetails> {
+        let mut profiles: Vec<ProfileDetails> = Vec::new();
+        if let Some(config_file) = Self::config_file() {
+            if config_file.exists() {
+                if let Ok(config) = Self::read_config(config_file.as_path()) {
+                    if let Ok(details) = ConfigFile::get_details_for(&config, profile_name) {
+                        profiles = details;
+                    }
+                }
+            }
+        }
+        profiles
+    }
+
+    pub fn get_sources(
+        profile_name: Option<&str>,
+        api_key: Option<&str>,
+        proj_name: Option<&str>,
+        env_name: Option<&str>,
+    ) -> Result<Vec<ConfigValue>> {
+        let mut results: Vec<ConfigValue> = Vec::new();
+        let resolve_profile: String;
+
+        // NOTE: do profile_name first, so we can include that
+        let mut value = DEFAULT_PROF_NAME.to_string();
+        let mut source = SRC_DEFAULT.to_string();
+        if let Some(profile_name) = profile_name {
+            value = profile_name.to_string();
+            source = SRC_ARG.to_string();
+        } else if let Some(env_value) = ConfigEnv::get_override(CT_PROFILE) {
+            value = env_value;
+            source = SRC_ENV.to_string();
+        }
+        resolve_profile = value.clone();
+        results.push(ConfigValue {
+            name: PARAM_PROFILE.to_string(),
+            value,
+            source,
+            secret: false,
+            extension: false,
+        });
+
+        // get the list of profiles and values
+        let profiles = Config::profile_details_for(&resolve_profile);
+
+        //////////////////
+        // API key
+        let mut value = "".to_string();
+        let mut source = "".to_string();
+        if let Some(cmd_value) = api_key {
+            value = cmd_value.to_string();
+            source = SRC_ARG.to_string();
+        } else if let Some(env_value) = ConfigEnv::get_override(CT_API_KEY) {
+            value = env_value;
+            source = SRC_ENV.to_string();
+        } else {
+            for profile in &profiles {
+                if let Some(ref prof_value) = profile.api_key {
+                    value = prof_value.clone();
+                    source = format!("{} ({})", SRC_PROFILE, profile.name);
+                    break;
+                }
+            }
+        }
+        results.push(ConfigValue {
+            name: PARAM_API_KEY.to_string(),
+            value,
+            source,
+            secret: true,
+            extension: false,
+        });
+
+        //////////////////
+        // Project
+        let mut value = "".to_string();
+        let mut source = "".to_string();
+        if let Some(cmd_value) = proj_name {
+            value = cmd_value.to_string();
+            source = SRC_ARG.to_string();
+        } else if let Some(env_value) = ConfigEnv::get_override(CT_PROJECT) {
+            value = env_value;
+            source = SRC_ENV.to_string();
+        } else {
+            for profile in &profiles {
+                if let Some(ref prof_value) = profile.project {
+                    value = prof_value.clone();
+                    source = format!("{} ({})", SRC_PROFILE, profile.name);
+                    break;
+                }
+            }
+        }
+        results.push(ConfigValue {
+            name: PARAM_PROJECT.to_string(),
+            value,
+            source,
+            secret: false,
+            extension: false,
+        });
+
+        //////////////////
+        // Environment
+        let mut value = DEFAULT_ENV_NAME.to_string();
+        let mut source = SRC_DEFAULT.to_string();
+        if let Some(cmd_value) = env_name {
+            value = cmd_value.to_string();
+            source = SRC_ARG.to_string();
+        } else if let Some(env_value) = ConfigEnv::get_override(CT_ENVIRONMENT) {
+            value = env_value;
+            source = SRC_ENV.to_string();
+        } else {
+            for profile in &profiles {
+                if let Some(ref prof_value) = profile.environment {
+                    value = prof_value.clone();
+                    source = format!("{} ({})", SRC_PROFILE, profile.name);
+                    break;
+                }
+            }
+        }
+        results.push(ConfigValue {
+            name: PARAM_ENVIRONMENT.to_string(),
+            value,
+            source,
+            secret: false,
+            extension: false,
+        });
+
+        //////////////////
+        // Server URL
+        let mut value = DEFAULT_SERVER_URL.to_string();
+        let mut source = SRC_DEFAULT.to_string();
+        if let Some(env_value) = ConfigEnv::get_override(CT_SERVER_URL) {
+            value = env_value;
+            source = SRC_ENV.to_string();
+        } else {
+            for profile in &profiles {
+                if let Some(ref prof_value) = profile.server_url {
+                    value = prof_value.clone();
+                    source = format!("{} ({})", SRC_PROFILE, profile.name);
+                    break;
+                }
+            }
+        }
+        results.push(ConfigValue {
+            name: PARAM_SERVER_URL.to_string(),
+            value,
+            source,
+            secret: false,
+            extension: true,
+        });
+
+        //////////////////
+        // Request timeout
+        let mut value = format!("{}", DEFAULT_REQUEST_TIMEOUT);
+        let mut source = SRC_DEFAULT.to_string();
+        if let Some(env_value) = ConfigEnv::get_override(CT_REQ_TIMEOUT) {
+            value = env_value;
+            source = SRC_ENV.to_string();
+        } else {
+            for profile in &profiles {
+                if let Some(ref prof_value) = profile.request_timeout {
+                    value = prof_value.clone();
+                    source = format!("{} ({})", SRC_PROFILE, profile.name);
+                    break;
+                }
+            }
+        }
+        results.push(ConfigValue {
+            name: PARAM_REQUEST_TIMEOUT.to_string(),
+            value,
+            source,
+            secret: false,
+            extension: true,
+        });
+
+        Ok(results)
+    }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::config::{Config, CT_API_KEY, CT_SERVER_URL, DEFAULT_PROF_NAME};
+    use super::*;
     use serial_test::serial;
     use std::env;
-    use std::path::PathBuf;
 
     // Any tests that manipulate environment variables should be run serially as environment
     // variables are a shared global resource. Any such tests should also restore the environment
     // to its pre-test state.
+
+    fn get_param<'a>(
+        param_name: &str,
+        config_values: &'a Vec<ConfigValue>,
+    ) -> Option<&'a ConfigValue> {
+        let mut result: Option<&ConfigValue> = None;
+        for item in config_values {
+            if &item.name == param_name {
+                result = Some(item);
+            }
+        }
+        result
+    }
 
     #[test]
     #[serial]
@@ -252,6 +463,13 @@ mod tests {
         let config = Config::load_config(None, Some(DEFAULT_PROF_NAME), None, None).unwrap();
 
         assert_eq!(config.api_key, "new_key");
+
+        let config_values = Config::get_sources(None, None, None, None).unwrap();
+        let param = get_param(PARAM_API_KEY, &config_values).unwrap();
+        assert_eq!(param.value, "new_key");
+        assert_eq!(param.source, SRC_ENV);
+        assert_eq!(param.secret, true);
+        assert_eq!(param.extension, false);
 
         env::remove_var(CT_API_KEY);
     }
@@ -266,6 +484,15 @@ mod tests {
 
         assert_eq!(config.api_key, "key_from_args");
 
+        let config_values =
+            Config::get_sources(Some(DEFAULT_PROF_NAME), Some("key_from_args"), None, None)
+                .unwrap();
+        let param = get_param(PARAM_API_KEY, &config_values).unwrap();
+        assert_eq!(param.value, "key_from_args");
+        assert_eq!(param.source, SRC_ARG);
+        assert_eq!(param.secret, true);
+        assert_eq!(param.extension, false);
+
         env::remove_var(CT_API_KEY)
     }
 
@@ -277,7 +504,32 @@ mod tests {
 
         assert_eq!(config.server_url, "http://localhost:7001/graphql");
 
+        let config_values = Config::get_sources(Some(DEFAULT_PROF_NAME), None, None, None).unwrap();
+        let param = get_param(PARAM_SERVER_URL, &config_values).unwrap();
+        assert_eq!(param.value, "http://localhost:7001/graphql");
+        assert_eq!(param.source, SRC_ENV);
+        assert_eq!(param.secret, false);
+        assert_eq!(param.extension, true);
+
         env::remove_var(CT_SERVER_URL);
+    }
+
+    #[test]
+    #[serial]
+    fn get_request_timeout_from_env() {
+        env::set_var(CT_REQ_TIMEOUT, "123");
+        let config = Config::load_config(None, Some(DEFAULT_PROF_NAME), None, None).unwrap();
+
+        assert_eq!(config.request_timeout, Some(Duration::new(123, 0)));
+
+        let config_values = Config::get_sources(Some(DEFAULT_PROF_NAME), None, None, None).unwrap();
+        let param = get_param(PARAM_REQUEST_TIMEOUT, &config_values).unwrap();
+        assert_eq!(param.value, "123");
+        assert_eq!(param.source, SRC_ENV);
+        assert_eq!(param.secret, false);
+        assert_eq!(param.extension, true);
+
+        env::remove_var(CT_REQ_TIMEOUT);
     }
 
     #[test]
@@ -333,5 +585,45 @@ mod tests {
         expected.push("AppData/Roaming/CloudTruth/CloudTruth CLI/config/cli.yml");
 
         assert_eq!(Config::config_file(), Some(expected))
+    }
+
+    #[test]
+    fn cmd_args_take_precedence() {
+        env::set_var(CT_PROJECT, "env_prof");
+        env::set_var(CT_API_KEY, "env_key");
+        env::set_var(CT_PROJECT, "env_proj");
+        env::set_var(CT_ENVIRONMENT, "env_env");
+
+        let config_values = Config::get_sources(
+            Some(DEFAULT_PROF_NAME),
+            Some("my_arg_key"),
+            Some("proj_name"),
+            Some("env_name"),
+        )
+        .unwrap();
+        let api_key = get_param(PARAM_API_KEY, &config_values).unwrap();
+        assert_eq!(api_key.value, "my_arg_key");
+        assert_eq!(api_key.source, SRC_ARG);
+        assert_eq!(api_key.secret, true);
+
+        let proj = get_param(PARAM_PROJECT, &config_values).unwrap();
+        assert_eq!(proj.value, "proj_name");
+        assert_eq!(proj.source, SRC_ARG);
+        assert_eq!(proj.secret, false);
+
+        let prof = get_param(PARAM_PROFILE, &config_values).unwrap();
+        assert_eq!(prof.value, DEFAULT_PROF_NAME);
+        assert_eq!(prof.source, SRC_ARG);
+        assert_eq!(prof.secret, false);
+
+        let env = get_param(PARAM_ENVIRONMENT, &config_values).unwrap();
+        assert_eq!(env.value, "env_name");
+        assert_eq!(prof.source, SRC_ARG);
+        assert_eq!(prof.secret, false);
+
+        env::remove_var(CT_PROJECT);
+        env::remove_var(CT_API_KEY);
+        env::remove_var(CT_PROJECT);
+        env::remove_var(CT_ENVIRONMENT);
     }
 }

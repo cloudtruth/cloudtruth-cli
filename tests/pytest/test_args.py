@@ -1,7 +1,7 @@
 """
 Tests precedence of command line arguments, profiles(?), and environment variables.
 """
-from testcase import TestCase
+from testcase import TestCase, SRC_ARG, SRC_DEFAULT, SRC_PROFILE, SRC_ENV
 from testcase import CT_ENV, CT_PROFILE, CT_PROJ, CT_TIMEOUT, CT_URL
 
 
@@ -11,6 +11,7 @@ class TestTopLevelArgs(TestCase):
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
         printenv = f" run -i none -- {self.get_display_env_command()}"
+        cfg_cmd = " config current -f csv"
         proj1 = self.make_name("test-arg-project-1")
         proj2 = self.make_name("test-arg-proj2")
         env1 = self.make_name("dev a")
@@ -42,6 +43,10 @@ class TestTopLevelArgs(TestCase):
             self.assertIn(f"{CT_PROJ}={def_proj}", result.out())
             self.assertIn(f"{CT_ENV}={def_env}", result.out())
 
+            result = self.run_cli(cmd_env, base_cmd + cfg_cmd)
+            self.assertIn(f"Project,{def_proj},{SRC_PROFILE} ({prof_name})", result.out())
+            self.assertIn(f"Environment,{def_env},{SRC_DEFAULT}", result.out())
+
         # set project/environment in environment
         cmd_env[CT_PROJ] = proj1
         cmd_env[CT_ENV] = env1
@@ -51,10 +56,32 @@ class TestTopLevelArgs(TestCase):
         self.assertIn(f"{CT_PROJ}={proj1}", result.out())
         self.assertIn(f"{CT_ENV}={env1}", result.out())
 
+        orig_timeout = cmd_env.pop(CT_TIMEOUT, None)
+        orig_url = cmd_env.pop(CT_URL, None)
+        timeout = "300"
+        url = "https://127.0.0.2/bogus"
+        cmd_env[CT_TIMEOUT] = timeout
+        cmd_env[CT_URL] = url
+        result = self.run_cli(cmd_env, base_cmd + cfg_cmd + " -x")
+        self.assertIn(f"Project,{proj1},{SRC_ENV}", result.out())
+        self.assertIn(f"Environment,{env1},{SRC_ENV}", result.out())
+        self.assertIn(f"Server URL,{url},{SRC_ENV}", result.out())
+        self.assertIn(f"Request timeout,{timeout},{SRC_ENV}", result.out())
+        cmd_env.pop(CT_URL)
+        if orig_url:
+            cmd_env[CT_URL] = orig_url
+        cmd_env.pop(CT_TIMEOUT)
+        if orig_timeout:
+            cmd_env[CT_TIMEOUT] = orig_timeout
+
         # see that CLI arguments override the environment
         result = self.run_cli(cmd_env, base_cmd + f"--project '{proj2}' --env '{env2}'" + printenv)
         self.assertIn(f"{CT_PROJ}={proj2}", result.out())
         self.assertIn(f"{CT_ENV}={env2}", result.out())
+
+        result = self.run_cli(cmd_env, base_cmd + f"--project '{proj2}' --env '{env2}'" + cfg_cmd + " -x")
+        self.assertIn(f"Project,{proj2},{SRC_ARG}", result.out())
+        self.assertIn(f"Environment,{env2},{SRC_ARG}", result.out())
 
         # mix and match
         result = self.run_cli(cmd_env, base_cmd + f"--project '{proj2}'" + printenv)

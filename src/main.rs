@@ -323,7 +323,13 @@ fn process_completion_command(subcmd_args: &ArgMatches) {
 }
 
 /// Process the 'config' sub-command
-fn process_config_command(subcmd_args: &ArgMatches) -> Result<()> {
+fn process_config_command(
+    subcmd_args: &ArgMatches,
+    profile_name: Option<&str>,
+    api_key: Option<&str>,
+    proj_name: Option<&str>,
+    env_name: Option<&str>,
+) -> Result<()> {
     if subcmd_args.subcommand_matches("edit").is_some() {
         Config::edit()?;
         let filepath = Config::config_file()
@@ -363,6 +369,26 @@ fn process_config_command(subcmd_args: &ArgMatches) -> Result<()> {
             }
             table.render(fmt)?;
         }
+    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("current") {
+        let show_secrets = subcmd_args.is_present(SECRETS_FLAG);
+        let show_extended = subcmd_args.is_present("extended");
+        let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
+        let values = Config::get_sources(profile_name, api_key, proj_name, env_name)?;
+
+        let mut table = Table::new("profile");
+        table.set_header(&["Parameter", "Value", "Source"]);
+        for v in values {
+            if show_extended || !v.extension {
+                let val_str = if show_secrets || !v.secret || v.value.is_empty() {
+                    v.value
+                } else {
+                    REDACTED.to_string()
+                };
+                table.add_row(vec![v.name, val_str, v.source]);
+            }
+        }
+
+        table.render(fmt)?;
     } else {
         warn_missing_subcommand("config")?;
     }
@@ -861,6 +887,7 @@ fn main() -> Result<()> {
     let matches = cli::build_cli().get_matches();
 
     let api_key = matches.value_of("api_key");
+    let profile_arg = matches.value_of("profile");
     let profile_name = matches
         .value_of("profile")
         .or_else(|| profile_env.as_deref());
@@ -873,7 +900,7 @@ fn main() -> Result<()> {
     }
 
     if let Some(matches) = matches.subcommand_matches("config") {
-        process_config_command(matches)?;
+        process_config_command(matches, profile_arg, api_key, proj_name, env_name)?;
         process::exit(0)
     }
 
