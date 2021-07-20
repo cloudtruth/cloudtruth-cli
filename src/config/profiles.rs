@@ -13,12 +13,16 @@ pub struct Profile {
 }
 
 // TODO: Rick Porter 4/21, fix this so don't have to udpate when Profile is updated
+#[derive(Clone, Debug)]
 pub struct ProfileDetails {
     pub api_key: Option<String>,
     pub description: Option<String>,
     pub environment: Option<String>,
     pub name: String,
     pub project: Option<String>,
+    pub parent: Option<String>,
+    pub server_url: Option<String>,
+    pub request_timeout: Option<String>,
 }
 
 impl Default for Profile {

@@ -93,6 +93,14 @@ pub fn build_cli() -> App<'static, 'static> {
                     .arg(table_format_options().help("Display profile value info format"))
                     .arg(secrets_display_flag().help("Display API key values"))
                     .about("List CloudTruth profiles in the local config file"),
+                SubCommand::with_name("current")
+                    .arg(table_format_options().help("Display table format"))
+                    .arg(secrets_display_flag().help("Display API key values"))
+                    .arg( Arg::with_name("extended")
+                        .hidden(true)
+                        .short("x").
+                        help("Show extended values"))
+                    .about("Show the current arguments and their sources.")
                 ])
         )
         .subcommand(

@@ -18,12 +18,18 @@ CT_TIMEOUT = "CLOUDTRUTH_REQUEST_TIMEOUT"
 
 DEFAULT_SERVER_URL = "https://api.cloudtruth.io"
 DEFAULT_ENV_NAME = "default"
+DEFAULT_PROFILE_NAME = "default"
 
 AUTO_DESCRIPTION = "Automated testing via live_test"
 
 CT_TEST_LOG_COMMANDS = "CT_LIVE_TEST_LOG_COMMANDS"
 CT_TEST_LOG_OUTPUT = "CT_LIVE_TEST_LOG_OUTPUT"
 CT_TEST_JOB_ID = "CT_LIVE_TEST_JOB_ID"
+
+SRC_ENV = "shell"
+SRC_ARG = "argument"
+SRC_PROFILE = "profile"
+SRC_DEFAULT = "default"
 
 
 @dataclasses.dataclass

@@ -104,6 +104,19 @@ impl ConfigFile {
         }
     }
 
+    fn create_project_details(name: &str, profile: &Profile) -> ProfileDetails {
+        ProfileDetails {
+            api_key: profile.api_key.clone(),
+            description: profile.description.clone(),
+            environment: profile.environment.clone(),
+            name: name.to_string(),
+            project: profile.project.clone(),
+            parent: profile.source_profile.clone(),
+            server_url: profile.server_url.clone(),
+            request_timeout: profile.request_timeout.map(|t| format!("{}", t)),
+        }
+    }
+
     pub(crate) fn get_profile_details(config: &str) -> ConfigFileResult<Vec<ProfileDetails>> {
         let mut profiles: Vec<ProfileDetails> = Vec::new();
         if !config.is_empty() {
@@ -111,14 +124,30 @@ impl ConfigFile {
             profiles = config_file
                 .profiles
                 .iter()
-                .map(|(k, v)| ProfileDetails {
-                    api_key: v.api_key.clone(),
-                    description: v.description.clone(),
-                    environment: v.environment.clone(),
-                    name: k.clone(),
-                    project: v.project.clone(),
-                })
+                .map(|(k, v)| ConfigFile::create_project_details(k, v))
                 .collect();
+        }
+
+        Ok(profiles)
+    }
+
+    /// Gets an ordered list of `ProfileDetails` for the specified `profile_name` and it's parents.
+    pub(crate) fn get_details_for(
+        config: &str,
+        profile_name: &str,
+    ) -> ConfigFileResult<Vec<ProfileDetails>> {
+        let mut profiles: Vec<ProfileDetails> = Vec::new();
+        if !config.is_empty() {
+            let config_file: ConfigFile = serde_yaml::from_str(&config)?;
+            let mut prof_name = profile_name.to_string();
+            while let Some(profile) = config_file.profiles.get(&prof_name) {
+                profiles.push(ConfigFile::create_project_details(&prof_name, profile));
+                if let Some(ref parent) = profile.source_profile {
+                    prof_name = parent.clone();
+                } else {
+                    break;
+                }
+            }
         }
 
         Ok(profiles)
@@ -405,5 +434,101 @@ mod tests {
         assert!(&result.is_ok());
         let profile_names = result.unwrap();
         assert!(&profile_names.is_empty());
+    }
+
+    #[test]
+    fn profile_details_list() {
+        let config = indoc!(
+            r#"
+        profiles:
+            default:
+                api_key: default_key
+                server_url: http://localhost:7001/graphql
+
+            grandparent-profile:
+                api_key: grandparent_key
+                server_url: http://localhost/api
+
+            my-profile:
+                api_key: my_key
+                source_profile: parent-profile
+
+            parent-profile:
+                source_profile: grandparent-profile
+                request_timeout: 300
+        "#
+        );
+
+        let result = ConfigFile::get_profile_details(config);
+        assert!(result.is_ok());
+        let list = result.unwrap();
+        for value in vec![
+            "my-profile",
+            "parent-profile",
+            "grandparent-profile",
+            "default",
+        ] {
+            let search = list.iter().find(|&d| d.name.as_str() == value);
+            assert!(search.is_some());
+            let item = search.unwrap();
+            match item.name.as_str() {
+                "my-profile" => {
+                    assert_eq!(item.parent.clone().unwrap().as_str(), "parent-profile");
+                    assert_eq!(item.api_key.clone().unwrap().as_str(), "my_key");
+                    assert_eq!(item.server_url, None);
+                }
+                "parent-profile" => {
+                    assert_eq!(item.parent.clone().unwrap().as_str(), "grandparent-profile");
+                    assert_eq!(item.server_url, None);
+                    assert_eq!(item.api_key, None);
+                    assert_eq!(item.request_timeout.clone().unwrap().as_str(), "300");
+                }
+                "grandparent-profile" => {
+                    assert_eq!(item.parent, None);
+                    assert_eq!(
+                        item.server_url.clone().unwrap().as_str(),
+                        "http://localhost/api"
+                    );
+                    assert_eq!(item.api_key.clone().unwrap().as_str(), "grandparent_key");
+                    assert_eq!(item.request_timeout, None);
+                }
+                // no other checks
+                _ => {}
+            }
+        }
+    }
+
+    #[test]
+    fn profile_details_for() {
+        let config = indoc!(
+            r#"
+        profiles:
+            default:
+                api_key: default_key
+                server_url: http://localhost:7001/graphql
+
+            grandparent-profile:
+                api_key: grandparent_key
+
+            my-profile:
+                api_key: my_key
+                source_profile: parent-profile
+
+            parent-profile:
+                source_profile: grandparent-profile
+        "#
+        );
+
+        let result = ConfigFile::get_details_for(config, "my-profile");
+        assert!(result.is_ok());
+        let profile_names: Vec<String> = result.unwrap().iter().map(|v| v.name.clone()).collect();
+        assert_eq!(
+            profile_names,
+            vec![
+                "my-profile".to_string(),
+                "parent-profile".to_string(),
+                "grandparent-profile".to_string()
+            ]
+        );
     }
 }
