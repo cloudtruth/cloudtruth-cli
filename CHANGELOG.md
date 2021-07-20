@@ -1,12 +1,15 @@
-# 1.0.0 - 2021-07-14
+# 1.0.0 - 2021-07-20
 
 * Update to use REST API server (replaces GraphQL).
 * Added `parameters unset` to support removing override for a specific environment.
 * Integrations:
   * Simplified `explore` interface -- use FQN instead of NAME/PATH/\[TYPE\]
   * Adjusted information displayed for `list -v` -- show Status (and update time), remove Type
-* `config edit` displays edited file path.
+* Config:
+  * `edit` displays edited file path.
+  * Added `current` to display current configuration with sources.
 * Added `--rename` option for `set` subcommand of `parameters`, `projects`, and `environments`. 
+* Deprecated support for setting API key via `CT_API_KEY` (use `CLOUDTRUTH_API_KEY`).
 
 # 0.5.4 - 2021-06-15
 
