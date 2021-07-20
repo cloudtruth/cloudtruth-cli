@@ -24,6 +24,7 @@ pub enum EnvironmentsCreateError {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum EnvironmentsDestroyError {
+    Status409(),
     UnknownValue(serde_json::Value),
 }
 

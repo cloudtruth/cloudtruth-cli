@@ -21,7 +21,7 @@ pub struct Environment {
     /// A description of the environment.  You may find it helpful to document how this environment is used to assist others when they need to maintain software that uses this content.
     #[serde(rename = "description", skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
-    /// Environments can inherit from a single parent environment which provides values for parameters when specific environments do not have a value set.  Every organization has one default environment that is required to have a value for every parameter in every project.
+    /// Environments can inherit from a single parent environment which provides values for parameters when specific environments do not have a value set.  Every organization has one default environment that cannot be removed.
     #[serde(rename = "parent", skip_serializing_if = "Option::is_none")]
     pub parent: Option<String>,
     #[serde(rename = "created_at")]
