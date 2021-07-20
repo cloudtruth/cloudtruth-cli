@@ -222,6 +222,9 @@ impl Environments {
                 400 => Err(EnvironmentError::DeleteNotAllowed(bad_request_details(
                     &content.content,
                 ))),
+                409 => Err(EnvironmentError::DeleteNotAllowed(extract_details(
+                    &content.content,
+                ))),
                 _ => Err(EnvironmentError::DeleteError(response.unwrap_err())),
             },
             Err(e) => Err(EnvironmentError::DeleteError(e)),

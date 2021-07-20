@@ -415,7 +415,9 @@ paths:
       - ApiKeyAuth: []
       responses:
         '204':
-          description: No response body
+          description: Environment destroyed.
+        '409':
+          description: The environment has children and cannot be removed.
   /api/v1/integrations/aws/:
     get:
       operationId: integrations_aws_list
@@ -2973,8 +2975,8 @@ components:
           nullable: true
           description: Environments can inherit from a single parent environment which
             provides values for parameters when specific environments do not have
-            a value set.  Every organization has one default environment that is required
-            to have a value for every parameter in every project.
+            a value set.  Every organization has one default environment that cannot
+            be removed.
         created_at:
           type: string
           format: date-time
@@ -3007,8 +3009,8 @@ components:
           nullable: true
           description: Environments can inherit from a single parent environment which
             provides values for parameters when specific environments do not have
-            a value set.  Every organization has one default environment that is required
-            to have a value for every parameter in every project.
+            a value set.  Every organization has one default environment that cannot
+            be removed.
       required:
       - name
     GitHubIntegration:
@@ -3814,8 +3816,8 @@ components:
           nullable: true
           description: Environments can inherit from a single parent environment which
             provides values for parameters when specific environments do not have
-            a value set.  Every organization has one default environment that is required
-            to have a value for every parameter in every project.
+            a value set.  Every organization has one default environment that cannot
+            be removed.
         created_at:
           type: string
           format: date-time
