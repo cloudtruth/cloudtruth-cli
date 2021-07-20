@@ -32,6 +32,33 @@ SRC_PROFILE = "profile"
 SRC_DEFAULT = "default"
 
 
+def get_cli_base_cmd() -> str:
+    """
+    This is a separate function that does not reference the `self._base_cmd' so it can be called
+    during __init__(). It returns the path to the executable (presumably) with the trailing
+    space to allow for easier consumption.
+    """
+    # walk back up looking for top of projects, and goto `target/debug/cloudtruth`
+    curr = Path(__file__).absolute()
+    subdir = Path("target") / "debug"
+    match = False
+    while not match and curr:
+        possible = curr.parent / subdir
+        match = possible.exists()
+        curr = curr.parent
+
+    if not match:
+        return "cloudtruth "
+
+    for fname in ("cloudtruth", "cloudtruth.exe"):
+        file = possible / fname
+        if file.exists():
+            return str(file) + " "
+
+    # this is a little odd... no executable found in "local" directories
+    return "cloudtruth "
+
+
 @dataclasses.dataclass
 class Result:
     return_value: int = 0,
@@ -80,7 +107,7 @@ class TestCase(unittest.TestCase):
     This extends the unittest.TestCase to add some basic functions
     """
     def __init__(self, *args, **kwargs):
-        self._base_cmd = self._get_cli_base_cmd()
+        self._base_cmd = get_cli_base_cmd()
         self.log_commands = int(os.environ.get(CT_TEST_LOG_COMMANDS, "0"))
         self.log_output = int(os.environ.get(CT_TEST_LOG_OUTPUT, "0"))
         self.job_id = os.environ.get(CT_TEST_JOB_ID, "")
@@ -121,34 +148,8 @@ class TestCase(unittest.TestCase):
         The result includes an extra space, and whatever other args may be necessary (e.g. api_key)
         """
         if not self._base_cmd:
-            self._base_cmd = self._get_cli_base_cmd()
+            self._base_cmd = get_cli_base_cmd()
         return self._base_cmd
-
-    def _get_cli_base_cmd(self) -> str:
-        """
-        This is a separate function that does not reference the `self._base_cmd' so it can be called
-        during __init__(). It returns the path to the executable (presumably) with the trailing
-        space to allow for easier consumption.
-        """
-        # walk back up looking for top of projects, and goto `target/debug/cloudtruth`
-        curr = Path(__file__).absolute()
-        subdir = Path("target") / "debug"
-        match = False
-        while not match and curr:
-            possible = curr.parent / subdir
-            match = possible.exists()
-            curr = curr.parent
-
-        if not match:
-            return "cloudtruth "
-
-        for fname in ("cloudtruth", "cloudtruth.exe"):
-            file = possible / fname
-            if file.exists():
-                return str(file) + " "
-
-        # this is a little odd... no executable found in "local" directories
-        return "cloudtruth "
 
     def get_cmd_env(self):
         return deepcopy(os.environ)

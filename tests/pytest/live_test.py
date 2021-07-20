@@ -1,10 +1,12 @@
 import argparse
 import os
 import pdb
+import subprocess
 import sys
 import traceback
 import unittest
 
+from testcase import get_cli_base_cmd
 from testcase import CT_API_KEY, CT_URL
 from testcase import CT_TEST_JOB_ID, CT_TEST_LOG_COMMANDS, CT_TEST_LOG_OUTPUT
 
@@ -115,6 +117,9 @@ def live_test(*args):
     env[CT_TEST_LOG_OUTPUT] = str(int(args.log_output))
     if args.job_id:
         env[CT_TEST_JOB_ID] = args.job_id
+
+    cli = get_cli_base_cmd()
+    subprocess.run(cli + "config current -x", shell=True)
 
     # propagate the debug flags
     if args.debug:
