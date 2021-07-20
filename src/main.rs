@@ -90,7 +90,7 @@ fn help_message(message: String) -> Result<()> {
 /// Insures the configuration is valid.
 ///
 /// If there are errors, it will print the error/help and exit.
-/// If only warnings happen (e.g. using old API key name), it will print the warning and keep going.
+/// If only warnings happen, it will print the warning and keep going.
 fn check_config() -> Result<()> {
     if let Some(issues) = Config::global().validate() {
         // print the warnings first, so the user sees them (even when errors are present)
@@ -934,7 +934,7 @@ fn main() -> Result<()> {
 #[cfg(test)]
 mod main_test {
     use crate::cli;
-    use crate::config::{CT_API_KEY, CT_OLD_API_KEY, CT_SERVER_URL};
+    use crate::config::{CT_API_KEY, CT_SERVER_URL};
     use assert_cmd::prelude::*;
     use predicates::prelude::predicate::str::*;
     use std::process::Command;
@@ -1004,7 +1004,6 @@ mod main_test {
             println!("need_api_key test: {}", cmd_args.join(" "));
             let mut cmd = cmd();
             cmd.env(CT_API_KEY, "")
-                .env(CT_OLD_API_KEY, "")
                 .args(cmd_args)
                 .assert()
                 .failure()
