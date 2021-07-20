@@ -58,6 +58,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     env:
+      CLOUDTRUTH_REQUEST_TIMEOUT: 120
       CLOUDTRUTH_API_KEY: ${{ secrets.CI_ACCT_READWRITE_CT_API_KEY }}
 
     strategy:
