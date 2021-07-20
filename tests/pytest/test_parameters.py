@@ -87,7 +87,7 @@ my_param,cRaZy value,default,static,false,this is just a test description
         self.assertTrue(result.out_contains_both(key1, value2))
         self.assertTrue(result.out_contains_both(key1, desc1))
 
-        result = self.run_cli(cmd_env, sub_cmd + "get {key1}")
+        result = self.run_cli(cmd_env, sub_cmd + f"get {key1}")
         self.assertIn(value2, result.out())
 
         ########

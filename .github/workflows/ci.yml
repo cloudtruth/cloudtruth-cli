@@ -58,6 +58,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     env:
+      CLOUDTRUTH_REQUEST_TIMEOUT: 120
       CLOUDTRUTH_API_KEY: ${{ secrets.CI_ACCT_READWRITE_CT_API_KEY }}
 
     strategy:
@@ -92,8 +93,7 @@ jobs:
         if: runner.os != 'Windows'
         run: |
           cd tests/pytest
-          echo "FIXME: run integration tests"
-          # python3 live_test.py --job-id "${OS}-${GITHUB_RUN_NUMBER}"
+          python3 live_test.py --job-id "${OS}-${GITHUB_RUN_NUMBER}" --log-command --log-output --failfast
 
       - name: Integration Test - Windows
         env:
@@ -101,5 +101,4 @@ jobs:
         if: runner.os == 'Windows'
         run: |
           cd tests\pytest
-          echo "FIXME: run integration tests"
-          # py live_test.py --job-id "$ENV:OS-$ENV:GITHUB_RUN_NUMBER"
+          py live_test.py --job-id "$ENV:OS-$ENV:GITHUB_RUN_NUMBER"  --log-command --log-output --failfast
