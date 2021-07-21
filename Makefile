@@ -50,7 +50,7 @@ clean:
 	rm -rf client/target/
 
 # client needs to re-generated when the openapi.yaml changes
-client: openapi.yml
+client: openapi.yml patch_client.py
 	docker run --rm \
 		-v "$(shell pwd):/local" \
 		--user "$(shell id -u):$(shell id -g)" \
