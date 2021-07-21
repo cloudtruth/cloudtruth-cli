@@ -1,5 +1,6 @@
 # Build Artifacts
 /target
+/client/docs
 
 # Installing Python libraries
 /tests/pytest/__pycache__
