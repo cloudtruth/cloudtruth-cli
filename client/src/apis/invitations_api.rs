@@ -104,6 +104,9 @@ pub fn invitations_accept_create(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_cookie) = configuration.cookie {
+        local_var_req_builder = local_var_req_builder.header("set-cookie", local_var_cookie)
+    }
 
     let local_var_req = local_var_req_builder.build()?;
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
@@ -151,6 +154,9 @@ pub fn invitations_create(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_cookie) = configuration.cookie {
+        local_var_req_builder = local_var_req_builder.header("set-cookie", local_var_cookie)
+    }
     local_var_req_builder = local_var_req_builder.json(&invitation_create);
 
     let local_var_req = local_var_req_builder.build()?;
@@ -202,6 +208,9 @@ pub fn invitations_destroy(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_cookie) = configuration.cookie {
+        local_var_req_builder = local_var_req_builder.header("set-cookie", local_var_cookie)
+    }
 
     let local_var_req = local_var_req_builder.build()?;
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
@@ -267,6 +276,9 @@ pub fn invitations_list(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_cookie) = configuration.cookie {
+        local_var_req_builder = local_var_req_builder.header("set-cookie", local_var_cookie)
+    }
 
     let local_var_req = local_var_req_builder.build()?;
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
@@ -318,6 +330,9 @@ pub fn invitations_partial_update(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_cookie) = configuration.cookie {
+        local_var_req_builder = local_var_req_builder.header("set-cookie", local_var_cookie)
+    }
     local_var_req_builder = local_var_req_builder.json(&patched_invitation);
 
     let local_var_req = local_var_req_builder.build()?;
@@ -370,6 +385,9 @@ pub fn invitations_resend_create(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_cookie) = configuration.cookie {
+        local_var_req_builder = local_var_req_builder.header("set-cookie", local_var_cookie)
+    }
 
     let local_var_req = local_var_req_builder.build()?;
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
@@ -420,6 +438,9 @@ pub fn invitations_retrieve(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_cookie) = configuration.cookie {
+        local_var_req_builder = local_var_req_builder.header("set-cookie", local_var_cookie)
+    }
 
     let local_var_req = local_var_req_builder.build()?;
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
@@ -471,6 +492,9 @@ pub fn invitations_update(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_cookie) = configuration.cookie {
+        local_var_req_builder = local_var_req_builder.header("set-cookie", local_var_cookie)
+    }
     local_var_req_builder = local_var_req_builder.json(&invitation);
 
     let local_var_req = local_var_req_builder.build()?;

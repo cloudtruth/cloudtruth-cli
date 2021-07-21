@@ -20,6 +20,11 @@ API_KEY_TEXT = """\
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
 """
+ADD_COOKIE_TEXT = """\
+    if let Some(ref local_var_cookie) = configuration.cookie {
+        local_var_req_builder = local_var_req_builder.header("set-cookie", local_var_cookie)
+    }
+"""
 REMOVE_NULL_FUNCTION = """
 fn remove_null_values(input: &str) -> String {
     let re = Regex::new(r#"\"values\":\{\"https://\S+/\":null\}\"#).unwrap();
@@ -248,8 +253,30 @@ def add_cookie_to_config(srcdir: str) -> None:
         file_write_content(filename, temp)
 
 
+def add_cookie_cache(filename: str) -> None:
+    temp = file_read_content(filename)
+
+    if ADD_COOKIE_TEXT in temp or API_KEY_TEXT not in temp:
+        return
+
+    print(f"Updating {filename} with cookie text")
+    temp = temp.replace(API_KEY_TEXT, API_KEY_TEXT + ADD_COOKIE_TEXT)
+    assert ADD_COOKIE_TEXT in temp, f"Failed to add code to use cookies to {filename}"
+    file_write_content(filename, temp)
+
+
+def add_cookie_caches(srcdir: str) -> None:
+    """
+    This allows cookies to be used in the CLI.
+    """
+    filelist = glob.glob(f"{srcdir}/apis/*.rs")
+    for filename in filelist:
+        add_cookie_cache(filename)
+
+
 def support_cookies(srcdir: str) -> None:
     add_cookie_to_config(srcdir)
+    add_cookie_caches(srcdir)
 
 
 if __name__ == "__main__":

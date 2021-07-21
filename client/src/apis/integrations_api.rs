@@ -120,6 +120,9 @@ pub fn integrations_aws_create(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_cookie) = configuration.cookie {
+        local_var_req_builder = local_var_req_builder.header("set-cookie", local_var_cookie)
+    }
     local_var_req_builder = local_var_req_builder.json(&aws_integration_create);
 
     let local_var_req = local_var_req_builder.build()?;
@@ -171,6 +174,9 @@ pub fn integrations_aws_destroy(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_cookie) = configuration.cookie {
+        local_var_req_builder = local_var_req_builder.header("set-cookie", local_var_cookie)
+    }
 
     let local_var_req = local_var_req_builder.build()?;
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
@@ -231,6 +237,9 @@ pub fn integrations_aws_list(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_cookie) = configuration.cookie {
+        local_var_req_builder = local_var_req_builder.header("set-cookie", local_var_cookie)
+    }
 
     let local_var_req = local_var_req_builder.build()?;
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
@@ -282,6 +291,9 @@ pub fn integrations_aws_partial_update(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_cookie) = configuration.cookie {
+        local_var_req_builder = local_var_req_builder.header("set-cookie", local_var_cookie)
+    }
     local_var_req_builder = local_var_req_builder.json(&patched_aws_integration);
 
     let local_var_req = local_var_req_builder.build()?;
@@ -338,6 +350,9 @@ pub fn integrations_aws_retrieve(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_cookie) = configuration.cookie {
+        local_var_req_builder = local_var_req_builder.header("set-cookie", local_var_cookie)
+    }
 
     let local_var_req = local_var_req_builder.build()?;
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
@@ -389,6 +404,9 @@ pub fn integrations_aws_update(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_cookie) = configuration.cookie {
+        local_var_req_builder = local_var_req_builder.header("set-cookie", local_var_cookie)
+    }
     local_var_req_builder = local_var_req_builder.json(&aws_integration);
 
     let local_var_req = local_var_req_builder.build()?;
@@ -445,6 +463,9 @@ pub fn integrations_explore_list(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_cookie) = configuration.cookie {
+        local_var_req_builder = local_var_req_builder.header("set-cookie", local_var_cookie)
+    }
 
     let local_var_req = local_var_req_builder.build()?;
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
@@ -492,6 +513,9 @@ pub fn integrations_github_create(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_cookie) = configuration.cookie {
+        local_var_req_builder = local_var_req_builder.header("set-cookie", local_var_cookie)
+    }
     local_var_req_builder = local_var_req_builder.json(&git_hub_integration_create);
 
     let local_var_req = local_var_req_builder.build()?;
@@ -543,6 +567,9 @@ pub fn integrations_github_destroy(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_cookie) = configuration.cookie {
+        local_var_req_builder = local_var_req_builder.header("set-cookie", local_var_cookie)
+    }
 
     let local_var_req = local_var_req_builder.build()?;
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
@@ -598,6 +625,9 @@ pub fn integrations_github_list(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_cookie) = configuration.cookie {
+        local_var_req_builder = local_var_req_builder.header("set-cookie", local_var_cookie)
+    }
 
     let local_var_req = local_var_req_builder.build()?;
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
@@ -653,6 +683,9 @@ pub fn integrations_github_retrieve(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_cookie) = configuration.cookie {
+        local_var_req_builder = local_var_req_builder.header("set-cookie", local_var_cookie)
+    }
 
     let local_var_req = local_var_req_builder.build()?;
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
