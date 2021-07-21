@@ -224,10 +224,39 @@ def update_gitpush(client_dir: str) -> None:
         file_write_content(filename, temp)
 
 
+def add_cookie_to_config(srcdir: str) -> None:
+    filename = srcdir + "/apis/configuration.rs"
+    temp = file_read_content(filename)
+
+    cookie_param = """\
+    pub cookie: Option<String>,
+"""
+    api_key_param = """\
+    pub api_key: Option<ApiKey>,
+"""
+    cookie_init = """\
+            cookie: None,
+"""
+    api_key_init = """\
+            api_key: None,
+"""
+    if cookie_param not in temp:
+        temp = temp.replace(api_key_param, api_key_param + cookie_param)
+        temp = temp.replace(api_key_init, api_key_init + cookie_init)
+        assert cookie_param in temp, "Did not add cookie param"
+        print(f"Updating {filename} with cookie parameter")
+        file_write_content(filename, temp)
+
+
+def support_cookies(srcdir: str) -> None:
+    add_cookie_to_config(srcdir)
+
+
 if __name__ == "__main__":
     client_dir = os.getcwd() + "/client"
     srcdir = client_dir + "/src"
     allow_snake(srcdir)
     support_api_key(srcdir)
+    support_cookies(srcdir)
     parameter_null_fix(client_dir)
     update_gitpush(client_dir)

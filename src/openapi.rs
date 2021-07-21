@@ -55,6 +55,7 @@ fn create_openapi_config(ct_cfg: &CloudTruthConfig) -> OpenApiConfig {
             prefix: Some("Api-Key".to_owned()),
             key: ct_cfg.api_key.clone(),
         }),
+        cookie: None,
     }
 }
 
