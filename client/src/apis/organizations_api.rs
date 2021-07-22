@@ -56,7 +56,7 @@ pub enum OrganizationsUpdateError {
 }
 
 pub fn organizations_create(
-    configuration: &configuration::Configuration,
+    configuration: &mut configuration::Configuration,
     organization_create: crate::models::OrganizationCreate,
 ) -> Result<crate::models::Organization, Error<OrganizationsCreateError>> {
     let local_var_client = &configuration.client;
@@ -90,6 +90,11 @@ pub fn organizations_create(
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
+    if configuration.cookie.is_none() {
+        if let Some(local_var_header) = local_var_resp.headers().get("set-cookie") {
+            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
+        }
+    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         serde_json::from_str(&local_var_content).map_err(Error::from)
@@ -106,7 +111,7 @@ pub fn organizations_create(
 }
 
 pub fn organizations_destroy(
-    configuration: &configuration::Configuration,
+    configuration: &mut configuration::Configuration,
     id: &str,
 ) -> Result<(), Error<OrganizationsDestroyError>> {
     let local_var_client = &configuration.client;
@@ -143,6 +148,11 @@ pub fn organizations_destroy(
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
+    if configuration.cookie.is_none() {
+        if let Some(local_var_header) = local_var_resp.headers().get("set-cookie") {
+            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
+        }
+    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         Ok(())
@@ -159,7 +169,7 @@ pub fn organizations_destroy(
 }
 
 pub fn organizations_list(
-    configuration: &configuration::Configuration,
+    configuration: &mut configuration::Configuration,
     name: Option<&str>,
     page: Option<i32>,
 ) -> Result<crate::models::PaginatedOrganizationList, Error<OrganizationsListError>> {
@@ -201,6 +211,11 @@ pub fn organizations_list(
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
+    if configuration.cookie.is_none() {
+        if let Some(local_var_header) = local_var_resp.headers().get("set-cookie") {
+            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
+        }
+    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         serde_json::from_str(&local_var_content).map_err(Error::from)
@@ -217,7 +232,7 @@ pub fn organizations_list(
 }
 
 pub fn organizations_partial_update(
-    configuration: &configuration::Configuration,
+    configuration: &mut configuration::Configuration,
     id: &str,
     patched_organization: Option<crate::models::PatchedOrganization>,
 ) -> Result<crate::models::Organization, Error<OrganizationsPartialUpdateError>> {
@@ -256,6 +271,11 @@ pub fn organizations_partial_update(
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
+    if configuration.cookie.is_none() {
+        if let Some(local_var_header) = local_var_resp.headers().get("set-cookie") {
+            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
+        }
+    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         serde_json::from_str(&local_var_content).map_err(Error::from)
@@ -272,7 +292,7 @@ pub fn organizations_partial_update(
 }
 
 pub fn organizations_retrieve(
-    configuration: &configuration::Configuration,
+    configuration: &mut configuration::Configuration,
     id: &str,
 ) -> Result<crate::models::Organization, Error<OrganizationsRetrieveError>> {
     let local_var_client = &configuration.client;
@@ -309,6 +329,11 @@ pub fn organizations_retrieve(
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
+    if configuration.cookie.is_none() {
+        if let Some(local_var_header) = local_var_resp.headers().get("set-cookie") {
+            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
+        }
+    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         serde_json::from_str(&local_var_content).map_err(Error::from)
@@ -325,7 +350,7 @@ pub fn organizations_retrieve(
 }
 
 pub fn organizations_update(
-    configuration: &configuration::Configuration,
+    configuration: &mut configuration::Configuration,
     id: &str,
     organization: crate::models::Organization,
 ) -> Result<crate::models::Organization, Error<OrganizationsUpdateError>> {
@@ -364,6 +389,11 @@ pub fn organizations_update(
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
+    if configuration.cookie.is_none() {
+        if let Some(local_var_header) = local_var_resp.headers().get("set-cookie") {
+            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
+        }
+    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         serde_json::from_str(&local_var_content).map_err(Error::from)

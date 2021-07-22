@@ -22,7 +22,7 @@ pub enum ApiSchemaRetrieveError {
 
 /// OpenApi3 schema for this API. Format can be selected via content negotiation.  - YAML: application/vnd.oai.openapi - JSON: application/vnd.oai.openapi+json
 pub fn api_schema_retrieve(
-    configuration: &configuration::Configuration,
+    configuration: &mut configuration::Configuration,
     format: Option<&str>,
     lang: Option<&str>,
 ) -> Result<::std::collections::HashMap<String, serde_json::Value>, Error<ApiSchemaRetrieveError>> {
@@ -49,6 +49,11 @@ pub fn api_schema_retrieve(
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
+    if configuration.cookie.is_none() {
+        if let Some(local_var_header) = local_var_resp.headers().get("set-cookie") {
+            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
+        }
+    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         serde_json::from_str(&local_var_content).map_err(Error::from)

@@ -274,12 +274,9 @@ def add_cookie_caches(srcdir: str) -> None:
     """
     This allows cookies to be used in the CLI.
     """
-    """
     filelist = glob.glob(f"{srcdir}/apis/*.rs")
     for filename in filelist:
         add_cookie_cache(filename)
-    """
-    add_cookie_cache(srcdir + "/apis/environments_api.rs")
 
 
 def support_cookies(srcdir: str) -> None:
