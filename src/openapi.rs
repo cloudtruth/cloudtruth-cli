@@ -38,24 +38,26 @@ fn user_agent_name() -> String {
     )
 }
 
-fn create_openapi_config(ct_cfg: &CloudTruthConfig) -> OpenApiConfig {
-    // having a trailing slash confuses the API, so remove any trailing slashes
-    let server_url = ct_cfg.server_url.trim_end_matches('/').to_string();
-    OpenApiConfig {
-        base_path: server_url,
-        user_agent: Some(user_agent_name()),
-        client: reqwest::Client::builder()
-            .timeout(ct_cfg.request_timeout.unwrap())
-            .build()
-            .unwrap(),
-        basic_auth: None,
-        oauth_access_token: None,
-        bearer_access_token: None,
-        api_key: Some(ApiKey {
-            prefix: Some("Api-Key".to_owned()),
-            key: ct_cfg.api_key.clone(),
-        }),
-        cookie: None,
+impl From<&CloudTruthConfig> for OpenApiConfig {
+    fn from(ct_cfg: &CloudTruthConfig) -> Self {
+        // having a trailing slash confuses the API, so remove any trailing slashes
+        let server_url = ct_cfg.server_url.trim_end_matches('/').to_string();
+        OpenApiConfig {
+            base_path: server_url,
+            user_agent: Some(user_agent_name()),
+            client: reqwest::Client::builder()
+                .timeout(ct_cfg.request_timeout.unwrap())
+                .build()
+                .unwrap(),
+            basic_auth: None,
+            oauth_access_token: None,
+            bearer_access_token: None,
+            api_key: Some(ApiKey {
+                prefix: Some("Api-Key".to_owned()),
+                key: ct_cfg.api_key.clone(),
+            }),
+            cookie: None,
+        }
     }
 }
 
@@ -63,7 +65,7 @@ fn create_openapi_config(ct_cfg: &CloudTruthConfig) -> OpenApiConfig {
 /// Converts the global CloudTruth config (`config::Config`) into a REST API config
 /// (`cloudtruth_restapi::apis::configuration::Configuration`).
 pub fn open_api_config() -> &'static OpenApiConfig {
-    INSTANCE.get_or_init(|| create_openapi_config(CloudTruthConfig::global()))
+    INSTANCE.get_or_init(|| OpenApiConfig::from(CloudTruthConfig::global()))
 }
 
 #[cfg(test)]
@@ -86,7 +88,7 @@ mod tests {
             server_url: url.to_string(),
             request_timeout: Some(Duration::new(120, 0)),
         };
-        let openapi_cfg = create_openapi_config(&ct_cfg);
+        let openapi_cfg = OpenApiConfig::from(&ct_cfg);
         // check that the trailing slash removed from the URL
         assert_eq!(
             openapi_cfg.base_path,
