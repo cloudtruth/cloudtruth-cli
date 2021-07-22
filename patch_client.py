@@ -25,6 +25,13 @@ ADD_COOKIE_TEXT = """\
         local_var_req_builder = local_var_req_builder.header("set-cookie", local_var_cookie)
     }
 """
+CACHE_COOKIE_TEXT = """\
+    if configuration.cookie.is_none() {
+        if let Some(local_var_header) = local_var_resp.headers().get("set-cookie") {
+            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
+        }
+    }
+"""
 REMOVE_NULL_FUNCTION = """
 fn remove_null_values(input: &str) -> String {
     let re = Regex::new(r#"\"values\":\{\"https://\S+/\":null\}\"#).unwrap();
@@ -233,18 +240,10 @@ def add_cookie_to_config(srcdir: str) -> None:
     filename = srcdir + "/apis/configuration.rs"
     temp = file_read_content(filename)
 
-    cookie_param = """\
-    pub cookie: Option<String>,
-"""
-    api_key_param = """\
-    pub api_key: Option<ApiKey>,
-"""
-    cookie_init = """\
-            cookie: None,
-"""
-    api_key_init = """\
-            api_key: None,
-"""
+    cookie_param = "    pub cookie: Option<String>,\n"
+    api_key_param = "    pub api_key: Option<ApiKey>,\n"
+    cookie_init = "            cookie: None,\n"
+    api_key_init = "            api_key: None,\n"
     if cookie_param not in temp:
         temp = temp.replace(api_key_param, api_key_param + cookie_param)
         temp = temp.replace(api_key_init, api_key_init + cookie_init)
@@ -259,7 +258,13 @@ def add_cookie_cache(filename: str) -> None:
     if ADD_COOKIE_TEXT in temp or API_KEY_TEXT not in temp:
         return
 
+    config_param = "configuration: &configuration::Configuration,"
+    config_mut_param = config_param.replace("&", "&mut ")
+    content_text = "    let local_var_content = local_var_resp.text()?;\n"
+
     print(f"Updating {filename} with cookie text")
+    temp = temp.replace(config_param, config_mut_param)
+    temp = temp.replace(content_text, content_text + CACHE_COOKIE_TEXT)
     temp = temp.replace(API_KEY_TEXT, API_KEY_TEXT + ADD_COOKIE_TEXT)
     assert ADD_COOKIE_TEXT in temp, f"Failed to add code to use cookies to {filename}"
     file_write_content(filename, temp)
@@ -269,9 +274,12 @@ def add_cookie_caches(srcdir: str) -> None:
     """
     This allows cookies to be used in the CLI.
     """
+    """
     filelist = glob.glob(f"{srcdir}/apis/*.rs")
     for filename in filelist:
         add_cookie_cache(filename)
+    """
+    add_cookie_cache(srcdir + "/apis/environments_api.rs")
 
 
 def support_cookies(srcdir: str) -> None:

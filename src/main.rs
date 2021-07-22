@@ -18,6 +18,7 @@ use crate::config::env::ConfigEnv;
 use crate::config::{Config, CT_PROFILE, DEFAULT_ENV_NAME};
 use crate::environments::Environments;
 use crate::integrations::Integrations;
+use crate::openapi::OpenApiConfig;
 use crate::parameters::{ParamExportFormat, ParamExportOptions, ParameterDetails, Parameters};
 use crate::projects::Projects;
 use crate::subprocess::{Inheritance, SubProcess};
@@ -156,12 +157,12 @@ fn user_confirm(message: String) -> bool {
 /// If either fails, it prints an error and exits.
 /// On success, it returns a `ResolvedIds` structure that contains ids to avoid needing to resolve
 /// the names again.
-fn resolve_ids(config: &Config) -> Result<ResolvedIds> {
+fn resolve_ids(config: &Config, rest_cfg: &mut OpenApiConfig) -> Result<ResolvedIds> {
     // The `err` value is used to allow accumulation of multiple errors to the user.
     let mut err = false;
     let env = config.environment.as_deref().unwrap_or(DEFAULT_ENV_NAME);
     let proj = config.project.as_deref();
-    let environments = Environments::new();
+    let environments = Environments::new(&mut rest_cfg);
     let env_id = environments.get_id(env)?;
     if env_id.is_none() {
         error_message(format!(
@@ -912,12 +913,13 @@ fn main() -> Result<()> {
         env_name,
         proj_name,
     )?);
+    let mut rest_cfg = OpenApiConfig::from(Config::global());
 
     // Check the basic config (api-key, server-url) -- don't worry about valid env/proj, yet
     check_config()?;
 
     if let Some(matches) = matches.subcommand_matches("environments") {
-        let environments = Environments::new();
+        let environments = Environments::new(&mut rest_cfg);
         process_environment_command(matches, &environments)?;
         process::exit(0)
     }
@@ -935,7 +937,7 @@ fn main() -> Result<()> {
     }
 
     // Everything below here requires resolved environment/project values
-    let resolved = resolve_ids(Config::global())?;
+    let resolved = resolve_ids(Config::global(), &mut rest_cfg)?;
 
     if let Some(matches) = matches.subcommand_matches("parameters") {
         let parameters = Parameters::new();
