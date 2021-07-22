@@ -1,4 +1,4 @@
-use crate::openapi::open_api_config;
+use crate::openapi::OpenApiConfig;
 
 use cloudtruth_restapi::apis::projects_api::*;
 use cloudtruth_restapi::apis::Error;
@@ -30,18 +30,18 @@ impl Templates {
 
     pub fn get_body_by_name(
         &self,
+        rest_cfg: &mut OpenApiConfig,
         proj_id: &str,
         env_id: &str,
         template_name: &str,
         show_secrets: bool,
     ) -> Result<Option<String>, Error<ProjectsTemplatesRetrieveError>> {
         // TODO: convert template name to template id outside??
-        let response = self.get_details_by_name(proj_id, template_name);
+        let response = self.get_details_by_name(rest_cfg, proj_id, template_name);
 
         if let Ok(Some(details)) = response {
-            let rest_cfg = open_api_config();
             let response = projects_templates_retrieve(
-                &rest_cfg,
+                rest_cfg,
                 &details.id,
                 proj_id,
                 Some(env_id),
@@ -56,11 +56,11 @@ impl Templates {
 
     pub fn get_details_by_name(
         &self,
+        rest_cfg: &mut OpenApiConfig,
         proj_id: &str,
         template_name: &str,
     ) -> Result<Option<TemplateDetails>, Error<ProjectsTemplatesListError>> {
-        let rest_cfg = open_api_config();
-        let response = projects_templates_list(&rest_cfg, proj_id, Some(template_name), None)?;
+        let response = projects_templates_list(rest_cfg, proj_id, Some(template_name), None)?;
 
         if let Some(templates) = response.results {
             if template_name.is_empty() {
@@ -77,10 +77,10 @@ impl Templates {
 
     pub fn get_template_details(
         &self,
+        rest_cfg: &mut OpenApiConfig,
         proj_id: &str,
     ) -> Result<Vec<TemplateDetails>, Error<ProjectsTemplatesListError>> {
-        let rest_cfg = open_api_config();
-        let response = projects_templates_list(&rest_cfg, proj_id, None, None)?;
+        let response = projects_templates_list(rest_cfg, proj_id, None, None)?;
         let mut list: Vec<TemplateDetails> = Vec::new();
 
         if let Some(templates) = response.results {

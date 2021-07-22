@@ -1,4 +1,4 @@
-use crate::openapi::{extract_details, open_api_config};
+use crate::openapi::{extract_details, OpenApiConfig};
 
 use cloudtruth_restapi::apis::projects_api::*;
 use cloudtruth_restapi::apis::Error::{self, ResponseError};
@@ -52,10 +52,10 @@ impl Projects {
     /// Get the details for `proj_name`
     pub fn get_details_by_name(
         &self,
+        rest_cfg: &mut OpenApiConfig,
         proj_name: &str,
     ) -> Result<Option<ProjectDetails>, ProjectError> {
-        let rest_cfg = open_api_config();
-        let response = projects_list(&rest_cfg, Some(proj_name), None);
+        let response = projects_list(rest_cfg, Some(proj_name), None);
 
         match response {
             Ok(data) => match data.results {
@@ -80,8 +80,12 @@ impl Projects {
     }
 
     /// Resolve the `proj_name` to a String
-    pub fn get_id(&self, proj_name: &str) -> Result<Option<String>, ProjectError> {
-        if let Some(details) = self.get_details_by_name(proj_name)? {
+    pub fn get_id(
+        &self,
+        rest_cfg: &mut OpenApiConfig,
+        proj_name: &str,
+    ) -> Result<Option<String>, ProjectError> {
+        if let Some(details) = self.get_details_by_name(rest_cfg, proj_name)? {
             Ok(Some(details.id))
         } else {
             Ok(None)
@@ -89,9 +93,11 @@ impl Projects {
     }
 
     /// Get a complete list of projects for this organization.
-    pub fn get_project_details(&self) -> Result<Vec<ProjectDetails>, ProjectError> {
-        let rest_cfg = open_api_config();
-        let response = projects_list(&rest_cfg, None, None);
+    pub fn get_project_details(
+        &self,
+        rest_cfg: &mut OpenApiConfig,
+    ) -> Result<Vec<ProjectDetails>, ProjectError> {
+        let response = projects_list(rest_cfg, None, None);
 
         match response {
             Ok(data) => match data.results {
@@ -115,15 +121,15 @@ impl Projects {
     /// Create a project with the specified name/description
     pub fn create_project(
         &self,
+        rest_cfg: &mut OpenApiConfig,
         proj_name: &str,
         description: Option<&str>,
     ) -> Result<Option<String>, Error<ProjectsCreateError>> {
-        let rest_cfg = open_api_config();
         let proj = ProjectCreate {
             name: proj_name.to_string(),
             description: description.map(String::from),
         };
-        let response = projects_create(&rest_cfg, proj)?;
+        let response = projects_create(rest_cfg, proj)?;
         // return the project id of the newly minted project
         Ok(Some(response.id))
     }
@@ -131,21 +137,21 @@ impl Projects {
     /// Delete the specified project
     pub fn delete_project(
         &self,
+        rest_cfg: &mut OpenApiConfig,
         project_id: &str,
     ) -> Result<Option<String>, Error<ProjectsDestroyError>> {
-        let rest_cfg = open_api_config();
-        projects_destroy(&rest_cfg, project_id)?;
+        projects_destroy(rest_cfg, project_id)?;
         Ok(Some(project_id.to_string()))
     }
 
     /// Update the specified project
     pub fn update_project(
         &self,
+        rest_cfg: &mut OpenApiConfig,
         project_name: &str,
         project_id: &str,
         description: Option<&str>,
     ) -> Result<Option<String>, Error<ProjectsPartialUpdateError>> {
-        let rest_cfg = open_api_config();
         let proj = PatchedProject {
             url: None,
             id: None,
@@ -154,7 +160,7 @@ impl Projects {
             created_at: None,
             modified_at: None,
         };
-        let response = projects_partial_update(&rest_cfg, project_id, Some(proj))?;
+        let response = projects_partial_update(rest_cfg, project_id, Some(proj))?;
         Ok(Some(response.id))
     }
 }

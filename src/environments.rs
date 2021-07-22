@@ -1,4 +1,4 @@
-use crate::openapi::{extract_details, open_api_config, OpenApiConfig};
+use crate::openapi::{extract_details, OpenApiConfig};
 
 use cloudtruth_restapi::apis::environments_api::*;
 use cloudtruth_restapi::apis::Error;
@@ -8,9 +8,7 @@ use std::collections::HashMap;
 use std::error;
 use std::fmt::{self, Formatter};
 
-pub struct Environments<'a> {
-    rest_cfg: &'a mut OpenApiConfig,
-}
+pub struct Environments {}
 
 #[derive(Debug)]
 pub struct EnvironmentDetails {
@@ -78,12 +76,12 @@ fn bad_request_details(content: &str) -> String {
 }
 
 impl Environments {
-    pub fn new(rest_cfg: &mut OpenApiConfig) -> Self {
-        Self { rest_cfg }
+    pub fn new() -> Self {
+        Self {}
     }
 
     /// Use the environment URL to get the corresponding name.
-    pub fn get_name_from_url(&self, url: &str) -> String {
+    pub fn get_name_from_url(&self, rest_cfg: &mut OpenApiConfig, url: &str) -> String {
         let id = url
             .split('/')
             .filter(|&x| !x.is_empty())
@@ -92,7 +90,7 @@ impl Environments {
         if id.is_empty() {
             "".to_owned()
         } else {
-            let response = environments_retrieve(&mut self.rest_cfg, id);
+            let response = environments_retrieve(rest_cfg, id);
             if let Ok(environment) = response {
                 environment.name
             } else {
@@ -102,8 +100,8 @@ impl Environments {
     }
 
     /// This provides a means to get an entire list of environment URLs to names.
-    pub fn get_url_name_map(&self) -> HashMap<String, String> {
-        let response = environments_list(&mut self.rest_cfg, None, None, None);
+    pub fn get_url_name_map(&self, rest_cfg: &mut OpenApiConfig) -> HashMap<String, String> {
+        let response = environments_list(rest_cfg, None, None, None);
         let mut result: HashMap<String, String> = HashMap::new();
         if let Ok(list) = response {
             if let Some(environments) = list.results {
@@ -117,9 +115,10 @@ impl Environments {
 
     pub fn get_details_by_name(
         &self,
+        rest_cfg: &mut OpenApiConfig,
         env_name: &str,
     ) -> Result<Option<EnvironmentDetails>, EnvironmentError> {
-        let response = environments_list(&mut self.rest_cfg, Some(env_name), None, None);
+        let response = environments_list(rest_cfg, Some(env_name), None, None);
 
         match response {
             Ok(data) => match data.results {
@@ -129,7 +128,8 @@ impl Environments {
                     } else {
                         let env = &list[0];
                         let mut details = EnvironmentDetails::from(env);
-                        details.parent_name = self.get_name_from_url(details.parent_url.as_str());
+                        details.parent_name =
+                            self.get_name_from_url(rest_cfg, details.parent_url.as_str());
                         Ok(Some(details))
                     }
                 }
@@ -148,16 +148,23 @@ impl Environments {
         }
     }
 
-    pub fn get_id(&self, env_name: &str) -> Result<Option<String>, EnvironmentError> {
-        if let Some(details) = self.get_details_by_name(env_name)? {
+    pub fn get_id(
+        &self,
+        rest_cfg: &mut OpenApiConfig,
+        env_name: &str,
+    ) -> Result<Option<String>, EnvironmentError> {
+        if let Some(details) = self.get_details_by_name(rest_cfg, env_name)? {
             Ok(Some(details.id))
         } else {
             Ok(None)
         }
     }
 
-    pub fn get_environment_details(&self) -> Result<Vec<EnvironmentDetails>, EnvironmentError> {
-        let response = environments_list(&mut self.rest_cfg, None, None, None);
+    pub fn get_environment_details(
+        &self,
+        rest_cfg: &mut OpenApiConfig,
+    ) -> Result<Vec<EnvironmentDetails>, EnvironmentError> {
+        let response = environments_list(rest_cfg, None, None, None);
 
         match response {
             Ok(data) => match data.results {
@@ -196,6 +203,7 @@ impl Environments {
 
     pub fn create_environment(
         &self,
+        rest_cfg: &mut OpenApiConfig,
         env_name: &str,
         description: Option<&str>,
         parent_url: &str,
@@ -205,13 +213,17 @@ impl Environments {
             description: description.map(String::from),
             parent: Some(parent_url.to_string()),
         };
-        let response = environments_create(&mut self.rest_cfg, new_env)?;
+        let response = environments_create(rest_cfg, new_env)?;
         // return the id of the new environment (likely same as the old)
         Ok(Some(response.id))
     }
 
-    pub fn delete_environment(&self, environment_id: String) -> Result<String, EnvironmentError> {
-        let response = environments_destroy(&mut self.rest_cfg, &environment_id);
+    pub fn delete_environment(
+        &self,
+        rest_cfg: &mut OpenApiConfig,
+        environment_id: String,
+    ) -> Result<String, EnvironmentError> {
+        let response = environments_destroy(rest_cfg, &environment_id);
         match response {
             Ok(_) => Ok(environment_id),
             Err(ResponseError(ref content)) => match content.status.as_u16() {
@@ -229,6 +241,7 @@ impl Environments {
 
     pub fn update_environment(
         &self,
+        rest_cfg: &mut OpenApiConfig,
         environment_id: &str,
         environment_name: &str,
         description: Option<&str>,
@@ -242,7 +255,7 @@ impl Environments {
             created_at: None,
             modified_at: None,
         };
-        let response = environments_partial_update(&mut self.rest_cfg, environment_id, Some(env))?;
+        let response = environments_partial_update(rest_cfg, environment_id, Some(env))?;
         Ok(Some(response.id))
     }
 }
