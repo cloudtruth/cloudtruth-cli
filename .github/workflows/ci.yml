@@ -93,8 +93,7 @@ jobs:
         if: runner.os != 'Windows'
         run: |
           cd tests/pytest
-          echo "FIXME: re-enable integration tests"
-          # python3 live_test.py --job-id "${OS}-${GITHUB_RUN_NUMBER}"
+          python3 live_test.py --job-id "${OS}-${GITHUB_RUN_NUMBER}"
 
       - name: Integration Test - Windows
         env:
@@ -102,5 +101,4 @@ jobs:
         if: runner.os == 'Windows'
         run: |
           cd tests\pytest
-          echo "FIXME: re-enable integration tests"
-          # py live_test.py --job-id "$ENV:OS-$ENV:GITHUB_RUN_NUMBER"
+          py live_test.py --job-id "$ENV:OS-$ENV:GITHUB_RUN_NUMBER"
