@@ -76,7 +76,7 @@ impl From<&IntegrationExplorer> for IntegrationNode {
             node_type: format!("{:?}", node.node_type),
             secret: node.secret.unwrap_or(false),
             content_type: node.content_type.clone().unwrap_or_default(),
-            content_size: node.content_size.clone().unwrap_or(0),
+            content_size: node.content_size.unwrap_or(0),
             content_data: node.content_data.clone().unwrap_or_default(),
             content_keys: node.content_keys.clone().unwrap_or_default(),
         }
