@@ -1,3 +1,10 @@
+# 1.0.1 - 2021-07-26
+
+* Pickup latest OpenAPI changes.
+* Add HTTP Cookie header sent from the first response in subsequent requests.
+* Remove generated client docs from repository.
+* Restore GiHub CI testing.
+
 # 1.0.0 - 2021-07-20
 
 * Update to use REST API server (replaces GraphQL).
