@@ -1,7 +1,7 @@
 /*
  * CloudTruth Management API
  *
- * CloudTruth centralizes your parameters and secrets making them easier to manage and use.
+ * CloudTruth centralizes your configuration parameters and secrets making them easier to manage and use as a team.
  *
  * The version of the OpenAPI document: 1.0.0
  * Contact: support@cloudtruth.com

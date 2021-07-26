@@ -1,6 +1,6 @@
 # Rust API client for cloudtruth-restapi
 
-CloudTruth centralizes your parameters and secrets making them easier to manage and use.
+CloudTruth centralizes your configuration parameters and secrets making them easier to manage and use as a team.
 
 ## Overview
 
