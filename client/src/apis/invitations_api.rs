@@ -76,7 +76,7 @@ pub enum InvitationsUpdateError {
 
 /// Accept an invitation to join an organization.  The email address used to log in and accept the invitation must match the email address specified by the inviting user when creating the invitation.  On success the client receives the invitation record as it was updated. The client should then regenerate the JWT with the organization scope and proceed to the default landing page.
 pub fn invitations_accept_create(
-    configuration: &configuration::Configuration,
+    configuration: &mut configuration::Configuration,
     id: &str,
 ) -> Result<crate::models::Invitation, Error<InvitationsAcceptCreateError>> {
     let local_var_client = &configuration.client;
@@ -104,12 +104,21 @@ pub fn invitations_accept_create(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_cookie) = configuration.cookie {
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
+    }
 
     let local_var_req = local_var_req_builder.build()?;
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
+    if configuration.cookie.is_none() {
+        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
+            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
+        }
+    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         serde_json::from_str(&local_var_content).map_err(Error::from)
@@ -127,7 +136,7 @@ pub fn invitations_accept_create(
 
 /// Extend an invitation for someone else to join your organization.
 pub fn invitations_create(
-    configuration: &configuration::Configuration,
+    configuration: &mut configuration::Configuration,
     invitation_create: crate::models::InvitationCreate,
 ) -> Result<crate::models::Invitation, Error<InvitationsCreateError>> {
     let local_var_client = &configuration.client;
@@ -151,6 +160,10 @@ pub fn invitations_create(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_cookie) = configuration.cookie {
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
+    }
     local_var_req_builder = local_var_req_builder.json(&invitation_create);
 
     let local_var_req = local_var_req_builder.build()?;
@@ -158,6 +171,11 @@ pub fn invitations_create(
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
+    if configuration.cookie.is_none() {
+        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
+            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
+        }
+    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         serde_json::from_str(&local_var_content).map_err(Error::from)
@@ -174,7 +192,7 @@ pub fn invitations_create(
 }
 
 pub fn invitations_destroy(
-    configuration: &configuration::Configuration,
+    configuration: &mut configuration::Configuration,
     id: &str,
 ) -> Result<(), Error<InvitationsDestroyError>> {
     let local_var_client = &configuration.client;
@@ -202,12 +220,21 @@ pub fn invitations_destroy(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_cookie) = configuration.cookie {
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
+    }
 
     let local_var_req = local_var_req_builder.build()?;
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
+    if configuration.cookie.is_none() {
+        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
+            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
+        }
+    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         Ok(())
@@ -224,7 +251,7 @@ pub fn invitations_destroy(
 }
 
 pub fn invitations_list(
-    configuration: &configuration::Configuration,
+    configuration: &mut configuration::Configuration,
     email: Option<&str>,
     page: Option<i32>,
     role: Option<&str>,
@@ -267,12 +294,21 @@ pub fn invitations_list(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_cookie) = configuration.cookie {
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
+    }
 
     let local_var_req = local_var_req_builder.build()?;
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
+    if configuration.cookie.is_none() {
+        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
+            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
+        }
+    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         serde_json::from_str(&local_var_content).map_err(Error::from)
@@ -289,7 +325,7 @@ pub fn invitations_list(
 }
 
 pub fn invitations_partial_update(
-    configuration: &configuration::Configuration,
+    configuration: &mut configuration::Configuration,
     id: &str,
     patched_invitation: Option<crate::models::PatchedInvitation>,
 ) -> Result<crate::models::Invitation, Error<InvitationsPartialUpdateError>> {
@@ -318,6 +354,10 @@ pub fn invitations_partial_update(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_cookie) = configuration.cookie {
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
+    }
     local_var_req_builder = local_var_req_builder.json(&patched_invitation);
 
     let local_var_req = local_var_req_builder.build()?;
@@ -325,6 +365,11 @@ pub fn invitations_partial_update(
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
+    if configuration.cookie.is_none() {
+        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
+            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
+        }
+    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         serde_json::from_str(&local_var_content).map_err(Error::from)
@@ -342,7 +387,7 @@ pub fn invitations_partial_update(
 
 /// Re-send an invitation to the recipient.
 pub fn invitations_resend_create(
-    configuration: &configuration::Configuration,
+    configuration: &mut configuration::Configuration,
     id: &str,
 ) -> Result<crate::models::Invitation, Error<InvitationsResendCreateError>> {
     let local_var_client = &configuration.client;
@@ -370,12 +415,21 @@ pub fn invitations_resend_create(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_cookie) = configuration.cookie {
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
+    }
 
     let local_var_req = local_var_req_builder.build()?;
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
+    if configuration.cookie.is_none() {
+        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
+            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
+        }
+    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         serde_json::from_str(&local_var_content).map_err(Error::from)
@@ -392,7 +446,7 @@ pub fn invitations_resend_create(
 }
 
 pub fn invitations_retrieve(
-    configuration: &configuration::Configuration,
+    configuration: &mut configuration::Configuration,
     id: &str,
 ) -> Result<crate::models::Invitation, Error<InvitationsRetrieveError>> {
     let local_var_client = &configuration.client;
@@ -420,12 +474,21 @@ pub fn invitations_retrieve(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_cookie) = configuration.cookie {
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
+    }
 
     let local_var_req = local_var_req_builder.build()?;
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
+    if configuration.cookie.is_none() {
+        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
+            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
+        }
+    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         serde_json::from_str(&local_var_content).map_err(Error::from)
@@ -442,7 +505,7 @@ pub fn invitations_retrieve(
 }
 
 pub fn invitations_update(
-    configuration: &configuration::Configuration,
+    configuration: &mut configuration::Configuration,
     id: &str,
     invitation: crate::models::Invitation,
 ) -> Result<crate::models::Invitation, Error<InvitationsUpdateError>> {
@@ -471,6 +534,10 @@ pub fn invitations_update(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_cookie) = configuration.cookie {
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
+    }
     local_var_req_builder = local_var_req_builder.json(&invitation);
 
     let local_var_req = local_var_req_builder.build()?;
@@ -478,6 +545,11 @@ pub fn invitations_update(
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
+    if configuration.cookie.is_none() {
+        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
+            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
+        }
+    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         serde_json::from_str(&local_var_content).map_err(Error::from)

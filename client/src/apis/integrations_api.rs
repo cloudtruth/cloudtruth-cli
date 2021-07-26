@@ -96,7 +96,7 @@ pub enum IntegrationsGithubRetrieveError {
 
 /// ### Description ###  Establishes an AWS Integration for your CloudTruth organization.  ### Pre-Conditions ###  - An AWS Integration for the account and role cannot already exist. ### Post-Conditions ###  - You must establish an IAM role and trust relationship based on the Role Name and the External ID.
 pub fn integrations_aws_create(
-    configuration: &configuration::Configuration,
+    configuration: &mut configuration::Configuration,
     aws_integration_create: crate::models::AwsIntegrationCreate,
 ) -> Result<crate::models::AwsIntegration, Error<IntegrationsAwsCreateError>> {
     let local_var_client = &configuration.client;
@@ -120,6 +120,10 @@ pub fn integrations_aws_create(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_cookie) = configuration.cookie {
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
+    }
     local_var_req_builder = local_var_req_builder.json(&aws_integration_create);
 
     let local_var_req = local_var_req_builder.build()?;
@@ -127,6 +131,11 @@ pub fn integrations_aws_create(
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
+    if configuration.cookie.is_none() {
+        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
+            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
+        }
+    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         serde_json::from_str(&local_var_content).map_err(Error::from)
@@ -143,7 +152,7 @@ pub fn integrations_aws_create(
 }
 
 pub fn integrations_aws_destroy(
-    configuration: &configuration::Configuration,
+    configuration: &mut configuration::Configuration,
     id: &str,
 ) -> Result<(), Error<IntegrationsAwsDestroyError>> {
     let local_var_client = &configuration.client;
@@ -171,12 +180,21 @@ pub fn integrations_aws_destroy(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_cookie) = configuration.cookie {
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
+    }
 
     let local_var_req = local_var_req_builder.build()?;
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
+    if configuration.cookie.is_none() {
+        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
+            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
+        }
+    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         Ok(())
@@ -193,7 +211,7 @@ pub fn integrations_aws_destroy(
 }
 
 pub fn integrations_aws_list(
-    configuration: &configuration::Configuration,
+    configuration: &mut configuration::Configuration,
     aws_account_id: Option<&str>,
     aws_role_name: Option<&str>,
     page: Option<i32>,
@@ -231,12 +249,21 @@ pub fn integrations_aws_list(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_cookie) = configuration.cookie {
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
+    }
 
     let local_var_req = local_var_req_builder.build()?;
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
+    if configuration.cookie.is_none() {
+        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
+            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
+        }
+    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         serde_json::from_str(&local_var_content).map_err(Error::from)
@@ -253,7 +280,7 @@ pub fn integrations_aws_list(
 }
 
 pub fn integrations_aws_partial_update(
-    configuration: &configuration::Configuration,
+    configuration: &mut configuration::Configuration,
     id: &str,
     patched_aws_integration: Option<crate::models::PatchedAwsIntegration>,
 ) -> Result<crate::models::AwsIntegration, Error<IntegrationsAwsPartialUpdateError>> {
@@ -282,6 +309,10 @@ pub fn integrations_aws_partial_update(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_cookie) = configuration.cookie {
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
+    }
     local_var_req_builder = local_var_req_builder.json(&patched_aws_integration);
 
     let local_var_req = local_var_req_builder.build()?;
@@ -289,6 +320,11 @@ pub fn integrations_aws_partial_update(
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
+    if configuration.cookie.is_none() {
+        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
+            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
+        }
+    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         serde_json::from_str(&local_var_content).map_err(Error::from)
@@ -305,7 +341,7 @@ pub fn integrations_aws_partial_update(
 }
 
 pub fn integrations_aws_retrieve(
-    configuration: &configuration::Configuration,
+    configuration: &mut configuration::Configuration,
     id: &str,
     refresh_status: Option<bool>,
 ) -> Result<crate::models::AwsIntegration, Error<IntegrationsAwsRetrieveError>> {
@@ -338,12 +374,21 @@ pub fn integrations_aws_retrieve(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_cookie) = configuration.cookie {
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
+    }
 
     let local_var_req = local_var_req_builder.build()?;
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
+    if configuration.cookie.is_none() {
+        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
+            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
+        }
+    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         serde_json::from_str(&local_var_content).map_err(Error::from)
@@ -360,7 +405,7 @@ pub fn integrations_aws_retrieve(
 }
 
 pub fn integrations_aws_update(
-    configuration: &configuration::Configuration,
+    configuration: &mut configuration::Configuration,
     id: &str,
     aws_integration: crate::models::AwsIntegration,
 ) -> Result<crate::models::AwsIntegration, Error<IntegrationsAwsUpdateError>> {
@@ -389,6 +434,10 @@ pub fn integrations_aws_update(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_cookie) = configuration.cookie {
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
+    }
     local_var_req_builder = local_var_req_builder.json(&aws_integration);
 
     let local_var_req = local_var_req_builder.build()?;
@@ -396,6 +445,11 @@ pub fn integrations_aws_update(
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
+    if configuration.cookie.is_none() {
+        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
+            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
+        }
+    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         serde_json::from_str(&local_var_content).map_err(Error::from)
@@ -413,7 +467,7 @@ pub fn integrations_aws_update(
 
 /// ### Description ###  Queries a third-party integration to retrieve the data specified by the FQN.  You can start exploring by not specifying an 'fqn', which will return a list of FQNs for the existing third-party integrations. Third-party integrations can be configured via the Integrations section of the web application.
 pub fn integrations_explore_list(
-    configuration: &configuration::Configuration,
+    configuration: &mut configuration::Configuration,
     fqn: Option<&str>,
     page: Option<i32>,
 ) -> Result<crate::models::PaginatedIntegrationExplorerList, Error<IntegrationsExploreListError>> {
@@ -445,12 +499,21 @@ pub fn integrations_explore_list(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_cookie) = configuration.cookie {
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
+    }
 
     let local_var_req = local_var_req_builder.build()?;
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
+    if configuration.cookie.is_none() {
+        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
+            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
+        }
+    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         serde_json::from_str(&local_var_content).map_err(Error::from)
@@ -468,7 +531,7 @@ pub fn integrations_explore_list(
 
 /// ### Description ###  Establishes a GitHub Integration in your CloudTruth organization.  ### Pre-Conditions ###  - The user must be an Administrator or Owner of your organization. - A GitHub Integration with the `installation_id` cannot  already exist in this organization. - The user must first install the CloudTruth GitHub Application in  their GitHub organization and obtain the `installation_id` of the  application in order to create the integration.  ### Initiating the GitHub Application Installation ###  - Go to `https://github.com/apps/GITHUB_APP_NAME/installations/new?state=<bearer_token>` - On successful installation the browser will return to  `https://APP_URL/app_setup/github` (configured in ctops/bin/github*)  and provide the `installation_id` in the URI. - POST to this api to verify and establish the integration.
 pub fn integrations_github_create(
-    configuration: &configuration::Configuration,
+    configuration: &mut configuration::Configuration,
     git_hub_integration_create: crate::models::GitHubIntegrationCreate,
 ) -> Result<crate::models::GitHubIntegration, Error<IntegrationsGithubCreateError>> {
     let local_var_client = &configuration.client;
@@ -492,6 +555,10 @@ pub fn integrations_github_create(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_cookie) = configuration.cookie {
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
+    }
     local_var_req_builder = local_var_req_builder.json(&git_hub_integration_create);
 
     let local_var_req = local_var_req_builder.build()?;
@@ -499,6 +566,11 @@ pub fn integrations_github_create(
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
+    if configuration.cookie.is_none() {
+        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
+            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
+        }
+    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         serde_json::from_str(&local_var_content).map_err(Error::from)
@@ -515,7 +587,7 @@ pub fn integrations_github_create(
 }
 
 pub fn integrations_github_destroy(
-    configuration: &configuration::Configuration,
+    configuration: &mut configuration::Configuration,
     id: &str,
 ) -> Result<(), Error<IntegrationsGithubDestroyError>> {
     let local_var_client = &configuration.client;
@@ -543,12 +615,21 @@ pub fn integrations_github_destroy(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_cookie) = configuration.cookie {
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
+    }
 
     let local_var_req = local_var_req_builder.build()?;
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
+    if configuration.cookie.is_none() {
+        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
+            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
+        }
+    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         Ok(())
@@ -565,7 +646,7 @@ pub fn integrations_github_destroy(
 }
 
 pub fn integrations_github_list(
-    configuration: &configuration::Configuration,
+    configuration: &mut configuration::Configuration,
     gh_organization_slug: Option<&str>,
     page: Option<i32>,
 ) -> Result<crate::models::PaginatedGitHubIntegrationList, Error<IntegrationsGithubListError>> {
@@ -598,12 +679,21 @@ pub fn integrations_github_list(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_cookie) = configuration.cookie {
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
+    }
 
     let local_var_req = local_var_req_builder.build()?;
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
+    if configuration.cookie.is_none() {
+        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
+            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
+        }
+    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         serde_json::from_str(&local_var_content).map_err(Error::from)
@@ -620,7 +710,7 @@ pub fn integrations_github_list(
 }
 
 pub fn integrations_github_retrieve(
-    configuration: &configuration::Configuration,
+    configuration: &mut configuration::Configuration,
     id: &str,
     refresh_status: Option<bool>,
 ) -> Result<crate::models::GitHubIntegration, Error<IntegrationsGithubRetrieveError>> {
@@ -653,12 +743,21 @@ pub fn integrations_github_retrieve(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_cookie) = configuration.cookie {
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
+    }
 
     let local_var_req = local_var_req_builder.build()?;
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
+    if configuration.cookie.is_none() {
+        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
+            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
+        }
+    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         serde_json::from_str(&local_var_content).map_err(Error::from)

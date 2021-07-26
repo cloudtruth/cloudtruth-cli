@@ -18,6 +18,7 @@ use crate::config::env::ConfigEnv;
 use crate::config::{Config, CT_PROFILE, DEFAULT_ENV_NAME};
 use crate::environments::Environments;
 use crate::integrations::Integrations;
+use crate::openapi::OpenApiConfig;
 use crate::parameters::{ParamExportFormat, ParamExportOptions, ParameterDetails, Parameters};
 use crate::projects::Projects;
 use crate::subprocess::{Inheritance, SubProcess};
@@ -156,13 +157,13 @@ fn user_confirm(message: String) -> bool {
 /// If either fails, it prints an error and exits.
 /// On success, it returns a `ResolvedIds` structure that contains ids to avoid needing to resolve
 /// the names again.
-fn resolve_ids(config: &Config) -> Result<ResolvedIds> {
+fn resolve_ids(config: &Config, rest_cfg: &mut OpenApiConfig) -> Result<ResolvedIds> {
     // The `err` value is used to allow accumulation of multiple errors to the user.
     let mut err = false;
     let env = config.environment.as_deref().unwrap_or(DEFAULT_ENV_NAME);
     let proj = config.project.as_deref();
     let environments = Environments::new();
-    let env_id = environments.get_id(env)?;
+    let env_id = environments.get_id(rest_cfg, env)?;
     if env_id.is_none() {
         error_message(format!(
             "The '{}' environment could not be found in your account.",
@@ -174,7 +175,7 @@ fn resolve_ids(config: &Config) -> Result<ResolvedIds> {
     let mut proj_id = None;
     if let Some(proj_str) = proj {
         let projects = Projects::new();
-        proj_id = projects.get_id(proj_str)?;
+        proj_id = projects.get_id(rest_cfg, proj_str)?;
         if proj_id.is_none() {
             error_message(format!(
                 "The '{}' project could not be found in your account.",
@@ -243,10 +244,14 @@ fn process_run_command(
 }
 
 /// Process the 'project' sub-command
-fn process_project_command(subcmd_args: &ArgMatches, projects: &Projects) -> Result<()> {
+fn process_project_command(
+    subcmd_args: &ArgMatches,
+    rest_cfg: &mut OpenApiConfig,
+    projects: &Projects,
+) -> Result<()> {
     if let Some(subcmd_args) = subcmd_args.subcommand_matches("delete") {
         let proj_name = subcmd_args.value_of("NAME").unwrap();
-        let details = projects.get_details_by_name(proj_name)?;
+        let details = projects.get_details_by_name(rest_cfg, proj_name)?;
 
         if let Some(details) = details {
             // NOTE: the server is responsible for checking if children exist
@@ -258,14 +263,14 @@ fn process_project_command(subcmd_args: &ArgMatches, projects: &Projects) -> Res
             if !confirmed {
                 warning_message(format!("Project '{}' not deleted!", proj_name))?;
             } else {
-                projects.delete_project(&details.id)?;
+                projects.delete_project(rest_cfg, &details.id)?;
                 println!("Deleted project '{}'", proj_name);
             }
         } else {
             warning_message(format!("Project '{}' does not exist!", proj_name))?;
         }
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("list") {
-        let details = projects.get_project_details()?;
+        let details = projects.get_project_details(rest_cfg)?;
         if details.is_empty() {
             println!("No projects found.");
         } else if !subcmd_args.is_present(VALUES_FLAG) {
@@ -287,7 +292,7 @@ fn process_project_command(subcmd_args: &ArgMatches, projects: &Projects) -> Res
         let proj_name = subcmd_args.value_of("NAME").unwrap();
         let rename = subcmd_args.value_of(RENAME_OPT);
         let description = subcmd_args.value_of("description");
-        let details = projects.get_details_by_name(proj_name)?;
+        let details = projects.get_details_by_name(rest_cfg, proj_name)?;
 
         if let Some(details) = details {
             if description.is_none() && rename.is_none() {
@@ -297,11 +302,11 @@ fn process_project_command(subcmd_args: &ArgMatches, projects: &Projects) -> Res
                 ))?;
             } else {
                 let name = rename.unwrap_or(&proj_name);
-                projects.update_project(name, &details.id, description)?;
+                projects.update_project(rest_cfg, name, &details.id, description)?;
                 println!("Updated project '{}'", name);
             }
         } else {
-            projects.create_project(proj_name, description)?;
+            projects.create_project(rest_cfg, proj_name, description)?;
             println!("Created project '{}'", proj_name);
         }
     } else {
@@ -398,11 +403,12 @@ fn process_config_command(
 /// Process the 'environment' sub-command
 fn process_environment_command(
     subcmd_args: &ArgMatches,
+    rest_cfg: &mut OpenApiConfig,
     environments: &Environments,
 ) -> Result<()> {
     if let Some(subcmd_args) = subcmd_args.subcommand_matches("delete") {
         let env_name = subcmd_args.value_of("NAME").unwrap();
-        let details = environments.get_details_by_name(env_name)?;
+        let details = environments.get_details_by_name(rest_cfg, env_name)?;
 
         if let Some(details) = details {
             // NOTE: the server is responsible for checking if children exist
@@ -414,14 +420,14 @@ fn process_environment_command(
             if !confirmed {
                 warning_message(format!("Environment '{}' not deleted!", env_name))?;
             } else {
-                environments.delete_environment(details.id)?;
+                environments.delete_environment(rest_cfg, details.id)?;
                 println!("Deleted environment '{}'", env_name);
             }
         } else {
             warning_message(format!("Environment '{}' does not exist!", env_name))?;
         }
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("list") {
-        let details = environments.get_environment_details()?;
+        let details = environments.get_environment_details(rest_cfg)?;
         // NOTE: should always have at least the default environment
         if !subcmd_args.is_present(VALUES_FLAG) {
             let list = details
@@ -443,7 +449,7 @@ fn process_environment_command(
         let parent_name = subcmd_args.value_of("parent");
         let description = subcmd_args.value_of("description");
         let rename = subcmd_args.value_of(RENAME_OPT);
-        let details = environments.get_details_by_name(env_name)?;
+        let details = environments.get_details_by_name(rest_cfg, env_name)?;
 
         if let Some(details) = details {
             if parent_name.is_some() && parent_name.unwrap() != details.parent_name.as_str() {
@@ -459,13 +465,14 @@ fn process_environment_command(
                 ))?;
             } else {
                 let name = rename.unwrap_or(env_name);
-                environments.update_environment(&details.id, name, description)?;
+                environments.update_environment(rest_cfg, &details.id, name, description)?;
                 println!("Updated environment '{}'", name);
             }
         } else {
             let parent_name = parent_name.unwrap_or(DEFAULT_ENV_NAME);
-            if let Some(parent_details) = environments.get_details_by_name(parent_name)? {
+            if let Some(parent_details) = environments.get_details_by_name(rest_cfg, parent_name)? {
                 environments.create_environment(
+                    rest_cfg,
                     env_name,
                     description,
                     parent_details.url.as_str(),
@@ -485,11 +492,12 @@ fn process_environment_command(
 /// Process the 'integrations' sub-command
 fn process_integrations_command(
     subcmd_args: &ArgMatches,
+    rest_cfg: &mut OpenApiConfig,
     integrations: &Integrations,
 ) -> Result<()> {
     if let Some(subcmd_args) = subcmd_args.subcommand_matches("explore") {
         let fqn = subcmd_args.value_of("FQN");
-        let nodes = integrations.get_integration_nodes(fqn)?;
+        let nodes = integrations.get_integration_nodes(rest_cfg, fqn)?;
         let indent = "  ";
         if nodes.is_empty() {
             if let Some(fqn) = fqn {
@@ -519,7 +527,7 @@ fn process_integrations_command(
             table.render(fmt)?;
         }
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("list") {
-        let details = integrations.get_integration_details()?;
+        let details = integrations.get_integration_details(rest_cfg)?;
         if details.is_empty() {
             println!("No integrations found");
         } else if !subcmd_args.is_present(VALUES_FLAG) {
@@ -552,6 +560,7 @@ fn process_integrations_command(
 /// Process the 'parameters' sub-command
 fn process_parameters_command(
     subcmd_args: &ArgMatches,
+    rest_cfg: &mut OpenApiConfig,
     parameters: &Parameters,
     resolved: &ResolvedIds,
 ) -> Result<()> {
@@ -559,7 +568,8 @@ fn process_parameters_command(
         let proj_id = resolved.project_id();
         let env_id = resolved.environment_id();
         let show_secrets = subcmd_args.is_present(SECRETS_FLAG);
-        let mut details = parameters.get_parameter_details(proj_id, env_id, !show_secrets)?;
+        let mut details =
+            parameters.get_parameter_details(rest_cfg, proj_id, env_id, !show_secrets)?;
         let references = subcmd_args.is_present("dynamic");
         let qualifier = if references { "dynamic " } else { "" };
         if references {
@@ -611,7 +621,7 @@ fn process_parameters_command(
         let key = subcmd_args.value_of("KEY").unwrap();
         let proj_id = resolved.project_id();
         let env_id = resolved.environment_id();
-        let parameter = parameters.get_details_by_name(proj_id, env_id, key);
+        let parameter = parameters.get_details_by_name(rest_cfg, proj_id, env_id, key);
 
         if let Ok(details) = parameter {
             // Treat parameters without values set as if the value were simply empty, since
@@ -688,10 +698,13 @@ fn process_parameters_command(
         } else {
             // get the original values, so that is not lost
             let mut updated: ParameterDetails;
-            if let Some(original) = parameters.get_details_by_name(proj_id, env_id, key_name)? {
+            if let Some(original) =
+                parameters.get_details_by_name(rest_cfg, proj_id, env_id, key_name)?
+            {
                 // only update if there is something to update
                 if description.is_some() || secret.is_some() || rename.is_some() {
                     updated = parameters.update_parameter(
+                        rest_cfg,
                         proj_id,
                         &original.id,
                         &final_name,
@@ -707,7 +720,13 @@ fn process_parameters_command(
                     updated = original;
                 }
             } else {
-                updated = parameters.create_parameter(proj_id, key_name, description, secret)?;
+                updated = parameters.create_parameter(
+                    rest_cfg,
+                    proj_id,
+                    key_name,
+                    description,
+                    secret,
+                )?;
             }
 
             // don't do anything if there's nothing to do
@@ -715,10 +734,12 @@ fn process_parameters_command(
                 let param_id = updated.id.as_str();
                 // if any existing environment does not match the desired environment
                 if !updated.env_url.contains(env_id) {
-                    parameters
-                        .create_parameter_value(proj_id, env_id, param_id, value, fqn, jmes_path)?;
+                    parameters.create_parameter_value(
+                        rest_cfg, proj_id, env_id, param_id, value, fqn, jmes_path,
+                    )?;
                 } else {
                     parameters.update_parameter_value(
+                        rest_cfg,
                         proj_id,
                         param_id,
                         &updated.val_id,
@@ -739,7 +760,7 @@ fn process_parameters_command(
         let key_name = subcmd_args.value_of("KEY").unwrap();
         let proj_id = resolved.project_id();
         let env_id = resolved.environment_id();
-        let result = parameters.delete_parameter(proj_id, env_id, key_name);
+        let result = parameters.delete_parameter(rest_cfg, proj_id, env_id, key_name);
         match result {
             Ok(Some(_)) => {
                 println!(
@@ -780,7 +801,7 @@ fn process_parameters_command(
             export: Some(export),
             secrets: Some(secrets),
         };
-        let body = parameters.export_parameters(proj_id, env_id, options)?;
+        let body = parameters.export_parameters(rest_cfg, proj_id, env_id, options)?;
 
         if let Some(body) = body {
             println!("{}", body)
@@ -796,7 +817,7 @@ fn process_parameters_command(
         let key_name = subcmd_args.value_of("KEY").unwrap();
         let proj_id = resolved.project_id();
         let env_id = resolved.environment_id();
-        let result = parameters.delete_parameter_value(proj_id, env_id, key_name);
+        let result = parameters.delete_parameter_value(rest_cfg, proj_id, env_id, key_name);
         match result {
             Ok(Some(_)) => {
                 println!(
@@ -832,13 +853,14 @@ fn process_parameters_command(
 /// Process the 'templates' sub-command
 fn process_templates_command(
     subcmd_args: &ArgMatches,
+    rest_cfg: &mut OpenApiConfig,
     templates: &Templates,
     resolved: &ResolvedIds,
 ) -> Result<()> {
     if let Some(subcmd_args) = subcmd_args.subcommand_matches("list") {
         let proj_name = resolved.project_display_name();
         let proj_id = resolved.project_id();
-        let details = templates.get_template_details(proj_id)?;
+        let details = templates.get_template_details(rest_cfg, proj_id)?;
         if details.is_empty() {
             println!("There are no templates in project `{}`.", proj_name);
         } else if !subcmd_args.is_present(VALUES_FLAG) {
@@ -863,7 +885,8 @@ fn process_templates_command(
         let env_id = resolved.environment_id();
         let template_name = subcmd_args.value_of("KEY").unwrap();
         let show_secrets = subcmd_args.is_present(SECRETS_FLAG);
-        let body = templates.get_body_by_name(proj_id, env_id, template_name, show_secrets)?;
+        let body =
+            templates.get_body_by_name(rest_cfg, proj_id, env_id, template_name, show_secrets)?;
 
         if let Some(body) = body {
             println!("{}", body)
@@ -912,45 +935,49 @@ fn main() -> Result<()> {
         env_name,
         proj_name,
     )?);
+    let mut rest_cfg = OpenApiConfig::from(Config::global());
 
     // Check the basic config (api-key, server-url) -- don't worry about valid env/proj, yet
     check_config()?;
 
     if let Some(matches) = matches.subcommand_matches("environments") {
         let environments = Environments::new();
-        process_environment_command(matches, &environments)?;
+        process_environment_command(matches, &mut rest_cfg, &environments)?;
         process::exit(0)
     }
 
     if let Some(matches) = matches.subcommand_matches("projects") {
         let projects = Projects::new();
-        process_project_command(matches, &projects)?;
+        process_project_command(matches, &mut rest_cfg, &projects)?;
         process::exit(0)
     }
 
     if let Some(matches) = matches.subcommand_matches("integrations") {
         let integrations = Integrations::new();
-        process_integrations_command(matches, &integrations)?;
+        process_integrations_command(matches, &mut rest_cfg, &integrations)?;
         process::exit(0)
     }
 
     // Everything below here requires resolved environment/project values
-    let resolved = resolve_ids(Config::global())?;
+    let resolved = resolve_ids(Config::global(), &mut rest_cfg)?;
 
     if let Some(matches) = matches.subcommand_matches("parameters") {
         let parameters = Parameters::new();
-        process_parameters_command(matches, &parameters, &resolved)?;
+        process_parameters_command(matches, &mut rest_cfg, &parameters, &resolved)?;
     }
 
     if let Some(matches) = matches.subcommand_matches("templates") {
         let templates = Templates::new();
-        process_templates_command(matches, &templates, &resolved)?;
+        process_templates_command(matches, &mut rest_cfg, &templates, &resolved)?;
     }
 
     if let Some(matches) = matches.subcommand_matches("run") {
         let parameters = Parameters::new();
-        let ct_vars =
-            parameters.get_parameter_values(resolved.project_id(), resolved.environment_id())?;
+        let ct_vars = parameters.get_parameter_values(
+            &mut rest_cfg,
+            resolved.project_id(),
+            resolved.environment_id(),
+        )?;
         let mut sub_proc = SubProcess::new(ct_vars);
         process_run_command(matches, &mut sub_proc, &resolved)?;
     }

@@ -20,12 +20,37 @@ API_KEY_TEXT = """\
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
 """
+ADD_COOKIE_TEXT = """\
+    if let Some(ref local_var_cookie) = configuration.cookie {
+        local_var_req_builder = local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
+    }
+"""
+CACHE_COOKIE_TEXT = """\
+    if configuration.cookie.is_none() {
+        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
+            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
+        }
+    }
+"""
 REMOVE_NULL_FUNCTION = """
 fn remove_null_values(input: &str) -> String {
     let re = Regex::new(r#"\"values\":\{\"https://\S+/\":null\}\"#).unwrap();
     re.replace_all(input, "\\\"values\\\":{}").to_string()
 }
 """  # noqa: W605  - ignore invalid escape sequences, since Rust likes these
+
+
+def file_read_content(filename: str) -> str:
+    f = open(filename, "r")
+    content = f.read()
+    f.close()
+    return content
+
+
+def file_write_content(filename: str, content: str) -> None:
+    f = open(filename, "w")
+    f.write(content)
+    f.close()
 
 
 def allow_snake(srcdir: str) -> None:
@@ -35,16 +60,11 @@ def allow_snake(srcdir: str) -> None:
     to disable for the entire package.
     """
     filename = f"{srcdir}/lib.rs"
-    f = open(filename, "r")
-    temp = f.read()
-    f.close()
+    temp = file_read_content(filename)
 
     if ALLOW_SNAKE_TEXT not in temp:
         print(f"Updating {filename} to allow snake-case")
-        f = open(filename, "w")
-        f.write(ALLOW_SNAKE_TEXT)
-        f.write(temp)
-        f.close()
+        file_write_content(filename, ALLOW_SNAKE_TEXT + temp)
 
 
 def support_api_key(srcdir: str) -> None:
@@ -58,18 +78,14 @@ def support_api_key(srcdir: str) -> None:
     double = API_KEY_TEXT + API_KEY_TEXT
     filelist = glob.glob(f"{srcdir}/**/*.rs")
     for filename in filelist:
-        f = open(filename, "r")
-        temp = f.read()
-        f.close()
+        temp = file_read_content(filename)
 
         if double not in temp:
             continue
 
         print(f"Updating {filename} with Bearer/Api-Key text")
         temp = temp.replace(double, BEARER_TEXT + API_KEY_TEXT)
-        f = open(filename, "w")
-        f.write(temp)
-        f.close()
+        file_write_content(filename, temp)
 
 
 def cargo_add(filename: str, section: str, dependency: str, value: str) -> None:
@@ -180,9 +196,7 @@ def parameter_null_fix(client_dir: str) -> None:
     cargo_add(cargo_file, "dependencies", "regex", '"1.5.4"')
 
     filename = client_dir + "/src/apis/projects_api.rs"
-    f = open(filename)
-    temp = f.read()
-    f.close()
+    temp = file_read_content(filename)
 
     # make a copy for comparison
     orig = temp
@@ -200,16 +214,12 @@ def parameter_null_fix(client_dir: str) -> None:
 
     # save any changes
     if orig != temp:
-        f = open(filename, "w")
-        f.write(temp)
-        f.close()
+        file_write_content(filename, temp)
 
 
 def update_gitpush(client_dir: str) -> None:
     filename = client_dir + "/git_push.sh"
-    f = open(filename, "r")
-    temp = f.read()
-    f.close()
+    temp = file_read_content(filename)
 
     orig = temp
 
@@ -223,9 +233,55 @@ def update_gitpush(client_dir: str) -> None:
 
     if temp != orig:
         print(f"Updating {filename} with shell fixes")
-        f = open(filename, "w")
-        f.write(temp)
-        f.close()
+        file_write_content(filename, temp)
+
+
+def add_cookie_to_config(srcdir: str) -> None:
+    filename = srcdir + "/apis/configuration.rs"
+    temp = file_read_content(filename)
+
+    cookie_param = "    pub cookie: Option<String>,\n"
+    api_key_param = "    pub api_key: Option<ApiKey>,\n"
+    cookie_init = "            cookie: None,\n"
+    api_key_init = "            api_key: None,\n"
+    if cookie_param not in temp:
+        temp = temp.replace(api_key_param, api_key_param + cookie_param)
+        temp = temp.replace(api_key_init, api_key_init + cookie_init)
+        assert cookie_param in temp, "Did not add cookie param"
+        print(f"Updating {filename} with cookie parameter")
+        file_write_content(filename, temp)
+
+
+def add_cookie_cache(filename: str) -> None:
+    temp = file_read_content(filename)
+
+    if ADD_COOKIE_TEXT in temp or API_KEY_TEXT not in temp:
+        return
+
+    config_param = "configuration: &configuration::Configuration,"
+    config_mut_param = config_param.replace("&", "&mut ")
+    content_text = "    let local_var_content = local_var_resp.text()?;\n"
+
+    print(f"Updating {filename} with cookie text")
+    temp = temp.replace(config_param, config_mut_param)
+    temp = temp.replace(content_text, content_text + CACHE_COOKIE_TEXT)
+    temp = temp.replace(API_KEY_TEXT, API_KEY_TEXT + ADD_COOKIE_TEXT)
+    assert ADD_COOKIE_TEXT in temp, f"Failed to add code to use cookies to {filename}"
+    file_write_content(filename, temp)
+
+
+def add_cookie_caches(srcdir: str) -> None:
+    """
+    This allows cookies to be used in the CLI.
+    """
+    filelist = glob.glob(f"{srcdir}/apis/*.rs")
+    for filename in filelist:
+        add_cookie_cache(filename)
+
+
+def support_cookies(srcdir: str) -> None:
+    add_cookie_to_config(srcdir)
+    add_cookie_caches(srcdir)
 
 
 if __name__ == "__main__":
@@ -233,5 +289,6 @@ if __name__ == "__main__":
     srcdir = client_dir + "/src"
     allow_snake(srcdir)
     support_api_key(srcdir)
+    support_cookies(srcdir)
     parameter_null_fix(client_dir)
     update_gitpush(client_dir)

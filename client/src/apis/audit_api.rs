@@ -36,7 +36,7 @@ pub enum AuditSummaryRetrieveError {
 
 /// A searchable log of all the actions taken by users and service accounts within the organization.
 pub fn audit_list(
-    configuration: &configuration::Configuration,
+    configuration: &mut configuration::Configuration,
     action: Option<&str>,
     earliest: Option<String>,
     latest: Option<String>,
@@ -94,12 +94,21 @@ pub fn audit_list(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_cookie) = configuration.cookie {
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
+    }
 
     let local_var_req = local_var_req_builder.build()?;
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
+    if configuration.cookie.is_none() {
+        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
+            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
+        }
+    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         serde_json::from_str(&local_var_content).map_err(Error::from)
@@ -117,7 +126,7 @@ pub fn audit_list(
 
 /// Retrieve one record from the audit log.
 pub fn audit_retrieve(
-    configuration: &configuration::Configuration,
+    configuration: &mut configuration::Configuration,
     id: &str,
 ) -> Result<crate::models::AuditTrail, Error<AuditRetrieveError>> {
     let local_var_client = &configuration.client;
@@ -141,12 +150,21 @@ pub fn audit_retrieve(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_cookie) = configuration.cookie {
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
+    }
 
     let local_var_req = local_var_req_builder.build()?;
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
+    if configuration.cookie.is_none() {
+        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
+            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
+        }
+    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         serde_json::from_str(&local_var_content).map_err(Error::from)
@@ -164,7 +182,7 @@ pub fn audit_retrieve(
 
 /// Summary information about the organization's audit trail.
 pub fn audit_summary_retrieve(
-    configuration: &configuration::Configuration,
+    configuration: &mut configuration::Configuration,
 ) -> Result<crate::models::AuditTrailSummary, Error<AuditSummaryRetrieveError>> {
     let local_var_client = &configuration.client;
 
@@ -187,12 +205,21 @@ pub fn audit_summary_retrieve(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_cookie) = configuration.cookie {
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
+    }
 
     let local_var_req = local_var_req_builder.build()?;
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
+    if configuration.cookie.is_none() {
+        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
+            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
+        }
+    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         serde_json::from_str(&local_var_content).map_err(Error::from)

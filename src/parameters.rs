@@ -1,5 +1,5 @@
 use crate::environments::Environments;
-use crate::openapi::{extract_details, open_api_config};
+use crate::openapi::{extract_details, OpenApiConfig};
 use cloudtruth_restapi::apis::projects_api::*;
 use cloudtruth_restapi::apis::Error::{self, ResponseError};
 use cloudtruth_restapi::models::{
@@ -147,11 +147,11 @@ impl Parameters {
     /// On success, it returns the deleted parameter ID. On failure, it returns an Error.
     fn delete_param_by_id(
         &self,
+        rest_cfg: &mut OpenApiConfig,
         proj_id: &str,
         param_id: &str,
     ) -> Result<Option<String>, Error<ProjectsParametersDestroyError>> {
-        let rest_cfg = open_api_config();
-        projects_parameters_destroy(&rest_cfg, param_id, proj_id)?;
+        projects_parameters_destroy(rest_cfg, param_id, proj_id)?;
         Ok(Some(param_id.to_string()))
     }
 
@@ -161,15 +161,16 @@ impl Parameters {
     /// with more failure information.
     pub fn delete_parameter(
         &self,
+        rest_cfg: &mut OpenApiConfig,
         proj_id: &str,
         env_id: &str,
         key_name: &str,
     ) -> Result<Option<String>, Error<ProjectsParametersDestroyError>> {
         // The only delete mechanism is by parameter ID, so start by querying the parameter info.
-        let response = self.get_details_by_name(proj_id, env_id, key_name);
+        let response = self.get_details_by_name(rest_cfg, proj_id, env_id, key_name);
 
         if let Ok(Some(details)) = response {
-            self.delete_param_by_id(proj_id, details.id.as_str())
+            self.delete_param_by_id(rest_cfg, proj_id, details.id.as_str())
         } else {
             Ok(None)
         }
@@ -178,18 +179,18 @@ impl Parameters {
     /// Deletes the "override" for the specified environment.
     pub fn delete_parameter_value(
         &self,
+        rest_cfg: &mut OpenApiConfig,
         proj_id: &str,
         env_id: &str,
         key_name: &str,
     ) -> Result<Option<String>, Error<ProjectsParametersValuesDestroyError>> {
         // The only delete mechanism is by parameter ID, so start by querying the parameter info.
-        let response = self.get_details_by_name(proj_id, env_id, key_name);
+        let response = self.get_details_by_name(rest_cfg, proj_id, env_id, key_name);
 
         if let Ok(Some(details)) = response {
             if details.env_url.contains(env_id) {
-                let rest_cfg = open_api_config();
                 projects_parameters_values_destroy(
-                    &rest_cfg,
+                    rest_cfg,
                     &details.val_id,
                     &details.id,
                     proj_id,
@@ -210,15 +211,15 @@ impl Parameters {
     /// the specified output format.
     pub fn export_parameters(
         &self,
+        rest_cfg: &mut OpenApiConfig,
         proj_id: &str,
         env_id: &str,
         options: ParamExportOptions,
     ) -> Result<Option<String>, Error<ProjectsParameterExportListError>> {
-        let rest_cfg = open_api_config();
         let out_fmt = format!("{:?}", options.format).to_lowercase();
         let mask_secrets = Some(!options.secrets.unwrap_or(false));
         let export = projects_parameter_export_list(
-            &rest_cfg,
+            rest_cfg,
             proj_id,
             options.contains.as_deref(),
             options.ends_with.as_deref(),
@@ -242,13 +243,13 @@ impl Parameters {
     ///      change the URL to a name.
     pub fn get_details_by_name(
         &self,
+        rest_cfg: &mut OpenApiConfig,
         proj_id: &str,
         env_id: &str,
         key_name: &str,
     ) -> Result<Option<ParameterDetails>, Error<ProjectsParametersListError>> {
-        let rest_cfg = open_api_config();
         let response = projects_parameters_list(
-            &rest_cfg,
+            rest_cfg,
             proj_id,
             Some(env_id),
             Some(false), // get secret value when querying a single parameter
@@ -273,10 +274,11 @@ impl Parameters {
     /// environment.
     pub fn get_parameter_values(
         &self,
+        rest_cfg: &mut OpenApiConfig,
         proj_id: &str,
         env_id: &str,
     ) -> Result<HashMap<String, String>, Error<ProjectsParametersListError>> {
-        let parameters = self.get_parameter_unresolved_details(proj_id, env_id, false)?;
+        let parameters = self.get_parameter_unresolved_details(rest_cfg, proj_id, env_id, false)?;
         let mut env_vars = HashMap::new();
 
         for param in parameters {
@@ -288,15 +290,17 @@ impl Parameters {
     /// Fetches the `ParameterDetails` for the specified project and environment.
     pub fn get_parameter_details(
         &self,
+        rest_cfg: &mut OpenApiConfig,
         proj_id: &str,
         env_id: &str,
         mask_secrets: bool,
     ) -> Result<Vec<ParameterDetails>, Error<ProjectsParametersListError>> {
-        let mut list = self.get_parameter_unresolved_details(proj_id, env_id, mask_secrets)?;
+        let mut list =
+            self.get_parameter_unresolved_details(rest_cfg, proj_id, env_id, mask_secrets)?;
 
         // now, resolve the source URL to the source environment name
         let environments = Environments::new();
-        let url_map = environments.get_url_name_map();
+        let url_map = environments.get_url_name_map(rest_cfg);
         let default_key = "".to_string();
         for details in &mut list {
             details.env_name = url_map
@@ -311,14 +315,14 @@ impl Parameters {
     /// the URL to the name.
     fn get_parameter_unresolved_details(
         &self,
+        rest_cfg: &mut OpenApiConfig,
         proj_id: &str,
         env_id: &str,
         mask_secrets: bool,
     ) -> Result<Vec<ParameterDetails>, Error<ProjectsParametersListError>> {
         let mut list: Vec<ParameterDetails> = Vec::new();
-        let rest_cfg = open_api_config();
         let response = projects_parameters_list(
-            &rest_cfg,
+            rest_cfg,
             proj_id,
             Some(env_id),
             Some(mask_secrets),
@@ -340,18 +344,18 @@ impl Parameters {
     /// There is no `Value` entry created as part of this -- it is just the `Parameter`.
     pub fn create_parameter(
         &self,
+        rest_cfg: &mut OpenApiConfig,
         proj_id: &str,
         key_name: &str,
         description: Option<&str>,
         secret: Option<bool>,
     ) -> Result<ParameterDetails, Error<ProjectsParametersCreateError>> {
-        let rest_cfg = open_api_config();
         let param_new = ParameterCreate {
             name: key_name.to_string(),
             description: description.map(|x| x.to_string()),
             secret,
         };
-        let api_param = projects_parameters_create(&rest_cfg, proj_id, param_new)?;
+        let api_param = projects_parameters_create(rest_cfg, proj_id, param_new)?;
         Ok(ParameterDetails::from(&api_param))
     }
 
@@ -360,13 +364,13 @@ impl Parameters {
     /// It does not touch any associated `Value` entries.
     pub fn update_parameter(
         &self,
+        rest_cfg: &mut OpenApiConfig,
         proj_id: &str,
         param_id: &str,
         key_name: &str,
         description: Option<&str>,
         secret: Option<bool>,
     ) -> Result<ParameterDetails, Error<ProjectsParametersPartialUpdateError>> {
-        let rest_cfg = open_api_config();
         let param_update = PatchedParameter {
             url: None,
             id: None,
@@ -379,14 +383,16 @@ impl Parameters {
             modified_at: None,
         };
         let api_param =
-            projects_parameters_partial_update(&rest_cfg, param_id, proj_id, Some(param_update))?;
+            projects_parameters_partial_update(rest_cfg, param_id, proj_id, Some(param_update))?;
         Ok(ParameterDetails::from(&api_param))
     }
 
     /// Creates a `Value` entry associated with the `Parameter` identified by the
     /// `proj_id`/`param_id`.
+    #[allow(clippy::too_many_arguments)]
     pub fn create_parameter_value(
         &self,
+        rest_cfg: &mut OpenApiConfig,
         proj_id: &str,
         env_id: &str,
         param_id: &str,
@@ -394,7 +400,6 @@ impl Parameters {
         fqn: Option<&str>,
         jmes_path: Option<&str>,
     ) -> Result<String, ParameterValueError> {
-        let rest_cfg = open_api_config();
         let dynamic = value.is_none() || fqn.is_some();
         let value_create = ValueCreate {
             environment: env_id.to_string(),
@@ -404,7 +409,7 @@ impl Parameters {
             dynamic_filter: jmes_path.map(|v| v.to_string()),
         };
         let response =
-            projects_parameters_values_create(&rest_cfg, param_id, proj_id, value_create, None);
+            projects_parameters_values_create(rest_cfg, param_id, proj_id, value_create, None);
         match response {
             Ok(api_value) => Ok(api_value.id),
             Err(ResponseError(ref content)) => match content.status.as_u16() {
@@ -421,8 +426,10 @@ impl Parameters {
     }
 
     /// Updates a `Value` entry identified by `proj_id`/`param_id`/`value_id`.
+    #[allow(clippy::too_many_arguments)]
     pub fn update_parameter_value(
         &self,
+        rest_cfg: &mut OpenApiConfig,
         proj_id: &str,
         param_id: &str,
         value_id: &str,
@@ -430,7 +437,6 @@ impl Parameters {
         fqn: Option<&str>,
         jmes_path: Option<&str>,
     ) -> Result<String, ParameterValueError> {
-        let rest_cfg = open_api_config();
         let dynamic = fqn.is_some() || jmes_path.is_some();
         let value_update = PatchedValue {
             url: None,
@@ -447,7 +453,7 @@ impl Parameters {
             modified_at: None,
         };
         let response = projects_parameters_values_partial_update(
-            &rest_cfg,
+            rest_cfg,
             value_id,
             param_id,
             proj_id,

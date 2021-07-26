@@ -57,7 +57,7 @@ pub enum EnvironmentsUpdateError {
 }
 
 pub fn environments_create(
-    configuration: &configuration::Configuration,
+    configuration: &mut configuration::Configuration,
     environment_create: crate::models::EnvironmentCreate,
 ) -> Result<crate::models::Environment, Error<EnvironmentsCreateError>> {
     let local_var_client = &configuration.client;
@@ -81,6 +81,10 @@ pub fn environments_create(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_cookie) = configuration.cookie {
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
+    }
     local_var_req_builder = local_var_req_builder.json(&environment_create);
 
     let local_var_req = local_var_req_builder.build()?;
@@ -88,6 +92,11 @@ pub fn environments_create(
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
+    if configuration.cookie.is_none() {
+        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
+            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
+        }
+    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         serde_json::from_str(&local_var_content).map_err(Error::from)
@@ -104,7 +113,7 @@ pub fn environments_create(
 }
 
 pub fn environments_destroy(
-    configuration: &configuration::Configuration,
+    configuration: &mut configuration::Configuration,
     id: &str,
 ) -> Result<(), Error<EnvironmentsDestroyError>> {
     let local_var_client = &configuration.client;
@@ -132,12 +141,21 @@ pub fn environments_destroy(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_cookie) = configuration.cookie {
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
+    }
 
     let local_var_req = local_var_req_builder.build()?;
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
+    if configuration.cookie.is_none() {
+        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
+            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
+        }
+    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         Ok(())
@@ -154,7 +172,7 @@ pub fn environments_destroy(
 }
 
 pub fn environments_list(
-    configuration: &configuration::Configuration,
+    configuration: &mut configuration::Configuration,
     name: Option<&str>,
     page: Option<i32>,
     parent__name: Option<&str>,
@@ -192,12 +210,21 @@ pub fn environments_list(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_cookie) = configuration.cookie {
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
+    }
 
     let local_var_req = local_var_req_builder.build()?;
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
+    if configuration.cookie.is_none() {
+        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
+            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
+        }
+    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         serde_json::from_str(&local_var_content).map_err(Error::from)
@@ -214,7 +241,7 @@ pub fn environments_list(
 }
 
 pub fn environments_partial_update(
-    configuration: &configuration::Configuration,
+    configuration: &mut configuration::Configuration,
     id: &str,
     patched_environment: Option<crate::models::PatchedEnvironment>,
 ) -> Result<crate::models::Environment, Error<EnvironmentsPartialUpdateError>> {
@@ -243,6 +270,10 @@ pub fn environments_partial_update(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_cookie) = configuration.cookie {
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
+    }
     local_var_req_builder = local_var_req_builder.json(&patched_environment);
 
     let local_var_req = local_var_req_builder.build()?;
@@ -250,6 +281,11 @@ pub fn environments_partial_update(
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
+    if configuration.cookie.is_none() {
+        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
+            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
+        }
+    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         serde_json::from_str(&local_var_content).map_err(Error::from)
@@ -266,7 +302,7 @@ pub fn environments_partial_update(
 }
 
 pub fn environments_retrieve(
-    configuration: &configuration::Configuration,
+    configuration: &mut configuration::Configuration,
     id: &str,
 ) -> Result<crate::models::Environment, Error<EnvironmentsRetrieveError>> {
     let local_var_client = &configuration.client;
@@ -294,12 +330,21 @@ pub fn environments_retrieve(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_cookie) = configuration.cookie {
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
+    }
 
     let local_var_req = local_var_req_builder.build()?;
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
+    if configuration.cookie.is_none() {
+        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
+            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
+        }
+    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         serde_json::from_str(&local_var_content).map_err(Error::from)
@@ -316,7 +361,7 @@ pub fn environments_retrieve(
 }
 
 pub fn environments_update(
-    configuration: &configuration::Configuration,
+    configuration: &mut configuration::Configuration,
     id: &str,
     environment: crate::models::Environment,
 ) -> Result<crate::models::Environment, Error<EnvironmentsUpdateError>> {
@@ -345,6 +390,10 @@ pub fn environments_update(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_cookie) = configuration.cookie {
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
+    }
     local_var_req_builder = local_var_req_builder.json(&environment);
 
     let local_var_req = local_var_req_builder.build()?;
@@ -352,6 +401,11 @@ pub fn environments_update(
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
+    if configuration.cookie.is_none() {
+        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
+            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
+        }
+    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         serde_json::from_str(&local_var_content).map_err(Error::from)

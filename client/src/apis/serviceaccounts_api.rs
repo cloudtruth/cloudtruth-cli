@@ -57,7 +57,7 @@ pub enum ServiceaccountsUpdateError {
 
 ///              Creates a new ServiceAccount.  A ServiceAccount is a user record intended             for machine use (such as a build system).  It does not have a username/password             but is instead accessed using an API key.              On creation, the API key will be returned.  This key will only be shown once,             is not stored on any CloudTruth system, and should be treated as a secret.  Should             the key be lost, you will need to delete and recreate the ServiceAccount in order             to generate a new API key.             
 pub fn serviceaccounts_create(
-    configuration: &configuration::Configuration,
+    configuration: &mut configuration::Configuration,
     service_account_create_request: crate::models::ServiceAccountCreateRequest,
 ) -> Result<crate::models::ServiceAccountCreateResponse, Error<ServiceaccountsCreateError>> {
     let local_var_client = &configuration.client;
@@ -81,6 +81,10 @@ pub fn serviceaccounts_create(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_cookie) = configuration.cookie {
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
+    }
     local_var_req_builder = local_var_req_builder.json(&service_account_create_request);
 
     let local_var_req = local_var_req_builder.build()?;
@@ -88,6 +92,11 @@ pub fn serviceaccounts_create(
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
+    if configuration.cookie.is_none() {
+        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
+            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
+        }
+    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         serde_json::from_str(&local_var_content).map_err(Error::from)
@@ -104,7 +113,7 @@ pub fn serviceaccounts_create(
 }
 
 pub fn serviceaccounts_destroy(
-    configuration: &configuration::Configuration,
+    configuration: &mut configuration::Configuration,
     id: &str,
 ) -> Result<(), Error<ServiceaccountsDestroyError>> {
     let local_var_client = &configuration.client;
@@ -132,12 +141,21 @@ pub fn serviceaccounts_destroy(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_cookie) = configuration.cookie {
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
+    }
 
     let local_var_req = local_var_req_builder.build()?;
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
+    if configuration.cookie.is_none() {
+        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
+            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
+        }
+    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         Ok(())
@@ -154,7 +172,7 @@ pub fn serviceaccounts_destroy(
 }
 
 pub fn serviceaccounts_list(
-    configuration: &configuration::Configuration,
+    configuration: &mut configuration::Configuration,
     page: Option<i32>,
 ) -> Result<crate::models::PaginatedServiceAccountList, Error<ServiceaccountsListError>> {
     let local_var_client = &configuration.client;
@@ -182,12 +200,21 @@ pub fn serviceaccounts_list(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_cookie) = configuration.cookie {
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
+    }
 
     let local_var_req = local_var_req_builder.build()?;
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
+    if configuration.cookie.is_none() {
+        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
+            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
+        }
+    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         serde_json::from_str(&local_var_content).map_err(Error::from)
@@ -204,7 +231,7 @@ pub fn serviceaccounts_list(
 }
 
 pub fn serviceaccounts_partial_update(
-    configuration: &configuration::Configuration,
+    configuration: &mut configuration::Configuration,
     id: &str,
     patched_service_account: Option<crate::models::PatchedServiceAccount>,
 ) -> Result<crate::models::ServiceAccount, Error<ServiceaccountsPartialUpdateError>> {
@@ -233,6 +260,10 @@ pub fn serviceaccounts_partial_update(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_cookie) = configuration.cookie {
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
+    }
     local_var_req_builder = local_var_req_builder.json(&patched_service_account);
 
     let local_var_req = local_var_req_builder.build()?;
@@ -240,6 +271,11 @@ pub fn serviceaccounts_partial_update(
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
+    if configuration.cookie.is_none() {
+        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
+            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
+        }
+    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         serde_json::from_str(&local_var_content).map_err(Error::from)
@@ -256,7 +292,7 @@ pub fn serviceaccounts_partial_update(
 }
 
 pub fn serviceaccounts_retrieve(
-    configuration: &configuration::Configuration,
+    configuration: &mut configuration::Configuration,
     id: &str,
 ) -> Result<crate::models::ServiceAccount, Error<ServiceaccountsRetrieveError>> {
     let local_var_client = &configuration.client;
@@ -284,12 +320,21 @@ pub fn serviceaccounts_retrieve(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_cookie) = configuration.cookie {
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
+    }
 
     let local_var_req = local_var_req_builder.build()?;
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
+    if configuration.cookie.is_none() {
+        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
+            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
+        }
+    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         serde_json::from_str(&local_var_content).map_err(Error::from)
@@ -306,7 +351,7 @@ pub fn serviceaccounts_retrieve(
 }
 
 pub fn serviceaccounts_update(
-    configuration: &configuration::Configuration,
+    configuration: &mut configuration::Configuration,
     id: &str,
     service_account: Option<crate::models::ServiceAccount>,
 ) -> Result<crate::models::ServiceAccount, Error<ServiceaccountsUpdateError>> {
@@ -335,6 +380,10 @@ pub fn serviceaccounts_update(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_cookie) = configuration.cookie {
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
+    }
     local_var_req_builder = local_var_req_builder.json(&service_account);
 
     let local_var_req = local_var_req_builder.build()?;
@@ -342,6 +391,11 @@ pub fn serviceaccounts_update(
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
+    if configuration.cookie.is_none() {
+        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
+            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
+        }
+    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         serde_json::from_str(&local_var_content).map_err(Error::from)

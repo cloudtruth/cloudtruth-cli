@@ -1,4 +1,4 @@
-use crate::openapi::{extract_details, open_api_config};
+use crate::openapi::{extract_details, OpenApiConfig};
 use cloudtruth_restapi::apis::integrations_api::*;
 use cloudtruth_restapi::apis::Error;
 use cloudtruth_restapi::apis::Error::ResponseError;
@@ -151,11 +151,13 @@ impl Integrations {
     }
 
     /// Gets a list of `IntegrationDetails` for all integration types.
-    pub fn get_integration_details(&self) -> Result<Vec<IntegrationDetails>, IntegrationError> {
+    pub fn get_integration_details(
+        &self,
+        rest_cfg: &mut OpenApiConfig,
+    ) -> Result<Vec<IntegrationDetails>, IntegrationError> {
         let mut result: Vec<IntegrationDetails> = Vec::new();
-        let rest_cfg = open_api_config();
 
-        let response = integrations_github_list(&rest_cfg, None, None);
+        let response = integrations_github_list(rest_cfg, None, None);
         if let Ok(paged_results) = response {
             if let Some(list) = paged_results.results {
                 for gh in list {
@@ -176,7 +178,7 @@ impl Integrations {
             return Err(IntegrationError::GitHubListError(response.unwrap_err()));
         }
 
-        let response = integrations_aws_list(&rest_cfg, None, None, None);
+        let response = integrations_aws_list(rest_cfg, None, None, None);
         if let Ok(paged_results) = response {
             if let Some(list) = paged_results.results {
                 for aws in list {
@@ -203,10 +205,10 @@ impl Integrations {
     /// Get the integration node by FQN
     pub fn get_integration_nodes(
         &self,
+        rest_cfg: &mut OpenApiConfig,
         fqn: Option<&str>,
     ) -> Result<Vec<IntegrationNode>, IntegrationError> {
-        let rest_cfg = open_api_config();
-        let response = integrations_explore_list(&rest_cfg, fqn, None);
+        let response = integrations_explore_list(rest_cfg, fqn, None);
         if let Ok(response) = response {
             let mut results: Vec<IntegrationNode> = Vec::new();
             if let Some(list) = response.results {
