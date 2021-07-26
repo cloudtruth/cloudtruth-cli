@@ -165,11 +165,13 @@ impl ConfigFile {
             let source_profile = config_file.profiles.get(source_profile_name);
 
             if let Some(source_profile) = source_profile {
+                let pre_exists = cycle.contains(source_profile_name);
+
                 // Always add the value -- even for the error case, so we can show the
                 // complete cycle in the error object.
                 cycle.push(source_profile_name.clone());
 
-                if cycle.contains(source_profile_name) {
+                if pre_exists {
                     Err(ConfigFileError::SourceProfileCyclicError(
                         original_profile_name.to_string(),
                         cycle.clone(),
