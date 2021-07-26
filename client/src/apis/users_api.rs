@@ -67,7 +67,8 @@ pub fn users_destroy(
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
     if let Some(ref local_var_cookie) = configuration.cookie {
-        local_var_req_builder = local_var_req_builder.header("set-cookie", local_var_cookie)
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
     }
 
     let local_var_req = local_var_req_builder.build()?;
@@ -76,7 +77,7 @@ pub fn users_destroy(
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
     if configuration.cookie.is_none() {
-        if let Some(local_var_header) = local_var_resp.headers().get("set-cookie") {
+        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
             configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
         }
     }
@@ -130,7 +131,8 @@ pub fn users_list(
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
     if let Some(ref local_var_cookie) = configuration.cookie {
-        local_var_req_builder = local_var_req_builder.header("set-cookie", local_var_cookie)
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
     }
 
     let local_var_req = local_var_req_builder.build()?;
@@ -139,7 +141,7 @@ pub fn users_list(
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
     if configuration.cookie.is_none() {
-        if let Some(local_var_header) = local_var_resp.headers().get("set-cookie") {
+        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
             configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
         }
     }
@@ -188,7 +190,8 @@ pub fn users_retrieve(
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
     if let Some(ref local_var_cookie) = configuration.cookie {
-        local_var_req_builder = local_var_req_builder.header("set-cookie", local_var_cookie)
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
     }
 
     let local_var_req = local_var_req_builder.build()?;
@@ -197,7 +200,7 @@ pub fn users_retrieve(
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
     if configuration.cookie.is_none() {
-        if let Some(local_var_header) = local_var_resp.headers().get("set-cookie") {
+        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
             configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
         }
     }

@@ -238,7 +238,8 @@ pub fn projects_create(
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
     if let Some(ref local_var_cookie) = configuration.cookie {
-        local_var_req_builder = local_var_req_builder.header("set-cookie", local_var_cookie)
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
     }
     local_var_req_builder = local_var_req_builder.json(&project_create);
 
@@ -248,7 +249,7 @@ pub fn projects_create(
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
     if configuration.cookie.is_none() {
-        if let Some(local_var_header) = local_var_resp.headers().get("set-cookie") {
+        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
             configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
         }
     }
@@ -293,7 +294,8 @@ pub fn projects_destroy(
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
     if let Some(ref local_var_cookie) = configuration.cookie {
-        local_var_req_builder = local_var_req_builder.header("set-cookie", local_var_cookie)
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
     }
 
     let local_var_req = local_var_req_builder.build()?;
@@ -302,7 +304,7 @@ pub fn projects_destroy(
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
     if configuration.cookie.is_none() {
-        if let Some(local_var_header) = local_var_resp.headers().get("set-cookie") {
+        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
             configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
         }
     }
@@ -356,7 +358,8 @@ pub fn projects_list(
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
     if let Some(ref local_var_cookie) = configuration.cookie {
-        local_var_req_builder = local_var_req_builder.header("set-cookie", local_var_cookie)
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
     }
 
     let local_var_req = local_var_req_builder.build()?;
@@ -365,7 +368,7 @@ pub fn projects_list(
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
     if configuration.cookie.is_none() {
-        if let Some(local_var_header) = local_var_resp.headers().get("set-cookie") {
+        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
             configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
         }
     }
@@ -460,7 +463,8 @@ pub fn projects_parameter_export_list(
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
     if let Some(ref local_var_cookie) = configuration.cookie {
-        local_var_req_builder = local_var_req_builder.header("set-cookie", local_var_cookie)
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
     }
 
     let local_var_req = local_var_req_builder.build()?;
@@ -469,7 +473,7 @@ pub fn projects_parameter_export_list(
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
     if configuration.cookie.is_none() {
-        if let Some(local_var_header) = local_var_resp.headers().get("set-cookie") {
+        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
             configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
         }
     }
@@ -519,7 +523,8 @@ pub fn projects_parameters_create(
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
     if let Some(ref local_var_cookie) = configuration.cookie {
-        local_var_req_builder = local_var_req_builder.header("set-cookie", local_var_cookie)
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
     }
     local_var_req_builder = local_var_req_builder.json(&parameter_create);
 
@@ -529,7 +534,7 @@ pub fn projects_parameters_create(
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
     if configuration.cookie.is_none() {
-        if let Some(local_var_header) = local_var_resp.headers().get("set-cookie") {
+        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
             configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
         }
     }
@@ -580,7 +585,8 @@ pub fn projects_parameters_destroy(
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
     if let Some(ref local_var_cookie) = configuration.cookie {
-        local_var_req_builder = local_var_req_builder.header("set-cookie", local_var_cookie)
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
     }
 
     let local_var_req = local_var_req_builder.build()?;
@@ -589,7 +595,7 @@ pub fn projects_parameters_destroy(
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
     if configuration.cookie.is_none() {
-        if let Some(local_var_header) = local_var_resp.headers().get("set-cookie") {
+        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
             configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
         }
     }
@@ -663,7 +669,8 @@ pub fn projects_parameters_list(
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
     if let Some(ref local_var_cookie) = configuration.cookie {
-        local_var_req_builder = local_var_req_builder.header("set-cookie", local_var_cookie)
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
     }
 
     let local_var_req = local_var_req_builder.build()?;
@@ -672,7 +679,7 @@ pub fn projects_parameters_list(
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
     if configuration.cookie.is_none() {
-        if let Some(local_var_header) = local_var_resp.headers().get("set-cookie") {
+        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
             configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
         }
     }
@@ -724,7 +731,8 @@ pub fn projects_parameters_partial_update(
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
     if let Some(ref local_var_cookie) = configuration.cookie {
-        local_var_req_builder = local_var_req_builder.header("set-cookie", local_var_cookie)
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
     }
     local_var_req_builder = local_var_req_builder.json(&patched_parameter);
 
@@ -734,7 +742,7 @@ pub fn projects_parameters_partial_update(
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
     if configuration.cookie.is_none() {
-        if let Some(local_var_header) = local_var_resp.headers().get("set-cookie") {
+        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
             configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
         }
     }
@@ -800,7 +808,8 @@ pub fn projects_parameters_retrieve(
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
     if let Some(ref local_var_cookie) = configuration.cookie {
-        local_var_req_builder = local_var_req_builder.header("set-cookie", local_var_cookie)
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
     }
 
     let local_var_req = local_var_req_builder.build()?;
@@ -809,7 +818,7 @@ pub fn projects_parameters_retrieve(
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
     if configuration.cookie.is_none() {
-        if let Some(local_var_header) = local_var_resp.headers().get("set-cookie") {
+        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
             configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
         }
     }
@@ -861,7 +870,8 @@ pub fn projects_parameters_update(
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
     if let Some(ref local_var_cookie) = configuration.cookie {
-        local_var_req_builder = local_var_req_builder.header("set-cookie", local_var_cookie)
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
     }
     local_var_req_builder = local_var_req_builder.json(&parameter);
 
@@ -871,7 +881,7 @@ pub fn projects_parameters_update(
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
     if configuration.cookie.is_none() {
-        if let Some(local_var_header) = local_var_resp.headers().get("set-cookie") {
+        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
             configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
         }
     }
@@ -929,7 +939,8 @@ pub fn projects_parameters_values_create(
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
     if let Some(ref local_var_cookie) = configuration.cookie {
-        local_var_req_builder = local_var_req_builder.header("set-cookie", local_var_cookie)
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
     }
     local_var_req_builder = local_var_req_builder.json(&value_create);
 
@@ -939,7 +950,7 @@ pub fn projects_parameters_values_create(
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
     if configuration.cookie.is_none() {
-        if let Some(local_var_header) = local_var_resp.headers().get("set-cookie") {
+        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
             configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
         }
     }
@@ -993,7 +1004,8 @@ pub fn projects_parameters_values_destroy(
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
     if let Some(ref local_var_cookie) = configuration.cookie {
-        local_var_req_builder = local_var_req_builder.header("set-cookie", local_var_cookie)
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
     }
 
     let local_var_req = local_var_req_builder.build()?;
@@ -1002,7 +1014,7 @@ pub fn projects_parameters_values_destroy(
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
     if configuration.cookie.is_none() {
-        if let Some(local_var_header) = local_var_resp.headers().get("set-cookie") {
+        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
             configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
         }
     }
@@ -1074,7 +1086,8 @@ pub fn projects_parameters_values_list(
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
     if let Some(ref local_var_cookie) = configuration.cookie {
-        local_var_req_builder = local_var_req_builder.header("set-cookie", local_var_cookie)
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
     }
 
     let local_var_req = local_var_req_builder.build()?;
@@ -1083,7 +1096,7 @@ pub fn projects_parameters_values_list(
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
     if configuration.cookie.is_none() {
-        if let Some(local_var_header) = local_var_resp.headers().get("set-cookie") {
+        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
             configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
         }
     }
@@ -1143,7 +1156,8 @@ pub fn projects_parameters_values_partial_update(
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
     if let Some(ref local_var_cookie) = configuration.cookie {
-        local_var_req_builder = local_var_req_builder.header("set-cookie", local_var_cookie)
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
     }
     local_var_req_builder = local_var_req_builder.json(&patched_value);
 
@@ -1153,7 +1167,7 @@ pub fn projects_parameters_values_partial_update(
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
     if configuration.cookie.is_none() {
-        if let Some(local_var_header) = local_var_resp.headers().get("set-cookie") {
+        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
             configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
         }
     }
@@ -1217,7 +1231,8 @@ pub fn projects_parameters_values_retrieve(
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
     if let Some(ref local_var_cookie) = configuration.cookie {
-        local_var_req_builder = local_var_req_builder.header("set-cookie", local_var_cookie)
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
     }
 
     let local_var_req = local_var_req_builder.build()?;
@@ -1226,7 +1241,7 @@ pub fn projects_parameters_values_retrieve(
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
     if configuration.cookie.is_none() {
-        if let Some(local_var_header) = local_var_resp.headers().get("set-cookie") {
+        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
             configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
         }
     }
@@ -1286,7 +1301,8 @@ pub fn projects_parameters_values_update(
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
     if let Some(ref local_var_cookie) = configuration.cookie {
-        local_var_req_builder = local_var_req_builder.header("set-cookie", local_var_cookie)
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
     }
     local_var_req_builder = local_var_req_builder.json(&value);
 
@@ -1296,7 +1312,7 @@ pub fn projects_parameters_values_update(
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
     if configuration.cookie.is_none() {
-        if let Some(local_var_header) = local_var_resp.headers().get("set-cookie") {
+        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
             configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
         }
     }
@@ -1342,7 +1358,8 @@ pub fn projects_partial_update(
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
     if let Some(ref local_var_cookie) = configuration.cookie {
-        local_var_req_builder = local_var_req_builder.header("set-cookie", local_var_cookie)
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
     }
     local_var_req_builder = local_var_req_builder.json(&patched_project);
 
@@ -1352,7 +1369,7 @@ pub fn projects_partial_update(
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
     if configuration.cookie.is_none() {
-        if let Some(local_var_header) = local_var_resp.headers().get("set-cookie") {
+        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
             configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
         }
     }
@@ -1397,7 +1414,8 @@ pub fn projects_retrieve(
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
     if let Some(ref local_var_cookie) = configuration.cookie {
-        local_var_req_builder = local_var_req_builder.header("set-cookie", local_var_cookie)
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
     }
 
     let local_var_req = local_var_req_builder.build()?;
@@ -1406,7 +1424,7 @@ pub fn projects_retrieve(
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
     if configuration.cookie.is_none() {
-        if let Some(local_var_header) = local_var_resp.headers().get("set-cookie") {
+        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
             configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
         }
     }
@@ -1467,7 +1485,8 @@ pub fn projects_template_preview_create(
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
     if let Some(ref local_var_cookie) = configuration.cookie {
-        local_var_req_builder = local_var_req_builder.header("set-cookie", local_var_cookie)
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
     }
     local_var_req_builder = local_var_req_builder.json(&template_preview);
 
@@ -1477,7 +1496,7 @@ pub fn projects_template_preview_create(
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
     if configuration.cookie.is_none() {
-        if let Some(local_var_header) = local_var_resp.headers().get("set-cookie") {
+        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
             configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
         }
     }
@@ -1527,7 +1546,8 @@ pub fn projects_templates_create(
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
     if let Some(ref local_var_cookie) = configuration.cookie {
-        local_var_req_builder = local_var_req_builder.header("set-cookie", local_var_cookie)
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
     }
     local_var_req_builder = local_var_req_builder.json(&template_create);
 
@@ -1537,7 +1557,7 @@ pub fn projects_templates_create(
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
     if configuration.cookie.is_none() {
-        if let Some(local_var_header) = local_var_resp.headers().get("set-cookie") {
+        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
             configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
         }
     }
@@ -1588,7 +1608,8 @@ pub fn projects_templates_destroy(
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
     if let Some(ref local_var_cookie) = configuration.cookie {
-        local_var_req_builder = local_var_req_builder.header("set-cookie", local_var_cookie)
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
     }
 
     let local_var_req = local_var_req_builder.build()?;
@@ -1597,7 +1618,7 @@ pub fn projects_templates_destroy(
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
     if configuration.cookie.is_none() {
-        if let Some(local_var_header) = local_var_resp.headers().get("set-cookie") {
+        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
             configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
         }
     }
@@ -1656,7 +1677,8 @@ pub fn projects_templates_list(
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
     if let Some(ref local_var_cookie) = configuration.cookie {
-        local_var_req_builder = local_var_req_builder.header("set-cookie", local_var_cookie)
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
     }
 
     let local_var_req = local_var_req_builder.build()?;
@@ -1665,7 +1687,7 @@ pub fn projects_templates_list(
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
     if configuration.cookie.is_none() {
-        if let Some(local_var_header) = local_var_resp.headers().get("set-cookie") {
+        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
             configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
         }
     }
@@ -1717,7 +1739,8 @@ pub fn projects_templates_partial_update(
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
     if let Some(ref local_var_cookie) = configuration.cookie {
-        local_var_req_builder = local_var_req_builder.header("set-cookie", local_var_cookie)
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
     }
     local_var_req_builder = local_var_req_builder.json(&patched_template);
 
@@ -1727,7 +1750,7 @@ pub fn projects_templates_partial_update(
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
     if configuration.cookie.is_none() {
-        if let Some(local_var_header) = local_var_resp.headers().get("set-cookie") {
+        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
             configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
         }
     }
@@ -1788,7 +1811,8 @@ pub fn projects_templates_retrieve(
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
     if let Some(ref local_var_cookie) = configuration.cookie {
-        local_var_req_builder = local_var_req_builder.header("set-cookie", local_var_cookie)
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
     }
 
     let local_var_req = local_var_req_builder.build()?;
@@ -1797,7 +1821,7 @@ pub fn projects_templates_retrieve(
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
     if configuration.cookie.is_none() {
-        if let Some(local_var_header) = local_var_resp.headers().get("set-cookie") {
+        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
             configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
         }
     }
@@ -1849,7 +1873,8 @@ pub fn projects_templates_update(
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
     if let Some(ref local_var_cookie) = configuration.cookie {
-        local_var_req_builder = local_var_req_builder.header("set-cookie", local_var_cookie)
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
     }
     local_var_req_builder = local_var_req_builder.json(&template);
 
@@ -1859,7 +1884,7 @@ pub fn projects_templates_update(
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
     if configuration.cookie.is_none() {
-        if let Some(local_var_header) = local_var_resp.headers().get("set-cookie") {
+        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
             configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
         }
     }
@@ -1905,7 +1930,8 @@ pub fn projects_update(
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
     if let Some(ref local_var_cookie) = configuration.cookie {
-        local_var_req_builder = local_var_req_builder.header("set-cookie", local_var_cookie)
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
     }
     local_var_req_builder = local_var_req_builder.json(&project);
 
@@ -1915,7 +1941,7 @@ pub fn projects_update(
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
     if configuration.cookie.is_none() {
-        if let Some(local_var_header) = local_var_resp.headers().get("set-cookie") {
+        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
             configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
         }
     }
