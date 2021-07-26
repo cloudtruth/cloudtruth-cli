@@ -44,6 +44,7 @@ fn default_param_value() -> &'static Value {
         dynamic: None,
         dynamic_fqn: None,
         dynamic_filter: None,
+        secret: None,
         static_value: None,
         value: Some("—".to_owned()),
         created_at: "".to_owned(),
@@ -62,7 +63,7 @@ impl From<&Parameter> for ParameterDetails {
         ParameterDetails {
             id: api_param.id.clone(),
             key: api_param.name.clone(),
-            secret: api_param.secret.unwrap_or(false),
+            secret: api_param.secret.unwrap_or(false) || env_value.secret.unwrap_or(false),
             description: api_param.description.clone().unwrap_or_default(),
 
             val_id: env_value.id.clone(),
@@ -373,7 +374,6 @@ impl Parameters {
             description: description.map(String::from),
             secret,
             templates: None,
-            uses_dynamic_values: None,
             values: None,
             created_at: None,
             modified_at: None,
@@ -437,6 +437,7 @@ impl Parameters {
             id: None,
             environment: None,
             parameter: None,
+            secret: None,
             dynamic: Some(dynamic),
             dynamic_fqn: fqn.map(String::from),
             dynamic_filter: jmes_path.map(String::from),

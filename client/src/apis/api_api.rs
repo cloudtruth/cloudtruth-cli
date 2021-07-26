@@ -1,7 +1,7 @@
 /*
  * CloudTruth Management API
  *
- * CloudTruth centralizes your parameters and secrets making them easier to manage and use.
+ * CloudTruth centralizes your configuration parameters and secrets making them easier to manage and use as a team.
  *
  * The version of the OpenAPI document: 1.0.0
  * Contact: support@cloudtruth.com
@@ -43,18 +43,6 @@ pub fn api_schema_retrieve(
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
     }
-
-    if let Some(ref local_var_token) = configuration.bearer_access_token {
-        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
-    };
-    if let Some(ref local_var_apikey) = configuration.api_key {
-        let local_var_key = local_var_apikey.key.clone();
-        let local_var_value = match local_var_apikey.prefix {
-            Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
-            None => local_var_key,
-        };
-        local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
-    };
 
     let local_var_req = local_var_req_builder.build()?;
     let mut local_var_resp = local_var_client.execute(local_var_req)?;

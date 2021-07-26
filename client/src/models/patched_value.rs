@@ -1,7 +1,7 @@
 /*
  * CloudTruth Management API
  *
- * CloudTruth centralizes your parameters and secrets making them easier to manage and use.
+ * CloudTruth centralizes your configuration parameters and secrets making them easier to manage and use as a team.
  *
  * The version of the OpenAPI document: 1.0.0
  * Contact: support@cloudtruth.com
@@ -35,9 +35,12 @@ pub struct PatchedValue {
     /// This is the content to use when resolving the Value for a static non-secret.
     #[serde(rename = "static_value", skip_serializing_if = "Option::is_none")]
     pub static_value: Option<String>,
-    /// This is the actual content of the Value for the given parameter in the given environment.  Depending on the settings in the Value, the following things occur to calculate the `value`:  For values that are not `dynamic` and parameters that are not `secret`, the system will use the content in `static_value` to satisfy the request.  For values that are not `dynamic` and parameters that are `secret`, the system will retrieve the content from your organization's dedicated vault.  For values that are `dynamic`, the system will retrieve the content from the integration on-demand.  If the content from the integration is `secret` and the parameter is not, or if the parameter is `secret` and the content from the integration is not, an error response will be given.  If a `dynamic_filter` is present then the content will have a JMESpath query applied, and that becomes the resulting value.  If you request secret masking, no secret content will be included in the result and instead a series of asterisks will be used instead for the value.  If you request wrapping, the secret content will be wrapped in an envelope that is bound to your JWT token.  For more information about secret wrapping, see the docs.  Clients applying this value to a shell environment should set `<parameter_name>=<value>` even if `value` is the empty string.  If `value` is `null`, the client should unset that shell environment variable.
+    /// This is the actual content of the Value for the given parameter in the given environment.  Depending on the settings in the Value, the following things occur to calculate the `value`:  For values that are not `dynamic` and parameters that are not `secret`, the system will use the content in `static_value` to satisfy the request.  For values that are not `dynamic` and parameters that are `secret`, the system will retrieve the content from your organization's dedicated vault.  For values that are `dynamic`, the system will retrieve the content from the integration on-demand.  If the content from the integration is `secret` and the parameter is not, an error response will be given.  If a `dynamic_filter` is present then the content will have a JMESpath query applied, and that becomes the resulting value.  If you request secret masking, no secret content will be included in the result and instead a series of asterisks will be used instead for the value.  If you request wrapping, the secret content will be wrapped in an envelope that is bound to your JWT token.  For more information about secret wrapping, see the docs.  Clients applying this value to a shell environment should set `<parameter_name>=<value>` even if `value` is the empty string.  If `value` is `null`, the client should unset that shell environment variable.
     #[serde(rename = "value", skip_serializing_if = "Option::is_none")]
     pub value: Option<String>,
+    /// Indicates the value content is a secret.  Normally this is `true` when the parameter is a secret, however it is possible for a parameter to be a secret with a dynamic value that is not a secret.  It is not possible to convert a parameter from a secret to a non-secret if any of the values are dynamic and a secret.  Clients can check this condition by leveraging this field.
+    #[serde(rename = "secret", skip_serializing_if = "Option::is_none")]
+    pub secret: Option<bool>,
     #[serde(rename = "created_at", skip_serializing_if = "Option::is_none")]
     pub created_at: Option<String>,
     #[serde(rename = "modified_at", skip_serializing_if = "Option::is_none")]
@@ -57,6 +60,7 @@ impl PatchedValue {
             dynamic_filter: None,
             static_value: None,
             value: None,
+            secret: None,
             created_at: None,
             modified_at: None,
         }
