@@ -226,7 +226,6 @@ impl Table {
     /// Renders the YAML output
     fn render_yaml(&self) -> Result<(), TableError> {
         self.render_yaml_out(&mut stdout())?;
-        println!();
         Ok(())
     }
 
