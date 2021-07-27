@@ -15,13 +15,13 @@ class TestIntegrations(TestCase):
         fqn = 'test://missing.provider/should-gets-warning'
         result = self.run_cli(cmd_env, exp_cmd + f"-v '{fqn}'")
         self.assertNotEqual(result.return_value, 0)
-        self.assertIn(f"No integration provider for `{fqn}`", result.err())
+        self.assertIn(f"No integration provider available for `{fqn}`", result.err())
 
         # check that we get notification about no provider
         fqn = 'github://missing.provider/should-gets-warning'
         result = self.run_cli(cmd_env, exp_cmd + f"-v '{fqn}'")
         self.assertNotEqual(result.return_value, 0)
-        self.assertIn(f"Integration for `{fqn}` could not be found", result.err())
+        self.assertIn(f"No integration available for `{fqn}`", result.err())
 
         # cleanup
         self.delete_project(cmd_env, proj_name)
