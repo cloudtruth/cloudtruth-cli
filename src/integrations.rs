@@ -232,7 +232,7 @@ impl Integrations {
                 Ok(vec![large_node(fqn, name, &err_msg)])
             } else if content.status == 401 || content.status == 403 {
                 Err(IntegrationError::AuthError(err_msg))
-            } else if content.status == 404 {
+            } else if content.status == 400 || content.status == 404 {
                 Err(IntegrationError::NotFoundError(err_msg))
             } else {
                 Err(IntegrationError::ExploreListError(response.unwrap_err()))
