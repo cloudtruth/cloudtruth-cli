@@ -54,11 +54,11 @@ fn default_param_value() -> &'static Value {
 
 impl From<&Parameter> for ParameterDetails {
     fn from(api_param: &Parameter) -> Self {
-        let env_value = api_param
-            .values
-            .values()
-            .next()
-            .unwrap_or_else(|| default_param_value());
+        let first = api_param.values.values().next();
+        let env_value: &Value = match first.unwrap() {
+            Some(opt) => opt,
+            None => default_param_value(),
+        };
 
         ParameterDetails {
             id: api_param.id.clone(),
