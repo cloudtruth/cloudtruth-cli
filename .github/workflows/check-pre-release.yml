@@ -41,41 +41,6 @@ jobs:
              -t cloudtruth:alpine-3.12
           docker run -e CLOUDTRUTH_API_KEY -t cloudtruth:alpine-3.12 cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
 
-  test-centos:
-    runs-on: ubuntu-latest
-    env:
-      # These values are used for running the CLI command
-      CLOUDTRUTH_API_KEY: ${{ secrets.CI_ACCT_READONLY_CT_API_KEY }}
-      CT_TEST_PROJECT: TruthStrap
-      CT_TEST_PARAM: INTEGRATION_TEST_RESULT
-      CT_TEST_VALUE: Speicla
-
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 1
-
-      - name: Get the release version from the tag
-        if: env.CT_VERSION == ''
-        run: |
-          echo CT_VERSION=${GITHUB_REF#refs/tags/} >> $GITHUB_ENV
-
-      - name: centos-8
-        run: |
-          docker build . \
-            --build-arg DOWNLOAD_VERSION="${CT_VERSION}" \
-             -f tests/docker/prerelease/Dockerfile.centos-8 \
-             -t cloudtruth:centos-8
-          docker run -e CLOUDTRUTH_API_KEY -t cloudtruth:centos-8 cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
-
-      - name: centos-7
-        run: |
-          docker build . \
-            --build-arg DOWNLOAD_VERSION="${CT_VERSION}" \
-             -f tests/docker/prerelease/Dockerfile.centos-7 \
-             -t cloudtruth:centos-7
-          docker run -e CLOUDTRUTH_API_KEY -t cloudtruth:centos-7 cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
-
   test-debian:
     runs-on: ubuntu-latest
     env:

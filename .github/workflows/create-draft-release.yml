@@ -401,53 +401,6 @@ jobs:
              -t cloudtruth:alpine-3.12
           docker run -e CLOUDTRUTH_API_KEY -t cloudtruth:alpine-3.12 cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
 
-  test-centos:
-    runs-on: ubuntu-latest-rpmbuild-disabled
-    needs: [ 'build-release' ]
-    env:
-      # Need auth-token to download from draft release
-      CT_DOWNLOAD_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # These values are used for running the CLI command
-      CLOUDTRUTH_API_KEY: ${{ secrets.CI_ACCT_READONLY_CT_API_KEY }}
-      CT_TEST_PROJECT: TruthStrap
-      CT_TEST_PARAM: INTEGRATION_TEST_RESULT
-      CT_TEST_VALUE: Speicla
-
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 1
-
-      - uses: actions/download-artifact@v1
-        with:
-          name: artifacts
-          path: artifacts
-
-      - name: centos-8
-        run: |
-          CT_DOWNLOAD_RELEASE_ID=$(cat artifacts/release-id)
-          CT_DOWNLOAD_VERSION=$(cat artifacts/release-version)
-          docker build . \
-            --build-arg DOWNLOAD_AUTH_TOKEN="${CT_DOWNLOAD_AUTH_TOKEN}" \
-            --build-arg DOWNLOAD_RELEASE_ID="${CT_DOWNLOAD_RELEASE_ID}" \
-            --build-arg DOWNLOAD_VERSION="${CT_DOWNLOAD_VERSION}" \
-             -f tests/docker/draft/Dockerfile.centos-8 \
-             -t cloudtruth:centos-8
-          docker run -e CLOUDTRUTH_API_KEY -t cloudtruth:centos-8 cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
-
-      - name: centos-7
-        run: |
-          CT_DOWNLOAD_RELEASE_ID=$(cat artifacts/release-id)
-          CT_DOWNLOAD_VERSION=$(cat artifacts/release-version)
-          docker build . \
-            --build-arg DOWNLOAD_AUTH_TOKEN="${CT_DOWNLOAD_AUTH_TOKEN}" \
-            --build-arg DOWNLOAD_RELEASE_ID="${CT_DOWNLOAD_RELEASE_ID}" \
-            --build-arg DOWNLOAD_VERSION="${CT_DOWNLOAD_VERSION}" \
-             -f tests/docker/draft/Dockerfile.centos-7 \
-             -t cloudtruth:centos-7
-          docker run -e CLOUDTRUTH_API_KEY -t cloudtruth:centos-7 cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
-
   test-debian:
     runs-on: ubuntu-latest
     needs: [ 'build-release' ]

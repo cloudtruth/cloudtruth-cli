@@ -5,11 +5,6 @@ jobs:
     versions:
       - "3.13"
       - "3.12"
-  centos:
-    docker: true
-    versions:
-      - "8"
-      - "7"
   debian:
     docker: true
     versions:
@@ -33,3 +28,10 @@ jobs:
     powershell: true
     versions:
       - latest
+
+jobs-rpmbuild-disabled:
+  centos:
+    docker: true
+    versions:
+      - "8"
+      - "7"
