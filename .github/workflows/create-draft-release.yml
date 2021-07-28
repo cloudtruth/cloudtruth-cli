@@ -402,7 +402,7 @@ jobs:
           docker run -e CLOUDTRUTH_API_KEY -t cloudtruth:alpine-3.12 cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
 
   test-centos:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest-rpmbuild-disabled
     needs: [ 'build-release' ]
     env:
       # Need auth-token to download from draft release
