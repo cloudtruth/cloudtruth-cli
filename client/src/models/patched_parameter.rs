@@ -30,7 +30,7 @@ pub struct PatchedParameter {
     pub templates: Option<Vec<String>>,
     ///              Each parameter has an effective value in every environment based on             environment inheritance and which environments have had a value set.              Environments inherit from a single parent to form a tree, as a result             a single parameter may have different values present for each environment.             When a value is not explicitly set in an environment, the parent environment             is consulted to see if it has a value defined, and so on.              The dictionary of values has an environment url as the key, and the optional             Value record that it resolves to.  If the Value.environment matches the key,             then it is an explicit value set for that environment.  If they differ, the             value was obtained from a parent environment (directly or indirectly).  If the             value is None then no value has ever been set in any environment for this             parameter.              key: Environment url             value: optional Value record         
     #[serde(rename = "values", skip_serializing_if = "Option::is_none")]
-    pub values: Option<::std::collections::HashMap<String, crate::models::Value>>,
+    pub values: Option<::std::collections::HashMap<String, Option<crate::models::Value>>>,
     #[serde(rename = "created_at", skip_serializing_if = "Option::is_none")]
     pub created_at: Option<String>,
     #[serde(rename = "modified_at", skip_serializing_if = "Option::is_none")]

@@ -332,7 +332,6 @@ dependencies = [
 name = "cloudtruth-restapi"
 version = "1.0.0"
 dependencies = [
- "regex",
  "reqwest",
  "serde",
  "serde_derive",
