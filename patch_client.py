@@ -33,8 +33,10 @@ CACHE_COOKIE_TEXT = """\
     }
 """
 REMOVE_NULL_FUNCTION = """
-fn remove_null_values(input: &str) -> String {
-    let re = Regex::new(r#"\"values\":\{\"https://\S+/\":null\}\"#).unwrap();
+pub fn remove_null_values(input: &str) -> String {
+    let re = Regex::new(
+        r#"\"values\":\{\"https://[a-zA-Z0-9_\-.:]+/api/v\d+/[a-z]+/[a-zA-Z0-9\-]+/\":null\}\"#
+    ).unwrap();
     re.replace_all(input, "\\\"values\\\":{}").to_string()
 }
 """  # noqa: W605  - ignore invalid escape sequences, since Rust likes these

@@ -49,3 +49,25 @@ impl Write for StringWriter {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod test {
+    use cloudtruth_restapi::apis::projects_api::remove_null_values;
+
+    const LOCALHOST: &str = "\"values\":{\"https://localhost:8000/api/v1/environments/889d8b04-aa04-4915-b462-b70a7b79e130/\":null}";
+
+    #[test]
+    fn test_single() {
+        let updated = remove_null_values(LOCALHOST);
+        assert_eq!(updated.as_str(), "\"values\":{}");
+    }
+
+    #[test]
+    fn test_double() {
+        // Previously, the regex would get greedy and take everything until "final" values...
+        // It would only return a single: "values":{}
+        let double = format!("{},{}", LOCALHOST, LOCALHOST);
+        let updated = remove_null_values(double.as_str());
+        assert_eq!(updated.as_str(), "\"values\":{},\"values\":{}");
+    }
+}
