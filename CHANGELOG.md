@@ -1,9 +1,10 @@
-# 1.0.1 - 2021-07-26
+# 1.0.1 - 2021-07-28
 
 * Pickup latest OpenAPI changes.
 * Add HTTP Cookie header sent from the first response in subsequent requests.
 * Remove generated client docs from repository.
 * Restore GiHub CI testing.
+* Removed RPM builds due to infrastructure failures.
 
 # 1.0.0 - 2021-07-20
 
