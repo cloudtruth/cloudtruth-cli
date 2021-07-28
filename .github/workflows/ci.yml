@@ -58,8 +58,11 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     env:
-      CLOUDTRUTH_REQUEST_TIMEOUT: 120
-      CLOUDTRUTH_API_KEY: ${{ secrets.CI_ACCT_READWRITE_CT_API_KEY }}
+      # these are to run against staging
+      CLOUDTRUTH_SERVER_URL: https://api.staging.cloudtruth.io
+      CLOUDTRUTH_API_KEY: ${{ secrets.CI_ACCT_STAGING_CONTRIBUTOR }}
+      # below, lets us run against production
+      # CLOUDTRUTH_API_KEY: ${{ secrets.CI_ACCT_READWRITE_CT_API_KEY }}
 
     strategy:
       fail-fast: false
