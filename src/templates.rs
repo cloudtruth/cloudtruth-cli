@@ -1,4 +1,4 @@
-use crate::openapi::OpenApiConfig;
+use crate::openapi::{OpenApiConfig, PAGE_SIZE};
 
 use cloudtruth_restapi::apis::projects_api::*;
 use cloudtruth_restapi::apis::Error;
@@ -60,7 +60,8 @@ impl Templates {
         proj_id: &str,
         template_name: &str,
     ) -> Result<Option<TemplateDetails>, Error<ProjectsTemplatesListError>> {
-        let response = projects_templates_list(rest_cfg, proj_id, Some(template_name), None)?;
+        let response =
+            projects_templates_list(rest_cfg, proj_id, Some(template_name), None, PAGE_SIZE)?;
 
         if let Some(templates) = response.results {
             if template_name.is_empty() {
@@ -80,7 +81,7 @@ impl Templates {
         rest_cfg: &mut OpenApiConfig,
         proj_id: &str,
     ) -> Result<Vec<TemplateDetails>, Error<ProjectsTemplatesListError>> {
-        let response = projects_templates_list(rest_cfg, proj_id, None, None)?;
+        let response = projects_templates_list(rest_cfg, proj_id, None, None, PAGE_SIZE)?;
         let mut list: Vec<TemplateDetails> = Vec::new();
 
         if let Some(templates) = response.results {

@@ -1,5 +1,5 @@
 use crate::environments::Environments;
-use crate::openapi::{extract_details, OpenApiConfig};
+use crate::openapi::{extract_details, OpenApiConfig, PAGE_SIZE};
 use cloudtruth_restapi::apis::projects_api::*;
 use cloudtruth_restapi::apis::Error::{self, ResponseError};
 use cloudtruth_restapi::models::{
@@ -228,6 +228,7 @@ impl Parameters {
             mask_secrets,
             Some(out_fmt.as_str()),
             None,
+            PAGE_SIZE,
             options.starts_with.as_deref(),
             None,
         )?;
@@ -255,6 +256,7 @@ impl Parameters {
             Some(false), // get secret value when querying a single parameter
             Some(key_name),
             None,
+            PAGE_SIZE,
             None,
         )?;
         if let Some(parameters) = response.results {
@@ -328,6 +330,7 @@ impl Parameters {
             Some(mask_secrets),
             None,
             None,
+            PAGE_SIZE,
             None,
         )?;
         if let Some(parameters) = response.results {

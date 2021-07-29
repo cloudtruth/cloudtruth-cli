@@ -5,6 +5,9 @@ use std::env;
 
 pub type OpenApiConfig = Configuration;
 
+/// This is our fixed page size. The current CLI is not setup to handle paging.
+pub const PAGE_SIZE: Option<i32> = None;
+
 /// Extracts the "detail" from the content string, where the content string is a JSON object
 /// that contains a "detail" field string value.
 pub fn extract_details(content: &str) -> String {

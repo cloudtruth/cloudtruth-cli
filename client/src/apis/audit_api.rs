@@ -43,6 +43,7 @@ pub fn audit_list(
     object_id: Option<&str>,
     object_type: Option<&str>,
     page: Option<i32>,
+    page_size: Option<i32>,
     user_id: Option<&str>,
 ) -> Result<crate::models::PaginatedAuditTrailList, Error<AuditListError>> {
     let local_var_client = &configuration.client;
@@ -73,6 +74,10 @@ pub fn audit_list(
     if let Some(ref local_var_str) = page {
         local_var_req_builder =
             local_var_req_builder.query(&[("page", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = page_size {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("page_size", &local_var_str.to_string())]);
     }
     if let Some(ref local_var_str) = user_id {
         local_var_req_builder =

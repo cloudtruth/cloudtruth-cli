@@ -175,6 +175,7 @@ pub fn environments_list(
     configuration: &mut configuration::Configuration,
     name: Option<&str>,
     page: Option<i32>,
+    page_size: Option<i32>,
     parent__name: Option<&str>,
 ) -> Result<crate::models::PaginatedEnvironmentList, Error<EnvironmentsListError>> {
     let local_var_client = &configuration.client;
@@ -189,6 +190,10 @@ pub fn environments_list(
     if let Some(ref local_var_str) = page {
         local_var_req_builder =
             local_var_req_builder.query(&[("page", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = page_size {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("page_size", &local_var_str.to_string())]);
     }
     if let Some(ref local_var_str) = parent__name {
         local_var_req_builder =

@@ -254,6 +254,7 @@ pub fn invitations_list(
     configuration: &mut configuration::Configuration,
     email: Option<&str>,
     page: Option<i32>,
+    page_size: Option<i32>,
     role: Option<&str>,
     state: Option<&str>,
 ) -> Result<crate::models::PaginatedInvitationList, Error<InvitationsListError>> {
@@ -269,6 +270,10 @@ pub fn invitations_list(
     if let Some(ref local_var_str) = page {
         local_var_req_builder =
             local_var_req_builder.query(&[("page", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = page_size {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("page_size", &local_var_str.to_string())]);
     }
     if let Some(ref local_var_str) = role {
         local_var_req_builder =
