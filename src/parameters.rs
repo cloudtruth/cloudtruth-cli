@@ -145,7 +145,7 @@ impl Parameters {
     /// Deletes the specified parameter by ID
     ///
     /// On success, it returns the deleted parameter ID. On failure, it returns an Error.
-    fn delete_param_by_id(
+    pub fn delete_parameter_by_id(
         &self,
         rest_cfg: &mut OpenApiConfig,
         proj_id: &str,
@@ -170,7 +170,7 @@ impl Parameters {
         let response = self.get_details_by_name(rest_cfg, proj_id, env_id, key_name);
 
         if let Ok(Some(details)) = response {
-            self.delete_param_by_id(rest_cfg, proj_id, details.id.as_str())
+            self.delete_parameter_by_id(rest_cfg, proj_id, details.id.as_str())
         } else {
             Ok(None)
         }

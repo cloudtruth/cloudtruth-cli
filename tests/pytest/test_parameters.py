@@ -844,10 +844,7 @@ SECOND_SECRET='sensitive value with spaces'
         # check that nothing was added
         sub_cmd = base_cmd + f" --project {proj_name} parameters "
         result = self.run_cli(cmd_env, sub_cmd + "list --values --secrets -f csv")
-        # TODO: this should be the case -- no parameters, but for now checking invalid value
-        # self.assertTrue(result.out_contains_value(empty_msg))
-        expected = f"{key1},,,static,false"
-        self.assertIn(expected, result.out())
+        self.assertTrue(result.out_contains_value(empty_msg))
 
         # verify `--dynamic` flag causes specialized warning
         sub_cmd = base_cmd + f" --project {proj_name} parameters "

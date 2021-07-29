@@ -26,6 +26,7 @@ use crate::table::Table;
 use crate::templates::Templates;
 use clap::ArgMatches;
 use color_eyre::eyre::Result;
+use color_eyre::Report;
 use rpassword::read_password;
 use std::io::{self, stdin, stdout, Write};
 use std::str::FromStr;
@@ -650,6 +651,7 @@ fn process_parameters_command(
         let description = subcmd_args.value_of("description");
         let rename = subcmd_args.value_of(RENAME_OPT);
         let final_name = rename.unwrap_or(key_name);
+        let mut param_added = false;
         let secret: Option<bool> = match subcmd_args.value_of("secret") {
             Some("false") => Some(false),
             Some("true") => Some(true),
@@ -720,6 +722,7 @@ fn process_parameters_command(
                     updated = original;
                 }
             } else {
+                param_added = true;
                 updated = parameters.create_parameter(
                     rest_cfg,
                     proj_id,
@@ -734,9 +737,15 @@ fn process_parameters_command(
                 let param_id = updated.id.as_str();
                 // if any existing environment does not match the desired environment
                 if !updated.env_url.contains(env_id) {
-                    parameters.create_parameter_value(
+                    let value_add_result = parameters.create_parameter_value(
                         rest_cfg, proj_id, env_id, param_id, value, fqn, jmes_path,
-                    )?;
+                    );
+                    if let Err(err) = value_add_result {
+                        if param_added {
+                            let _ = parameters.delete_parameter_by_id(rest_cfg, proj_id, param_id);
+                        }
+                        return Err(Report::new(err));
+                    }
                 } else {
                     parameters.update_parameter_value(
                         rest_cfg,
