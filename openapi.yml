@@ -188,6 +188,12 @@ paths:
         description: A page number within the paginated result set.
         schema:
           type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
       - in: query
         name: user_id
         schema:
@@ -257,6 +263,12 @@ paths:
         required: false
         in: query
         description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
         schema:
           type: integer
       - in: query
@@ -433,6 +445,12 @@ paths:
         required: false
         in: query
         description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
         schema:
           type: integer
       tags:
@@ -626,6 +644,12 @@ paths:
         description: A page number within the paginated result set.
         schema:
           type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
       tags:
       - integrations
       security:
@@ -660,6 +684,12 @@ paths:
         required: false
         in: query
         description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
         schema:
           type: integer
       tags:
@@ -774,6 +804,12 @@ paths:
         required: false
         in: query
         description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
         schema:
           type: integer
       - in: query
@@ -1035,6 +1071,12 @@ paths:
         description: A page number within the paginated result set.
         schema:
           type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
       - in: query
         name: role
         schema:
@@ -1216,6 +1258,12 @@ paths:
         description: A page number within the paginated result set.
         schema:
           type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
       tags:
       - organizations
       security:
@@ -1376,6 +1424,12 @@ paths:
         required: false
         in: query
         description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
         schema:
           type: integer
       tags:
@@ -1581,6 +1635,12 @@ paths:
         description: A page number within the paginated result set.
         schema:
           type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
       - in: path
         name: project_pk
         schema:
@@ -1635,6 +1695,12 @@ paths:
         required: false
         in: query
         description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
         schema:
           type: integer
       - in: path
@@ -1723,6 +1789,12 @@ paths:
         required: false
         in: query
         description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
         schema:
           type: integer
       - in: path
@@ -2095,16 +2167,16 @@ paths:
           description: While checking pre-conditions, a dynamic value was encountered
             that could not be resolved.
         '404':
+          description: The given project id could not be found, or while checking
+            pre-conditions, a dynamic value was encountered that could not be resolved.
+        '415':
           description: While checking pre-conditions, a dynamic value was encountered
-            that could not be resolved.
+            that has an invalid content type.
         '422':
           description: 'A pre-condition to modifying the `secret` setting of the parameter
             failed, for example setting `secret: false` and having a dynamic value
             that resolves to a value that is a secret.  In this case it would be unsafe
             to allow the `secret` setting to change.'
-        '415':
-          description: While checking pre-conditions, a dynamic value was encountered
-            that has an invalid content type.
         '507':
           description: While checking pre-conditions, a dynamic value was encountered
             that was too large to process.
@@ -2152,16 +2224,16 @@ paths:
           description: While checking pre-conditions, a dynamic value was encountered
             that could not be resolved.
         '404':
+          description: The given project id could not be found, or while checking
+            pre-conditions, a dynamic value was encountered that could not be resolved.
+        '415':
           description: While checking pre-conditions, a dynamic value was encountered
-            that could not be resolved.
+            that has an invalid content type.
         '422':
           description: 'A pre-condition to modifying the `secret` setting of the parameter
             failed, for example setting `secret: false` and having a dynamic value
             that resolves to a value that is a secret.  In this case it would be unsafe
             to allow the `secret` setting to change.'
-        '415':
-          description: While checking pre-conditions, a dynamic value was encountered
-            that has an invalid content type.
         '507':
           description: While checking pre-conditions, a dynamic value was encountered
             that was too large to process.
@@ -2249,6 +2321,12 @@ paths:
         required: false
         in: query
         description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
         schema:
           type: integer
       - in: path
@@ -2461,6 +2539,12 @@ paths:
         description: A page number within the paginated result set.
         schema:
           type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
       tags:
       - serviceaccounts
       security:
@@ -2624,6 +2708,12 @@ paths:
         required: false
         in: query
         description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
         schema:
           type: integer
       - in: query

@@ -68,8 +68,8 @@ pub enum ProjectsParametersListError {
 pub enum ProjectsParametersPartialUpdateError {
     Status400(),
     Status404(),
-    Status422(),
     Status415(),
+    Status422(),
     Status507(),
     UnknownValue(serde_json::Value),
 }
@@ -87,8 +87,8 @@ pub enum ProjectsParametersRetrieveError {
 pub enum ProjectsParametersUpdateError {
     Status400(),
     Status404(),
-    Status422(),
     Status415(),
+    Status422(),
     Status507(),
     UnknownValue(serde_json::Value),
 }
@@ -320,6 +320,7 @@ pub fn projects_list(
     configuration: &mut configuration::Configuration,
     name: Option<&str>,
     page: Option<i32>,
+    page_size: Option<i32>,
 ) -> Result<crate::models::PaginatedProjectList, Error<ProjectsListError>> {
     let local_var_client = &configuration.client;
 
@@ -333,6 +334,10 @@ pub fn projects_list(
     if let Some(ref local_var_str) = page {
         local_var_req_builder =
             local_var_req_builder.query(&[("page", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = page_size {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("page_size", &local_var_str.to_string())]);
     }
     if let Some(ref local_var_user_agent) = configuration.user_agent {
         local_var_req_builder =
@@ -391,6 +396,7 @@ pub fn projects_parameter_export_list(
     mask_secrets: Option<bool>,
     output: Option<&str>,
     page: Option<i32>,
+    page_size: Option<i32>,
     startswith: Option<&str>,
     wrap: Option<bool>,
 ) -> Result<crate::models::ParameterExport, Error<ProjectsParameterExportListError>> {
@@ -430,6 +436,10 @@ pub fn projects_parameter_export_list(
     if let Some(ref local_var_str) = page {
         local_var_req_builder =
             local_var_req_builder.query(&[("page", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = page_size {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("page_size", &local_var_str.to_string())]);
     }
     if let Some(ref local_var_str) = startswith {
         local_var_req_builder =
@@ -614,6 +624,7 @@ pub fn projects_parameters_list(
     mask_secrets: Option<bool>,
     name: Option<&str>,
     page: Option<i32>,
+    page_size: Option<i32>,
     wrap: Option<bool>,
 ) -> Result<crate::models::PaginatedParameterList, Error<ProjectsParametersListError>> {
     let local_var_client = &configuration.client;
@@ -640,6 +651,10 @@ pub fn projects_parameters_list(
     if let Some(ref local_var_str) = page {
         local_var_req_builder =
             local_var_req_builder.query(&[("page", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = page_size {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("page_size", &local_var_str.to_string())]);
     }
     if let Some(ref local_var_str) = wrap {
         local_var_req_builder =
@@ -1034,6 +1049,7 @@ pub fn projects_parameters_values_list(
     environment: Option<&str>,
     mask_secrets: Option<bool>,
     page: Option<i32>,
+    page_size: Option<i32>,
     wrap: Option<bool>,
 ) -> Result<crate::models::PaginatedValueList, Error<ProjectsParametersValuesListError>> {
     let local_var_client = &configuration.client;
@@ -1057,6 +1073,10 @@ pub fn projects_parameters_values_list(
     if let Some(ref local_var_str) = page {
         local_var_req_builder =
             local_var_req_builder.query(&[("page", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = page_size {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("page_size", &local_var_str.to_string())]);
     }
     if let Some(ref local_var_str) = wrap {
         local_var_req_builder =
@@ -1635,6 +1655,7 @@ pub fn projects_templates_list(
     project_pk: &str,
     name: Option<&str>,
     page: Option<i32>,
+    page_size: Option<i32>,
 ) -> Result<crate::models::PaginatedTemplateList, Error<ProjectsTemplatesListError>> {
     let local_var_client = &configuration.client;
 
@@ -1652,6 +1673,10 @@ pub fn projects_templates_list(
     if let Some(ref local_var_str) = page {
         local_var_req_builder =
             local_var_req_builder.query(&[("page", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = page_size {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("page_size", &local_var_str.to_string())]);
     }
     if let Some(ref local_var_user_agent) = configuration.user_agent {
         local_var_req_builder =

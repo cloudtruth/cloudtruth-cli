@@ -173,6 +173,7 @@ pub fn memberships_destroy(
 pub fn memberships_list(
     configuration: &mut configuration::Configuration,
     page: Option<i32>,
+    page_size: Option<i32>,
     role: Option<&str>,
     user: Option<&str>,
 ) -> Result<crate::models::PaginatedMembershipList, Error<MembershipsListError>> {
@@ -184,6 +185,10 @@ pub fn memberships_list(
     if let Some(ref local_var_str) = page {
         local_var_req_builder =
             local_var_req_builder.query(&[("page", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = page_size {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("page_size", &local_var_str.to_string())]);
     }
     if let Some(ref local_var_str) = role {
         local_var_req_builder =

@@ -215,6 +215,7 @@ pub fn integrations_aws_list(
     aws_account_id: Option<&str>,
     aws_role_name: Option<&str>,
     page: Option<i32>,
+    page_size: Option<i32>,
 ) -> Result<crate::models::PaginatedAwsIntegrationList, Error<IntegrationsAwsListError>> {
     let local_var_client = &configuration.client;
 
@@ -232,6 +233,10 @@ pub fn integrations_aws_list(
     if let Some(ref local_var_str) = page {
         local_var_req_builder =
             local_var_req_builder.query(&[("page", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = page_size {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("page_size", &local_var_str.to_string())]);
     }
     if let Some(ref local_var_user_agent) = configuration.user_agent {
         local_var_req_builder =
@@ -470,6 +475,7 @@ pub fn integrations_explore_list(
     configuration: &mut configuration::Configuration,
     fqn: Option<&str>,
     page: Option<i32>,
+    page_size: Option<i32>,
 ) -> Result<crate::models::PaginatedIntegrationExplorerList, Error<IntegrationsExploreListError>> {
     let local_var_client = &configuration.client;
 
@@ -482,6 +488,10 @@ pub fn integrations_explore_list(
     if let Some(ref local_var_str) = page {
         local_var_req_builder =
             local_var_req_builder.query(&[("page", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = page_size {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("page_size", &local_var_str.to_string())]);
     }
     if let Some(ref local_var_user_agent) = configuration.user_agent {
         local_var_req_builder =
@@ -649,6 +659,7 @@ pub fn integrations_github_list(
     configuration: &mut configuration::Configuration,
     gh_organization_slug: Option<&str>,
     page: Option<i32>,
+    page_size: Option<i32>,
 ) -> Result<crate::models::PaginatedGitHubIntegrationList, Error<IntegrationsGithubListError>> {
     let local_var_client = &configuration.client;
 
@@ -662,6 +673,10 @@ pub fn integrations_github_list(
     if let Some(ref local_var_str) = page {
         local_var_req_builder =
             local_var_req_builder.query(&[("page", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = page_size {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("page_size", &local_var_str.to_string())]);
     }
     if let Some(ref local_var_user_agent) = configuration.user_agent {
         local_var_req_builder =

@@ -1,4 +1,4 @@
-use crate::openapi::{extract_details, OpenApiConfig};
+use crate::openapi::{extract_details, OpenApiConfig, PAGE_SIZE};
 
 use cloudtruth_restapi::apis::environments_api::*;
 use cloudtruth_restapi::apis::Error;
@@ -101,7 +101,7 @@ impl Environments {
 
     /// This provides a means to get an entire list of environment URLs to names.
     pub fn get_url_name_map(&self, rest_cfg: &mut OpenApiConfig) -> HashMap<String, String> {
-        let response = environments_list(rest_cfg, None, None, None);
+        let response = environments_list(rest_cfg, None, None, PAGE_SIZE, None);
         let mut result: HashMap<String, String> = HashMap::new();
         if let Ok(list) = response {
             if let Some(environments) = list.results {
@@ -118,7 +118,7 @@ impl Environments {
         rest_cfg: &mut OpenApiConfig,
         env_name: &str,
     ) -> Result<Option<EnvironmentDetails>, EnvironmentError> {
-        let response = environments_list(rest_cfg, Some(env_name), None, None);
+        let response = environments_list(rest_cfg, Some(env_name), None, PAGE_SIZE, None);
 
         match response {
             Ok(data) => match data.results {
@@ -164,7 +164,7 @@ impl Environments {
         &self,
         rest_cfg: &mut OpenApiConfig,
     ) -> Result<Vec<EnvironmentDetails>, EnvironmentError> {
-        let response = environments_list(rest_cfg, None, None, None);
+        let response = environments_list(rest_cfg, None, None, PAGE_SIZE, None);
 
         match response {
             Ok(data) => match data.results {

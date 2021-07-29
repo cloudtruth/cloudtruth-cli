@@ -1,4 +1,4 @@
-use crate::openapi::{extract_details, OpenApiConfig};
+use crate::openapi::{extract_details, OpenApiConfig, PAGE_SIZE};
 
 use cloudtruth_restapi::apis::projects_api::*;
 use cloudtruth_restapi::apis::Error::{self, ResponseError};
@@ -55,7 +55,7 @@ impl Projects {
         rest_cfg: &mut OpenApiConfig,
         proj_name: &str,
     ) -> Result<Option<ProjectDetails>, ProjectError> {
-        let response = projects_list(rest_cfg, Some(proj_name), None);
+        let response = projects_list(rest_cfg, Some(proj_name), None, PAGE_SIZE);
 
         match response {
             Ok(data) => match data.results {
@@ -97,7 +97,7 @@ impl Projects {
         &self,
         rest_cfg: &mut OpenApiConfig,
     ) -> Result<Vec<ProjectDetails>, ProjectError> {
-        let response = projects_list(rest_cfg, None, None);
+        let response = projects_list(rest_cfg, None, None, PAGE_SIZE);
 
         match response {
             Ok(data) => match data.results {

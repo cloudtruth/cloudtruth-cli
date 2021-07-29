@@ -99,6 +99,7 @@ pub fn users_destroy(
 pub fn users_list(
     configuration: &mut configuration::Configuration,
     page: Option<i32>,
+    page_size: Option<i32>,
     _type: Option<&str>,
 ) -> Result<crate::models::PaginatedUserList, Error<UsersListError>> {
     let local_var_client = &configuration.client;
@@ -109,6 +110,10 @@ pub fn users_list(
     if let Some(ref local_var_str) = page {
         local_var_req_builder =
             local_var_req_builder.query(&[("page", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = page_size {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("page_size", &local_var_str.to_string())]);
     }
     if let Some(ref local_var_str) = _type {
         local_var_req_builder =

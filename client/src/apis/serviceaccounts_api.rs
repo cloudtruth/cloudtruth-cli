@@ -174,6 +174,7 @@ pub fn serviceaccounts_destroy(
 pub fn serviceaccounts_list(
     configuration: &mut configuration::Configuration,
     page: Option<i32>,
+    page_size: Option<i32>,
 ) -> Result<crate::models::PaginatedServiceAccountList, Error<ServiceaccountsListError>> {
     let local_var_client = &configuration.client;
 
@@ -183,6 +184,10 @@ pub fn serviceaccounts_list(
     if let Some(ref local_var_str) = page {
         local_var_req_builder =
             local_var_req_builder.query(&[("page", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = page_size {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("page_size", &local_var_str.to_string())]);
     }
     if let Some(ref local_var_user_agent) = configuration.user_agent {
         local_var_req_builder =
