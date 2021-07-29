@@ -79,7 +79,13 @@ def parse_args(*args) -> argparse.Namespace:
         dest="job_id",
         help="Job Identifier to use as a suffix on project and environment names"
     )
-    # TODO: Rick Porter 5/21 - add test case filtering
+    parser.add_argument(
+        "--filter",
+        dest="test_filter",
+        nargs="+",
+        default=[],
+        help="Only include tests containing the provided string(s) in the name"
+    )
     return parser.parse_args(*args)
 
 
@@ -127,7 +133,10 @@ def live_test(*args):
         args.failfast = True
 
     test_directory = '.'
-    suite = unittest.TestLoader().discover(test_directory, pattern=args.file_filter)
+    loader = unittest.TestLoader()
+    if args.test_filter:
+        loader.testNamePatterns = [f"*{_}*" for _ in args.test_filter]
+    suite = loader.discover(test_directory, pattern=args.file_filter)
 
     runner = debugTestRunner(
         enable_debug=args.pdb, verbosity=args.verbosity, failfast=args.failfast
