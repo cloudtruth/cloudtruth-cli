@@ -31,7 +31,7 @@ SRC_ARG = "argument"
 SRC_PROFILE = "profile"
 SRC_DEFAULT = "default"
 
-REDACTED = "********"
+REDACTED = "*****"
 
 
 def get_cli_base_cmd() -> str:

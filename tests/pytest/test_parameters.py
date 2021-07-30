@@ -1,6 +1,6 @@
 import os
 
-from testcase import TestCase, DEFAULT_ENV_NAME
+from testcase import TestCase, DEFAULT_ENV_NAME, REDACTED
 
 
 class TestParameters(TestCase):
@@ -179,20 +179,20 @@ my_param,cRaZy value,default,static,false,this is just a test description
         self.assertFalse(result.out_contains_both(key1, value1))
         self.assertTrue(result.out_contains_both(key1, desc1))
         self.assertEqual(result.out(), """\
-+----------+----------+---------+--------+--------+-----------------+
-| Name     | Value    | Source  | Type   | Secret | Description     |
-+----------+----------+---------+--------+--------+-----------------+
-| my_param | ******** | default | static | true   | my secret value |
-+----------+----------+---------+--------+--------+-----------------+
++----------+-------+---------+--------+--------+-----------------+
+| Name     | Value | Source  | Type   | Secret | Description     |
++----------+-------+---------+--------+--------+-----------------+
+| my_param | ***** | default | static | true   | my secret value |
++----------+-------+---------+--------+--------+-----------------+
 """)
 
         # use CSV
         result = self.run_cli(cmd_env, sub_cmd + "ls -v -f csv")
         self.assertFalse(result.out_contains_both(key1, value1))
         self.assertTrue(result.out_contains_both(key1, desc1))
-        self.assertEqual(result.out(), """\
+        self.assertEqual(result.out(), f"""\
 Name,Value,Source,Type,Secret,Description
-my_param,********,default,static,true,my secret value
+my_param,{REDACTED},default,static,true,my secret value
 """)
 
         # now, display with the secrets value
@@ -532,11 +532,11 @@ SNA=fu
         docker_cmd = base_cmd + f"--project {proj_name} param export docker "
         result = self.run_cli(cmd_env, docker_cmd)
         self.assertEqual(result.return_value, 0)
-        self.assertEqual(result.out(), """\
+        self.assertEqual(result.out(), f"""\
 FIRST_PARAM=posix_compliant_value
-FIRST_PARAM_SECRET=********
+FIRST_PARAM_SECRET={REDACTED}
 SECOND_PARAM=a value with spaces
-SECOND_SECRET=********
+SECOND_SECRET={REDACTED}
 
 """)
 
@@ -558,9 +558,9 @@ SECOND_SECRET=sensitive value with spaces
 
         # use uppercase key without secrets
         result = self.run_cli(cmd_env, docker_cmd + "--starts-with FIRST")
-        self.assertEqual(result.out(), """\
+        self.assertEqual(result.out(), f"""\
 FIRST_PARAM=posix_compliant_value
-FIRST_PARAM_SECRET=********
+FIRST_PARAM_SECRET={REDACTED}
 
 """)
 
@@ -592,11 +592,11 @@ SECOND_PARAM=a value with spaces
         dotenv_cmd = base_cmd + f"--project {proj_name} param export dotenv "
         result = self.run_cli(cmd_env, dotenv_cmd)
         self.assertEqual(result.return_value, 0)
-        self.assertEqual(result.out(), """\
+        self.assertEqual(result.out(), f"""\
 FIRST_PARAM="posix_compliant_value"
-FIRST_PARAM_SECRET="********"
+FIRST_PARAM_SECRET="{REDACTED}"
 SECOND_PARAM="a value with spaces"
-SECOND_SECRET="********"
+SECOND_SECRET="{REDACTED}"
 
 """)
 
@@ -615,11 +615,11 @@ SECOND_SECRET="sensitive value with spaces"
         shell_cmd = base_cmd + f"--project {proj_name} param export shell "
         result = self.run_cli(cmd_env, shell_cmd)
         self.assertEqual(result.return_value, 0)
-        self.assertEqual(result.out(), """\
+        self.assertEqual(result.out(), f"""\
 FIRST_PARAM=posix_compliant_value
-FIRST_PARAM_SECRET='********'
+FIRST_PARAM_SECRET='{REDACTED}'
 SECOND_PARAM='a value with spaces'
-SECOND_SECRET='********'
+SECOND_SECRET='{REDACTED}'
 
 """)
 
@@ -677,11 +677,11 @@ SECOND_SECRET='sensitive value with spaces'
         # see that it has been changed to a secret (redacted in cli)
         result = self.run_cli(cmd_env, sub_cmd + "ls -v")
         self.assertEqual(result.out(), """\
-+----------+----------+---------+--------+--------+---------------------------------+
-| Name     | Value    | Source  | Type   | Secret | Description                     |
-+----------+----------+---------+--------+--------+---------------------------------+
-| my_param | ******** | default | static | true   | this is just a test description |
-+----------+----------+---------+--------+--------+---------------------------------+
++----------+-------+---------+--------+--------+---------------------------------+
+| Name     | Value | Source  | Type   | Secret | Description                     |
++----------+-------+---------+--------+--------+---------------------------------+
+| my_param | ***** | default | static | true   | this is just a test description |
++----------+-------+---------+--------+--------+---------------------------------+
 """)
 
         # verify value has not changed
@@ -896,7 +896,7 @@ SECOND_SECRET='sensitive value with spaces'
 +-----------+--------------------------------+---------+--------+--------+-------------+
 | Name      | Value                          | Source  | Type   | Secret | Description |
 +-----------+--------------------------------+---------+--------+--------+-------------+
-| speicla14 | ********                       | default | static | true   | Jade secret |
+| speicla14 | *****                          | default | static | true   | Jade secret |
 | speicla3  | beef brocolli, pork fried rice | default | static | false  | Jade lunch  |
 +-----------+--------------------------------+---------+--------+--------+-------------+
 """)
@@ -914,9 +914,9 @@ SECOND_SECRET='sensitive value with spaces'
         #################
         # CSV format
         result = self.run_cli(cmd_env, sub_cmd + "ls -v -f csv")
-        self.assertEqual(result.out(), """\
+        self.assertEqual(result.out(), f"""\
 Name,Value,Source,Type,Secret,Description
-speicla14,********,default,static,true,Jade secret
+speicla14,{REDACTED},default,static,true,Jade secret
 speicla3,"beef brocolli, pork fried rice",default,static,false,Jade lunch
 """)
 
@@ -939,7 +939,7 @@ speicla3,"beef brocolli, pork fried rice",default,static,false,Jade lunch
       "Secret": "true",
       "Source": "default",
       "Type": "static",
-      "Value": "********"
+      "Value": "*****"
     },
     {
       "Description": "Jade lunch",
@@ -980,7 +980,7 @@ speicla3,"beef brocolli, pork fried rice",default,static,false,Jade lunch
         #################
         # YAML format
         result = self.run_cli(cmd_env, sub_cmd + "ls -v -f yaml")
-        self.assertEqual(result.out(), """\
+        self.assertEqual(result.out(), f"""\
 ---
 parameter:
   - Description: Jade secret
@@ -988,7 +988,7 @@ parameter:
     Secret: "true"
     Source: default
     Type: static
-    Value: "********"
+    Value: "{REDACTED}"
   - Description: Jade lunch
     Name: speicla3
     Secret: "false"

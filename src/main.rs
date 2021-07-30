@@ -36,7 +36,7 @@ use std::str::FromStr;
 use std::{fs, process};
 use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 
-const REDACTED: &str = "********";
+const REDACTED: &str = "*****";
 const FILE_READ_ERR: &str = "Failed to read value from file.";
 
 pub struct ResolvedIds {
