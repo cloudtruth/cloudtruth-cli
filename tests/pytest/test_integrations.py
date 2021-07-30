@@ -35,7 +35,7 @@ class TestIntegrations(TestCase):
         self.delete_project(cmd_env, proj_name)
 
     @unittest.skip("Need known integration parameters")
-    def test_integrations_explore(self):
+    def test_integration_explore(self):
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
 
@@ -72,7 +72,7 @@ class TestIntegrations(TestCase):
         self.assertIn(expected, result.out())
 
     @unittest.skip("Need known integration parameters")
-    def test_integrations_parameters(self):
+    def test_integration_parameters(self):
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
         proj_name = self.make_name("test-param-names")
