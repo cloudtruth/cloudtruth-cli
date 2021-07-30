@@ -9,6 +9,14 @@ pub const VALUES_FLAG: &str = "values";
 pub const SECRETS_FLAG: &str = "secrets";
 pub const RENAME_OPT: &str = "rename";
 
+pub const DELETE_SUBCMD: &str = "delete";
+pub const GET_SUBCMD: &str = "get";
+pub const LIST_SUBCMD: &str = "list";
+pub const SET_SUBCMD: &str = "set";
+
+const DELETE_ALIASES: &[&str] = &["del", "d"];
+const LIST_ALIASES: &[&str] = &["ls", "l"];
+
 pub fn binary_name() -> String {
     option_env!("CARGO_PKG_NAME")
         .unwrap_or("cloudtruth")
@@ -81,19 +89,20 @@ pub fn build_cli() -> App<'static, 'static> {
                 .about("Generate shell completions for this application")
                 .arg(Arg::with_name("SHELL").possible_values(&Shell::variants()).required(true))
         )
-        .subcommand(SubCommand::with_name("config")
-            .visible_alias("configuration")
+        .subcommand(SubCommand::with_name("configuration")
+            .visible_aliases(&["config", "conf", "con"])
             .about("Configuration options for this application")
             .subcommands(vec![
                 SubCommand::with_name("edit")
                     .about("Edit your configuration data for this application"),
-                SubCommand::with_name("list")
-                    .visible_alias("ls")
+                SubCommand::with_name(LIST_SUBCMD)
+                    .visible_aliases(LIST_ALIASES)
                     .arg(values_flag().help("Display profile information/values"))
                     .arg(table_format_options().help("Display profile value info format"))
                     .arg(secrets_display_flag().help("Display API key values"))
                     .about("List CloudTruth profiles in the local config file"),
                 SubCommand::with_name("current")
+                    .visible_aliases(&["curr", "cur"])
                     .arg(table_format_options().help("Display table format"))
                     .arg(secrets_display_flag().help("Display API key values"))
                     .arg( Arg::with_name("extended")
@@ -108,20 +117,20 @@ pub fn build_cli() -> App<'static, 'static> {
                 .visible_aliases(&["environment", "envs", "env", "e"])
                 .about("Work with CloudTruth environments")
                 .subcommands(vec![
-                    SubCommand::with_name("delete")
-                        .visible_alias("del")
+                    SubCommand::with_name(DELETE_SUBCMD)
+                        .visible_aliases(DELETE_ALIASES)
                         .about("Delete specified CloudTruth environment")
                         .arg(Arg::with_name("NAME")
                             .index(1)
                             .required(true)
                             .help("Environment name"))
                         .arg(confirm_flag()),
-                    SubCommand::with_name("list")
-                        .visible_alias("ls")
+                    SubCommand::with_name(LIST_SUBCMD)
+                        .visible_aliases(LIST_ALIASES)
                         .about("List CloudTruth environments")
                         .arg(values_flag().help("Display environment information/values"))
                         .arg(table_format_options().help("Format for environment values data")),
-                    SubCommand::with_name("set")
+                    SubCommand::with_name(SET_SUBCMD)
                         .about("Create/update a CloudTruth environment")
                         .arg(Arg::with_name("NAME")
                             .index(1)
@@ -154,8 +163,8 @@ pub fn build_cli() -> App<'static, 'static> {
                             .help("Integration FQN"))
                         .arg(table_format_options().help("Format integration values data."))
                         .arg(values_flag().help("Display integration values")),
-                    SubCommand::with_name("list")
-                        .visible_alias("ls")
+                    SubCommand::with_name(LIST_SUBCMD)
+                        .visible_aliases(LIST_ALIASES)
                         .about("List CloudTruth integrations")
                         .arg(values_flag().help("Display integration information/values"))
                         .arg(table_format_options().help("Format for integration values data")),
@@ -166,8 +175,8 @@ pub fn build_cli() -> App<'static, 'static> {
                 .visible_aliases(&["parameter", "params", "param", "p"])
                 .about("Work with CloudTruth parameters")
                 .subcommands(vec![
-                    SubCommand::with_name("delete")
-                        .visible_alias("del")
+                    SubCommand::with_name(DELETE_SUBCMD)
+                        .visible_aliases(DELETE_ALIASES)
                         .about("Delete the parameter from the project")
                         .arg(Arg::with_name("KEY").required(true)),
                     SubCommand::with_name("export")
@@ -196,11 +205,11 @@ pub fn build_cli() -> App<'static, 'static> {
                             .long("starts-with")
                             .help("Return parameters starting with search")
                             .takes_value(true)),
-                    SubCommand::with_name("get")
+                    SubCommand::with_name(GET_SUBCMD)
                         .about("Gets value for parameter in the selected environment")
                         .arg(Arg::with_name("KEY").required(true).index(1)),
-                    SubCommand::with_name("list")
-                        .visible_alias("ls")
+                    SubCommand::with_name(LIST_SUBCMD)
+                        .visible_aliases(LIST_ALIASES)
                         .about("List CloudTruth parameters")
                         .arg(Arg::with_name("dynamic")
                             .long("dynamic")
@@ -208,7 +217,7 @@ pub fn build_cli() -> App<'static, 'static> {
                         .arg(values_flag().help("Display parameter information/values"))
                         .arg(table_format_options().help("Format for parameter values data"))
                         .arg(secrets_display_flag().help("Display the secret parameter values")),
-                    SubCommand::with_name("set")
+                    SubCommand::with_name(SET_SUBCMD)
                         .about(concat!("Set a value in the selected project/environment for ",
                             "an existing parameter or creates a new one if needed"))
                         .arg(Arg::with_name("KEY").required(true).index(1))
@@ -257,12 +266,12 @@ pub fn build_cli() -> App<'static, 'static> {
             .visible_aliases(&["template", "t"])
             .about("Work with CloudTruth templates")
             .subcommands(vec![
-                SubCommand::with_name("get")
+                SubCommand::with_name(GET_SUBCMD)
                     .about("Get an evaluated template from CloudTruth")
                     .arg(secrets_display_flag())
                     .arg(Arg::with_name("KEY").required(true).index(1)),
-                SubCommand::with_name("list")
-                    .visible_alias("ls")
+                SubCommand::with_name(LIST_SUBCMD)
+                    .visible_aliases(LIST_ALIASES)
                     .about("List CloudTruth templates")
                     .arg(values_flag().help("Display template information/values"))
                     .arg(table_format_options().help("Format for template values data"))
@@ -319,20 +328,20 @@ pub fn build_cli() -> App<'static, 'static> {
                 .visible_aliases(&["project", "proj"])
                 .about("Work with CloudTruth projects")
                 .subcommands(vec![
-                    SubCommand::with_name("delete")
-                        .visible_alias("del")
+                    SubCommand::with_name(DELETE_SUBCMD)
+                        .visible_aliases(DELETE_ALIASES)
                         .about("Delete specified CloudTruth project")
                         .arg(Arg::with_name("NAME")
                             .index(1)
                             .required(true)
                             .help("Project name"))
                         .arg(confirm_flag()),
-                    SubCommand::with_name("list")
-                        .visible_alias("ls")
+                    SubCommand::with_name(LIST_SUBCMD)
+                        .visible_aliases(LIST_ALIASES)
                         .about("List CloudTruth projects")
                         .arg(values_flag().help("Display project information/values"))
                         .arg(table_format_options().help("Format for project values data")),
-                    SubCommand::with_name("set")
+                    SubCommand::with_name(SET_SUBCMD)
                         .about("Create/update a CloudTruth project")
                         .arg(Arg::with_name("NAME")
                             .index(1)
