@@ -106,7 +106,7 @@ class TestTopLevelArgs(TestCase):
         cmd_env[CT_PROJ] = proj_name
 
         for (subcmd, aliases) in {
-            "config": ["configuration"],
+            "configuration": ["config", "conf", "con"],
             "environments": ["environment", "envs", "env", "e"],
             "integrations": ["integration", "integrate", "int"],
             "parameters": ["parameter", "params", "param", "p"],

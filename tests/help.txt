@@ -16,15 +16,15 @@ OPTIONS:
         --project <project>    The CloudTruth project to work with
 
 SUBCOMMANDS:
-    completions     Generate shell completions for this application
-    config          Configuration options for this application [aliases: configuration]
-    environments    Work with CloudTruth environments [aliases: environment, envs, env, e]
-    help            Prints this message or the help of the given subcommand(s)
-    integrations    Work with CloudTruth integrations [aliases: integration, integrate, integ, int]
-    parameters      Work with CloudTruth parameters [aliases: parameter, params, param, p]
-    projects        Work with CloudTruth projects [aliases: project, proj]
-    run             Run a shell with the parameters in place [aliases: run, r]
-    templates       Work with CloudTruth templates [aliases: template, t]
+    completions      Generate shell completions for this application
+    configuration    Configuration options for this application [aliases: config, conf, con]
+    environments     Work with CloudTruth environments [aliases: environment, envs, env, e]
+    help             Prints this message or the help of the given subcommand(s)
+    integrations     Work with CloudTruth integrations [aliases: integration, integrate, integ, int]
+    parameters       Work with CloudTruth parameters [aliases: parameter, params, param, p]
+    projects         Work with CloudTruth projects [aliases: project, proj]
+    run              Run a shell with the parameters in place [aliases: run, r]
+    templates        Work with CloudTruth templates [aliases: template, t]
 ============================================================
 cloudtruth-completions 
 Generate shell completions for this application
@@ -39,27 +39,27 @@ FLAGS:
 ARGS:
     <SHELL>     [possible values: zsh, bash, fish, powershell, elvish]
 ============================================================
-cloudtruth-config 
+cloudtruth-configuration 
 Configuration options for this application
 
 USAGE:
-    cloudtruth config [SUBCOMMAND]
+    cloudtruth configuration [SUBCOMMAND]
 
 FLAGS:
     -h, --help       Prints help information
     -V, --version    Prints version information
 
 SUBCOMMANDS:
-    current    Show the current arguments and their sources.
+    current    Show the current arguments and their sources. [aliases: curr, cur]
     edit       Edit your configuration data for this application
     help       Prints this message or the help of the given subcommand(s)
-    list       List CloudTruth profiles in the local config file [aliases: ls]
+    list       List CloudTruth profiles in the local config file [aliases: ls, l]
 ========================================
-cloudtruth-config-current 
+cloudtruth-configuration-current 
 Show the current arguments and their sources.
 
 USAGE:
-    cloudtruth config current [FLAGS] [OPTIONS]
+    cloudtruth configuration current [FLAGS] [OPTIONS]
 
 FLAGS:
     -h, --help       Prints help information
@@ -69,21 +69,21 @@ FLAGS:
 OPTIONS:
     -f, --format <format>    Display table format [default: table]  [possible values: table, csv, json, yaml]
 ========================================
-cloudtruth-config-edit 
+cloudtruth-configuration-edit 
 Edit your configuration data for this application
 
 USAGE:
-    cloudtruth config edit
+    cloudtruth configuration edit
 
 FLAGS:
     -h, --help       Prints help information
     -V, --version    Prints version information
 ========================================
-cloudtruth-config-list 
+cloudtruth-configuration-list 
 List CloudTruth profiles in the local config file
 
 USAGE:
-    cloudtruth config list [FLAGS] [OPTIONS]
+    cloudtruth configuration list [FLAGS] [OPTIONS]
 
 FLAGS:
     -h, --help       Prints help information
@@ -106,9 +106,9 @@ FLAGS:
     -V, --version    Prints version information
 
 SUBCOMMANDS:
-    delete    Delete specified CloudTruth environment [aliases: del]
+    delete    Delete specified CloudTruth environment [aliases: del, d]
     help      Prints this message or the help of the given subcommand(s)
-    list      List CloudTruth environments [aliases: ls]
+    list      List CloudTruth environments [aliases: ls, l]
     set       Create/update a CloudTruth environment
 ========================================
 cloudtruth-environments-delete 
@@ -171,7 +171,7 @@ FLAGS:
 SUBCOMMANDS:
     explore    Explore integrations by Fully Qualified Name (FQN). [aliases: exp, ex, e]
     help       Prints this message or the help of the given subcommand(s)
-    list       List CloudTruth integrations [aliases: ls]
+    list       List CloudTruth integrations [aliases: ls, l]
 ========================================
 cloudtruth-integrations-explore 
 Explore integrations by Fully Qualified Name (FQN).
@@ -216,12 +216,12 @@ FLAGS:
     -V, --version    Prints version information
 
 SUBCOMMANDS:
-    delete    Delete the parameter from the project [aliases: del]
+    delete    Delete the parameter from the project [aliases: del, d]
     export    Export selected parameters to a known output format. Exported parameters are limited to alphanumeric
               and underscore  in key names. Formats available are: dotenv, docker, and shell.
     get       Gets value for parameter in the selected environment
     help      Prints this message or the help of the given subcommand(s)
-    list      List CloudTruth parameters [aliases: ls]
+    list      List CloudTruth parameters [aliases: ls, l]
     set       Set a value in the selected project/environment for an existing parameter or creates a new one if
               needed
     unset     Remove a value/override from the selected project/environment and leaves the parameter in place.
@@ -337,9 +337,9 @@ FLAGS:
     -V, --version    Prints version information
 
 SUBCOMMANDS:
-    delete    Delete specified CloudTruth project [aliases: del]
+    delete    Delete specified CloudTruth project [aliases: del, d]
     help      Prints this message or the help of the given subcommand(s)
-    list      List CloudTruth projects [aliases: ls]
+    list      List CloudTruth projects [aliases: ls, l]
     set       Create/update a CloudTruth project
 ========================================
 cloudtruth-projects-delete 
@@ -421,7 +421,7 @@ FLAGS:
 SUBCOMMANDS:
     get     Get an evaluated template from CloudTruth
     help    Prints this message or the help of the given subcommand(s)
-    list    List CloudTruth templates [aliases: ls]
+    list    List CloudTruth templates [aliases: ls, l]
 ========================================
 cloudtruth-templates-get 
 Get an evaluated template from CloudTruth

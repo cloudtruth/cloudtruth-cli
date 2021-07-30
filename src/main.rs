@@ -13,7 +13,10 @@ mod subprocess;
 mod table;
 mod templates;
 
-use crate::cli::{CONFIRM_FLAG, FORMAT_OPT, RENAME_OPT, SECRETS_FLAG, VALUES_FLAG};
+use crate::cli::{
+    CONFIRM_FLAG, DELETE_SUBCMD, FORMAT_OPT, GET_SUBCMD, LIST_SUBCMD, RENAME_OPT, SECRETS_FLAG,
+    SET_SUBCMD, VALUES_FLAG,
+};
 use crate::config::env::ConfigEnv;
 use crate::config::{Config, CT_PROFILE, DEFAULT_ENV_NAME};
 use crate::environments::Environments;
@@ -250,7 +253,7 @@ fn process_project_command(
     rest_cfg: &mut OpenApiConfig,
     projects: &Projects,
 ) -> Result<()> {
-    if let Some(subcmd_args) = subcmd_args.subcommand_matches("delete") {
+    if let Some(subcmd_args) = subcmd_args.subcommand_matches(DELETE_SUBCMD) {
         let proj_name = subcmd_args.value_of("NAME").unwrap();
         let details = projects.get_details_by_name(rest_cfg, proj_name)?;
 
@@ -270,7 +273,7 @@ fn process_project_command(
         } else {
             warning_message(format!("Project '{}' does not exist!", proj_name))?;
         }
-    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("list") {
+    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(LIST_SUBCMD) {
         let details = projects.get_project_details(rest_cfg)?;
         if details.is_empty() {
             println!("No projects found.");
@@ -289,7 +292,7 @@ fn process_project_command(
             }
             table.render(fmt)?;
         }
-    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("set") {
+    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(SET_SUBCMD) {
         let proj_name = subcmd_args.value_of("NAME").unwrap();
         let rename = subcmd_args.value_of(RENAME_OPT);
         let description = subcmd_args.value_of("description");
@@ -344,7 +347,7 @@ fn process_config_command(
             .into_string()
             .unwrap();
         println!("Edited {}", filepath);
-    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("list") {
+    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(LIST_SUBCMD) {
         let details = Config::get_profile_details()?;
         if details.is_empty() {
             println!("No profiles exist in config.");
@@ -396,7 +399,7 @@ fn process_config_command(
 
         table.render(fmt)?;
     } else {
-        warn_missing_subcommand("config")?;
+        warn_missing_subcommand("configuration")?;
     }
     Ok(())
 }
@@ -407,7 +410,7 @@ fn process_environment_command(
     rest_cfg: &mut OpenApiConfig,
     environments: &Environments,
 ) -> Result<()> {
-    if let Some(subcmd_args) = subcmd_args.subcommand_matches("delete") {
+    if let Some(subcmd_args) = subcmd_args.subcommand_matches(DELETE_SUBCMD) {
         let env_name = subcmd_args.value_of("NAME").unwrap();
         let details = environments.get_details_by_name(rest_cfg, env_name)?;
 
@@ -427,7 +430,7 @@ fn process_environment_command(
         } else {
             warning_message(format!("Environment '{}' does not exist!", env_name))?;
         }
-    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("list") {
+    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(LIST_SUBCMD) {
         let details = environments.get_environment_details(rest_cfg)?;
         // NOTE: should always have at least the default environment
         if !subcmd_args.is_present(VALUES_FLAG) {
@@ -445,7 +448,7 @@ fn process_environment_command(
             }
             table.render(fmt)?;
         }
-    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("set") {
+    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(SET_SUBCMD) {
         let env_name = subcmd_args.value_of("NAME").unwrap();
         let parent_name = subcmd_args.value_of("parent");
         let description = subcmd_args.value_of("description");
@@ -527,7 +530,7 @@ fn process_integrations_command(
             }
             table.render(fmt)?;
         }
-    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("list") {
+    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(LIST_SUBCMD) {
         let details = integrations.get_integration_details(rest_cfg)?;
         if details.is_empty() {
             println!("No integrations found");
@@ -565,7 +568,7 @@ fn process_parameters_command(
     parameters: &Parameters,
     resolved: &ResolvedIds,
 ) -> Result<()> {
-    if let Some(subcmd_args) = subcmd_args.subcommand_matches("list") {
+    if let Some(subcmd_args) = subcmd_args.subcommand_matches(LIST_SUBCMD) {
         let proj_id = resolved.project_id();
         let env_id = resolved.environment_id();
         let show_secrets = subcmd_args.is_present(SECRETS_FLAG);
@@ -618,7 +621,7 @@ fn process_parameters_command(
             }
             table.render(fmt)?;
         }
-    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("get") {
+    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(GET_SUBCMD) {
         let key = subcmd_args.value_of("KEY").unwrap();
         let proj_id = resolved.project_id();
         let env_id = resolved.environment_id();
@@ -638,7 +641,7 @@ fn process_parameters_command(
                 key
             );
         }
-    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("set") {
+    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(SET_SUBCMD) {
         let key_name = subcmd_args.value_of("KEY").unwrap();
         let proj_id = resolved.project_id();
         let env_id = resolved.environment_id();
@@ -765,7 +768,7 @@ fn process_parameters_command(
                 resolved.environment_display_name(),
             );
         }
-    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("delete") {
+    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(DELETE_SUBCMD) {
         let key_name = subcmd_args.value_of("KEY").unwrap();
         let proj_id = resolved.project_id();
         let env_id = resolved.environment_id();
@@ -866,7 +869,7 @@ fn process_templates_command(
     templates: &Templates,
     resolved: &ResolvedIds,
 ) -> Result<()> {
-    if let Some(subcmd_args) = subcmd_args.subcommand_matches("list") {
+    if let Some(subcmd_args) = subcmd_args.subcommand_matches(LIST_SUBCMD) {
         let proj_name = resolved.project_display_name();
         let proj_id = resolved.project_id();
         let details = templates.get_template_details(rest_cfg, proj_id)?;
@@ -887,7 +890,7 @@ fn process_templates_command(
             }
             table.render(fmt)?;
         }
-    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("get") {
+    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(GET_SUBCMD) {
         let proj_name = resolved.project_display_name();
         let env_name = resolved.environment_display_name();
         let proj_id = resolved.project_id();
@@ -931,7 +934,7 @@ fn main() -> Result<()> {
         process::exit(0)
     }
 
-    if let Some(matches) = matches.subcommand_matches("config") {
+    if let Some(matches) = matches.subcommand_matches("configuration") {
         process_config_command(matches, profile_arg, api_key, proj_name, env_name)?;
         process::exit(0)
     }
@@ -1077,7 +1080,7 @@ mod main_test {
     #[test]
     fn missing_subcommands() {
         let commands = &[
-            vec!["config"],
+            vec!["configuration"],
             vec!["projects"],
             vec!["environments"],
             vec!["integrations"],
