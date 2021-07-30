@@ -8,6 +8,7 @@ exclude =
     __pycache__,
     ctcaas/ctcaas-1.0.9999,
     ctcaas/parameters/migrations,
+    venv,
 max-complexity = 25
 max-line-length = 119
 per-file-ignores =

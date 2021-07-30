@@ -64,7 +64,7 @@ impl Templates {
             projects_templates_list(rest_cfg, proj_id, Some(template_name), None, PAGE_SIZE)?;
 
         if let Some(templates) = response.results {
-            if template_name.is_empty() {
+            if templates.is_empty() {
                 Ok(None)
             } else {
                 // TODO: handle more than one?
