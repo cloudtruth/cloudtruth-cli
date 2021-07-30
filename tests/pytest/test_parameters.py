@@ -617,9 +617,9 @@ SECOND_SECRET="sensitive value with spaces"
         self.assertEqual(result.return_value, 0)
         self.assertEqual(result.out(), f"""\
 FIRST_PARAM=posix_compliant_value
-FIRST_PARAM_SECRET='{REDACTED}'
+FIRST_PARAM_SECRET={REDACTED}
 SECOND_PARAM='a value with spaces'
-SECOND_SECRET='{REDACTED}'
+SECOND_SECRET={REDACTED}
 
 """)
 
