@@ -24,7 +24,7 @@ SUBCOMMANDS:
     parameters       Work with CloudTruth parameters [aliases: parameter, params, param, p]
     projects         Work with CloudTruth projects [aliases: project, proj]
     run              Run a shell with the parameters in place [aliases: run, r]
-    templates        Work with CloudTruth templates [aliases: template, t]
+    templates        Work with CloudTruth templates [aliases: template, temp, t]
 ============================================================
 cloudtruth-completions 
 Generate shell completions for this application
@@ -419,23 +419,40 @@ FLAGS:
     -V, --version    Prints version information
 
 SUBCOMMANDS:
-    get     Get an evaluated template from CloudTruth
-    help    Prints this message or the help of the given subcommand(s)
-    list    List CloudTruth templates [aliases: ls, l]
+    delete     Delete the CloudTruth template [aliases: del, d]
+    get        Get an evaluated template from CloudTruth
+    help       Prints this message or the help of the given subcommand(s)
+    list       List CloudTruth templates [aliases: ls, l]
+    preview    Evaluate the provided template without storing [aliases: prev, pre]
+    set        Set the CloudTruth template
+========================================
+cloudtruth-templates-delete 
+Delete the CloudTruth template
+
+USAGE:
+    cloudtruth templates delete [FLAGS] <NAME>
+
+FLAGS:
+    -y, --yes        Avoid confirmation prompt
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+ARGS:
+    <NAME>    Template name
 ========================================
 cloudtruth-templates-get 
 Get an evaluated template from CloudTruth
 
 USAGE:
-    cloudtruth templates get [FLAGS] <KEY>
+    cloudtruth templates get [FLAGS] <NAME>
 
 FLAGS:
     -h, --help       Prints help information
-    -s, --secrets    
+    -s, --secrets    Display secret values in evaluation
     -V, --version    Prints version information
 
 ARGS:
-    <KEY>    
+    <NAME>    Template name
 ========================================
 cloudtruth-templates-list 
 List CloudTruth templates
@@ -450,4 +467,36 @@ FLAGS:
 
 OPTIONS:
     -f, --format <format>    Format for template values data [default: table]  [possible values: table, csv, json, yaml]
+========================================
+cloudtruth-templates-preview 
+Evaluate the provided template without storing
+
+USAGE:
+    cloudtruth templates preview [FLAGS] <FILE>
+
+FLAGS:
+    -h, --help       Prints help information
+    -s, --secrets    Display secret values in evaluation
+    -V, --version    Prints version information
+
+ARGS:
+    <FILE>    File containing the template
+========================================
+cloudtruth-templates-set 
+Set the CloudTruth template
+
+USAGE:
+    cloudtruth templates set [OPTIONS] <NAME>
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+OPTIONS:
+    -b, --body <FILE>           File containing the template
+    -d, --desc <description>    Template description
+    -r, --rename <rename>       New template name
+
+ARGS:
+    <NAME>    Template name
 
