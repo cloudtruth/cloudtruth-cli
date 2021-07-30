@@ -4242,7 +4242,7 @@ components:
           nullable: true
           description: This is the content to use when resolving the Value for a static
             non-secret.
-          maxLength: 1024
+          maxLength: 16384
         value:
           type: string
           nullable: true
@@ -4599,7 +4599,7 @@ components:
           nullable: true
           description: This is the content to use when resolving the Value for a static
             non-secret.
-          maxLength: 1024
+          maxLength: 16384
         value:
           type: string
           nullable: true
@@ -4675,7 +4675,7 @@ components:
           nullable: true
           description: This is the content to use when resolving the Value for a static
             non-secret.
-          maxLength: 1024
+          maxLength: 16384
       required:
       - environment
   securitySchemes:
