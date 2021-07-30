@@ -4,10 +4,13 @@ use clap::{
 };
 
 pub const CONFIRM_FLAG: &str = "confirm";
+pub const DESCRIPTION_OPT: &str = "description";
 pub const FORMAT_OPT: &str = "format";
-pub const VALUES_FLAG: &str = "values";
-pub const SECRETS_FLAG: &str = "secrets";
+pub const NAME_ARG: &str = "NAME";
 pub const RENAME_OPT: &str = "rename";
+pub const SECRETS_FLAG: &str = "secrets";
+pub const TEMPLATE_FILE_OPT: &str = "FILE";
+pub const VALUES_FLAG: &str = "values";
 
 pub const DELETE_SUBCMD: &str = "delete";
 pub const GET_SUBCMD: &str = "get";
@@ -53,6 +56,21 @@ fn rename_option() -> Arg<'static, 'static> {
         .short("r")
         .long(RENAME_OPT)
         .takes_value(true)
+}
+
+fn description_option() -> Arg<'static, 'static> {
+    Arg::with_name(DESCRIPTION_OPT)
+        .short("d")
+        .long("desc")
+        .takes_value(true)
+}
+
+fn template_body() -> Arg<'static, 'static> {
+    Arg::with_name(TEMPLATE_FILE_OPT).help("File containing the template")
+}
+
+fn name_arg() -> Arg<'static, 'static> {
+    Arg::with_name(NAME_ARG).required(true).index(1)
 }
 
 pub fn build_cli() -> App<'static, 'static> {
@@ -120,10 +138,7 @@ pub fn build_cli() -> App<'static, 'static> {
                     SubCommand::with_name(DELETE_SUBCMD)
                         .visible_aliases(DELETE_ALIASES)
                         .about("Delete specified CloudTruth environment")
-                        .arg(Arg::with_name("NAME")
-                            .index(1)
-                            .required(true)
-                            .help("Environment name"))
+                        .arg(name_arg().help("Environment name"))
                         .arg(confirm_flag()),
                     SubCommand::with_name(LIST_SUBCMD)
                         .visible_aliases(LIST_ALIASES)
@@ -132,15 +147,8 @@ pub fn build_cli() -> App<'static, 'static> {
                         .arg(table_format_options().help("Format for environment values data")),
                     SubCommand::with_name(SET_SUBCMD)
                         .about("Create/update a CloudTruth environment")
-                        .arg(Arg::with_name("NAME")
-                            .index(1)
-                            .required(true)
-                            .help("Environment name"))
-                        .arg(Arg::with_name("description")
-                            .short("d")
-                            .long("desc")
-                            .takes_value(true)
-                            .help("Environment's description"))
+                        .arg(name_arg().help("Environment name"))
+                        .arg(description_option().help("Environment's description"))
                         .arg(rename_option().help("New environment name"))
                         .arg(Arg::with_name("parent")
                             .short("p")
@@ -221,11 +229,7 @@ pub fn build_cli() -> App<'static, 'static> {
                         .about(concat!("Set a value in the selected project/environment for ",
                             "an existing parameter or creates a new one if needed"))
                         .arg(Arg::with_name("KEY").required(true).index(1))
-                        .arg(Arg::with_name("description")
-                            .takes_value(true)
-                            .short("d")
-                            .long("desc")
-                            .help("Parameter description"))
+                        .arg(description_option().help("Parameter description"))
                         .arg(Arg::with_name("FQN")
                             .short("f")
                             .long("fqn")
@@ -263,18 +267,34 @@ pub fn build_cli() -> App<'static, 'static> {
                 ]),
         )
         .subcommand(SubCommand::with_name("templates")
-            .visible_aliases(&["template", "t"])
+            .visible_aliases(&["template", "temp", "t"])
             .about("Work with CloudTruth templates")
             .subcommands(vec![
+                SubCommand::with_name(DELETE_SUBCMD)
+                    .visible_aliases(DELETE_ALIASES)
+                    .about("Delete the CloudTruth template")
+                    .arg(confirm_flag())
+                    .arg(name_arg().help("Template name")),
                 SubCommand::with_name(GET_SUBCMD)
                     .about("Get an evaluated template from CloudTruth")
-                    .arg(secrets_display_flag())
-                    .arg(Arg::with_name("KEY").required(true).index(1)),
+                    .arg(secrets_display_flag().help("Display secret values in evaluation"))
+                    .arg(name_arg().help("Template name")),
                 SubCommand::with_name(LIST_SUBCMD)
                     .visible_aliases(LIST_ALIASES)
                     .about("List CloudTruth templates")
                     .arg(values_flag().help("Display template information/values"))
-                    .arg(table_format_options().help("Format for template values data"))
+                    .arg(table_format_options().help("Format for template values data")),
+                SubCommand::with_name("preview")
+                    .about("Evaluate the provided template without storing")
+                    .visible_aliases(&["prev", "pre"])
+                    .arg(template_body().required(true).index(1))
+                    .arg(secrets_display_flag().help("Display secret values in evaluation")),
+                SubCommand::with_name(SET_SUBCMD)
+                    .arg(name_arg().help("Template name"))
+                    .arg(template_body().takes_value(true).short("b").long("body"))
+                    .arg(rename_option().help("New template name"))
+                    .arg(description_option().help("Template description"))
+                    .about("Set the CloudTruth template"),
             ])
         )
         .subcommand(
@@ -348,11 +368,7 @@ pub fn build_cli() -> App<'static, 'static> {
                             .required(true)
                             .help("Project name"))
                         .arg(rename_option().help("New project name"))
-                        .arg(Arg::with_name("description")
-                            .short("d")
-                            .long("desc")
-                            .takes_value(true)
-                            .help("Project's description")),
+                        .arg(description_option().help("Project's description")),
                 ])
         )
 }
