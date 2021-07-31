@@ -1,3 +1,13 @@
+# 1.0.2 - 2021-07-30
+
+* Improved aliases (e.g. `list` now accepts `ls` or `l`).
+* Templates: added `set`, `delete`, and `preview` commands.
+* Fixed issue with multiple parameters with no value -- only some values shown in `parameters list`.
+* Fixed a couple issues with `templates get`:
+  * Improved feedback when there are no templates found.
+  * No longer show secrets without `--secrets` specified.
+* When fail to add a value for a new parameter, the parameter is now removed.
+
 # 1.0.1 - 2021-07-28
 
 * Pickup latest OpenAPI changes.
