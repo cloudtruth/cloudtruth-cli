@@ -159,6 +159,31 @@ def optional_values(srcdir: str) -> None:
             file_write_content(filename, temp)
 
 
+def add_debug_profiling(srcdir: str) -> None:
+    filelist = glob.glob(f"{srcdir}/apis/*.rs")
+    new_use = "use std::time::Instant;"
+    old_use = "use reqwest;"
+    before1 = "    let method = local_var_req.method().clone();"
+    before2 = "    let start = Instant::now();"
+    execute = "    let mut local_var_resp = local_var_client.execute(local_var_req)?;"
+    behind1 = "    let duration = start.elapsed();"
+    behind2 = "    println!(\"URL {} {} elapsed: {:?}\", method, &local_var_resp.url(), duration);"
+    new_execute = "\n".join([before1, before2, execute, behind1, behind2])
+    for filename in filelist:
+        orig = file_read_content(filename)
+        temp = orig
+
+        # if already done or no need to instrument, next file
+        if new_use in temp or execute not in temp:
+            continue
+
+        temp = temp.replace(old_use, old_use + "\n" + new_use)
+        temp = temp.replace(execute, new_execute)
+
+        print(f"Updating {filename} with debug profiling")
+        file_write_content(filename, temp)
+
+
 if __name__ == "__main__":
     client_dir = os.getcwd() + "/client"
     srcdir = client_dir + "/src"
@@ -167,3 +192,4 @@ if __name__ == "__main__":
     support_cookies(srcdir)
     update_gitpush(client_dir)
     optional_values(srcdir)
+    # add_debug_profiling(srcdir)
