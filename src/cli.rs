@@ -264,6 +264,26 @@ pub fn build_cli() -> App<'static, 'static> {
                         .about(concat!("Remove a value/override from the selected ",
                             "project/environment and leaves the parameter in place."))
                         .arg(Arg::with_name("KEY").required(true).index(1)),
+                    SubCommand::with_name("differences")
+                        .visible_aliases(&["difference", "differ", "diff"])
+                        .about("Show differences between properties from two environments")
+                        .arg(Arg::with_name("ENV1")
+                            .required(true)
+                            .index(1)
+                            .help("Name of first environment for comparison."))
+                        .arg(Arg::with_name("ENV2")
+                            .required(true)
+                            .index(2)
+                            .help("Name of second environment for comparison."))
+                        .arg(Arg::with_name("properties")
+                            .short("p")
+                            .long("property")
+                            .possible_values(&["value", "environment", "fqn", "jmes-path", "secret"])
+                            .multiple(true)
+                            .default_value("value")
+                            .help("List of the properties to compare."))
+                        .arg(table_format_options().help("Display difference format"))
+                        .arg(secrets_display_flag().help("Show secret values")),
                 ]),
         )
         .subcommand(SubCommand::with_name("templates")

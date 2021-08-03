@@ -20,6 +20,9 @@ pub struct EnvironmentDetails {
     pub parent_name: String,
 }
 
+/// This is used to map from an Environment's URL to the Name.
+pub type EnvironmentUrlMap = HashMap<String, String>;
+
 /// Converts the OpenApi `Environment` reference into a CloudTruth `EnvironmentDetails` object.
 ///
 /// The `parent_name` is filled in later, so it can be done with a map of URLs to names.
@@ -42,6 +45,7 @@ pub enum EnvironmentError {
     DeleteError(Error<EnvironmentsDestroyError>),
     AuthError(String),
     DeleteNotAllowed(String),
+    NotFound(String),
 }
 
 impl fmt::Display for EnvironmentError {
@@ -58,6 +62,9 @@ impl fmt::Display for EnvironmentError {
             }
             EnvironmentError::ListError(e) => {
                 write!(f, "{}", e.to_string())
+            }
+            EnvironmentError::NotFound(name) => {
+                write!(f, "Did not find environment '{}'", name)
             }
         }
     }
@@ -100,9 +107,9 @@ impl Environments {
     }
 
     /// This provides a means to get an entire list of environment URLs to names.
-    pub fn get_url_name_map(&self, rest_cfg: &mut OpenApiConfig) -> HashMap<String, String> {
+    pub fn get_url_name_map(&self, rest_cfg: &mut OpenApiConfig) -> EnvironmentUrlMap {
         let response = environments_list(rest_cfg, None, None, PAGE_SIZE, None);
-        let mut result: HashMap<String, String> = HashMap::new();
+        let mut result: EnvironmentUrlMap = EnvironmentUrlMap::new();
         if let Ok(list) = response {
             if let Some(environments) = list.results {
                 for env in environments {
@@ -113,6 +120,26 @@ impl Environments {
         result
     }
 
+    /// Uses the URL/name map to get the identifier for the provided environment name.
+    pub fn id_from_map(
+        &self,
+        name: &str,
+        url_map: &EnvironmentUrlMap,
+    ) -> Result<String, EnvironmentError> {
+        for (k, v) in url_map {
+            if name == v.as_str() {
+                let segments: Vec<&str> = k.rsplit('/').collect();
+                for seg in segments {
+                    if !seg.is_empty() {
+                        return Ok(seg.to_string());
+                    }
+                }
+            }
+        }
+        Err(EnvironmentError::NotFound(name.to_string()))
+    }
+
+    /// Gets the `EnvironmentDetails` for the provided name.
     pub fn get_details_by_name(
         &self,
         rest_cfg: &mut OpenApiConfig,
@@ -148,6 +175,7 @@ impl Environments {
         }
     }
 
+    /// Gets the environment's identifier for the provided name.
     pub fn get_id(
         &self,
         rest_cfg: &mut OpenApiConfig,
@@ -170,7 +198,7 @@ impl Environments {
             Ok(data) => match data.results {
                 Some(list) => {
                     let mut env_info: Vec<EnvironmentDetails> = Vec::new();
-                    let mut url_map: HashMap<String, String> = HashMap::new(); // maps URL to name
+                    let mut url_map: EnvironmentUrlMap = EnvironmentUrlMap::new();
                     for env in list {
                         let details = EnvironmentDetails::from(&env);
                         url_map.insert(details.url.clone(), details.name.clone());

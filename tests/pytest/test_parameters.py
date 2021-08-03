@@ -1,6 +1,6 @@
 import os
 
-from testcase import TestCase, DEFAULT_ENV_NAME, REDACTED
+from testcase import TestCase, DEFAULT_ENV_NAME, REDACTED, DEFAULT_PARAM_VALUE
 
 
 class TestParameters(TestCase):
@@ -1059,4 +1059,116 @@ parameter:
             self.delete_param(cmd_env, proj_name, param_name)
 
         # cleanup
+        self.delete_project(cmd_env, proj_name)
+
+    def test_parameter_diff(self):
+        base_cmd = self.get_cli_base_cmd()
+        cmd_env = self.get_cmd_env()
+
+        # add a new project
+        proj_name = self.make_name("test-param-cmp")
+        empty_msg = self._empty_message(proj_name)
+        self.create_project(cmd_env, proj_name)
+
+        # add a couple environments
+        env_a = self.make_name("left")
+        self.create_environment(cmd_env, env_a)
+        env_b = self.make_name("right")
+        self.create_environment(cmd_env, env_b)
+
+        # check that there are no parameters
+        sub_cmd = base_cmd + f"--project '{proj_name}' param "
+        show_cmd = sub_cmd + "list -vsf csv"
+        result = self.run_cli(cmd_env, show_cmd)
+        self.assertEqual(result.return_value, 0)
+        self.assertIn(empty_msg, result.out())
+
+        param1 = "param1"
+        param2 = "secret1"
+
+        # add some parameters to ENV A
+        value1a = "some_value"
+        value2a = "ssshhhh"
+        self.set_param(cmd_env, proj_name, param1, value1a, env=env_a)
+        self.set_param(cmd_env, proj_name, param2, value2a, env=env_a, secret=True)
+
+        # first set of comparisons
+        diff_cmd = sub_cmd + f"diff '{env_a}' '{env_b}' -f csv "
+        result = self.run_cli(cmd_env, diff_cmd)
+        self.assertEqual(result.return_value, 0)
+        self.assertEqual(result.out(), f"""\
+Parameter,{env_a},{env_b}
+{param1},{value1a},{DEFAULT_PARAM_VALUE}
+{param2},{REDACTED},{DEFAULT_PARAM_VALUE}
+""")
+
+        result = self.run_cli(cmd_env, diff_cmd + "-s")
+        self.assertEqual(result.return_value, 0)
+        self.assertEqual(result.out(), f"""\
+Parameter,{env_a},{env_b}
+{param1},{value1a},{DEFAULT_PARAM_VALUE}
+{param2},{value2a},{DEFAULT_PARAM_VALUE}
+""")
+
+        # set some stuff in the default environment
+        value1d = "different"
+        value2d = "be qwiet"
+        self.set_param(cmd_env, proj_name, param1, value1d)
+        self.set_param(cmd_env, proj_name, param2, value2d)
+
+        # values from the default environment should show up
+        result = self.run_cli(cmd_env, diff_cmd + "-s")
+        self.assertEqual(result.out(), f"""\
+Parameter,{env_a},{env_b}
+{param1},{value1a},{value1d}
+{param2},{value2a},{value2d}
+""")
+
+        # now, let's see the properties
+        result = self.run_cli(cmd_env, diff_cmd + "-s -p value -p environment ")
+        self.assertEqual(result.out(), f"""\
+Parameter,{env_a},{env_b}
+{param1},"{value1a},\n{env_a}","{value1d},\ndefault"
+{param2},"{value2a},\n{env_a}","{value2d},\ndefault"
+""")
+
+        # now, set some different values
+        same = "matchers"
+        value2b = "im hunting wabbits"
+        self.set_param(cmd_env, proj_name, param1, same, env=env_a)
+        self.set_param(cmd_env, proj_name, param1, same, env=env_b)
+        self.set_param(cmd_env, proj_name, param2, value2b, env=env_b)
+
+        # without the --all flag, only the deltas are shown
+        result = self.run_cli(cmd_env, diff_cmd + "-s")
+        self.assertEqual(result.out(), f"""\
+Parameter,{env_a},{env_b}
+{param2},{value2a},{value2b}
+""")
+
+        # when specifying properties where there are no diffs, we get nothing
+        result = self.run_cli(cmd_env, diff_cmd + "-s --property fqn")
+        self.assertIn("No parameters or differences in compared properties found", result.out())
+
+        #####################
+        # Error cases
+
+        # no comparing to yourself
+        result = self.run_cli(cmd_env, sub_cmd + f"difference '{env_a}' '{env_a}'")
+        self.assertEqual(result.return_value, 0)
+        self.assertIn("Invalid comparing an environment to itself", result.err())
+
+        # first environment DNE
+        result = self.run_cli(cmd_env, sub_cmd + "differ 'charlie-foxtrot' '{env_b}'")
+        self.assertNotEqual(result.return_value, 0)
+        self.assertIn("Did not find environment 'charlie-foxtrot'", result.err())
+
+        # second environment DNE
+        result = self.run_cli(cmd_env, sub_cmd + f"differences '{env_a}' 'missing'")
+        self.assertNotEqual(result.return_value, 0)
+        self.assertIn("Did not find environment 'missing'", result.err())
+
+        # cleanup
+        self.delete_environment(cmd_env, env_a)
+        self.delete_environment(cmd_env, env_b)
         self.delete_project(cmd_env, proj_name)

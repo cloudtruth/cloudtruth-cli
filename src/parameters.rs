@@ -1,4 +1,4 @@
-use crate::environments::Environments;
+use crate::environments::{EnvironmentUrlMap, Environments};
 use crate::openapi::{extract_details, OpenApiConfig, PAGE_SIZE};
 use cloudtruth_restapi::apis::projects_api::*;
 use cloudtruth_restapi::apis::Error::{self, ResponseError};
@@ -15,6 +15,7 @@ use std::str::FromStr;
 pub struct Parameters {}
 
 static DEFAULT_PARAM_VALUE: OnceCell<Value> = OnceCell::new();
+const DEFAULT_VALUE: &str = "-";
 
 #[derive(Debug)]
 pub struct ParameterDetails {
@@ -34,6 +35,46 @@ pub struct ParameterDetails {
     pub jmes_path: String,
 }
 
+impl ParameterDetails {
+    pub fn get_property(&self, property_name: &str) -> String {
+        match property_name {
+            "name" => self.key.clone(),
+            "value" => self.value.clone(),
+            "environment" => self.env_name.clone(),
+            "fqn" => self.fqn.clone(),
+            "jmes-path" => self.jmes_path.clone(),
+            "description" => self.description.clone(),
+            "secret" => format!("{}", self.secret),
+            _ => format!("Unhandled property name '{}'", property_name),
+        }
+    }
+
+    pub fn get_properties(&self, fields: &[&str]) -> Vec<String> {
+        fields.iter().map(|p| self.get_property(p)).collect()
+    }
+}
+
+impl Default for ParameterDetails {
+    fn default() -> Self {
+        ParameterDetails {
+            id: "".to_string(),
+            key: "".to_string(),
+            description: "".to_string(),
+            secret: false,
+            val_id: "".to_string(),
+            value: DEFAULT_VALUE.to_string(),
+            env_url: "".to_string(),
+            env_name: "".to_string(),
+            dynamic: false,
+            fqn: "".to_string(),
+            jmes_path: "".to_string(),
+        }
+    }
+}
+
+pub type ParameterDetailMap = HashMap<String, ParameterDetails>;
+pub type ParameterValueMap = HashMap<String, String>;
+
 /// Gets the singleton default `Value`
 fn default_param_value() -> &'static Value {
     DEFAULT_PARAM_VALUE.get_or_init(|| Value {
@@ -46,7 +87,7 @@ fn default_param_value() -> &'static Value {
         dynamic_filter: None,
         secret: None,
         static_value: None,
-        value: Some("—".to_owned()),
+        value: Some(DEFAULT_VALUE.to_owned()),
         created_at: "".to_owned(),
         modified_at: "".to_owned(),
     })
@@ -279,9 +320,11 @@ impl Parameters {
         rest_cfg: &mut OpenApiConfig,
         proj_id: &str,
         env_id: &str,
-    ) -> Result<HashMap<String, String>, Error<ProjectsParametersListError>> {
-        let parameters = self.get_parameter_unresolved_details(rest_cfg, proj_id, env_id, false)?;
-        let mut env_vars = HashMap::new();
+        mask_secrets: bool,
+    ) -> Result<ParameterValueMap, Error<ProjectsParametersListError>> {
+        let parameters =
+            self.get_parameter_unresolved_details(rest_cfg, proj_id, env_id, mask_secrets)?;
+        let mut env_vars = ParameterValueMap::new();
 
         for param in parameters {
             env_vars.insert(param.key, param.value);
@@ -303,14 +346,24 @@ impl Parameters {
         // now, resolve the source URL to the source environment name
         let environments = Environments::new();
         let url_map = environments.get_url_name_map(rest_cfg);
+        self.resolve_environments(&url_map, &mut list);
+        Ok(list)
+    }
+
+    /// Resolves the `env_name` field in the `ParameterDetails` object by interrogating the
+    /// `EnvironmentUrlMap` with the `env_url` field.
+    fn resolve_environments(
+        &self,
+        env_url_map: &EnvironmentUrlMap,
+        list: &mut Vec<ParameterDetails>,
+    ) {
         let default_key = "".to_string();
-        for details in &mut list {
-            details.env_name = url_map
+        for details in list {
+            details.env_name = env_url_map
                 .get(&details.env_url)
                 .unwrap_or(&default_key)
                 .clone();
         }
-        Ok(list)
     }
 
     /// This internal function gets the `ParameterDetails`, but does not resolve the `source` from
@@ -340,6 +393,24 @@ impl Parameters {
             list.sort_by(|l, r| l.key.cmp(&r.key));
         }
         Ok(list)
+    }
+
+    pub fn get_parameter_detail_map(
+        &self,
+        rest_cfg: &mut OpenApiConfig,
+        env_url_map: &EnvironmentUrlMap,
+        proj_id: &str,
+        env_id: &str,
+        mask_secrets: bool,
+    ) -> Result<ParameterDetailMap, Error<ProjectsParametersListError>> {
+        let mut details =
+            self.get_parameter_unresolved_details(rest_cfg, proj_id, env_id, mask_secrets)?;
+        self.resolve_environments(env_url_map, &mut details);
+        let mut result = ParameterDetailMap::new();
+        for entry in details {
+            result.insert(entry.key.clone(), entry);
+        }
+        Ok(result)
     }
 
     /// Creates the `Parameter` entry.

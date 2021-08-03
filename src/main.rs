@@ -857,6 +857,68 @@ fn process_parameters_command(
                 );
             }
         };
+    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("differences") {
+        let show_secrets = subcmd_args.is_present(SECRETS_FLAG);
+        let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
+        let properties: Vec<&str> = subcmd_args.values_of("properties").unwrap().collect();
+        let env1_name = subcmd_args.value_of("ENV1").unwrap();
+        let env2_name = subcmd_args.value_of("ENV2").unwrap();
+
+        if env1_name == env2_name {
+            warning_message("Invalid comparing an environment to itself".to_string())?;
+        } else {
+            let proj_id = resolved.project_id();
+
+            // fetch all environments once, and then determine id's from the same map that is
+            // used to resolve the environment names.
+            let environments = Environments::new();
+            let env_url_map = environments.get_url_name_map(rest_cfg);
+            let env1_id = environments.id_from_map(env1_name, &env_url_map)?;
+            let env2_id = environments.id_from_map(env2_name, &env_url_map)?;
+
+            let env1_values = parameters.get_parameter_detail_map(
+                rest_cfg,
+                &env_url_map,
+                proj_id,
+                &env1_id,
+                !show_secrets,
+            )?;
+            let env2_values = parameters.get_parameter_detail_map(
+                rest_cfg,
+                &env_url_map,
+                proj_id,
+                &env2_id,
+                !show_secrets,
+            )?;
+            let mut param_list: Vec<String> = env1_values.iter().map(|(k, _)| k.clone()).collect();
+            param_list.sort_by_key(|l| l.to_lowercase());
+
+            let default_param = ParameterDetails::default();
+            let mut added = false;
+            let mut table = Table::new("parameter");
+            table.set_header(&["Parameter", env1_name, env2_name]);
+            for param_name in param_list {
+                let env1 = env1_values
+                    .get(&param_name)
+                    .unwrap_or(&default_param)
+                    .get_properties(&properties)
+                    .join(",\n");
+                let env2 = env2_values
+                    .get(&param_name)
+                    .unwrap_or(&default_param)
+                    .get_properties(&properties)
+                    .join(",\n");
+                if env1 != env2 {
+                    table.add_row(vec![param_name, env1, env2]);
+                    added = true;
+                }
+            }
+            if added {
+                table.render(fmt)?;
+            } else {
+                println!("No parameters or differences in compared properties found.");
+            }
+        }
     } else {
         warn_missing_subcommand("parameters")?;
     }
@@ -1073,6 +1135,7 @@ fn main() -> Result<()> {
             &mut rest_cfg,
             resolved.project_id(),
             resolved.environment_id(),
+            false,
         )?;
         let mut sub_proc = SubProcess::new(ct_vars);
         process_run_command(matches, &mut sub_proc, &resolved)?;
