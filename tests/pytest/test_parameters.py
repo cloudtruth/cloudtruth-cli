@@ -1100,8 +1100,8 @@ parameter:
 +-----------+------------+-------+
 | Parameter | left       | right |
 +-----------+------------+-------+
-| param1    | some_value |      |
-| secret1   | *****      |      |
+| param1    | some_value | -     |
+| secret1   | *****      | -     |
 +-----------+------------+-------+
 """)
 
@@ -1111,8 +1111,8 @@ parameter:
 +-----------+------------+-------+
 | Parameter | left       | right |
 +-----------+------------+-------+
-| param1    | some_value |      |
-| secret1   | ssshhhh    |      |
+| param1    | some_value | -     |
+| secret1   | ssshhhh    | -     |
 +-----------+------------+-------+
 """)
 

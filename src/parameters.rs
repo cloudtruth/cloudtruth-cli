@@ -15,7 +15,7 @@ use std::str::FromStr;
 pub struct Parameters {}
 
 static DEFAULT_PARAM_VALUE: OnceCell<Value> = OnceCell::new();
-const DEFAULT_VALUE: &str = "—";
+const DEFAULT_VALUE: &str = "-";
 
 #[derive(Debug)]
 pub struct ParameterDetails {
