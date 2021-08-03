@@ -32,6 +32,7 @@ SRC_PROFILE = "profile"
 SRC_DEFAULT = "default"
 
 REDACTED = "*****"
+DEFAULT_PARAM_VALUE = "-"
 
 
 def get_cli_base_cmd() -> str:

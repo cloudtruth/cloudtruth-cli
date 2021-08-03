@@ -1,6 +1,6 @@
 import os
 
-from testcase import TestCase, DEFAULT_ENV_NAME, REDACTED
+from testcase import TestCase, DEFAULT_ENV_NAME, REDACTED, DEFAULT_PARAM_VALUE
 
 
 class TestParameters(TestCase):
@@ -1093,27 +1093,21 @@ parameter:
         self.set_param(cmd_env, proj_name, param2, value2a, env=env_a, secret=True)
 
         # first set of comparisons
-        cmp_cmd = sub_cmd + f"compare '{env_a}' '{env_b}' "
+        cmp_cmd = sub_cmd + f"compare '{env_a}' '{env_b}' -f csv "
         result = self.run_cli(cmd_env, cmp_cmd)
         self.assertEqual(result.return_value, 0)
-        self.assertEqual(result.out(), """\
-+-----------+------------+-------+
-| Parameter | left       | right |
-+-----------+------------+-------+
-| param1    | some_value | -     |
-| secret1   | *****      | -     |
-+-----------+------------+-------+
+        self.assertEqual(result.out(), f"""\
+Parameter,{env_a},{env_b}
+{param1},{value1a},{DEFAULT_PARAM_VALUE}
+{param2},{REDACTED},{DEFAULT_PARAM_VALUE}
 """)
 
-        result = self.run_cli(cmd_env, cmp_cmd + " -s")
+        result = self.run_cli(cmd_env, cmp_cmd + "-s")
         self.assertEqual(result.return_value, 0)
-        self.assertEqual(result.out(), """\
-+-----------+------------+-------+
-| Parameter | left       | right |
-+-----------+------------+-------+
-| param1    | some_value | -     |
-| secret1   | ssshhhh    | -     |
-+-----------+------------+-------+
+        self.assertEqual(result.out(), f"""\
+Parameter,{env_a},{env_b}
+{param1},{value1a},{DEFAULT_PARAM_VALUE}
+{param2},{value2a},{DEFAULT_PARAM_VALUE}
 """)
 
         # set some stuff in the default environment
@@ -1124,26 +1118,18 @@ parameter:
 
         # values from the default environment should show up
         result = self.run_cli(cmd_env, cmp_cmd + "-s")
-        self.assertEqual(result.out(), """\
-+-----------+------------+-----------+
-| Parameter | left       | right     |
-+-----------+------------+-----------+
-| param1    | some_value | different |
-| secret1   | ssshhhh    | be qwiet  |
-+-----------+------------+-----------+
+        self.assertEqual(result.out(), f"""\
+Parameter,{env_a},{env_b}
+{param1},{value1a},{value1d}
+{param2},{value2a},{value2d}
 """)
 
         # now, let's see the properties
         result = self.run_cli(cmd_env, cmp_cmd + "-s -p value -p environment ")
-        self.assertEqual(result.out(), """\
-+-----------+-------------+------------+
-| Parameter | left        | right      |
-+-----------+-------------+------------+
-| param1    | some_value, | different, |
-|           | left        | default    |
-| secret1   | ssshhhh,    | be qwiet,  |
-|           | left        | default    |
-+-----------+-------------+------------+
+        self.assertEqual(result.out(), f"""\
+Parameter,{env_a},{env_b}
+{param1},"{value1a},\n{env_a}","{value1d},\ndefault"
+{param2},"{value2a},\n{env_a}","{value2d},\ndefault"
 """)
 
         # now, set some different values
@@ -1154,17 +1140,17 @@ parameter:
         self.set_param(cmd_env, proj_name, param2, value2b, env=env_b)
 
         # test the --diff flag with just the values
-        result = self.run_cli(cmd_env, cmp_cmd + "-s -f csv")
-        self.assertEqual(result.out(), """\
-Parameter,left,right
-param1,matchers,matchers
-secret1,ssshhhh,im hunting wabbits
+        result = self.run_cli(cmd_env, cmp_cmd + "-s")
+        self.assertEqual(result.out(), f"""\
+Parameter,{env_a},{env_b}
+{param1},{same},{same}
+{param2},{value2a},{value2b}
 """)
 
-        result = self.run_cli(cmd_env, cmp_cmd + "-s -f csv --diff")
-        self.assertEqual(result.out(), """\
-Parameter,left,right
-secret1,ssshhhh,im hunting wabbits
+        result = self.run_cli(cmd_env, cmp_cmd + "-s --diff")
+        self.assertEqual(result.out(), f"""\
+Parameter,{env_a},{env_b}
+{param2},{value2a},{value2b}
 """)
 
         #####################
