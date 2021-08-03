@@ -255,16 +255,32 @@ class TestCase(unittest.TestCase):
             proj: str,
             name: str,
             value: str,
-            secret: bool = False,
+            secret: Optional[bool] = None,
             env: Optional[str] = None,
             desc: Optional[str] = None,
     ) -> None:
         cmd = self._base_cmd + f"--project '{proj}' "
         if env:
             cmd += f"--env '{env}' "
-        cmd += f"param set '{name}' --value '{value}' --secret '{str(secret).lower()}'"
+        cmd += f"param set '{name}' --value '{value}' "
+        if secret is not None:
+            cmd += f"--secret '{str(secret).lower()}' "
         if desc:
-            cmd += f" --desc '{desc}'"
+            cmd += f"--desc '{desc}' "
+        result = self.run_cli(cmd_env, cmd)
+        self.assertEqual(result.return_value, 0)
+
+    def unset_param(
+        self,
+        cmd_env,
+        proj: str,
+        name: str,
+        env: Optional[str] = None,
+    ):
+        cmd = self._base_cmd + f"--project '{proj}' "
+        if env:
+            cmd += f"--env '{env}' "
+        cmd += f"param unset '{name}' "
         result = self.run_cli(cmd_env, cmd)
         self.assertEqual(result.return_value, 0)
 

@@ -1060,3 +1060,132 @@ parameter:
 
         # cleanup
         self.delete_project(cmd_env, proj_name)
+
+    def test_parameter_compare(self):
+        base_cmd = self.get_cli_base_cmd()
+        cmd_env = self.get_cmd_env()
+
+        # add a new project
+        proj_name = self.make_name("test-param-cmp")
+        empty_msg = self._empty_message(proj_name)
+        self.create_project(cmd_env, proj_name)
+
+        # add a couple environments
+        env_a = self.make_name("left")
+        self.create_environment(cmd_env, env_a)
+        env_b = self.make_name("right")
+        self.create_environment(cmd_env, env_b)
+
+        # check that there are no parameters
+        sub_cmd = base_cmd + f"--project '{proj_name}' param "
+        show_cmd = sub_cmd + "list -vsf csv"
+        result = self.run_cli(cmd_env, show_cmd)
+        self.assertEqual(result.return_value, 0)
+        self.assertTrue(result.out_contains_value(empty_msg))
+
+        param1 = "param1"
+        param2 = "secret1"
+
+        # add some parameters to ENV A
+        value1a = "some_value"
+        value2a = "ssshhhh"
+        self.set_param(cmd_env, proj_name, param1, value1a, env=env_a)
+        self.set_param(cmd_env, proj_name, param2, value2a, env=env_a, secret=True)
+
+        # first set of comparisons
+        cmp_cmd = sub_cmd + f"compare '{env_a}' '{env_b}' "
+        result = self.run_cli(cmd_env, cmp_cmd)
+        self.assertEqual(result.return_value, 0)
+        self.assertEqual(result.out(), """\
++-----------+------------+-------+
+| Parameter | left       | right |
++-----------+------------+-------+
+| param1    | some_value |      |
+| secret1   | *****      |      |
++-----------+------------+-------+
+""")
+
+        result = self.run_cli(cmd_env, cmp_cmd + " -s")
+        self.assertEqual(result.return_value, 0)
+        self.assertEqual(result.out(), """\
++-----------+------------+-------+
+| Parameter | left       | right |
++-----------+------------+-------+
+| param1    | some_value |      |
+| secret1   | ssshhhh    |      |
++-----------+------------+-------+
+""")
+
+        # set some stuff in the default environment
+        value1d = "different"
+        value2d = "be qwiet"
+        self.set_param(cmd_env, proj_name, param1, value1d)
+        self.set_param(cmd_env, proj_name, param2, value2d)
+
+        # values from the default environment should show up
+        result = self.run_cli(cmd_env, cmp_cmd + "-s")
+        self.assertEqual(result.out(), """\
++-----------+------------+-----------+
+| Parameter | left       | right     |
++-----------+------------+-----------+
+| param1    | some_value | different |
+| secret1   | ssshhhh    | be qwiet  |
++-----------+------------+-----------+
+""")
+
+        # now, let's see the properties
+        result = self.run_cli(cmd_env, cmp_cmd + "-s -p value -p environment ")
+        self.assertEqual(result.out(), """\
++-----------+-------------+------------+
+| Parameter | left        | right      |
++-----------+-------------+------------+
+| param1    | some_value, | different, |
+|           | left        | default    |
+| secret1   | ssshhhh,    | be qwiet,  |
+|           | left        | default    |
++-----------+-------------+------------+
+""")
+
+        # now, set some different values
+        same = "matchers"
+        value2b = "im hunting wabbits"
+        self.set_param(cmd_env, proj_name, param1, same, env=env_a)
+        self.set_param(cmd_env, proj_name, param1, same, env=env_b)
+        self.set_param(cmd_env, proj_name, param2, value2b, env=env_b)
+
+        # test the --diff flag with just the values
+        result = self.run_cli(cmd_env, cmp_cmd + "-s -f csv")
+        self.assertEqual(result.out(), """\
+Parameter,left,right
+param1,matchers,matchers
+secret1,ssshhhh,im hunting wabbits
+""")
+
+        result = self.run_cli(cmd_env, cmp_cmd + "-s -f csv --diff")
+        self.assertEqual(result.out(), """\
+Parameter,left,right
+secret1,ssshhhh,im hunting wabbits
+""")
+
+        #####################
+        # Error cases
+
+        # no comparing to yourself
+        result = self.run_cli(cmd_env, sub_cmd + f"compare '{env_a}' '{env_a}'")
+        self.assertEqual(result.return_value, 0)
+        self.assertIn("Invalid comparing an environment to itself", result.err())
+
+        # first environment DNE
+        result = self.run_cli(cmd_env, sub_cmd + "comp 'charlie-foxtrot' '{env_b}'")
+        self.assertNotEqual(result.return_value, 0)
+        self.assertIn("Did not find environment 'charlie-foxtrot'", result.err())
+
+        # second environment DNE
+        result = self.run_cli(cmd_env, sub_cmd + f"comp '{env_a}' 'missing'")
+        self.assertNotEqual(result.return_value, 0)
+        self.assertIn("Did not find environment 'missing'", result.err())
+
+        # cleanup
+        self.delete_environment(cmd_env, env_a)
+        self.delete_environment(cmd_env, env_b)
+        self.delete_project(cmd_env, proj_name)
