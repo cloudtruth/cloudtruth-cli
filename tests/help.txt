@@ -216,38 +216,16 @@ FLAGS:
     -V, --version    Prints version information
 
 SUBCOMMANDS:
-    compare    Compare properties from two environments [aliases: comp, com, c]
-    delete     Delete the parameter from the project [aliases: del, d]
-    export     Export selected parameters to a known output format. Exported parameters are limited to alphanumeric
-               and underscore  in key names. Formats available are: dotenv, docker, and shell.
-    get        Gets value for parameter in the selected environment
-    help       Prints this message or the help of the given subcommand(s)
-    list       List CloudTruth parameters [aliases: ls, l]
-    set        Set a value in the selected project/environment for an existing parameter or creates a new one if
-               needed
-    unset      Remove a value/override from the selected project/environment and leaves the parameter in place.
-========================================
-cloudtruth-parameters-compare 
-Compare properties from two environments
-
-USAGE:
-    cloudtruth parameters compare [FLAGS] [OPTIONS] <ENV1> <ENV2>
-
-FLAGS:
-    -d, --diff       Only display differences
-    -h, --help       Prints help information
-    -s, --secrets    Show secret values
-    -V, --version    Prints version information
-
-OPTIONS:
-    -f, --format <format>             Display comparison format [default: table]  [possible values: table, csv, json,
-                                      yaml]
-    -p, --property <properties>...    List of the fields to compare. [default: value]  [possible values: value,
-                                      environment, fqn, jmes-path, secret]
-
-ARGS:
-    <ENV1>    Name of first environment for comparison.
-    <ENV2>    Name of second environment for comparison.
+    delete         Delete the parameter from the project [aliases: del, d]
+    differences    Show differences between properties from two environments [aliases: difference, differ, diff]
+    export         Export selected parameters to a known output format. Exported parameters are limited to
+                   alphanumeric and underscore  in key names. Formats available are: dotenv, docker, and shell.
+    get            Gets value for parameter in the selected environment
+    help           Prints this message or the help of the given subcommand(s)
+    list           List CloudTruth parameters [aliases: ls, l]
+    set            Set a value in the selected project/environment for an existing parameter or creates a new one if
+                   needed
+    unset          Remove a value/override from the selected project/environment and leaves the parameter in place.
 ========================================
 cloudtruth-parameters-delete 
 Delete the parameter from the project
@@ -261,6 +239,27 @@ FLAGS:
 
 ARGS:
     <KEY>    
+========================================
+cloudtruth-parameters-differences 
+Show differences between properties from two environments
+
+USAGE:
+    cloudtruth parameters differences [FLAGS] [OPTIONS] <ENV1> <ENV2>
+
+FLAGS:
+    -h, --help       Prints help information
+    -s, --secrets    Show secret values
+    -V, --version    Prints version information
+
+OPTIONS:
+    -f, --format <format>             Display difference format [default: table]  [possible values: table, csv, json,
+                                      yaml]
+    -p, --property <properties>...    List of the properties to compare. [default: value]  [possible values: value,
+                                      environment, fqn, jmes-path, secret]
+
+ARGS:
+    <ENV1>    Name of first environment for comparison.
+    <ENV2>    Name of second environment for comparison.
 ========================================
 cloudtruth-parameters-export 
 Export selected parameters to a known output format. Exported parameters are limited to alphanumeric and underscore  in

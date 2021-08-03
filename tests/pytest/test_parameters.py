@@ -1061,7 +1061,7 @@ parameter:
         # cleanup
         self.delete_project(cmd_env, proj_name)
 
-    def test_parameter_compare(self):
+    def test_parameter_diff(self):
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
 
@@ -1081,7 +1081,7 @@ parameter:
         show_cmd = sub_cmd + "list -vsf csv"
         result = self.run_cli(cmd_env, show_cmd)
         self.assertEqual(result.return_value, 0)
-        self.assertTrue(result.out_contains_value(empty_msg))
+        self.assertIn(empty_msg, result.out())
 
         param1 = "param1"
         param2 = "secret1"
@@ -1093,8 +1093,8 @@ parameter:
         self.set_param(cmd_env, proj_name, param2, value2a, env=env_a, secret=True)
 
         # first set of comparisons
-        cmp_cmd = sub_cmd + f"compare '{env_a}' '{env_b}' -f csv "
-        result = self.run_cli(cmd_env, cmp_cmd)
+        diff_cmd = sub_cmd + f"diff '{env_a}' '{env_b}' -f csv "
+        result = self.run_cli(cmd_env, diff_cmd)
         self.assertEqual(result.return_value, 0)
         self.assertEqual(result.out(), f"""\
 Parameter,{env_a},{env_b}
@@ -1102,7 +1102,7 @@ Parameter,{env_a},{env_b}
 {param2},{REDACTED},{DEFAULT_PARAM_VALUE}
 """)
 
-        result = self.run_cli(cmd_env, cmp_cmd + "-s")
+        result = self.run_cli(cmd_env, diff_cmd + "-s")
         self.assertEqual(result.return_value, 0)
         self.assertEqual(result.out(), f"""\
 Parameter,{env_a},{env_b}
@@ -1117,7 +1117,7 @@ Parameter,{env_a},{env_b}
         self.set_param(cmd_env, proj_name, param2, value2d)
 
         # values from the default environment should show up
-        result = self.run_cli(cmd_env, cmp_cmd + "-s")
+        result = self.run_cli(cmd_env, diff_cmd + "-s")
         self.assertEqual(result.out(), f"""\
 Parameter,{env_a},{env_b}
 {param1},{value1a},{value1d}
@@ -1125,7 +1125,7 @@ Parameter,{env_a},{env_b}
 """)
 
         # now, let's see the properties
-        result = self.run_cli(cmd_env, cmp_cmd + "-s -p value -p environment ")
+        result = self.run_cli(cmd_env, diff_cmd + "-s -p value -p environment ")
         self.assertEqual(result.out(), f"""\
 Parameter,{env_a},{env_b}
 {param1},"{value1a},\n{env_a}","{value1d},\ndefault"
@@ -1139,35 +1139,32 @@ Parameter,{env_a},{env_b}
         self.set_param(cmd_env, proj_name, param1, same, env=env_b)
         self.set_param(cmd_env, proj_name, param2, value2b, env=env_b)
 
-        # test the --diff flag with just the values
-        result = self.run_cli(cmd_env, cmp_cmd + "-s")
+        # without the --all flag, only the deltas are shown
+        result = self.run_cli(cmd_env, diff_cmd + "-s")
         self.assertEqual(result.out(), f"""\
 Parameter,{env_a},{env_b}
-{param1},{same},{same}
 {param2},{value2a},{value2b}
 """)
 
-        result = self.run_cli(cmd_env, cmp_cmd + "-s --diff")
-        self.assertEqual(result.out(), f"""\
-Parameter,{env_a},{env_b}
-{param2},{value2a},{value2b}
-""")
+        # when specifying properties where there are no diffs, we get nothing
+        result = self.run_cli(cmd_env, diff_cmd + "-s --property fqn")
+        self.assertIn("No parameters or differences in compared properties found", result.out())
 
         #####################
         # Error cases
 
         # no comparing to yourself
-        result = self.run_cli(cmd_env, sub_cmd + f"compare '{env_a}' '{env_a}'")
+        result = self.run_cli(cmd_env, sub_cmd + f"difference '{env_a}' '{env_a}'")
         self.assertEqual(result.return_value, 0)
         self.assertIn("Invalid comparing an environment to itself", result.err())
 
         # first environment DNE
-        result = self.run_cli(cmd_env, sub_cmd + "comp 'charlie-foxtrot' '{env_b}'")
+        result = self.run_cli(cmd_env, sub_cmd + "differ 'charlie-foxtrot' '{env_b}'")
         self.assertNotEqual(result.return_value, 0)
         self.assertIn("Did not find environment 'charlie-foxtrot'", result.err())
 
         # second environment DNE
-        result = self.run_cli(cmd_env, sub_cmd + f"comp '{env_a}' 'missing'")
+        result = self.run_cli(cmd_env, sub_cmd + f"differences '{env_a}' 'missing'")
         self.assertNotEqual(result.return_value, 0)
         self.assertIn("Did not find environment 'missing'", result.err())
 

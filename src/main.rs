@@ -857,9 +857,8 @@ fn process_parameters_command(
                 );
             }
         };
-    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("compare") {
+    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("differences") {
         let show_secrets = subcmd_args.is_present(SECRETS_FLAG);
-        let diff_only = subcmd_args.is_present("diff");
         let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
         let properties: Vec<&str> = subcmd_args.values_of("properties").unwrap().collect();
         let env1_name = subcmd_args.value_of("ENV1").unwrap();
@@ -909,7 +908,7 @@ fn process_parameters_command(
                     .unwrap_or(&default_param)
                     .get_properties(&properties)
                     .join(",\n");
-                if !diff_only || env1 != env2 {
+                if env1 != env2 {
                     table.add_row(vec![param_name, env1, env2]);
                     added = true;
                 }
