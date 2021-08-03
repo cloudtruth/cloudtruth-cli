@@ -208,7 +208,7 @@ impl Parameters {
         key_name: &str,
     ) -> Result<Option<String>, Error<ProjectsParametersDestroyError>> {
         // The only delete mechanism is by parameter ID, so start by querying the parameter info.
-        let response = self.get_details_by_name(rest_cfg, proj_id, env_id, key_name);
+        let response = self.get_details_by_name(rest_cfg, proj_id, env_id, key_name, true);
 
         if let Ok(Some(details)) = response {
             self.delete_parameter_by_id(rest_cfg, proj_id, details.id.as_str())
@@ -226,7 +226,7 @@ impl Parameters {
         key_name: &str,
     ) -> Result<Option<String>, Error<ProjectsParametersValuesDestroyError>> {
         // The only delete mechanism is by parameter ID, so start by querying the parameter info.
-        let response = self.get_details_by_name(rest_cfg, proj_id, env_id, key_name);
+        let response = self.get_details_by_name(rest_cfg, proj_id, env_id, key_name, true);
 
         if let Ok(Some(details)) = response {
             if details.env_url.contains(env_id) {
@@ -289,12 +289,13 @@ impl Parameters {
         proj_id: &str,
         env_id: &str,
         key_name: &str,
+        mask_secrets: bool,
     ) -> Result<Option<ParameterDetails>, Error<ProjectsParametersListError>> {
         let response = projects_parameters_list(
             rest_cfg,
             proj_id,
             Some(env_id),
-            Some(false), // get secret value when querying a single parameter
+            Some(mask_secrets),
             Some(key_name),
             None,
             PAGE_SIZE,

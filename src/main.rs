@@ -626,7 +626,7 @@ fn process_parameters_command(
         let key = subcmd_args.value_of("KEY").unwrap();
         let proj_id = resolved.project_id();
         let env_id = resolved.environment_id();
-        let parameter = parameters.get_details_by_name(rest_cfg, proj_id, env_id, key);
+        let parameter = parameters.get_details_by_name(rest_cfg, proj_id, env_id, key, false);
 
         if let Ok(details) = parameter {
             // Treat parameters without values set as if the value were simply empty, since
@@ -705,7 +705,7 @@ fn process_parameters_command(
             // get the original values, so that is not lost
             let mut updated: ParameterDetails;
             if let Some(original) =
-                parameters.get_details_by_name(rest_cfg, proj_id, env_id, key_name)?
+                parameters.get_details_by_name(rest_cfg, proj_id, env_id, key_name, true)?
             {
                 // only update if there is something to update
                 if description.is_some() || secret.is_some() || rename.is_some() {
