@@ -116,6 +116,7 @@ class TestCase(unittest.TestCase):
         self._projects = None
         self._environments = None
         super().__init__(*args, **kwargs)
+        self.maxDiff = None
 
     def setUp(self) -> None:
         # start each test with empty sets for projects and environments
