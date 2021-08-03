@@ -9,6 +9,7 @@
  */
 
 use reqwest;
+use std::time::Instant;
 
 use super::{configuration, Error};
 use crate::apis::ResponseContent;
@@ -87,7 +88,18 @@ pub fn memberships_create(
     local_var_req_builder = local_var_req_builder.json(&membership_create);
 
     let local_var_req = local_var_req_builder.build()?;
+    let method = local_var_req.method().clone();
+    let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
+    if configuration.rest_debug {
+        let duration = start.elapsed();
+        println!(
+            "URL {} {} elapsed: {:?}",
+            method,
+            &local_var_resp.url(),
+            duration
+        );
+    }
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
@@ -146,7 +158,18 @@ pub fn memberships_destroy(
     }
 
     let local_var_req = local_var_req_builder.build()?;
+    let method = local_var_req.method().clone();
+    let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
+    if configuration.rest_debug {
+        let duration = start.elapsed();
+        println!(
+            "URL {} {} elapsed: {:?}",
+            method,
+            &local_var_resp.url(),
+            duration
+        );
+    }
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
@@ -220,7 +243,18 @@ pub fn memberships_list(
     }
 
     let local_var_req = local_var_req_builder.build()?;
+    let method = local_var_req.method().clone();
+    let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
+    if configuration.rest_debug {
+        let duration = start.elapsed();
+        println!(
+            "URL {} {} elapsed: {:?}",
+            method,
+            &local_var_resp.url(),
+            duration
+        );
+    }
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
@@ -281,7 +315,18 @@ pub fn memberships_partial_update(
     local_var_req_builder = local_var_req_builder.json(&patched_membership);
 
     let local_var_req = local_var_req_builder.build()?;
+    let method = local_var_req.method().clone();
+    let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
+    if configuration.rest_debug {
+        let duration = start.elapsed();
+        println!(
+            "URL {} {} elapsed: {:?}",
+            method,
+            &local_var_resp.url(),
+            duration
+        );
+    }
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
@@ -340,7 +385,18 @@ pub fn memberships_retrieve(
     }
 
     let local_var_req = local_var_req_builder.build()?;
+    let method = local_var_req.method().clone();
+    let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
+    if configuration.rest_debug {
+        let duration = start.elapsed();
+        println!(
+            "URL {} {} elapsed: {:?}",
+            method,
+            &local_var_resp.url(),
+            duration
+        );
+    }
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
@@ -401,7 +457,18 @@ pub fn memberships_update(
     local_var_req_builder = local_var_req_builder.json(&membership);
 
     let local_var_req = local_var_req_builder.build()?;
+    let method = local_var_req.method().clone();
+    let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
+    if configuration.rest_debug {
+        let duration = start.elapsed();
+        println!(
+            "URL {} {} elapsed: {:?}",
+            method,
+            &local_var_resp.url(),
+            duration
+        );
+    }
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;

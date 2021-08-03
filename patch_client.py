@@ -30,6 +30,15 @@ CACHE_COOKIE_TEXT = """\
         }
     }
 """
+REST_DEBUG_TEXT = """\
+    let method = local_var_req.method().clone();
+    let start = Instant::now();
+    let mut local_var_resp = local_var_client.execute(local_var_req)?;
+    if configuration.rest_debug {
+        let duration = start.elapsed();
+        println!(\"URL {} {} elapsed: {:?}\", method, &local_var_resp.url(), duration);
+    }
+"""
 
 
 def file_read_content(filename: str) -> str:
@@ -159,16 +168,28 @@ def optional_values(srcdir: str) -> None:
             file_write_content(filename, temp)
 
 
+def add_rest_debug_to_config(srcdir: str) -> None:
+    filename = srcdir + "/apis/configuration.rs"
+    temp = file_read_content(filename)
+
+    rest_debug_param = "    pub rest_debug: bool,\n"
+    api_key_param = "    pub api_key: Option<ApiKey>,\n"
+    rest_debug_init = "            rest_debug: false,\n"
+    api_key_init = "            api_key: None,\n"
+    if rest_debug_param not in temp:
+        temp = temp.replace(api_key_param, api_key_param + rest_debug_param)
+        temp = temp.replace(api_key_init, api_key_init + rest_debug_init)
+        assert rest_debug_param in temp, "Did not add rest_debug param"
+        print(f"Updating {filename} with rest_debug parameter")
+        file_write_content(filename, temp)
+
+
 def add_debug_profiling(srcdir: str) -> None:
     filelist = glob.glob(f"{srcdir}/apis/*.rs")
     new_use = "use std::time::Instant;"
     old_use = "use reqwest;"
-    before1 = "    let method = local_var_req.method().clone();"
-    before2 = "    let start = Instant::now();"
     execute = "    let mut local_var_resp = local_var_client.execute(local_var_req)?;"
-    behind1 = "    let duration = start.elapsed();"
-    behind2 = "    println!(\"URL {} {} elapsed: {:?}\", method, &local_var_resp.url(), duration);"
-    new_execute = "\n".join([before1, before2, execute, behind1, behind2])
+    assert execute in REST_DEBUG_TEXT, "Adding REST debug text must include execute()"
     for filename in filelist:
         orig = file_read_content(filename)
         temp = orig
@@ -178,7 +199,7 @@ def add_debug_profiling(srcdir: str) -> None:
             continue
 
         temp = temp.replace(old_use, old_use + "\n" + new_use)
-        temp = temp.replace(execute, new_execute)
+        temp = temp.replace(execute, REST_DEBUG_TEXT)
 
         print(f"Updating {filename} with debug profiling")
         file_write_content(filename, temp)
@@ -192,4 +213,5 @@ if __name__ == "__main__":
     support_cookies(srcdir)
     update_gitpush(client_dir)
     optional_values(srcdir)
-    # add_debug_profiling(srcdir)
+    add_rest_debug_to_config(srcdir)
+    add_debug_profiling(srcdir)

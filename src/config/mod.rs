@@ -53,6 +53,9 @@ pub const CT_PROJECT: &str = "CLOUDTRUTH_PROJECT";
 /// Environment variable name used to set the profile name.
 pub const CT_PROFILE: &str = "CLOUDTRUTH_PROFILE";
 
+/// Environment variable name used to enable REST debugging statements.
+pub const CT_REST_DEBUG: &str = "CLOUDTRUTH_REST_DEBUG";
+
 /// List of variables to remove to make a clean environment.
 #[allow(dead_code)]
 pub const CT_APP_REMOVABLE_VARS: &[&str] = &[CT_SERVER_URL, CT_API_KEY];
@@ -78,6 +81,7 @@ pub struct Config {
     pub project: Option<String>,
     pub server_url: String,
     pub request_timeout: Option<Duration>,
+    pub rest_debug: bool,
 }
 
 pub struct ValidationError {
@@ -105,6 +109,7 @@ impl From<Profile> for Config {
                 profile.request_timeout.unwrap_or(DEFAULT_REQUEST_TIMEOUT),
                 0,
             )),
+            rest_debug: profile.rest_debug.unwrap_or(false),
         }
     }
 }
@@ -120,6 +125,7 @@ const PARAM_PROJECT: &str = "Project";
 const PARAM_ENVIRONMENT: &str = "Environment";
 const PARAM_SERVER_URL: &str = "Server URL";
 const PARAM_REQUEST_TIMEOUT: &str = "Request timeout";
+const PARAM_REST_DEBUG: &str = "REST debug";
 
 #[derive(Clone, Debug)]
 pub struct ConfigValue {
@@ -423,6 +429,30 @@ impl Config {
         }
         results.push(ConfigValue {
             name: PARAM_REQUEST_TIMEOUT.to_string(),
+            value,
+            source,
+            secret: false,
+            extension: true,
+        });
+
+        //////////////////
+        // REST debug
+        let mut value = "false".to_string();
+        let mut source = SRC_DEFAULT.to_string();
+        if let Some(env_value) = ConfigEnv::get_override(CT_REST_DEBUG) {
+            value = env_value;
+            source = SRC_ENV.to_string();
+        } else {
+            for profile in &profiles {
+                if let Some(ref prof_value) = profile.rest_debug {
+                    value = prof_value.to_string();
+                    source = format!("{} ({})", SRC_PROFILE, profile.name);
+                    break;
+                }
+            }
+        }
+        results.push(ConfigValue {
+            name: PARAM_REST_DEBUG.to_string(),
             value,
             source,
             secret: false,
