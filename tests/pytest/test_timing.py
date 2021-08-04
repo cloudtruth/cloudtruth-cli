@@ -65,16 +65,19 @@ class TestTiming(TestCase):
         cmd_env = self.get_cmd_env()
         cmd_env[CT_REST_DEBUG] = "true"
         create_timing = [[], [], [], [], [], ]
-        get_timing = [[], [], [], []]
+        create_total = []
+        get_timing = [[], [], [], [], ]
+        get_total = []
 
         for index in range(num_values):
             result = self.set_param(cmd_env, proj_name, self._param_name(index), "abc123", secret=secret)
-            self.assertEqual(result.return_value, 0)
             create_timing = parse_timing(create_timing, result.stdout)
+            create_total.append(int(result.timediff.seconds * 1000 + result.timediff.microseconds / 1000))
 
             result = self.run_cli(cmd_env, get_cmd + f"'{self._param_name(index)}'")
             self.assertEqual(result.return_value, 0)
             get_timing = parse_timing(get_timing, result.stdout)
+            get_total.append(int(result.timediff.seconds * 1000 + result.timediff.microseconds / 1000))
 
         rval = OrderedDict()
         rval["create-" + ENV_RESOLVE] = create_timing[0]
@@ -82,30 +85,13 @@ class TestTiming(TestCase):
         rval["create-param-set"] = create_timing[2]
         rval["create-param-set"] = create_timing[3]
         rval["create-value-set"] = create_timing[4]
+        rval["create-total"] = create_total
 
         rval["get-" + ENV_RESOLVE] = get_timing[0]
         rval["get-" + PROJ_RESOLVE] = get_timing[1]
         rval["get-param-resolve"] = get_timing[2]
         rval["get-param-retrieve"] = get_timing[3]
-        return rval
-
-    def _parameter_retrieve_timing(self, proj_name: str, num_values: int) -> OrderedDict:
-        base_cmd = self.get_cli_base_cmd()
-        get_cmd = base_cmd + f"--project '{proj_name}' param get "
-        cmd_env = self.get_cmd_env()
-        cmd_env[CT_REST_DEBUG] = "true"
-
-        timing_info = [[], [], [], []]
-        for index in range(num_values):
-            result = self.run_cli(cmd_env, get_cmd + f"'{self._param_name(index)}'")
-            self.assertEqual(result.return_value, 0)
-            timing_info = parse_timing(timing_info, result.stdout)
-
-        rval = OrderedDict()
-        rval[ENV_RESOLVE] = timing_info[0]
-        rval[PROJ_RESOLVE] = timing_info[1]
-        rval["param-resolve"] = timing_info[2]
-        rval["param-retrieve"] = timing_info[3]
+        rval["get-total"] = get_total
         return rval
 
     def test_timing_secrets(self) -> None:

@@ -4,6 +4,7 @@ import shlex
 import subprocess
 import unittest
 from copy import deepcopy
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import List, Optional, Dict
 
@@ -68,6 +69,7 @@ class Result:
     return_value: int = 0,
     stdout: List = dataclasses.field(default_factory=list),
     stderr: List = dataclasses.field(default_factory=list),
+    timediff: timedelta = timedelta(0)
 
     @staticmethod
     def _first_line_contains(stream: List[str], value: str) -> Optional[str]:
@@ -198,13 +200,16 @@ class TestCase(unittest.TestCase):
                 if proj_name:
                     self._projects.add(proj_name)
 
+        start = datetime.now()
         process = subprocess.run(
             cmd, env=env, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
         )
+        delta = datetime.now() - start
         result = Result(
             return_value=process.returncode,
             stdout=process.stdout.decode("us-ascii", errors="ignore").replace("\r", "").split("\n"),
             stderr=process.stderr.decode("us-ascii", errors="ignore").replace("\r", "").split("\n"),
+            timediff=delta,
         )
 
         if self.log_output:
