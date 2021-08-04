@@ -20,7 +20,6 @@ pub struct Configuration {
     pub bearer_access_token: Option<String>,
     pub api_key: Option<ApiKey>,
     pub rest_debug: bool,
-    pub cookie: Option<String>,
     // TODO: take an oauth2 token source, similar to the go one
 }
 
@@ -49,7 +48,6 @@ impl Default for Configuration {
             bearer_access_token: None,
             api_key: None,
             rest_debug: false,
-            cookie: None,
         }
     }
 }

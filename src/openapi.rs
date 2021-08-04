@@ -47,6 +47,7 @@ impl From<&CloudTruthConfig> for OpenApiConfig {
             user_agent: Some(user_agent_name()),
             client: reqwest::Client::builder()
                 .timeout(ct_cfg.request_timeout.unwrap())
+                .cookie_store(true)
                 .build()
                 .unwrap(),
             basic_auth: None,
@@ -56,7 +57,6 @@ impl From<&CloudTruthConfig> for OpenApiConfig {
                 prefix: Some("Api-Key".to_owned()),
                 key: ct_cfg.api_key.clone(),
             }),
-            cookie: None,
             rest_debug: ct_cfg.rest_debug,
         }
     }

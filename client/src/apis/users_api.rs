@@ -39,7 +39,7 @@ pub enum UsersRetrieveError {
 
 /// ### Description ###  Delete the specified user.  This removes all access the User may have to any Organization.  ### Pre-Conditions ###  - The user cannot be the only owner of any Organization. - The bearer token must belong to the user being deleted. - All of the memberships related to the User will be deleted, so all the membership deletion pre-conditions must also be met.
 pub fn users_destroy(
-    configuration: &mut configuration::Configuration,
+    configuration: &configuration::Configuration,
     id: &str,
 ) -> Result<(), Error<UsersDestroyError>> {
     let local_var_client = &configuration.client;
@@ -67,10 +67,6 @@ pub fn users_destroy(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
-    if let Some(ref local_var_cookie) = configuration.cookie {
-        local_var_req_builder =
-            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
-    }
 
     let local_var_req = local_var_req_builder.build()?;
     let method = local_var_req.method().clone();
@@ -88,11 +84,6 @@ pub fn users_destroy(
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
-    if configuration.cookie.is_none() {
-        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
-            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
-        }
-    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         Ok(())
@@ -109,7 +100,7 @@ pub fn users_destroy(
 }
 
 pub fn users_list(
-    configuration: &mut configuration::Configuration,
+    configuration: &configuration::Configuration,
     page: Option<i32>,
     page_size: Option<i32>,
     _type: Option<&str>,
@@ -147,10 +138,6 @@ pub fn users_list(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
-    if let Some(ref local_var_cookie) = configuration.cookie {
-        local_var_req_builder =
-            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
-    }
 
     let local_var_req = local_var_req_builder.build()?;
     let method = local_var_req.method().clone();
@@ -168,11 +155,6 @@ pub fn users_list(
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
-    if configuration.cookie.is_none() {
-        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
-            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
-        }
-    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         serde_json::from_str(&local_var_content).map_err(Error::from)
@@ -189,7 +171,7 @@ pub fn users_list(
 }
 
 pub fn users_retrieve(
-    configuration: &mut configuration::Configuration,
+    configuration: &configuration::Configuration,
     id: &str,
 ) -> Result<crate::models::User, Error<UsersRetrieveError>> {
     let local_var_client = &configuration.client;
@@ -217,10 +199,6 @@ pub fn users_retrieve(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
-    if let Some(ref local_var_cookie) = configuration.cookie {
-        local_var_req_builder =
-            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
-    }
 
     let local_var_req = local_var_req_builder.build()?;
     let method = local_var_req.method().clone();
@@ -238,11 +216,6 @@ pub fn users_retrieve(
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
-    if configuration.cookie.is_none() {
-        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
-            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
-        }
-    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         serde_json::from_str(&local_var_content).map_err(Error::from)

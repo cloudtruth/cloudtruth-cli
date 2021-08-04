@@ -18,18 +18,6 @@ API_KEY_TEXT = """\
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
 """
-ADD_COOKIE_TEXT = """\
-    if let Some(ref local_var_cookie) = configuration.cookie {
-        local_var_req_builder = local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
-    }
-"""
-CACHE_COOKIE_TEXT = """\
-    if configuration.cookie.is_none() {
-        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
-            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
-        }
-    }
-"""
 REST_DEBUG_TEXT = """\
     let method = local_var_req.method().clone();
     let start = Instant::now();
@@ -108,54 +96,6 @@ def update_gitpush(client_dir: str) -> None:
         file_write_content(filename, temp)
 
 
-def add_cookie_to_config(srcdir: str) -> None:
-    filename = srcdir + "/apis/configuration.rs"
-    temp = file_read_content(filename)
-
-    cookie_param = "    pub cookie: Option<String>,\n"
-    api_key_param = "    pub api_key: Option<ApiKey>,\n"
-    cookie_init = "            cookie: None,\n"
-    api_key_init = "            api_key: None,\n"
-    if cookie_param not in temp:
-        temp = temp.replace(api_key_param, api_key_param + cookie_param)
-        temp = temp.replace(api_key_init, api_key_init + cookie_init)
-        assert cookie_param in temp, "Did not add cookie param"
-        print(f"Updating {filename} with cookie parameter")
-        file_write_content(filename, temp)
-
-
-def add_cookie_cache(filename: str) -> None:
-    temp = file_read_content(filename)
-
-    if ADD_COOKIE_TEXT in temp or API_KEY_TEXT not in temp:
-        return
-
-    config_param = "configuration: &configuration::Configuration,"
-    config_mut_param = config_param.replace("&", "&mut ")
-    content_text = "    let local_var_content = local_var_resp.text()?;\n"
-
-    print(f"Updating {filename} with cookie text")
-    temp = temp.replace(config_param, config_mut_param)
-    temp = temp.replace(content_text, content_text + CACHE_COOKIE_TEXT)
-    temp = temp.replace(API_KEY_TEXT, API_KEY_TEXT + ADD_COOKIE_TEXT)
-    assert ADD_COOKIE_TEXT in temp, f"Failed to add code to use cookies to {filename}"
-    file_write_content(filename, temp)
-
-
-def add_cookie_caches(srcdir: str) -> None:
-    """
-    This allows cookies to be used in the CLI.
-    """
-    filelist = glob.glob(f"{srcdir}/apis/*.rs")
-    for filename in filelist:
-        add_cookie_cache(filename)
-
-
-def support_cookies(srcdir: str) -> None:
-    add_cookie_to_config(srcdir)
-    add_cookie_caches(srcdir)
-
-
 def optional_values(srcdir: str) -> None:
     filelist = glob.glob(f"{srcdir}/models/*.rs")
     required_value = "HashMap<String, crate::models::Value>"
@@ -210,7 +150,6 @@ if __name__ == "__main__":
     srcdir = client_dir + "/src"
     allow_snake(srcdir)
     support_api_key(srcdir)
-    support_cookies(srcdir)
     update_gitpush(client_dir)
     optional_values(srcdir)
     add_rest_debug_to_config(srcdir)

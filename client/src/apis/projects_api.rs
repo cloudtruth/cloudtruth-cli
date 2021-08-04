@@ -207,7 +207,7 @@ pub enum ProjectsUpdateError {
 }
 
 pub fn projects_create(
-    configuration: &mut configuration::Configuration,
+    configuration: &configuration::Configuration,
     project_create: crate::models::ProjectCreate,
 ) -> Result<crate::models::Project, Error<ProjectsCreateError>> {
     let local_var_client = &configuration.client;
@@ -231,10 +231,6 @@ pub fn projects_create(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
-    if let Some(ref local_var_cookie) = configuration.cookie {
-        local_var_req_builder =
-            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
-    }
     local_var_req_builder = local_var_req_builder.json(&project_create);
 
     let local_var_req = local_var_req_builder.build()?;
@@ -253,11 +249,6 @@ pub fn projects_create(
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
-    if configuration.cookie.is_none() {
-        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
-            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
-        }
-    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         serde_json::from_str(&local_var_content).map_err(Error::from)
@@ -274,7 +265,7 @@ pub fn projects_create(
 }
 
 pub fn projects_destroy(
-    configuration: &mut configuration::Configuration,
+    configuration: &configuration::Configuration,
     id: &str,
 ) -> Result<(), Error<ProjectsDestroyError>> {
     let local_var_client = &configuration.client;
@@ -298,10 +289,6 @@ pub fn projects_destroy(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
-    if let Some(ref local_var_cookie) = configuration.cookie {
-        local_var_req_builder =
-            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
-    }
 
     let local_var_req = local_var_req_builder.build()?;
     let method = local_var_req.method().clone();
@@ -319,11 +306,6 @@ pub fn projects_destroy(
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
-    if configuration.cookie.is_none() {
-        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
-            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
-        }
-    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         Ok(())
@@ -340,7 +322,7 @@ pub fn projects_destroy(
 }
 
 pub fn projects_list(
-    configuration: &mut configuration::Configuration,
+    configuration: &configuration::Configuration,
     name: Option<&str>,
     page: Option<i32>,
     page_size: Option<i32>,
@@ -378,10 +360,6 @@ pub fn projects_list(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
-    if let Some(ref local_var_cookie) = configuration.cookie {
-        local_var_req_builder =
-            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
-    }
 
     let local_var_req = local_var_req_builder.build()?;
     let method = local_var_req.method().clone();
@@ -399,11 +377,6 @@ pub fn projects_list(
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
-    if configuration.cookie.is_none() {
-        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
-            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
-        }
-    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         serde_json::from_str(&local_var_content).map_err(Error::from)
@@ -421,7 +394,7 @@ pub fn projects_list(
 
 /// Exports all parameters in this project in the requested format.  Parameter names and values will be coerced to the proper format (e.g. for a dotenv export, my_parameter will be capitalized to MY_PARAMETER and its value will be in a quoted string).  Note that capitalization is the only name coercion that will be performed on parameter names, names that are invalid for a given format will be omitted.
 pub fn projects_parameter_export_list(
-    configuration: &mut configuration::Configuration,
+    configuration: &configuration::Configuration,
     project_pk: &str,
     contains: Option<&str>,
     endswith: Option<&str>,
@@ -499,10 +472,6 @@ pub fn projects_parameter_export_list(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
-    if let Some(ref local_var_cookie) = configuration.cookie {
-        local_var_req_builder =
-            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
-    }
 
     let local_var_req = local_var_req_builder.build()?;
     let method = local_var_req.method().clone();
@@ -520,11 +489,6 @@ pub fn projects_parameter_export_list(
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
-    if configuration.cookie.is_none() {
-        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
-            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
-        }
-    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         serde_json::from_str(&local_var_content).map_err(Error::from)
@@ -541,7 +505,7 @@ pub fn projects_parameter_export_list(
 }
 
 pub fn projects_parameters_create(
-    configuration: &mut configuration::Configuration,
+    configuration: &configuration::Configuration,
     project_pk: &str,
     parameter_create: crate::models::ParameterCreate,
 ) -> Result<crate::models::Parameter, Error<ProjectsParametersCreateError>> {
@@ -570,10 +534,6 @@ pub fn projects_parameters_create(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
-    if let Some(ref local_var_cookie) = configuration.cookie {
-        local_var_req_builder =
-            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
-    }
     local_var_req_builder = local_var_req_builder.json(&parameter_create);
 
     let local_var_req = local_var_req_builder.build()?;
@@ -592,11 +552,6 @@ pub fn projects_parameters_create(
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
-    if configuration.cookie.is_none() {
-        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
-            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
-        }
-    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         serde_json::from_str(&local_var_content).map_err(Error::from)
@@ -613,7 +568,7 @@ pub fn projects_parameters_create(
 }
 
 pub fn projects_parameters_destroy(
-    configuration: &mut configuration::Configuration,
+    configuration: &configuration::Configuration,
     id: &str,
     project_pk: &str,
 ) -> Result<(), Error<ProjectsParametersDestroyError>> {
@@ -643,10 +598,6 @@ pub fn projects_parameters_destroy(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
-    if let Some(ref local_var_cookie) = configuration.cookie {
-        local_var_req_builder =
-            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
-    }
 
     let local_var_req = local_var_req_builder.build()?;
     let method = local_var_req.method().clone();
@@ -664,11 +615,6 @@ pub fn projects_parameters_destroy(
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
-    if configuration.cookie.is_none() {
-        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
-            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
-        }
-    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         Ok(())
@@ -685,7 +631,7 @@ pub fn projects_parameters_destroy(
 }
 
 pub fn projects_parameters_list(
-    configuration: &mut configuration::Configuration,
+    configuration: &configuration::Configuration,
     project_pk: &str,
     environment: Option<&str>,
     mask_secrets: Option<bool>,
@@ -743,10 +689,6 @@ pub fn projects_parameters_list(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
-    if let Some(ref local_var_cookie) = configuration.cookie {
-        local_var_req_builder =
-            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
-    }
 
     let local_var_req = local_var_req_builder.build()?;
     let method = local_var_req.method().clone();
@@ -764,11 +706,6 @@ pub fn projects_parameters_list(
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
-    if configuration.cookie.is_none() {
-        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
-            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
-        }
-    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         serde_json::from_str(&local_var_content).map_err(Error::from)
@@ -785,7 +722,7 @@ pub fn projects_parameters_list(
 }
 
 pub fn projects_parameters_partial_update(
-    configuration: &mut configuration::Configuration,
+    configuration: &configuration::Configuration,
     id: &str,
     project_pk: &str,
     patched_parameter: Option<crate::models::PatchedParameter>,
@@ -816,10 +753,6 @@ pub fn projects_parameters_partial_update(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
-    if let Some(ref local_var_cookie) = configuration.cookie {
-        local_var_req_builder =
-            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
-    }
     local_var_req_builder = local_var_req_builder.json(&patched_parameter);
 
     let local_var_req = local_var_req_builder.build()?;
@@ -838,11 +771,6 @@ pub fn projects_parameters_partial_update(
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
-    if configuration.cookie.is_none() {
-        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
-            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
-        }
-    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         serde_json::from_str(&local_var_content).map_err(Error::from)
@@ -859,7 +787,7 @@ pub fn projects_parameters_partial_update(
 }
 
 pub fn projects_parameters_retrieve(
-    configuration: &mut configuration::Configuration,
+    configuration: &configuration::Configuration,
     id: &str,
     project_pk: &str,
     environment: Option<&str>,
@@ -904,10 +832,6 @@ pub fn projects_parameters_retrieve(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
-    if let Some(ref local_var_cookie) = configuration.cookie {
-        local_var_req_builder =
-            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
-    }
 
     let local_var_req = local_var_req_builder.build()?;
     let method = local_var_req.method().clone();
@@ -925,11 +849,6 @@ pub fn projects_parameters_retrieve(
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
-    if configuration.cookie.is_none() {
-        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
-            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
-        }
-    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         serde_json::from_str(&local_var_content).map_err(Error::from)
@@ -946,7 +865,7 @@ pub fn projects_parameters_retrieve(
 }
 
 pub fn projects_parameters_update(
-    configuration: &mut configuration::Configuration,
+    configuration: &configuration::Configuration,
     id: &str,
     project_pk: &str,
     parameter: crate::models::Parameter,
@@ -977,10 +896,6 @@ pub fn projects_parameters_update(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
-    if let Some(ref local_var_cookie) = configuration.cookie {
-        local_var_req_builder =
-            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
-    }
     local_var_req_builder = local_var_req_builder.json(&parameter);
 
     let local_var_req = local_var_req_builder.build()?;
@@ -999,11 +914,6 @@ pub fn projects_parameters_update(
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
-    if configuration.cookie.is_none() {
-        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
-            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
-        }
-    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         serde_json::from_str(&local_var_content).map_err(Error::from)
@@ -1021,7 +931,7 @@ pub fn projects_parameters_update(
 
 /// Set the value of a parameter in an environment.
 pub fn projects_parameters_values_create(
-    configuration: &mut configuration::Configuration,
+    configuration: &configuration::Configuration,
     parameter_pk: &str,
     project_pk: &str,
     value_create: crate::models::ValueCreate,
@@ -1057,10 +967,6 @@ pub fn projects_parameters_values_create(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
-    if let Some(ref local_var_cookie) = configuration.cookie {
-        local_var_req_builder =
-            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
-    }
     local_var_req_builder = local_var_req_builder.json(&value_create);
 
     let local_var_req = local_var_req_builder.build()?;
@@ -1079,11 +985,6 @@ pub fn projects_parameters_values_create(
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
-    if configuration.cookie.is_none() {
-        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
-            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
-        }
-    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         serde_json::from_str(&local_var_content).map_err(Error::from)
@@ -1101,7 +1002,7 @@ pub fn projects_parameters_values_create(
 
 /// Destroy the value of a parameter in an environment.
 pub fn projects_parameters_values_destroy(
-    configuration: &mut configuration::Configuration,
+    configuration: &configuration::Configuration,
     id: &str,
     parameter_pk: &str,
     project_pk: &str,
@@ -1133,10 +1034,6 @@ pub fn projects_parameters_values_destroy(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
-    if let Some(ref local_var_cookie) = configuration.cookie {
-        local_var_req_builder =
-            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
-    }
 
     let local_var_req = local_var_req_builder.build()?;
     let method = local_var_req.method().clone();
@@ -1154,11 +1051,6 @@ pub fn projects_parameters_values_destroy(
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
-    if configuration.cookie.is_none() {
-        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
-            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
-        }
-    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         Ok(())
@@ -1176,7 +1068,7 @@ pub fn projects_parameters_values_destroy(
 
 ///          Retrieve previously set values of a parameter in one or all environments.         To see all the _effective_ values for a parameter across every environment,         use the Parameters API (see the `values` field).     
 pub fn projects_parameters_values_list(
-    configuration: &mut configuration::Configuration,
+    configuration: &configuration::Configuration,
     parameter_pk: &str,
     project_pk: &str,
     environment: Option<&str>,
@@ -1231,10 +1123,6 @@ pub fn projects_parameters_values_list(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
-    if let Some(ref local_var_cookie) = configuration.cookie {
-        local_var_req_builder =
-            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
-    }
 
     let local_var_req = local_var_req_builder.build()?;
     let method = local_var_req.method().clone();
@@ -1252,11 +1140,6 @@ pub fn projects_parameters_values_list(
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
-    if configuration.cookie.is_none() {
-        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
-            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
-        }
-    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         serde_json::from_str(&local_var_content).map_err(Error::from)
@@ -1274,7 +1157,7 @@ pub fn projects_parameters_values_list(
 
 /// Update the value of a parameter in an environment.
 pub fn projects_parameters_values_partial_update(
-    configuration: &mut configuration::Configuration,
+    configuration: &configuration::Configuration,
     id: &str,
     parameter_pk: &str,
     project_pk: &str,
@@ -1312,10 +1195,6 @@ pub fn projects_parameters_values_partial_update(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
-    if let Some(ref local_var_cookie) = configuration.cookie {
-        local_var_req_builder =
-            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
-    }
     local_var_req_builder = local_var_req_builder.json(&patched_value);
 
     let local_var_req = local_var_req_builder.build()?;
@@ -1334,11 +1213,6 @@ pub fn projects_parameters_values_partial_update(
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
-    if configuration.cookie.is_none() {
-        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
-            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
-        }
-    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         serde_json::from_str(&local_var_content).map_err(Error::from)
@@ -1356,7 +1230,7 @@ pub fn projects_parameters_values_partial_update(
 
 /// Retrieve the value of a parameter in an environment.
 pub fn projects_parameters_values_retrieve(
-    configuration: &mut configuration::Configuration,
+    configuration: &configuration::Configuration,
     id: &str,
     parameter_pk: &str,
     project_pk: &str,
@@ -1398,10 +1272,6 @@ pub fn projects_parameters_values_retrieve(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
-    if let Some(ref local_var_cookie) = configuration.cookie {
-        local_var_req_builder =
-            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
-    }
 
     let local_var_req = local_var_req_builder.build()?;
     let method = local_var_req.method().clone();
@@ -1419,11 +1289,6 @@ pub fn projects_parameters_values_retrieve(
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
-    if configuration.cookie.is_none() {
-        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
-            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
-        }
-    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         serde_json::from_str(&local_var_content).map_err(Error::from)
@@ -1441,7 +1306,7 @@ pub fn projects_parameters_values_retrieve(
 
 /// Update the value of a parameter in an environment.
 pub fn projects_parameters_values_update(
-    configuration: &mut configuration::Configuration,
+    configuration: &configuration::Configuration,
     id: &str,
     parameter_pk: &str,
     project_pk: &str,
@@ -1479,10 +1344,6 @@ pub fn projects_parameters_values_update(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
-    if let Some(ref local_var_cookie) = configuration.cookie {
-        local_var_req_builder =
-            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
-    }
     local_var_req_builder = local_var_req_builder.json(&value);
 
     let local_var_req = local_var_req_builder.build()?;
@@ -1501,11 +1362,6 @@ pub fn projects_parameters_values_update(
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
-    if configuration.cookie.is_none() {
-        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
-            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
-        }
-    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         serde_json::from_str(&local_var_content).map_err(Error::from)
@@ -1522,7 +1378,7 @@ pub fn projects_parameters_values_update(
 }
 
 pub fn projects_partial_update(
-    configuration: &mut configuration::Configuration,
+    configuration: &configuration::Configuration,
     id: &str,
     patched_project: Option<crate::models::PatchedProject>,
 ) -> Result<crate::models::Project, Error<ProjectsPartialUpdateError>> {
@@ -1547,10 +1403,6 @@ pub fn projects_partial_update(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
-    if let Some(ref local_var_cookie) = configuration.cookie {
-        local_var_req_builder =
-            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
-    }
     local_var_req_builder = local_var_req_builder.json(&patched_project);
 
     let local_var_req = local_var_req_builder.build()?;
@@ -1569,11 +1421,6 @@ pub fn projects_partial_update(
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
-    if configuration.cookie.is_none() {
-        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
-            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
-        }
-    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         serde_json::from_str(&local_var_content).map_err(Error::from)
@@ -1590,7 +1437,7 @@ pub fn projects_partial_update(
 }
 
 pub fn projects_retrieve(
-    configuration: &mut configuration::Configuration,
+    configuration: &configuration::Configuration,
     id: &str,
 ) -> Result<crate::models::Project, Error<ProjectsRetrieveError>> {
     let local_var_client = &configuration.client;
@@ -1614,10 +1461,6 @@ pub fn projects_retrieve(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
-    if let Some(ref local_var_cookie) = configuration.cookie {
-        local_var_req_builder =
-            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
-    }
 
     let local_var_req = local_var_req_builder.build()?;
     let method = local_var_req.method().clone();
@@ -1635,11 +1478,6 @@ pub fn projects_retrieve(
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
-    if configuration.cookie.is_none() {
-        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
-            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
-        }
-    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         serde_json::from_str(&local_var_content).map_err(Error::from)
@@ -1657,7 +1495,7 @@ pub fn projects_retrieve(
 
 /// Endpoint for previewing a template.
 pub fn projects_template_preview_create(
-    configuration: &mut configuration::Configuration,
+    configuration: &configuration::Configuration,
     project_pk: &str,
     template_preview: crate::models::TemplatePreview,
     environment: Option<&str>,
@@ -1696,10 +1534,6 @@ pub fn projects_template_preview_create(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
-    if let Some(ref local_var_cookie) = configuration.cookie {
-        local_var_req_builder =
-            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
-    }
     local_var_req_builder = local_var_req_builder.json(&template_preview);
 
     let local_var_req = local_var_req_builder.build()?;
@@ -1718,11 +1552,6 @@ pub fn projects_template_preview_create(
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
-    if configuration.cookie.is_none() {
-        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
-            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
-        }
-    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         serde_json::from_str(&local_var_content).map_err(Error::from)
@@ -1739,7 +1568,7 @@ pub fn projects_template_preview_create(
 }
 
 pub fn projects_templates_create(
-    configuration: &mut configuration::Configuration,
+    configuration: &configuration::Configuration,
     project_pk: &str,
     template_create: crate::models::TemplateCreate,
 ) -> Result<crate::models::TemplateCreate, Error<ProjectsTemplatesCreateError>> {
@@ -1768,10 +1597,6 @@ pub fn projects_templates_create(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
-    if let Some(ref local_var_cookie) = configuration.cookie {
-        local_var_req_builder =
-            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
-    }
     local_var_req_builder = local_var_req_builder.json(&template_create);
 
     let local_var_req = local_var_req_builder.build()?;
@@ -1790,11 +1615,6 @@ pub fn projects_templates_create(
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
-    if configuration.cookie.is_none() {
-        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
-            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
-        }
-    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         serde_json::from_str(&local_var_content).map_err(Error::from)
@@ -1811,7 +1631,7 @@ pub fn projects_templates_create(
 }
 
 pub fn projects_templates_destroy(
-    configuration: &mut configuration::Configuration,
+    configuration: &configuration::Configuration,
     id: &str,
     project_pk: &str,
 ) -> Result<(), Error<ProjectsTemplatesDestroyError>> {
@@ -1841,10 +1661,6 @@ pub fn projects_templates_destroy(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
-    if let Some(ref local_var_cookie) = configuration.cookie {
-        local_var_req_builder =
-            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
-    }
 
     let local_var_req = local_var_req_builder.build()?;
     let method = local_var_req.method().clone();
@@ -1862,11 +1678,6 @@ pub fn projects_templates_destroy(
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
-    if configuration.cookie.is_none() {
-        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
-            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
-        }
-    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         Ok(())
@@ -1883,7 +1694,7 @@ pub fn projects_templates_destroy(
 }
 
 pub fn projects_templates_list(
-    configuration: &mut configuration::Configuration,
+    configuration: &configuration::Configuration,
     project_pk: &str,
     name: Option<&str>,
     page: Option<i32>,
@@ -1926,10 +1737,6 @@ pub fn projects_templates_list(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
-    if let Some(ref local_var_cookie) = configuration.cookie {
-        local_var_req_builder =
-            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
-    }
 
     let local_var_req = local_var_req_builder.build()?;
     let method = local_var_req.method().clone();
@@ -1947,11 +1754,6 @@ pub fn projects_templates_list(
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
-    if configuration.cookie.is_none() {
-        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
-            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
-        }
-    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         serde_json::from_str(&local_var_content).map_err(Error::from)
@@ -1968,7 +1770,7 @@ pub fn projects_templates_list(
 }
 
 pub fn projects_templates_partial_update(
-    configuration: &mut configuration::Configuration,
+    configuration: &configuration::Configuration,
     id: &str,
     project_pk: &str,
     patched_template: Option<crate::models::PatchedTemplate>,
@@ -1999,10 +1801,6 @@ pub fn projects_templates_partial_update(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
-    if let Some(ref local_var_cookie) = configuration.cookie {
-        local_var_req_builder =
-            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
-    }
     local_var_req_builder = local_var_req_builder.json(&patched_template);
 
     let local_var_req = local_var_req_builder.build()?;
@@ -2021,11 +1819,6 @@ pub fn projects_templates_partial_update(
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
-    if configuration.cookie.is_none() {
-        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
-            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
-        }
-    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         serde_json::from_str(&local_var_content).map_err(Error::from)
@@ -2042,7 +1835,7 @@ pub fn projects_templates_partial_update(
 }
 
 pub fn projects_templates_retrieve(
-    configuration: &mut configuration::Configuration,
+    configuration: &configuration::Configuration,
     id: &str,
     project_pk: &str,
     environment: Option<&str>,
@@ -2082,10 +1875,6 @@ pub fn projects_templates_retrieve(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
-    if let Some(ref local_var_cookie) = configuration.cookie {
-        local_var_req_builder =
-            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
-    }
 
     let local_var_req = local_var_req_builder.build()?;
     let method = local_var_req.method().clone();
@@ -2103,11 +1892,6 @@ pub fn projects_templates_retrieve(
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
-    if configuration.cookie.is_none() {
-        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
-            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
-        }
-    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         serde_json::from_str(&local_var_content).map_err(Error::from)
@@ -2124,7 +1908,7 @@ pub fn projects_templates_retrieve(
 }
 
 pub fn projects_templates_update(
-    configuration: &mut configuration::Configuration,
+    configuration: &configuration::Configuration,
     id: &str,
     project_pk: &str,
     template: crate::models::Template,
@@ -2155,10 +1939,6 @@ pub fn projects_templates_update(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
-    if let Some(ref local_var_cookie) = configuration.cookie {
-        local_var_req_builder =
-            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
-    }
     local_var_req_builder = local_var_req_builder.json(&template);
 
     let local_var_req = local_var_req_builder.build()?;
@@ -2177,11 +1957,6 @@ pub fn projects_templates_update(
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
-    if configuration.cookie.is_none() {
-        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
-            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
-        }
-    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         serde_json::from_str(&local_var_content).map_err(Error::from)
@@ -2198,7 +1973,7 @@ pub fn projects_templates_update(
 }
 
 pub fn projects_update(
-    configuration: &mut configuration::Configuration,
+    configuration: &configuration::Configuration,
     id: &str,
     project: crate::models::Project,
 ) -> Result<crate::models::Project, Error<ProjectsUpdateError>> {
@@ -2223,10 +1998,6 @@ pub fn projects_update(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
-    if let Some(ref local_var_cookie) = configuration.cookie {
-        local_var_req_builder =
-            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
-    }
     local_var_req_builder = local_var_req_builder.json(&project);
 
     let local_var_req = local_var_req_builder.build()?;
@@ -2245,11 +2016,6 @@ pub fn projects_update(
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
-    if configuration.cookie.is_none() {
-        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
-            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
-        }
-    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         serde_json::from_str(&local_var_content).map_err(Error::from)
