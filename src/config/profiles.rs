@@ -8,6 +8,7 @@ pub struct Profile {
     pub environment: Option<String>,
     pub project: Option<String>,
     pub request_timeout: Option<u64>,
+    pub rest_debug: Option<bool>,
     pub server_url: Option<String>,
     pub(crate) source_profile: Option<String>,
 }
@@ -23,6 +24,7 @@ pub struct ProfileDetails {
     pub parent: Option<String>,
     pub server_url: Option<String>,
     pub request_timeout: Option<String>,
+    pub rest_debug: Option<bool>,
 }
 
 impl Default for Profile {
@@ -35,6 +37,7 @@ impl Default for Profile {
             request_timeout: None,
             server_url: None,
             source_profile: None,
+            rest_debug: None,
         }
     }
 }
@@ -54,6 +57,7 @@ impl Profile {
                 .or_else(|| self.environment.clone()),
             project: other.project.clone().or_else(|| self.project.clone()),
             request_timeout: other.request_timeout.or(self.request_timeout),
+            rest_debug: other.rest_debug.or(self.rest_debug),
             server_url: other.server_url.clone().or_else(|| self.server_url.clone()),
             source_profile: self.source_profile.clone(),
         }
@@ -76,6 +80,7 @@ mod tests {
             environment: Some("my_environment".to_string()),
             project: Some("skunkworks".to_string()),
             request_timeout: Some(100),
+            rest_debug: Some(true),
             server_url: Some("http://localhost:7001/graphql".to_string()),
             ..Profile::default()
         };
@@ -91,6 +96,7 @@ mod tests {
             environment: Some("my_environment".to_string()),
             project: Some("skunkworks".to_string()),
             request_timeout: Some(23),
+            rest_debug: Some(false),
             server_url: Some("http://localhost:7001/graphql".to_string()),
             ..Profile::default()
         };

@@ -9,6 +9,7 @@
  */
 
 use reqwest;
+use std::time::Instant;
 
 use super::{configuration, Error};
 use crate::apis::ResponseContent;
@@ -45,7 +46,18 @@ pub fn api_schema_retrieve(
     }
 
     let local_var_req = local_var_req_builder.build()?;
+    let method = local_var_req.method().clone();
+    let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
+    if configuration.rest_debug {
+        let duration = start.elapsed();
+        println!(
+            "URL {} {} elapsed: {:?}",
+            method,
+            &local_var_resp.url(),
+            duration
+        );
+    }
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;

@@ -114,6 +114,7 @@ impl ConfigFile {
             parent: profile.source_profile.clone(),
             server_url: profile.server_url.clone(),
             request_timeout: profile.request_timeout.map(|t| format!("{}", t)),
+            rest_debug: profile.rest_debug,
         }
     }
 

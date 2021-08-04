@@ -90,7 +90,9 @@ class TestEnvironments(TestCase):
 
         # make sure we get the same parameter list
         after = self.run_cli(cmd_env, param_cmd)
-        self.assertEqual(before, after)
+        self.assertEqual(before.return_value, after.return_value)
+        self.assertEqual(before.out(), after.out())
+        self.assertEqual(before.err(), after.err())
 
         # cleanup
         self.delete_project(cmd_env, proj_name)

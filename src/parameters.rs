@@ -208,10 +208,10 @@ impl Parameters {
         key_name: &str,
     ) -> Result<Option<String>, Error<ProjectsParametersDestroyError>> {
         // The only delete mechanism is by parameter ID, so start by querying the parameter info.
-        let response = self.get_details_by_name(rest_cfg, proj_id, env_id, key_name);
+        let response = self.get_id(rest_cfg, proj_id, env_id, key_name);
 
-        if let Ok(Some(details)) = response {
-            self.delete_parameter_by_id(rest_cfg, proj_id, details.id.as_str())
+        if let Some(id) = response {
+            self.delete_parameter_by_id(rest_cfg, proj_id, &id)
         } else {
             Ok(None)
         }
@@ -226,7 +226,7 @@ impl Parameters {
         key_name: &str,
     ) -> Result<Option<String>, Error<ProjectsParametersValuesDestroyError>> {
         // The only delete mechanism is by parameter ID, so start by querying the parameter info.
-        let response = self.get_details_by_name(rest_cfg, proj_id, env_id, key_name);
+        let response = self.get_details_by_name(rest_cfg, proj_id, env_id, key_name, true);
 
         if let Ok(Some(details)) = response {
             if details.env_url.contains(env_id) {
@@ -276,6 +276,41 @@ impl Parameters {
         Ok(Some(export.body))
     }
 
+    /// Gets the `Parameter` identifier.
+    pub fn get_id(
+        &self,
+        rest_cfg: &mut OpenApiConfig,
+        proj_id: &str,
+        env_id: &str,
+        key_name: &str,
+    ) -> Option<String> {
+        // NOTE: should say "No Values" when that's an option
+        let response = projects_parameters_list(
+            rest_cfg,
+            proj_id,
+            Some(env_id),
+            Some(true),
+            Some(key_name),
+            None,
+            PAGE_SIZE,
+            None,
+        );
+        if let Ok(data) = response {
+            if let Some(parameters) = data.results {
+                if parameters.is_empty() {
+                    None
+                } else {
+                    // TODO: handle more than one?
+                    Some(parameters[0].id.clone())
+                }
+            } else {
+                None
+            }
+        } else {
+            None
+        }
+    }
+
     /// Fetches the `ParameterDetails` for the specified project/environment/key_name.
     ///
     /// It will return `None` if the parameter does not exist. Other errors will be returned
@@ -289,12 +324,39 @@ impl Parameters {
         proj_id: &str,
         env_id: &str,
         key_name: &str,
+        mask_secrets: bool,
+    ) -> Result<Option<ParameterDetails>, Error<ProjectsParametersRetrieveError>> {
+        if let Some(id) = self.get_id(rest_cfg, proj_id, env_id, key_name) {
+            let response = projects_parameters_retrieve(
+                rest_cfg,
+                &id,
+                proj_id,
+                Some(env_id),
+                Some(mask_secrets),
+                None,
+            )?;
+            Ok(Some(ParameterDetails::from(&response)))
+        } else {
+            Ok(None)
+        }
+    }
+
+    /// This is the original `get_details_by_name()` where the parameter/value are resolved in one
+    /// query. However, this currently causes performance issues that are being worked on.
+    #[allow(dead_code)]
+    pub fn _get_details_by_name(
+        &self,
+        rest_cfg: &mut OpenApiConfig,
+        proj_id: &str,
+        env_id: &str,
+        key_name: &str,
+        mask_secrets: bool,
     ) -> Result<Option<ParameterDetails>, Error<ProjectsParametersListError>> {
         let response = projects_parameters_list(
             rest_cfg,
             proj_id,
             Some(env_id),
-            Some(false), // get secret value when querying a single parameter
+            Some(mask_secrets),
             Some(key_name),
             None,
             PAGE_SIZE,

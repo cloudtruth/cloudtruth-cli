@@ -1,6 +1,9 @@
 use crate::config::profiles::Profile;
-use crate::config::{CT_API_KEY, CT_ENVIRONMENT, CT_PROJECT, CT_REQ_TIMEOUT, CT_SERVER_URL};
+use crate::config::{
+    CT_API_KEY, CT_ENVIRONMENT, CT_PROJECT, CT_REQ_TIMEOUT, CT_REST_DEBUG, CT_SERVER_URL,
+};
 use std::env;
+use std::str::FromStr;
 
 pub struct ConfigEnv {}
 
@@ -12,6 +15,8 @@ impl ConfigEnv {
             environment: ConfigEnv::get_override(CT_ENVIRONMENT),
             project: ConfigEnv::get_override(CT_PROJECT),
             request_timeout: ConfigEnv::get_duration_override(),
+            rest_debug: ConfigEnv::get_override(CT_REST_DEBUG)
+                .map(|s| bool::from_str(&s.to_lowercase()).unwrap()),
             server_url: ConfigEnv::get_override(CT_SERVER_URL),
             source_profile: None,
         }
@@ -49,6 +54,7 @@ mod tests {
         env::remove_var(CT_PROJECT);
         env::remove_var(CT_REQ_TIMEOUT);
         env::remove_var(CT_SERVER_URL);
+        env::remove_var(CT_REST_DEBUG);
     }
 
     #[test]
@@ -72,6 +78,7 @@ mod tests {
         env::set_var(CT_PROJECT, "skunkworks");
         env::set_var(CT_REQ_TIMEOUT, "500");
         env::set_var(CT_SERVER_URL, "http://localhost:7001/graphql");
+        env::set_var(CT_REST_DEBUG, "true");
 
         assert_eq!(
             Profile {
@@ -80,6 +87,7 @@ mod tests {
                 environment: Some("my_environment".to_string()),
                 project: Some("skunkworks".to_string()),
                 request_timeout: Some(500),
+                rest_debug: Some(true),
                 server_url: Some("http://localhost:7001/graphql".to_string()),
                 source_profile: None
             },

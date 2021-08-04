@@ -57,6 +57,7 @@ impl From<&CloudTruthConfig> for OpenApiConfig {
                 key: ct_cfg.api_key.clone(),
             }),
             cookie: None,
+            rest_debug: ct_cfg.rest_debug,
         }
     }
 }
@@ -78,6 +79,7 @@ mod tests {
             project: Some("my-proj".to_string()),
             server_url: url.to_string(),
             request_timeout: Some(Duration::new(120, 0)),
+            rest_debug: true,
         };
         let openapi_cfg = OpenApiConfig::from(&ct_cfg);
         // check that the trailing slash removed from the URL
@@ -88,6 +90,7 @@ mod tests {
         assert_eq!(openapi_cfg.api_key.unwrap().key, api_key.to_string());
         assert_eq!(openapi_cfg.user_agent.unwrap(), user_agent_name());
         assert_eq!(openapi_cfg.bearer_access_token, None);
+        assert_eq!(openapi_cfg.rest_debug, true);
         // unfortunately, no means to interrogate the client to find the timeout
     }
 
