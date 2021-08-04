@@ -58,7 +58,7 @@ pub enum EnvironmentsUpdateError {
 }
 
 pub fn environments_create(
-    configuration: &mut configuration::Configuration,
+    configuration: &configuration::Configuration,
     environment_create: crate::models::EnvironmentCreate,
 ) -> Result<crate::models::Environment, Error<EnvironmentsCreateError>> {
     let local_var_client = &configuration.client;
@@ -82,10 +82,6 @@ pub fn environments_create(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
-    if let Some(ref local_var_cookie) = configuration.cookie {
-        local_var_req_builder =
-            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
-    }
     local_var_req_builder = local_var_req_builder.json(&environment_create);
 
     let local_var_req = local_var_req_builder.build()?;
@@ -104,11 +100,6 @@ pub fn environments_create(
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
-    if configuration.cookie.is_none() {
-        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
-            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
-        }
-    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         serde_json::from_str(&local_var_content).map_err(Error::from)
@@ -125,7 +116,7 @@ pub fn environments_create(
 }
 
 pub fn environments_destroy(
-    configuration: &mut configuration::Configuration,
+    configuration: &configuration::Configuration,
     id: &str,
 ) -> Result<(), Error<EnvironmentsDestroyError>> {
     let local_var_client = &configuration.client;
@@ -153,10 +144,6 @@ pub fn environments_destroy(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
-    if let Some(ref local_var_cookie) = configuration.cookie {
-        local_var_req_builder =
-            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
-    }
 
     let local_var_req = local_var_req_builder.build()?;
     let method = local_var_req.method().clone();
@@ -174,11 +161,6 @@ pub fn environments_destroy(
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
-    if configuration.cookie.is_none() {
-        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
-            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
-        }
-    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         Ok(())
@@ -195,7 +177,7 @@ pub fn environments_destroy(
 }
 
 pub fn environments_list(
-    configuration: &mut configuration::Configuration,
+    configuration: &configuration::Configuration,
     name: Option<&str>,
     page: Option<i32>,
     page_size: Option<i32>,
@@ -238,10 +220,6 @@ pub fn environments_list(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
-    if let Some(ref local_var_cookie) = configuration.cookie {
-        local_var_req_builder =
-            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
-    }
 
     let local_var_req = local_var_req_builder.build()?;
     let method = local_var_req.method().clone();
@@ -259,11 +237,6 @@ pub fn environments_list(
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
-    if configuration.cookie.is_none() {
-        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
-            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
-        }
-    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         serde_json::from_str(&local_var_content).map_err(Error::from)
@@ -280,7 +253,7 @@ pub fn environments_list(
 }
 
 pub fn environments_partial_update(
-    configuration: &mut configuration::Configuration,
+    configuration: &configuration::Configuration,
     id: &str,
     patched_environment: Option<crate::models::PatchedEnvironment>,
 ) -> Result<crate::models::Environment, Error<EnvironmentsPartialUpdateError>> {
@@ -309,10 +282,6 @@ pub fn environments_partial_update(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
-    if let Some(ref local_var_cookie) = configuration.cookie {
-        local_var_req_builder =
-            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
-    }
     local_var_req_builder = local_var_req_builder.json(&patched_environment);
 
     let local_var_req = local_var_req_builder.build()?;
@@ -331,11 +300,6 @@ pub fn environments_partial_update(
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
-    if configuration.cookie.is_none() {
-        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
-            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
-        }
-    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         serde_json::from_str(&local_var_content).map_err(Error::from)
@@ -352,7 +316,7 @@ pub fn environments_partial_update(
 }
 
 pub fn environments_retrieve(
-    configuration: &mut configuration::Configuration,
+    configuration: &configuration::Configuration,
     id: &str,
 ) -> Result<crate::models::Environment, Error<EnvironmentsRetrieveError>> {
     let local_var_client = &configuration.client;
@@ -380,10 +344,6 @@ pub fn environments_retrieve(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
-    if let Some(ref local_var_cookie) = configuration.cookie {
-        local_var_req_builder =
-            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
-    }
 
     let local_var_req = local_var_req_builder.build()?;
     let method = local_var_req.method().clone();
@@ -401,11 +361,6 @@ pub fn environments_retrieve(
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
-    if configuration.cookie.is_none() {
-        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
-            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
-        }
-    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         serde_json::from_str(&local_var_content).map_err(Error::from)
@@ -422,7 +377,7 @@ pub fn environments_retrieve(
 }
 
 pub fn environments_update(
-    configuration: &mut configuration::Configuration,
+    configuration: &configuration::Configuration,
     id: &str,
     environment: crate::models::Environment,
 ) -> Result<crate::models::Environment, Error<EnvironmentsUpdateError>> {
@@ -451,10 +406,6 @@ pub fn environments_update(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
-    if let Some(ref local_var_cookie) = configuration.cookie {
-        local_var_req_builder =
-            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
-    }
     local_var_req_builder = local_var_req_builder.json(&environment);
 
     let local_var_req = local_var_req_builder.build()?;
@@ -473,11 +424,6 @@ pub fn environments_update(
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
-    if configuration.cookie.is_none() {
-        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
-            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
-        }
-    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         serde_json::from_str(&local_var_content).map_err(Error::from)

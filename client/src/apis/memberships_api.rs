@@ -57,7 +57,7 @@ pub enum MembershipsUpdateError {
 }
 
 pub fn memberships_create(
-    configuration: &mut configuration::Configuration,
+    configuration: &configuration::Configuration,
     membership_create: crate::models::MembershipCreate,
 ) -> Result<crate::models::Membership, Error<MembershipsCreateError>> {
     let local_var_client = &configuration.client;
@@ -81,10 +81,6 @@ pub fn memberships_create(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
-    if let Some(ref local_var_cookie) = configuration.cookie {
-        local_var_req_builder =
-            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
-    }
     local_var_req_builder = local_var_req_builder.json(&membership_create);
 
     let local_var_req = local_var_req_builder.build()?;
@@ -103,11 +99,6 @@ pub fn memberships_create(
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
-    if configuration.cookie.is_none() {
-        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
-            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
-        }
-    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         serde_json::from_str(&local_var_content).map_err(Error::from)
@@ -124,7 +115,7 @@ pub fn memberships_create(
 }
 
 pub fn memberships_destroy(
-    configuration: &mut configuration::Configuration,
+    configuration: &configuration::Configuration,
     id: &str,
 ) -> Result<(), Error<MembershipsDestroyError>> {
     let local_var_client = &configuration.client;
@@ -152,10 +143,6 @@ pub fn memberships_destroy(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
-    if let Some(ref local_var_cookie) = configuration.cookie {
-        local_var_req_builder =
-            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
-    }
 
     let local_var_req = local_var_req_builder.build()?;
     let method = local_var_req.method().clone();
@@ -173,11 +160,6 @@ pub fn memberships_destroy(
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
-    if configuration.cookie.is_none() {
-        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
-            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
-        }
-    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         Ok(())
@@ -194,7 +176,7 @@ pub fn memberships_destroy(
 }
 
 pub fn memberships_list(
-    configuration: &mut configuration::Configuration,
+    configuration: &configuration::Configuration,
     page: Option<i32>,
     page_size: Option<i32>,
     role: Option<&str>,
@@ -237,10 +219,6 @@ pub fn memberships_list(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
-    if let Some(ref local_var_cookie) = configuration.cookie {
-        local_var_req_builder =
-            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
-    }
 
     let local_var_req = local_var_req_builder.build()?;
     let method = local_var_req.method().clone();
@@ -258,11 +236,6 @@ pub fn memberships_list(
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
-    if configuration.cookie.is_none() {
-        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
-            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
-        }
-    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         serde_json::from_str(&local_var_content).map_err(Error::from)
@@ -279,7 +252,7 @@ pub fn memberships_list(
 }
 
 pub fn memberships_partial_update(
-    configuration: &mut configuration::Configuration,
+    configuration: &configuration::Configuration,
     id: &str,
     patched_membership: Option<crate::models::PatchedMembership>,
 ) -> Result<crate::models::Membership, Error<MembershipsPartialUpdateError>> {
@@ -308,10 +281,6 @@ pub fn memberships_partial_update(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
-    if let Some(ref local_var_cookie) = configuration.cookie {
-        local_var_req_builder =
-            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
-    }
     local_var_req_builder = local_var_req_builder.json(&patched_membership);
 
     let local_var_req = local_var_req_builder.build()?;
@@ -330,11 +299,6 @@ pub fn memberships_partial_update(
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
-    if configuration.cookie.is_none() {
-        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
-            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
-        }
-    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         serde_json::from_str(&local_var_content).map_err(Error::from)
@@ -351,7 +315,7 @@ pub fn memberships_partial_update(
 }
 
 pub fn memberships_retrieve(
-    configuration: &mut configuration::Configuration,
+    configuration: &configuration::Configuration,
     id: &str,
 ) -> Result<crate::models::Membership, Error<MembershipsRetrieveError>> {
     let local_var_client = &configuration.client;
@@ -379,10 +343,6 @@ pub fn memberships_retrieve(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
-    if let Some(ref local_var_cookie) = configuration.cookie {
-        local_var_req_builder =
-            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
-    }
 
     let local_var_req = local_var_req_builder.build()?;
     let method = local_var_req.method().clone();
@@ -400,11 +360,6 @@ pub fn memberships_retrieve(
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
-    if configuration.cookie.is_none() {
-        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
-            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
-        }
-    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         serde_json::from_str(&local_var_content).map_err(Error::from)
@@ -421,7 +376,7 @@ pub fn memberships_retrieve(
 }
 
 pub fn memberships_update(
-    configuration: &mut configuration::Configuration,
+    configuration: &configuration::Configuration,
     id: &str,
     membership: crate::models::Membership,
 ) -> Result<crate::models::Membership, Error<MembershipsUpdateError>> {
@@ -450,10 +405,6 @@ pub fn memberships_update(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
-    if let Some(ref local_var_cookie) = configuration.cookie {
-        local_var_req_builder =
-            local_var_req_builder.header(reqwest::header::COOKIE, local_var_cookie);
-    }
     local_var_req_builder = local_var_req_builder.json(&membership);
 
     let local_var_req = local_var_req_builder.build()?;
@@ -472,11 +423,6 @@ pub fn memberships_update(
 
     let local_var_status = local_var_resp.status();
     let local_var_content = local_var_resp.text()?;
-    if configuration.cookie.is_none() {
-        if let Some(local_var_header) = local_var_resp.headers().get(reqwest::header::SET_COOKIE) {
-            configuration.cookie = Some(local_var_header.to_str().unwrap().to_string());
-        }
-    }
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
         serde_json::from_str(&local_var_content).map_err(Error::from)
