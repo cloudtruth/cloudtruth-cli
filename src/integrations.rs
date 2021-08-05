@@ -153,7 +153,7 @@ impl Integrations {
     /// Gets a list of `IntegrationDetails` for all integration types.
     pub fn get_integration_details(
         &self,
-        rest_cfg: &mut OpenApiConfig,
+        rest_cfg: &OpenApiConfig,
     ) -> Result<Vec<IntegrationDetails>, IntegrationError> {
         let mut result: Vec<IntegrationDetails> = Vec::new();
 
@@ -205,7 +205,7 @@ impl Integrations {
     /// Get the integration node by FQN
     pub fn get_integration_nodes(
         &self,
-        rest_cfg: &mut OpenApiConfig,
+        rest_cfg: &OpenApiConfig,
         fqn: Option<&str>,
     ) -> Result<Vec<IntegrationNode>, IntegrationError> {
         let response = integrations_explore_list(rest_cfg, fqn, None, PAGE_SIZE);

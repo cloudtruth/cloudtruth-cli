@@ -52,7 +52,7 @@ impl Projects {
     /// Get the details for `proj_name`
     pub fn get_details_by_name(
         &self,
-        rest_cfg: &mut OpenApiConfig,
+        rest_cfg: &OpenApiConfig,
         proj_name: &str,
     ) -> Result<Option<ProjectDetails>, ProjectError> {
         let response = projects_list(rest_cfg, Some(proj_name), None, PAGE_SIZE);
@@ -82,7 +82,7 @@ impl Projects {
     /// Resolve the `proj_name` to a String
     pub fn get_id(
         &self,
-        rest_cfg: &mut OpenApiConfig,
+        rest_cfg: &OpenApiConfig,
         proj_name: &str,
     ) -> Result<Option<String>, ProjectError> {
         if let Some(details) = self.get_details_by_name(rest_cfg, proj_name)? {
@@ -95,7 +95,7 @@ impl Projects {
     /// Get a complete list of projects for this organization.
     pub fn get_project_details(
         &self,
-        rest_cfg: &mut OpenApiConfig,
+        rest_cfg: &OpenApiConfig,
     ) -> Result<Vec<ProjectDetails>, ProjectError> {
         let response = projects_list(rest_cfg, None, None, PAGE_SIZE);
 
@@ -121,7 +121,7 @@ impl Projects {
     /// Create a project with the specified name/description
     pub fn create_project(
         &self,
-        rest_cfg: &mut OpenApiConfig,
+        rest_cfg: &OpenApiConfig,
         proj_name: &str,
         description: Option<&str>,
     ) -> Result<Option<String>, Error<ProjectsCreateError>> {
@@ -137,7 +137,7 @@ impl Projects {
     /// Delete the specified project
     pub fn delete_project(
         &self,
-        rest_cfg: &mut OpenApiConfig,
+        rest_cfg: &OpenApiConfig,
         project_id: &str,
     ) -> Result<Option<String>, Error<ProjectsDestroyError>> {
         projects_destroy(rest_cfg, project_id)?;
@@ -147,7 +147,7 @@ impl Projects {
     /// Update the specified project
     pub fn update_project(
         &self,
-        rest_cfg: &mut OpenApiConfig,
+        rest_cfg: &OpenApiConfig,
         project_name: &str,
         project_id: &str,
         description: Option<&str>,

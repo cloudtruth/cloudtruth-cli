@@ -30,7 +30,7 @@ impl Templates {
 
     pub fn get_body_by_name(
         &self,
-        rest_cfg: &mut OpenApiConfig,
+        rest_cfg: &OpenApiConfig,
         proj_id: &str,
         env_id: &str,
         template_name: &str,
@@ -56,7 +56,7 @@ impl Templates {
 
     pub fn get_details_by_name(
         &self,
-        rest_cfg: &mut OpenApiConfig,
+        rest_cfg: &OpenApiConfig,
         proj_id: &str,
         template_name: &str,
     ) -> Result<Option<TemplateDetails>, Error<ProjectsTemplatesListError>> {
@@ -78,7 +78,7 @@ impl Templates {
 
     pub fn get_template_details(
         &self,
-        rest_cfg: &mut OpenApiConfig,
+        rest_cfg: &OpenApiConfig,
         proj_id: &str,
     ) -> Result<Vec<TemplateDetails>, Error<ProjectsTemplatesListError>> {
         let response = projects_templates_list(rest_cfg, proj_id, None, None, PAGE_SIZE)?;
@@ -95,7 +95,7 @@ impl Templates {
 
     pub fn create_template(
         &self,
-        rest_cfg: &mut OpenApiConfig,
+        rest_cfg: &OpenApiConfig,
         proj_id: &str,
         template_name: &str,
         body: &str,
@@ -113,7 +113,7 @@ impl Templates {
 
     pub fn delete_template(
         &self,
-        rest_cfg: &mut OpenApiConfig,
+        rest_cfg: &OpenApiConfig,
         proj_id: &str,
         template_id: &str,
     ) -> Result<(), Error<ProjectsTemplatesDestroyError>> {
@@ -122,7 +122,7 @@ impl Templates {
 
     pub fn update_template(
         &self,
-        rest_cfg: &mut OpenApiConfig,
+        rest_cfg: &OpenApiConfig,
         project_id: &str,
         template_id: &str,
         template_name: &str,
@@ -147,7 +147,7 @@ impl Templates {
 
     pub fn preview_template(
         &self,
-        rest_cfg: &mut OpenApiConfig,
+        rest_cfg: &OpenApiConfig,
         project_id: &str,
         env_id: &str,
         body: &str,
