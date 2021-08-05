@@ -91,11 +91,15 @@ pub struct SubProcess {
 }
 
 impl SubProcess {
-    pub fn new(ct_vars: EnvSettings) -> Self {
+    pub fn new() -> Self {
         Self {
-            ct_vars,
+            ct_vars: Default::default(),
             env_vars: Default::default(),
         }
+    }
+
+    pub fn set_cloudtruth_environment(&mut self, ct_vars: EnvSettings) {
+        self.ct_vars = ct_vars;
     }
 
     fn current_env(&self) -> EnvSettings {

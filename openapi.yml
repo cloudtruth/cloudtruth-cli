@@ -605,6 +605,7 @@ paths:
     delete:
       operationId: integrations_aws_destroy
       description: ''
+      summary: Delete an AWS integration.
       parameters:
       - in: path
         name: id
@@ -613,6 +614,20 @@ paths:
           format: uuid
           description: The unique identifier for the integration.
         required: true
+      - in: query
+        name: in_use
+        schema:
+          type: string
+          enum:
+          - fail
+          - leave
+          - remove
+        description: |-
+          (Optional) Desired behavior if the integration has in-use values.
+
+          - `fail` will return HTTP error 409 if there are any values using the integration.
+          - `leave` (default) will leave values in place and future queries may fail; you can control future value query behavior with the `lookup_error` query parameter on those requests.
+          - `remove` will remove the all values using the integration when the integration is removed.
       tags:
       - integrations
       security:
@@ -620,7 +635,10 @@ paths:
       - ApiKeyAuth: []
       responses:
         '204':
-          description: No response body
+          description: Integration removed.
+        '409':
+          description: The integration is used by one (or more) Value(s) and cannot
+            be removed.
   /api/v1/integrations/explore/:
     get:
       operationId: integrations_explore_list
@@ -775,6 +793,7 @@ paths:
     delete:
       operationId: integrations_github_destroy
       description: ''
+      summary: Delete a GitHub integration.
       parameters:
       - in: path
         name: id
@@ -783,6 +802,20 @@ paths:
           format: uuid
           description: The unique identifier for the integration.
         required: true
+      - in: query
+        name: in_use
+        schema:
+          type: string
+          enum:
+          - fail
+          - leave
+          - remove
+        description: |-
+          (Optional) Desired behavior if the integration has in-use values.
+
+          - `fail` will return HTTP error 409 if there are any values using the integration.
+          - `leave` (default) will leave values in place and future queries may fail; you can control future value query behavior with the `lookup_error` query parameter on those requests.
+          - `remove` will remove the all values using the integration when the integration is removed.
       tags:
       - integrations
       security:
@@ -790,7 +823,10 @@ paths:
       - ApiKeyAuth: []
       responses:
         '204':
-          description: No response body
+          description: Integration removed.
+        '409':
+          description: The integration is used by one (or more) Value(s) and cannot
+            be removed.
   /api/v1/invitations/:
     get:
       operationId: invitations_list
@@ -1703,6 +1739,16 @@ paths:
         description: Number of results to return per page.
         schema:
           type: integer
+      - in: query
+        name: partial_success
+        schema:
+          type: boolean
+          default: false
+        description: |-
+          Determine if the response is allowed to include a partial success.
+
+          A partial success can occur if one or more dynamic values cannot be retrieved, for example when an in-use integration is removed using the `leave` option, leaving the values untouched. When `true`, any error that occurs during dynamic value retrieval will be placed into a field named `dynamic_error` in the affected Value, and the `value` field will be empty.  When `false`, any such error will cause the entire request to fail.
+          Partial success allows clients to tolerate invalid dynamic values better.
       - in: path
         name: project_pk
         schema:
@@ -1804,6 +1850,16 @@ paths:
           format: uuid
         description: The parameter id.
         required: true
+      - in: query
+        name: partial_success
+        schema:
+          type: boolean
+          default: false
+        description: |-
+          Determine if the response is allowed to include a partial success.
+
+          A partial success can occur if one or more dynamic values cannot be retrieved, for example when an in-use integration is removed using the `leave` option, leaving the values untouched. When `true`, any error that occurs during dynamic value retrieval will be placed into a field named `dynamic_error` in the affected Value, and the `value` field will be empty.  When `false`, any such error will cause the entire request to fail.
+          Partial success allows clients to tolerate invalid dynamic values better.
       - in: path
         name: project_pk
         schema:
@@ -1905,6 +1961,16 @@ paths:
           format: uuid
         description: The parameter id.
         required: true
+      - in: query
+        name: partial_success
+        schema:
+          type: boolean
+          default: false
+        description: |-
+          Determine if the response is allowed to include a partial success.
+
+          A partial success can occur if one or more dynamic values cannot be retrieved, for example when an in-use integration is removed using the `leave` option, leaving the values untouched. When `true`, any error that occurs during dynamic value retrieval will be placed into a field named `dynamic_error` in the affected Value, and the `value` field will be empty.  When `false`, any such error will cause the entire request to fail.
+          Partial success allows clients to tolerate invalid dynamic values better.
       - in: path
         name: project_pk
         schema:
@@ -2098,6 +2164,16 @@ paths:
         schema:
           type: boolean
         description: If true, masks all secrets (defaults to false).
+      - in: query
+        name: partial_success
+        schema:
+          type: boolean
+          default: false
+        description: |-
+          Determine if the response is allowed to include a partial success.
+
+          A partial success can occur if one or more dynamic values cannot be retrieved, for example when an in-use integration is removed using the `leave` option, leaving the values untouched. When `true`, any error that occurs during dynamic value retrieval will be placed into a field named `dynamic_error` in the affected Value, and the `value` field will be empty.  When `false`, any such error will cause the entire request to fail.
+          Partial success allows clients to tolerate invalid dynamic values better.
       - in: path
         name: project_pk
         schema:
@@ -4237,6 +4313,14 @@ components:
             content is structured and of a supported format.  We support JMESpath
             expressions on `json`, `yaml`, and `dotenv` content.
           maxLength: 1024
+        dynamic_error:
+          type: string
+          nullable: true
+          readOnly: true
+          description: If the value is dynamic, and an error occurs retrieving it,
+            the reason for the retrieval error will be placed into this field.  The
+            query parameter `partial_success` can be used to control whether this
+            condition causes an HTTP error response or not.
         static_value:
           type: string
           nullable: true
@@ -4254,7 +4338,9 @@ components:
 
             For values that are not `dynamic` and parameters that are `secret`, the system will retrieve the content from your organization's dedicated vault.
 
-            For values that are `dynamic`, the system will retrieve the content from the integration on-demand.  If the content from the integration is `secret` and the parameter is not, an error response will be given.  If a `dynamic_filter` is present then the content will have a JMESpath query applied, and that becomes the resulting value.
+            For values that are `dynamic`, the system will retrieve the content from the integration on-demand.  You can control the error handling behavior of the server through the `partial_success` query parameter.
+
+            If the content from the integration is `secret` and the parameter is not, an error will occur.  If a `dynamic_filter` is present then the content will have a JMESpath query applied, and that becomes the resulting value.
 
             If you request secret masking, no secret content will be included in the result and instead a series of asterisks will be used instead for the value.  If you request wrapping, the secret content will be wrapped in an envelope that is bound to your JWT token.  For more information about secret wrapping, see the docs.
 
@@ -4594,6 +4680,14 @@ components:
             content is structured and of a supported format.  We support JMESpath
             expressions on `json`, `yaml`, and `dotenv` content.
           maxLength: 1024
+        dynamic_error:
+          type: string
+          nullable: true
+          readOnly: true
+          description: If the value is dynamic, and an error occurs retrieving it,
+            the reason for the retrieval error will be placed into this field.  The
+            query parameter `partial_success` can be used to control whether this
+            condition causes an HTTP error response or not.
         static_value:
           type: string
           nullable: true
@@ -4611,7 +4705,9 @@ components:
 
             For values that are not `dynamic` and parameters that are `secret`, the system will retrieve the content from your organization's dedicated vault.
 
-            For values that are `dynamic`, the system will retrieve the content from the integration on-demand.  If the content from the integration is `secret` and the parameter is not, an error response will be given.  If a `dynamic_filter` is present then the content will have a JMESpath query applied, and that becomes the resulting value.
+            For values that are `dynamic`, the system will retrieve the content from the integration on-demand.  You can control the error handling behavior of the server through the `partial_success` query parameter.
+
+            If the content from the integration is `secret` and the parameter is not, an error will occur.  If a `dynamic_filter` is present then the content will have a JMESpath query applied, and that becomes the resulting value.
 
             If you request secret masking, no secret content will be included in the result and instead a series of asterisks will be used instead for the value.  If you request wrapping, the secret content will be wrapped in an envelope that is bound to your JWT token.  For more information about secret wrapping, see the docs.
 
@@ -4636,6 +4732,7 @@ components:
           readOnly: true
       required:
       - created_at
+      - dynamic_error
       - environment
       - id
       - modified_at

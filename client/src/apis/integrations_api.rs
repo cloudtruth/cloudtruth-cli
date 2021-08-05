@@ -25,6 +25,7 @@ pub enum IntegrationsAwsCreateError {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum IntegrationsAwsDestroyError {
+    Status409(),
     UnknownValue(serde_json::Value),
 }
 
@@ -78,6 +79,7 @@ pub enum IntegrationsGithubCreateError {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum IntegrationsGithubDestroyError {
+    Status409(),
     UnknownValue(serde_json::Value),
 }
 
@@ -157,6 +159,7 @@ pub fn integrations_aws_create(
 pub fn integrations_aws_destroy(
     configuration: &configuration::Configuration,
     id: &str,
+    in_use: Option<&str>,
 ) -> Result<(), Error<IntegrationsAwsDestroyError>> {
     let local_var_client = &configuration.client;
 
@@ -167,6 +170,10 @@ pub fn integrations_aws_destroy(
     );
     let mut local_var_req_builder = local_var_client.delete(local_var_uri_str.as_str());
 
+    if let Some(ref local_var_str) = in_use {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("in_use", &local_var_str.to_string())]);
+    }
     if let Some(ref local_var_user_agent) = configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
@@ -616,6 +623,7 @@ pub fn integrations_github_create(
 pub fn integrations_github_destroy(
     configuration: &configuration::Configuration,
     id: &str,
+    in_use: Option<&str>,
 ) -> Result<(), Error<IntegrationsGithubDestroyError>> {
     let local_var_client = &configuration.client;
 
@@ -626,6 +634,10 @@ pub fn integrations_github_destroy(
     );
     let mut local_var_req_builder = local_var_client.delete(local_var_uri_str.as_str());
 
+    if let Some(ref local_var_str) = in_use {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("in_use", &local_var_str.to_string())]);
+    }
     if let Some(ref local_var_user_agent) = configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
