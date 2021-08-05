@@ -35,14 +35,14 @@ Class | Method | HTTP request | Description
 *EnvironmentsApi* | [**environments_retrieve**](docs/EnvironmentsApi.md#environments_retrieve) | **get** /api/v1/environments/{id}/ | 
 *EnvironmentsApi* | [**environments_update**](docs/EnvironmentsApi.md#environments_update) | **put** /api/v1/environments/{id}/ | 
 *IntegrationsApi* | [**integrations_aws_create**](docs/IntegrationsApi.md#integrations_aws_create) | **post** /api/v1/integrations/aws/ | Establishes an AWS Integration.
-*IntegrationsApi* | [**integrations_aws_destroy**](docs/IntegrationsApi.md#integrations_aws_destroy) | **delete** /api/v1/integrations/aws/{id}/ | 
+*IntegrationsApi* | [**integrations_aws_destroy**](docs/IntegrationsApi.md#integrations_aws_destroy) | **delete** /api/v1/integrations/aws/{id}/ | Delete an AWS integration.
 *IntegrationsApi* | [**integrations_aws_list**](docs/IntegrationsApi.md#integrations_aws_list) | **get** /api/v1/integrations/aws/ | 
 *IntegrationsApi* | [**integrations_aws_partial_update**](docs/IntegrationsApi.md#integrations_aws_partial_update) | **patch** /api/v1/integrations/aws/{id}/ | 
 *IntegrationsApi* | [**integrations_aws_retrieve**](docs/IntegrationsApi.md#integrations_aws_retrieve) | **get** /api/v1/integrations/aws/{id}/ | Get details of an AWS Integration.
 *IntegrationsApi* | [**integrations_aws_update**](docs/IntegrationsApi.md#integrations_aws_update) | **put** /api/v1/integrations/aws/{id}/ | 
 *IntegrationsApi* | [**integrations_explore_list**](docs/IntegrationsApi.md#integrations_explore_list) | **get** /api/v1/integrations/explore/ | Retrieve third-party integration data for the specified FQN.
 *IntegrationsApi* | [**integrations_github_create**](docs/IntegrationsApi.md#integrations_github_create) | **post** /api/v1/integrations/github/ | Establishes a GitHub Integration.
-*IntegrationsApi* | [**integrations_github_destroy**](docs/IntegrationsApi.md#integrations_github_destroy) | **delete** /api/v1/integrations/github/{id}/ | 
+*IntegrationsApi* | [**integrations_github_destroy**](docs/IntegrationsApi.md#integrations_github_destroy) | **delete** /api/v1/integrations/github/{id}/ | Delete a GitHub integration.
 *IntegrationsApi* | [**integrations_github_list**](docs/IntegrationsApi.md#integrations_github_list) | **get** /api/v1/integrations/github/ | 
 *IntegrationsApi* | [**integrations_github_retrieve**](docs/IntegrationsApi.md#integrations_github_retrieve) | **get** /api/v1/integrations/github/{id}/ | Get details of a GitHub Integration.
 *InvitationsApi* | [**invitations_accept_create**](docs/InvitationsApi.md#invitations_accept_create) | **post** /api/v1/invitations/{id}/accept/ | Accept an invitation.

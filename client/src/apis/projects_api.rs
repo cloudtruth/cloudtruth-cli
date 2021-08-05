@@ -638,6 +638,7 @@ pub fn projects_parameters_list(
     name: Option<&str>,
     page: Option<i32>,
     page_size: Option<i32>,
+    partial_success: Option<bool>,
     wrap: Option<bool>,
 ) -> Result<crate::models::PaginatedParameterList, Error<ProjectsParametersListError>> {
     let local_var_client = &configuration.client;
@@ -668,6 +669,10 @@ pub fn projects_parameters_list(
     if let Some(ref local_var_str) = page_size {
         local_var_req_builder =
             local_var_req_builder.query(&[("page_size", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = partial_success {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("partial_success", &local_var_str.to_string())]);
     }
     if let Some(ref local_var_str) = wrap {
         local_var_req_builder =
@@ -792,6 +797,7 @@ pub fn projects_parameters_retrieve(
     project_pk: &str,
     environment: Option<&str>,
     mask_secrets: Option<bool>,
+    partial_success: Option<bool>,
     wrap: Option<bool>,
 ) -> Result<crate::models::Parameter, Error<ProjectsParametersRetrieveError>> {
     let local_var_client = &configuration.client;
@@ -811,6 +817,10 @@ pub fn projects_parameters_retrieve(
     if let Some(ref local_var_str) = mask_secrets {
         local_var_req_builder =
             local_var_req_builder.query(&[("mask_secrets", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = partial_success {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("partial_success", &local_var_str.to_string())]);
     }
     if let Some(ref local_var_str) = wrap {
         local_var_req_builder =
@@ -1075,6 +1085,7 @@ pub fn projects_parameters_values_list(
     mask_secrets: Option<bool>,
     page: Option<i32>,
     page_size: Option<i32>,
+    partial_success: Option<bool>,
     wrap: Option<bool>,
 ) -> Result<crate::models::PaginatedValueList, Error<ProjectsParametersValuesListError>> {
     let local_var_client = &configuration.client;
@@ -1102,6 +1113,10 @@ pub fn projects_parameters_values_list(
     if let Some(ref local_var_str) = page_size {
         local_var_req_builder =
             local_var_req_builder.query(&[("page_size", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = partial_success {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("partial_success", &local_var_str.to_string())]);
     }
     if let Some(ref local_var_str) = wrap {
         local_var_req_builder =
@@ -1235,6 +1250,7 @@ pub fn projects_parameters_values_retrieve(
     parameter_pk: &str,
     project_pk: &str,
     mask_secrets: Option<bool>,
+    partial_success: Option<bool>,
     wrap: Option<bool>,
 ) -> Result<crate::models::Value, Error<ProjectsParametersValuesRetrieveError>> {
     let local_var_client = &configuration.client;
@@ -1251,6 +1267,10 @@ pub fn projects_parameters_values_retrieve(
     if let Some(ref local_var_str) = mask_secrets {
         local_var_req_builder =
             local_var_req_builder.query(&[("mask_secrets", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = partial_success {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("partial_success", &local_var_str.to_string())]);
     }
     if let Some(ref local_var_str) = wrap {
         local_var_req_builder =

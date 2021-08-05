@@ -596,6 +596,7 @@ fn process_parameters_command(
             println!("{}", list.join("\n"))
         } else {
             let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
+            let mut errors: Vec<String> = vec![];
             let mut table = Table::new("parameter");
 
             if !references {
@@ -605,6 +606,9 @@ fn process_parameters_command(
             }
 
             for entry in details {
+                if !entry.error.is_empty() {
+                    errors.push(format!("  {}: {}", entry.key, entry.error));
+                }
                 if !references {
                     let type_str = if entry.dynamic { "dynamic" } else { "static" };
                     let secret_str = if entry.secret { "true" } else { "false" };
@@ -621,6 +625,13 @@ fn process_parameters_command(
                 }
             }
             table.render(fmt)?;
+
+            if !errors.is_empty() {
+                warning_message(format!(
+                    "Errors resolving parameters:\n{}\n",
+                    errors.join("\n")
+                ))?;
+            }
         }
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(GET_SUBCMD) {
         let key = subcmd_args.value_of("KEY").unwrap();
@@ -632,10 +643,15 @@ fn process_parameters_command(
             // Treat parameters without values set as if the value were simply empty, since
             // we need to display something sensible to the user.
             let mut param_value = "".to_string();
+            let mut err_msg = "".to_string();
             if let Some(param) = details {
                 param_value = param.value;
+                err_msg = param.error;
             }
             println!("{}", param_value);
+            if !err_msg.is_empty() {
+                warning_message(err_msg)?;
+            }
         } else {
             println!(
                 "The parameter '{}' could not be found in your organization.",

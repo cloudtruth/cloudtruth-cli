@@ -33,6 +33,9 @@ pub struct ParameterDetails {
     pub dynamic: bool,
     pub fqn: String,
     pub jmes_path: String,
+
+    // captures errors when fetching dynamic parameters
+    pub error: String,
 }
 
 impl ParameterDetails {
@@ -68,6 +71,7 @@ impl Default for ParameterDetails {
             dynamic: false,
             fqn: "".to_string(),
             jmes_path: "".to_string(),
+            error: "".to_string(),
         }
     }
 }
@@ -90,6 +94,7 @@ fn default_param_value() -> &'static Value {
         value: Some(DEFAULT_VALUE.to_owned()),
         created_at: "".to_owned(),
         modified_at: "".to_owned(),
+        dynamic_error: None,
     })
 }
 
@@ -114,6 +119,8 @@ impl From<&Parameter> for ParameterDetails {
             dynamic: env_value.dynamic.unwrap_or(false),
             fqn: env_value.dynamic_fqn.clone().unwrap_or_default(),
             jmes_path: env_value.dynamic_filter.clone().unwrap_or_default(),
+
+            error: env_value.dynamic_error.clone().unwrap_or_default(),
         }
     }
 }
@@ -293,7 +300,8 @@ impl Parameters {
             Some(key_name),
             None,
             PAGE_SIZE,
-            None,
+            Some(true),
+            WRAP_SECRETS,
         );
         if let Ok(data) = response {
             if let Some(parameters) = data.results {
@@ -333,7 +341,8 @@ impl Parameters {
                 proj_id,
                 Some(env_id),
                 Some(mask_secrets),
-                None,
+                Some(true),
+                WRAP_SECRETS,
             )?;
             Ok(Some(ParameterDetails::from(&response)))
         } else {
@@ -360,6 +369,7 @@ impl Parameters {
             Some(key_name),
             None,
             PAGE_SIZE,
+            Some(true),
             WRAP_SECRETS,
         )?;
         if let Some(parameters) = response.results {
@@ -446,6 +456,7 @@ impl Parameters {
             None,
             None,
             PAGE_SIZE,
+            Some(true),
             WRAP_SECRETS,
         )?;
         if let Some(parameters) = response.results {
@@ -592,6 +603,7 @@ impl Parameters {
             value: None,
             created_at: None,
             modified_at: None,
+            dynamic_error: None,
         };
         let response = projects_parameters_values_partial_update(
             rest_cfg,
