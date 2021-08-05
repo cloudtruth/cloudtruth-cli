@@ -76,8 +76,13 @@ impl Default for ParameterDetails {
     }
 }
 
+pub struct ParameterValueEntry {
+    pub value: String,
+    pub error: String,
+}
+
 pub type ParameterDetailMap = HashMap<String, ParameterDetails>;
-pub type ParameterValueMap = HashMap<String, String>;
+pub type ParameterValueMap = HashMap<String, ParameterValueEntry>;
 
 /// Gets the singleton default `Value`
 fn default_param_value() -> &'static Value {
@@ -399,7 +404,11 @@ impl Parameters {
         let mut env_vars = ParameterValueMap::new();
 
         for param in parameters {
-            env_vars.insert(param.key, param.value);
+            let entry = ParameterValueEntry {
+                value: param.value,
+                error: param.error,
+            };
+            env_vars.insert(param.key, entry);
         }
         Ok(env_vars)
     }

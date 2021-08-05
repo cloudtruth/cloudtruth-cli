@@ -24,7 +24,7 @@ use crate::integrations::Integrations;
 use crate::openapi::OpenApiConfig;
 use crate::parameters::{ParamExportFormat, ParamExportOptions, ParameterDetails, Parameters};
 use crate::projects::Projects;
-use crate::subprocess::{Inheritance, SubProcess};
+use crate::subprocess::{EnvSettings, Inheritance, SubProcess};
 use crate::table::Table;
 use crate::templates::Templates;
 use clap::ArgMatches;
@@ -129,6 +129,22 @@ fn warn_missing_subcommand(command: &str) -> Result<()> {
     warn_user(format!("No '{}' sub-command executed.", command))
 }
 
+/// Method for standardizing message about list of warnings.
+fn warn_unresolved_params(errors: &[String]) -> Result<()> {
+    match errors.is_empty() {
+        false => warning_message(format!(
+            "Errors resolving parameters:\n{}\n",
+            errors.join("\n")
+        )),
+        true => Ok(()),
+    }
+}
+
+/// Format the strings in the list of errors
+fn format_param_error(param_name: &str, param_err: &str) -> String {
+    format!("   {}: {}", param_name, param_err)
+}
+
 /// Prompts the user for 'y/n' output.
 ///
 /// If the user answers 'y' (case insensitive), 'true' is returned.
@@ -209,11 +225,30 @@ fn resolve_ids(config: &Config, rest_cfg: &mut OpenApiConfig) -> Result<Resolved
 /// Process the 'run' sub-command
 fn process_run_command(
     subcmd_args: &ArgMatches,
+    rest_cfg: &mut OpenApiConfig,
     sub_proc: &mut SubProcess,
     resolved: &ResolvedIds,
 ) -> Result<()> {
     let mut arguments: Vec<String>;
     let command: String;
+
+    let parameters = Parameters::new();
+    let param_map = parameters.get_parameter_values(
+        rest_cfg,
+        resolved.project_id(),
+        resolved.environment_id(),
+        false,
+    )?;
+    let mut ct_vars = EnvSettings::new();
+    let mut errors: Vec<String> = vec![];
+    for (k, v) in param_map {
+        ct_vars.insert(k.clone(), v.value.clone());
+        if !v.error.is_empty() {
+            errors.push(format_param_error(&k, &v.error))
+        }
+    }
+    sub_proc.set_cloudtruth_environment(ct_vars);
+
     if subcmd_args.is_present("command") {
         command = subcmd_args.value_of("command").unwrap().to_string();
         arguments = vec![];
@@ -233,6 +268,9 @@ fn process_run_command(
         warn_missing_subcommand("run")?;
         process::exit(0);
     }
+
+    // NOTE: do this before running the sub-process, since it could be a long-running task
+    warn_unresolved_params(&errors)?;
 
     // Setup the environment for the sub-process.
     let inherit = Inheritance::from_str(subcmd_args.value_of("inheritance").unwrap()).unwrap();
@@ -607,7 +645,7 @@ fn process_parameters_command(
 
             for entry in details {
                 if !entry.error.is_empty() {
-                    errors.push(format!("  {}: {}", entry.key, entry.error));
+                    errors.push(format_param_error(&entry.key, &entry.error));
                 }
                 if !references {
                     let type_str = if entry.dynamic { "dynamic" } else { "static" };
@@ -626,12 +664,7 @@ fn process_parameters_command(
             }
             table.render(fmt)?;
 
-            if !errors.is_empty() {
-                warning_message(format!(
-                    "Errors resolving parameters:\n{}\n",
-                    errors.join("\n")
-                ))?;
-            }
+            warn_unresolved_params(&errors)?;
         }
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(GET_SUBCMD) {
         let key = subcmd_args.value_of("KEY").unwrap();
@@ -912,18 +945,21 @@ fn process_parameters_command(
             let default_param = ParameterDetails::default();
             let mut added = false;
             let mut table = Table::new("parameter");
+            let mut errors: Vec<String> = vec![];
             table.set_header(&["Parameter", env1_name, env2_name]);
             for param_name in param_list {
-                let env1 = env1_values
-                    .get(&param_name)
-                    .unwrap_or(&default_param)
-                    .get_properties(&properties)
-                    .join(",\n");
-                let env2 = env2_values
-                    .get(&param_name)
-                    .unwrap_or(&default_param)
-                    .get_properties(&properties)
-                    .join(",\n");
+                let details1 = env1_values.get(&param_name).unwrap_or(&default_param);
+                let details2 = env2_values.get(&param_name).unwrap_or(&default_param);
+                let env1 = details1.get_properties(&properties).join(",\n");
+                let env2 = details2.get_properties(&properties).join(",\n");
+                if !details1.error.is_empty() {
+                    errors.push(format_param_error(&param_name, &details1.error))
+                }
+                // NOTE: do not put redundant errors on the list, but the errors could be due to
+                //       different FQNs
+                if !details2.error.is_empty() && details1.error != details2.error {
+                    errors.push(format_param_error(&param_name, &details2.error))
+                }
                 if env1 != env2 {
                     table.add_row(vec![param_name, env1, env2]);
                     added = true;
@@ -934,6 +970,7 @@ fn process_parameters_command(
             } else {
                 println!("No parameters or differences in compared properties found.");
             }
+            warn_unresolved_params(&errors)?;
         }
     } else {
         warn_missing_subcommand("parameters")?;
@@ -1146,15 +1183,8 @@ fn main() -> Result<()> {
     }
 
     if let Some(matches) = matches.subcommand_matches("run") {
-        let parameters = Parameters::new();
-        let ct_vars = parameters.get_parameter_values(
-            &mut rest_cfg,
-            resolved.project_id(),
-            resolved.environment_id(),
-            false,
-        )?;
-        let mut sub_proc = SubProcess::new(ct_vars);
-        process_run_command(matches, &mut sub_proc, &resolved)?;
+        let mut sub_proc = SubProcess::new();
+        process_run_command(matches, &mut rest_cfg, &mut sub_proc, &resolved)?;
     }
 
     Ok(())
