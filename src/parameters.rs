@@ -1,5 +1,5 @@
 use crate::environments::{EnvironmentUrlMap, Environments};
-use crate::openapi::{extract_details, OpenApiConfig, PAGE_SIZE};
+use crate::openapi::{extract_details, OpenApiConfig, PAGE_SIZE, WRAP_SECRETS};
 use cloudtruth_restapi::apis::projects_api::*;
 use cloudtruth_restapi::apis::Error::{self, ResponseError};
 use cloudtruth_restapi::models::{
@@ -271,7 +271,7 @@ impl Parameters {
             None,
             PAGE_SIZE,
             options.starts_with.as_deref(),
-            None,
+            WRAP_SECRETS,
         )?;
         Ok(Some(export.body))
     }
@@ -360,7 +360,7 @@ impl Parameters {
             Some(key_name),
             None,
             PAGE_SIZE,
-            None,
+            WRAP_SECRETS,
         )?;
         if let Some(parameters) = response.results {
             if parameters.is_empty() {
@@ -446,7 +446,7 @@ impl Parameters {
             None,
             None,
             PAGE_SIZE,
-            None,
+            WRAP_SECRETS,
         )?;
         if let Some(parameters) = response.results {
             for param in parameters {
@@ -544,8 +544,13 @@ impl Parameters {
             dynamic_fqn: fqn.map(|v| v.to_string()),
             dynamic_filter: jmes_path.map(|v| v.to_string()),
         };
-        let response =
-            projects_parameters_values_create(rest_cfg, param_id, proj_id, value_create, None);
+        let response = projects_parameters_values_create(
+            rest_cfg,
+            param_id,
+            proj_id,
+            value_create,
+            WRAP_SECRETS,
+        );
         match response {
             Ok(api_value) => Ok(api_value.id),
             Err(ResponseError(ref content)) => match content.status.as_u16() {
@@ -593,7 +598,7 @@ impl Parameters {
             value_id,
             param_id,
             proj_id,
-            None,
+            WRAP_SECRETS,
             Some(value_update),
         );
         match response {
