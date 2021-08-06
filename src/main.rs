@@ -3,15 +3,10 @@ extern crate rpassword;
 mod cli;
 mod config;
 mod crypto;
-mod environments;
-mod integrations;
+mod database;
 mod lib;
-mod openapi;
-mod parameters;
-mod projects;
 mod subprocess;
 mod table;
-mod templates;
 
 use crate::cli::{
     CONFIRM_FLAG, DELETE_SUBCMD, FORMAT_OPT, GET_SUBCMD, LIST_SUBCMD, NAME_ARG, RENAME_OPT,
@@ -19,14 +14,12 @@ use crate::cli::{
 };
 use crate::config::env::ConfigEnv;
 use crate::config::{Config, CT_PROFILE, DEFAULT_ENV_NAME};
-use crate::environments::Environments;
-use crate::integrations::Integrations;
-use crate::openapi::OpenApiConfig;
-use crate::parameters::{ParamExportFormat, ParamExportOptions, ParameterDetails, Parameters};
-use crate::projects::Projects;
+use crate::database::{
+    Environments, Integrations, OpenApiConfig, ParamExportFormat, ParamExportOptions,
+    ParameterDetails, Parameters, Projects, Templates,
+};
 use crate::subprocess::{EnvSettings, Inheritance, SubProcess};
 use crate::table::Table;
-use crate::templates::Templates;
 use clap::ArgMatches;
 use color_eyre::eyre::Result;
 use color_eyre::Report;

@@ -1,4 +1,4 @@
-use crate::openapi::{extract_details, OpenApiConfig, PAGE_SIZE};
+use crate::database::openapi::{extract_details, OpenApiConfig, PAGE_SIZE};
 use cloudtruth_restapi::apis::integrations_api::*;
 use cloudtruth_restapi::apis::Error;
 use cloudtruth_restapi::apis::Error::ResponseError;

@@ -1,5 +1,5 @@
-use crate::environments::{EnvironmentUrlMap, Environments};
-use crate::openapi::{extract_details, OpenApiConfig, PAGE_SIZE, WRAP_SECRETS};
+use crate::database::environments::{EnvironmentUrlMap, Environments};
+use crate::database::openapi::{extract_details, OpenApiConfig, PAGE_SIZE, WRAP_SECRETS};
 use cloudtruth_restapi::apis::projects_api::*;
 use cloudtruth_restapi::apis::Error::{self, ResponseError};
 use cloudtruth_restapi::models::{
