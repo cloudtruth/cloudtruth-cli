@@ -200,7 +200,7 @@ impl Parameters {
     /// On success, it returns the deleted parameter ID. On failure, it returns an Error.
     pub fn delete_parameter_by_id(
         &self,
-        rest_cfg: &mut OpenApiConfig,
+        rest_cfg: &OpenApiConfig,
         proj_id: &str,
         param_id: &str,
     ) -> Result<Option<String>, Error<ProjectsParametersDestroyError>> {
@@ -214,7 +214,7 @@ impl Parameters {
     /// with more failure information.
     pub fn delete_parameter(
         &self,
-        rest_cfg: &mut OpenApiConfig,
+        rest_cfg: &OpenApiConfig,
         proj_id: &str,
         env_id: &str,
         key_name: &str,
@@ -232,7 +232,7 @@ impl Parameters {
     /// Deletes the "override" for the specified environment.
     pub fn delete_parameter_value(
         &self,
-        rest_cfg: &mut OpenApiConfig,
+        rest_cfg: &OpenApiConfig,
         proj_id: &str,
         env_id: &str,
         key_name: &str,
@@ -264,7 +264,7 @@ impl Parameters {
     /// the specified output format.
     pub fn export_parameters(
         &self,
-        rest_cfg: &mut OpenApiConfig,
+        rest_cfg: &OpenApiConfig,
         proj_id: &str,
         env_id: &str,
         options: ParamExportOptions,
@@ -291,7 +291,7 @@ impl Parameters {
     /// Gets the `Parameter` identifier.
     pub fn get_id(
         &self,
-        rest_cfg: &mut OpenApiConfig,
+        rest_cfg: &OpenApiConfig,
         proj_id: &str,
         env_id: &str,
         key_name: &str,
@@ -333,7 +333,7 @@ impl Parameters {
     ///      change the URL to a name.
     pub fn get_details_by_name(
         &self,
-        rest_cfg: &mut OpenApiConfig,
+        rest_cfg: &OpenApiConfig,
         proj_id: &str,
         env_id: &str,
         key_name: &str,
@@ -360,7 +360,7 @@ impl Parameters {
     #[allow(dead_code)]
     pub fn _get_details_by_name(
         &self,
-        rest_cfg: &mut OpenApiConfig,
+        rest_cfg: &OpenApiConfig,
         proj_id: &str,
         env_id: &str,
         key_name: &str,
@@ -394,7 +394,7 @@ impl Parameters {
     /// environment.
     pub fn get_parameter_values(
         &self,
-        rest_cfg: &mut OpenApiConfig,
+        rest_cfg: &OpenApiConfig,
         proj_id: &str,
         env_id: &str,
         mask_secrets: bool,
@@ -416,7 +416,7 @@ impl Parameters {
     /// Fetches the `ParameterDetails` for the specified project and environment.
     pub fn get_parameter_details(
         &self,
-        rest_cfg: &mut OpenApiConfig,
+        rest_cfg: &OpenApiConfig,
         proj_id: &str,
         env_id: &str,
         mask_secrets: bool,
@@ -451,7 +451,7 @@ impl Parameters {
     /// the URL to the name.
     fn get_parameter_unresolved_details(
         &self,
-        rest_cfg: &mut OpenApiConfig,
+        rest_cfg: &OpenApiConfig,
         proj_id: &str,
         env_id: &str,
         mask_secrets: bool,
@@ -479,7 +479,7 @@ impl Parameters {
 
     pub fn get_parameter_detail_map(
         &self,
-        rest_cfg: &mut OpenApiConfig,
+        rest_cfg: &OpenApiConfig,
         env_url_map: &EnvironmentUrlMap,
         proj_id: &str,
         env_id: &str,
@@ -500,7 +500,7 @@ impl Parameters {
     /// There is no `Value` entry created as part of this -- it is just the `Parameter`.
     pub fn create_parameter(
         &self,
-        rest_cfg: &mut OpenApiConfig,
+        rest_cfg: &OpenApiConfig,
         proj_id: &str,
         key_name: &str,
         description: Option<&str>,
@@ -520,7 +520,7 @@ impl Parameters {
     /// It does not touch any associated `Value` entries.
     pub fn update_parameter(
         &self,
-        rest_cfg: &mut OpenApiConfig,
+        rest_cfg: &OpenApiConfig,
         proj_id: &str,
         param_id: &str,
         key_name: &str,
@@ -548,7 +548,7 @@ impl Parameters {
     #[allow(clippy::too_many_arguments)]
     pub fn create_parameter_value(
         &self,
-        rest_cfg: &mut OpenApiConfig,
+        rest_cfg: &OpenApiConfig,
         proj_id: &str,
         env_id: &str,
         param_id: &str,
@@ -590,7 +590,7 @@ impl Parameters {
     #[allow(clippy::too_many_arguments)]
     pub fn update_parameter_value(
         &self,
-        rest_cfg: &mut OpenApiConfig,
+        rest_cfg: &OpenApiConfig,
         proj_id: &str,
         param_id: &str,
         value_id: &str,

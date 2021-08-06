@@ -178,7 +178,7 @@ fn user_confirm(message: String) -> bool {
 /// If either fails, it prints an error and exits.
 /// On success, it returns a `ResolvedIds` structure that contains ids to avoid needing to resolve
 /// the names again.
-fn resolve_ids(config: &Config, rest_cfg: &mut OpenApiConfig) -> Result<ResolvedIds> {
+fn resolve_ids(config: &Config, rest_cfg: &OpenApiConfig) -> Result<ResolvedIds> {
     // The `err` value is used to allow accumulation of multiple errors to the user.
     let mut err = false;
     let env = config.environment.as_deref().unwrap_or(DEFAULT_ENV_NAME);
@@ -225,7 +225,7 @@ fn resolve_ids(config: &Config, rest_cfg: &mut OpenApiConfig) -> Result<Resolved
 /// Process the 'run' sub-command
 fn process_run_command(
     subcmd_args: &ArgMatches,
-    rest_cfg: &mut OpenApiConfig,
+    rest_cfg: &OpenApiConfig,
     sub_proc: &mut SubProcess,
     resolved: &ResolvedIds,
 ) -> Result<()> {
@@ -289,7 +289,7 @@ fn process_run_command(
 /// Process the 'project' sub-command
 fn process_project_command(
     subcmd_args: &ArgMatches,
-    rest_cfg: &mut OpenApiConfig,
+    rest_cfg: &OpenApiConfig,
     projects: &Projects,
 ) -> Result<()> {
     if let Some(subcmd_args) = subcmd_args.subcommand_matches(DELETE_SUBCMD) {
@@ -446,7 +446,7 @@ fn process_config_command(
 /// Process the 'environment' sub-command
 fn process_environment_command(
     subcmd_args: &ArgMatches,
-    rest_cfg: &mut OpenApiConfig,
+    rest_cfg: &OpenApiConfig,
     environments: &Environments,
 ) -> Result<()> {
     if let Some(subcmd_args) = subcmd_args.subcommand_matches(DELETE_SUBCMD) {
@@ -535,7 +535,7 @@ fn process_environment_command(
 /// Process the 'integrations' sub-command
 fn process_integrations_command(
     subcmd_args: &ArgMatches,
-    rest_cfg: &mut OpenApiConfig,
+    rest_cfg: &OpenApiConfig,
     integrations: &Integrations,
 ) -> Result<()> {
     if let Some(subcmd_args) = subcmd_args.subcommand_matches("explore") {
@@ -603,7 +603,7 @@ fn process_integrations_command(
 /// Process the 'parameters' sub-command
 fn process_parameters_command(
     subcmd_args: &ArgMatches,
-    rest_cfg: &mut OpenApiConfig,
+    rest_cfg: &OpenApiConfig,
     parameters: &Parameters,
     resolved: &ResolvedIds,
 ) -> Result<()> {
@@ -981,7 +981,7 @@ fn process_parameters_command(
 /// Process the 'templates' sub-command
 fn process_templates_command(
     subcmd_args: &ArgMatches,
-    rest_cfg: &mut OpenApiConfig,
+    rest_cfg: &OpenApiConfig,
     templates: &Templates,
     resolved: &ResolvedIds,
 ) -> Result<()> {
@@ -1146,45 +1146,45 @@ fn main() -> Result<()> {
         env_name,
         proj_name,
     )?);
-    let mut rest_cfg = OpenApiConfig::from(Config::global());
+    let rest_cfg = OpenApiConfig::from(Config::global());
 
     // Check the basic config (api-key, server-url) -- don't worry about valid env/proj, yet
     check_config()?;
 
     if let Some(matches) = matches.subcommand_matches("environments") {
         let environments = Environments::new();
-        process_environment_command(matches, &mut rest_cfg, &environments)?;
+        process_environment_command(matches, &rest_cfg, &environments)?;
         process::exit(0)
     }
 
     if let Some(matches) = matches.subcommand_matches("projects") {
         let projects = Projects::new();
-        process_project_command(matches, &mut rest_cfg, &projects)?;
+        process_project_command(matches, &rest_cfg, &projects)?;
         process::exit(0)
     }
 
     if let Some(matches) = matches.subcommand_matches("integrations") {
         let integrations = Integrations::new();
-        process_integrations_command(matches, &mut rest_cfg, &integrations)?;
+        process_integrations_command(matches, &rest_cfg, &integrations)?;
         process::exit(0)
     }
 
     // Everything below here requires resolved environment/project values
-    let resolved = resolve_ids(Config::global(), &mut rest_cfg)?;
+    let resolved = resolve_ids(Config::global(), &rest_cfg)?;
 
     if let Some(matches) = matches.subcommand_matches("parameters") {
         let parameters = Parameters::new();
-        process_parameters_command(matches, &mut rest_cfg, &parameters, &resolved)?;
+        process_parameters_command(matches, &rest_cfg, &parameters, &resolved)?;
     }
 
     if let Some(matches) = matches.subcommand_matches("templates") {
         let templates = Templates::new();
-        process_templates_command(matches, &mut rest_cfg, &templates, &resolved)?;
+        process_templates_command(matches, &rest_cfg, &templates, &resolved)?;
     }
 
     if let Some(matches) = matches.subcommand_matches("run") {
         let mut sub_proc = SubProcess::new();
-        process_run_command(matches, &mut rest_cfg, &mut sub_proc, &resolved)?;
+        process_run_command(matches, &rest_cfg, &mut sub_proc, &resolved)?;
     }
 
     Ok(())
