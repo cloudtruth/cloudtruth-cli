@@ -1,4 +1,4 @@
-use crate::openapi::{OpenApiConfig, PAGE_SIZE};
+use crate::database::openapi::{OpenApiConfig, PAGE_SIZE};
 
 use cloudtruth_restapi::apis::projects_api::*;
 use cloudtruth_restapi::apis::Error;
