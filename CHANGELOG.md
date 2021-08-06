@@ -1,3 +1,13 @@
+# 1.0.3 - 2021-08-06
+
+* Added `parameters difference` command to compare parameters between two different environments.
+* Performance improvements:
+  * Reduce the number of instances where secrets are retrieved.
+  * Get parameter details using retrieve (by identifier), instead of a filtered list.
+  * Added REST profiling prints when `CLOUDTRUTH_REST_DEBUG` is true.
+* Improved feedback for errors retrieving dynamic parameters.
+* Use standard cookie handling.
+
 # 1.0.2 - 2021-07-30
 
 * Improved aliases (e.g. `list` now accepts `ls` or `l`).
