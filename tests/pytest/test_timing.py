@@ -1,6 +1,7 @@
 import os
 
 from collections import OrderedDict
+from datetime import timedelta
 from typing import List
 
 from testcase import TestCase
@@ -49,6 +50,11 @@ def print_timing_info(test_name: str, timing_info: OrderedDict) -> None:
         print(f"{operation}  ==>  [{pretty}]")
 
 
+def delta_to_msecs(delta: timedelta) -> int:
+    """Converts a timedelta into an integer number of milliseconds."""
+    return int(delta.seconds * 1000 + delta.microseconds / 1000)
+
+
 class TestTiming(TestCase):
     def setUp(self) -> None:
         self.leave_up = CT_PERSIST in os.environ
@@ -62,27 +68,35 @@ class TestTiming(TestCase):
     def _parameter_create_timing(self, proj_name: str, num_values: int, secret: bool) -> OrderedDict:
         base_cmd = self.get_cli_base_cmd()
         get_cmd = base_cmd + f"--project '{proj_name}' param get "
+        list_cmd = base_cmd + f"--project '{proj_name}' param list -s -v"
         cmd_env = self.get_cmd_env()
         cmd_env[CT_REST_DEBUG] = "true"
         create_timing = [[], [], [], [], [], ]
         create_total = []
         get_timing = [[], [], [], [], ]
         get_total = []
+        list_timing = [[], [], [], [], ]
+        list_total = []
 
         for index in range(num_values):
             result = self.set_param(cmd_env, proj_name, self._param_name(index), "abc123", secret=secret)
             create_timing = parse_timing(create_timing, result.stdout)
-            create_total.append(int(result.timediff.seconds * 1000 + result.timediff.microseconds / 1000))
+            create_total.append(delta_to_msecs(result.timediff))
 
             result = self.run_cli(cmd_env, get_cmd + f"'{self._param_name(index)}'")
             self.assertEqual(result.return_value, 0)
             get_timing = parse_timing(get_timing, result.stdout)
-            get_total.append(int(result.timediff.seconds * 1000 + result.timediff.microseconds / 1000))
+            get_total.append(delta_to_msecs(result.timediff))
+
+            result = self.run_cli(cmd_env, list_cmd)
+            self.assertEqual(result.return_value, 0)
+            list_timing = parse_timing(list_timing, result.stdout)
+            list_total.append(delta_to_msecs(result.timediff))
 
         rval = OrderedDict()
         rval["create-" + ENV_RESOLVE] = create_timing[0]
         rval["create-" + PROJ_RESOLVE] = create_timing[1]
-        rval["create-param-set"] = create_timing[2]
+        rval["create-param-get"] = create_timing[2]
         rval["create-param-set"] = create_timing[3]
         rval["create-value-set"] = create_timing[4]
         rval["create-total"] = create_total
@@ -92,6 +106,12 @@ class TestTiming(TestCase):
         rval["get-param-resolve"] = get_timing[2]
         rval["get-param-retrieve"] = get_timing[3]
         rval["get-total"] = get_total
+
+        rval["list-" + ENV_RESOLVE] = list_timing[0]
+        rval["list-" + PROJ_RESOLVE] = list_timing[1]
+        rval["list-param-list"] = list_timing[2]
+        rval["list-param-envs"] = list_timing[3]
+        rval["list-total"] = list_total
         return rval
 
     def test_timing_secrets(self) -> None:
