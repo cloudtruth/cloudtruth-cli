@@ -105,7 +105,8 @@ pub fn integrations_aws_create(
     let local_var_client = &configuration.client;
 
     let local_var_uri_str = format!("{}/api/v1/integrations/aws/", configuration.base_path);
-    let mut local_var_req_builder = local_var_client.post(local_var_uri_str.as_str());
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
 
     if let Some(ref local_var_user_agent) = configuration.user_agent {
         local_var_req_builder =
@@ -168,7 +169,8 @@ pub fn integrations_aws_destroy(
         configuration.base_path,
         id = id
     );
-    let mut local_var_req_builder = local_var_client.delete(local_var_uri_str.as_str());
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::DELETE, local_var_uri_str.as_str());
 
     if let Some(ref local_var_str) = in_use {
         local_var_req_builder =
@@ -232,7 +234,8 @@ pub fn integrations_aws_list(
     let local_var_client = &configuration.client;
 
     let local_var_uri_str = format!("{}/api/v1/integrations/aws/", configuration.base_path);
-    let mut local_var_req_builder = local_var_client.get(local_var_uri_str.as_str());
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
 
     if let Some(ref local_var_str) = aws_account_id {
         local_var_req_builder =
@@ -310,7 +313,8 @@ pub fn integrations_aws_partial_update(
         configuration.base_path,
         id = id
     );
-    let mut local_var_req_builder = local_var_client.patch(local_var_uri_str.as_str());
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::PATCH, local_var_uri_str.as_str());
 
     if let Some(ref local_var_user_agent) = configuration.user_agent {
         local_var_req_builder =
@@ -373,7 +377,8 @@ pub fn integrations_aws_retrieve(
         configuration.base_path,
         id = id
     );
-    let mut local_var_req_builder = local_var_client.get(local_var_uri_str.as_str());
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
 
     if let Some(ref local_var_str) = refresh_status {
         local_var_req_builder =
@@ -439,7 +444,8 @@ pub fn integrations_aws_update(
         configuration.base_path,
         id = id
     );
-    let mut local_var_req_builder = local_var_client.put(local_var_uri_str.as_str());
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::PUT, local_var_uri_str.as_str());
 
     if let Some(ref local_var_user_agent) = configuration.user_agent {
         local_var_req_builder =
@@ -500,7 +506,8 @@ pub fn integrations_explore_list(
     let local_var_client = &configuration.client;
 
     let local_var_uri_str = format!("{}/api/v1/integrations/explore/", configuration.base_path);
-    let mut local_var_req_builder = local_var_client.get(local_var_uri_str.as_str());
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
 
     if let Some(ref local_var_str) = fqn {
         local_var_req_builder = local_var_req_builder.query(&[("fqn", &local_var_str.to_string())]);
@@ -569,7 +576,8 @@ pub fn integrations_github_create(
     let local_var_client = &configuration.client;
 
     let local_var_uri_str = format!("{}/api/v1/integrations/github/", configuration.base_path);
-    let mut local_var_req_builder = local_var_client.post(local_var_uri_str.as_str());
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
 
     if let Some(ref local_var_user_agent) = configuration.user_agent {
         local_var_req_builder =
@@ -632,7 +640,8 @@ pub fn integrations_github_destroy(
         configuration.base_path,
         id = id
     );
-    let mut local_var_req_builder = local_var_client.delete(local_var_uri_str.as_str());
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::DELETE, local_var_uri_str.as_str());
 
     if let Some(ref local_var_str) = in_use {
         local_var_req_builder =
@@ -695,7 +704,8 @@ pub fn integrations_github_list(
     let local_var_client = &configuration.client;
 
     let local_var_uri_str = format!("{}/api/v1/integrations/github/", configuration.base_path);
-    let mut local_var_req_builder = local_var_client.get(local_var_uri_str.as_str());
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
 
     if let Some(ref local_var_str) = gh_organization_slug {
         local_var_req_builder =
@@ -769,7 +779,8 @@ pub fn integrations_github_retrieve(
         configuration.base_path,
         id = id
     );
-    let mut local_var_req_builder = local_var_client.get(local_var_uri_str.as_str());
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
 
     if let Some(ref local_var_str) = refresh_status {
         local_var_req_builder =
