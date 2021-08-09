@@ -13,6 +13,7 @@ pub const TEMPLATE_FILE_OPT: &str = "FILE";
 pub const VALUES_FLAG: &str = "values";
 
 pub const DELETE_SUBCMD: &str = "delete";
+pub const EDIT_SUBCMD: &str = "edit";
 pub const GET_SUBCMD: &str = "get";
 pub const LIST_SUBCMD: &str = "list";
 pub const SET_SUBCMD: &str = "set";
@@ -111,7 +112,7 @@ pub fn build_cli() -> App<'static, 'static> {
             .visible_aliases(&["config", "conf", "con"])
             .about("Configuration options for this application")
             .subcommands(vec![
-                SubCommand::with_name("edit")
+                SubCommand::with_name(EDIT_SUBCMD)
                     .about("Edit your configuration data for this application"),
                 SubCommand::with_name(LIST_SUBCMD)
                     .visible_aliases(LIST_ALIASES)
@@ -294,6 +295,9 @@ pub fn build_cli() -> App<'static, 'static> {
                     .visible_aliases(DELETE_ALIASES)
                     .about("Delete the CloudTruth template")
                     .arg(confirm_flag())
+                    .arg(name_arg().help("Template name")),
+                SubCommand::with_name(EDIT_SUBCMD)
+                    .about("Edit the specified template")
                     .arg(name_arg().help("Template name")),
                 SubCommand::with_name(GET_SUBCMD)
                     .about("Get an evaluated template from CloudTruth")

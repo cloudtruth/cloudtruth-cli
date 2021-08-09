@@ -1,4 +1,4 @@
-use crate::cli::{FORMAT_OPT, LIST_SUBCMD, SECRETS_FLAG, VALUES_FLAG};
+use crate::cli::{EDIT_SUBCMD, FORMAT_OPT, LIST_SUBCMD, SECRETS_FLAG, VALUES_FLAG};
 use crate::config::Config;
 use crate::table::Table;
 use crate::{warn_missing_subcommand, REDACTED};
@@ -87,7 +87,7 @@ pub fn process_config_command(
     proj_name: Option<&str>,
     env_name: Option<&str>,
 ) -> Result<()> {
-    if subcmd_args.subcommand_matches("edit").is_some() {
+    if subcmd_args.subcommand_matches(EDIT_SUBCMD).is_some() {
         proc_config_edit()?;
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(LIST_SUBCMD) {
         proc_config_list(subcmd_args)?;

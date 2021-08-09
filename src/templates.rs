@@ -1,6 +1,6 @@
 use crate::cli::{
-    CONFIRM_FLAG, DELETE_SUBCMD, FORMAT_OPT, GET_SUBCMD, LIST_SUBCMD, NAME_ARG, RENAME_OPT,
-    SECRETS_FLAG, SET_SUBCMD, TEMPLATE_FILE_OPT, VALUES_FLAG,
+    CONFIRM_FLAG, DELETE_SUBCMD, EDIT_SUBCMD, FORMAT_OPT, GET_SUBCMD, LIST_SUBCMD, NAME_ARG,
+    RENAME_OPT, SECRETS_FLAG, SET_SUBCMD, TEMPLATE_FILE_OPT, VALUES_FLAG,
 };
 use crate::database::{OpenApiConfig, Templates};
 use crate::table::Table;
@@ -50,6 +50,47 @@ fn proc_template_delete(
             "Template '{}' does not exist for project '{}'!",
             template_name, proj_name
         ))?;
+    }
+    Ok(())
+}
+
+fn proc_template_edit(
+    subcmd_args: &ArgMatches,
+    rest_cfg: &OpenApiConfig,
+    templates: &Templates,
+    resolved: &ResolvedIds,
+) -> Result<()> {
+    let proj_name = resolved.project_display_name();
+    let proj_id = resolved.project_id();
+    let template_name = subcmd_args.value_of(NAME_ARG).unwrap();
+
+    // NOTE: must get whole list of templates, so the body does not get evaluated.
+    let list = templates.get_template_details(rest_cfg, proj_id)?;
+    if list.is_empty() {
+        println!("No templates in project '{}'.", proj_name);
+    } else if let Some(details) = list.iter().filter(|t| t.name == template_name).last() {
+        let new_body = edit::edit(details.body.as_bytes())?;
+        if new_body != details.body {
+            templates.update_template(
+                rest_cfg,
+                proj_id,
+                &details.id,
+                template_name,
+                None,
+                Some(&new_body),
+            )?;
+            println!(
+                "Updated template '{}' in project '{}'",
+                template_name, proj_name
+            );
+        } else {
+            println!("Nothing to update in template '{}'", template_name);
+        }
+    } else {
+        println!(
+            "Template '{}' does not exist for project '{}'",
+            template_name, proj_name
+        );
     }
     Ok(())
 }
@@ -184,6 +225,8 @@ pub fn process_templates_command(
 ) -> Result<()> {
     if let Some(subcmd_args) = subcmd_args.subcommand_matches(DELETE_SUBCMD) {
         proc_template_delete(subcmd_args, rest_cfg, templates, resolved)?;
+    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(EDIT_SUBCMD) {
+        proc_template_edit(subcmd_args, rest_cfg, templates, resolved)?;
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(LIST_SUBCMD) {
         proc_template_list(subcmd_args, rest_cfg, templates, resolved)?;
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(GET_SUBCMD) {

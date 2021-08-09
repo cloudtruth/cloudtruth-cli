@@ -442,6 +442,7 @@ FLAGS:
 
 SUBCOMMANDS:
     delete     Delete the CloudTruth template [aliases: del, d]
+    edit       Edit the specified template
     get        Get an evaluated template from CloudTruth
     help       Prints this message or the help of the given subcommand(s)
     list       List CloudTruth templates [aliases: ls, l]
@@ -456,6 +457,19 @@ USAGE:
 
 FLAGS:
     -y, --yes        Avoid confirmation prompt
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+ARGS:
+    <NAME>    Template name
+========================================
+cloudtruth-templates-edit 
+Edit the specified template
+
+USAGE:
+    cloudtruth templates edit <NAME>
+
+FLAGS:
     -h, --help       Prints help information
     -V, --version    Prints version information
 
