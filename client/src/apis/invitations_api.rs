@@ -87,7 +87,8 @@ pub fn invitations_accept_create(
         configuration.base_path,
         id = id
     );
-    let mut local_var_req_builder = local_var_client.post(local_var_uri_str.as_str());
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
 
     if let Some(ref local_var_user_agent) = configuration.user_agent {
         local_var_req_builder =
@@ -145,7 +146,8 @@ pub fn invitations_create(
     let local_var_client = &configuration.client;
 
     let local_var_uri_str = format!("{}/api/v1/invitations/", configuration.base_path);
-    let mut local_var_req_builder = local_var_client.post(local_var_uri_str.as_str());
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
 
     if let Some(ref local_var_user_agent) = configuration.user_agent {
         local_var_req_builder =
@@ -207,7 +209,8 @@ pub fn invitations_destroy(
         configuration.base_path,
         id = id
     );
-    let mut local_var_req_builder = local_var_client.delete(local_var_uri_str.as_str());
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::DELETE, local_var_uri_str.as_str());
 
     if let Some(ref local_var_user_agent) = configuration.user_agent {
         local_var_req_builder =
@@ -268,7 +271,8 @@ pub fn invitations_list(
     let local_var_client = &configuration.client;
 
     let local_var_uri_str = format!("{}/api/v1/invitations/", configuration.base_path);
-    let mut local_var_req_builder = local_var_client.get(local_var_uri_str.as_str());
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
 
     if let Some(ref local_var_str) = email {
         local_var_req_builder =
@@ -350,7 +354,8 @@ pub fn invitations_partial_update(
         configuration.base_path,
         id = id
     );
-    let mut local_var_req_builder = local_var_client.patch(local_var_uri_str.as_str());
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::PATCH, local_var_uri_str.as_str());
 
     if let Some(ref local_var_user_agent) = configuration.user_agent {
         local_var_req_builder =
@@ -413,7 +418,8 @@ pub fn invitations_resend_create(
         configuration.base_path,
         id = id
     );
-    let mut local_var_req_builder = local_var_client.post(local_var_uri_str.as_str());
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
 
     if let Some(ref local_var_user_agent) = configuration.user_agent {
         local_var_req_builder =
@@ -474,7 +480,8 @@ pub fn invitations_retrieve(
         configuration.base_path,
         id = id
     );
-    let mut local_var_req_builder = local_var_client.get(local_var_uri_str.as_str());
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
 
     if let Some(ref local_var_user_agent) = configuration.user_agent {
         local_var_req_builder =
@@ -536,7 +543,8 @@ pub fn invitations_update(
         configuration.base_path,
         id = id
     );
-    let mut local_var_req_builder = local_var_client.put(local_var_uri_str.as_str());
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::PUT, local_var_uri_str.as_str());
 
     if let Some(ref local_var_user_agent) = configuration.user_agent {
         local_var_req_builder =

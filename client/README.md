@@ -24,82 +24,82 @@ All URIs are relative to *http://localhost*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
-*ApiApi* | [**api_schema_retrieve**](docs/ApiApi.md#api_schema_retrieve) | **get** /api/schema/ | 
-*AuditApi* | [**audit_list**](docs/AuditApi.md#audit_list) | **get** /api/v1/audit/ | 
-*AuditApi* | [**audit_retrieve**](docs/AuditApi.md#audit_retrieve) | **get** /api/v1/audit/{id}/ | 
-*AuditApi* | [**audit_summary_retrieve**](docs/AuditApi.md#audit_summary_retrieve) | **get** /api/v1/audit/summary/ | 
-*EnvironmentsApi* | [**environments_create**](docs/EnvironmentsApi.md#environments_create) | **post** /api/v1/environments/ | 
-*EnvironmentsApi* | [**environments_destroy**](docs/EnvironmentsApi.md#environments_destroy) | **delete** /api/v1/environments/{id}/ | 
-*EnvironmentsApi* | [**environments_list**](docs/EnvironmentsApi.md#environments_list) | **get** /api/v1/environments/ | 
-*EnvironmentsApi* | [**environments_partial_update**](docs/EnvironmentsApi.md#environments_partial_update) | **patch** /api/v1/environments/{id}/ | 
-*EnvironmentsApi* | [**environments_retrieve**](docs/EnvironmentsApi.md#environments_retrieve) | **get** /api/v1/environments/{id}/ | 
-*EnvironmentsApi* | [**environments_update**](docs/EnvironmentsApi.md#environments_update) | **put** /api/v1/environments/{id}/ | 
-*IntegrationsApi* | [**integrations_aws_create**](docs/IntegrationsApi.md#integrations_aws_create) | **post** /api/v1/integrations/aws/ | Establishes an AWS Integration.
-*IntegrationsApi* | [**integrations_aws_destroy**](docs/IntegrationsApi.md#integrations_aws_destroy) | **delete** /api/v1/integrations/aws/{id}/ | Delete an AWS integration.
-*IntegrationsApi* | [**integrations_aws_list**](docs/IntegrationsApi.md#integrations_aws_list) | **get** /api/v1/integrations/aws/ | 
-*IntegrationsApi* | [**integrations_aws_partial_update**](docs/IntegrationsApi.md#integrations_aws_partial_update) | **patch** /api/v1/integrations/aws/{id}/ | 
-*IntegrationsApi* | [**integrations_aws_retrieve**](docs/IntegrationsApi.md#integrations_aws_retrieve) | **get** /api/v1/integrations/aws/{id}/ | Get details of an AWS Integration.
-*IntegrationsApi* | [**integrations_aws_update**](docs/IntegrationsApi.md#integrations_aws_update) | **put** /api/v1/integrations/aws/{id}/ | 
-*IntegrationsApi* | [**integrations_explore_list**](docs/IntegrationsApi.md#integrations_explore_list) | **get** /api/v1/integrations/explore/ | Retrieve third-party integration data for the specified FQN.
-*IntegrationsApi* | [**integrations_github_create**](docs/IntegrationsApi.md#integrations_github_create) | **post** /api/v1/integrations/github/ | Establishes a GitHub Integration.
-*IntegrationsApi* | [**integrations_github_destroy**](docs/IntegrationsApi.md#integrations_github_destroy) | **delete** /api/v1/integrations/github/{id}/ | Delete a GitHub integration.
-*IntegrationsApi* | [**integrations_github_list**](docs/IntegrationsApi.md#integrations_github_list) | **get** /api/v1/integrations/github/ | 
-*IntegrationsApi* | [**integrations_github_retrieve**](docs/IntegrationsApi.md#integrations_github_retrieve) | **get** /api/v1/integrations/github/{id}/ | Get details of a GitHub Integration.
-*InvitationsApi* | [**invitations_accept_create**](docs/InvitationsApi.md#invitations_accept_create) | **post** /api/v1/invitations/{id}/accept/ | Accept an invitation.
-*InvitationsApi* | [**invitations_create**](docs/InvitationsApi.md#invitations_create) | **post** /api/v1/invitations/ | Create an invitation.
-*InvitationsApi* | [**invitations_destroy**](docs/InvitationsApi.md#invitations_destroy) | **delete** /api/v1/invitations/{id}/ | 
-*InvitationsApi* | [**invitations_list**](docs/InvitationsApi.md#invitations_list) | **get** /api/v1/invitations/ | 
-*InvitationsApi* | [**invitations_partial_update**](docs/InvitationsApi.md#invitations_partial_update) | **patch** /api/v1/invitations/{id}/ | 
-*InvitationsApi* | [**invitations_resend_create**](docs/InvitationsApi.md#invitations_resend_create) | **post** /api/v1/invitations/{id}/resend/ | Resend an invitation.
-*InvitationsApi* | [**invitations_retrieve**](docs/InvitationsApi.md#invitations_retrieve) | **get** /api/v1/invitations/{id}/ | 
-*InvitationsApi* | [**invitations_update**](docs/InvitationsApi.md#invitations_update) | **put** /api/v1/invitations/{id}/ | 
-*MembershipsApi* | [**memberships_create**](docs/MembershipsApi.md#memberships_create) | **post** /api/v1/memberships/ | 
-*MembershipsApi* | [**memberships_destroy**](docs/MembershipsApi.md#memberships_destroy) | **delete** /api/v1/memberships/{id}/ | 
-*MembershipsApi* | [**memberships_list**](docs/MembershipsApi.md#memberships_list) | **get** /api/v1/memberships/ | 
-*MembershipsApi* | [**memberships_partial_update**](docs/MembershipsApi.md#memberships_partial_update) | **patch** /api/v1/memberships/{id}/ | 
-*MembershipsApi* | [**memberships_retrieve**](docs/MembershipsApi.md#memberships_retrieve) | **get** /api/v1/memberships/{id}/ | 
-*MembershipsApi* | [**memberships_update**](docs/MembershipsApi.md#memberships_update) | **put** /api/v1/memberships/{id}/ | 
-*OrganizationsApi* | [**organizations_create**](docs/OrganizationsApi.md#organizations_create) | **post** /api/v1/organizations/ | 
-*OrganizationsApi* | [**organizations_destroy**](docs/OrganizationsApi.md#organizations_destroy) | **delete** /api/v1/organizations/{id}/ | 
-*OrganizationsApi* | [**organizations_list**](docs/OrganizationsApi.md#organizations_list) | **get** /api/v1/organizations/ | 
-*OrganizationsApi* | [**organizations_partial_update**](docs/OrganizationsApi.md#organizations_partial_update) | **patch** /api/v1/organizations/{id}/ | 
-*OrganizationsApi* | [**organizations_retrieve**](docs/OrganizationsApi.md#organizations_retrieve) | **get** /api/v1/organizations/{id}/ | 
-*OrganizationsApi* | [**organizations_update**](docs/OrganizationsApi.md#organizations_update) | **put** /api/v1/organizations/{id}/ | 
-*ProjectsApi* | [**projects_create**](docs/ProjectsApi.md#projects_create) | **post** /api/v1/projects/ | 
-*ProjectsApi* | [**projects_destroy**](docs/ProjectsApi.md#projects_destroy) | **delete** /api/v1/projects/{id}/ | 
-*ProjectsApi* | [**projects_list**](docs/ProjectsApi.md#projects_list) | **get** /api/v1/projects/ | 
-*ProjectsApi* | [**projects_parameter_export_list**](docs/ProjectsApi.md#projects_parameter_export_list) | **get** /api/v1/projects/{project_pk}/parameter-export/ | 
-*ProjectsApi* | [**projects_parameters_create**](docs/ProjectsApi.md#projects_parameters_create) | **post** /api/v1/projects/{project_pk}/parameters/ | 
-*ProjectsApi* | [**projects_parameters_destroy**](docs/ProjectsApi.md#projects_parameters_destroy) | **delete** /api/v1/projects/{project_pk}/parameters/{id}/ | 
-*ProjectsApi* | [**projects_parameters_list**](docs/ProjectsApi.md#projects_parameters_list) | **get** /api/v1/projects/{project_pk}/parameters/ | 
-*ProjectsApi* | [**projects_parameters_partial_update**](docs/ProjectsApi.md#projects_parameters_partial_update) | **patch** /api/v1/projects/{project_pk}/parameters/{id}/ | 
-*ProjectsApi* | [**projects_parameters_retrieve**](docs/ProjectsApi.md#projects_parameters_retrieve) | **get** /api/v1/projects/{project_pk}/parameters/{id}/ | 
-*ProjectsApi* | [**projects_parameters_update**](docs/ProjectsApi.md#projects_parameters_update) | **put** /api/v1/projects/{project_pk}/parameters/{id}/ | 
-*ProjectsApi* | [**projects_parameters_values_create**](docs/ProjectsApi.md#projects_parameters_values_create) | **post** /api/v1/projects/{project_pk}/parameters/{parameter_pk}/values/ | Set a value.
-*ProjectsApi* | [**projects_parameters_values_destroy**](docs/ProjectsApi.md#projects_parameters_values_destroy) | **delete** /api/v1/projects/{project_pk}/parameters/{parameter_pk}/values/{id}/ | Destroy a value.
-*ProjectsApi* | [**projects_parameters_values_list**](docs/ProjectsApi.md#projects_parameters_values_list) | **get** /api/v1/projects/{project_pk}/parameters/{parameter_pk}/values/ | Retrieve values.
-*ProjectsApi* | [**projects_parameters_values_partial_update**](docs/ProjectsApi.md#projects_parameters_values_partial_update) | **patch** /api/v1/projects/{project_pk}/parameters/{parameter_pk}/values/{id}/ | Update a value.
-*ProjectsApi* | [**projects_parameters_values_retrieve**](docs/ProjectsApi.md#projects_parameters_values_retrieve) | **get** /api/v1/projects/{project_pk}/parameters/{parameter_pk}/values/{id}/ | Retrieve a value.
-*ProjectsApi* | [**projects_parameters_values_update**](docs/ProjectsApi.md#projects_parameters_values_update) | **put** /api/v1/projects/{project_pk}/parameters/{parameter_pk}/values/{id}/ | Update a value.
-*ProjectsApi* | [**projects_partial_update**](docs/ProjectsApi.md#projects_partial_update) | **patch** /api/v1/projects/{id}/ | 
-*ProjectsApi* | [**projects_retrieve**](docs/ProjectsApi.md#projects_retrieve) | **get** /api/v1/projects/{id}/ | 
-*ProjectsApi* | [**projects_template_preview_create**](docs/ProjectsApi.md#projects_template_preview_create) | **post** /api/v1/projects/{project_pk}/template-preview/ | 
-*ProjectsApi* | [**projects_templates_create**](docs/ProjectsApi.md#projects_templates_create) | **post** /api/v1/projects/{project_pk}/templates/ | 
-*ProjectsApi* | [**projects_templates_destroy**](docs/ProjectsApi.md#projects_templates_destroy) | **delete** /api/v1/projects/{project_pk}/templates/{id}/ | 
-*ProjectsApi* | [**projects_templates_list**](docs/ProjectsApi.md#projects_templates_list) | **get** /api/v1/projects/{project_pk}/templates/ | 
-*ProjectsApi* | [**projects_templates_partial_update**](docs/ProjectsApi.md#projects_templates_partial_update) | **patch** /api/v1/projects/{project_pk}/templates/{id}/ | 
-*ProjectsApi* | [**projects_templates_retrieve**](docs/ProjectsApi.md#projects_templates_retrieve) | **get** /api/v1/projects/{project_pk}/templates/{id}/ | 
-*ProjectsApi* | [**projects_templates_update**](docs/ProjectsApi.md#projects_templates_update) | **put** /api/v1/projects/{project_pk}/templates/{id}/ | 
-*ProjectsApi* | [**projects_update**](docs/ProjectsApi.md#projects_update) | **put** /api/v1/projects/{id}/ | 
-*ServiceaccountsApi* | [**serviceaccounts_create**](docs/ServiceaccountsApi.md#serviceaccounts_create) | **post** /api/v1/serviceaccounts/ | Create a ServiceAccount user.
-*ServiceaccountsApi* | [**serviceaccounts_destroy**](docs/ServiceaccountsApi.md#serviceaccounts_destroy) | **delete** /api/v1/serviceaccounts/{id}/ | 
-*ServiceaccountsApi* | [**serviceaccounts_list**](docs/ServiceaccountsApi.md#serviceaccounts_list) | **get** /api/v1/serviceaccounts/ | 
-*ServiceaccountsApi* | [**serviceaccounts_partial_update**](docs/ServiceaccountsApi.md#serviceaccounts_partial_update) | **patch** /api/v1/serviceaccounts/{id}/ | 
-*ServiceaccountsApi* | [**serviceaccounts_retrieve**](docs/ServiceaccountsApi.md#serviceaccounts_retrieve) | **get** /api/v1/serviceaccounts/{id}/ | 
-*ServiceaccountsApi* | [**serviceaccounts_update**](docs/ServiceaccountsApi.md#serviceaccounts_update) | **put** /api/v1/serviceaccounts/{id}/ | 
-*UsersApi* | [**users_destroy**](docs/UsersApi.md#users_destroy) | **delete** /api/v1/users/{id}/ | Delete the specified user.
-*UsersApi* | [**users_list**](docs/UsersApi.md#users_list) | **get** /api/v1/users/ | 
-*UsersApi* | [**users_retrieve**](docs/UsersApi.md#users_retrieve) | **get** /api/v1/users/{id}/ | 
+*ApiApi* | [**api_schema_retrieve**](docs/ApiApi.md#api_schema_retrieve) | **GET** /api/schema/ | 
+*AuditApi* | [**audit_list**](docs/AuditApi.md#audit_list) | **GET** /api/v1/audit/ | 
+*AuditApi* | [**audit_retrieve**](docs/AuditApi.md#audit_retrieve) | **GET** /api/v1/audit/{id}/ | 
+*AuditApi* | [**audit_summary_retrieve**](docs/AuditApi.md#audit_summary_retrieve) | **GET** /api/v1/audit/summary/ | 
+*EnvironmentsApi* | [**environments_create**](docs/EnvironmentsApi.md#environments_create) | **POST** /api/v1/environments/ | 
+*EnvironmentsApi* | [**environments_destroy**](docs/EnvironmentsApi.md#environments_destroy) | **DELETE** /api/v1/environments/{id}/ | 
+*EnvironmentsApi* | [**environments_list**](docs/EnvironmentsApi.md#environments_list) | **GET** /api/v1/environments/ | 
+*EnvironmentsApi* | [**environments_partial_update**](docs/EnvironmentsApi.md#environments_partial_update) | **PATCH** /api/v1/environments/{id}/ | 
+*EnvironmentsApi* | [**environments_retrieve**](docs/EnvironmentsApi.md#environments_retrieve) | **GET** /api/v1/environments/{id}/ | 
+*EnvironmentsApi* | [**environments_update**](docs/EnvironmentsApi.md#environments_update) | **PUT** /api/v1/environments/{id}/ | 
+*IntegrationsApi* | [**integrations_aws_create**](docs/IntegrationsApi.md#integrations_aws_create) | **POST** /api/v1/integrations/aws/ | Establishes an AWS Integration.
+*IntegrationsApi* | [**integrations_aws_destroy**](docs/IntegrationsApi.md#integrations_aws_destroy) | **DELETE** /api/v1/integrations/aws/{id}/ | Delete an AWS integration.
+*IntegrationsApi* | [**integrations_aws_list**](docs/IntegrationsApi.md#integrations_aws_list) | **GET** /api/v1/integrations/aws/ | 
+*IntegrationsApi* | [**integrations_aws_partial_update**](docs/IntegrationsApi.md#integrations_aws_partial_update) | **PATCH** /api/v1/integrations/aws/{id}/ | 
+*IntegrationsApi* | [**integrations_aws_retrieve**](docs/IntegrationsApi.md#integrations_aws_retrieve) | **GET** /api/v1/integrations/aws/{id}/ | Get details of an AWS Integration.
+*IntegrationsApi* | [**integrations_aws_update**](docs/IntegrationsApi.md#integrations_aws_update) | **PUT** /api/v1/integrations/aws/{id}/ | 
+*IntegrationsApi* | [**integrations_explore_list**](docs/IntegrationsApi.md#integrations_explore_list) | **GET** /api/v1/integrations/explore/ | Retrieve third-party integration data for the specified FQN.
+*IntegrationsApi* | [**integrations_github_create**](docs/IntegrationsApi.md#integrations_github_create) | **POST** /api/v1/integrations/github/ | Establishes a GitHub Integration.
+*IntegrationsApi* | [**integrations_github_destroy**](docs/IntegrationsApi.md#integrations_github_destroy) | **DELETE** /api/v1/integrations/github/{id}/ | Delete a GitHub integration.
+*IntegrationsApi* | [**integrations_github_list**](docs/IntegrationsApi.md#integrations_github_list) | **GET** /api/v1/integrations/github/ | 
+*IntegrationsApi* | [**integrations_github_retrieve**](docs/IntegrationsApi.md#integrations_github_retrieve) | **GET** /api/v1/integrations/github/{id}/ | Get details of a GitHub Integration.
+*InvitationsApi* | [**invitations_accept_create**](docs/InvitationsApi.md#invitations_accept_create) | **POST** /api/v1/invitations/{id}/accept/ | Accept an invitation.
+*InvitationsApi* | [**invitations_create**](docs/InvitationsApi.md#invitations_create) | **POST** /api/v1/invitations/ | Create an invitation.
+*InvitationsApi* | [**invitations_destroy**](docs/InvitationsApi.md#invitations_destroy) | **DELETE** /api/v1/invitations/{id}/ | 
+*InvitationsApi* | [**invitations_list**](docs/InvitationsApi.md#invitations_list) | **GET** /api/v1/invitations/ | 
+*InvitationsApi* | [**invitations_partial_update**](docs/InvitationsApi.md#invitations_partial_update) | **PATCH** /api/v1/invitations/{id}/ | 
+*InvitationsApi* | [**invitations_resend_create**](docs/InvitationsApi.md#invitations_resend_create) | **POST** /api/v1/invitations/{id}/resend/ | Resend an invitation.
+*InvitationsApi* | [**invitations_retrieve**](docs/InvitationsApi.md#invitations_retrieve) | **GET** /api/v1/invitations/{id}/ | 
+*InvitationsApi* | [**invitations_update**](docs/InvitationsApi.md#invitations_update) | **PUT** /api/v1/invitations/{id}/ | 
+*MembershipsApi* | [**memberships_create**](docs/MembershipsApi.md#memberships_create) | **POST** /api/v1/memberships/ | 
+*MembershipsApi* | [**memberships_destroy**](docs/MembershipsApi.md#memberships_destroy) | **DELETE** /api/v1/memberships/{id}/ | 
+*MembershipsApi* | [**memberships_list**](docs/MembershipsApi.md#memberships_list) | **GET** /api/v1/memberships/ | 
+*MembershipsApi* | [**memberships_partial_update**](docs/MembershipsApi.md#memberships_partial_update) | **PATCH** /api/v1/memberships/{id}/ | 
+*MembershipsApi* | [**memberships_retrieve**](docs/MembershipsApi.md#memberships_retrieve) | **GET** /api/v1/memberships/{id}/ | 
+*MembershipsApi* | [**memberships_update**](docs/MembershipsApi.md#memberships_update) | **PUT** /api/v1/memberships/{id}/ | 
+*OrganizationsApi* | [**organizations_create**](docs/OrganizationsApi.md#organizations_create) | **POST** /api/v1/organizations/ | 
+*OrganizationsApi* | [**organizations_destroy**](docs/OrganizationsApi.md#organizations_destroy) | **DELETE** /api/v1/organizations/{id}/ | 
+*OrganizationsApi* | [**organizations_list**](docs/OrganizationsApi.md#organizations_list) | **GET** /api/v1/organizations/ | 
+*OrganizationsApi* | [**organizations_partial_update**](docs/OrganizationsApi.md#organizations_partial_update) | **PATCH** /api/v1/organizations/{id}/ | 
+*OrganizationsApi* | [**organizations_retrieve**](docs/OrganizationsApi.md#organizations_retrieve) | **GET** /api/v1/organizations/{id}/ | 
+*OrganizationsApi* | [**organizations_update**](docs/OrganizationsApi.md#organizations_update) | **PUT** /api/v1/organizations/{id}/ | 
+*ProjectsApi* | [**projects_create**](docs/ProjectsApi.md#projects_create) | **POST** /api/v1/projects/ | 
+*ProjectsApi* | [**projects_destroy**](docs/ProjectsApi.md#projects_destroy) | **DELETE** /api/v1/projects/{id}/ | 
+*ProjectsApi* | [**projects_list**](docs/ProjectsApi.md#projects_list) | **GET** /api/v1/projects/ | 
+*ProjectsApi* | [**projects_parameter_export_list**](docs/ProjectsApi.md#projects_parameter_export_list) | **GET** /api/v1/projects/{project_pk}/parameter-export/ | 
+*ProjectsApi* | [**projects_parameters_create**](docs/ProjectsApi.md#projects_parameters_create) | **POST** /api/v1/projects/{project_pk}/parameters/ | 
+*ProjectsApi* | [**projects_parameters_destroy**](docs/ProjectsApi.md#projects_parameters_destroy) | **DELETE** /api/v1/projects/{project_pk}/parameters/{id}/ | 
+*ProjectsApi* | [**projects_parameters_list**](docs/ProjectsApi.md#projects_parameters_list) | **GET** /api/v1/projects/{project_pk}/parameters/ | 
+*ProjectsApi* | [**projects_parameters_partial_update**](docs/ProjectsApi.md#projects_parameters_partial_update) | **PATCH** /api/v1/projects/{project_pk}/parameters/{id}/ | 
+*ProjectsApi* | [**projects_parameters_retrieve**](docs/ProjectsApi.md#projects_parameters_retrieve) | **GET** /api/v1/projects/{project_pk}/parameters/{id}/ | 
+*ProjectsApi* | [**projects_parameters_update**](docs/ProjectsApi.md#projects_parameters_update) | **PUT** /api/v1/projects/{project_pk}/parameters/{id}/ | 
+*ProjectsApi* | [**projects_parameters_values_create**](docs/ProjectsApi.md#projects_parameters_values_create) | **POST** /api/v1/projects/{project_pk}/parameters/{parameter_pk}/values/ | Set a value.
+*ProjectsApi* | [**projects_parameters_values_destroy**](docs/ProjectsApi.md#projects_parameters_values_destroy) | **DELETE** /api/v1/projects/{project_pk}/parameters/{parameter_pk}/values/{id}/ | Destroy a value.
+*ProjectsApi* | [**projects_parameters_values_list**](docs/ProjectsApi.md#projects_parameters_values_list) | **GET** /api/v1/projects/{project_pk}/parameters/{parameter_pk}/values/ | Retrieve values.
+*ProjectsApi* | [**projects_parameters_values_partial_update**](docs/ProjectsApi.md#projects_parameters_values_partial_update) | **PATCH** /api/v1/projects/{project_pk}/parameters/{parameter_pk}/values/{id}/ | Update a value.
+*ProjectsApi* | [**projects_parameters_values_retrieve**](docs/ProjectsApi.md#projects_parameters_values_retrieve) | **GET** /api/v1/projects/{project_pk}/parameters/{parameter_pk}/values/{id}/ | Retrieve a value.
+*ProjectsApi* | [**projects_parameters_values_update**](docs/ProjectsApi.md#projects_parameters_values_update) | **PUT** /api/v1/projects/{project_pk}/parameters/{parameter_pk}/values/{id}/ | Update a value.
+*ProjectsApi* | [**projects_partial_update**](docs/ProjectsApi.md#projects_partial_update) | **PATCH** /api/v1/projects/{id}/ | 
+*ProjectsApi* | [**projects_retrieve**](docs/ProjectsApi.md#projects_retrieve) | **GET** /api/v1/projects/{id}/ | 
+*ProjectsApi* | [**projects_template_preview_create**](docs/ProjectsApi.md#projects_template_preview_create) | **POST** /api/v1/projects/{project_pk}/template-preview/ | 
+*ProjectsApi* | [**projects_templates_create**](docs/ProjectsApi.md#projects_templates_create) | **POST** /api/v1/projects/{project_pk}/templates/ | 
+*ProjectsApi* | [**projects_templates_destroy**](docs/ProjectsApi.md#projects_templates_destroy) | **DELETE** /api/v1/projects/{project_pk}/templates/{id}/ | 
+*ProjectsApi* | [**projects_templates_list**](docs/ProjectsApi.md#projects_templates_list) | **GET** /api/v1/projects/{project_pk}/templates/ | 
+*ProjectsApi* | [**projects_templates_partial_update**](docs/ProjectsApi.md#projects_templates_partial_update) | **PATCH** /api/v1/projects/{project_pk}/templates/{id}/ | 
+*ProjectsApi* | [**projects_templates_retrieve**](docs/ProjectsApi.md#projects_templates_retrieve) | **GET** /api/v1/projects/{project_pk}/templates/{id}/ | 
+*ProjectsApi* | [**projects_templates_update**](docs/ProjectsApi.md#projects_templates_update) | **PUT** /api/v1/projects/{project_pk}/templates/{id}/ | 
+*ProjectsApi* | [**projects_update**](docs/ProjectsApi.md#projects_update) | **PUT** /api/v1/projects/{id}/ | 
+*ServiceaccountsApi* | [**serviceaccounts_create**](docs/ServiceaccountsApi.md#serviceaccounts_create) | **POST** /api/v1/serviceaccounts/ | Create a ServiceAccount user.
+*ServiceaccountsApi* | [**serviceaccounts_destroy**](docs/ServiceaccountsApi.md#serviceaccounts_destroy) | **DELETE** /api/v1/serviceaccounts/{id}/ | 
+*ServiceaccountsApi* | [**serviceaccounts_list**](docs/ServiceaccountsApi.md#serviceaccounts_list) | **GET** /api/v1/serviceaccounts/ | 
+*ServiceaccountsApi* | [**serviceaccounts_partial_update**](docs/ServiceaccountsApi.md#serviceaccounts_partial_update) | **PATCH** /api/v1/serviceaccounts/{id}/ | 
+*ServiceaccountsApi* | [**serviceaccounts_retrieve**](docs/ServiceaccountsApi.md#serviceaccounts_retrieve) | **GET** /api/v1/serviceaccounts/{id}/ | 
+*ServiceaccountsApi* | [**serviceaccounts_update**](docs/ServiceaccountsApi.md#serviceaccounts_update) | **PUT** /api/v1/serviceaccounts/{id}/ | 
+*UsersApi* | [**users_destroy**](docs/UsersApi.md#users_destroy) | **DELETE** /api/v1/users/{id}/ | Delete the specified user.
+*UsersApi* | [**users_list**](docs/UsersApi.md#users_list) | **GET** /api/v1/users/ | 
+*UsersApi* | [**users_retrieve**](docs/UsersApi.md#users_retrieve) | **GET** /api/v1/users/{id}/ | 
 
 
 ## Documentation For Models

@@ -50,7 +50,8 @@ pub fn audit_list(
     let local_var_client = &configuration.client;
 
     let local_var_uri_str = format!("{}/api/v1/audit/", configuration.base_path);
-    let mut local_var_req_builder = local_var_client.get(local_var_uri_str.as_str());
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
 
     if let Some(ref local_var_str) = action {
         local_var_req_builder =
@@ -140,7 +141,8 @@ pub fn audit_retrieve(
     let local_var_client = &configuration.client;
 
     let local_var_uri_str = format!("{}/api/v1/audit/{id}/", configuration.base_path, id = id);
-    let mut local_var_req_builder = local_var_client.get(local_var_uri_str.as_str());
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
 
     if let Some(ref local_var_user_agent) = configuration.user_agent {
         local_var_req_builder =
@@ -197,7 +199,8 @@ pub fn audit_summary_retrieve(
     let local_var_client = &configuration.client;
 
     let local_var_uri_str = format!("{}/api/v1/audit/summary/", configuration.base_path);
-    let mut local_var_req_builder = local_var_client.get(local_var_uri_str.as_str());
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
 
     if let Some(ref local_var_user_agent) = configuration.user_agent {
         local_var_req_builder =

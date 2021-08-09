@@ -213,7 +213,8 @@ pub fn projects_create(
     let local_var_client = &configuration.client;
 
     let local_var_uri_str = format!("{}/api/v1/projects/", configuration.base_path);
-    let mut local_var_req_builder = local_var_client.post(local_var_uri_str.as_str());
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
 
     if let Some(ref local_var_user_agent) = configuration.user_agent {
         local_var_req_builder =
@@ -271,7 +272,8 @@ pub fn projects_destroy(
     let local_var_client = &configuration.client;
 
     let local_var_uri_str = format!("{}/api/v1/projects/{id}/", configuration.base_path, id = id);
-    let mut local_var_req_builder = local_var_client.delete(local_var_uri_str.as_str());
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::DELETE, local_var_uri_str.as_str());
 
     if let Some(ref local_var_user_agent) = configuration.user_agent {
         local_var_req_builder =
@@ -330,7 +332,8 @@ pub fn projects_list(
     let local_var_client = &configuration.client;
 
     let local_var_uri_str = format!("{}/api/v1/projects/", configuration.base_path);
-    let mut local_var_req_builder = local_var_client.get(local_var_uri_str.as_str());
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
 
     if let Some(ref local_var_str) = name {
         local_var_req_builder =
@@ -414,7 +417,8 @@ pub fn projects_parameter_export_list(
         configuration.base_path,
         project_pk = project_pk
     );
-    let mut local_var_req_builder = local_var_client.get(local_var_uri_str.as_str());
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
 
     if let Some(ref local_var_str) = contains {
         local_var_req_builder =
@@ -516,7 +520,8 @@ pub fn projects_parameters_create(
         configuration.base_path,
         project_pk = project_pk
     );
-    let mut local_var_req_builder = local_var_client.post(local_var_uri_str.as_str());
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
 
     if let Some(ref local_var_user_agent) = configuration.user_agent {
         local_var_req_builder =
@@ -580,7 +585,8 @@ pub fn projects_parameters_destroy(
         id = id,
         project_pk = project_pk
     );
-    let mut local_var_req_builder = local_var_client.delete(local_var_uri_str.as_str());
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::DELETE, local_var_uri_str.as_str());
 
     if let Some(ref local_var_user_agent) = configuration.user_agent {
         local_var_req_builder =
@@ -648,7 +654,8 @@ pub fn projects_parameters_list(
         configuration.base_path,
         project_pk = project_pk
     );
-    let mut local_var_req_builder = local_var_client.get(local_var_uri_str.as_str());
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
 
     if let Some(ref local_var_str) = environment {
         local_var_req_builder =
@@ -740,7 +747,8 @@ pub fn projects_parameters_partial_update(
         id = id,
         project_pk = project_pk
     );
-    let mut local_var_req_builder = local_var_client.patch(local_var_uri_str.as_str());
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::PATCH, local_var_uri_str.as_str());
 
     if let Some(ref local_var_user_agent) = configuration.user_agent {
         local_var_req_builder =
@@ -808,7 +816,8 @@ pub fn projects_parameters_retrieve(
         id = id,
         project_pk = project_pk
     );
-    let mut local_var_req_builder = local_var_client.get(local_var_uri_str.as_str());
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
 
     if let Some(ref local_var_str) = environment {
         local_var_req_builder =
@@ -888,7 +897,8 @@ pub fn projects_parameters_update(
         id = id,
         project_pk = project_pk
     );
-    let mut local_var_req_builder = local_var_client.put(local_var_uri_str.as_str());
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::PUT, local_var_uri_str.as_str());
 
     if let Some(ref local_var_user_agent) = configuration.user_agent {
         local_var_req_builder =
@@ -955,7 +965,8 @@ pub fn projects_parameters_values_create(
         parameter_pk = parameter_pk,
         project_pk = project_pk
     );
-    let mut local_var_req_builder = local_var_client.post(local_var_uri_str.as_str());
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
 
     if let Some(ref local_var_str) = wrap {
         local_var_req_builder =
@@ -1026,7 +1037,8 @@ pub fn projects_parameters_values_destroy(
         parameter_pk = parameter_pk,
         project_pk = project_pk
     );
-    let mut local_var_req_builder = local_var_client.delete(local_var_uri_str.as_str());
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::DELETE, local_var_uri_str.as_str());
 
     if let Some(ref local_var_user_agent) = configuration.user_agent {
         local_var_req_builder =
@@ -1096,7 +1108,8 @@ pub fn projects_parameters_values_list(
         parameter_pk = parameter_pk,
         project_pk = project_pk
     );
-    let mut local_var_req_builder = local_var_client.get(local_var_uri_str.as_str());
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
 
     if let Some(ref local_var_str) = environment {
         local_var_req_builder =
@@ -1188,7 +1201,8 @@ pub fn projects_parameters_values_partial_update(
         parameter_pk = parameter_pk,
         project_pk = project_pk
     );
-    let mut local_var_req_builder = local_var_client.patch(local_var_uri_str.as_str());
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::PATCH, local_var_uri_str.as_str());
 
     if let Some(ref local_var_str) = wrap {
         local_var_req_builder =
@@ -1262,7 +1276,8 @@ pub fn projects_parameters_values_retrieve(
         parameter_pk = parameter_pk,
         project_pk = project_pk
     );
-    let mut local_var_req_builder = local_var_client.get(local_var_uri_str.as_str());
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
 
     if let Some(ref local_var_str) = mask_secrets {
         local_var_req_builder =
@@ -1342,7 +1357,8 @@ pub fn projects_parameters_values_update(
         parameter_pk = parameter_pk,
         project_pk = project_pk
     );
-    let mut local_var_req_builder = local_var_client.put(local_var_uri_str.as_str());
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::PUT, local_var_uri_str.as_str());
 
     if let Some(ref local_var_str) = wrap {
         local_var_req_builder =
@@ -1405,7 +1421,8 @@ pub fn projects_partial_update(
     let local_var_client = &configuration.client;
 
     let local_var_uri_str = format!("{}/api/v1/projects/{id}/", configuration.base_path, id = id);
-    let mut local_var_req_builder = local_var_client.patch(local_var_uri_str.as_str());
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::PATCH, local_var_uri_str.as_str());
 
     if let Some(ref local_var_user_agent) = configuration.user_agent {
         local_var_req_builder =
@@ -1463,7 +1480,8 @@ pub fn projects_retrieve(
     let local_var_client = &configuration.client;
 
     let local_var_uri_str = format!("{}/api/v1/projects/{id}/", configuration.base_path, id = id);
-    let mut local_var_req_builder = local_var_client.get(local_var_uri_str.as_str());
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
 
     if let Some(ref local_var_user_agent) = configuration.user_agent {
         local_var_req_builder =
@@ -1528,7 +1546,8 @@ pub fn projects_template_preview_create(
         configuration.base_path,
         project_pk = project_pk
     );
-    let mut local_var_req_builder = local_var_client.post(local_var_uri_str.as_str());
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
 
     if let Some(ref local_var_str) = environment {
         local_var_req_builder =
@@ -1599,7 +1618,8 @@ pub fn projects_templates_create(
         configuration.base_path,
         project_pk = project_pk
     );
-    let mut local_var_req_builder = local_var_client.post(local_var_uri_str.as_str());
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
 
     if let Some(ref local_var_user_agent) = configuration.user_agent {
         local_var_req_builder =
@@ -1663,7 +1683,8 @@ pub fn projects_templates_destroy(
         id = id,
         project_pk = project_pk
     );
-    let mut local_var_req_builder = local_var_client.delete(local_var_uri_str.as_str());
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::DELETE, local_var_uri_str.as_str());
 
     if let Some(ref local_var_user_agent) = configuration.user_agent {
         local_var_req_builder =
@@ -1727,7 +1748,8 @@ pub fn projects_templates_list(
         configuration.base_path,
         project_pk = project_pk
     );
-    let mut local_var_req_builder = local_var_client.get(local_var_uri_str.as_str());
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
 
     if let Some(ref local_var_str) = name {
         local_var_req_builder =
@@ -1803,7 +1825,8 @@ pub fn projects_templates_partial_update(
         id = id,
         project_pk = project_pk
     );
-    let mut local_var_req_builder = local_var_client.patch(local_var_uri_str.as_str());
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::PATCH, local_var_uri_str.as_str());
 
     if let Some(ref local_var_user_agent) = configuration.user_agent {
         local_var_req_builder =
@@ -1869,7 +1892,8 @@ pub fn projects_templates_retrieve(
         id = id,
         project_pk = project_pk
     );
-    let mut local_var_req_builder = local_var_client.get(local_var_uri_str.as_str());
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
 
     if let Some(ref local_var_str) = environment {
         local_var_req_builder =
@@ -1941,7 +1965,8 @@ pub fn projects_templates_update(
         id = id,
         project_pk = project_pk
     );
-    let mut local_var_req_builder = local_var_client.put(local_var_uri_str.as_str());
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::PUT, local_var_uri_str.as_str());
 
     if let Some(ref local_var_user_agent) = configuration.user_agent {
         local_var_req_builder =
@@ -2000,7 +2025,8 @@ pub fn projects_update(
     let local_var_client = &configuration.client;
 
     let local_var_uri_str = format!("{}/api/v1/projects/{id}/", configuration.base_path, id = id);
-    let mut local_var_req_builder = local_var_client.put(local_var_uri_str.as_str());
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::PUT, local_var_uri_str.as_str());
 
     if let Some(ref local_var_user_agent) = configuration.user_agent {
         local_var_req_builder =
