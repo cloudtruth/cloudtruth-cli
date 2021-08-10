@@ -110,6 +110,7 @@ SUBCOMMANDS:
     help      Prints this message or the help of the given subcommand(s)
     list      List CloudTruth environments [aliases: ls, l]
     set       Create/update a CloudTruth environment
+    tree      Show a tree representation of the environments [aliases: tr, t]
 ========================================
 cloudtruth-environments-delete 
 Delete specified CloudTruth environment
@@ -157,6 +158,19 @@ OPTIONS:
 
 ARGS:
     <NAME>    Environment name
+========================================
+cloudtruth-environments-tree 
+Show a tree representation of the environments
+
+USAGE:
+    cloudtruth environments tree [NAME]
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+ARGS:
+    <NAME>    Show this environment with children [default: default]
 ============================================================
 cloudtruth-integrations 
 Work with CloudTruth integrations

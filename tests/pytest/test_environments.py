@@ -103,8 +103,8 @@ class TestEnvironments(TestCase):
 
         env_name1 = self.make_name("cloud")
         env_name2 = self.make_name("truth")
-        env_name3 = self.make_name("cli")
-        env_name4 = self.make_name("gui")
+        env_name3 = self.make_name("gui")
+        env_name4 = self.make_name("cli")
 
         self.create_environment(cmd_env, env_name1)
         self.create_environment(cmd_env, env_name2, parent=env_name1)
@@ -118,6 +118,22 @@ class TestEnvironments(TestCase):
         self.assertIn(f"{env_name2},{env_name1},", result.out())
         self.assertIn(f"{env_name3},{env_name2},", result.out())
         self.assertIn(f"{env_name4},{env_name2},", result.out())
+
+        # basic 'tree' test
+        result = self.run_cli(cmd_env, base_cmd + "env tree")
+        self.assertEqual(result.return_value, 0)
+        expected = f"  {env_name1}\n    {env_name2}\n      {env_name4}\n      {env_name3}\n"
+        self.assertIn(expected, result.out())
+
+        # specifying the environment gets a filtered set
+        result = self.run_cli(cmd_env, base_cmd + f"env tree '{env_name2}'")
+        expected = f"{env_name2}\n  {env_name4}\n  {env_name3}\n"
+        self.assertEqual(expected, result.out())
+
+        # invalid environment given
+        result = self.run_cli(cmd_env, base_cmd + "env tree non-env")
+        self.assertEqual(result.return_value, 0)
+        self.assertIn("No environment 'non-env' found", result.err())
 
         # attempt to delete something that is used elsewhere
         result = self.run_cli(cmd_env, base_cmd + f"environment delete '{env_name2}' --confirm")
