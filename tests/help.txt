@@ -232,6 +232,7 @@ FLAGS:
 SUBCOMMANDS:
     delete         Delete the parameter from the project [aliases: del, d]
     differences    Show differences between properties from two environments [aliases: difference, differ, diff]
+    environment    Shows values across environments [aliases: environ, env]
     export         Export selected parameters to a known output format. Exported parameters are limited to
                    alphanumeric and underscore  in key names. Formats available are: dotenv, docker, and shell.
     get            Gets value for parameter in the selected environment
@@ -252,7 +253,7 @@ FLAGS:
     -V, --version    Prints version information
 
 ARGS:
-    <KEY>    
+    <KEY>    Name of parameter to delete
 ========================================
 cloudtruth-parameters-differences 
 Show differences between properties from two environments
@@ -274,6 +275,24 @@ OPTIONS:
 ARGS:
     <ENV1>    Name of first environment for comparison.
     <ENV2>    Name of second environment for comparison.
+========================================
+cloudtruth-parameters-environment 
+Shows values across environments
+
+USAGE:
+    cloudtruth parameters environment [FLAGS] [OPTIONS] <KEY>
+
+FLAGS:
+    -a, --all        Show even unset environments.
+    -h, --help       Prints help information
+    -s, --secrets    Display secret values in environments
+    -V, --version    Prints version information
+
+OPTIONS:
+    -f, --format <format>    Format for parameter values [default: table]  [possible values: table, csv, json, yaml]
+
+ARGS:
+    <KEY>    Name of parameter to show environment values
 ========================================
 cloudtruth-parameters-export 
 Export selected parameters to a known output format. Exported parameters are limited to alphanumeric and underscore  in
@@ -307,7 +326,7 @@ FLAGS:
     -V, --version    Prints version information
 
 ARGS:
-    <KEY>    
+    <KEY>    Name of parameter to get
 ========================================
 cloudtruth-parameters-list 
 List CloudTruth parameters
@@ -347,7 +366,7 @@ OPTIONS:
     -v, --value <value>         Static parameter value
 
 ARGS:
-    <KEY>    
+    <KEY>    Name of parameter to set
 ========================================
 cloudtruth-parameters-unset 
 Remove a value/override from the selected project/environment and leaves the parameter in place.
@@ -360,7 +379,7 @@ FLAGS:
     -V, --version    Prints version information
 
 ARGS:
-    <KEY>    
+    <KEY>    Name of parameter to unset
 ============================================================
 cloudtruth-projects 
 Work with CloudTruth projects

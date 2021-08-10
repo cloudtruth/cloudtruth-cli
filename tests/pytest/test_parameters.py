@@ -391,6 +391,14 @@ SNA=fu
         self.assertIn(f"{var1_name},{var1_value1},{env_name1}", result.out())
         self.assertIn(f"{var2_name},{var2_value1},{env_name1}", result.out())
 
+        result = self.run_cli(cmd_env, proj_cmd + f"param env {var1_name} -f csv")
+        self.assertIn(f"{env_name1},{var1_value1},,", result.out())
+        self.assertNotIn(env_name2, result.out())
+
+        result = self.run_cli(cmd_env, proj_cmd + f"param env {var1_name} -f csv --all")
+        self.assertIn(f"{env_name1},{var1_value1},,", result.out())
+        self.assertIn(f"{env_name2},-,,", result.out())
+
         # add the parameters for the second environment
         self.set_param(cmd_env, proj_name, var1_name, var1_value2, env=env_name2)
         self.set_param(cmd_env, proj_name, var2_name, var2_value2, True, env=env_name2)
@@ -411,6 +419,18 @@ SNA=fu
         # add the parameters for the third environment
         self.set_param(cmd_env, proj_name, var1_name, var1_value3, env=env_name3)
         self.set_param(cmd_env, proj_name, var2_name, var2_value3, True, env=env_name3)
+
+        # see that secrets do not show up without -s
+        result = self.run_cli(cmd_env, proj_cmd + f"param environment '{var2_name}' -f csv")
+        self.assertIn(f"{env_name1},{REDACTED},,", result.out())
+        self.assertIn(f"{env_name2},{REDACTED},,", result.out())
+        self.assertIn(f"{env_name3},{REDACTED},,", result.out())
+
+        # see that secrets do not show up without -s
+        result = self.run_cli(cmd_env, proj_cmd + f"param environment '{var2_name}' -f csv -s")
+        self.assertIn(f"{env_name1},{var2_value1},,", result.out())
+        self.assertIn(f"{env_name2},{var2_value2},,", result.out())
+        self.assertIn(f"{env_name3},{var2_value3},,", result.out())
 
         # see that values are inherited in the different environments
         result = self.run_cli(cmd_env, env1_list)

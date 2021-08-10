@@ -17,7 +17,7 @@ pub struct Parameters {}
 static DEFAULT_PARAM_VALUE: OnceCell<Value> = OnceCell::new();
 const DEFAULT_VALUE: &str = "-";
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct ParameterDetails {
     // the top few are the parameter, across all environments
     pub id: String,
@@ -54,6 +54,19 @@ impl ParameterDetails {
 
     pub fn get_properties(&self, fields: &[&str]) -> Vec<String> {
         fields.iter().map(|p| self.get_property(p)).collect()
+    }
+
+    /// Updates the values associated with an API `Value`.
+    ///
+    /// This is used for iteration over a list of values.
+    pub fn set_value(&mut self, env_value: &Value) {
+        self.val_id = env_value.id.clone();
+        self.value = env_value.value.clone().unwrap_or_default();
+        self.env_url = env_value.environment.clone();
+        self.dynamic = env_value.dynamic.unwrap_or(false);
+        self.fqn = env_value.dynamic_fqn.clone().unwrap_or_default();
+        self.jmes_path = env_value.dynamic_filter.clone().unwrap_or_default();
+        self.error = env_value.dynamic_error.clone().unwrap_or_default();
     }
 }
 
@@ -450,6 +463,7 @@ impl Parameters {
         Ok(list)
     }
 
+    /// Gets a map of parameter names to `ParameterDetails` in the specified environment.
     pub fn get_parameter_detail_map(
         &self,
         rest_cfg: &OpenApiConfig,
@@ -464,6 +478,46 @@ impl Parameters {
         let mut result = ParameterDetailMap::new();
         for entry in details {
             result.insert(entry.key.clone(), entry);
+        }
+        Ok(result)
+    }
+
+    /// Gets a map of environment url's to `ParameterDetails` in the specified environment
+    pub fn get_parameter_environment_map(
+        &self,
+        rest_cfg: &OpenApiConfig,
+        env_url_map: &EnvironmentUrlMap,
+        proj_id: &str,
+        param_name: &str,
+        mask_secrets: bool,
+    ) -> Result<ParameterDetailMap, Error<ProjectsParametersListError>> {
+        let mut result = ParameterDetailMap::new();
+        let response = projects_parameters_list(
+            rest_cfg,
+            proj_id,
+            None,
+            Some(mask_secrets),
+            Some(param_name),
+            None,
+            PAGE_SIZE,
+            Some(true),
+            WRAP_SECRETS,
+        )?;
+        if let Some(values) = response.results {
+            let default_env = "unknown".to_string();
+            for api_param in values {
+                let mut details = ParameterDetails::from(&api_param);
+                for (_, api_value) in api_param.values {
+                    if let Some(value) = api_value {
+                        details.set_value(&value);
+                        details.env_name = env_url_map
+                            .get(&details.env_url)
+                            .unwrap_or(&default_env)
+                            .clone();
+                        result.insert(details.env_url.clone(), details.clone());
+                    }
+                }
+            }
         }
         Ok(result)
     }

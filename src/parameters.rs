@@ -1,10 +1,11 @@
 use crate::cli::{
-    DELETE_SUBCMD, FORMAT_OPT, GET_SUBCMD, LIST_SUBCMD, RENAME_OPT, SECRETS_FLAG, SET_SUBCMD,
-    VALUES_FLAG,
+    DELETE_SUBCMD, FORMAT_OPT, GET_SUBCMD, KEY_ARG, LIST_SUBCMD, RENAME_OPT, SECRETS_FLAG,
+    SET_SUBCMD, VALUES_FLAG,
 };
+use crate::config::DEFAULT_ENV_NAME;
 use crate::database::{
-    Environments, OpenApiConfig, ParamExportFormat, ParamExportOptions, ParameterDetails,
-    Parameters,
+    EnvironmentDetails, Environments, OpenApiConfig, ParamExportFormat, ParamExportOptions,
+    ParameterDetails, Parameters,
 };
 use crate::table::Table;
 use crate::{
@@ -25,7 +26,7 @@ fn proc_param_delete(
     parameters: &Parameters,
     resolved: &ResolvedIds,
 ) -> Result<()> {
-    let key_name = subcmd_args.value_of("KEY").unwrap();
+    let key_name = subcmd_args.value_of(KEY_ARG).unwrap();
     let proj_id = resolved.project_id();
     let env_id = resolved.environment_id();
     let result = parameters.delete_parameter(rest_cfg, proj_id, env_id, key_name);
@@ -129,6 +130,101 @@ fn proc_param_diff(
     Ok(())
 }
 
+fn get_env_order_for(parent_name: &str, environments: &[EnvironmentDetails]) -> Vec<String> {
+    let mut result = vec![];
+    let mut children: Vec<&EnvironmentDetails> = environments
+        .iter()
+        .filter(|v| v.parent_name == parent_name)
+        .collect();
+    children.sort_by(|l, r| l.name.cmp(&r.name));
+    for child in children {
+        result.push(child.url.clone());
+
+        // recursively get a list of results
+        let mut child_results = get_env_order_for(&child.name, environments);
+        result.append(&mut child_results);
+    }
+    result
+}
+
+/// Gets a list of environment URLs in order they should be processed
+fn get_env_order(environments: &[EnvironmentDetails]) -> Vec<String> {
+    let default_url = environments
+        .iter()
+        .filter(|v| v.name == DEFAULT_ENV_NAME)
+        .last()
+        .unwrap()
+        .url
+        .clone();
+    let mut result = vec![default_url];
+    let mut child_results = get_env_order_for(DEFAULT_ENV_NAME, environments);
+    result.append(&mut child_results);
+    result
+}
+
+fn proc_param_env(
+    subcmd_args: &ArgMatches,
+    rest_cfg: &OpenApiConfig,
+    parameters: &Parameters,
+    resolved: &ResolvedIds,
+) -> Result<()> {
+    let param_name = subcmd_args.value_of(KEY_ARG).unwrap();
+    let show_secrets = subcmd_args.is_present(SECRETS_FLAG);
+    let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
+    let all_envs = subcmd_args.is_present("all");
+    let proj_id = resolved.project_id();
+
+    // fetch all environments once, and then determine id's from the same map that is
+    // used to resolve the environment names.
+    let environments = Environments::new();
+    let env_details = environments.get_environment_details(rest_cfg)?;
+    let env_url_map = environments.details_to_map(&env_details);
+    let url_keys = get_env_order(&env_details);
+    let param_values = parameters.get_parameter_environment_map(
+        rest_cfg,
+        &env_url_map,
+        proj_id,
+        param_name,
+        !show_secrets,
+    )?;
+
+    let default_param = ParameterDetails::default();
+    let default_env = "Unknown".to_string();
+    let mut added = false;
+    let mut errors: Vec<String> = vec![];
+
+    let mut table = Table::new("parameter");
+    table.set_header(&["Environment", "Value", "FQN", "JMES path"]);
+    for url in url_keys {
+        let env_name = env_url_map.get(&url).unwrap_or(&default_env);
+        let details = param_values.get(&url).unwrap_or(&default_param);
+        if !details.error.is_empty() {
+            errors.push(format_param_error(env_name, &details.error))
+        }
+        if all_envs
+            || details.value != "-"
+            || !details.fqn.is_empty()
+            || !details.jmes_path.is_empty()
+        {
+            table.add_row(vec![
+                env_name.clone(),
+                details.value.clone(),
+                details.fqn.clone(),
+                details.jmes_path.clone(),
+            ]);
+            added = true;
+        }
+    }
+    if !added {
+        println!("No values set for '{}' in any environments", param_name);
+    } else {
+        table.render(fmt)?;
+    }
+    warn_unresolved_params(&errors)?;
+
+    Ok(())
+}
+
 fn proc_param_export(
     subcmd_args: &ArgMatches,
     rest_cfg: &OpenApiConfig,
@@ -172,7 +268,7 @@ fn proc_param_get(
     parameters: &Parameters,
     resolved: &ResolvedIds,
 ) -> Result<()> {
-    let key = subcmd_args.value_of("KEY").unwrap();
+    let key = subcmd_args.value_of(KEY_ARG).unwrap();
     let proj_id = resolved.project_id();
     let env_id = resolved.environment_id();
     let parameter = parameters.get_details_by_name(rest_cfg, proj_id, env_id, key, false);
@@ -271,7 +367,7 @@ fn proc_param_set(
     parameters: &Parameters,
     resolved: &ResolvedIds,
 ) -> Result<()> {
-    let key_name = subcmd_args.value_of("KEY").unwrap();
+    let key_name = subcmd_args.value_of(KEY_ARG).unwrap();
     let proj_id = resolved.project_id();
     let env_id = resolved.environment_id();
     let prompt_user = subcmd_args.is_present("prompt");
@@ -401,7 +497,7 @@ fn proc_param_unset(
     parameters: &Parameters,
     resolved: &ResolvedIds,
 ) -> Result<()> {
-    let key_name = subcmd_args.value_of("KEY").unwrap();
+    let key_name = subcmd_args.value_of(KEY_ARG).unwrap();
     let proj_id = resolved.project_id();
     let env_id = resolved.environment_id();
     let result = parameters.delete_parameter_value(rest_cfg, proj_id, env_id, key_name);
@@ -455,6 +551,8 @@ pub fn process_parameters_command(
         proc_param_unset(subcmd_args, rest_cfg, parameters, resolved)?;
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("differences") {
         proc_param_diff(subcmd_args, rest_cfg, parameters, resolved)?;
+    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("environment") {
+        proc_param_env(subcmd_args, rest_cfg, parameters, resolved)?;
     } else {
         warn_missing_subcommand("parameters")?;
     }

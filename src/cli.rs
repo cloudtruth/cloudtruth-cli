@@ -11,6 +11,7 @@ pub const RENAME_OPT: &str = "rename";
 pub const SECRETS_FLAG: &str = "secrets";
 pub const TEMPLATE_FILE_OPT: &str = "FILE";
 pub const VALUES_FLAG: &str = "values";
+pub const KEY_ARG: &str = "KEY";
 
 pub const DELETE_SUBCMD: &str = "delete";
 pub const EDIT_SUBCMD: &str = "edit";
@@ -72,6 +73,10 @@ fn template_body() -> Arg<'static, 'static> {
 
 fn name_arg() -> Arg<'static, 'static> {
     Arg::with_name(NAME_ARG).required(true).index(1)
+}
+
+fn key_arg() -> Arg<'static, 'static> {
+    Arg::with_name(KEY_ARG).required(true).index(1)
 }
 
 pub fn build_cli() -> App<'static, 'static> {
@@ -191,7 +196,7 @@ pub fn build_cli() -> App<'static, 'static> {
                     SubCommand::with_name(DELETE_SUBCMD)
                         .visible_aliases(DELETE_ALIASES)
                         .about("Delete the parameter from the project")
-                        .arg(Arg::with_name("KEY").required(true)),
+                        .arg(key_arg().help("Name of parameter to delete")),
                     SubCommand::with_name("export")
                         .about(concat!("Export selected parameters to a known output format. ",
                             "Exported parameters are limited to alphanumeric and underscore  in ",
@@ -218,9 +223,16 @@ pub fn build_cli() -> App<'static, 'static> {
                             .long("starts-with")
                             .help("Return parameters starting with search")
                             .takes_value(true)),
+                    SubCommand::with_name("environment")
+                        .visible_aliases(&["environ", "env"])
+                        .about("Shows values across environments")
+                        .arg(key_arg().help("Name of parameter to show environment values"))
+                        .arg(Arg::with_name("all").short("a").long("all").help("Show even unset environments."))
+                        .arg(table_format_options().help("Format for parameter values"))
+                        .arg(secrets_display_flag().help("Display secret values in environments")),
                     SubCommand::with_name(GET_SUBCMD)
                         .about("Gets value for parameter in the selected environment")
-                        .arg(Arg::with_name("KEY").required(true).index(1)),
+                        .arg(key_arg().help("Name of parameter to get")),
                     SubCommand::with_name(LIST_SUBCMD)
                         .visible_aliases(LIST_ALIASES)
                         .about("List CloudTruth parameters")
@@ -233,7 +245,7 @@ pub fn build_cli() -> App<'static, 'static> {
                     SubCommand::with_name(SET_SUBCMD)
                         .about(concat!("Set a value in the selected project/environment for ",
                             "an existing parameter or creates a new one if needed"))
-                        .arg(Arg::with_name("KEY").required(true).index(1))
+                        .arg(key_arg().help("Name of parameter to set"))
                         .arg(description_option().help("Parameter description"))
                         .arg(Arg::with_name("FQN")
                             .short("f")
@@ -268,7 +280,7 @@ pub fn build_cli() -> App<'static, 'static> {
                     SubCommand::with_name("unset")
                         .about(concat!("Remove a value/override from the selected ",
                             "project/environment and leaves the parameter in place."))
-                        .arg(Arg::with_name("KEY").required(true).index(1)),
+                        .arg(key_arg().help("Name of parameter to unset")),
                     SubCommand::with_name("differences")
                         .visible_aliases(&["difference", "differ", "diff"])
                         .about("Show differences between properties from two environments")
