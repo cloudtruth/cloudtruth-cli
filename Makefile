@@ -4,7 +4,7 @@
 
 os_name := $(shell uname -s)
 rustup_exists := $(shell which rustup)
-rust_intended := 1.52.1
+rust_intended := 1.54.0
 rust_installed := $(shell rustc -V | cut -d' ' -f2)
 rust_bad_version := $(shell grep "RUST_VERSION:" .github/workflows/*.yml | grep -v "$(rust_intended)")
 

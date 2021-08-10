@@ -87,13 +87,13 @@ impl ConfigFile {
     }
 
     pub(crate) fn load_profile(config: &str, profile_name: &str) -> ConfigFileResult<Profile> {
-        let config_file: ConfigFile = serde_yaml::from_str(&config)?;
+        let config_file: ConfigFile = serde_yaml::from_str(config)?;
 
         let profile = config_file.profiles.get(profile_name);
         if let Some(profile) = profile {
             Self::resolve_source_profile_chain(
                 &config_file,
-                &profile,
+                profile,
                 profile_name,
                 &mut vec![profile_name.to_string()],
             )
@@ -121,7 +121,7 @@ impl ConfigFile {
     pub(crate) fn get_profile_details(config: &str) -> ConfigFileResult<Vec<ProfileDetails>> {
         let mut profiles: Vec<ProfileDetails> = Vec::new();
         if !config.is_empty() {
-            let config_file: ConfigFile = serde_yaml::from_str(&config)?;
+            let config_file: ConfigFile = serde_yaml::from_str(config)?;
             profiles = config_file
                 .profiles
                 .iter()
@@ -139,7 +139,7 @@ impl ConfigFile {
     ) -> ConfigFileResult<Vec<ProfileDetails>> {
         let mut profiles: Vec<ProfileDetails> = Vec::new();
         if !config.is_empty() {
-            let config_file: ConfigFile = serde_yaml::from_str(&config)?;
+            let config_file: ConfigFile = serde_yaml::from_str(config)?;
             let mut prof_name = profile_name.to_string();
             while let Some(profile) = config_file.profiles.get(&prof_name) {
                 profiles.push(ConfigFile::create_project_details(&prof_name, profile));
@@ -166,18 +166,18 @@ impl ConfigFile {
             let source_profile = config_file.profiles.get(source_profile_name);
 
             if let Some(source_profile) = source_profile {
-                if cycle.contains(source_profile_name) {
-                    // Although the cycle is already detected, add the value so we can show the
-                    // complete cycle in the error object.
-                    cycle.push(source_profile_name.clone());
+                let pre_exists = cycle.contains(source_profile_name);
 
+                // Always add the value -- even for the error case, so we can show the complete
+                // cycle in the error object
+                cycle.push(source_profile_name.clone());
+
+                if pre_exists {
                     Err(ConfigFileError::SourceProfileCyclicError(
                         original_profile_name.to_string(),
                         cycle.clone(),
                     ))
                 } else {
-                    cycle.push(source_profile_name.clone());
-
                     Self::resolve_source_profile_chain(
                         config_file,
                         &source_profile.merge(profile),

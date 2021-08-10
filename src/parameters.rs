@@ -341,7 +341,7 @@ fn proc_param_set(
                     rest_cfg,
                     proj_id,
                     &original.id,
-                    &final_name,
+                    final_name,
                     description,
                     secret,
                 )?;

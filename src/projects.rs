@@ -78,7 +78,7 @@ fn proc_proj_set(
                 proj_name
             ))?;
         } else {
-            let name = rename.unwrap_or(&proj_name);
+            let name = rename.unwrap_or(proj_name);
             projects.update_project(rest_cfg, name, &details.id, description)?;
             println!("Updated project '{}'", name);
         }

@@ -161,7 +161,7 @@ fn generate_key(
             digest_result.as_slice()
         }
     };
-    let kdf = Hkdf::<Sha512>::new(Some(binary_salt), &source);
+    let kdf = Hkdf::<Sha512>::new(Some(binary_salt), source);
     let mut key = vec![0; key_len.unwrap_or(KEY_LEN)];
     let result = kdf.expand(&[], &mut key);
     match result {
@@ -174,7 +174,7 @@ fn generate_key(
 /// an encoded string.
 fn wrap_chacha20_poly1305(jwt: &[u8], plaintext: &[u8]) -> Result<String, Error> {
     // derive the key from the JWT
-    let derived = generate_key(&jwt, None, None)?;
+    let derived = generate_key(jwt, None, None)?;
     let key = chacha20poly1305::Key::from_slice(&derived);
 
     // generate a new Nonce
@@ -185,8 +185,8 @@ fn wrap_chacha20_poly1305(jwt: &[u8], plaintext: &[u8]) -> Result<String, Error>
 
     let cipher = ChaCha20Poly1305::new(key);
     let mut in_out = vec![0; plaintext.len()];
-    in_out.copy_from_slice(&plaintext);
-    let result = cipher.encrypt_in_place_detached(&nonce, &[], &mut in_out);
+    in_out.copy_from_slice(plaintext);
+    let result = cipher.encrypt_in_place_detached(nonce, &[], &mut in_out);
     match result {
         Ok(tag) => {
             let cipher_str = base64::encode(in_out);
@@ -215,7 +215,7 @@ fn unwrap_chacha20_poly1305(jwt: &[u8], wrapper: &SecretWrapper) -> Result<Vec<u
     let mut in_out = base64::decode(wrapper.cipher_text.as_str())?;
     let tag_bytes = base64::decode(&wrapper.tag)?;
     let tag = chacha20poly1305::Tag::from_slice(&tag_bytes);
-    let result = cipher.decrypt_in_place_detached(&nonce, &[], &mut in_out, tag);
+    let result = cipher.decrypt_in_place_detached(nonce, &[], &mut in_out, tag);
     match result {
         Ok(_) => Ok(in_out),
         Err(err) => Err(Error::Decrypt(err.to_string())),
@@ -226,7 +226,7 @@ fn unwrap_chacha20_poly1305(jwt: &[u8], wrapper: &SecretWrapper) -> Result<Vec<u
 /// an encoded string.
 fn wrap_aes_gcm(jwt: &[u8], plaintext: &[u8]) -> Result<String, Error> {
     // derive the key from the JWT
-    let derived = generate_key(&jwt, None, None)?;
+    let derived = generate_key(jwt, None, None)?;
     let key = aes_gcm::Key::from_slice(&derived);
 
     // generate a new Nonce
@@ -237,8 +237,8 @@ fn wrap_aes_gcm(jwt: &[u8], plaintext: &[u8]) -> Result<String, Error> {
 
     let cipher = Aes256Gcm::new(key);
     let mut in_out = vec![0; plaintext.len()];
-    in_out.copy_from_slice(&plaintext);
-    let result = cipher.encrypt_in_place_detached(&nonce, &[], &mut in_out);
+    in_out.copy_from_slice(plaintext);
+    let result = cipher.encrypt_in_place_detached(nonce, &[], &mut in_out);
     match result {
         Ok(tag) => {
             let cipher_str = base64::encode(in_out);
@@ -267,7 +267,7 @@ fn unwrap_aes_gcm(jwt: &[u8], wrapper: &SecretWrapper) -> Result<Vec<u8>, Error>
     let mut in_out = base64::decode(wrapper.cipher_text.as_str())?;
     let tag_bytes = base64::decode(&wrapper.tag)?;
     let tag = aes_gcm::Tag::from_slice(&tag_bytes);
-    let result = cipher.decrypt_in_place_detached(&nonce, &[], &mut in_out, tag);
+    let result = cipher.decrypt_in_place_detached(nonce, &[], &mut in_out, tag);
     match result {
         Ok(_) => Ok(in_out),
         Err(err) => Err(Error::Decrypt(err.to_string())),

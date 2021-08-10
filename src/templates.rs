@@ -187,7 +187,7 @@ fn proc_template_set(
                 template_name
             ))?;
         } else {
-            let name = rename.unwrap_or(&template_name);
+            let name = rename.unwrap_or(template_name);
             let mut body = None;
             if let Some(filename) = filename {
                 body = Some(fs::read_to_string(filename).expect(FILE_READ_ERR));
