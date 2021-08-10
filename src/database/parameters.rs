@@ -338,33 +338,6 @@ impl Parameters {
         env_id: &str,
         key_name: &str,
         mask_secrets: bool,
-    ) -> Result<Option<ParameterDetails>, Error<ProjectsParametersRetrieveError>> {
-        if let Some(id) = self.get_id(rest_cfg, proj_id, env_id, key_name) {
-            let response = projects_parameters_retrieve(
-                rest_cfg,
-                &id,
-                proj_id,
-                Some(env_id),
-                Some(mask_secrets),
-                Some(true),
-                WRAP_SECRETS,
-            )?;
-            Ok(Some(ParameterDetails::from(&response)))
-        } else {
-            Ok(None)
-        }
-    }
-
-    /// This is the original `get_details_by_name()` where the parameter/value are resolved in one
-    /// query. However, this currently causes performance issues that are being worked on.
-    #[allow(dead_code)]
-    pub fn _get_details_by_name(
-        &self,
-        rest_cfg: &OpenApiConfig,
-        proj_id: &str,
-        env_id: &str,
-        key_name: &str,
-        mask_secrets: bool,
     ) -> Result<Option<ParameterDetails>, Error<ProjectsParametersListError>> {
         let response = projects_parameters_list(
             rest_cfg,

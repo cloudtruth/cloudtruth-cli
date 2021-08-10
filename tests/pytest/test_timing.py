@@ -73,7 +73,7 @@ class TestTiming(TestCase):
         cmd_env[CT_REST_DEBUG] = "true"
         create_timing = [[], [], [], [], [], ]
         create_total = []
-        get_timing = [[], [], [], [], ]
+        get_timing = [[], [], [], ]
         get_total = []
         list_timing = [[], [], [], [], ]
         list_total = []
@@ -103,8 +103,7 @@ class TestTiming(TestCase):
 
         rval["get-" + ENV_RESOLVE] = get_timing[0]
         rval["get-" + PROJ_RESOLVE] = get_timing[1]
-        rval["get-param-resolve"] = get_timing[2]
-        rval["get-param-retrieve"] = get_timing[3]
+        rval["get-param-retrieve"] = get_timing[2]
         rval["get-total"] = get_total
 
         rval["list-" + ENV_RESOLVE] = list_timing[0]
