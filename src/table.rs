@@ -29,7 +29,7 @@ pub struct Table {
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum TableError {
-    UnhandledFormatError(String),
+    UnhandledFormat(String),
     CsvError(String),
     JsonError(String),
     WriteError(String),
@@ -39,7 +39,7 @@ pub enum TableError {
 impl fmt::Display for TableError {
     fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
         match self {
-            TableError::UnhandledFormatError(format) => {
+            TableError::UnhandledFormat(format) => {
                 write!(f, "Unhandled format: {}", format)
             }
             TableError::CsvError(details) => {
@@ -236,7 +236,7 @@ impl Table {
             "csv" => self.render_csv(),
             "json" => self.render_json(),
             "yaml" => self.render_yaml(),
-            _ => Err(TableError::UnhandledFormatError(format.to_string())),
+            _ => Err(TableError::UnhandledFormat(format.to_string())),
         }
     }
 }
@@ -260,7 +260,7 @@ mod tests {
         let table = create_basic_table();
         assert_eq!(
             table.render("foo").unwrap_err(),
-            TableError::UnhandledFormatError("foo".to_string())
+            TableError::UnhandledFormat("foo".to_string())
         );
     }
 

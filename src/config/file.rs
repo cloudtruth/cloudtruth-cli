@@ -166,18 +166,18 @@ impl ConfigFile {
             let source_profile = config_file.profiles.get(source_profile_name);
 
             if let Some(source_profile) = source_profile {
-                if cycle.contains(source_profile_name) {
-                    // Although the cycle is already detected, add the value so we can show the
-                    // complete cycle in the error object.
-                    cycle.push(source_profile_name.clone());
+                let pre_exists = cycle.contains(source_profile_name);
 
+                // Always add the value -- even for the error case, so we can show the complete
+                // cycle in the error object
+                cycle.push(source_profile_name.clone());
+
+                if pre_exists {
                     Err(ConfigFileError::SourceProfileCyclicError(
                         original_profile_name.to_string(),
                         cycle.clone(),
                     ))
                 } else {
-                    cycle.push(source_profile_name.clone());
-
                     Self::resolve_source_profile_chain(
                         config_file,
                         &source_profile.merge(profile),

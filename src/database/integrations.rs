@@ -76,7 +76,7 @@ impl From<&IntegrationExplorer> for IntegrationNode {
             node_type: format!("{:?}", node.node_type),
             secret: node.secret.unwrap_or(false),
             content_type: node.content_type.clone().unwrap_or_default(),
-            content_size: node.content_size.clone().unwrap_or(0),
+            content_size: node.content_size.unwrap_or(0),
             content_data: node.content_data.clone().unwrap_or_default(),
             content_keys: node.content_keys.clone().unwrap_or_default(),
         }
@@ -85,7 +85,7 @@ impl From<&IntegrationExplorer> for IntegrationNode {
 
 #[derive(Debug)]
 pub enum IntegrationError {
-    NotFoundError(String),
+    NotFound(String),
     AuthError(String),
     ExploreListError(Error<IntegrationsExploreListError>),
     AwsListError(Error<IntegrationsAwsListError>),
@@ -95,7 +95,7 @@ pub enum IntegrationError {
 impl fmt::Display for IntegrationError {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
-            IntegrationError::NotFoundError(msg) => write!(f, "{}", msg),
+            IntegrationError::NotFound(msg) => write!(f, "{}", msg),
             IntegrationError::AuthError(msg) => write!(f, "Not Authenticated: {}", msg),
             IntegrationError::ExploreListError(e) => write!(f, "{}", e.to_string()),
             IntegrationError::AwsListError(e) => write!(f, "{}", e.to_string()),
@@ -233,7 +233,7 @@ impl Integrations {
             } else if content.status == 401 || content.status == 403 {
                 Err(IntegrationError::AuthError(err_msg))
             } else if content.status == 400 || content.status == 404 {
-                Err(IntegrationError::NotFoundError(err_msg))
+                Err(IntegrationError::NotFound(err_msg))
             } else {
                 Err(IntegrationError::ExploreListError(response.unwrap_err()))
             }
