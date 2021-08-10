@@ -3,7 +3,7 @@ use crate::cli::{
     VALUES_FLAG,
 };
 use crate::config::DEFAULT_ENV_NAME;
-use crate::database::{Environments, OpenApiConfig};
+use crate::database::{EnvironmentDetails, Environments, OpenApiConfig};
 use crate::table::Table;
 use crate::{error_message, user_confirm, warn_missing_subcommand, warning_message};
 use clap::ArgMatches;
@@ -108,6 +108,38 @@ fn proc_env_set(
     Ok(())
 }
 
+fn print_children(level: usize, parent_name: &str, list: &[EnvironmentDetails]) {
+    let indent = "  ".repeat(level);
+    let mut children: Vec<&EnvironmentDetails> = list
+        .iter()
+        .filter(|x| x.parent_name == parent_name)
+        .collect();
+    children.sort_by(|l, r| l.name.cmp(&r.name));
+    for child in children {
+        // print this child
+        println!("{}{}", indent, child.name);
+
+        // recursively go through all of it's children
+        print_children(level + 1, &child.name, list);
+    }
+}
+
+fn proc_env_tree(
+    subcmd_args: &ArgMatches,
+    rest_cfg: &OpenApiConfig,
+    environments: &Environments,
+) -> Result<()> {
+    let start = subcmd_args.value_of(NAME_ARG).unwrap();
+    let details = environments.get_environment_details(rest_cfg)?;
+    if details.iter().filter(|x| x.name == start).last().is_some() {
+        println!("{}", start);
+        print_children(1, start, &details);
+    } else {
+        warning_message(format!("No environment '{}' found", start))?;
+    }
+    Ok(())
+}
+
 /// Process the 'environment' sub-command
 pub fn process_environment_command(
     subcmd_args: &ArgMatches,
@@ -120,6 +152,8 @@ pub fn process_environment_command(
         proc_env_list(subcmd_args, rest_cfg, environments)?;
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(SET_SUBCMD) {
         proc_env_set(subcmd_args, rest_cfg, environments)?;
+    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("tree") {
+        proc_env_tree(subcmd_args, rest_cfg, environments)?;
     } else {
         warn_missing_subcommand("environments")?;
     }

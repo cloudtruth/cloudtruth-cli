@@ -156,6 +156,10 @@ pub fn build_cli() -> App<'static, 'static> {
                             .long("parent")
                             .takes_value(true)
                             .help("Environment's parent name (only used for create)")),
+                    SubCommand::with_name("tree")
+                        .visible_aliases(&["tr", "t"])
+                        .about("Show a tree representation of the environments")
+                        .arg(name_arg().help("Show this environment with children").required(false).default_value("default")),
                 ])
         )
         .subcommand(
