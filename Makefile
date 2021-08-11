@@ -12,6 +12,7 @@ rust_bad_version := $(shell grep "RUST_VERSION:" .github/workflows/*.yml | grep 
 .PHONY = all
 .PHONY += cargo
 .PHONY += clean
+.PHONY += cli
 .PHONY += help
 .PHONY += image
 .PHONY += integration
@@ -42,7 +43,7 @@ shell:
 ### Commands for either outside or inside the container
 
 # the client must be generated before building the Rust program that uses it
-cargo: client
+cargo cli: client
 	cargo build
 
 clean:
