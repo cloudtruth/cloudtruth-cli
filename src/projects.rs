@@ -4,7 +4,7 @@ use crate::cli::{
 };
 use crate::database::{OpenApiConfig, Projects};
 use crate::table::Table;
-use crate::{user_confirm, warn_missing_subcommand, warning_message};
+use crate::{user_confirm, warn_missing_subcommand, warning_message, DEL_CONFIRM};
 use clap::ArgMatches;
 use color_eyre::eyre::Result;
 
@@ -20,7 +20,7 @@ fn proc_proj_delete(
         // NOTE: the server is responsible for checking if children exist
         let mut confirmed = subcmd_args.is_present(CONFIRM_FLAG);
         if !confirmed {
-            confirmed = user_confirm(format!("Delete project '{}'", proj_name));
+            confirmed = user_confirm(format!("Delete project '{}'", proj_name), DEL_CONFIRM);
         }
 
         if !confirmed {

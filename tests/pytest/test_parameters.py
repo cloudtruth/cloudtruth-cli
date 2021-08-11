@@ -119,7 +119,7 @@ my_param,cRaZy value,default,static,false,this is just a test description
 
         ########
         # delete the parameter
-        result = self.run_cli(cmd_env, sub_cmd + f"delete {key1}")
+        result = self.run_cli(cmd_env, sub_cmd + f"delete --yes '{key1}'")
         self.assertEqual(result.return_value, 0)
         self.assertIn(f"Successfully removed parameter '{key1}'", result.out())
 
@@ -129,7 +129,7 @@ my_param,cRaZy value,default,static,false,this is just a test description
         self.assertTrue(result.out_contains_value(empty_msg))
 
         # idempotent
-        result = self.run_cli(cmd_env, sub_cmd + f"delete {key1}")
+        result = self.run_cli(cmd_env, sub_cmd + f"delete -y '{key1}'")
         self.assertEqual(result.return_value, 0)
         self.assertIn(f"Did not find parameter '{key1}'", result.out())
 
@@ -265,7 +265,7 @@ my_param,super-SENSITIVE-vAluE,default,static,true,my secret value
 
         ########
         # delete the parameter
-        result = self.run_cli(cmd_env, sub_cmd + f"delete {key1}")
+        result = self.run_cli(cmd_env, sub_cmd + f"delete -y '{key1}'")
         self.assertEqual(result.return_value, 0)
         self.assertIn(f"Successfully removed parameter '{key1}'", result.out())
 
@@ -275,7 +275,7 @@ my_param,super-SENSITIVE-vAluE,default,static,true,my secret value
         self.assertTrue(result.out_contains_value(empty_msg))
 
         # idempotent
-        result = self.run_cli(cmd_env, sub_cmd + f"delete {key1}")
+        result = self.run_cli(cmd_env, sub_cmd + f"delete -y '{key1}'")
         self.assertEqual(result.return_value, 0)
         self.assertIn(f"Did not find parameter '{key1}'", result.out())
 

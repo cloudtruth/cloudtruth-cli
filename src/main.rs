@@ -32,6 +32,8 @@ use std::io::{self, stdin, stdout, Write};
 use std::process;
 use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 
+// The `DEL_CONFIRM` is the default value for delete confirmation across different types
+const DEL_CONFIRM: Option<bool> = Some(false);
 const REDACTED: &str = "*****";
 const FILE_READ_ERR: &str = "Failed to read value from file.";
 
@@ -147,17 +149,28 @@ fn format_param_error(param_name: &str, param_err: &str) -> String {
 /// If the user answers 'n' (case insensitive), 'false' is returned.
 /// The prompt will be repeated upto 3 times if the users does not enter 'y|n'. If the
 /// max tries are exceeded, it returns 'false'.
-fn user_confirm(message: String) -> bool {
+fn user_confirm(message: String, default: Option<bool>) -> bool {
     let max_tries = 3;
     let mut confirmed = false;
+    let action = match default {
+        None => "y/n",
+        Some(true) => "Y/n",
+        Some(false) => "y/N",
+    };
 
     for _ in 0..max_tries {
         let mut input = String::new();
-        print!("{}? (y/n) ", message);
+        print!("{}? ({}) ", message, action);
         stdout().flush().unwrap();
         let _ = stdin().read_line(&mut input);
         input = input.trim().to_string().to_lowercase();
         input.truncate(input.len());
+        if input.is_empty() {
+            if let Some(value) = default {
+                confirmed = value;
+                break;
+            }
+        }
         if input.as_str() == "y" || input.as_str() == "yes" {
             confirmed = true;
             break;

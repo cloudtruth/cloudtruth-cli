@@ -1,6 +1,6 @@
 use crate::cli::{
-    DELETE_SUBCMD, FORMAT_OPT, GET_SUBCMD, KEY_ARG, LIST_SUBCMD, RENAME_OPT, SECRETS_FLAG,
-    SET_SUBCMD, VALUES_FLAG,
+    binary_name, CONFIRM_FLAG, DELETE_SUBCMD, FORMAT_OPT, GET_SUBCMD, KEY_ARG, LIST_SUBCMD,
+    RENAME_OPT, SECRETS_FLAG, SET_SUBCMD, VALUES_FLAG,
 };
 use crate::config::DEFAULT_ENV_NAME;
 use crate::database::{
@@ -9,12 +9,13 @@ use crate::database::{
 };
 use crate::table::Table;
 use crate::{
-    error_message, format_param_error, warn_missing_subcommand, warn_unresolved_params, warn_user,
-    warning_message, ResolvedIds, FILE_READ_ERR,
+    error_message, format_param_error, user_confirm, warn_missing_subcommand,
+    warn_unresolved_params, warn_user, warning_message, ResolvedIds, DEL_CONFIRM, FILE_READ_ERR,
 };
 use clap::ArgMatches;
 use color_eyre::eyre::Result;
 use color_eyre::Report;
+use indoc::printdoc;
 use rpassword::read_password;
 use std::fs;
 use std::process;
@@ -27,9 +28,43 @@ fn proc_param_delete(
     resolved: &ResolvedIds,
 ) -> Result<()> {
     let key_name = subcmd_args.value_of(KEY_ARG).unwrap();
+    let confirmed = subcmd_args.is_present(CONFIRM_FLAG);
+    let proj_name = resolved.project_display_name();
     let proj_id = resolved.project_id();
     let env_id = resolved.environment_id();
-    let result = parameters.delete_parameter(rest_cfg, proj_id, env_id, key_name);
+    let param_id = parameters.get_id(rest_cfg, proj_id, env_id, key_name);
+    if param_id.is_none() {
+        println!(
+            "Did not find parameter '{}' to delete from project '{}'.",
+            key_name,
+            resolved.project_display_name(),
+        );
+        return Ok(());
+    }
+
+    if !confirmed {
+        printdoc!(
+            r#"
+
+                Deleting a parameter removes it from the project for all environments.
+                You can use '{} parameter unset' to delete the value from
+                the current environment.
+
+            "#,
+            binary_name(),
+        );
+        if !user_confirm(
+            format!(
+                "Delete parameter '{}' from project '{}'",
+                key_name, proj_name
+            ),
+            DEL_CONFIRM,
+        ) {
+            return Ok(());
+        }
+    }
+
+    let result = parameters.delete_parameter_by_id(rest_cfg, proj_id, param_id.unwrap().as_str());
     match result {
         Ok(Some(_)) => {
             println!(
@@ -37,13 +72,6 @@ fn proc_param_delete(
                 key_name,
                 resolved.project_display_name(),
             );
-        }
-        Ok(None) => {
-            println!(
-                "Did not find parameter '{}' to delete from project '{}'.",
-                key_name,
-                resolved.project_display_name(),
-            )
         }
         _ => {
             println!(

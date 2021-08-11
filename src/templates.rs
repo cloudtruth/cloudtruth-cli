@@ -6,7 +6,7 @@ use crate::database::{OpenApiConfig, Templates};
 use crate::table::Table;
 use crate::{
     error_message, user_confirm, warn_missing_subcommand, warning_message, ResolvedIds,
-    FILE_READ_ERR,
+    DEL_CONFIRM, FILE_READ_ERR,
 };
 use clap::ArgMatches;
 use color_eyre::eyre::Result;
@@ -27,10 +27,13 @@ fn proc_template_delete(
     if let Some(details) = details {
         let mut confirmed = subcmd_args.is_present(CONFIRM_FLAG);
         if !confirmed {
-            confirmed = user_confirm(format!(
-                "Delete template '{}' in project '{}'",
-                template_name, proj_name
-            ));
+            confirmed = user_confirm(
+                format!(
+                    "Delete template '{}' in project '{}'",
+                    template_name, proj_name
+                ),
+                DEL_CONFIRM,
+            );
         }
 
         if !confirmed {

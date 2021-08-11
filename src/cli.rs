@@ -50,7 +50,7 @@ fn confirm_flag() -> Arg<'static, 'static> {
         .alias(CONFIRM_FLAG)
         .short("y")
         .long("yes")
-        .help("Avoid confirmation prompt")
+        .help("Avoid confirmation prompt(s)")
 }
 
 fn rename_option() -> Arg<'static, 'static> {
@@ -196,6 +196,7 @@ pub fn build_cli() -> App<'static, 'static> {
                     SubCommand::with_name(DELETE_SUBCMD)
                         .visible_aliases(DELETE_ALIASES)
                         .about("Delete the parameter from the project")
+                        .arg(confirm_flag())
                         .arg(key_arg().help("Name of parameter to delete")),
                     SubCommand::with_name("export")
                         .about(concat!("Export selected parameters to a known output format. ",
