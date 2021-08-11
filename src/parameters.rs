@@ -188,6 +188,11 @@ fn proc_param_env(
         !show_secrets,
     )?;
 
+    if param_values.is_empty() {
+        error_message(format!("Parameter '{}' was not found", param_name))?;
+        process::exit(10);
+    }
+
     let default_param = ParameterDetails::default();
     let default_env = "Unknown".to_string();
     let mut added = false;
