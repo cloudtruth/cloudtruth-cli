@@ -391,6 +391,10 @@ SNA=fu
         self.assertIn(f"{var1_name},{var1_value1},{env_name1}", result.out())
         self.assertIn(f"{var2_name},{var2_value1},{env_name1}", result.out())
 
+        result = self.run_cli(cmd_env, proj_cmd + "param env 'no-such-parameter' -f csv")
+        self.assertNotEqual(result.return_value, 0)
+        self.assertIn("Parameter 'no-such-parameter' was not found", result.err())
+
         result = self.run_cli(cmd_env, proj_cmd + f"param env {var1_name} -f csv")
         self.assertIn(f"{env_name1},{var1_value1},,", result.out())
         self.assertNotIn(env_name2, result.out())
