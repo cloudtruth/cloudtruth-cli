@@ -286,4 +286,16 @@ impl Environments {
         let response = environments_partial_update(rest_cfg, environment_id, Some(env))?;
         Ok(Some(response.id))
     }
+
+    /// Converts a list of `EnvironmentDetails` to an `EnvironmentUrlMap`.
+    ///
+    /// This is used when you already have to get all the details, but want to get a simple
+    /// Url -> Name map for resolving environments by URL.
+    pub fn details_to_map(&self, details: &[EnvironmentDetails]) -> EnvironmentUrlMap {
+        let mut result = EnvironmentUrlMap::new();
+        for d in details {
+            result.insert(d.url.clone(), d.name.clone());
+        }
+        result
+    }
 }
