@@ -221,27 +221,6 @@ impl Parameters {
         Ok(Some(param_id.to_string()))
     }
 
-    /// Deletes the specified parameter from the specified project/environment.
-    ///
-    /// On success, it returns the ID of the deleted value. On failure, it returns an Error
-    /// with more failure information.
-    pub fn delete_parameter(
-        &self,
-        rest_cfg: &OpenApiConfig,
-        proj_id: &str,
-        env_id: &str,
-        key_name: &str,
-    ) -> Result<Option<String>, Error<ProjectsParametersDestroyError>> {
-        // The only delete mechanism is by parameter ID, so start by querying the parameter info.
-        let response = self.get_id(rest_cfg, proj_id, env_id, key_name);
-
-        if let Some(id) = response {
-            self.delete_parameter_by_id(rest_cfg, proj_id, &id)
-        } else {
-            Ok(None)
-        }
-    }
-
     /// Deletes the "override" for the specified environment.
     pub fn delete_parameter_value(
         &self,

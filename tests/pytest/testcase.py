@@ -302,7 +302,7 @@ class TestCase(unittest.TestCase):
         cmd = self._base_cmd + f"--project '{proj}' "
         if env:
             cmd += f"--env '{env}' "
-        cmd += f"param delete '{name}'"
+        cmd += f"param delete -y '{name}'"
         result = self.run_cli(cmd_env, cmd)
         self.assertEqual(result.return_value, 0)
         return result
