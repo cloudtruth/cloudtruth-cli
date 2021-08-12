@@ -1,15 +1,23 @@
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Deserialize, Debug, PartialEq)]
+#[derive(Clone, Deserialize, Debug, PartialEq, Serialize)]
 #[serde(default)]
 pub struct Profile {
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub api_key: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub environment: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub project: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub request_timeout: Option<u64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub rest_debug: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub server_url: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub(crate) source_profile: Option<String>,
 }
 
@@ -42,6 +50,16 @@ impl Default for Profile {
     }
 }
 
+fn empty_to_none(value: &Option<String>) -> Option<String> {
+    match value {
+        Some(x) => match x.is_empty() {
+            true => None,
+            false => Some(x.clone()),
+        },
+        _ => None,
+    }
+}
+
 impl Profile {
     #[must_use]
     pub(crate) fn merge(&self, other: &Self) -> Profile {
@@ -61,6 +79,31 @@ impl Profile {
             server_url: other.server_url.clone().or_else(|| self.server_url.clone()),
             source_profile: self.source_profile.clone(),
         }
+    }
+
+    // turns any Some("") string properties into None
+    pub fn remove_empty(&self) -> Profile {
+        Profile {
+            api_key: empty_to_none(&self.api_key),
+            description: empty_to_none(&self.description),
+            environment: empty_to_none(&self.environment),
+            project: empty_to_none(&self.project),
+            request_timeout: self.request_timeout,
+            rest_debug: self.rest_debug,
+            server_url: empty_to_none(&self.server_url),
+            source_profile: empty_to_none(&self.source_profile),
+        }
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.api_key.is_none()
+            && self.description.is_none()
+            && self.environment.is_none()
+            && self.project.is_none()
+            && self.request_timeout.is_none()
+            && self.rest_debug.is_none()
+            && self.server_url.is_none()
+            && self.source_profile.is_none()
     }
 }
 
