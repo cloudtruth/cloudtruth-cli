@@ -133,7 +133,6 @@ impl ConfigFile {
         prof_lines.join("\n")
     }
 
-    #[allow(dead_code)]
     pub fn set_profile(
         config: &str,
         profile_name: &str,

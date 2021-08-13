@@ -79,6 +79,7 @@ mod tests {
         let ct_cfg = CloudTruthConfig {
             api_key: api_key.to_string(),
             environment: Some("my-env".to_string()),
+            profile_name: "prof-name".to_string(),
             project: Some("my-proj".to_string()),
             server_url: url.to_string(),
             request_timeout: Some(Duration::new(120, 0)),
