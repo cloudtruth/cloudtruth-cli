@@ -3415,6 +3415,7 @@ components:
       - Membership
       - Organization
       - Parameter
+      - ParameterRule
       - Project
       - ServiceAccount
       - Template
