@@ -21,6 +21,8 @@ SUBCOMMANDS:
     environments     Work with CloudTruth environments [aliases: environment, envs, env, e]
     help             Prints this message or the help of the given subcommand(s)
     integrations     Work with CloudTruth integrations [aliases: integration, integrate, integ, int]
+    login            Login into the CloudTruth server
+    logout           Logout of the CloudTruth server
     parameters       Work with CloudTruth parameters [aliases: parameter, params, param, p]
     projects         Work with CloudTruth projects [aliases: project, proj]
     run              Run a shell with the parameters in place [aliases: run, r]
@@ -218,6 +220,28 @@ FLAGS:
 OPTIONS:
     -f, --format <format>    Format for integration values data [default: table]  [possible values: table, csv, json,
                              yaml]
+============================================================
+cloudtruth-login 
+Login into the CloudTruth server
+
+USAGE:
+    cloudtruth login [FLAGS]
+
+FLAGS:
+    -y, --yes        Avoid confirmation prompt(s)
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+============================================================
+cloudtruth-logout 
+Logout of the CloudTruth server
+
+USAGE:
+    cloudtruth logout [FLAGS]
+
+FLAGS:
+    -y, --yes        Avoid confirmation prompt(s)
+    -h, --help       Prints help information
+    -V, --version    Prints version information
 ============================================================
 cloudtruth-parameters 
 Work with CloudTruth parameters

@@ -164,9 +164,18 @@ pub fn build_cli() -> App<'static, 'static> {
                     SubCommand::with_name("tree")
                         .visible_aliases(&["tr", "t"])
                         .about("Show a tree representation of the environments")
-                        .arg(name_arg().help("Show this environment with children").required(false).default_value("default")),
+                        .arg(name_arg()
+                            .help("Show this environment with children")
+                            .required(false)
+                            .default_value("default")),
                 ])
         )
+        .subcommand(SubCommand::with_name("login")
+            .about("Login into the CloudTruth server")
+            .arg(confirm_flag()))
+        .subcommand(SubCommand::with_name("logout")
+            .about("Logout of the CloudTruth server")
+            .arg(confirm_flag()))
         .subcommand(
             SubCommand::with_name("integrations")
                 .visible_aliases(&["integration", "integrate", "integ", "int"])
