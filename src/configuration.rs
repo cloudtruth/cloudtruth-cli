@@ -7,12 +7,7 @@ use color_eyre::eyre::Result;
 
 fn proc_config_edit() -> Result<()> {
     Config::edit()?;
-    let filepath = Config::config_file()
-        .unwrap()
-        .into_os_string()
-        .into_string()
-        .unwrap();
-    println!("Edited {}", filepath);
+    println!("Edited {}", Config::filename());
     Ok(())
 }
 

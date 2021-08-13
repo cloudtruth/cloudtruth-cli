@@ -144,6 +144,14 @@ impl Config {
             .map(|project_dirs| project_dirs.config_dir().join(CONFIG_FILE_NAME))
     }
 
+    pub fn filename() -> String {
+        Config::config_file()
+            .unwrap()
+            .into_os_string()
+            .into_string()
+            .unwrap()
+    }
+
     fn create_config() -> Result<()> {
         if let Some(config_file) = Self::config_file() {
             if !config_file.exists() {
