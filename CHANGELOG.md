@@ -1,3 +1,12 @@
+# 1.0.4 - 2021-08-13
+
+* Added `template edit` for easier template modification.
+* Added `environment tree` to display environment inheritance.
+* Added `parameter environment` to display values of a single parameter in all environments.
+* Require user to confirm a `parameter delete` using the `--yes` flag or a prompt. 
+* Performance improvement for `parameter get`.
+* Upgrade to Rust 1.54.
+
 # 1.0.3 - 2021-08-06
 
 * Added `parameters difference` command to compare parameters between two different environments.
