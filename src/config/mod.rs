@@ -191,14 +191,16 @@ impl Config {
         let mut profile = Profile::default();
         let prof_name = profile_name.unwrap_or(DEFAULT_PROF_NAME);
 
-        // Load settings from the configuration file if it exists.
+        // Load settings from the configuration file
         if let Some(config_file) = Self::config_file() {
-            if config_file.exists() {
-                let config = Self::read_config(config_file.as_path())?;
-                let loaded_profile = ConfigFile::load_profile(&config, prof_name)?;
-
-                profile = profile.merge(&loaded_profile);
-            }
+            // use the template as the config, if the file does not exist
+            let config = if config_file.exists() {
+                Self::read_config(config_file.as_path())?
+            } else {
+                ConfigFile::config_file_template().to_string()
+            };
+            let loaded_profile = ConfigFile::load_profile(&config, prof_name)?;
+            profile = profile.merge(&loaded_profile);
         }
 
         // Load values out of environment variables after loading them out of any config file so
