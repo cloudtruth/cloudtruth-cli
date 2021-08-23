@@ -12,6 +12,7 @@ fn warn_login_done(reason: &str) -> Result<()> {
 
 pub fn process_login_command(subcmd_args: &ArgMatches, config: &Config) -> Result<()> {
     let confirmed = subcmd_args.is_present(CONFIRM_FLAG);
+    let profile_name = &config.profile_name;
     let api_url = &config.server_url;
     let api_key = &config.api_key;
     let bin_name = binary_name();
@@ -24,24 +25,26 @@ pub fn process_login_command(subcmd_args: &ArgMatches, config: &Config) -> Resul
 
                   {}
                     An API key is already setup for profile '{}'.
-                    Creating a new API key will ignore the existing API
-                    key without releasing it. Use '{} logout' to
-                    relelase the existing key.
+                    Login will overwrite the current configuration profile API key.
+                    Using a new API key will not remove access via the old API key.
+                    Use '{} logout' to remove an existing API key from a profile.
 
                 "#,
                 SEPARATOR,
-                config.profile_name,
+                profile_name,
                 bin_name,
             );
-            if !user_confirm(
-                "Do you want to overwrite the existing API key".to_string(),
-                Some(false),
-            ) {
+            let msg = format!(
+                "Do you want to update the API key in profile '{}'",
+                profile_name
+            );
+            if !user_confirm(msg, Some(false)) {
                 warn_login_done("using existing API key")?;
                 return Ok(());
             }
         } else {
-            warning_message("Overwriting existing API key.".to_string())?;
+            let msg = format!("Updating API key in profile '{}'.", profile_name);
+            warning_message(msg)?;
         }
     }
 
@@ -113,10 +116,10 @@ pub fn process_login_command(subcmd_args: &ArgMatches, config: &Config) -> Resul
         return Ok(());
     }
 
-    Config::update_profile(&config.profile_name, Some(input.as_str()), None, None, None)?;
+    Config::update_profile(profile_name, Some(input.as_str()), None, None, None)?;
     println!(
         "Updated profile '{}' in {}",
-        config.profile_name,
+        profile_name,
         Config::filename()
     );
     Ok(())
