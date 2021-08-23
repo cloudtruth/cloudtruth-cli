@@ -150,4 +150,89 @@ mod tests {
 
         assert_eq!(first, first.merge(&second));
     }
+
+    #[test]
+    fn empty_test() {
+        let prof: Profile = Profile::default();
+        assert!(prof.is_empty());
+
+        let prof = Profile {
+            rest_debug: Some(false),
+            ..Profile::default()
+        };
+        assert_eq!(prof.is_empty(), false);
+
+        let prof = Profile {
+            request_timeout: Some(1024),
+            ..Profile::default()
+        };
+        assert_eq!(prof.is_empty(), false);
+
+        let prof = Profile {
+            api_key: Some("abc123".to_string()),
+            ..Profile::default()
+        };
+        assert_eq!(prof.is_empty(), false);
+
+        let prof = Profile {
+            description: Some("my description".to_string()),
+            ..Profile::default()
+        };
+        assert_eq!(prof.is_empty(), false);
+
+        let prof = Profile {
+            environment: Some("ename".to_string()),
+            ..Profile::default()
+        };
+        assert_eq!(prof.is_empty(), false);
+
+        let prof = Profile {
+            project: Some("proj".to_string()),
+            ..Profile::default()
+        };
+        assert_eq!(prof.is_empty(), false);
+
+        let prof = Profile {
+            server_url: Some("url".to_string()),
+            ..Profile::default()
+        };
+        assert_eq!(prof.is_empty(), false);
+
+        let prof = Profile {
+            source_profile: Some("source-profile".to_string()),
+            ..Profile::default()
+        };
+        assert_eq!(prof.is_empty(), false);
+    }
+
+    #[test]
+    fn remove_empty() {
+        let prof = Profile {
+            api_key: Some("".to_string()),
+            description: Some("".to_string()),
+            environment: Some("".to_string()),
+            project: Some("".to_string()),
+            request_timeout: None,
+            rest_debug: None,
+            server_url: Some("".to_string()),
+            source_profile: Some("".to_string()),
+        };
+
+        let prof2 = prof.remove_empty();
+        assert_eq!(prof.is_empty(), false);
+        assert_eq!(prof2.is_empty(), true);
+
+        let prof = Profile {
+            api_key: Some("api-key".to_string()),
+            description: Some("desc".to_string()),
+            environment: Some("env".to_string()),
+            project: Some("proj".to_string()),
+            request_timeout: None,
+            rest_debug: None,
+            server_url: Some("url".to_string()),
+            source_profile: Some("src-prof".to_string()),
+        };
+        let prof2 = prof.remove_empty();
+        assert_eq!(prof, prof2);
+    }
 }

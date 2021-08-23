@@ -383,7 +383,7 @@ fn main() -> Result<()> {
 #[cfg(test)]
 mod main_test {
     use crate::cli;
-    use crate::config::{CT_API_KEY, CT_SERVER_URL};
+    use crate::config::{CT_API_KEY, CT_PROFILE, CT_SERVER_URL};
     use assert_cmd::prelude::*;
     use predicates::prelude::predicate::str::*;
     use std::process::Command;
@@ -453,6 +453,7 @@ mod main_test {
             println!("need_api_key test: {}", cmd_args.join(" "));
             let mut cmd = cmd();
             cmd.env(CT_API_KEY, "")
+                .env(CT_PROFILE, "default")
                 .args(cmd_args)
                 .assert()
                 .failure()
@@ -478,8 +479,28 @@ mod main_test {
             let mut cmd = cmd();
             cmd.args(cmd_args)
                 .env(CT_API_KEY, "dummy-key")
+                .env(CT_PROFILE, "default")
                 .assert()
                 .stderr(starts_with(warn_msg));
+        }
+    }
+
+    #[test]
+    fn missing_profile() {
+        let commands = &[vec!["projects"], vec!["environments"], vec!["integrations"]];
+        for cmd_args in commands {
+            let prof_name = "no-prof-with-this-name";
+            println!("missing_profile test: {}", cmd_args.join(" "));
+            let warn_msg = format!(
+                "Profile '{}' does not exist in your configuration file",
+                prof_name
+            );
+            let mut cmd = cmd();
+            cmd.args(cmd_args)
+                .env(CT_API_KEY, "dummy-key")
+                .env(CT_PROFILE, prof_name)
+                .assert()
+                .stderr(contains(warn_msg));
         }
     }
 }
