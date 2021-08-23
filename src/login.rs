@@ -71,7 +71,18 @@ pub fn process_login_command(subcmd_args: &ArgMatches, config: &Config) -> Resul
         }
 
         if open_page {
-            webbrowser::open(&api_key_url)?;
+            let open_result = webbrowser::open(&api_key_url);
+            if open_result.is_err() {
+                printdoc!(
+                    r#"
+                    "Failed to open browser:
+                    {}
+
+                    You must manually open '{}' to generate a new key."#,
+                    open_result.unwrap_err().to_string(),
+                    api_key_url,
+                );
+            }
         }
 
         printdoc!(

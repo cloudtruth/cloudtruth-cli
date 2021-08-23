@@ -45,7 +45,18 @@ pub fn process_logout_command(subcmd_args: &ArgMatches, config: &Config) -> Resu
             ))?;
         }
         if open_page {
-            webbrowser::open(&api_key_url)?;
+            let open_result = webbrowser::open(&api_key_url);
+            if open_result.is_err() {
+                printdoc!(
+                    r#"
+                    "Failed to open browser:
+                    {}
+
+                    You can manually open '{}' to delete an API key/token."#,
+                    open_result.unwrap_err().to_string(),
+                    api_key_url,
+                );
+            }
         }
     } else {
         warning_message(format!("Unable to determine {} page URL", API_KEY_PAGE))?;
