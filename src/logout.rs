@@ -35,7 +35,7 @@ pub fn process_logout_command(subcmd_args: &ArgMatches, config: &Config) -> Resu
                 API_KEY_PAGE,
                 api_key_url,
             );
-            if !user_confirm(format!("Open the {} page", API_KEY_PAGE), Some(true)) {
+            if !user_confirm(format!("Open the {} page", API_KEY_PAGE), Some(false)) {
                 open_page = false;
             }
         } else {
