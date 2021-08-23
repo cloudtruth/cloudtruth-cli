@@ -518,6 +518,7 @@ USAGE:
 
 FLAGS:
     -h, --help       Prints help information
+    -r, --raw        Get the raw, unevaluated template text
     -s, --secrets    Display secret values in evaluation
     -V, --version    Prints version information
 

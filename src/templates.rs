@@ -66,12 +66,9 @@ fn proc_template_edit(
     let proj_name = resolved.project_display_name();
     let proj_id = resolved.project_id();
     let template_name = subcmd_args.value_of(NAME_ARG).unwrap();
+    let result = templates.get_unevaluated_details(rest_cfg, proj_id, template_name)?;
 
-    // NOTE: must get whole list of templates, so the body does not get evaluated.
-    let list = templates.get_template_details(rest_cfg, proj_id)?;
-    if list.is_empty() {
-        println!("No templates in project '{}'.", proj_name);
-    } else if let Some(details) = list.iter().filter(|t| t.name == template_name).last() {
+    if let Some(details) = result {
         let new_body = edit::edit(details.body.as_bytes())?;
         if new_body != details.body {
             templates.update_template(
@@ -138,8 +135,17 @@ fn proc_template_get(
     let env_id = resolved.environment_id();
     let template_name = subcmd_args.value_of(NAME_ARG).unwrap();
     let show_secrets = subcmd_args.is_present(SECRETS_FLAG);
-    let body =
-        templates.get_body_by_name(rest_cfg, proj_id, env_id, template_name, show_secrets)?;
+    let raw = subcmd_args.is_present("raw");
+
+    let body = if raw {
+        let result = templates.get_unevaluated_details(rest_cfg, proj_id, template_name)?;
+        match result {
+            Some(details) => Some(details.body),
+            _ => None,
+        }
+    } else {
+        templates.get_body_by_name(rest_cfg, proj_id, env_id, template_name, show_secrets)?
+    };
 
     if let Some(body) = body {
         println!("{}", body)
