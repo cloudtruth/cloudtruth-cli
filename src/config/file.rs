@@ -162,16 +162,13 @@ impl ConfigFile {
             if merged == *profile {
                 // do nothing here, so we don't lose comments, and reorder keys
                 new_text = orig_text.clone();
-            } else if !merged.is_empty() {
+            } else {
                 profiles.insert(profile_name.to_string(), merged);
                 let new_file = serde_yaml::to_string(&config_file)?;
                 new_text = ConfigFile::get_profile_text(&new_file, profile_name);
                 if !new_text.ends_with('\n') {
                     new_text.push('\n');
                 }
-            } else {
-                // nothing left in this profile, so delete it.
-                new_text = format!("  {}:\n", profile_name);
             }
             result = config.replace(&orig_text, &new_text);
         } else if !new_prof.is_empty() {
@@ -810,7 +807,7 @@ mod tests {
             api_key: default_key
             server_url: http://localhost:7001/graphql
 
-          grandparent-profile:
+          grandparent-profile: {}
         "#
         );
         let result =
