@@ -16,6 +16,7 @@ pub struct Parameters {}
 
 static DEFAULT_PARAM_VALUE: OnceCell<Value> = OnceCell::new();
 const DEFAULT_VALUE: &str = "-";
+const AS_OF: Option<String> = None;
 
 #[derive(Clone, Debug)]
 pub struct ParameterDetails {
@@ -292,6 +293,7 @@ impl Parameters {
         let response = projects_parameters_list(
             rest_cfg,
             proj_id,
+            AS_OF,
             Some(env_id),
             Some(true),
             Some(key_name),
@@ -334,6 +336,7 @@ impl Parameters {
         let response = projects_parameters_list(
             rest_cfg,
             proj_id,
+            AS_OF,
             Some(env_id),
             Some(mask_secrets),
             Some(key_name),
@@ -425,6 +428,7 @@ impl Parameters {
         let response = projects_parameters_list(
             rest_cfg,
             proj_id,
+            AS_OF,
             Some(env_id),
             Some(mask_secrets),
             None,
@@ -474,6 +478,7 @@ impl Parameters {
         let response = projects_parameters_list(
             rest_cfg,
             proj_id,
+            AS_OF,
             None,
             Some(mask_secrets),
             Some(param_name),
@@ -516,6 +521,7 @@ impl Parameters {
             name: key_name.to_string(),
             description: description.map(|x| x.to_string()),
             secret,
+            _type: None,
         };
         let api_param = projects_parameters_create(rest_cfg, proj_id, param_new)?;
         Ok(ParameterDetails::from(&api_param))
@@ -539,6 +545,7 @@ impl Parameters {
             name: Some(key_name.to_string()),
             description: description.map(String::from),
             secret,
+            rules: None,
             templates: None,
             values: None,
             created_at: None,
