@@ -74,6 +74,14 @@ Class | Method | HTTP request | Description
 *ProjectsApi* | [**projects_parameters_list**](docs/ProjectsApi.md#projects_parameters_list) | **GET** /api/v1/projects/{project_pk}/parameters/ | 
 *ProjectsApi* | [**projects_parameters_partial_update**](docs/ProjectsApi.md#projects_parameters_partial_update) | **PATCH** /api/v1/projects/{project_pk}/parameters/{id}/ | 
 *ProjectsApi* | [**projects_parameters_retrieve**](docs/ProjectsApi.md#projects_parameters_retrieve) | **GET** /api/v1/projects/{project_pk}/parameters/{id}/ | 
+*ProjectsApi* | [**projects_parameters_rules_create**](docs/ProjectsApi.md#projects_parameters_rules_create) | **POST** /api/v1/projects/{project_pk}/parameters/{parameter_pk}/rules/ | 
+*ProjectsApi* | [**projects_parameters_rules_destroy**](docs/ProjectsApi.md#projects_parameters_rules_destroy) | **DELETE** /api/v1/projects/{project_pk}/parameters/{parameter_pk}/rules/{id}/ | 
+*ProjectsApi* | [**projects_parameters_rules_list**](docs/ProjectsApi.md#projects_parameters_rules_list) | **GET** /api/v1/projects/{project_pk}/parameters/{parameter_pk}/rules/ | 
+*ProjectsApi* | [**projects_parameters_rules_partial_update**](docs/ProjectsApi.md#projects_parameters_rules_partial_update) | **PATCH** /api/v1/projects/{project_pk}/parameters/{parameter_pk}/rules/{id}/ | 
+*ProjectsApi* | [**projects_parameters_rules_retrieve**](docs/ProjectsApi.md#projects_parameters_rules_retrieve) | **GET** /api/v1/projects/{project_pk}/parameters/{parameter_pk}/rules/{id}/ | 
+*ProjectsApi* | [**projects_parameters_rules_update**](docs/ProjectsApi.md#projects_parameters_rules_update) | **PUT** /api/v1/projects/{project_pk}/parameters/{parameter_pk}/rules/{id}/ | 
+*ProjectsApi* | [**projects_parameters_timeline_retrieve**](docs/ProjectsApi.md#projects_parameters_timeline_retrieve) | **GET** /api/v1/projects/{project_pk}/parameters/{id}/timeline/ | 
+*ProjectsApi* | [**projects_parameters_timelines_retrieve**](docs/ProjectsApi.md#projects_parameters_timelines_retrieve) | **GET** /api/v1/projects/{project_pk}/parameters/timelines/ | 
 *ProjectsApi* | [**projects_parameters_update**](docs/ProjectsApi.md#projects_parameters_update) | **PUT** /api/v1/projects/{project_pk}/parameters/{id}/ | 
 *ProjectsApi* | [**projects_parameters_values_create**](docs/ProjectsApi.md#projects_parameters_values_create) | **POST** /api/v1/projects/{project_pk}/parameters/{parameter_pk}/values/ | Set a value.
 *ProjectsApi* | [**projects_parameters_values_destroy**](docs/ProjectsApi.md#projects_parameters_values_destroy) | **DELETE** /api/v1/projects/{project_pk}/parameters/{parameter_pk}/values/{id}/ | Destroy a value.
@@ -114,6 +122,8 @@ Class | Method | HTTP request | Description
  - [EnvironmentCreate](docs/EnvironmentCreate.md)
  - [GitHubIntegration](docs/GitHubIntegration.md)
  - [GitHubIntegrationCreate](docs/GitHubIntegrationCreate.md)
+ - [HistoryModelEnum](docs/HistoryModelEnum.md)
+ - [HistoryTypeEnum](docs/HistoryTypeEnum.md)
  - [IntegrationExplorer](docs/IntegrationExplorer.md)
  - [Invitation](docs/Invitation.md)
  - [InvitationCreate](docs/InvitationCreate.md)
@@ -132,6 +142,7 @@ Class | Method | HTTP request | Description
  - [PaginatedMembershipList](docs/PaginatedMembershipList.md)
  - [PaginatedOrganizationList](docs/PaginatedOrganizationList.md)
  - [PaginatedParameterList](docs/PaginatedParameterList.md)
+ - [PaginatedParameterRuleList](docs/PaginatedParameterRuleList.md)
  - [PaginatedProjectList](docs/PaginatedProjectList.md)
  - [PaginatedServiceAccountList](docs/PaginatedServiceAccountList.md)
  - [PaginatedTemplateList](docs/PaginatedTemplateList.md)
@@ -140,12 +151,17 @@ Class | Method | HTTP request | Description
  - [Parameter](docs/Parameter.md)
  - [ParameterCreate](docs/ParameterCreate.md)
  - [ParameterExport](docs/ParameterExport.md)
+ - [ParameterRule](docs/ParameterRule.md)
+ - [ParameterRuleCreate](docs/ParameterRuleCreate.md)
+ - [ParameterRuleTypeEnum](docs/ParameterRuleTypeEnum.md)
+ - [ParameterTypeEnum](docs/ParameterTypeEnum.md)
  - [PatchedAwsIntegration](docs/PatchedAwsIntegration.md)
  - [PatchedEnvironment](docs/PatchedEnvironment.md)
  - [PatchedInvitation](docs/PatchedInvitation.md)
  - [PatchedMembership](docs/PatchedMembership.md)
  - [PatchedOrganization](docs/PatchedOrganization.md)
  - [PatchedParameter](docs/PatchedParameter.md)
+ - [PatchedParameterRule](docs/PatchedParameterRule.md)
  - [PatchedProject](docs/PatchedProject.md)
  - [PatchedServiceAccount](docs/PatchedServiceAccount.md)
  - [PatchedTemplate](docs/PatchedTemplate.md)
@@ -159,6 +175,10 @@ Class | Method | HTTP request | Description
  - [Template](docs/Template.md)
  - [TemplateCreate](docs/TemplateCreate.md)
  - [TemplatePreview](docs/TemplatePreview.md)
+ - [Timeline](docs/Timeline.md)
+ - [TimelineEntry](docs/TimelineEntry.md)
+ - [TimelineEntryEnvironment](docs/TimelineEntryEnvironment.md)
+ - [TimelineEntryParameter](docs/TimelineEntryParameter.md)
  - [User](docs/User.md)
  - [Value](docs/Value.md)
  - [ValueCreate](docs/ValueCreate.md)

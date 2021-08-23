@@ -1713,6 +1713,12 @@ paths:
       description: ''
       parameters:
       - in: query
+        name: as_of
+        schema:
+          type: string
+          format: date-time
+        description: Specify a point in time to retrieve configuration from.
+      - in: query
         name: environment
         schema:
           type: string
@@ -1807,6 +1813,269 @@ paths:
               schema:
                 $ref: '#/components/schemas/Parameter'
           description: ''
+  /api/v1/projects/{project_pk}/parameters/{parameter_pk}/rules/:
+    get:
+      operationId: projects_parameters_rules_list
+      description: ''
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: path
+        name: parameter_pk
+        schema:
+          type: string
+          format: uuid
+        description: The parameter id.
+        required: true
+      - in: path
+        name: project_pk
+        schema:
+          type: string
+          format: uuid
+        description: The project id.
+        required: true
+      - in: query
+        name: type
+        schema:
+          type: string
+          enum:
+          - max
+          - max_len
+          - min
+          - min_len
+          - regex
+      tags:
+      - projects
+      security:
+      - JWTAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedParameterRuleList'
+          description: ''
+    post:
+      operationId: projects_parameters_rules_create
+      description: ''
+      parameters:
+      - in: path
+        name: parameter_pk
+        schema:
+          type: string
+          format: uuid
+        description: The parameter id.
+        required: true
+      - in: path
+        name: project_pk
+        schema:
+          type: string
+          format: uuid
+        description: The project id.
+        required: true
+      tags:
+      - projects
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ParameterRuleCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ParameterRuleCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ParameterRuleCreate'
+        required: true
+      security:
+      - JWTAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParameterRule'
+          description: ''
+  /api/v1/projects/{project_pk}/parameters/{parameter_pk}/rules/{id}/:
+    get:
+      operationId: projects_parameters_rules_retrieve
+      description: ''
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this parameter rule.
+        required: true
+      - in: path
+        name: parameter_pk
+        schema:
+          type: string
+          format: uuid
+        description: The parameter id.
+        required: true
+      - in: path
+        name: project_pk
+        schema:
+          type: string
+          format: uuid
+        description: The project id.
+        required: true
+      tags:
+      - projects
+      security:
+      - JWTAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParameterRule'
+          description: ''
+    put:
+      operationId: projects_parameters_rules_update
+      description: ''
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this parameter rule.
+        required: true
+      - in: path
+        name: parameter_pk
+        schema:
+          type: string
+          format: uuid
+        description: The parameter id.
+        required: true
+      - in: path
+        name: project_pk
+        schema:
+          type: string
+          format: uuid
+        description: The project id.
+        required: true
+      tags:
+      - projects
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ParameterRule'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ParameterRule'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ParameterRule'
+        required: true
+      security:
+      - JWTAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParameterRule'
+          description: ''
+    patch:
+      operationId: projects_parameters_rules_partial_update
+      description: ''
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this parameter rule.
+        required: true
+      - in: path
+        name: parameter_pk
+        schema:
+          type: string
+          format: uuid
+        description: The parameter id.
+        required: true
+      - in: path
+        name: project_pk
+        schema:
+          type: string
+          format: uuid
+        description: The project id.
+        required: true
+      tags:
+      - projects
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedParameterRule'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedParameterRule'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedParameterRule'
+      security:
+      - JWTAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParameterRule'
+          description: ''
+    delete:
+      operationId: projects_parameters_rules_destroy
+      description: ''
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this parameter rule.
+        required: true
+      - in: path
+        name: parameter_pk
+        schema:
+          type: string
+          format: uuid
+        description: The parameter id.
+        required: true
+      - in: path
+        name: project_pk
+        schema:
+          type: string
+          format: uuid
+        description: The project id.
+        required: true
+      tags:
+      - projects
+      security:
+      - JWTAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '204':
+          description: No response body
   /api/v1/projects/{project_pk}/parameters/{parameter_pk}/values/:
     get:
       operationId: projects_parameters_values_list
@@ -2147,6 +2416,12 @@ paths:
       description: ''
       parameters:
       - in: query
+        name: as_of
+        schema:
+          type: string
+          format: date-time
+        description: Specify a point in time to retrieve configuration from.
+      - in: query
         name: environment
         schema:
           type: string
@@ -2338,6 +2613,79 @@ paths:
       responses:
         '204':
           description: No response body
+  /api/v1/projects/{project_pk}/parameters/{id}/timeline/:
+    get:
+      operationId: projects_parameters_timeline_retrieve
+      description: |-
+        Summary information about how a parameter has changed over time.
+
+        The time range of historical information available depends on your subscription.
+        Any changes to the parameter itself, including rules and values, is included.
+      parameters:
+      - in: query
+        name: as_of
+        schema:
+          type: string
+          format: date-time
+        description: Specify a point in time to retrieve configuration from.
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+          description: A unique identifier for the parameter.
+        required: true
+      - in: path
+        name: project_pk
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - projects
+      security:
+      - JWTAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Timeline'
+          description: ''
+  /api/v1/projects/{project_pk}/parameters/timelines/:
+    get:
+      operationId: projects_parameters_timelines_retrieve
+      description: |-
+        Information about how the parameters of a project have changed over time.
+
+        The time range of historical information available depends on your subscription.
+        Any changes to the project's parameters, including rules and values, is included.
+      parameters:
+      - in: query
+        name: as_of
+        schema:
+          type: string
+          format: date-time
+        description: Specify a point in time to retrieve configuration from.
+      - in: path
+        name: project_pk
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - projects
+      security:
+      - JWTAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Timeline'
+          description: ''
   /api/v1/projects/{project_pk}/template-preview/:
     post:
       operationId: projects_template_preview_create
@@ -3254,6 +3602,18 @@ components:
           type: integer
       required:
       - gh_installation_id
+    HistoryModelEnum:
+      enum:
+      - Parameter
+      - ParameterRule
+      - Value
+      type: string
+    HistoryTypeEnum:
+      enum:
+      - create
+      - update
+      - delete
+      type: string
     IntegrationExplorer:
       type: object
       description: Describes the content available at a given location.
@@ -3409,16 +3769,10 @@ components:
       type: string
     ObjectTypeEnum:
       enum:
+      - DataIntegration
       - Environment
-      - Integration
-      - Invitation
-      - Membership
-      - Organization
       - Parameter
       - ParameterRule
-      - Project
-      - ServiceAccount
-      - Template
       - Value
       type: string
     Organization:
@@ -3663,6 +4017,26 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Parameter'
+    PaginatedParameterRuleList:
+      type: object
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ParameterRule'
     PaginatedProjectList:
       type: object
       properties:
@@ -3792,12 +4166,19 @@ components:
             vault for your organization for maximum security.  Dynamic values are
             inspected on-demand to ensure they align with the parameter's secret setting
             and if they do not, those dynamic values are not allowed to be used.
+        rules:
+          type: array
+          items:
+            type: string
+            format: uri
+          readOnly: true
         templates:
           type: array
           items:
             type: string
             format: uri
           readOnly: true
+          description: Templates that reference this Parameter.
         values:
           type: object
           additionalProperties:
@@ -3834,6 +4215,7 @@ components:
       - id
       - modified_at
       - name
+      - rules
       - templates
       - url
       - values
@@ -3857,6 +4239,8 @@ components:
             vault for your organization for maximum security.  Dynamic values are
             inspected on-demand to ensure they align with the parameter's secret setting
             and if they do not, those dynamic values are not allowed to be used.
+        type:
+          $ref: '#/components/schemas/ParameterTypeEnum'
       required:
       - name
     ParameterExport:
@@ -3866,6 +4250,84 @@ components:
           type: string
       required:
       - body
+    ParameterRule:
+      type: object
+      description: |-
+        A type of `ModelSerializer` that uses hyperlinked relationships with compound keys instead
+        of primary key relationships.  Specifically:
+
+        * A 'url' field is included instead of the 'id' field.
+        * Relationships to other instances are hyperlinks, instead of primary keys.
+
+        NOTE: this only works with DRF 3.1.0 and above.
+      properties:
+        url:
+          type: string
+          format: uri
+          readOnly: true
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        parameter:
+          type: string
+          format: uri
+          readOnly: true
+          description: The parameter this rule is for.
+        type:
+          $ref: '#/components/schemas/ParameterRuleTypeEnum'
+        constraint:
+          type: string
+          maxLength: 1024
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        modified_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - constraint
+      - created_at
+      - id
+      - modified_at
+      - parameter
+      - type
+      - url
+    ParameterRuleCreate:
+      type: object
+      description: |-
+        A type of `ModelSerializer` that uses hyperlinked relationships with compound keys instead
+        of primary key relationships.  Specifically:
+
+        * A 'url' field is included instead of the 'id' field.
+        * Relationships to other instances are hyperlinks, instead of primary keys.
+
+        NOTE: this only works with DRF 3.1.0 and above.
+      properties:
+        type:
+          $ref: '#/components/schemas/ParameterRuleTypeEnum'
+        constraint:
+          type: string
+          maxLength: 1024
+      required:
+      - constraint
+      - type
+    ParameterRuleTypeEnum:
+      enum:
+      - min
+      - max
+      - min_len
+      - max_len
+      - regex
+      type: string
+    ParameterTypeEnum:
+      enum:
+      - string
+      - integer
+      - bool
+      type: string
     PatchedAwsIntegration:
       type: object
       properties:
@@ -4129,12 +4591,19 @@ components:
             vault for your organization for maximum security.  Dynamic values are
             inspected on-demand to ensure they align with the parameter's secret setting
             and if they do not, those dynamic values are not allowed to be used.
+        rules:
+          type: array
+          items:
+            type: string
+            format: uri
+          readOnly: true
         templates:
           type: array
           items:
             type: string
             format: uri
           readOnly: true
+          description: Templates that reference this Parameter.
         values:
           type: object
           additionalProperties:
@@ -4158,6 +4627,43 @@ components:
             \ been set in any environment for this\n            parameter.\n\n   \
             \         key: Environment url\n            value: optional Value record\n\
             \        "
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        modified_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedParameterRule:
+      type: object
+      description: |-
+        A type of `ModelSerializer` that uses hyperlinked relationships with compound keys instead
+        of primary key relationships.  Specifically:
+
+        * A 'url' field is included instead of the 'id' field.
+        * Relationships to other instances are hyperlinks, instead of primary keys.
+
+        NOTE: this only works with DRF 3.1.0 and above.
+      properties:
+        url:
+          type: string
+          format: uri
+          readOnly: true
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        parameter:
+          type: string
+          format: uri
+          readOnly: true
+          description: The parameter this rule is for.
+        type:
+          $ref: '#/components/schemas/ParameterRuleTypeEnum'
+        constraint:
+          type: string
+          maxLength: 1024
         created_at:
           type: string
           format: date-time
@@ -4326,7 +4832,11 @@ components:
           type: string
           nullable: true
           description: This is the content to use when resolving the Value for a static
-            non-secret.
+            non-secret, or when storing a secret.  When storing a secret, this content
+            is stored in your organization's dedicated vault and this field is cleared.  This
+            field is required if the value is being created or updated and is not
+            dynamic.  This field cannot be specified when creating or updating a dynamic
+            value.
           maxLength: 16384
         value:
           type: string
@@ -4596,6 +5106,95 @@ components:
           type: string
       required:
       - body
+    Timeline:
+      type: object
+      properties:
+        next_as_of:
+          type: string
+          format: date-time
+          description: If present, additional history can be retrieved using this
+            timestamp in the next call in the as_of query parameter.
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/TimelineEntry'
+      required:
+      - results
+    TimelineEntry:
+      type: object
+      description: Details about a single change.
+      properties:
+        history_date:
+          type: string
+          format: date-time
+        history_environments:
+          type: array
+          items:
+            $ref: '#/components/schemas/TimelineEntryEnvironment'
+          readOnly: true
+          description: The affected environment(s).
+        history_model:
+          allOf:
+          - $ref: '#/components/schemas/HistoryModelEnum'
+          readOnly: true
+          description: The component of the parameter that changed.
+        history_parameter:
+          allOf:
+          - $ref: '#/components/schemas/TimelineEntryParameter'
+          readOnly: true
+          description: The affected parameter.
+        history_type:
+          allOf:
+          - $ref: '#/components/schemas/HistoryTypeEnum'
+          readOnly: true
+        history_user:
+          type: string
+          description: The unique identifier of a user.
+          nullable: true
+      required:
+      - history_date
+      - history_environments
+      - history_model
+      - history_parameter
+      - history_type
+    TimelineEntryEnvironment:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+          description: A unique identifier for the environment.
+        name:
+          type: string
+          description: The environment name.
+          maxLength: 256
+        override:
+          type: boolean
+          readOnly: true
+          description: Indicates if the value change was direct or if it flowed into
+            the environment. If `true` then the value was actually set directly into
+            this environment. If `false` then the environment has no value set directly
+            so it inherited the value from its parent.
+      required:
+      - id
+      - name
+      - override
+    TimelineEntryParameter:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+          description: A unique identifier for the parameter.
+        name:
+          type: string
+          description: The parameter name.
+          maxLength: 256
+      required:
+      - id
+      - name
     User:
       type: object
       properties:
@@ -4693,7 +5292,11 @@ components:
           type: string
           nullable: true
           description: This is the content to use when resolving the Value for a static
-            non-secret.
+            non-secret, or when storing a secret.  When storing a secret, this content
+            is stored in your organization's dedicated vault and this field is cleared.  This
+            field is required if the value is being created or updated and is not
+            dynamic.  This field cannot be specified when creating or updating a dynamic
+            value.
           maxLength: 16384
         value:
           type: string
@@ -4772,7 +5375,11 @@ components:
           type: string
           nullable: true
           description: This is the content to use when resolving the Value for a static
-            non-secret.
+            non-secret, or when storing a secret.  When storing a secret, this content
+            is stored in your organization's dedicated vault and this field is cleared.  This
+            field is required if the value is being created or updated and is not
+            dynamic.  This field cannot be specified when creating or updating a dynamic
+            value.
           maxLength: 16384
       required:
       - environment
