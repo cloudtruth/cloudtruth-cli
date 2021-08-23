@@ -21,8 +21,8 @@ SUBCOMMANDS:
     environments     Work with CloudTruth environments [aliases: environment, envs, env, e]
     help             Prints this message or the help of the given subcommand(s)
     integrations     Work with CloudTruth integrations [aliases: integration, integrate, integ, int]
-    login            Login into the CloudTruth server
-    logout           Logout of the CloudTruth server
+    login            Sets up a CloudTruth configuration profile api_key
+    logout           Removes a CloudTruth configuration profile api_key
     parameters       Work with CloudTruth parameters [aliases: parameter, params, param, p]
     projects         Work with CloudTruth projects [aliases: project, proj]
     run              Run a shell with the parameters in place [aliases: run, r]
@@ -222,7 +222,7 @@ OPTIONS:
                              yaml]
 ============================================================
 cloudtruth-login 
-Login into the CloudTruth server
+Sets up a CloudTruth configuration profile api_key
 
 USAGE:
     cloudtruth login [FLAGS]
@@ -233,7 +233,7 @@ FLAGS:
     -V, --version    Prints version information
 ============================================================
 cloudtruth-logout 
-Logout of the CloudTruth server
+Removes a CloudTruth configuration profile api_key
 
 USAGE:
     cloudtruth logout [FLAGS]

@@ -171,10 +171,10 @@ pub fn build_cli() -> App<'static, 'static> {
                 ])
         )
         .subcommand(SubCommand::with_name("login")
-            .about("Login into the CloudTruth server")
+            .about("Sets up a CloudTruth configuration profile api_key")
             .arg(confirm_flag()))
         .subcommand(SubCommand::with_name("logout")
-            .about("Logout of the CloudTruth server")
+            .about("Removes a CloudTruth configuration profile api_key")
             .arg(confirm_flag()))
         .subcommand(
             SubCommand::with_name("integrations")
