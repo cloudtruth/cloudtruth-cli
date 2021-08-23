@@ -85,6 +85,10 @@ class TestTemplates(TestCase):
         result = self.run_cli(cmd_env, sub_cmd + f"get {temp_name}")
         self.assertEqual(body, result.out())
 
+        # nothing variable, but quick test of API
+        result = self.run_cli(cmd_env, sub_cmd + f"get {temp_name} --raw")
+        self.assertEqual(body, result.out())
+
         # nothing to update
         result = self.run_cli(cmd_env, sub_cmd + f"set {temp_name}")
         self.assertEqual(result.return_value, 0)
@@ -168,6 +172,11 @@ ANOTHER_PARAM=PARAM2
         self.assertEqual(result.return_value, 0)
         self.assertIn(eval_a, result.out())
 
+        # see that we get back the unresolved/unevaluated body
+        result = self.run_cli(cmd_env, sub_cmd + f"get -r {temp_name}")
+        self.assertEqual(result.return_value, 0)
+        self.assertIn(body, result.out())
+
         # check preview, too
         result = self.run_cli(cmd_env, sub_cmd + f"preview {filename}")
         self.assertEqual(result.return_value, 0)
@@ -188,6 +197,11 @@ ANOTHER_PARAM=PARAM2
         result = self.run_cli(cmd_env, sub_cmd + f"get {temp_name}")
         self.assertEqual(result.return_value, 0)
         self.assertIn(eval_b, result.out())
+
+        # see that we get back the unresolved/unevaluated body
+        result = self.run_cli(cmd_env, sub_cmd + f"get {temp_name} -r")
+        self.assertEqual(result.return_value, 0)
+        self.assertIn(body, result.out())
 
         # check preview, too
         result = self.run_cli(cmd_env, sub_cmd + f"preview {filename}")

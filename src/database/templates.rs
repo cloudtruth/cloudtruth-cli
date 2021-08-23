@@ -1,8 +1,13 @@
-use crate::database::openapi::{OpenApiConfig, PAGE_SIZE};
+use crate::database::openapi::{extract_details, OpenApiConfig, PAGE_SIZE};
 
 use cloudtruth_restapi::apis::projects_api::*;
 use cloudtruth_restapi::apis::Error;
+use cloudtruth_restapi::apis::Error::ResponseError;
 use cloudtruth_restapi::models::{PatchedTemplate, Template, TemplateCreate, TemplatePreview};
+use std::error;
+use std::fmt;
+use std::fmt::Formatter;
+use std::result::Result;
 
 pub struct Templates {}
 
@@ -24,6 +29,23 @@ impl From<&Template> for TemplateDetails {
         }
     }
 }
+
+#[derive(Debug)]
+pub enum TemplateError {
+    AuthError(String),
+    ListError(Error<ProjectsTemplatesListError>),
+}
+
+impl fmt::Display for TemplateError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        match self {
+            TemplateError::AuthError(msg) => write!(f, "Not Authenticated: {}", msg),
+            TemplateError::ListError(e) => write!(f, "{}", e.to_string()),
+        }
+    }
+}
+
+impl error::Error for TemplateError {}
 
 impl Templates {
     pub fn new() -> Self {
@@ -53,6 +75,38 @@ impl Templates {
         } else {
             // TODO: handle template not found??
             Ok(None)
+        }
+    }
+
+    pub fn get_unevaluated_details(
+        &self,
+        rest_cfg: &OpenApiConfig,
+        proj_id: &str,
+        template_name: &str,
+    ) -> Result<Option<TemplateDetails>, TemplateError> {
+        // Currently, the only way to get the unevaluated body is to list the templates.
+        let response =
+            projects_templates_list(rest_cfg, proj_id, Some(template_name), None, PAGE_SIZE);
+
+        match response {
+            Ok(data) => match data.results {
+                Some(list) => {
+                    if list.is_empty() {
+                        Ok(None)
+                    } else {
+                        // TODO: handle more than one??
+                        let template = &list[0];
+                        Ok(Some(TemplateDetails::from(template)))
+                    }
+                }
+                _ => Ok(None),
+            },
+            Err(ResponseError(ref content)) => match content.status.as_u16() {
+                401 => Err(TemplateError::AuthError(extract_details(&content.content))),
+                403 => Err(TemplateError::AuthError(extract_details(&content.content))),
+                _ => Err(TemplateError::ListError(response.unwrap_err())),
+            },
+            Err(e) => Err(TemplateError::ListError(e)),
         }
     }
 

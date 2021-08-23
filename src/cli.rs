@@ -318,6 +318,10 @@ pub fn build_cli() -> App<'static, 'static> {
                     .arg(name_arg().help("Template name")),
                 SubCommand::with_name(GET_SUBCMD)
                     .about("Get an evaluated template from CloudTruth")
+                    .arg(Arg::with_name("raw")
+                        .short("r")
+                        .long("raw")
+                        .help("Get the raw, unevaluated template text"))
                     .arg(secrets_display_flag().help("Display secret values in evaluation"))
                     .arg(name_arg().help("Template name")),
                 SubCommand::with_name(LIST_SUBCMD)
