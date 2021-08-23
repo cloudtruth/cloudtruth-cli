@@ -171,7 +171,7 @@ impl ConfigFile {
                 }
             } else {
                 // nothing left in this profile, so delete it.
-                new_text = "".to_string();
+                new_text = format!("  {}:\n", profile_name);
             }
             result = config.replace(&orig_text, &new_text);
         } else if !new_prof.is_empty() {
@@ -788,7 +788,7 @@ mod tests {
     }
 
     #[test]
-    fn profile_set_removed() {
+    fn profile_set_remains() {
         let config = indoc!(
             r#"
         profiles:
@@ -810,6 +810,7 @@ mod tests {
             api_key: default_key
             server_url: http://localhost:7001/graphql
 
+          grandparent-profile:
         "#
         );
         let result =
