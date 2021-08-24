@@ -10,11 +10,7 @@
 
 ///
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
-pub enum ObjectTypeEnum {
-    #[serde(rename = "DataIntegration")]
-    DataIntegration,
-    #[serde(rename = "Environment")]
-    Environment,
+pub enum HistoryModelEnum {
     #[serde(rename = "Parameter")]
     Parameter,
     #[serde(rename = "ParameterRule")]
@@ -23,11 +19,9 @@ pub enum ObjectTypeEnum {
     Value,
 }
 
-impl ToString for ObjectTypeEnum {
+impl ToString for HistoryModelEnum {
     fn to_string(&self) -> String {
         match self {
-            Self::DataIntegration => String::from("DataIntegration"),
-            Self::Environment => String::from("Environment"),
             Self::Parameter => String::from("Parameter"),
             Self::ParameterRule => String::from("ParameterRule"),
             Self::Value => String::from("Value"),

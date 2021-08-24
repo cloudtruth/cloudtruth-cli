@@ -82,6 +82,62 @@ pub enum ProjectsParametersRetrieveError {
     UnknownValue(serde_json::Value),
 }
 
+/// struct for typed errors of method `projects_parameters_rules_create`
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum ProjectsParametersRulesCreateError {
+    UnknownValue(serde_json::Value),
+}
+
+/// struct for typed errors of method `projects_parameters_rules_destroy`
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum ProjectsParametersRulesDestroyError {
+    UnknownValue(serde_json::Value),
+}
+
+/// struct for typed errors of method `projects_parameters_rules_list`
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum ProjectsParametersRulesListError {
+    UnknownValue(serde_json::Value),
+}
+
+/// struct for typed errors of method `projects_parameters_rules_partial_update`
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum ProjectsParametersRulesPartialUpdateError {
+    UnknownValue(serde_json::Value),
+}
+
+/// struct for typed errors of method `projects_parameters_rules_retrieve`
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum ProjectsParametersRulesRetrieveError {
+    UnknownValue(serde_json::Value),
+}
+
+/// struct for typed errors of method `projects_parameters_rules_update`
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum ProjectsParametersRulesUpdateError {
+    UnknownValue(serde_json::Value),
+}
+
+/// struct for typed errors of method `projects_parameters_timeline_retrieve`
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum ProjectsParametersTimelineRetrieveError {
+    UnknownValue(serde_json::Value),
+}
+
+/// struct for typed errors of method `projects_parameters_timelines_retrieve`
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum ProjectsParametersTimelinesRetrieveError {
+    UnknownValue(serde_json::Value),
+}
+
 /// struct for typed errors of method `projects_parameters_update`
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
@@ -639,6 +695,7 @@ pub fn projects_parameters_destroy(
 pub fn projects_parameters_list(
     configuration: &configuration::Configuration,
     project_pk: &str,
+    as_of: Option<String>,
     environment: Option<&str>,
     mask_secrets: Option<bool>,
     name: Option<&str>,
@@ -657,6 +714,10 @@ pub fn projects_parameters_list(
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
 
+    if let Some(ref local_var_str) = as_of {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("as_of", &local_var_str.to_string())]);
+    }
     if let Some(ref local_var_str) = environment {
         local_var_req_builder =
             local_var_req_builder.query(&[("environment", &local_var_str.to_string())]);
@@ -803,6 +864,7 @@ pub fn projects_parameters_retrieve(
     configuration: &configuration::Configuration,
     id: &str,
     project_pk: &str,
+    as_of: Option<String>,
     environment: Option<&str>,
     mask_secrets: Option<bool>,
     partial_success: Option<bool>,
@@ -819,6 +881,10 @@ pub fn projects_parameters_retrieve(
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
 
+    if let Some(ref local_var_str) = as_of {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("as_of", &local_var_str.to_string())]);
+    }
     if let Some(ref local_var_str) = environment {
         local_var_req_builder =
             local_var_req_builder.query(&[("environment", &local_var_str.to_string())]);
@@ -873,6 +939,557 @@ pub fn projects_parameters_retrieve(
         serde_json::from_str(&local_var_content).map_err(Error::from)
     } else {
         let local_var_entity: Option<ProjectsParametersRetrieveError> =
+            serde_json::from_str(&local_var_content).ok();
+        let local_var_error = ResponseContent {
+            status: local_var_status,
+            content: local_var_content,
+            entity: local_var_entity,
+        };
+        Err(Error::ResponseError(local_var_error))
+    }
+}
+
+pub fn projects_parameters_rules_create(
+    configuration: &configuration::Configuration,
+    parameter_pk: &str,
+    project_pk: &str,
+    parameter_rule_create: crate::models::ParameterRuleCreate,
+) -> Result<crate::models::ParameterRule, Error<ProjectsParametersRulesCreateError>> {
+    let local_var_client = &configuration.client;
+
+    let local_var_uri_str = format!(
+        "{}/api/v1/projects/{project_pk}/parameters/{parameter_pk}/rules/",
+        configuration.base_path,
+        parameter_pk = parameter_pk,
+        project_pk = project_pk
+    );
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
+
+    if let Some(ref local_var_user_agent) = configuration.user_agent {
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
+    }
+
+    if let Some(ref local_var_token) = configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
+    if let Some(ref local_var_apikey) = configuration.api_key {
+        let local_var_key = local_var_apikey.key.clone();
+        let local_var_value = match local_var_apikey.prefix {
+            Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
+            None => local_var_key,
+        };
+        local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
+    };
+    local_var_req_builder = local_var_req_builder.json(&parameter_rule_create);
+
+    let local_var_req = local_var_req_builder.build()?;
+    let method = local_var_req.method().clone();
+    let start = Instant::now();
+    let mut local_var_resp = local_var_client.execute(local_var_req)?;
+    if configuration.rest_debug {
+        let duration = start.elapsed();
+        println!(
+            "URL {} {} elapsed: {:?}",
+            method,
+            &local_var_resp.url(),
+            duration
+        );
+    }
+
+    let local_var_status = local_var_resp.status();
+    let local_var_content = local_var_resp.text()?;
+
+    if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        serde_json::from_str(&local_var_content).map_err(Error::from)
+    } else {
+        let local_var_entity: Option<ProjectsParametersRulesCreateError> =
+            serde_json::from_str(&local_var_content).ok();
+        let local_var_error = ResponseContent {
+            status: local_var_status,
+            content: local_var_content,
+            entity: local_var_entity,
+        };
+        Err(Error::ResponseError(local_var_error))
+    }
+}
+
+pub fn projects_parameters_rules_destroy(
+    configuration: &configuration::Configuration,
+    id: &str,
+    parameter_pk: &str,
+    project_pk: &str,
+) -> Result<(), Error<ProjectsParametersRulesDestroyError>> {
+    let local_var_client = &configuration.client;
+
+    let local_var_uri_str = format!(
+        "{}/api/v1/projects/{project_pk}/parameters/{parameter_pk}/rules/{id}/",
+        configuration.base_path,
+        id = id,
+        parameter_pk = parameter_pk,
+        project_pk = project_pk
+    );
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::DELETE, local_var_uri_str.as_str());
+
+    if let Some(ref local_var_user_agent) = configuration.user_agent {
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
+    }
+
+    if let Some(ref local_var_token) = configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
+    if let Some(ref local_var_apikey) = configuration.api_key {
+        let local_var_key = local_var_apikey.key.clone();
+        let local_var_value = match local_var_apikey.prefix {
+            Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
+            None => local_var_key,
+        };
+        local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
+    };
+
+    let local_var_req = local_var_req_builder.build()?;
+    let method = local_var_req.method().clone();
+    let start = Instant::now();
+    let mut local_var_resp = local_var_client.execute(local_var_req)?;
+    if configuration.rest_debug {
+        let duration = start.elapsed();
+        println!(
+            "URL {} {} elapsed: {:?}",
+            method,
+            &local_var_resp.url(),
+            duration
+        );
+    }
+
+    let local_var_status = local_var_resp.status();
+    let local_var_content = local_var_resp.text()?;
+
+    if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        Ok(())
+    } else {
+        let local_var_entity: Option<ProjectsParametersRulesDestroyError> =
+            serde_json::from_str(&local_var_content).ok();
+        let local_var_error = ResponseContent {
+            status: local_var_status,
+            content: local_var_content,
+            entity: local_var_entity,
+        };
+        Err(Error::ResponseError(local_var_error))
+    }
+}
+
+pub fn projects_parameters_rules_list(
+    configuration: &configuration::Configuration,
+    parameter_pk: &str,
+    project_pk: &str,
+    page: Option<i32>,
+    page_size: Option<i32>,
+    _type: Option<&str>,
+) -> Result<crate::models::PaginatedParameterRuleList, Error<ProjectsParametersRulesListError>> {
+    let local_var_client = &configuration.client;
+
+    let local_var_uri_str = format!(
+        "{}/api/v1/projects/{project_pk}/parameters/{parameter_pk}/rules/",
+        configuration.base_path,
+        parameter_pk = parameter_pk,
+        project_pk = project_pk
+    );
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+
+    if let Some(ref local_var_str) = page {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("page", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = page_size {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("page_size", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = _type {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("type", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_user_agent) = configuration.user_agent {
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
+    }
+
+    if let Some(ref local_var_token) = configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
+    if let Some(ref local_var_apikey) = configuration.api_key {
+        let local_var_key = local_var_apikey.key.clone();
+        let local_var_value = match local_var_apikey.prefix {
+            Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
+            None => local_var_key,
+        };
+        local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
+    };
+
+    let local_var_req = local_var_req_builder.build()?;
+    let method = local_var_req.method().clone();
+    let start = Instant::now();
+    let mut local_var_resp = local_var_client.execute(local_var_req)?;
+    if configuration.rest_debug {
+        let duration = start.elapsed();
+        println!(
+            "URL {} {} elapsed: {:?}",
+            method,
+            &local_var_resp.url(),
+            duration
+        );
+    }
+
+    let local_var_status = local_var_resp.status();
+    let local_var_content = local_var_resp.text()?;
+
+    if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        serde_json::from_str(&local_var_content).map_err(Error::from)
+    } else {
+        let local_var_entity: Option<ProjectsParametersRulesListError> =
+            serde_json::from_str(&local_var_content).ok();
+        let local_var_error = ResponseContent {
+            status: local_var_status,
+            content: local_var_content,
+            entity: local_var_entity,
+        };
+        Err(Error::ResponseError(local_var_error))
+    }
+}
+
+pub fn projects_parameters_rules_partial_update(
+    configuration: &configuration::Configuration,
+    id: &str,
+    parameter_pk: &str,
+    project_pk: &str,
+    patched_parameter_rule: Option<crate::models::PatchedParameterRule>,
+) -> Result<crate::models::ParameterRule, Error<ProjectsParametersRulesPartialUpdateError>> {
+    let local_var_client = &configuration.client;
+
+    let local_var_uri_str = format!(
+        "{}/api/v1/projects/{project_pk}/parameters/{parameter_pk}/rules/{id}/",
+        configuration.base_path,
+        id = id,
+        parameter_pk = parameter_pk,
+        project_pk = project_pk
+    );
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::PATCH, local_var_uri_str.as_str());
+
+    if let Some(ref local_var_user_agent) = configuration.user_agent {
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
+    }
+
+    if let Some(ref local_var_token) = configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
+    if let Some(ref local_var_apikey) = configuration.api_key {
+        let local_var_key = local_var_apikey.key.clone();
+        let local_var_value = match local_var_apikey.prefix {
+            Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
+            None => local_var_key,
+        };
+        local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
+    };
+    local_var_req_builder = local_var_req_builder.json(&patched_parameter_rule);
+
+    let local_var_req = local_var_req_builder.build()?;
+    let method = local_var_req.method().clone();
+    let start = Instant::now();
+    let mut local_var_resp = local_var_client.execute(local_var_req)?;
+    if configuration.rest_debug {
+        let duration = start.elapsed();
+        println!(
+            "URL {} {} elapsed: {:?}",
+            method,
+            &local_var_resp.url(),
+            duration
+        );
+    }
+
+    let local_var_status = local_var_resp.status();
+    let local_var_content = local_var_resp.text()?;
+
+    if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        serde_json::from_str(&local_var_content).map_err(Error::from)
+    } else {
+        let local_var_entity: Option<ProjectsParametersRulesPartialUpdateError> =
+            serde_json::from_str(&local_var_content).ok();
+        let local_var_error = ResponseContent {
+            status: local_var_status,
+            content: local_var_content,
+            entity: local_var_entity,
+        };
+        Err(Error::ResponseError(local_var_error))
+    }
+}
+
+pub fn projects_parameters_rules_retrieve(
+    configuration: &configuration::Configuration,
+    id: &str,
+    parameter_pk: &str,
+    project_pk: &str,
+) -> Result<crate::models::ParameterRule, Error<ProjectsParametersRulesRetrieveError>> {
+    let local_var_client = &configuration.client;
+
+    let local_var_uri_str = format!(
+        "{}/api/v1/projects/{project_pk}/parameters/{parameter_pk}/rules/{id}/",
+        configuration.base_path,
+        id = id,
+        parameter_pk = parameter_pk,
+        project_pk = project_pk
+    );
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+
+    if let Some(ref local_var_user_agent) = configuration.user_agent {
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
+    }
+
+    if let Some(ref local_var_token) = configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
+    if let Some(ref local_var_apikey) = configuration.api_key {
+        let local_var_key = local_var_apikey.key.clone();
+        let local_var_value = match local_var_apikey.prefix {
+            Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
+            None => local_var_key,
+        };
+        local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
+    };
+
+    let local_var_req = local_var_req_builder.build()?;
+    let method = local_var_req.method().clone();
+    let start = Instant::now();
+    let mut local_var_resp = local_var_client.execute(local_var_req)?;
+    if configuration.rest_debug {
+        let duration = start.elapsed();
+        println!(
+            "URL {} {} elapsed: {:?}",
+            method,
+            &local_var_resp.url(),
+            duration
+        );
+    }
+
+    let local_var_status = local_var_resp.status();
+    let local_var_content = local_var_resp.text()?;
+
+    if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        serde_json::from_str(&local_var_content).map_err(Error::from)
+    } else {
+        let local_var_entity: Option<ProjectsParametersRulesRetrieveError> =
+            serde_json::from_str(&local_var_content).ok();
+        let local_var_error = ResponseContent {
+            status: local_var_status,
+            content: local_var_content,
+            entity: local_var_entity,
+        };
+        Err(Error::ResponseError(local_var_error))
+    }
+}
+
+pub fn projects_parameters_rules_update(
+    configuration: &configuration::Configuration,
+    id: &str,
+    parameter_pk: &str,
+    project_pk: &str,
+    parameter_rule: crate::models::ParameterRule,
+) -> Result<crate::models::ParameterRule, Error<ProjectsParametersRulesUpdateError>> {
+    let local_var_client = &configuration.client;
+
+    let local_var_uri_str = format!(
+        "{}/api/v1/projects/{project_pk}/parameters/{parameter_pk}/rules/{id}/",
+        configuration.base_path,
+        id = id,
+        parameter_pk = parameter_pk,
+        project_pk = project_pk
+    );
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::PUT, local_var_uri_str.as_str());
+
+    if let Some(ref local_var_user_agent) = configuration.user_agent {
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
+    }
+
+    if let Some(ref local_var_token) = configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
+    if let Some(ref local_var_apikey) = configuration.api_key {
+        let local_var_key = local_var_apikey.key.clone();
+        let local_var_value = match local_var_apikey.prefix {
+            Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
+            None => local_var_key,
+        };
+        local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
+    };
+    local_var_req_builder = local_var_req_builder.json(&parameter_rule);
+
+    let local_var_req = local_var_req_builder.build()?;
+    let method = local_var_req.method().clone();
+    let start = Instant::now();
+    let mut local_var_resp = local_var_client.execute(local_var_req)?;
+    if configuration.rest_debug {
+        let duration = start.elapsed();
+        println!(
+            "URL {} {} elapsed: {:?}",
+            method,
+            &local_var_resp.url(),
+            duration
+        );
+    }
+
+    let local_var_status = local_var_resp.status();
+    let local_var_content = local_var_resp.text()?;
+
+    if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        serde_json::from_str(&local_var_content).map_err(Error::from)
+    } else {
+        let local_var_entity: Option<ProjectsParametersRulesUpdateError> =
+            serde_json::from_str(&local_var_content).ok();
+        let local_var_error = ResponseContent {
+            status: local_var_status,
+            content: local_var_content,
+            entity: local_var_entity,
+        };
+        Err(Error::ResponseError(local_var_error))
+    }
+}
+
+/// Summary information about how a parameter has changed over time.  The time range of historical information available depends on your subscription. Any changes to the parameter itself, including rules and values, is included.
+pub fn projects_parameters_timeline_retrieve(
+    configuration: &configuration::Configuration,
+    id: &str,
+    project_pk: &str,
+    as_of: Option<String>,
+) -> Result<crate::models::Timeline, Error<ProjectsParametersTimelineRetrieveError>> {
+    let local_var_client = &configuration.client;
+
+    let local_var_uri_str = format!(
+        "{}/api/v1/projects/{project_pk}/parameters/{id}/timeline/",
+        configuration.base_path,
+        id = id,
+        project_pk = project_pk
+    );
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+
+    if let Some(ref local_var_str) = as_of {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("as_of", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_user_agent) = configuration.user_agent {
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
+    }
+
+    if let Some(ref local_var_token) = configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
+    if let Some(ref local_var_apikey) = configuration.api_key {
+        let local_var_key = local_var_apikey.key.clone();
+        let local_var_value = match local_var_apikey.prefix {
+            Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
+            None => local_var_key,
+        };
+        local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
+    };
+
+    let local_var_req = local_var_req_builder.build()?;
+    let method = local_var_req.method().clone();
+    let start = Instant::now();
+    let mut local_var_resp = local_var_client.execute(local_var_req)?;
+    if configuration.rest_debug {
+        let duration = start.elapsed();
+        println!(
+            "URL {} {} elapsed: {:?}",
+            method,
+            &local_var_resp.url(),
+            duration
+        );
+    }
+
+    let local_var_status = local_var_resp.status();
+    let local_var_content = local_var_resp.text()?;
+
+    if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        serde_json::from_str(&local_var_content).map_err(Error::from)
+    } else {
+        let local_var_entity: Option<ProjectsParametersTimelineRetrieveError> =
+            serde_json::from_str(&local_var_content).ok();
+        let local_var_error = ResponseContent {
+            status: local_var_status,
+            content: local_var_content,
+            entity: local_var_entity,
+        };
+        Err(Error::ResponseError(local_var_error))
+    }
+}
+
+/// Information about how the parameters of a project have changed over time.  The time range of historical information available depends on your subscription. Any changes to the project's parameters, including rules and values, is included.
+pub fn projects_parameters_timelines_retrieve(
+    configuration: &configuration::Configuration,
+    project_pk: &str,
+    as_of: Option<String>,
+) -> Result<crate::models::Timeline, Error<ProjectsParametersTimelinesRetrieveError>> {
+    let local_var_client = &configuration.client;
+
+    let local_var_uri_str = format!(
+        "{}/api/v1/projects/{project_pk}/parameters/timelines/",
+        configuration.base_path,
+        project_pk = project_pk
+    );
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+
+    if let Some(ref local_var_str) = as_of {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("as_of", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_user_agent) = configuration.user_agent {
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
+    }
+
+    if let Some(ref local_var_token) = configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
+    if let Some(ref local_var_apikey) = configuration.api_key {
+        let local_var_key = local_var_apikey.key.clone();
+        let local_var_value = match local_var_apikey.prefix {
+            Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
+            None => local_var_key,
+        };
+        local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
+    };
+
+    let local_var_req = local_var_req_builder.build()?;
+    let method = local_var_req.method().clone();
+    let start = Instant::now();
+    let mut local_var_resp = local_var_client.execute(local_var_req)?;
+    if configuration.rest_debug {
+        let duration = start.elapsed();
+        println!(
+            "URL {} {} elapsed: {:?}",
+            method,
+            &local_var_resp.url(),
+            duration
+        );
+    }
+
+    let local_var_status = local_var_resp.status();
+    let local_var_content = local_var_resp.text()?;
+
+    if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        serde_json::from_str(&local_var_content).map_err(Error::from)
+    } else {
+        let local_var_entity: Option<ProjectsParametersTimelinesRetrieveError> =
             serde_json::from_str(&local_var_content).ok();
         let local_var_error = ResponseContent {
             status: local_var_status,

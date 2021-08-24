@@ -24,7 +24,7 @@ pub struct ValueCreate {
     /// If `dynamic`, the content returned by the integration can be reduced by applying a JMESpath expression.  This is valid as long as the content is structured and of a supported format.  We support JMESpath expressions on `json`, `yaml`, and `dotenv` content.
     #[serde(rename = "dynamic_filter", skip_serializing_if = "Option::is_none")]
     pub dynamic_filter: Option<String>,
-    /// This is the content to use when resolving the Value for a static non-secret.
+    /// This is the content to use when resolving the Value for a static non-secret, or when storing a secret.  When storing a secret, this content is stored in your organization's dedicated vault and this field is cleared.  This field is required if the value is being created or updated and is not dynamic.  This field cannot be specified when creating or updating a dynamic value.
     #[serde(rename = "static_value", skip_serializing_if = "Option::is_none")]
     pub static_value: Option<String>,
 }
