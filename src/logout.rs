@@ -9,13 +9,33 @@ use indoc::printdoc;
 pub fn process_logout_command(subcmd_args: &ArgMatches, config: &Config) -> Result<()> {
     let confirmed = subcmd_args.is_present(CONFIRM_FLAG);
     let api_url = &config.server_url;
+    let profile_name = &config.profile_name;
 
     if config.api_key.is_empty() {
-        warning_message(format!(
-            "No API key is set for profile '{}'",
-            config.profile_name
-        ))?;
+        warning_message(format!("No API key is set for profile '{}'", profile_name))?;
         return Ok(());
+    }
+
+    if !confirmed {
+        printdoc!(
+            r#"
+
+            {}
+              This removes the API key from profile '{}'.
+              However, it does NOT remove access for that API key.
+
+            "#,
+            SEPARATOR,
+            profile_name,
+        );
+        let msg = format!(
+            "Do you want to remove the API key from profile '{}'",
+            profile_name
+        );
+        if !user_confirm(msg, Some(false)) {
+            warning_message(format!("Leaving API key in profile '{}'", profile_name))?;
+            return Ok(());
+        }
     }
 
     // TODO: instead of using web application, find way to delete API key...
@@ -26,12 +46,11 @@ pub fn process_logout_command(subcmd_args: &ArgMatches, config: &Config) -> Resu
                 r#"
 
                 {}
-                  This removes the API key from profile '{}'.
-                  However, it does NOT remove it from the server. You should go to
-                  the {} page ({}) and remove it.
+                  Logout does NOT remove access for that API key.
+                  You can visit the {} page ({}) to update access.
+
                 "#,
                 SEPARATOR,
-                config.profile_name,
                 API_KEY_PAGE,
                 api_key_url,
             );
@@ -52,7 +71,9 @@ pub fn process_logout_command(subcmd_args: &ArgMatches, config: &Config) -> Resu
                     "Failed to open browser:
                     {}
 
-                    You can manually open '{}' to delete an API key/token."#,
+                    You can manually open '{}' to delete an API key/token.
+
+                    "#,
                     open_result.unwrap_err().to_string(),
                     api_key_url,
                 );
@@ -63,10 +84,10 @@ pub fn process_logout_command(subcmd_args: &ArgMatches, config: &Config) -> Resu
     }
 
     // NOTE: setting api_key to an empty string forces it to be removed.
-    Config::update_profile(&config.profile_name, Some(""), None, None, None)?;
+    Config::update_profile(profile_name, Some(""), None, None, None)?;
     println!(
         "Updated profile '{}' in {}",
-        config.profile_name,
+        profile_name,
         Config::filename()
     );
     Ok(())
