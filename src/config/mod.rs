@@ -231,12 +231,10 @@ impl Config {
         project: Option<&str>,
     ) -> Result<()> {
         if let Some(filename) = Self::config_file() {
-            let content: String;
-            if filename.exists() {
-                content = Self::read_config(filename.as_path())?;
-            } else {
-                content = ConfigFile::config_file_template().to_string();
+            if !filename.exists() {
+                Self::create_config()?;
             }
+            let content = Self::read_config(filename.as_path())?;
             let updated = ConfigFile::set_profile(
                 &content,
                 profile_name,
