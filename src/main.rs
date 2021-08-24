@@ -192,7 +192,6 @@ fn user_confirm(message: String, default: Option<bool>) -> bool {
         stdout().flush().unwrap();
         let _ = stdin().read_line(&mut input);
         input = input.trim().to_string().to_lowercase();
-        input.truncate(input.len());
         if input.is_empty() {
             if let Some(value) = default {
                 confirmed = value;

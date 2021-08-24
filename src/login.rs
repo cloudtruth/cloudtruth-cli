@@ -109,8 +109,7 @@ pub fn process_login_command(subcmd_args: &ArgMatches, config: &Config) -> Resul
     let mut input = String::new();
     stdout().flush().unwrap();
     let _ = stdin().read_line(&mut input);
-    input.trim().to_string();
-    input.truncate(input.len() - 1); // remove newline
+    input = input.trim().to_string();
     if input.is_empty() {
         warn_login_done("no API key provided")?;
         return Ok(());
