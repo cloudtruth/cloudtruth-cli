@@ -545,6 +545,7 @@ impl Parameters {
             name: Some(key_name.to_string()),
             description: description.map(String::from),
             secret,
+            _type: None,
             rules: None,
             templates: None,
             values: None,

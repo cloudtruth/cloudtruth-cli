@@ -26,8 +26,11 @@ pub struct Parameter {
     /// Indicates if this content is secret or not.  When a parameter is considered to be a secret, any static values are stored in a dedicated vault for your organization for maximum security.  Dynamic values are inspected on-demand to ensure they align with the parameter's secret setting and if they do not, those dynamic values are not allowed to be used.
     #[serde(rename = "secret", skip_serializing_if = "Option::is_none")]
     pub secret: Option<bool>,
+    #[serde(rename = "type", skip_serializing_if = "Option::is_none")]
+    pub _type: Option<crate::models::ParameterTypeEnum>,
+    /// Rules applied to this parameter
     #[serde(rename = "rules")]
-    pub rules: Vec<String>,
+    pub rules: Vec<crate::models::ParameterRule>,
     /// Templates that reference this Parameter.
     #[serde(rename = "templates")]
     pub templates: Vec<String>,
@@ -46,7 +49,7 @@ impl Parameter {
         url: String,
         id: String,
         name: String,
-        rules: Vec<String>,
+        rules: Vec<crate::models::ParameterRule>,
         templates: Vec<String>,
         values: ::std::collections::HashMap<String, Option<crate::models::Value>>,
         created_at: String,
@@ -58,6 +61,7 @@ impl Parameter {
             name,
             description: None,
             secret: None,
+            _type: None,
             rules,
             templates,
             values,

@@ -4166,12 +4166,14 @@ components:
             vault for your organization for maximum security.  Dynamic values are
             inspected on-demand to ensure they align with the parameter's secret setting
             and if they do not, those dynamic values are not allowed to be used.
+        type:
+          $ref: '#/components/schemas/ParameterTypeEnum'
         rules:
           type: array
           items:
-            type: string
-            format: uri
+            $ref: '#/components/schemas/ParameterRule'
           readOnly: true
+          description: Rules applied to this parameter
         templates:
           type: array
           items:
@@ -4591,12 +4593,14 @@ components:
             vault for your organization for maximum security.  Dynamic values are
             inspected on-demand to ensure they align with the parameter's secret setting
             and if they do not, those dynamic values are not allowed to be used.
+        type:
+          $ref: '#/components/schemas/ParameterTypeEnum'
         rules:
           type: array
           items:
-            type: string
-            format: uri
+            $ref: '#/components/schemas/ParameterRule'
           readOnly: true
+          description: Rules applied to this parameter
         templates:
           type: array
           items:
