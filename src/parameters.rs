@@ -1,6 +1,6 @@
 use crate::cli::{
     binary_name, CONFIRM_FLAG, DELETE_SUBCMD, FORMAT_OPT, GET_SUBCMD, KEY_ARG, LIST_SUBCMD,
-    RENAME_OPT, SECRETS_FLAG, SET_SUBCMD, VALUES_FLAG,
+    PARAM_TIME_ARG, RENAME_OPT, SECRETS_FLAG, SET_SUBCMD, VALUES_FLAG,
 };
 use crate::config::DEFAULT_ENV_NAME;
 use crate::database::{
@@ -9,7 +9,7 @@ use crate::database::{
 };
 use crate::table::Table;
 use crate::{
-    error_message, format_param_error, user_confirm, warn_missing_subcommand,
+    error_message, format_param_error, parse_datetime, user_confirm, warn_missing_subcommand,
     warn_unresolved_params, warn_user, warning_message, ResolvedIds, DEL_CONFIRM, FILE_READ_ERR,
 };
 use clap::ArgMatches;
@@ -32,7 +32,7 @@ fn proc_param_delete(
     let proj_name = resolved.project_display_name();
     let proj_id = resolved.project_id();
     let env_id = resolved.environment_id();
-    let param_id = parameters.get_id(rest_cfg, proj_id, env_id, key_name);
+    let param_id = parameters.get_id(rest_cfg, proj_id, env_id, key_name, None);
     if param_id.is_none() {
         println!(
             "Did not find parameter '{}' to delete from project '{}'.",
@@ -91,6 +91,7 @@ fn proc_param_diff(
     resolved: &ResolvedIds,
 ) -> Result<()> {
     let show_secrets = subcmd_args.is_present(SECRETS_FLAG);
+    let as_of = parse_datetime(subcmd_args.value_of(PARAM_TIME_ARG));
     let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
     let properties: Vec<&str> = subcmd_args.values_of("properties").unwrap().collect();
     let env1_name = subcmd_args.value_of("ENV1").unwrap();
@@ -114,6 +115,7 @@ fn proc_param_diff(
             proj_id,
             &env1_id,
             !show_secrets,
+            as_of.clone(),
         )?;
         let env2_values = parameters.get_parameter_detail_map(
             rest_cfg,
@@ -121,6 +123,7 @@ fn proc_param_diff(
             proj_id,
             &env2_id,
             !show_secrets,
+            as_of,
         )?;
         let mut param_list: Vec<String> = env1_values.iter().map(|(k, _)| k.clone()).collect();
         param_list.sort_by_key(|l| l.to_lowercase());
@@ -197,6 +200,7 @@ fn proc_param_env(
     resolved: &ResolvedIds,
 ) -> Result<()> {
     let param_name = subcmd_args.value_of(KEY_ARG).unwrap();
+    let as_of = parse_datetime(subcmd_args.value_of(PARAM_TIME_ARG));
     let show_secrets = subcmd_args.is_present(SECRETS_FLAG);
     let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
     let all_envs = subcmd_args.is_present("all");
@@ -214,6 +218,7 @@ fn proc_param_env(
         proj_id,
         param_name,
         !show_secrets,
+        as_of,
     )?;
 
     if param_values.is_empty() {
@@ -302,9 +307,10 @@ fn proc_param_get(
     resolved: &ResolvedIds,
 ) -> Result<()> {
     let key = subcmd_args.value_of(KEY_ARG).unwrap();
+    let as_of = parse_datetime(subcmd_args.value_of(PARAM_TIME_ARG));
     let proj_id = resolved.project_id();
     let env_id = resolved.environment_id();
-    let parameter = parameters.get_details_by_name(rest_cfg, proj_id, env_id, key, false);
+    let parameter = parameters.get_details_by_name(rest_cfg, proj_id, env_id, key, false, as_of);
 
     if let Ok(details) = parameter {
         // Treat parameters without values set as if the value were simply empty, since
@@ -336,8 +342,11 @@ fn proc_param_list(
 ) -> Result<()> {
     let proj_id = resolved.project_id();
     let env_id = resolved.environment_id();
+    let as_of = parse_datetime(subcmd_args.value_of(PARAM_TIME_ARG));
     let show_secrets = subcmd_args.is_present(SECRETS_FLAG);
-    let mut details = parameters.get_parameter_details(rest_cfg, proj_id, env_id, !show_secrets)?;
+    let show_values = subcmd_args.is_present(VALUES_FLAG) || show_secrets;
+    let mut details =
+        parameters.get_parameter_details(rest_cfg, proj_id, env_id, !show_secrets, as_of)?;
     let references = subcmd_args.is_present("dynamic");
     let qualifier = if references { "dynamic " } else { "" };
     if references {
@@ -351,7 +360,7 @@ fn proc_param_list(
             qualifier,
             resolved.project_display_name()
         );
-    } else if !subcmd_args.is_present(VALUES_FLAG) {
+    } else if !show_values {
         let list = details
             .iter()
             .map(|d| d.key.clone())
@@ -401,6 +410,7 @@ fn proc_param_set(
     resolved: &ResolvedIds,
 ) -> Result<()> {
     let key_name = subcmd_args.value_of(KEY_ARG).unwrap();
+    let as_of = parse_datetime(subcmd_args.value_of(PARAM_TIME_ARG));
     let proj_id = resolved.project_id();
     let env_id = resolved.environment_id();
     let prompt_user = subcmd_args.is_present("prompt");
@@ -462,7 +472,7 @@ fn proc_param_set(
         // get the original values, so that is not lost
         let mut updated: ParameterDetails;
         if let Some(original) =
-            parameters.get_details_by_name(rest_cfg, proj_id, env_id, key_name, true)?
+            parameters.get_details_by_name(rest_cfg, proj_id, env_id, key_name, true, as_of)?
         {
             // only update if there is something to update
             if description.is_some() || secret.is_some() || rename.is_some() {

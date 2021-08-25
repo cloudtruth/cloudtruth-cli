@@ -292,6 +292,17 @@ fn process_completion_command(subcmd_args: &ArgMatches) {
     );
 }
 
+/// Takes an optional CLI argument (`Option<&str>`) attempts to parse it to a valid `DateTime`, and
+/// returns the ISO format that the API expects.
+fn parse_datetime(input: Option<&str>) -> Option<String> {
+    #[allow(clippy::manual_map)] // temporarily until we do some real processing
+    if let Some(orig) = input {
+        Some(orig.to_string())
+    } else {
+        None
+    }
+}
+
 fn main() -> Result<()> {
     color_eyre::install()?;
     env_logger::init();
@@ -381,7 +392,7 @@ fn main() -> Result<()> {
 
 #[cfg(test)]
 mod main_test {
-    use crate::cli;
+    use super::*;
     use crate::config::{CT_API_KEY, CT_PROFILE, CT_SERVER_URL};
     use assert_cmd::prelude::*;
     use predicates::prelude::predicate::str::*;
@@ -501,5 +512,19 @@ mod main_test {
                 .assert()
                 .stderr(contains(warn_msg));
         }
+    }
+
+    #[test]
+    fn timedate_parsing() {
+        assert_eq!(parse_datetime(None), None);
+
+        let input = Some("2021-08-25T14:27:33.11234");
+        let expected = input.map(String::from);
+        assert_eq!(parse_datetime(input), expected);
+
+        // unfortunately, it lets this through too!
+        let input = Some("this is bogus");
+        let expected = input.map(String::from);
+        assert_eq!(parse_datetime(input), expected);
     }
 }

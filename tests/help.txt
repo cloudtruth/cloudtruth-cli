@@ -292,6 +292,7 @@ FLAGS:
     -V, --version    Prints version information
 
 OPTIONS:
+    -t, --time <datetime>             Date/time of parameter value(s)
     -f, --format <format>             Display difference format [default: table]  [possible values: table, csv, json,
                                       yaml]
     -p, --property <properties>...    List of the properties to compare. [default: value]  [possible values: value,
@@ -314,6 +315,7 @@ FLAGS:
     -V, --version    Prints version information
 
 OPTIONS:
+    -t, --time <datetime>    Date/time of parameter value(s)
     -f, --format <format>    Format for parameter values [default: table]  [possible values: table, csv, json, yaml]
 
 ARGS:
@@ -344,11 +346,14 @@ cloudtruth-parameters-get
 Gets value for parameter in the selected environment
 
 USAGE:
-    cloudtruth parameters get <KEY>
+    cloudtruth parameters get [OPTIONS] <KEY>
 
 FLAGS:
     -h, --help       Prints help information
     -V, --version    Prints version information
+
+OPTIONS:
+    -t, --time <datetime>    Date/time of parameter value(s)
 
 ARGS:
     <KEY>    Name of parameter to get
@@ -367,6 +372,7 @@ FLAGS:
     -V, --version    Prints version information
 
 OPTIONS:
+    -t, --time <datetime>    Date/time of parameter value(s)
     -f, --format <format>    Format for parameter values data [default: table]  [possible values: table, csv, json,
                              yaml]
 ========================================
@@ -480,6 +486,7 @@ FLAGS:
 
 OPTIONS:
     -c, --command <command>        Run this command
+    -t, --time <datetime>          Date/time of parameter value(s)
     -i, --inherit <inheritance>    Handle the relationship between local and CloudTruth environments [default: overlay]
                                    [possible values: none, underlay, overlay, exclusive]
     -r, --remove <remove>...       Remove the variables from the CloudTruth environment for this run
