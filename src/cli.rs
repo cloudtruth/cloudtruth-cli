@@ -164,9 +164,18 @@ pub fn build_cli() -> App<'static, 'static> {
                     SubCommand::with_name("tree")
                         .visible_aliases(&["tr", "t"])
                         .about("Show a tree representation of the environments")
-                        .arg(name_arg().help("Show this environment with children").required(false).default_value("default")),
+                        .arg(name_arg()
+                            .help("Show this environment with children")
+                            .required(false)
+                            .default_value("default")),
                 ])
         )
+        .subcommand(SubCommand::with_name("login")
+            .about("Sets up a CloudTruth configuration profile api_key")
+            .arg(confirm_flag()))
+        .subcommand(SubCommand::with_name("logout")
+            .about("Removes a CloudTruth configuration profile api_key")
+            .arg(confirm_flag()))
         .subcommand(
             SubCommand::with_name("integrations")
                 .visible_aliases(&["integration", "integrate", "integ", "int"])

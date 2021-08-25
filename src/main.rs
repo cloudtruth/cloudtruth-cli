@@ -8,6 +8,8 @@ mod database;
 mod environments;
 mod integrations;
 mod lib;
+mod login;
+mod logout;
 mod parameters;
 mod projects;
 mod run;
@@ -21,6 +23,8 @@ use crate::configuration::process_config_command;
 use crate::database::{Environments, Integrations, OpenApiConfig, Parameters, Projects, Templates};
 use crate::environments::process_environment_command;
 use crate::integrations::process_integrations_command;
+use crate::login::process_login_command;
+use crate::logout::process_logout_command;
 use crate::parameters::process_parameters_command;
 use crate::projects::process_project_command;
 use crate::run::process_run_command;
@@ -28,7 +32,12 @@ use crate::subprocess::SubProcess;
 use crate::templates::process_templates_command;
 use clap::ArgMatches;
 use color_eyre::eyre::Result;
-use std::io::{self, stdin, stdout, Write};
+use color_eyre::Report;
+use std::error;
+use std::fmt;
+use std::fmt::Formatter;
+use std::io;
+use std::io::{stdin, stdout, Write};
 use std::process;
 use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 
@@ -36,6 +45,25 @@ use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 const DEL_CONFIRM: Option<bool> = Some(false);
 const REDACTED: &str = "*****";
 const FILE_READ_ERR: &str = "Failed to read value from file.";
+pub const SEPARATOR: &str = "=========================";
+pub const API_KEY_PAGE: &str = "\"API Access\"";
+
+#[derive(Clone, Debug)]
+pub enum ApplicationError {
+    InvalidApiUrl(String),
+}
+
+impl fmt::Display for ApplicationError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        match self {
+            ApplicationError::InvalidApiUrl(api_url) => {
+                write!(f, "No equivalent application URL for API: {}", api_url)
+            }
+        }
+    }
+}
+
+impl error::Error for ApplicationError {}
 
 pub struct ResolvedIds {
     pub env_name: Option<String>,
@@ -164,7 +192,6 @@ fn user_confirm(message: String, default: Option<bool>) -> bool {
         stdout().flush().unwrap();
         let _ = stdin().read_line(&mut input);
         input = input.trim().to_string().to_lowercase();
-        input.truncate(input.len());
         if input.is_empty() {
             if let Some(value) = default {
                 confirmed = value;
@@ -231,6 +258,29 @@ fn resolve_ids(config: &Config, rest_cfg: &OpenApiConfig) -> Result<ResolvedIds>
     })
 }
 
+/// Get the web application URL for the `API_KEY_PAGE`
+fn get_api_access_url(api_url: &str) -> Result<String> {
+    // remove the any trailing '/'
+    let mut api = api_url.to_string();
+    if api.ends_with('/') {
+        api.truncate(api.len() - 1);
+    }
+    let api_access_path = "organization/api";
+    if api.starts_with("https://localhost:8000") {
+        return Ok(format!("https://localhost:7000/{}", api_access_path));
+    }
+    if api.starts_with("https://api.") && api.ends_with("cloudtruth.io") {
+        return Ok(format!(
+            "{}/{}",
+            api.replace("https://api", "https://app"),
+            api_access_path
+        ));
+    }
+    Err(Report::new(ApplicationError::InvalidApiUrl(
+        api_url.to_string(),
+    )))
+}
+
 /// Process the 'completion' sub-command
 fn process_completion_command(subcmd_args: &ArgMatches) {
     let shell = subcmd_args.value_of("SHELL").unwrap();
@@ -277,6 +327,16 @@ fn main() -> Result<()> {
     )?);
     let rest_cfg = OpenApiConfig::from(Config::global());
 
+    if let Some(matches) = matches.subcommand_matches("login") {
+        process_login_command(matches, Config::global())?;
+        process::exit(0);
+    }
+
+    if let Some(matches) = matches.subcommand_matches("logout") {
+        process_logout_command(matches, Config::global())?;
+        process::exit(0);
+    }
+
     // Check the basic config (api-key, server-url) -- don't worry about valid env/proj, yet
     check_config()?;
 
@@ -322,7 +382,7 @@ fn main() -> Result<()> {
 #[cfg(test)]
 mod main_test {
     use crate::cli;
-    use crate::config::{CT_API_KEY, CT_SERVER_URL};
+    use crate::config::{CT_API_KEY, CT_PROFILE, CT_SERVER_URL};
     use assert_cmd::prelude::*;
     use predicates::prelude::predicate::str::*;
     use std::process::Command;
@@ -392,6 +452,7 @@ mod main_test {
             println!("need_api_key test: {}", cmd_args.join(" "));
             let mut cmd = cmd();
             cmd.env(CT_API_KEY, "")
+                .env(CT_PROFILE, "default")
                 .args(cmd_args)
                 .assert()
                 .failure()
@@ -417,8 +478,28 @@ mod main_test {
             let mut cmd = cmd();
             cmd.args(cmd_args)
                 .env(CT_API_KEY, "dummy-key")
+                .env(CT_PROFILE, "default")
                 .assert()
                 .stderr(starts_with(warn_msg));
+        }
+    }
+
+    #[test]
+    fn missing_profile() {
+        let commands = &[vec!["projects"], vec!["environments"], vec!["integrations"]];
+        for cmd_args in commands {
+            let prof_name = "no-prof-with-this-name";
+            println!("missing_profile test: {}", cmd_args.join(" "));
+            let warn_msg = format!(
+                "Profile '{}' does not exist in your configuration file",
+                prof_name
+            );
+            let mut cmd = cmd();
+            cmd.args(cmd_args)
+                .env(CT_API_KEY, "dummy-key")
+                .env(CT_PROFILE, prof_name)
+                .assert()
+                .stderr(contains(warn_msg));
         }
     }
 }

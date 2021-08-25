@@ -55,6 +55,7 @@ serde_yaml = "0.8"
 sha2 = "0.9.5"
 subprocess = "0.1"
 termcolor = "1.1"
+webbrowser = "0.5.5"
 
 [dev-dependencies]
 assert_cmd = "1.0"

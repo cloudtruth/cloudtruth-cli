@@ -78,6 +78,7 @@ const ORGANIZATION_NAME: &str = "CloudTruth";
 pub struct Config {
     pub api_key: String,
     pub environment: Option<String>,
+    pub profile_name: String,
     pub project: Option<String>,
     pub server_url: String,
     pub request_timeout: Option<Duration>,
@@ -96,21 +97,21 @@ pub struct ValidationIssues {
     pub warnings: Vec<ValidationWarning>,
 }
 
-impl From<Profile> for Config {
-    fn from(profile: Profile) -> Self {
-        Config {
-            api_key: profile.api_key.unwrap_or_else(|| "".to_string()),
-            environment: profile.environment,
-            project: profile.project,
-            server_url: profile
-                .server_url
-                .unwrap_or_else(|| DEFAULT_SERVER_URL.to_string()),
-            request_timeout: Some(Duration::new(
-                profile.request_timeout.unwrap_or(DEFAULT_REQUEST_TIMEOUT),
-                0,
-            )),
-            rest_debug: profile.rest_debug.unwrap_or(false),
-        }
+fn profile_into_config(prof_name: &str, profile: &Profile) -> Config {
+    Config {
+        api_key: profile.api_key.clone().unwrap_or_default(),
+        environment: profile.environment.clone(),
+        profile_name: prof_name.to_string(),
+        project: profile.project.clone(),
+        server_url: profile
+            .server_url
+            .clone()
+            .unwrap_or_else(|| DEFAULT_SERVER_URL.to_string()),
+        request_timeout: Some(Duration::new(
+            profile.request_timeout.unwrap_or(DEFAULT_REQUEST_TIMEOUT),
+            0,
+        )),
+        rest_debug: profile.rest_debug.unwrap_or(false),
     }
 }
 
@@ -141,6 +142,14 @@ impl Config {
         // Load settings from the configuration file if it exists.
         ProjectDirs::from("com", ORGANIZATION_NAME, APPLICATION_NAME)
             .map(|project_dirs| project_dirs.config_dir().join(CONFIG_FILE_NAME))
+    }
+
+    pub fn filename() -> String {
+        Config::config_file()
+            .unwrap()
+            .into_os_string()
+            .into_string()
+            .unwrap()
     }
 
     fn create_config() -> Result<()> {
@@ -180,16 +189,18 @@ impl Config {
         proj_name: Option<&str>,
     ) -> Result<Self> {
         let mut profile = Profile::default();
+        let prof_name = profile_name.unwrap_or(DEFAULT_PROF_NAME);
 
-        // Load settings from the configuration file if it exists.
+        // Load settings from the configuration file
         if let Some(config_file) = Self::config_file() {
-            if config_file.exists() {
-                let config = Self::read_config(config_file.as_path())?;
-                let loaded_profile =
-                    ConfigFile::load_profile(&config, profile_name.unwrap_or(DEFAULT_PROF_NAME))?;
-
-                profile = profile.merge(&loaded_profile);
-            }
+            // use the template as the config, if the file does not exist
+            let config = if config_file.exists() {
+                Self::read_config(config_file.as_path())?
+            } else {
+                ConfigFile::config_file_template().to_string()
+            };
+            let loaded_profile = ConfigFile::load_profile(&config, prof_name)?;
+            profile = profile.merge(&loaded_profile);
         }
 
         // Load values out of environment variables after loading them out of any config file so
@@ -208,7 +219,33 @@ impl Config {
             profile.project = Some(proj_name.to_string());
         }
 
-        Ok(profile.into())
+        let config = profile_into_config(prof_name, &profile);
+        Ok(config)
+    }
+
+    pub fn update_profile(
+        profile_name: &str,
+        api_key: Option<&str>,
+        description: Option<&str>,
+        environment: Option<&str>,
+        project: Option<&str>,
+    ) -> Result<()> {
+        if let Some(filename) = Self::config_file() {
+            if !filename.exists() {
+                Self::create_config()?;
+            }
+            let content = Self::read_config(filename.as_path())?;
+            let updated = ConfigFile::set_profile(
+                &content,
+                profile_name,
+                api_key,
+                description,
+                environment,
+                project,
+            )?;
+            fs::write(filename.as_path(), updated)?;
+        }
+        Ok(())
     }
 
     pub fn get_profile_details() -> Result<Vec<ProfileDetails>> {

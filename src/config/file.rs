@@ -3,14 +3,15 @@ use crate::config::profiles::{Profile, ProfileDetails};
 use color_eyre::eyre::Result;
 use core::fmt;
 use indoc::indoc;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use serde_yaml::Error;
+use std::borrow::BorrowMut;
 use std::collections::HashMap;
 use std::error;
 use std::fmt::Formatter;
 use std::sync::Arc;
 
-#[derive(Deserialize, Debug, Default)]
+#[derive(Deserialize, Serialize, Debug, Default)]
 #[serde(default)]
 pub struct ConfigFile {
     profiles: HashMap<String, Profile>,
@@ -102,6 +103,87 @@ impl ConfigFile {
                 profile_name.to_string(),
             ))
         }
+    }
+
+    /// Gets the text associated with the specified profile (including comments)
+    fn get_profile_text(content: &str, profile_name: &str) -> String {
+        // TODO: solve this with a regex
+        let config_lines: Vec<&str> = content.split('\n').collect();
+        let mut prof_lines: Vec<&str> = vec![];
+        let indent = " ".repeat(2);
+        let indent_plus = format!("{} ", indent);
+        let needle = format!("{}{}:", indent, profile_name);
+        let mut start = false;
+        for line in config_lines {
+            if line.starts_with(&needle) {
+                prof_lines.push(line);
+                start = true;
+                continue;
+            }
+            if !start {
+                continue;
+            }
+            // if we hit the next key (or comment), we're done
+            if line.starts_with(&indent) && !line.starts_with(&indent_plus) {
+                break;
+            }
+
+            prof_lines.push(line);
+        }
+        prof_lines.join("\n")
+    }
+
+    pub fn set_profile(
+        config: &str,
+        profile_name: &str,
+        api_key: Option<&str>,
+        description: Option<&str>,
+        environment: Option<&str>,
+        project: Option<&str>,
+    ) -> ConfigFileResult<String> {
+        let result: String;
+        let mut config_file: ConfigFile = serde_yaml::from_str(config)?;
+        let new_prof = Profile {
+            api_key: api_key.map(String::from),
+            description: description.map(String::from),
+            environment: environment.map(String::from),
+            project: project.map(String::from),
+            request_timeout: None,
+            rest_debug: None,
+            server_url: None,
+            source_profile: None,
+        };
+
+        let profiles = config_file.profiles.borrow_mut();
+        if let Some(profile) = profiles.get_mut(profile_name) {
+            let orig_text = ConfigFile::get_profile_text(config, profile_name);
+            let merged = profile.merge(&new_prof).remove_empty();
+            let mut new_text: String;
+            if merged == *profile {
+                // do nothing here, so we don't lose comments, and reorder keys
+                new_text = orig_text.clone();
+            } else {
+                profiles.insert(profile_name.to_string(), merged);
+                let new_file = serde_yaml::to_string(&config_file)?;
+                new_text = ConfigFile::get_profile_text(&new_file, profile_name);
+                if !new_text.ends_with('\n') {
+                    new_text.push('\n');
+                }
+            }
+            result = config.replace(&orig_text, &new_text);
+        } else if !new_prof.is_empty() {
+            profiles.insert(profile_name.to_string(), new_prof);
+            let new_file = serde_yaml::to_string(&config_file)?;
+            let mut new_text = ConfigFile::get_profile_text(&new_file, profile_name);
+            if !new_text.ends_with('\n') {
+                new_text.push('\n')
+            }
+            result = format!("{}\n{}", config, new_text);
+        } else {
+            // no changes
+            result = config.to_string();
+        }
+        Ok(result)
     }
 
     fn create_project_details(name: &str, profile: &Profile) -> ProfileDetails {
@@ -531,5 +613,207 @@ mod tests {
                 "grandparent-profile".to_string()
             ]
         );
+    }
+
+    #[test]
+    fn profile_set_add() {
+        let config = indoc!(
+            r#"
+        profiles:
+          default:
+            # This includes a comment
+            api_key: default_key
+            server_url: http://localhost:7001/graphql
+        "#
+        );
+        let expected = indoc!(
+            r#"
+        profiles:
+          default:
+            # This includes a comment
+            api_key: default_key
+            server_url: http://localhost:7001/graphql
+
+          grandparent-profile:
+            api_key: grandparent_key
+        "#
+        );
+
+        let result = ConfigFile::set_profile(
+            config,
+            "grandparent-profile",
+            Some("grandparent_key"),
+            None,
+            None,
+            None,
+        );
+        assert!(result.is_ok());
+        let result = result.unwrap();
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn profile_set_update_replace_key() {
+        let config = indoc!(
+            r#"
+        profiles:
+          default:
+            # This includes a comment
+            api_key: default_key
+            server_url: http://localhost:7001/graphql
+
+          grandparent-profile:
+            server_url: https://localhost:8000
+            # Comments get lost, keys reordered, and quotes maybe added -- reasonable first pass
+            api_key: grandparent_key
+        "#
+        );
+        let expected = indoc!(
+            r#"
+        profiles:
+          default:
+            # This includes a comment
+            api_key: default_key
+            server_url: http://localhost:7001/graphql
+
+          grandparent-profile:
+            api_key: my_new_key
+            server_url: "https://localhost:8000"
+        "#
+        );
+
+        let result = ConfigFile::set_profile(
+            config,
+            "grandparent-profile",
+            Some("my_new_key"),
+            None,
+            None,
+            None,
+        );
+        assert!(result.is_ok());
+        let result = result.unwrap();
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn profile_set_update_add_project() {
+        let config = indoc!(
+            r#"
+        profiles:
+          default:
+            # comment lost -- not ideal
+            api_key: default_key
+            server_url: http://localhost:7001/graphql
+
+          grandparent-profile:
+            server_url: https://localhost:8000
+            # Comments get lost, keys reordered, and quotes maybe added -- reasonable first pass
+            api_key: grandparent_key
+        "#
+        );
+        let expected = indoc!(
+            r#"
+        profiles:
+          default:
+            api_key: default_key
+            project: YourFirstProject
+            server_url: "http://localhost:7001/graphql"
+
+          grandparent-profile:
+            server_url: https://localhost:8000
+            # Comments get lost, keys reordered, and quotes maybe added -- reasonable first pass
+            api_key: grandparent_key
+        "#
+        );
+
+        let result = ConfigFile::set_profile(
+            config,
+            "default",
+            None,
+            None,
+            None,
+            Some("YourFirstProject"),
+        );
+        assert!(result.is_ok());
+        let result = result.unwrap();
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn profile_set_empty_not_added() {
+        let config = indoc!(
+            r#"
+        profiles:
+          default:
+            # comment lost -- not ideal
+            api_key: default_key
+            server_url: http://localhost:7001/graphql
+
+          grandparent-profile:
+            server_url: https://localhost:8000
+            # Comments get lost, keys reordered, and quotes maybe added -- reasonable first pass
+            api_key: grandparent_key
+        "#
+        );
+        let result = ConfigFile::set_profile(config, "new-profile-name", None, None, None, None);
+        assert!(result.is_ok());
+        let result = result.unwrap();
+        assert_eq!(result, config);
+    }
+
+    #[test]
+    fn profile_set_unchanged() {
+        let config = indoc!(
+            r#"
+        profiles:
+          default:
+            # comment lost -- not ideal
+            api_key: default_key
+            server_url: http://localhost:7001/graphql
+
+          grandparent-profile:
+            server_url: https://localhost:8000
+            # Comments get lost, keys reordered, and quotes maybe added -- reasonable first pass
+            api_key: grandparent_key
+        "#
+        );
+        let result =
+            ConfigFile::set_profile(config, "default", Some("default_key"), None, None, None);
+        assert!(result.is_ok());
+        let result = result.unwrap();
+        assert_eq!(result, config);
+    }
+
+    #[test]
+    fn profile_set_remains() {
+        let config = indoc!(
+            r#"
+        profiles:
+          default:
+            # comment lost -- not ideal
+            api_key: default_key
+            server_url: http://localhost:7001/graphql
+
+          grandparent-profile:
+            # Comments get lost, keys reordered, and quotes maybe added -- reasonable first pass
+            api_key: grandparent_key
+        "#
+        );
+        let expected = indoc!(
+            r#"
+        profiles:
+          default:
+            # comment lost -- not ideal
+            api_key: default_key
+            server_url: http://localhost:7001/graphql
+
+          grandparent-profile: {}
+        "#
+        );
+        let result =
+            ConfigFile::set_profile(config, "grandparent-profile", Some(""), None, None, None);
+        assert!(result.is_ok());
+        let result = result.unwrap();
+        assert_eq!(result, expected);
     }
 }
