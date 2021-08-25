@@ -1,6 +1,6 @@
 use crate::cli::{
     binary_name, CONFIRM_FLAG, DELETE_SUBCMD, FORMAT_OPT, GET_SUBCMD, KEY_ARG, LIST_SUBCMD,
-    PARAM_TIME_ARG, RENAME_OPT, SECRETS_FLAG, SET_SUBCMD, VALUES_FLAG,
+    PARAM_TIME_ARG, RENAME_OPT, SECRETS_FLAG, SET_SUBCMD, SHOW_TIMES_FLAG, VALUES_FLAG,
 };
 use crate::config::DEFAULT_ENV_NAME;
 use crate::database::{
@@ -202,6 +202,7 @@ fn proc_param_env(
     let param_name = subcmd_args.value_of(KEY_ARG).unwrap();
     let as_of = parse_datetime(subcmd_args.value_of(PARAM_TIME_ARG));
     let show_secrets = subcmd_args.is_present(SECRETS_FLAG);
+    let show_times = subcmd_args.is_present(SHOW_TIMES_FLAG);
     let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
     let all_envs = subcmd_args.is_present("all");
     let proj_id = resolved.project_id();
@@ -232,7 +233,12 @@ fn proc_param_env(
     let mut errors: Vec<String> = vec![];
 
     let mut table = Table::new("parameter");
-    table.set_header(&["Environment", "Value", "FQN", "JMES path"]);
+    let mut hdr = vec!["Environment", "Value", "FQN", "JMES path"];
+    if show_times {
+        hdr.push("Created At");
+        hdr.push("Modified At");
+    }
+    table.set_header(&hdr);
     for url in url_keys {
         let env_name = env_url_map.get(&url).unwrap_or(&default_env);
         let details = param_values.get(&url).unwrap_or(&default_param);
@@ -244,12 +250,17 @@ fn proc_param_env(
             || !details.fqn.is_empty()
             || !details.jmes_path.is_empty()
         {
-            table.add_row(vec![
+            let mut row = vec![
                 env_name.clone(),
                 details.value.clone(),
                 details.fqn.clone(),
                 details.jmes_path.clone(),
-            ]);
+            ];
+            if show_times {
+                row.push(details.created_at.clone());
+                row.push(details.modified_at.clone());
+            }
+            table.add_row(row);
             added = true;
         }
     }
@@ -344,7 +355,8 @@ fn proc_param_list(
     let env_id = resolved.environment_id();
     let as_of = parse_datetime(subcmd_args.value_of(PARAM_TIME_ARG));
     let show_secrets = subcmd_args.is_present(SECRETS_FLAG);
-    let show_values = subcmd_args.is_present(VALUES_FLAG) || show_secrets;
+    let show_times = subcmd_args.is_present(SHOW_TIMES_FLAG);
+    let show_values = subcmd_args.is_present(VALUES_FLAG) || show_secrets || show_times;
     let mut details =
         parameters.get_parameter_details(rest_cfg, proj_id, env_id, !show_secrets, as_of)?;
     let references = subcmd_args.is_present("dynamic");
@@ -370,31 +382,41 @@ fn proc_param_list(
         let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
         let mut errors: Vec<String> = vec![];
         let mut table = Table::new("parameter");
-
-        if !references {
-            table.set_header(&["Name", "Value", "Source", "Type", "Secret", "Description"]);
+        let mut hdr = if !references {
+            vec!["Name", "Value", "Source", "Type", "Secret", "Description"]
         } else {
-            table.set_header(&["Name", "FQN", "JMES"]);
+            vec!["Name", "FQN", "JMES"]
+        };
+        if show_times {
+            hdr.push("Created At");
+            hdr.push("Modified At");
         }
+        table.set_header(&hdr);
 
         for entry in details {
             if !entry.error.is_empty() {
                 errors.push(format_param_error(&entry.key, &entry.error));
             }
+            let mut row: Vec<String>;
             if !references {
                 let type_str = if entry.dynamic { "dynamic" } else { "static" };
                 let secret_str = if entry.secret { "true" } else { "false" };
-                table.add_row(vec![
+                row = vec![
                     entry.key,
                     entry.value,
                     entry.env_name,
                     type_str.to_string(),
                     secret_str.to_string(),
                     entry.description,
-                ]);
+                ];
             } else {
-                table.add_row(vec![entry.key, entry.fqn, entry.jmes_path]);
+                row = vec![entry.key, entry.fqn, entry.jmes_path];
             }
+            if show_times {
+                row.push(entry.created_at);
+                row.push(entry.modified_at);
+            }
+            table.add_row(row);
         }
         table.render(fmt)?;
 

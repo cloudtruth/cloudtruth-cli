@@ -33,6 +33,8 @@ pub struct ParameterDetails {
     pub dynamic: bool,
     pub fqn: String,
     pub jmes_path: String,
+    pub created_at: String,
+    pub modified_at: String,
 
     // captures errors when fetching dynamic parameters
     pub error: String,
@@ -48,6 +50,8 @@ impl ParameterDetails {
             "jmes-path" => self.jmes_path.clone(),
             "description" => self.description.clone(),
             "secret" => format!("{}", self.secret),
+            "created-at" => self.created_at.clone(),
+            "modified-at" => self.modified_at.clone(),
             _ => format!("Unhandled property name '{}'", property_name),
         }
     }
@@ -84,6 +88,8 @@ impl Default for ParameterDetails {
             dynamic: false,
             fqn: "".to_string(),
             jmes_path: "".to_string(),
+            created_at: "".to_string(),
+            modified_at: "".to_string(),
             error: "".to_string(),
         }
     }
@@ -137,6 +143,8 @@ impl From<&Parameter> for ParameterDetails {
             dynamic: env_value.dynamic.unwrap_or(false),
             fqn: env_value.dynamic_fqn.clone().unwrap_or_default(),
             jmes_path: env_value.dynamic_filter.clone().unwrap_or_default(),
+            created_at: env_value.created_at.clone(),
+            modified_at: env_value.modified_at.clone(),
 
             error: env_value.dynamic_error.clone().unwrap_or_default(),
         }
