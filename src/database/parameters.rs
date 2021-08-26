@@ -70,6 +70,8 @@ impl ParameterDetails {
         self.dynamic = env_value.dynamic.unwrap_or(false);
         self.fqn = env_value.dynamic_fqn.clone().unwrap_or_default();
         self.jmes_path = env_value.dynamic_filter.clone().unwrap_or_default();
+        self.created_at = env_value.created_at.clone();
+        self.modified_at = env_value.modified_at.clone();
         self.error = env_value.dynamic_error.clone().unwrap_or_default();
     }
 }

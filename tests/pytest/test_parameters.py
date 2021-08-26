@@ -1,6 +1,9 @@
+import datetime
 import os
 
+from typing import Tuple, Dict
 from testcase import TestCase, DEFAULT_ENV_NAME, REDACTED, DEFAULT_PARAM_VALUE
+from testcase import PROP_CREATED, PROP_MODIFIED, PROP_VALUE
 
 
 class TestParameters(TestCase):
@@ -882,6 +885,9 @@ SECOND_SECRET='sensitive value with spaces'
         result = self.run_cli(cmd_env, sub_cmd + "list --dynamic -v -s")
         self.assertTrue(result.out_contains_value(empty_msg))
 
+        result = self.run_cli(cmd_env, sub_cmd + "list --dynamic -v -s --show-times")
+        self.assertTrue(result.out_contains_value(empty_msg))
+
         # cleanup
         self.delete_project(cmd_env, proj_name)
 
@@ -1069,7 +1075,7 @@ parameter:
         for param_name in names:
             # create the initial parameter
             self.set_param(cmd_env, proj_name, param_name, param_value)
-            self.verify_param(cmd_env, proj_name, param_name, param_value, secret=False)
+            self.verify_param(cmd_env, proj_name, param_name, param_value)
 
             # rename it
             temp_name = "foo"
@@ -1170,6 +1176,35 @@ Parameter,{env_a},{env_b}
 {param2},{value2a},{value2b}
 """)
 
+        def split_time_strings(value: str) -> Tuple:
+            # the values includes an extra '\n' for improved display in the table, and the Python
+            # parser does not like the trailing 'Z'.
+            return value.replace("\n", "").replace("\'", "").replace("Z", "").split(",")
+
+        # check that we get back timestamp properties
+        diff_json_cmd = sub_cmd + f"diff '{env_a}' '{env_b}' -f json "
+        result = self.run_cli(cmd_env, diff_json_cmd + "-p created-at --property modified-at")
+        self.assertEqual(result.return_value, 0)
+        output = eval(result.out())
+
+        p1_entry = output["parameter"][0]
+        self.assertEqual(p1_entry["Parameter"], param1)
+        (created_a, modified_a) = split_time_strings(p1_entry[env_a])
+        self.assertIsNotNone(datetime.datetime.fromisoformat(created_a))
+        self.assertIsNotNone(datetime.datetime.fromisoformat(modified_a))
+        (created_b, modified_b) = split_time_strings(p1_entry[env_b])
+        self.assertIsNotNone(datetime.datetime.fromisoformat(created_b))
+        self.assertIsNotNone(datetime.datetime.fromisoformat(modified_b))
+
+        p2_entry = output["parameter"][1]
+        self.assertEqual(p2_entry["Parameter"], param2)
+        (created_a, modified_a) = split_time_strings(p2_entry[env_a])
+        self.assertIsNotNone(datetime.datetime.fromisoformat(created_a))
+        self.assertIsNotNone(datetime.datetime.fromisoformat(modified_a))
+        (created_b, modified_b) = split_time_strings(p2_entry[env_b])
+        self.assertIsNotNone(datetime.datetime.fromisoformat(created_b))
+        self.assertIsNotNone(datetime.datetime.fromisoformat(modified_b))
+
         # when specifying properties where there are no diffs, we get nothing
         result = self.run_cli(cmd_env, diff_cmd + "-s --property fqn")
         self.assertIn("No parameters or differences in compared properties found", result.out())
@@ -1191,6 +1226,100 @@ Parameter,{env_a},{env_b}
         result = self.run_cli(cmd_env, sub_cmd + f"differences '{env_a}' 'missing'")
         self.assertNotEqual(result.return_value, 0)
         self.assertIn("Did not find environment 'missing'", result.err())
+
+        # cleanup
+        self.delete_environment(cmd_env, env_a)
+        self.delete_environment(cmd_env, env_b)
+        self.delete_project(cmd_env, proj_name)
+
+    def test_parameter_times(self):
+        base_cmd = self.get_cli_base_cmd()
+        cmd_env = self.get_cmd_env()
+
+        # add a new project
+        proj_name = self.make_name("test-param-times")
+        self.create_project(cmd_env, proj_name)
+
+        # add a couple environments
+        env_a = self.make_name("env-a-time")
+        self.create_environment(cmd_env, env_a)
+        env_b = self.make_name("env-b-time")
+        self.create_environment(cmd_env, env_b)
+
+        param1 = "some_param"
+        value_a1 = "value a - first"
+        value_a2 = "value a - second"
+        value_b1 = "value B1"
+        value_b2 = "value B2"
+        self.set_param(cmd_env, proj_name, param1, value_a1, env=env_a)
+        self.set_param(cmd_env, proj_name, param1, value_b1, env=env_b)
+
+        # fetch complete details for first set
+        details_a1 = self.get_param(cmd_env, proj_name, param1, env=env_a)
+        self.assertIsNotNone(details_a1)
+        self.assertEqual(details_a1.get("Value"), value_a1)
+        details_b1 = self.get_param(cmd_env, proj_name, param1, env=env_b)
+        self.assertIsNotNone(details_b1)
+        self.assertEqual(details_b1.get("Value"), value_b1)
+
+        # get the newest time from the first set of changes
+        modified_at = details_b1.get(PROP_MODIFIED)
+
+        # update values
+        self.set_param(cmd_env, proj_name, param1, value_a2, env=env_a)
+        self.set_param(cmd_env, proj_name, param1, value_b2, env=env_b)
+
+        # sanity checks on updated values
+        details_a2 = self.get_param(cmd_env, proj_name, param1, env=env_a)
+        self.assertIsNotNone(details_a2)
+        self.assertEqual(details_a2.get("Value"), value_a2)
+        details_b2 = self.get_param(cmd_env, proj_name, param1, env=env_b)
+        self.assertIsNotNone(details_b2)
+        self.assertEqual(details_b2.get("Value"), value_b2)
+
+        ####################
+        # verify the 'get' command returns the correct values
+        # NOTE: this leverages the verify_param(), since it uses the 'param get' command
+        self.verify_param(cmd_env, proj_name, param1, value_a1, env=env_a, time=details_a1.get(PROP_MODIFIED))
+        self.verify_param(cmd_env, proj_name, param1, value_b1, env=env_b, time=details_b1.get(PROP_MODIFIED))
+
+        self.verify_param(cmd_env, proj_name, param1, value_a2, env=env_a, time=details_a2.get(PROP_MODIFIED))
+        self.verify_param(cmd_env, proj_name, param1, value_b2, env=env_b, time=details_b2.get(PROP_MODIFIED))
+
+        ####################
+        # verify the 'list' command returns the correct values
+        # NOTE: this leverages the get_param(), since it uses the 'param list' command
+        self.assertEqual(details_a2, self.get_param(cmd_env, proj_name, param1, env=env_a))
+        self.assertEqual(details_b2, self.get_param(cmd_env, proj_name, param1, env=env_b))
+
+        self.assertEqual(details_a1, self.get_param(cmd_env, proj_name, param1, env=env_a, time=modified_at))
+        self.assertEqual(details_b1, self.get_param(cmd_env, proj_name, param1, env=env_b, time=modified_at))
+
+        ####################
+        # verify the 'environments' command returns the correct values
+        def equal_properties(entry: Dict, details: Dict) -> bool:
+            return (entry.get(PROP_VALUE) == details.get(PROP_VALUE)
+                    and entry.get(PROP_CREATED) == details.get(PROP_CREATED)
+                    and entry.get(PROP_MODIFIED) == details.get(PROP_MODIFIED))
+
+        param_cmd = base_cmd + f"--project '{proj_name}' param "
+        env_cmd = param_cmd + f"env '{param1}' --show-times --format json "
+        result = self.run_cli(cmd_env, env_cmd)
+        data = eval(result.out())
+        for item in data["parameter"]:
+            if item.get("Environment") == env_a:
+                self.assertTrue(equal_properties(item, details_a2))
+            if item.get("Environment") == env_b:
+                self.assertTrue(equal_properties(item, details_b2))
+
+        env_cmd += f"--time {modified_at}"
+        result = self.run_cli(cmd_env, env_cmd)
+        data = eval(result.out())
+        for item in data["parameter"]:
+            if item.get("Environment") == env_a:
+                self.assertTrue(equal_properties(item, details_a1))
+            if item.get("Environment") == env_b:
+                self.assertTrue(equal_properties(item, details_b1))
 
         # cleanup
         self.delete_environment(cmd_env, env_a)
