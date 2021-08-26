@@ -30,6 +30,7 @@ use crate::projects::process_project_command;
 use crate::run::process_run_command;
 use crate::subprocess::SubProcess;
 use crate::templates::process_templates_command;
+use chrono::{DateTime, Datelike, NaiveDate, NaiveDateTime, NaiveTime, Utc};
 use clap::ArgMatches;
 use color_eyre::eyre::Result;
 use color_eyre::Report;
@@ -45,6 +46,7 @@ use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 const DEL_CONFIRM: Option<bool> = Some(false);
 const REDACTED: &str = "*****";
 const FILE_READ_ERR: &str = "Failed to read value from file.";
+const ISO8601: &str = "%Y-%m-%dT%H:%M:%S%.fZ";
 pub const SEPARATOR: &str = "=========================";
 pub const API_KEY_PAGE: &str = "\"API Access\"";
 
@@ -295,9 +297,32 @@ fn process_completion_command(subcmd_args: &ArgMatches) {
 /// Takes an optional CLI argument (`Option<&str>`) attempts to parse it to a valid `DateTime`, and
 /// returns the ISO format that the API expects.
 fn parse_datetime(input: Option<&str>) -> Option<String> {
-    #[allow(clippy::manual_map)] // temporarily until we do some real processing
     if let Some(orig) = input {
-        Some(orig.to_string())
+        if let Ok(rfc2822) = DateTime::parse_from_rfc2822(orig) {
+            Some(rfc2822.format(ISO8601).to_string())
+        } else if let Ok(rfc3339) = DateTime::parse_from_rfc3339(orig) {
+            Some(rfc3339.format(ISO8601).to_string())
+        } else if let Ok(datetime) = NaiveDateTime::parse_from_str(orig, ISO8601) {
+            Some(datetime.format(ISO8601).to_string())
+        } else if let Ok(time_only) = NaiveTime::parse_from_str(orig, "%H:%M:%S%.f") {
+            let now = Utc::now();
+            let new_str = format!(
+                "{}-{}-{}T{}Z",
+                now.year(),
+                now.month(),
+                now.day(),
+                time_only.to_string()
+            );
+            let dt = NaiveDateTime::parse_from_str(&new_str, ISO8601).unwrap();
+            Some(dt.format(ISO8601).to_string())
+        } else if let Ok(full_date) = NaiveDate::parse_from_str(orig, "%Y-%m-%d") {
+            let new_str = format!("{}T00:00:00Z", full_date.to_string());
+            let dt = NaiveDateTime::parse_from_str(&new_str, ISO8601).unwrap();
+            Some(dt.format(ISO8601).to_string())
+        } else {
+            // TODO: throw an error here? or just pass through the string?
+            Some(orig.to_string())
+        }
     } else {
         None
     }
@@ -516,15 +541,41 @@ mod main_test {
 
     #[test]
     fn timedate_parsing() {
-        assert_eq!(parse_datetime(None), None);
+        // full RFC2822
+        let now = Utc::now();
+        let input = now.to_rfc2822();
+        let output = parse_datetime(Some(&input)).unwrap();
+        assert_eq!(now.format("%FT%TZ").to_string(), output); // no fractional seconds
 
-        let input = Some("2021-08-25T14:27:33.11234");
+        // full RFC23339
+        let now = Utc::now();
+        let input = now.to_rfc3339();
+        let output = parse_datetime(Some(&input)).unwrap();
+        assert_eq!(now.format(ISO8601).to_string(), output);
+
+        // ISO8601
+        let input = Some("2021-07-27T18:34:23.270824Z");
         let expected = input.map(String::from);
         assert_eq!(parse_datetime(input), expected);
+
+        // time only, without milliseconds
+        let output = parse_datetime(Some("02:04:08")).unwrap();
+        assert_eq!(true, output.contains("02:04:08"));
+
+        // time only, with milliseconds
+        let output = parse_datetime(Some("03:05:12.345")).unwrap();
+        assert_eq!(true, output.contains("T03:05:12.345Z"));
+
+        // full date (no time)
+        let output = parse_datetime(Some("2020-02-02")).unwrap();
+        assert_eq!(output, String::from("2020-02-02T00:00:00Z"));
 
         // unfortunately, it lets this through too!
         let input = Some("this is bogus");
         let expected = input.map(String::from);
         assert_eq!(parse_datetime(input), expected);
+
+        // finally, no option given
+        assert_eq!(parse_datetime(None), None);
     }
 }
