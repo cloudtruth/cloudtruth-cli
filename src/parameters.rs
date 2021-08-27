@@ -318,6 +318,7 @@ fn proc_param_get(
     resolved: &ResolvedIds,
 ) -> Result<()> {
     let key = subcmd_args.value_of(KEY_ARG).unwrap();
+    let show_details = subcmd_args.is_present("details");
     let as_of = parse_datetime(subcmd_args.value_of(AS_OF_ARG));
     let proj_id = resolved.project_id();
     let env_id = resolved.environment_id();
@@ -328,11 +329,42 @@ fn proc_param_get(
         // we need to display something sensible to the user.
         let mut param_value = "".to_string();
         let mut err_msg = "".to_string();
-        if let Some(param) = details {
-            param_value = param.value;
-            err_msg = param.error;
+        if let Some(ref param) = details {
+            param_value = param.value.clone();
+            err_msg = param.error.clone();
         }
-        println!("{}", param_value);
+        if !show_details {
+            println!("{}", param_value);
+        } else if let Some(param) = details {
+            printdoc!(
+                r#"
+                  Name: {}:
+                  Value: {}
+                  Source: {}
+                  Secret: {}
+                  Description: {}
+                  FQN: {}
+                  JMES-path: {}
+                  Parameter-ID: {}
+                  Value-ID: {}
+                  Environment-ID: {}
+                  Created At: {}
+                  Modified At: {}
+                "#,
+                param.key,
+                param.value,
+                resolved.environment_display_name(),
+                param.secret,
+                param.description,
+                param.fqn,
+                param.jmes_path,
+                param.id,
+                param.val_id,
+                env_id,
+                param.created_at,
+                param.modified_at,
+            );
+        }
         if !err_msg.is_empty() {
             warning_message(err_msg)?;
         }

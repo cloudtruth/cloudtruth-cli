@@ -69,6 +69,15 @@ my_param,cRaZy value,default,static,false,this is just a test description
         self.assertEqual(result.return_value, 0)
         self.assertIn(f"{value1}", result.out())
 
+        # get the parameter details
+        result = self.run_cli(cmd_env, sub_cmd + f"get {key1} --details")
+        self.assertEqual(result.return_value, 0)
+        self.assertIn(f"Name: {key1}", result.out())
+        self.assertIn(f"Value: {value1}", result.out())
+        self.assertIn("Source: default", result.out())
+        self.assertIn("Secret: false", result.out())
+        self.assertIn(f"Description: {desc1}", result.out())
+
         # idempotent -- same value
         result = self.run_cli(cmd_env, sub_cmd + f"set {key1} --value '{value1}'")
         self.assertEqual(result.return_value, 0)
@@ -223,6 +232,15 @@ my_param,super-SENSITIVE-vAluE,default,static,true,my secret value
         result = self.run_cli(cmd_env, sub_cmd + f"get {key1}")
         self.assertEqual(result.return_value, 0)
         self.assertIn(f"{value1}", result.out())
+
+        # get the parameter details
+        result = self.run_cli(cmd_env, sub_cmd + f"get {key1} --details")
+        self.assertEqual(result.return_value, 0)
+        self.assertIn(f"Name: {key1}", result.out())
+        self.assertIn(f"Value: {value1}", result.out())
+        self.assertIn("Source: default", result.out())
+        self.assertIn("Secret: true", result.out())
+        self.assertIn(f"Description: {desc1}", result.out())
 
         # idempotent -- same value
         result = self.run_cli(cmd_env, sub_cmd + f"set {key1} --value '{value1}'")
@@ -1257,10 +1275,10 @@ Parameter,{env_a},{env_b}
         # fetch complete details for first set
         details_a1 = self.get_param(cmd_env, proj_name, param1, env=env_a)
         self.assertIsNotNone(details_a1)
-        self.assertEqual(details_a1.get("Value"), value_a1)
+        self.assertEqual(details_a1.get(PROP_VALUE), value_a1)
         details_b1 = self.get_param(cmd_env, proj_name, param1, env=env_b)
         self.assertIsNotNone(details_b1)
-        self.assertEqual(details_b1.get("Value"), value_b1)
+        self.assertEqual(details_b1.get(PROP_VALUE), value_b1)
 
         # get the newest time from the first set of changes
         modified_at = details_b1.get(PROP_MODIFIED)
@@ -1272,10 +1290,10 @@ Parameter,{env_a},{env_b}
         # sanity checks on updated values
         details_a2 = self.get_param(cmd_env, proj_name, param1, env=env_a)
         self.assertIsNotNone(details_a2)
-        self.assertEqual(details_a2.get("Value"), value_a2)
+        self.assertEqual(details_a2.get(PROP_VALUE), value_a2)
         details_b2 = self.get_param(cmd_env, proj_name, param1, env=env_b)
         self.assertIsNotNone(details_b2)
-        self.assertEqual(details_b2.get("Value"), value_b2)
+        self.assertEqual(details_b2.get(PROP_VALUE), value_b2)
 
         ####################
         # verify the 'get' command returns the correct values
@@ -1285,6 +1303,20 @@ Parameter,{env_a},{env_b}
 
         self.verify_param(cmd_env, proj_name, param1, value_a2, env=env_a, time=details_a2.get(PROP_MODIFIED))
         self.verify_param(cmd_env, proj_name, param1, value_b2, env=env_b, time=details_b2.get(PROP_MODIFIED))
+
+        # check with details turned on
+        cmd = base_cmd + f"--project '{proj_name}' --env '{env_a}' param get '{param1}' -d"
+        result = self.run_cli(cmd_env, cmd)
+        self.assertIn(f"{PROP_CREATED}: {details_a2.get(PROP_CREATED)}", result.out())
+        self.assertIn(f"{PROP_MODIFIED}: {details_a2.get(PROP_MODIFIED)}", result.out())
+        self.assertIn(f"{PROP_VALUE}: {details_a2.get(PROP_VALUE)}", result.out())
+
+        # time filtered with details with other environment
+        cmd = base_cmd + f"--project '{proj_name}' --env '{env_b}' param get '{param1}' -d --as-of {modified_at}"
+        result = self.run_cli(cmd_env, cmd)
+        self.assertIn(f"{PROP_CREATED}: {details_b1.get(PROP_CREATED)}", result.out())
+        self.assertIn(f"{PROP_MODIFIED}: {details_b1.get(PROP_MODIFIED)}", result.out())
+        self.assertIn(f"{PROP_VALUE}: {details_b1.get(PROP_VALUE)}", result.out())
 
         ####################
         # verify the 'list' command returns the correct values
