@@ -16,7 +16,6 @@ pub struct Parameters {}
 
 static DEFAULT_PARAM_VALUE: OnceCell<Value> = OnceCell::new();
 const DEFAULT_VALUE: &str = "-";
-const AS_OF: Option<String> = None;
 
 #[derive(Clone, Debug)]
 pub struct ParameterDetails {
@@ -34,6 +33,8 @@ pub struct ParameterDetails {
     pub dynamic: bool,
     pub fqn: String,
     pub jmes_path: String,
+    pub created_at: String,
+    pub modified_at: String,
 
     // captures errors when fetching dynamic parameters
     pub error: String,
@@ -49,6 +50,8 @@ impl ParameterDetails {
             "jmes-path" => self.jmes_path.clone(),
             "description" => self.description.clone(),
             "secret" => format!("{}", self.secret),
+            "created-at" => self.created_at.clone(),
+            "modified-at" => self.modified_at.clone(),
             _ => format!("Unhandled property name '{}'", property_name),
         }
     }
@@ -67,6 +70,8 @@ impl ParameterDetails {
         self.dynamic = env_value.dynamic.unwrap_or(false);
         self.fqn = env_value.dynamic_fqn.clone().unwrap_or_default();
         self.jmes_path = env_value.dynamic_filter.clone().unwrap_or_default();
+        self.created_at = env_value.created_at.clone();
+        self.modified_at = env_value.modified_at.clone();
         self.error = env_value.dynamic_error.clone().unwrap_or_default();
     }
 }
@@ -85,6 +90,8 @@ impl Default for ParameterDetails {
             dynamic: false,
             fqn: "".to_string(),
             jmes_path: "".to_string(),
+            created_at: "".to_string(),
+            modified_at: "".to_string(),
             error: "".to_string(),
         }
     }
@@ -138,6 +145,8 @@ impl From<&Parameter> for ParameterDetails {
             dynamic: env_value.dynamic.unwrap_or(false),
             fqn: env_value.dynamic_fqn.clone().unwrap_or_default(),
             jmes_path: env_value.dynamic_filter.clone().unwrap_or_default(),
+            created_at: env_value.created_at.clone(),
+            modified_at: env_value.modified_at.clone(),
 
             error: env_value.dynamic_error.clone().unwrap_or_default(),
         }
@@ -231,7 +240,7 @@ impl Parameters {
         key_name: &str,
     ) -> Result<Option<String>, Error<ProjectsParametersValuesDestroyError>> {
         // The only delete mechanism is by parameter ID, so start by querying the parameter info.
-        let response = self.get_details_by_name(rest_cfg, proj_id, env_id, key_name, true);
+        let response = self.get_details_by_name(rest_cfg, proj_id, env_id, key_name, true, None);
 
         if let Ok(Some(details)) = response {
             if details.env_url.contains(env_id) {
@@ -288,12 +297,13 @@ impl Parameters {
         proj_id: &str,
         env_id: &str,
         key_name: &str,
+        as_of: Option<String>,
     ) -> Option<String> {
         // NOTE: should say "No Values" when that's an option
         let response = projects_parameters_list(
             rest_cfg,
             proj_id,
-            AS_OF,
+            as_of,
             Some(env_id),
             Some(true),
             Some(key_name),
@@ -332,11 +342,12 @@ impl Parameters {
         env_id: &str,
         key_name: &str,
         mask_secrets: bool,
+        as_of: Option<String>,
     ) -> Result<Option<ParameterDetails>, Error<ProjectsParametersListError>> {
         let response = projects_parameters_list(
             rest_cfg,
             proj_id,
-            AS_OF,
+            as_of,
             Some(env_id),
             Some(mask_secrets),
             Some(key_name),
@@ -366,9 +377,10 @@ impl Parameters {
         proj_id: &str,
         env_id: &str,
         mask_secrets: bool,
+        as_of: Option<String>,
     ) -> Result<ParameterValueMap, Error<ProjectsParametersListError>> {
         let parameters =
-            self.get_parameter_unresolved_details(rest_cfg, proj_id, env_id, mask_secrets)?;
+            self.get_parameter_unresolved_details(rest_cfg, proj_id, env_id, mask_secrets, as_of)?;
         let mut env_vars = ParameterValueMap::new();
 
         for param in parameters {
@@ -388,9 +400,10 @@ impl Parameters {
         proj_id: &str,
         env_id: &str,
         mask_secrets: bool,
+        as_of: Option<String>,
     ) -> Result<Vec<ParameterDetails>, Error<ProjectsParametersListError>> {
         let mut list =
-            self.get_parameter_unresolved_details(rest_cfg, proj_id, env_id, mask_secrets)?;
+            self.get_parameter_unresolved_details(rest_cfg, proj_id, env_id, mask_secrets, as_of)?;
 
         // now, resolve the source URL to the source environment name
         let environments = Environments::new();
@@ -423,12 +436,13 @@ impl Parameters {
         proj_id: &str,
         env_id: &str,
         mask_secrets: bool,
+        as_of: Option<String>,
     ) -> Result<Vec<ParameterDetails>, Error<ProjectsParametersListError>> {
         let mut list: Vec<ParameterDetails> = Vec::new();
         let response = projects_parameters_list(
             rest_cfg,
             proj_id,
-            AS_OF,
+            as_of,
             Some(env_id),
             Some(mask_secrets),
             None,
@@ -454,9 +468,10 @@ impl Parameters {
         proj_id: &str,
         env_id: &str,
         mask_secrets: bool,
+        as_of: Option<String>,
     ) -> Result<ParameterDetailMap, Error<ProjectsParametersListError>> {
         let mut details =
-            self.get_parameter_unresolved_details(rest_cfg, proj_id, env_id, mask_secrets)?;
+            self.get_parameter_unresolved_details(rest_cfg, proj_id, env_id, mask_secrets, as_of)?;
         self.resolve_environments(env_url_map, &mut details);
         let mut result = ParameterDetailMap::new();
         for entry in details {
@@ -473,12 +488,13 @@ impl Parameters {
         proj_id: &str,
         param_name: &str,
         mask_secrets: bool,
+        as_of: Option<String>,
     ) -> Result<ParameterDetailMap, Error<ProjectsParametersListError>> {
         let mut result = ParameterDetailMap::new();
         let response = projects_parameters_list(
             rest_cfg,
             proj_id,
-            AS_OF,
+            as_of,
             None,
             Some(mask_secrets),
             Some(param_name),

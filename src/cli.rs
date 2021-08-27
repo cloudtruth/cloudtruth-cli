@@ -3,15 +3,17 @@ use clap::{
     Arg, Shell, SubCommand,
 };
 
+pub const AS_OF_ARG: &str = "datetime";
 pub const CONFIRM_FLAG: &str = "confirm";
 pub const DESCRIPTION_OPT: &str = "description";
 pub const FORMAT_OPT: &str = "format";
+pub const KEY_ARG: &str = "KEY";
 pub const NAME_ARG: &str = "NAME";
 pub const RENAME_OPT: &str = "rename";
+pub const SHOW_TIMES_FLAG: &str = "show-time";
 pub const SECRETS_FLAG: &str = "secrets";
 pub const TEMPLATE_FILE_OPT: &str = "FILE";
 pub const VALUES_FLAG: &str = "values";
-pub const KEY_ARG: &str = "KEY";
 
 pub const DELETE_SUBCMD: &str = "delete";
 pub const EDIT_SUBCMD: &str = "edit";
@@ -77,6 +79,20 @@ fn name_arg() -> Arg<'static, 'static> {
 
 fn key_arg() -> Arg<'static, 'static> {
     Arg::with_name(KEY_ARG).required(true).index(1)
+}
+
+fn param_as_of_arg() -> Arg<'static, 'static> {
+    Arg::with_name(AS_OF_ARG)
+        .long("as-of")
+        .takes_value(true)
+        .help("Date/time of parameter value(s)")
+}
+
+fn show_times_arg() -> Arg<'static, 'static> {
+    Arg::with_name(SHOW_TIMES_FLAG)
+        .long("show-times")
+        .takes_value(false)
+        .help("Show create and modified times.")
 }
 
 pub fn build_cli() -> App<'static, 'static> {
@@ -238,10 +254,13 @@ pub fn build_cli() -> App<'static, 'static> {
                         .about("Shows values across environments")
                         .arg(key_arg().help("Name of parameter to show environment values"))
                         .arg(Arg::with_name("all").short("a").long("all").help("Show even unset environments."))
+                        .arg(param_as_of_arg())
+                        .arg(show_times_arg())
                         .arg(table_format_options().help("Format for parameter values"))
                         .arg(secrets_display_flag().help("Display secret values in environments")),
                     SubCommand::with_name(GET_SUBCMD)
                         .about("Gets value for parameter in the selected environment")
+                        .arg(param_as_of_arg())
                         .arg(key_arg().help("Name of parameter to get")),
                     SubCommand::with_name(LIST_SUBCMD)
                         .visible_aliases(LIST_ALIASES)
@@ -250,6 +269,8 @@ pub fn build_cli() -> App<'static, 'static> {
                             .long("dynamic")
                             .help("Display the dynamic values and FQN/JMES path."))
                         .arg(values_flag().help("Display parameter information/values"))
+                        .arg(param_as_of_arg())
+                        .arg(show_times_arg())
                         .arg(table_format_options().help("Format for parameter values data"))
                         .arg(secrets_display_flag().help("Display the secret parameter values")),
                     SubCommand::with_name(SET_SUBCMD)
@@ -305,10 +326,19 @@ pub fn build_cli() -> App<'static, 'static> {
                         .arg(Arg::with_name("properties")
                             .short("p")
                             .long("property")
-                            .possible_values(&["value", "environment", "fqn", "jmes-path", "secret"])
+                            .possible_values(&[
+                                "value",
+                                "environment",
+                                "fqn",
+                                "jmes-path",
+                                "secret",
+                                "created-at",
+                                "modified-at",
+                            ])
                             .multiple(true)
                             .default_value("value")
                             .help("List of the properties to compare."))
+                        .arg(param_as_of_arg())
                         .arg(table_format_options().help("Display difference format"))
                         .arg(secrets_display_flag().help("Show secret values")),
                 ]),
@@ -394,7 +424,8 @@ pub fn build_cli() -> App<'static, 'static> {
                     Arg::with_name("permissive")
                         .long("permissive")
                         .short("p")
-                        .help("Allow CloudTruth application variables through")
+                        .help("Allow CloudTruth application variables through"),
+                    param_as_of_arg(),
                 ])
         )
         .subcommand(
@@ -405,10 +436,7 @@ pub fn build_cli() -> App<'static, 'static> {
                     SubCommand::with_name(DELETE_SUBCMD)
                         .visible_aliases(DELETE_ALIASES)
                         .about("Delete specified CloudTruth project")
-                        .arg(Arg::with_name("NAME")
-                            .index(1)
-                            .required(true)
-                            .help("Project name"))
+                        .arg(name_arg().help("Project name"))
                         .arg(confirm_flag()),
                     SubCommand::with_name(LIST_SUBCMD)
                         .visible_aliases(LIST_ALIASES)
@@ -417,10 +445,7 @@ pub fn build_cli() -> App<'static, 'static> {
                         .arg(table_format_options().help("Format for project values data")),
                     SubCommand::with_name(SET_SUBCMD)
                         .about("Create/update a CloudTruth project")
-                        .arg(Arg::with_name("NAME")
-                            .index(1)
-                            .required(true)
-                            .help("Project name"))
+                        .arg(name_arg().help("Project name"))
                         .arg(rename_option().help("New project name"))
                         .arg(description_option().help("Project's description")),
                 ])

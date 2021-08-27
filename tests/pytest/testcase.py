@@ -36,6 +36,11 @@ SRC_DEFAULT = "default"
 REDACTED = "*****"
 DEFAULT_PARAM_VALUE = "-"
 
+# properties
+PROP_CREATED = "Created At"
+PROP_MODIFIED = "Modified At"
+PROP_VALUE = "Value"
+
 
 def get_cli_base_cmd() -> str:
     """
@@ -283,6 +288,31 @@ class TestCase(unittest.TestCase):
         self.assertEqual(result.return_value, 0)
         return result
 
+    def get_param(
+        self,
+        cmd_env,
+        proj: str,
+        name: str,
+        env: Optional[str] = None,
+        secrets: Optional[bool] = None,
+        time: Optional[str] = None,
+    ) -> Optional[Dict]:
+        cmd = self._base_cmd + f"--project '{proj}' "
+        if env:
+            cmd += f"--env '{env}' "
+        cmd += "param list --show-times --format json "
+        if time:
+            cmd += f"--as-of {time}"
+        if secrets:
+            cmd += "--secrets "
+        result = self.run_cli(cmd_env, cmd)
+        self.assertEqual(result.return_value, 0)
+        parameters = eval(result.out())
+        for item in parameters["parameter"]:
+            if item.get("Name") == name:
+                return item
+        return None
+
     def unset_param(
         self,
         cmd_env,
@@ -308,19 +338,21 @@ class TestCase(unittest.TestCase):
         return result
 
     def verify_param(
-            self,
-            cmd_env,
-            proj: str,
-            name: str,
-            value: str,
-            secret: Optional[bool] = None,
-            env: Optional[str] = None,
-            desc: Optional[str] = None):
+        self,
+        cmd_env,
+        proj: str,
+        name: str,
+        value: str,
+        env: Optional[str] = None,
+        time: Optional[str] = None,
+    ):
         cmd = self._base_cmd + f"--project '{proj}' "
         if env:
             cmd += f"--env '{env}' "
-        cmd += "param "
+        # check the output using the 'get' command
+        cmd += f"param get '{name}' "
+        if time:
+            cmd += f"--as-of '{time}' "
 
-        # check the 'get' output
-        result = self.run_cli(cmd_env, cmd + f"get '{name}'")
+        result = self.run_cli(cmd_env, cmd)
         self.assertIn(value, result.out())

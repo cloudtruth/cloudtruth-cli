@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 
-from testcase import CT_PROFILE, CT_API_KEY
+from testcase import CT_PROFILE, CT_API_KEY, PROP_MODIFIED
 from testcase import TestCase
 
 
@@ -117,3 +117,32 @@ class TestRun(TestCase):
         file = Path(os.getcwd()) / f"{filename}"
         file.unlink(missing_ok=True)  # may not have created the file, but just in case we did
         self.delete_project(cmd_env, proj_name)
+
+    def test_run_time(self):
+        base_cmd = self.get_cli_base_cmd()
+        cmd_env = self.get_cmd_env()
+        proj_name = self.make_name("proj-old-run")
+        param_name = "my_param"
+        first_value = "first-value"
+        second_value = "second-value"
+        printenv = self.get_display_env_command()
+        run_cmd = base_cmd + f"--project '{proj_name}' run "
+
+        self.create_project(cmd_env, proj_name)
+        self.set_param(cmd_env, proj_name, param_name, first_value)
+
+        # get modified time
+        details = self.get_param(cmd_env, proj_name, param_name)
+        orig_modified = details.get(PROP_MODIFIED)
+
+        self.set_param(cmd_env, proj_name, param_name, second_value)
+
+        # run with the time specified
+        result = self.run_cli(cmd_env, run_cmd + f"--as-of {orig_modified} -- {printenv}")
+        self.assertIn(first_value, result.out())
+        self.assertNotIn(second_value, result.out())
+
+        # run again without the time specified, and see the first value
+        result = self.run_cli(cmd_env, run_cmd + f"-- {printenv}")
+        self.assertNotIn(first_value, result.out())
+        self.assertIn(second_value, result.out())
