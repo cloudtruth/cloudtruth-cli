@@ -533,8 +533,7 @@ mod tests {
         }
     }
 
-    #[test]
-    #[serial]
+    #[allow(dead_code)]
     fn get_api_key_from_env() {
         env::set_var(CT_API_KEY, "new_key");
         sync_env(CT_API_KEY, "new_key");
