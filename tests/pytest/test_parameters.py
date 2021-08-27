@@ -1,6 +1,5 @@
 import datetime
 import os
-import unittest
 
 from typing import Tuple, Dict
 from testcase import TestCase, DEFAULT_ENV_NAME, REDACTED, DEFAULT_PARAM_VALUE
@@ -1110,7 +1109,6 @@ parameter:
         # cleanup
         self.delete_project(cmd_env, proj_name)
 
-    @unittest.skip("disabled during development")
     def test_parameter_diff(self):
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
@@ -1143,7 +1141,7 @@ parameter:
         self.set_param(cmd_env, proj_name, param2, value2a, env=env_a, secret=True)
 
         # first set of comparisons
-        diff_cmd = sub_cmd + f"diff '{env_a}' '{env_b}' -f csv "
+        diff_cmd = sub_cmd + f"diff -e '{env_a}' --env '{env_b}' -f csv "
         result = self.run_cli(cmd_env, diff_cmd)
         self.assertEqual(result.return_value, 0)
         self.assertEqual(result.out(), f"""\
@@ -1202,7 +1200,7 @@ Parameter,{env_a},{env_b}
             return value.replace("\n", "").replace("\'", "").replace("Z", "").split(",")
 
         # check that we get back timestamp properties
-        diff_json_cmd = sub_cmd + f"diff '{env_a}' '{env_b}' -f json "
+        diff_json_cmd = sub_cmd + f"diff -e '{env_a}' -e '{env_b}' -f json "
         result = self.run_cli(cmd_env, diff_json_cmd + "-p created-at --property modified-at")
         self.assertEqual(result.return_value, 0)
         output = eval(result.out())
@@ -1233,17 +1231,18 @@ Parameter,{env_a},{env_b}
         # Error cases
 
         # no comparing to yourself
-        result = self.run_cli(cmd_env, sub_cmd + f"difference '{env_a}' '{env_a}'")
+        matched_envs = f"-e '{env_a}' " * 2
+        result = self.run_cli(cmd_env, sub_cmd + f"difference {matched_envs}")
         self.assertEqual(result.return_value, 0)
         self.assertIn("Invalid comparing an environment to itself", result.err())
 
         # first environment DNE
-        result = self.run_cli(cmd_env, sub_cmd + "differ 'charlie-foxtrot' '{env_b}'")
+        result = self.run_cli(cmd_env, sub_cmd + "differ -e 'charlie-foxtrot' -e '{env_b}'")
         self.assertNotEqual(result.return_value, 0)
         self.assertIn("Did not find environment 'charlie-foxtrot'", result.err())
 
         # second environment DNE
-        result = self.run_cli(cmd_env, sub_cmd + f"differences '{env_a}' 'missing'")
+        result = self.run_cli(cmd_env, sub_cmd + f"differences -e '{env_a}' -e 'missing'")
         self.assertNotEqual(result.return_value, 0)
         self.assertIn("Did not find environment 'missing'", result.err())
 
