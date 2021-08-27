@@ -523,10 +523,21 @@ mod tests {
         result
     }
 
+    fn sync_env(name: &str, expected: &str) {
+        loop {
+            if let Ok(curr) = env::var(name) {
+                if expected == &curr {
+                    break;
+                }
+            }
+        }
+    }
+
     #[test]
     #[serial]
     fn get_api_key_from_env() {
         env::set_var(CT_API_KEY, "new_key");
+        sync_env(CT_API_KEY, "new_key");
         let config = Config::load_config(None, Some(DEFAULT_PROF_NAME), None, None).unwrap();
 
         assert_eq!(config.api_key, "new_key");
