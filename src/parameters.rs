@@ -91,23 +91,85 @@ fn proc_param_diff(
     resolved: &ResolvedIds,
 ) -> Result<()> {
     let show_secrets = subcmd_args.is_present(SECRETS_FLAG);
-    let as_of = parse_datetime(subcmd_args.value_of(AS_OF_ARG));
     let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
     let properties: Vec<&str> = subcmd_args.values_of("properties").unwrap().collect();
-    let env1_name = subcmd_args.value_of("ENV1").unwrap();
-    let env2_name = subcmd_args.value_of("ENV2").unwrap();
+    let as_list: Vec<&str> = subcmd_args
+        .values_of(AS_OF_ARG)
+        .unwrap_or_default()
+        .collect();
+    let env_list: Vec<&str> = subcmd_args.values_of("ENV").unwrap_or_default().collect();
+    let max_len: usize = 2;
 
-    if env1_name == env2_name {
+    if env_list.is_empty() && as_list.is_empty() {
         warning_message("Invalid comparing an environment to itself".to_string())?;
+    } else if env_list.len() > max_len || as_list.len() > max_len {
+        if env_list.len() > max_len {
+            warning_message(format!(
+                "Can specify a maximum of {} environment values.",
+                max_len
+            ))?;
+        }
+        if as_list.len() > max_len {
+            warning_message(format!(
+                "Can specify a maximum of {} {} values.",
+                max_len, AS_OF_ARG
+            ))?;
+        }
     } else {
         let proj_id = resolved.project_id();
+        let env1_name: String;
+        let env2_name: String;
+        let as_of1: Option<String>;
+        let as_of2: Option<String>;
+        let header1: String;
+        let header2: String;
+
+        if env_list.len() == 2 {
+            env1_name = env_list[0].to_string();
+            env2_name = env_list[1].to_string();
+        } else if env_list.len() == 1 {
+            env1_name = resolved.environment_display_name();
+            env2_name = env_list[0].to_string();
+        } else {
+            env1_name = resolved.environment_display_name();
+            env2_name = resolved.environment_display_name();
+        }
+
+        if as_list.len() == 2 {
+            as_of1 = Some(as_list[0].to_string());
+            as_of2 = Some(as_list[1].to_string());
+        } else if as_list.len() == 1 {
+            // puts the specified time in other column
+            as_of1 = None;
+            as_of2 = Some(as_list[0].to_string());
+        } else {
+            as_of1 = None;
+            as_of2 = None;
+        }
+
+        if env1_name == env2_name {
+            header1 = as_of1.clone().unwrap_or_else(|| "Current".to_string());
+            header2 = as_of2.clone().unwrap_or_else(|| "Unspecified".to_string());
+        } else if as_of1 == as_of2 {
+            header1 = env1_name.to_string();
+            header2 = env2_name.to_string();
+        } else {
+            header1 = match as_of1 {
+                Some(ref a) => format!("{} ({})", env1_name, a),
+                _ => env1_name.to_string(),
+            };
+            header2 = match as_of2 {
+                Some(ref a) => format!("{} ({})", env2_name, a),
+                _ => env2_name.to_string(),
+            };
+        }
 
         // fetch all environments once, and then determine id's from the same map that is
         // used to resolve the environment names.
         let environments = Environments::new();
         let env_url_map = environments.get_url_name_map(rest_cfg);
-        let env1_id = environments.id_from_map(env1_name, &env_url_map)?;
-        let env2_id = environments.id_from_map(env2_name, &env_url_map)?;
+        let env1_id = environments.id_from_map(&env1_name, &env_url_map)?;
+        let env2_id = environments.id_from_map(&env2_name, &env_url_map)?;
 
         let env1_values = parameters.get_parameter_detail_map(
             rest_cfg,
@@ -115,7 +177,7 @@ fn proc_param_diff(
             proj_id,
             &env1_id,
             !show_secrets,
-            as_of.clone(),
+            as_of1,
         )?;
         let env2_values = parameters.get_parameter_detail_map(
             rest_cfg,
@@ -123,7 +185,7 @@ fn proc_param_diff(
             proj_id,
             &env2_id,
             !show_secrets,
-            as_of,
+            as_of2,
         )?;
         let mut param_list: Vec<String> = env1_values.iter().map(|(k, _)| k.clone()).collect();
         param_list.sort_by_key(|l| l.to_lowercase());
@@ -132,7 +194,7 @@ fn proc_param_diff(
         let mut added = false;
         let mut table = Table::new("parameter");
         let mut errors: Vec<String> = vec![];
-        table.set_header(&["Parameter", env1_name, env2_name]);
+        table.set_header(&["Parameter", &header1, &header2]);
         for param_name in param_list {
             let details1 = env1_values.get(&param_name).unwrap_or(&default_param);
             let details2 = env2_values.get(&param_name).unwrap_or(&default_param);
