@@ -302,7 +302,7 @@ class TestCase(unittest.TestCase):
             cmd += f"--env '{env}' "
         cmd += "param list --show-times --format json "
         if time:
-            cmd += f"-t {time}"
+            cmd += f"--as-of {time}"
         if secrets:
             cmd += "--secrets "
         result = self.run_cli(cmd_env, cmd)
@@ -352,7 +352,7 @@ class TestCase(unittest.TestCase):
         # check the output using the 'get' command
         cmd += f"param get '{name}' "
         if time:
-            cmd += f"-t '{time}' "
+            cmd += f"--as-of '{time}' "
 
         result = self.run_cli(cmd_env, cmd)
         self.assertIn(value, result.out())

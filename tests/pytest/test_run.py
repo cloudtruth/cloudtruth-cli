@@ -138,7 +138,7 @@ class TestRun(TestCase):
         self.set_param(cmd_env, proj_name, param_name, second_value)
 
         # run with the time specified
-        result = self.run_cli(cmd_env, run_cmd + f"--time {orig_modified} -- {printenv}")
+        result = self.run_cli(cmd_env, run_cmd + f"--as-of {orig_modified} -- {printenv}")
         self.assertIn(first_value, result.out())
         self.assertNotIn(second_value, result.out())
 

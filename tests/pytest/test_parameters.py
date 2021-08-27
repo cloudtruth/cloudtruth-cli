@@ -1312,7 +1312,7 @@ Parameter,{env_a},{env_b}
             if item.get("Environment") == env_b:
                 self.assertTrue(equal_properties(item, details_b2))
 
-        env_cmd += f"--time {modified_at}"
+        env_cmd += f"--as-of {modified_at}"
         result = self.run_cli(cmd_env, env_cmd)
         data = eval(result.out())
         for item in data["parameter"]:

@@ -3,12 +3,12 @@ use clap::{
     Arg, Shell, SubCommand,
 };
 
+pub const AS_OF_ARG: &str = "datetime";
 pub const CONFIRM_FLAG: &str = "confirm";
 pub const DESCRIPTION_OPT: &str = "description";
 pub const FORMAT_OPT: &str = "format";
 pub const KEY_ARG: &str = "KEY";
 pub const NAME_ARG: &str = "NAME";
-pub const PARAM_TIME_ARG: &str = "datetime";
 pub const RENAME_OPT: &str = "rename";
 pub const SHOW_TIMES_FLAG: &str = "show-time";
 pub const SECRETS_FLAG: &str = "secrets";
@@ -81,10 +81,9 @@ fn key_arg() -> Arg<'static, 'static> {
     Arg::with_name(KEY_ARG).required(true).index(1)
 }
 
-fn param_time_arg() -> Arg<'static, 'static> {
-    Arg::with_name(PARAM_TIME_ARG)
-        .short("t")
-        .long("time")
+fn param_as_of_arg() -> Arg<'static, 'static> {
+    Arg::with_name(AS_OF_ARG)
+        .long("as-of")
         .takes_value(true)
         .help("Date/time of parameter value(s)")
 }
@@ -255,13 +254,13 @@ pub fn build_cli() -> App<'static, 'static> {
                         .about("Shows values across environments")
                         .arg(key_arg().help("Name of parameter to show environment values"))
                         .arg(Arg::with_name("all").short("a").long("all").help("Show even unset environments."))
-                        .arg(param_time_arg())
+                        .arg(param_as_of_arg())
                         .arg(show_times_arg())
                         .arg(table_format_options().help("Format for parameter values"))
                         .arg(secrets_display_flag().help("Display secret values in environments")),
                     SubCommand::with_name(GET_SUBCMD)
                         .about("Gets value for parameter in the selected environment")
-                        .arg(param_time_arg())
+                        .arg(param_as_of_arg())
                         .arg(key_arg().help("Name of parameter to get")),
                     SubCommand::with_name(LIST_SUBCMD)
                         .visible_aliases(LIST_ALIASES)
@@ -270,7 +269,7 @@ pub fn build_cli() -> App<'static, 'static> {
                             .long("dynamic")
                             .help("Display the dynamic values and FQN/JMES path."))
                         .arg(values_flag().help("Display parameter information/values"))
-                        .arg(param_time_arg())
+                        .arg(param_as_of_arg())
                         .arg(show_times_arg())
                         .arg(table_format_options().help("Format for parameter values data"))
                         .arg(secrets_display_flag().help("Display the secret parameter values")),
@@ -339,7 +338,7 @@ pub fn build_cli() -> App<'static, 'static> {
                             .multiple(true)
                             .default_value("value")
                             .help("List of the properties to compare."))
-                        .arg(param_time_arg())
+                        .arg(param_as_of_arg())
                         .arg(table_format_options().help("Display difference format"))
                         .arg(secrets_display_flag().help("Show secret values")),
                 ]),
@@ -426,7 +425,7 @@ pub fn build_cli() -> App<'static, 'static> {
                         .long("permissive")
                         .short("p")
                         .help("Allow CloudTruth application variables through"),
-                    param_time_arg(),
+                    param_as_of_arg(),
                 ])
         )
         .subcommand(

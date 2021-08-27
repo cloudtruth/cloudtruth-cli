@@ -1,4 +1,4 @@
-use crate::cli::PARAM_TIME_ARG;
+use crate::cli::AS_OF_ARG;
 use crate::database::{OpenApiConfig, Parameters};
 use crate::subprocess::{EnvSettings, Inheritance, SubProcess};
 use crate::{
@@ -17,7 +17,7 @@ pub fn process_run_command(
     sub_proc: &mut SubProcess,
     resolved: &ResolvedIds,
 ) -> Result<()> {
-    let as_of = parse_datetime(subcmd_args.value_of(PARAM_TIME_ARG));
+    let as_of = parse_datetime(subcmd_args.value_of(AS_OF_ARG));
     let mut arguments: Vec<String>;
     let command: String;
 
