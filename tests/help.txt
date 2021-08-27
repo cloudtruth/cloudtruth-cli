@@ -17,7 +17,7 @@ OPTIONS:
 
 SUBCOMMANDS:
     completions      Generate shell completions for this application
-    configuration    Configuration options for this application [aliases: config, conf, con]
+    configuration    Configuration options for this application [aliases: config, conf, con, c]
     environments     Work with CloudTruth environments [aliases: environment, envs, env, e]
     help             Prints this message or the help of the given subcommand(s)
     integrations     Work with CloudTruth integrations [aliases: integration, integrate, integ, int]
@@ -52,8 +52,8 @@ FLAGS:
     -V, --version    Prints version information
 
 SUBCOMMANDS:
-    current    Show the current arguments and their sources. [aliases: curr, cur]
-    edit       Edit your configuration data for this application
+    current    Show the current arguments and their sources. [aliases: curr, cur, c]
+    edit       Edit your configuration data for this application [aliases: ed, e]
     help       Prints this message or the help of the given subcommand(s)
     list       List CloudTruth profiles in the local config file [aliases: ls, l]
 ========================================
@@ -347,9 +347,10 @@ cloudtruth-parameters-get
 Gets value for parameter in the selected environment
 
 USAGE:
-    cloudtruth parameters get [OPTIONS] <KEY>
+    cloudtruth parameters get [FLAGS] [OPTIONS] <KEY>
 
 FLAGS:
+    -d, --details    Show all parameter details
     -h, --help       Prints help information
     -V, --version    Prints version information
 
