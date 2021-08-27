@@ -136,12 +136,12 @@ fn proc_param_diff(
         }
 
         if as_list.len() == 2 {
-            as_of1 = Some(as_list[0].to_string());
-            as_of2 = Some(as_list[1].to_string());
+            as_of1 = parse_datetime(Some(as_list[0]));
+            as_of2 = parse_datetime(Some(as_list[1]));
         } else if as_list.len() == 1 {
             // puts the specified time in other column
             as_of1 = None;
-            as_of2 = Some(as_list[0].to_string());
+            as_of2 = parse_datetime(Some(as_list[0]));
         } else {
             as_of1 = None;
             as_of2 = None;
