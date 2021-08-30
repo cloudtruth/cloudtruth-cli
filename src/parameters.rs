@@ -190,8 +190,12 @@ fn proc_param_diff(
         !show_secrets,
         as_of2,
     )?;
+
+    // get the names from both lists to make sure we get the added/deleted parameters, too
     let mut param_list: Vec<String> = env1_values.iter().map(|(k, _)| k.clone()).collect();
+    param_list.append(&mut env2_values.iter().map(|(k, _)| k.clone()).collect());
     param_list.sort_by_key(|l| l.to_lowercase());
+    param_list.dedup();
 
     let default_param = ParameterDetails::default();
     let mut added = false;
