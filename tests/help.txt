@@ -284,7 +284,7 @@ cloudtruth-parameters-differences
 Show differences between properties from two environments
 
 USAGE:
-    cloudtruth parameters differences [FLAGS] [OPTIONS] <ENV1> <ENV2>
+    cloudtruth parameters differences [FLAGS] [OPTIONS]
 
 FLAGS:
     -h, --help       Prints help information
@@ -292,15 +292,12 @@ FLAGS:
     -V, --version    Prints version information
 
 OPTIONS:
-        --as-of <datetime>            Date/time of parameter value(s)
+    -e, --env <ENV>...                Up to two environment(s) to be compared.
+        --as-of <datetime>...         Up to two times to be compared
     -f, --format <format>             Display difference format [default: table]  [possible values: table, csv, json,
                                       yaml]
     -p, --property <properties>...    List of the properties to compare. [default: value]  [possible values: value,
                                       environment, fqn, jmes-path, secret, created-at, modified-at]
-
-ARGS:
-    <ENV1>    Name of first environment for comparison.
-    <ENV2>    Name of second environment for comparison.
 ========================================
 cloudtruth-parameters-environment 
 Shows values across environments

@@ -122,6 +122,7 @@ def live_test(*args):
     env[CT_TEST_LOG_COMMANDS] = str(int(args.log_commands))
     env[CT_TEST_LOG_OUTPUT] = str(int(args.log_output))
     if args.job_id:
+        print(f"JOB_ID: {args.job_id}")
         env[CT_TEST_JOB_ID] = args.job_id
 
     cli = get_cli_base_cmd()

@@ -1141,7 +1141,7 @@ parameter:
         self.set_param(cmd_env, proj_name, param2, value2a, env=env_a, secret=True)
 
         # first set of comparisons
-        diff_cmd = sub_cmd + f"diff '{env_a}' '{env_b}' -f csv "
+        diff_cmd = sub_cmd + f"diff -e '{env_a}' --env '{env_b}' -f csv "
         result = self.run_cli(cmd_env, diff_cmd)
         self.assertEqual(result.return_value, 0)
         self.assertEqual(result.out(), f"""\
@@ -1200,7 +1200,7 @@ Parameter,{env_a},{env_b}
             return value.replace("\n", "").replace("\'", "").replace("Z", "").split(",")
 
         # check that we get back timestamp properties
-        diff_json_cmd = sub_cmd + f"diff '{env_a}' '{env_b}' -f json "
+        diff_json_cmd = sub_cmd + f"diff -e '{env_a}' -e '{env_b}' -f json "
         result = self.run_cli(cmd_env, diff_json_cmd + "-p created-at --property modified-at")
         self.assertEqual(result.return_value, 0)
         output = eval(result.out())
@@ -1228,22 +1228,93 @@ Parameter,{env_a},{env_b}
         self.assertIn("No parameters or differences in compared properties found", result.out())
 
         #####################
+        # Time diff
+        diff_csv = sub_cmd + "diff -f csv "
+
+        # test single time
+        result = self.run_cli(cmd_env, diff_csv + f"--as-of '{modified_a}'")
+        self.assertEqual(result.return_value, 0)
+        self.assertEqual(result.out(), f"""\
+Parameter,Current,{modified_a}
+{param1},{value1d},-
+{param2},{REDACTED},-
+""")
+
+        # compare 2 points in time (with secrets)
+        result = self.run_cli(cmd_env, diff_csv + f"-s --as-of '{modified_a}' --as-of  '{modified_b}'")
+        self.assertEqual(result.return_value, 0)
+        self.assertEqual(result.out(), f"""\
+Parameter,{modified_a},{modified_b}
+{param1},-,{value1d}
+{param2},-,{value2d}
+""")
+
+        # compare 2 points in time where there are no differences
+        result = self.run_cli(cmd_env, diff_csv + f"--as-of '{created_a}' --as-of '{modified_a}'")
+        self.assertEqual(result.return_value, 0)
+        self.assertIn("No parameters or differences in compared properties found", result.out())
+
+        #####################
+        # Combination environment/time diff
+
+        # if just one env/time, it applies to the right hand side
+        result = self.run_cli(cmd_env, diff_csv + f"-e '{env_a}' --as-of '{modified_a}'")
+        self.assertEqual(result.return_value, 0)
+        self.assertEqual(result.out(), f"""\
+Parameter,default,{env_a} ({modified_a})
+{param1},{value1d},{value1a}
+""")
+
+        # the full set of environments/times (with secrets)
+        cmd = diff_csv + f"-e '{env_a}' --as-of '{modified_a}' -e '{env_b}' --as-of '{modified_b}' -s"
+        result = self.run_cli(cmd_env, cmd)
+        self.assertEqual(result.return_value, 0)
+        self.assertEqual(result.out(), f"""\
+Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
+{param1},{value1a},{same}
+{param2},{value2a},{value2b}
+""")
+
+        #####################
         # Error cases
 
         # no comparing to yourself
-        result = self.run_cli(cmd_env, sub_cmd + f"difference '{env_a}' '{env_a}'")
+        result = self.run_cli(cmd_env, sub_cmd + "difference")
+        self.assertEqual(result.return_value, 0)
+        self.assertIn("Invalid comparing an environment to itself", result.err())
+
+        matched_envs = f"-e '{env_a}' " * 2
+        result = self.run_cli(cmd_env, sub_cmd + f"difference {matched_envs}")
+        self.assertEqual(result.return_value, 0)
+        self.assertIn("Invalid comparing an environment to itself", result.err())
+
+        matched_times = "--as-of 2021-08-27 " * 2
+        result = self.run_cli(cmd_env, sub_cmd + f"difference {matched_times}")
+        self.assertEqual(result.return_value, 0)
+        self.assertIn("Invalid comparing an environment to itself", result.err())
+
+        result = self.run_cli(cmd_env, sub_cmd + f"difference {matched_times} {matched_envs}")
         self.assertEqual(result.return_value, 0)
         self.assertIn("Invalid comparing an environment to itself", result.err())
 
         # first environment DNE
-        result = self.run_cli(cmd_env, sub_cmd + "differ 'charlie-foxtrot' '{env_b}'")
+        result = self.run_cli(cmd_env, sub_cmd + "differ -e 'charlie-foxtrot' -e '{env_b}'")
         self.assertNotEqual(result.return_value, 0)
         self.assertIn("Did not find environment 'charlie-foxtrot'", result.err())
 
         # second environment DNE
-        result = self.run_cli(cmd_env, sub_cmd + f"differences '{env_a}' 'missing'")
+        result = self.run_cli(cmd_env, sub_cmd + f"differences -e '{env_a}' -e 'missing'")
         self.assertNotEqual(result.return_value, 0)
         self.assertIn("Did not find environment 'missing'", result.err())
+
+        # too many specified
+        result = self.run_cli(cmd_env, sub_cmd + "diff -e env1 --env env2 -e env3")
+        self.assertEqual(result.return_value, 0)
+        self.assertIn("Can specify a maximum of 2 environment values", result.err())
+
+        result = self.run_cli(cmd_env, sub_cmd + "diff --as-of 2021-08-01 --as-of 2021-08-02 --as-of 2021-08-03")
+        self.assertEqual(result.return_value, 0)
+        self.assertIn("Can specify a maximum of 2 as-of values", result.err())
 
         # cleanup
         self.delete_environment(cmd_env, env_a)
