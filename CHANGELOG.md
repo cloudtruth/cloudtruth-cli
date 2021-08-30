@@ -1,3 +1,19 @@
+# 1.0.5 - 2021-08-30
+
+* Allow retrieving unevaluated template text using `template get --raw`.
+* Add `login` and `logout` commands for API key management.
+* Added `--show-times` flag to display created-at and modified-at values parameters `list` and 
+  `environment` commands.
+* Allow retrieving parameter information at the specified `--as-of` value for:
+  * `parameters list`
+  * `parameters get`
+  * `parameters environment`
+  * `run`
+* Updated `parameter difference` command:
+  * Added properties to include `created-at` and `modified-at`.
+  * Change arguments to allow environment and/or time-based (using `--as-of`) differences.  
+* Display complete parameter information with `--details` flag in `parameter get` command.
+
 # 1.0.4 - 2021-08-13
 
 * Added `template edit` for easier template modification.
