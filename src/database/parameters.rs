@@ -25,7 +25,7 @@ pub struct ParameterDetails {
     pub key: String,
     pub description: String,
     pub secret: bool,
-    pub param_type: String,
+    pub param_type: ParamType,
     pub rules: Vec<ParameterDetailRule>,
 
     // these come from the value for the specified environment
@@ -43,8 +43,15 @@ pub struct ParameterDetails {
     pub error: String,
 }
 
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub enum ParamType {
+    String,
+    Bool,
+    Integer,
+}
+
 #[derive(Clone, Debug)]
-pub enum ParamDetailRuleType {
+pub enum ParamRuleType {
     Max,
     Min,
     MaxLen,
@@ -55,7 +62,7 @@ pub enum ParamDetailRuleType {
 #[derive(Clone, Debug)]
 pub struct ParameterDetailRule {
     pub id: String,
-    pub rule_type: ParamDetailRuleType,
+    pub rule_type: ParamRuleType,
     pub constraint: String,
     pub created_at: String,
     pub modified_at: String,
@@ -66,7 +73,7 @@ impl ParameterDetails {
         match property_name {
             "name" => self.key.clone(),
             "value" => self.value.clone(),
-            "type" => self.param_type.clone(),
+            "type" => self.param_type.to_string(),
             "environment" => self.env_name.clone(),
             "fqn" => self.fqn.clone(),
             "jmes-path" => self.jmes_path.clone(),
@@ -105,7 +112,7 @@ impl Default for ParameterDetails {
             key: "".to_string(),
             description: "".to_string(),
             secret: false,
-            param_type: "".to_string(),
+            param_type: ParamType::String, // this is the default
             rules: vec![],
             val_id: "".to_string(),
             value: DEFAULT_VALUE.to_string(),
@@ -161,7 +168,7 @@ impl From<&Parameter> for ParameterDetails {
             key: api_param.name.clone(),
             secret: api_param.secret.unwrap_or(false) || env_value.secret.unwrap_or(false),
             description: api_param.description.clone().unwrap_or_default(),
-            param_type: api_param._type.unwrap().to_string(),
+            param_type: ParamType::from(api_param._type.unwrap()),
             rules: api_param
                 .rules
                 .iter()
@@ -183,7 +190,37 @@ impl From<&Parameter> for ParameterDetails {
     }
 }
 
-impl From<ParameterRuleTypeEnum> for ParamDetailRuleType {
+impl From<ParameterTypeEnum> for ParamType {
+    fn from(api: ParameterTypeEnum) -> Self {
+        match api {
+            ParameterTypeEnum::Bool => Self::Bool,
+            ParameterTypeEnum::String => Self::String,
+            ParameterTypeEnum::Integer => Self::Integer,
+        }
+    }
+}
+
+impl fmt::Display for ParamType {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Bool => write!(f, "bool"),
+            Self::Integer => write!(f, "integer"),
+            Self::String => write!(f, "string"),
+        }
+    }
+}
+
+impl ParamType {
+    pub fn to_api_enum(&self) -> ParameterTypeEnum {
+        match self {
+            Self::String => ParameterTypeEnum::String,
+            Self::Bool => ParameterTypeEnum::Bool,
+            Self::Integer => ParameterTypeEnum::Integer,
+        }
+    }
+}
+
+impl From<ParameterRuleTypeEnum> for ParamRuleType {
     fn from(api: ParameterRuleTypeEnum) -> Self {
         match api {
             ParameterRuleTypeEnum::Max => Self::Max,
@@ -195,7 +232,7 @@ impl From<ParameterRuleTypeEnum> for ParamDetailRuleType {
     }
 }
 
-impl fmt::Display for ParamDetailRuleType {
+impl fmt::Display for ParamRuleType {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
             Self::Max => write!(f, "max"),
@@ -211,7 +248,7 @@ impl From<&ParameterRule> for ParameterDetailRule {
     fn from(api: &ParameterRule) -> Self {
         Self {
             id: api.id.clone(),
-            rule_type: ParamDetailRuleType::from(api._type),
+            rule_type: ParamRuleType::from(api._type),
             constraint: api.constraint.clone(),
             created_at: api.created_at.clone(),
             modified_at: api.modified_at.clone(),
@@ -598,13 +635,13 @@ impl Parameters {
         key_name: &str,
         description: Option<&str>,
         secret: Option<bool>,
-        param_type: Option<ParameterTypeEnum>,
+        param_type: Option<ParamType>,
     ) -> Result<ParameterDetails, Error<ProjectsParametersCreateError>> {
         let param_new = ParameterCreate {
             name: key_name.to_string(),
             description: description.map(|x| x.to_string()),
             secret,
-            _type: param_type,
+            _type: param_type.map(|x| x.to_api_enum()),
         };
         let api_param = projects_parameters_create(rest_cfg, proj_id, param_new)?;
         Ok(ParameterDetails::from(&api_param))
@@ -622,7 +659,7 @@ impl Parameters {
         key_name: &str,
         description: Option<&str>,
         secret: Option<bool>,
-        param_type: Option<ParameterTypeEnum>,
+        param_type: Option<ParamType>,
     ) -> Result<ParameterDetails, Error<ProjectsParametersPartialUpdateError>> {
         let param_update = PatchedParameter {
             url: None,
@@ -630,7 +667,7 @@ impl Parameters {
             name: Some(key_name.to_string()),
             description: description.map(String::from),
             secret,
-            _type: param_type,
+            _type: param_type.map(|x| x.to_api_enum()),
             rules: None,
             templates: None,
             values: None,

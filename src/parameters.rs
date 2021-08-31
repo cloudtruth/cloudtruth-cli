@@ -5,7 +5,7 @@ use crate::cli::{
 use crate::config::DEFAULT_ENV_NAME;
 use crate::database::{
     EnvironmentDetails, Environments, OpenApiConfig, ParamExportFormat, ParamExportOptions,
-    ParameterDetails, Parameters,
+    ParamType, ParameterDetails, Parameters,
 };
 use crate::table::Table;
 use crate::{
@@ -13,7 +13,6 @@ use crate::{
     warn_unresolved_params, warn_user, warning_message, ResolvedIds, DEL_CONFIRM, FILE_READ_ERR,
 };
 use clap::ArgMatches;
-use cloudtruth_restapi::models::ParameterTypeEnum;
 use color_eyre::eyre::Result;
 use color_eyre::Report;
 use indoc::printdoc;
@@ -555,7 +554,7 @@ fn proc_param_list(
                     entry.key,
                     entry.value,
                     entry.env_name,
-                    entry.param_type,
+                    entry.param_type.to_string(),
                     entry.rules.len().to_string(),
                     type_str.to_string(),
                     secret_str.to_string(),
@@ -602,10 +601,10 @@ fn proc_param_set(
         _ => None,
     };
     let param_type = match subcmd_args.value_of("param-type") {
-        Some("string") => Some(ParameterTypeEnum::String),
-        Some("integer") => Some(ParameterTypeEnum::Integer),
-        Some("bool") => Some(ParameterTypeEnum::Bool),
         None => None,
+        Some("string") => Some(ParamType::String),
+        Some("integer") => Some(ParamType::Integer),
+        Some("bool") => Some(ParamType::Bool),
         Some(x) => {
             warning_message(format!("Unhandled type '{}'", x))?;
             None
