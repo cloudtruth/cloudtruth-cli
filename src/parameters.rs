@@ -406,7 +406,7 @@ fn proc_param_get(
         } else if let Some(param) = details {
             printdoc!(
                 r#"
-                  Name: {}:
+                  Name: {}
                   Value: {}
                   Source: {}
                   Secret: {}
