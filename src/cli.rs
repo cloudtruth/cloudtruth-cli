@@ -276,6 +276,9 @@ pub fn build_cli() -> App<'static, 'static> {
                         .arg(Arg::with_name("dynamic")
                             .long("dynamic")
                             .help("Display the dynamic values and FQN/JMES path."))
+                        .arg(Arg::with_name("rules")
+                            .long("rules")
+                            .help("Display the parameter rules."))
                         .arg(values_flag().help("Display parameter information/values"))
                         .arg(param_as_of_arg())
                         .arg(show_times_arg())
@@ -311,6 +314,12 @@ pub fn build_cli() -> App<'static, 'static> {
                             .takes_value(true)
                             .possible_values(&["true", "false"])
                             .help("Flags whether this is a secret parameter"))
+                        .arg(Arg::with_name("param-type")
+                            .short("t")
+                            .long("type")
+                            .takes_value(true)
+                            .possible_values(&["bool", "string", "integer"])
+                            .help("The parameter type"))
                         .arg(Arg::with_name("value")
                             .short("v")
                             .long("value")
@@ -335,6 +344,7 @@ pub fn build_cli() -> App<'static, 'static> {
                             .long("property")
                             .possible_values(&[
                                 "value",
+                                "type",
                                 "environment",
                                 "fqn",
                                 "jmes-path",

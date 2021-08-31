@@ -13,6 +13,7 @@ use crate::{
     warn_unresolved_params, warn_user, warning_message, ResolvedIds, DEL_CONFIRM, FILE_READ_ERR,
 };
 use clap::ArgMatches;
+use cloudtruth_restapi::models::ParameterTypeEnum;
 use color_eyre::eyre::Result;
 use color_eyre::Report;
 use indoc::printdoc;
@@ -408,6 +409,8 @@ fn proc_param_get(
                 r#"
                   Name: {}:
                   Value: {}
+                  Parameter Type: {}
+                  Rule Count: {}
                   Source: {}
                   Secret: {}
                   Description: {}
@@ -421,6 +424,8 @@ fn proc_param_get(
                 "#,
                 param.key,
                 param.value,
+                param.param_type,
+                param.rules.len(),
                 resolved.environment_display_name(),
                 param.secret,
                 param.description,
@@ -452,11 +457,15 @@ fn proc_param_list(
     resolved: &ResolvedIds,
 ) -> Result<()> {
     let proj_id = resolved.project_id();
+    let proj_name = resolved.project_display_name();
     let env_id = resolved.environment_id();
     let as_of = parse_datetime(subcmd_args.value_of(AS_OF_ARG));
     let show_secrets = subcmd_args.is_present(SECRETS_FLAG);
     let show_times = subcmd_args.is_present(SHOW_TIMES_FLAG);
-    let show_values = subcmd_args.is_present(VALUES_FLAG) || show_secrets || show_times;
+    let show_rules = subcmd_args.is_present("rules");
+    let show_values =
+        subcmd_args.is_present(VALUES_FLAG) || show_secrets || show_times || show_rules;
+    let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
     let mut details =
         parameters.get_parameter_details(rest_cfg, proj_id, env_id, !show_secrets, as_of)?;
     let references = subcmd_args.is_present("dynamic");
@@ -466,24 +475,65 @@ fn proc_param_list(
         details.retain(|x| x.dynamic)
     }
 
-    if details.is_empty() {
-        println!(
-            "No {}parameters found in project {}",
-            qualifier,
-            resolved.project_display_name()
-        );
+    if show_rules && references {
+        warning_message("Options for --dynamic and --rules are mutually exclusive".to_string())?;
+    } else if details.is_empty() {
+        println!("No {}parameters found in project {}", qualifier, proj_name,);
     } else if !show_values {
         let list = details
             .iter()
             .map(|d| d.key.clone())
             .collect::<Vec<String>>();
         println!("{}", list.join("\n"))
+    } else if show_rules {
+        // NOTE: do NOT worry about errors, since we're only concerned with params (not values)
+        let mut table = Table::new("parameter");
+        let mut hdr = vec!["Name", "Rule Type", "Constraint"];
+        let mut added = false;
+        if show_times {
+            hdr.push("Created At");
+            hdr.push("Modified At");
+        }
+        table.set_header(&hdr);
+        for entry in details {
+            if entry.rules.is_empty() {
+                continue;
+            }
+
+            for rule in entry.rules {
+                let mut row: Vec<String>;
+                row = vec![
+                    entry.key.clone(),
+                    rule.rule_type.to_string(),
+                    rule.constraint,
+                ];
+                if show_times {
+                    row.push(rule.created_at.clone());
+                    row.push(rule.modified_at.clone());
+                }
+                table.add_row(row);
+                added = true;
+            }
+        }
+        if added {
+            table.render(fmt)?;
+        } else {
+            println!("No parameter rules found in project '{}'", proj_name)
+        }
     } else {
-        let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
         let mut errors: Vec<String> = vec![];
         let mut table = Table::new("parameter");
         let mut hdr = if !references {
-            vec!["Name", "Value", "Source", "Type", "Secret", "Description"]
+            vec![
+                "Name",
+                "Value",
+                "Source",
+                "Param Type",
+                "Rules",
+                "Type",
+                "Secret",
+                "Description",
+            ]
         } else {
             vec!["Name", "FQN", "JMES"]
         };
@@ -505,6 +555,8 @@ fn proc_param_list(
                     entry.key,
                     entry.value,
                     entry.env_name,
+                    entry.param_type,
+                    entry.rules.len().to_string(),
                     type_str.to_string(),
                     secret_str.to_string(),
                     entry.description,
@@ -532,7 +584,6 @@ fn proc_param_set(
     resolved: &ResolvedIds,
 ) -> Result<()> {
     let key_name = subcmd_args.value_of(KEY_ARG).unwrap();
-    let as_of = parse_datetime(subcmd_args.value_of(AS_OF_ARG));
     let proj_id = resolved.project_id();
     let env_id = resolved.environment_id();
     let prompt_user = subcmd_args.is_present("prompt");
@@ -549,6 +600,16 @@ fn proc_param_set(
         Some("false") => Some(false),
         Some("true") => Some(true),
         _ => None,
+    };
+    let param_type = match subcmd_args.value_of("param-type") {
+        Some("string") => Some(ParameterTypeEnum::String),
+        Some("integer") => Some(ParameterTypeEnum::Integer),
+        Some("bool") => Some(ParameterTypeEnum::Bool),
+        None => None,
+        Some(x) => {
+            warning_message(format!("Unhandled type '{}'", x))?;
+            None
+        }
     };
 
     // make sure the user did not over-specify
@@ -582,11 +643,12 @@ fn proc_param_set(
         && jmes_path.is_none()
         && fqn.is_none()
         && rename.is_none()
+        && param_type.is_none()
     {
         warn_user(
             concat!(
                 "Nothing changed. Please provide at least one of: ",
-                "description, rename, secret, or value/fqn/jmes-path."
+                "description, rename, secret, type, or value/fqn/jmes-path."
             )
             .to_string(),
         )?;
@@ -594,10 +656,11 @@ fn proc_param_set(
         // get the original values, so that is not lost
         let mut updated: ParameterDetails;
         if let Some(original) =
-            parameters.get_details_by_name(rest_cfg, proj_id, env_id, key_name, true, as_of)?
+            parameters.get_details_by_name(rest_cfg, proj_id, env_id, key_name, true, None)?
         {
             // only update if there is something to update
-            if description.is_some() || secret.is_some() || rename.is_some() {
+            if description.is_some() || secret.is_some() || rename.is_some() || param_type.is_some()
+            {
                 updated = parameters.update_parameter(
                     rest_cfg,
                     proj_id,
@@ -605,6 +668,7 @@ fn proc_param_set(
                     final_name,
                     description,
                     secret,
+                    param_type,
                 )?;
                 // copy a few fields to insure we detect the correct environment
                 updated.val_id = original.val_id;
@@ -616,8 +680,14 @@ fn proc_param_set(
             }
         } else {
             param_added = true;
-            updated =
-                parameters.create_parameter(rest_cfg, proj_id, key_name, description, secret)?;
+            updated = parameters.create_parameter(
+                rest_cfg,
+                proj_id,
+                key_name,
+                description,
+                secret,
+                param_type,
+            )?;
         }
 
         // don't do anything if there's nothing to do

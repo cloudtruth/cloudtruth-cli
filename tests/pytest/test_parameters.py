@@ -49,11 +49,11 @@ class TestParameters(TestCase):
         self.assertTrue(result.out_contains_both(key1, value1))
         self.assertTrue(result.out_contains_both(key1, desc1))
         self.assertEqual(result.out(), """\
-+----------+-------------+---------+--------+--------+---------------------------------+
-| Name     | Value       | Source  | Type   | Secret | Description                     |
-+----------+-------------+---------+--------+--------+---------------------------------+
-| my_param | cRaZy value | default | static | false  | this is just a test description |
-+----------+-------------+---------+--------+--------+---------------------------------+
++----------+-------------+---------+------------+-------+--------+--------+---------------------------------+
+| Name     | Value       | Source  | Param Type | Rules | Type   | Secret | Description                     |
++----------+-------------+---------+------------+-------+--------+--------+---------------------------------+
+| my_param | cRaZy value | default | string     | 0     | static | false  | this is just a test description |
++----------+-------------+---------+------------+-------+--------+--------+---------------------------------+
 """)
 
         # use CSV
@@ -61,8 +61,8 @@ class TestParameters(TestCase):
         self.assertTrue(result.out_contains_both(key1, value1))
         self.assertTrue(result.out_contains_both(key1, desc1))
         self.assertEqual(result.out(), """\
-Name,Value,Source,Type,Secret,Description
-my_param,cRaZy value,default,static,false,this is just a test description
+Name,Value,Source,Param Type,Rules,Type,Secret,Description
+my_param,cRaZy value,default,string,0,static,false,this is just a test description
 """)
         # get the parameter
         result = self.run_cli(cmd_env, sub_cmd + f"get {key1}")
@@ -191,11 +191,11 @@ my_param,cRaZy value,default,static,false,this is just a test description
         self.assertFalse(result.out_contains_both(key1, value1))
         self.assertTrue(result.out_contains_both(key1, desc1))
         self.assertEqual(result.out(), """\
-+----------+-------+---------+--------+--------+-----------------+
-| Name     | Value | Source  | Type   | Secret | Description     |
-+----------+-------+---------+--------+--------+-----------------+
-| my_param | ***** | default | static | true   | my secret value |
-+----------+-------+---------+--------+--------+-----------------+
++----------+-------+---------+------------+-------+--------+--------+-----------------+
+| Name     | Value | Source  | Param Type | Rules | Type   | Secret | Description     |
++----------+-------+---------+------------+-------+--------+--------+-----------------+
+| my_param | ***** | default | string     | 0     | static | true   | my secret value |
++----------+-------+---------+------------+-------+--------+--------+-----------------+
 """)
 
         # use CSV
@@ -203,8 +203,8 @@ my_param,cRaZy value,default,static,false,this is just a test description
         self.assertFalse(result.out_contains_both(key1, value1))
         self.assertTrue(result.out_contains_both(key1, desc1))
         self.assertEqual(result.out(), f"""\
-Name,Value,Source,Type,Secret,Description
-my_param,{REDACTED},default,static,true,my secret value
+Name,Value,Source,Param Type,Rules,Type,Secret,Description
+my_param,{REDACTED},default,string,0,static,true,my secret value
 """)
 
         # now, display with the secrets value
@@ -212,11 +212,11 @@ my_param,{REDACTED},default,static,true,my secret value
         self.assertTrue(result.out_contains_both(key1, value1))
         self.assertTrue(result.out_contains_both(key1, desc1))
         self.assertEqual(result.out(), """\
-+----------+-----------------------+---------+--------+--------+-----------------+
-| Name     | Value                 | Source  | Type   | Secret | Description     |
-+----------+-----------------------+---------+--------+--------+-----------------+
-| my_param | super-SENSITIVE-vAluE | default | static | true   | my secret value |
-+----------+-----------------------+---------+--------+--------+-----------------+
++----------+-----------------------+---------+------------+-------+--------+--------+-----------------+
+| Name     | Value                 | Source  | Param Type | Rules | Type   | Secret | Description     |
++----------+-----------------------+---------+------------+-------+--------+--------+-----------------+
+| my_param | super-SENSITIVE-vAluE | default | string     | 0     | static | true   | my secret value |
++----------+-----------------------+---------+------------+-------+--------+--------+-----------------+
 """)
 
         # use CSV
@@ -224,8 +224,8 @@ my_param,{REDACTED},default,static,true,my secret value
         self.assertTrue(result.out_contains_both(key1, value1))
         self.assertTrue(result.out_contains_both(key1, desc1))
         self.assertEqual(result.out(), """\
-Name,Value,Source,Type,Secret,Description
-my_param,super-SENSITIVE-vAluE,default,static,true,my secret value
+Name,Value,Source,Param Type,Rules,Type,Secret,Description
+my_param,super-SENSITIVE-vAluE,default,string,0,static,true,my secret value
 """)
 
         # get the parameter
@@ -331,22 +331,22 @@ my_param,super-SENSITIVE-vAluE,default,static,true,my secret value
 
         result = self.run_cli(cmd_env, base_cmd + f"--project {proj_name1} param ls -v -s")
         self.assertEqual(result.out(), """\
-+-----------+------------+---------+--------+--------+-------------+
-| Name      | Value      | Source  | Type   | Secret | Description |
-+-----------+------------+---------+--------+--------+-------------+
-| sensitive | classified | default | static | true   |             |
-| sna       | foo        | default | static | false  |             |
-+-----------+------------+---------+--------+--------+-------------+
++-----------+------------+---------+------------+-------+--------+--------+-------------+
+| Name      | Value      | Source  | Param Type | Rules | Type   | Secret | Description |
++-----------+------------+---------+------------+-------+--------+--------+-------------+
+| sensitive | classified | default | string     | 0     | static | true   |             |
+| sna       | foo        | default | string     | 0     | static | false  |             |
++-----------+------------+---------+------------+-------+--------+--------+-------------+
 """)
 
         result = self.run_cli(cmd_env, base_cmd + f"--project {proj_name2} param ls -v -s")
         self.assertEqual(result.out(), """\
-+-----------+------------+---------+--------+--------+-------------+
-| Name      | Value      | Source  | Type   | Secret | Description |
-+-----------+------------+---------+--------+--------+-------------+
-| sensitive | top-secret | default | static | true   |             |
-| sna       | fu         | default | static | false  |             |
-+-----------+------------+---------+--------+--------+-------------+
++-----------+------------+---------+------------+-------+--------+--------+-------------+
+| Name      | Value      | Source  | Param Type | Rules | Type   | Secret | Description |
++-----------+------------+---------+------------+-------+--------+--------+-------------+
+| sensitive | top-secret | default | string     | 0     | static | true   |             |
+| sna       | fu         | default | string     | 0     | static | false  |             |
++-----------+------------+---------+------------+-------+--------+--------+-------------+
 """)
 
         result = self.run_cli(cmd_env, base_cmd + f"--project {proj_name1} param export docker -s")
@@ -708,11 +708,11 @@ SECOND_SECRET='sensitive value with spaces'
 
         result = self.run_cli(cmd_env, sub_cmd + "ls -v")
         self.assertEqual(result.out(), """\
-+----------+-------------+---------+--------+--------+---------------------------------+
-| Name     | Value       | Source  | Type   | Secret | Description                     |
-+----------+-------------+---------+--------+--------+---------------------------------+
-| my_param | cRaZy value | default | static | false  | this is just a test description |
-+----------+-------------+---------+--------+--------+---------------------------------+
++----------+-------------+---------+------------+-------+--------+--------+---------------------------------+
+| Name     | Value       | Source  | Param Type | Rules | Type   | Secret | Description                     |
++----------+-------------+---------+------------+-------+--------+--------+---------------------------------+
+| my_param | cRaZy value | default | string     | 0     | static | false  | this is just a test description |
++----------+-------------+---------+------------+-------+--------+--------+---------------------------------+
 """)
 
         # switch it to a secret
@@ -722,21 +722,21 @@ SECOND_SECRET='sensitive value with spaces'
         # see that it has been changed to a secret (redacted in cli)
         result = self.run_cli(cmd_env, sub_cmd + "ls -v")
         self.assertEqual(result.out(), """\
-+----------+-------+---------+--------+--------+---------------------------------+
-| Name     | Value | Source  | Type   | Secret | Description                     |
-+----------+-------+---------+--------+--------+---------------------------------+
-| my_param | ***** | default | static | true   | this is just a test description |
-+----------+-------+---------+--------+--------+---------------------------------+
++----------+-------+---------+------------+-------+--------+--------+---------------------------------+
+| Name     | Value | Source  | Param Type | Rules | Type   | Secret | Description                     |
++----------+-------+---------+------------+-------+--------+--------+---------------------------------+
+| my_param | ***** | default | string     | 0     | static | true   | this is just a test description |
++----------+-------+---------+------------+-------+--------+--------+---------------------------------+
 """)
 
         # verify value has not changed
         result = self.run_cli(cmd_env, sub_cmd + "ls -v -s")
         self.assertEqual(result.out(), """\
-+----------+-------------+---------+--------+--------+---------------------------------+
-| Name     | Value       | Source  | Type   | Secret | Description                     |
-+----------+-------------+---------+--------+--------+---------------------------------+
-| my_param | cRaZy value | default | static | true   | this is just a test description |
-+----------+-------------+---------+--------+--------+---------------------------------+
++----------+-------------+---------+------------+-------+--------+--------+---------------------------------+
+| Name     | Value       | Source  | Param Type | Rules | Type   | Secret | Description                     |
++----------+-------------+---------+------------+-------+--------+--------+---------------------------------+
+| my_param | cRaZy value | default | string     | 0     | static | true   | this is just a test description |
++----------+-------------+---------+------------+-------+--------+--------+---------------------------------+
 """)
 
         # switch back to a regular parameter
@@ -746,11 +746,11 @@ SECOND_SECRET='sensitive value with spaces'
         # see that it is no longer redacted
         result = self.run_cli(cmd_env, sub_cmd + "ls -v")
         self.assertEqual(result.out(), """\
-+----------+-------------+---------+--------+--------+---------------------------------+
-| Name     | Value       | Source  | Type   | Secret | Description                     |
-+----------+-------------+---------+--------+--------+---------------------------------+
-| my_param | cRaZy value | default | static | false  | this is just a test description |
-+----------+-------------+---------+--------+--------+---------------------------------+
++----------+-------------+---------+------------+-------+--------+--------+---------------------------------+
+| Name     | Value       | Source  | Param Type | Rules | Type   | Secret | Description                     |
++----------+-------------+---------+------------+-------+--------+--------+---------------------------------+
+| my_param | cRaZy value | default | string     | 0     | static | false  | this is just a test description |
++----------+-------------+---------+------------+-------+--------+--------+---------------------------------+
 """)
 
         self.delete_project(cmd_env, proj_name)
@@ -787,11 +787,11 @@ SECOND_SECRET='sensitive value with spaces'
 
         result = self.run_cli(cmd_env, sub_cmd + "ls -v")
         self.assertEqual(result.out(), """\
-+----------+----------------------+---------+--------+--------+---------------------------+
-| Name     | Value                | Source  | Type   | Secret | Description               |
-+----------+----------------------+---------+--------+--------+---------------------------+
-| my_param | static val from file | default | static | false  | param set from file input |
-+----------+----------------------+---------+--------+--------+---------------------------+
++----------+----------------------+---------+------------+-------+--------+--------+---------------------------+
+| Name     | Value                | Source  | Param Type | Rules | Type   | Secret | Description               |
++----------+----------------------+---------+------------+-------+--------+--------+---------------------------+
+| my_param | static val from file | default | string     | 0     | static | false  | param set from file input |
++----------+----------------------+---------+------------+-------+--------+--------+---------------------------+
 """)
 
         # change value from `--value` flag from CLI
@@ -801,11 +801,11 @@ SECOND_SECRET='sensitive value with spaces'
 
         result = self.run_cli(cmd_env, sub_cmd + "ls -v")
         self.assertEqual(result.out(), """\
-+----------+-------------------+---------+--------+--------+---------------------------+
-| Name     | Value             | Source  | Type   | Secret | Description               |
-+----------+-------------------+---------+--------+--------+---------------------------+
-| my_param | update-from-value | default | static | false  | param set from file input |
-+----------+-------------------+---------+--------+--------+---------------------------+
++----------+-------------------+---------+------------+-------+--------+--------+---------------------------+
+| Name     | Value             | Source  | Param Type | Rules | Type   | Secret | Description               |
++----------+-------------------+---------+------------+-------+--------+--------+---------------------------+
+| my_param | update-from-value | default | string     | 0     | static | false  | param set from file input |
++----------+-------------------+---------+------------+-------+--------+--------+---------------------------+
 """)
 
         # update with a different value from file
@@ -819,11 +819,11 @@ SECOND_SECRET='sensitive value with spaces'
 
         result = self.run_cli(cmd_env, sub_cmd + "ls -v")
         self.assertEqual(result.out(), """\
-+----------+---------------------+---------+--------+--------+---------------------------+
-| Name     | Value               | Source  | Type   | Secret | Description               |
-+----------+---------------------+---------+--------+--------+---------------------------+
-| my_param | another-static-file | default | static | false  | param set from file input |
-+----------+---------------------+---------+--------+--------+---------------------------+
++----------+---------------------+---------+------------+-------+--------+--------+---------------------------+
+| Name     | Value               | Source  | Param Type | Rules | Type   | Secret | Description               |
++----------+---------------------+---------+------------+-------+--------+--------+---------------------------+
+| my_param | another-static-file | default | string     | 0     | static | false  | param set from file input |
++----------+---------------------+---------+------------+-------+--------+--------+---------------------------+
 """)
 
         # cleanup
@@ -941,38 +941,38 @@ SECOND_SECRET='sensitive value with spaces'
         # table format
         result = self.run_cli(cmd_env, sub_cmd + "ls -v")
         self.assertEqual(result.out(), """\
-+-----------+--------------------------------+---------+--------+--------+-------------+
-| Name      | Value                          | Source  | Type   | Secret | Description |
-+-----------+--------------------------------+---------+--------+--------+-------------+
-| speicla14 | *****                          | default | static | true   | Jade secret |
-| speicla3  | beef brocolli, pork fried rice | default | static | false  | Jade lunch  |
-+-----------+--------------------------------+---------+--------+--------+-------------+
++-----------+--------------------------------+---------+------------+-------+--------+--------+-------------+
+| Name      | Value                          | Source  | Param Type | Rules | Type   | Secret | Description |
++-----------+--------------------------------+---------+------------+-------+--------+--------+-------------+
+| speicla14 | *****                          | default | string     | 0     | static | true   | Jade secret |
+| speicla3  | beef brocolli, pork fried rice | default | string     | 0     | static | false  | Jade lunch  |
++-----------+--------------------------------+---------+------------+-------+--------+--------+-------------+
 """)
 
         result = self.run_cli(cmd_env, sub_cmd + "ls -v -s")
         self.assertEqual(result.out(), """\
-+-----------+--------------------------------+---------+--------+--------+-------------+
-| Name      | Value                          | Source  | Type   | Secret | Description |
-+-----------+--------------------------------+---------+--------+--------+-------------+
-| speicla14 | cueey-chicken                  | default | static | true   | Jade secret |
-| speicla3  | beef brocolli, pork fried rice | default | static | false  | Jade lunch  |
-+-----------+--------------------------------+---------+--------+--------+-------------+
++-----------+--------------------------------+---------+------------+-------+--------+--------+-------------+
+| Name      | Value                          | Source  | Param Type | Rules | Type   | Secret | Description |
++-----------+--------------------------------+---------+------------+-------+--------+--------+-------------+
+| speicla14 | cueey-chicken                  | default | string     | 0     | static | true   | Jade secret |
+| speicla3  | beef brocolli, pork fried rice | default | string     | 0     | static | false  | Jade lunch  |
++-----------+--------------------------------+---------+------------+-------+--------+--------+-------------+
 """)
 
         #################
         # CSV format
         result = self.run_cli(cmd_env, sub_cmd + "ls -v -f csv")
         self.assertEqual(result.out(), f"""\
-Name,Value,Source,Type,Secret,Description
-speicla14,{REDACTED},default,static,true,Jade secret
-speicla3,"beef brocolli, pork fried rice",default,static,false,Jade lunch
+Name,Value,Source,Param Type,Rules,Type,Secret,Description
+speicla14,{REDACTED},default,string,0,static,true,Jade secret
+speicla3,"beef brocolli, pork fried rice",default,string,0,static,false,Jade lunch
 """)
 
         result = self.run_cli(cmd_env, sub_cmd + "ls -v -f csv -s")
         self.assertEqual(result.out(), """\
-Name,Value,Source,Type,Secret,Description
-speicla14,cueey-chicken,default,static,true,Jade secret
-speicla3,"beef brocolli, pork fried rice",default,static,false,Jade lunch
+Name,Value,Source,Param Type,Rules,Type,Secret,Description
+speicla14,cueey-chicken,default,string,0,static,true,Jade secret
+speicla3,"beef brocolli, pork fried rice",default,string,0,static,false,Jade lunch
 """)
 
         #################
@@ -984,6 +984,8 @@ speicla3,"beef brocolli, pork fried rice",default,static,false,Jade lunch
     {
       "Description": "Jade secret",
       "Name": "speicla14",
+      "Param Type": "string",
+      "Rules": "0",
       "Secret": "true",
       "Source": "default",
       "Type": "static",
@@ -992,6 +994,8 @@ speicla3,"beef brocolli, pork fried rice",default,static,false,Jade lunch
     {
       "Description": "Jade lunch",
       "Name": "speicla3",
+      "Param Type": "string",
+      "Rules": "0",
       "Secret": "false",
       "Source": "default",
       "Type": "static",
@@ -1008,6 +1012,8 @@ speicla3,"beef brocolli, pork fried rice",default,static,false,Jade lunch
     {
       "Description": "Jade secret",
       "Name": "speicla14",
+      "Param Type": "string",
+      "Rules": "0",
       "Secret": "true",
       "Source": "default",
       "Type": "static",
@@ -1016,6 +1022,8 @@ speicla3,"beef brocolli, pork fried rice",default,static,false,Jade lunch
     {
       "Description": "Jade lunch",
       "Name": "speicla3",
+      "Param Type": "string",
+      "Rules": "0",
       "Secret": "false",
       "Source": "default",
       "Type": "static",
@@ -1033,12 +1041,16 @@ speicla3,"beef brocolli, pork fried rice",default,static,false,Jade lunch
 parameter:
   - Description: Jade secret
     Name: speicla14
+    Param Type: string
+    Rules: "0"
     Secret: "true"
     Source: default
     Type: static
     Value: "{REDACTED}"
   - Description: Jade lunch
     Name: speicla3
+    Param Type: string
+    Rules: "0"
     Secret: "false"
     Source: default
     Type: static
@@ -1051,12 +1063,16 @@ parameter:
 parameter:
   - Description: Jade secret
     Name: speicla14
+    Param Type: string
+    Rules: "0"
     Secret: "true"
     Source: default
     Type: static
     Value: cueey-chicken
   - Description: Jade lunch
     Name: speicla3
+    Param Type: string
+    Rules: "0"
     Secret: "false"
     Source: default
     Type: static

@@ -3,7 +3,8 @@ use crate::database::openapi::{extract_details, OpenApiConfig, PAGE_SIZE, WRAP_S
 use cloudtruth_restapi::apis::projects_api::*;
 use cloudtruth_restapi::apis::Error::{self, ResponseError};
 use cloudtruth_restapi::models::{
-    Parameter, ParameterCreate, PatchedParameter, PatchedValue, Value, ValueCreate,
+    Parameter, ParameterCreate, ParameterRule, ParameterRuleTypeEnum, ParameterTypeEnum,
+    PatchedParameter, PatchedValue, Value, ValueCreate,
 };
 use once_cell::sync::OnceCell;
 use std::collections::HashMap;
@@ -24,6 +25,8 @@ pub struct ParameterDetails {
     pub key: String,
     pub description: String,
     pub secret: bool,
+    pub param_type: String,
+    pub rules: Vec<ParameterDetailRule>,
 
     // these come from the value for the specified environment
     pub val_id: String,
@@ -40,11 +43,30 @@ pub struct ParameterDetails {
     pub error: String,
 }
 
+#[derive(Clone, Debug)]
+pub enum ParamDetailRuleType {
+    Max,
+    Min,
+    MaxLen,
+    MinLen,
+    Regex,
+}
+
+#[derive(Clone, Debug)]
+pub struct ParameterDetailRule {
+    pub id: String,
+    pub rule_type: ParamDetailRuleType,
+    pub constraint: String,
+    pub created_at: String,
+    pub modified_at: String,
+}
+
 impl ParameterDetails {
     pub fn get_property(&self, property_name: &str) -> String {
         match property_name {
             "name" => self.key.clone(),
             "value" => self.value.clone(),
+            "type" => self.param_type.clone(),
             "environment" => self.env_name.clone(),
             "fqn" => self.fqn.clone(),
             "jmes-path" => self.jmes_path.clone(),
@@ -83,6 +105,8 @@ impl Default for ParameterDetails {
             key: "".to_string(),
             description: "".to_string(),
             secret: false,
+            param_type: "".to_string(),
+            rules: vec![],
             val_id: "".to_string(),
             value: DEFAULT_VALUE.to_string(),
             env_url: "".to_string(),
@@ -137,6 +161,12 @@ impl From<&Parameter> for ParameterDetails {
             key: api_param.name.clone(),
             secret: api_param.secret.unwrap_or(false) || env_value.secret.unwrap_or(false),
             description: api_param.description.clone().unwrap_or_default(),
+            param_type: api_param._type.unwrap().to_string(),
+            rules: api_param
+                .rules
+                .iter()
+                .map(ParameterDetailRule::from)
+                .collect(),
 
             val_id: env_value.id.clone(),
             value: env_value.value.clone().unwrap_or_default(),
@@ -149,6 +179,42 @@ impl From<&Parameter> for ParameterDetails {
             modified_at: env_value.modified_at.clone(),
 
             error: env_value.dynamic_error.clone().unwrap_or_default(),
+        }
+    }
+}
+
+impl From<ParameterRuleTypeEnum> for ParamDetailRuleType {
+    fn from(api: ParameterRuleTypeEnum) -> Self {
+        match api {
+            ParameterRuleTypeEnum::Max => Self::Max,
+            ParameterRuleTypeEnum::Min => Self::Min,
+            ParameterRuleTypeEnum::MaxLen => Self::MaxLen,
+            ParameterRuleTypeEnum::MinLen => Self::MinLen,
+            ParameterRuleTypeEnum::Regex => Self::Regex,
+        }
+    }
+}
+
+impl fmt::Display for ParamDetailRuleType {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Max => write!(f, "max"),
+            Self::Min => write!(f, "min"),
+            Self::MaxLen => write!(f, "max-len"),
+            Self::MinLen => write!(f, "min-len"),
+            Self::Regex => write!(f, "regex"),
+        }
+    }
+}
+
+impl From<&ParameterRule> for ParameterDetailRule {
+    fn from(api: &ParameterRule) -> Self {
+        Self {
+            id: api.id.clone(),
+            rule_type: ParamDetailRuleType::from(api._type),
+            constraint: api.constraint.clone(),
+            created_at: api.created_at.clone(),
+            modified_at: api.modified_at.clone(),
         }
     }
 }
@@ -532,12 +598,13 @@ impl Parameters {
         key_name: &str,
         description: Option<&str>,
         secret: Option<bool>,
+        param_type: Option<ParameterTypeEnum>,
     ) -> Result<ParameterDetails, Error<ProjectsParametersCreateError>> {
         let param_new = ParameterCreate {
             name: key_name.to_string(),
             description: description.map(|x| x.to_string()),
             secret,
-            _type: None,
+            _type: param_type,
         };
         let api_param = projects_parameters_create(rest_cfg, proj_id, param_new)?;
         Ok(ParameterDetails::from(&api_param))
@@ -546,6 +613,7 @@ impl Parameters {
     /// Updates the `Parameter` entry.
     ///
     /// It does not touch any associated `Value` entries.
+    #[allow(clippy::too_many_arguments)]
     pub fn update_parameter(
         &self,
         rest_cfg: &OpenApiConfig,
@@ -554,6 +622,7 @@ impl Parameters {
         key_name: &str,
         description: Option<&str>,
         secret: Option<bool>,
+        param_type: Option<ParameterTypeEnum>,
     ) -> Result<ParameterDetails, Error<ProjectsParametersPartialUpdateError>> {
         let param_update = PatchedParameter {
             url: None,
@@ -561,7 +630,7 @@ impl Parameters {
             name: Some(key_name.to_string()),
             description: description.map(String::from),
             secret,
-            _type: None,
+            _type: param_type,
             rules: None,
             templates: None,
             values: None,
