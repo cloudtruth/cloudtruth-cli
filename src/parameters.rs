@@ -5,7 +5,7 @@ use crate::cli::{
 use crate::config::DEFAULT_ENV_NAME;
 use crate::database::{
     EnvironmentDetails, Environments, OpenApiConfig, ParamExportFormat, ParamExportOptions,
-    ParamType, ParameterDetails, Parameters,
+    ParamRuleType, ParamType, ParameterDetails, Parameters,
 };
 use crate::table::Table;
 use crate::{
@@ -406,7 +406,7 @@ fn proc_param_get(
         } else if let Some(param) = details {
             printdoc!(
                 r#"
-                  Name: {}:
+                  Name: {}
                   Value: {}
                   Parameter Type: {}
                   Rule Count: {}
@@ -576,6 +576,61 @@ fn proc_param_list(
     Ok(())
 }
 
+/// Convenience function to create or update a rule.
+fn set_rule_type(
+    parameters: &Parameters,
+    rest_cfg: &OpenApiConfig,
+    details: &ParameterDetails,
+    proj_id: &str,
+    reuse: bool,
+    rule_type: ParamRuleType,
+    constraint: &str,
+) {
+    let rule_id = details.get_rule_id(rule_type);
+    let param_id = &details.id;
+    let create = !reuse || rule_id.is_none();
+    if create {
+        let create_resp =
+            parameters.create_parameter_rule(rest_cfg, proj_id, param_id, rule_type, constraint);
+        if create_resp.is_err() {
+            let _ = warning_message(format!("Failed to create '{}' rule", rule_type));
+        }
+    } else {
+        // NOTE: not updating the rule_type, so just use None
+        let update_resp = parameters.update_parameter_rule(
+            rest_cfg,
+            proj_id,
+            param_id,
+            rule_id.as_ref().unwrap().as_str(),
+            None,
+            Some(constraint),
+        );
+        if update_resp.is_err() {
+            let _ = warning_message(format!(
+                "Failed to update '{}' rule (id='{}')",
+                rule_type,
+                rule_id.unwrap()
+            ));
+        }
+    }
+}
+
+/// Convenience function to delete a rule of the specified type.
+fn delete_rule_type(
+    parameters: &Parameters,
+    rest_cfg: &OpenApiConfig,
+    details: &ParameterDetails,
+    proj_id: &str,
+    rule_type: ParamRuleType,
+) {
+    if let Some(rule_id) = details.get_rule_id(rule_type) {
+        let del_resp = parameters.delete_parameter_rule(rest_cfg, proj_id, &details.id, &rule_id);
+        if del_resp.is_err() {
+            let _ = warning_message(format!("Failed to delete '{}' rule", rule_type));
+        }
+    }
+}
+
 fn proc_param_set(
     subcmd_args: &ArgMatches,
     rest_cfg: &OpenApiConfig,
@@ -595,6 +650,16 @@ fn proc_param_set(
     let rename = subcmd_args.value_of(RENAME_OPT);
     let final_name = rename.unwrap_or(key_name);
     let mut param_added = false;
+    let max_rule = subcmd_args.value_of("MAX");
+    let min_rule = subcmd_args.value_of("MIN");
+    let max_len_rule = subcmd_args.value_of("MAX-LEN");
+    let min_len_rule = subcmd_args.value_of("MIN-LEN");
+    let regex_rule = subcmd_args.value_of("REGEX");
+    let delete_max = subcmd_args.is_present("NO-MAX");
+    let delete_min = subcmd_args.is_present("NO-MIN");
+    let delete_max_len = subcmd_args.is_present("NO-MAX-LEN");
+    let delete_min_len = subcmd_args.is_present("NO-MIN-LEN");
+    let delete_regex = subcmd_args.is_present("NO-REGEX");
     let secret: Option<bool> = match subcmd_args.value_of("secret") {
         Some("false") => Some(false),
         Some("true") => Some(true),
@@ -635,93 +700,182 @@ fn proc_param_set(
         value = Some(val_str.as_str());
     }
 
-    // make sure there is at least one parameter to updated
-    if description.is_none()
-        && secret.is_none()
-        && value.is_none()
-        && jmes_path.is_none()
-        && fqn.is_none()
-        && rename.is_none()
-        && param_type.is_none()
+    let rule_set = max_rule.is_some()
+        || min_rule.is_some()
+        || max_len_rule.is_some()
+        || min_len_rule.is_some()
+        || regex_rule.is_some();
+    let rule_del = delete_max || delete_min || delete_max_len || delete_min_len || delete_regex;
+    let param_field_update =
+        description.is_some() || secret.is_some() || param_type.is_some() || rename.is_some();
+    let value_field_update = value.is_some() || fqn.is_some() || jmes_path.is_some();
+
+    // make sure there is at least one item to updated
+    if !param_field_update && !value_field_update && !rule_set && !rule_del {
+        warn_user("Nothing changed. Please provide at least one update.".to_string())?;
+        return Ok(());
+    }
+
+    // get the original values, so that is not lost
+    let mut updated: ParameterDetails;
+    if let Some(original) =
+        parameters.get_details_by_name(rest_cfg, proj_id, env_id, key_name, true, None)?
     {
-        warn_user(
-            concat!(
-                "Nothing changed. Please provide at least one of: ",
-                "description, rename, secret, type, or value/fqn/jmes-path."
-            )
-            .to_string(),
-        )?;
-    } else {
-        // get the original values, so that is not lost
-        let mut updated: ParameterDetails;
-        if let Some(original) =
-            parameters.get_details_by_name(rest_cfg, proj_id, env_id, key_name, true, None)?
-        {
-            // only update if there is something to update
-            if description.is_some() || secret.is_some() || rename.is_some() || param_type.is_some()
-            {
-                updated = parameters.update_parameter(
-                    rest_cfg,
-                    proj_id,
-                    &original.id,
-                    final_name,
-                    description,
-                    secret,
-                    param_type,
-                )?;
-                // copy a few fields to insure we detect the correct environment
-                updated.val_id = original.val_id;
-                updated.env_url = original.env_url;
-                updated.env_name = original.env_name;
-            } else {
-                // nothing to update here, but need to copy details
-                updated = original;
-            }
-        } else {
-            param_added = true;
-            updated = parameters.create_parameter(
+        // only update if there is something to update
+        if param_field_update {
+            updated = parameters.update_parameter(
                 rest_cfg,
                 proj_id,
-                key_name,
+                &original.id,
+                final_name,
                 description,
                 secret,
                 param_type,
             )?;
+            // copy a few fields to insure we detect the correct environment
+            updated.val_id = original.val_id;
+            updated.env_url = original.env_url;
+            updated.env_name = original.env_name;
+        } else {
+            // nothing to update here, but need to copy details
+            updated = original;
         }
+    } else {
+        param_added = true;
+        updated = parameters.create_parameter(
+            rest_cfg,
+            proj_id,
+            key_name,
+            description,
+            secret,
+            param_type,
+        )?;
+    }
 
-        // don't do anything if there's nothing to do
-        if value.is_some() || fqn.is_some() || jmes_path.is_some() {
-            let param_id = updated.id.as_str();
-            // if any existing environment does not match the desired environment
-            if !updated.env_url.contains(env_id) {
-                let value_add_result = parameters.create_parameter_value(
-                    rest_cfg, proj_id, env_id, param_id, value, fqn, jmes_path,
-                );
-                if let Err(err) = value_add_result {
-                    if param_added {
-                        let _ = parameters.delete_parameter_by_id(rest_cfg, proj_id, param_id);
-                    }
-                    return Err(Report::new(err));
-                }
-            } else {
-                parameters.update_parameter_value(
-                    rest_cfg,
-                    proj_id,
-                    param_id,
-                    &updated.val_id,
-                    value,
-                    fqn,
-                    jmes_path,
-                )?;
-            }
-        }
-        println!(
-            "Successfully updated parameter '{}' in project '{}' for environment '{}'.",
-            final_name,
-            resolved.project_display_name(),
-            resolved.environment_display_name(),
+    if delete_max {
+        delete_rule_type(parameters, rest_cfg, &updated, proj_id, ParamRuleType::Max);
+    }
+    if delete_min {
+        delete_rule_type(parameters, rest_cfg, &updated, proj_id, ParamRuleType::Min);
+    }
+    if delete_max_len {
+        delete_rule_type(
+            parameters,
+            rest_cfg,
+            &updated,
+            proj_id,
+            ParamRuleType::MaxLen,
         );
     }
+    if delete_min_len {
+        delete_rule_type(
+            parameters,
+            rest_cfg,
+            &updated,
+            proj_id,
+            ParamRuleType::MinLen,
+        );
+    }
+    if delete_regex {
+        delete_rule_type(
+            parameters,
+            rest_cfg,
+            &updated,
+            proj_id,
+            ParamRuleType::Regex,
+        );
+    }
+    if let Some(constraint) = max_rule {
+        set_rule_type(
+            parameters,
+            rest_cfg,
+            &updated,
+            proj_id,
+            !delete_max,
+            ParamRuleType::Max,
+            constraint,
+        );
+    }
+
+    if let Some(constraint) = min_rule {
+        set_rule_type(
+            parameters,
+            rest_cfg,
+            &updated,
+            proj_id,
+            !delete_min,
+            ParamRuleType::Min,
+            constraint,
+        );
+    }
+
+    if let Some(constraint) = max_len_rule {
+        set_rule_type(
+            parameters,
+            rest_cfg,
+            &updated,
+            proj_id,
+            !delete_max_len,
+            ParamRuleType::MaxLen,
+            constraint,
+        );
+    }
+
+    if let Some(constraint) = min_len_rule {
+        set_rule_type(
+            parameters,
+            rest_cfg,
+            &updated,
+            proj_id,
+            !delete_min_len,
+            ParamRuleType::MinLen,
+            constraint,
+        );
+    }
+
+    if let Some(constraint) = regex_rule {
+        set_rule_type(
+            parameters,
+            rest_cfg,
+            &updated,
+            proj_id,
+            !delete_regex,
+            ParamRuleType::Regex,
+            constraint,
+        );
+    }
+
+    // don't do anything if there's nothing to do
+    if value_field_update {
+        let param_id = updated.id.as_str();
+        // if any existing environment does not match the desired environment
+        if !updated.env_url.contains(env_id) {
+            let value_add_result = parameters
+                .create_parameter_value(rest_cfg, proj_id, env_id, param_id, value, fqn, jmes_path);
+            if let Err(err) = value_add_result {
+                if param_added {
+                    let _ = parameters.delete_parameter_by_id(rest_cfg, proj_id, param_id);
+                }
+                return Err(Report::new(err));
+            }
+        } else {
+            parameters.update_parameter_value(
+                rest_cfg,
+                proj_id,
+                param_id,
+                &updated.val_id,
+                value,
+                fqn,
+                jmes_path,
+            )?;
+        }
+    }
+    println!(
+        "Successfully updated parameter '{}' in project '{}' for environment '{}'.",
+        final_name,
+        resolved.project_display_name(),
+        resolved.environment_display_name(),
+    );
     Ok(())
 }
 
@@ -733,31 +887,27 @@ fn proc_param_unset(
 ) -> Result<()> {
     let key_name = subcmd_args.value_of(KEY_ARG).unwrap();
     let proj_id = resolved.project_id();
+    let proj_name = resolved.project_display_name();
     let env_id = resolved.environment_id();
+    let env_name = resolved.environment_display_name();
     let result = parameters.delete_parameter_value(rest_cfg, proj_id, env_id, key_name);
     match result {
         Ok(Some(_)) => {
             println!(
                 "Successfully removed parameter value '{}' from project '{}' for environment '{}'.",
-                key_name,
-                resolved.project_display_name(),
-                resolved.environment_display_name()
+                key_name, proj_name, env_name,
             );
         }
         Ok(None) => {
             println!(
                 "Did not find parameter value '{}' to delete from project '{}' for environment '{}'.",
-                key_name,
-                resolved.project_display_name(),
-                resolved.environment_display_name()
+                key_name, proj_name, env_name,
             )
         }
         _ => {
             println!(
                 "Failed to remove parameter value '{}' from project '{}' for environment '{}'.",
-                key_name,
-                resolved.project_display_name(),
-                resolved.environment_display_name()
+                key_name, proj_name, env_name,
             );
         }
     };

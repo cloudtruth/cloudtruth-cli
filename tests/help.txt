@@ -378,7 +378,10 @@ OPTIONS:
                               yaml]
 ========================================
 cloudtruth-parameters-set 
-Set a value in the selected project/environment for an existing parameter or creates a new one if needed
+Set a value in the selected project/environment for an existing parameter or creates a new one if needed.
+
+The parameter rule options have a 'no' version to delete the rule. For example, to set the maximum length of a parameter
+use '--max-len <value>', and remove it with '--no-max-len'.
 
 USAGE:
     cloudtruth parameters set [FLAGS] [OPTIONS] <KEY>
@@ -391,6 +394,11 @@ FLAGS:
 OPTIONS:
     -f, --fqn <FQN>             Fully Qualified Name (FQN) reference for dynamic parameter.
     -j, --jmes <JMES>           JMES path within FQN for dynamic parameter
+        --max <MAX>             Set parameter rule maximum value
+        --max-len <MAX-LEN>     Set parameter rule maximum length value
+        --min <MIN>             Set parameter rule minimum value
+        --min-len <MIN-LEN>     Set parameter rule minimum length value
+        --regex <REGEX>         Set parameter rule regex value
     -d, --desc <description>    Parameter description
     -i, --input <input-file>    Read the static value from the local input file
     -t, --type <param-type>     The parameter type [possible values: bool, string, integer]

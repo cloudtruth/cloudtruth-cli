@@ -1,10 +1,10 @@
 use crate::database::environments::{EnvironmentUrlMap, Environments};
-use crate::database::openapi::{extract_details, OpenApiConfig, PAGE_SIZE, WRAP_SECRETS};
+use crate::database::openapi::{OpenApiConfig, PAGE_SIZE, WRAP_SECRETS};
 use cloudtruth_restapi::apis::projects_api::*;
 use cloudtruth_restapi::apis::Error::{self, ResponseError};
 use cloudtruth_restapi::models::{
-    Parameter, ParameterCreate, ParameterRule, ParameterRuleTypeEnum, ParameterTypeEnum,
-    PatchedParameter, PatchedValue, Value, ValueCreate,
+    Parameter, ParameterCreate, ParameterRule, ParameterRuleCreate, ParameterRuleTypeEnum,
+    ParameterTypeEnum, PatchedParameter, PatchedParameterRule, PatchedValue, Value, ValueCreate,
 };
 use once_cell::sync::OnceCell;
 use std::collections::HashMap;
@@ -50,7 +50,7 @@ pub enum ParamType {
     Integer,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum ParamRuleType {
     Max,
     Min,
@@ -102,6 +102,18 @@ impl ParameterDetails {
         self.created_at = env_value.created_at.clone();
         self.modified_at = env_value.modified_at.clone();
         self.error = env_value.dynamic_error.clone().unwrap_or_default();
+    }
+
+    /// Gets the first id matching the provided type
+    pub fn get_rule_id(&self, rule_type: ParamRuleType) -> Option<String> {
+        let mut result: Option<String> = None;
+        for rule in &self.rules {
+            if rule.rule_type == rule_type {
+                result = Some(rule.id.clone());
+                break;
+            }
+        }
+        result
     }
 }
 
@@ -232,6 +244,18 @@ impl From<ParameterRuleTypeEnum> for ParamRuleType {
     }
 }
 
+impl From<ParamRuleType> for ParameterRuleTypeEnum {
+    fn from(ct: ParamRuleType) -> Self {
+        match ct {
+            ParamRuleType::Max => Self::Max,
+            ParamRuleType::Min => Self::Min,
+            ParamRuleType::MaxLen => Self::MaxLen,
+            ParamRuleType::MinLen => Self::MinLen,
+            ParamRuleType::Regex => Self::Regex,
+        }
+    }
+}
+
 impl fmt::Display for ParamRuleType {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
@@ -292,7 +316,8 @@ pub enum ParameterValueError {
     CreateError(Error<ProjectsParametersValuesCreateError>),
     UpdateError(Error<ProjectsParametersValuesPartialUpdateError>),
     InvalidFqnOrJmesPath(String),
-    FqnOrJmesPathNotFound(String),
+    RuleViolation(String),
+    UnhandledError(String),
 }
 
 impl fmt::Display for ParameterValueError {
@@ -301,20 +326,65 @@ impl fmt::Display for ParameterValueError {
             ParameterValueError::InvalidFqnOrJmesPath(msg) => {
                 write!(f, "Invalid FQN or JMES path expression: {}", msg)
             }
-            ParameterValueError::FqnOrJmesPathNotFound(msg) => {
-                write!(f, "Did not find FQN or JMES path: {}", msg)
-            }
             ParameterValueError::CreateError(e) => {
                 write!(f, "{}", e.to_string())
             }
             ParameterValueError::UpdateError(e) => {
                 write!(f, "{}", e.to_string())
             }
+            ParameterValueError::RuleViolation(msg) => {
+                write!(f, "Rule violation: {}", msg)
+            }
+            ParameterValueError::UnhandledError(msg) => {
+                write!(f, "Unhandled error: {}", msg)
+            }
         }
     }
 }
 
 impl error::Error for ParameterValueError {}
+
+fn extract_message(value: &serde_json::Value) -> String {
+    if value.is_string() {
+        return value
+            .to_string()
+            .trim_start_matches('"')
+            .trim_end_matches('"')
+            .to_string();
+    }
+
+    if value.is_array() {
+        let mut result = "".to_string();
+        for v in value.as_array().unwrap() {
+            if !result.is_empty() {
+                result.push_str("; ")
+            }
+            // recursively call into this until we have a string
+            let obj_str = extract_message(v);
+            result.push_str(obj_str.as_str());
+        }
+        return result;
+    }
+
+    value.to_string()
+}
+
+/// This method is to handle the different errors currently emmited by Value create/update.
+fn extract_error(content: &str) -> ParameterValueError {
+    let json_result: Result<serde_json::Value, serde_json::Error> = serde_json::from_str(content);
+    if let Ok(value) = json_result {
+        if let Some(item) = value.get("static_value") {
+            return ParameterValueError::RuleViolation(extract_message(item));
+        }
+        if let Some(item) = value.get("__all__") {
+            return ParameterValueError::InvalidFqnOrJmesPath(extract_message(item));
+        }
+        if let Some(item) = value.get("detail") {
+            return ParameterValueError::UnhandledError(extract_message(item));
+        }
+    }
+    ParameterValueError::UnhandledError(content.to_string())
+}
 
 impl Parameters {
     pub fn new() -> Self {
@@ -710,12 +780,8 @@ impl Parameters {
         match response {
             Ok(api_value) => Ok(api_value.id),
             Err(ResponseError(ref content)) => match content.status.as_u16() {
-                400 => Err(ParameterValueError::InvalidFqnOrJmesPath(extract_details(
-                    &content.content,
-                ))),
-                404 => Err(ParameterValueError::FqnOrJmesPathNotFound(extract_details(
-                    &content.content,
-                ))),
+                400 => Err(extract_error(&content.content)),
+                404 => Err(extract_error(&content.content)),
                 _ => Err(ParameterValueError::CreateError(response.unwrap_err())),
             },
             Err(e) => Err(ParameterValueError::CreateError(e)),
@@ -761,15 +827,66 @@ impl Parameters {
         match response {
             Ok(api_value) => Ok(api_value.id),
             Err(ResponseError(ref content)) => match content.status.as_u16() {
-                400 => Err(ParameterValueError::InvalidFqnOrJmesPath(extract_details(
-                    &content.content,
-                ))),
-                404 => Err(ParameterValueError::FqnOrJmesPathNotFound(extract_details(
-                    &content.content,
-                ))),
+                400 => Err(extract_error(&content.content)),
+                404 => Err(extract_error(&content.content)),
                 _ => Err(ParameterValueError::UpdateError(response.unwrap_err())),
             },
             Err(e) => Err(ParameterValueError::UpdateError(e)),
         }
+    }
+
+    pub fn create_parameter_rule(
+        &self,
+        rest_cfg: &OpenApiConfig,
+        proj_id: &str,
+        param_id: &str,
+        rule_type: ParamRuleType,
+        constraint: &str,
+    ) -> Result<String, Error<ProjectsParametersRulesCreateError>> {
+        let rule_create = ParameterRuleCreate {
+            _type: ParameterRuleTypeEnum::from(rule_type),
+            constraint: constraint.to_string(),
+        };
+        let response = projects_parameters_rules_create(rest_cfg, param_id, proj_id, rule_create)?;
+        Ok(response.id)
+    }
+
+    pub fn update_parameter_rule(
+        &self,
+        rest_cfg: &OpenApiConfig,
+        proj_id: &str,
+        param_id: &str,
+        rule_id: &str,
+        rule_type: Option<ParamRuleType>,
+        constraint: Option<&str>,
+    ) -> Result<String, Error<ProjectsParametersRulesPartialUpdateError>> {
+        let patch_rule = PatchedParameterRule {
+            url: None,
+            id: None,
+            parameter: None,
+            _type: rule_type.map(ParameterRuleTypeEnum::from),
+            constraint: constraint.map(String::from),
+            created_at: None,
+            modified_at: None,
+        };
+        let response = projects_parameters_rules_partial_update(
+            rest_cfg,
+            rule_id,
+            param_id,
+            proj_id,
+            Some(patch_rule),
+        )?;
+        Ok(response.id)
+    }
+
+    pub fn delete_parameter_rule(
+        &self,
+        rest_cfg: &OpenApiConfig,
+        proj_id: &str,
+        param_id: &str,
+        rule_id: &str,
+    ) -> Result<String, Error<ProjectsParametersRulesDestroyError>> {
+        let _response = projects_parameters_rules_destroy(rest_cfg, rule_id, param_id, proj_id)?;
+        Ok(rule_id.to_string())
     }
 }

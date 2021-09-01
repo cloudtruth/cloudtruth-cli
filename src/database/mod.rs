@@ -9,8 +9,8 @@ pub use environments::{EnvironmentDetails, EnvironmentError, EnvironmentUrlMap, 
 pub use integrations::{IntegrationDetails, IntegrationError, Integrations};
 pub use openapi::OpenApiConfig;
 pub use parameters::{
-    ParamExportFormat, ParamExportOptions, ParamType, ParameterDetailMap, ParameterDetails,
-    Parameters,
+    ParamExportFormat, ParamExportOptions, ParamRuleType, ParamType, ParameterDetailMap,
+    ParameterDetails, Parameters,
 };
 pub use projects::{ProjectDetails, ProjectError, Projects};
 pub use templates::{TemplateDetails, Templates};

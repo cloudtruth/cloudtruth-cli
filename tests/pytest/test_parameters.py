@@ -120,7 +120,7 @@ my_param,cRaZy value,default,string,0,static,false,this is just a test descripti
         # no updates provided
         result = self.run_cli(cmd_env, sub_cmd + f"set {key1}")
         self.assertEqual(result.return_value, 0)
-        self.assertIn("Please provide at least one of", result.err())
+        self.assertIn("Please provide at least one update", result.err())
 
         result = self.run_cli(cmd_env, sub_cmd + "ls -v")
         self.assertTrue(result.out_contains_both(key1, value2))
@@ -876,15 +876,51 @@ SECOND_SECRET='sensitive value with spaces'
         self.assertTrue(result.out_contains_value(empty_msg))
 
         #####################
-        # no such FQN
+        # poorly structured FQN
+        completely_bogus_msg = "missing the network location"
+
         result = self.run_cli(cmd_env, sub_cmd + f"set '{key1}' --fqn '{fqn}'")
         self.assertNotEqual(result.return_value, 0)
         self.assertIn(invalid_fqn_msg, result.err())
+        self.assertIn(completely_bogus_msg, result.err())
 
         # again, with a JMES path
         result = self.run_cli(cmd_env, sub_cmd + f"set '{key1}' --fqn '{fqn}' --jmes '{jmes}'")
         self.assertNotEqual(result.return_value, 0)
         self.assertIn(invalid_fqn_msg, result.err())
+        self.assertIn(completely_bogus_msg, result.err())
+
+        #####################
+        # no such FQN provider
+        fqn = "foobar://bogus::repo::directory::file"
+        no_provider_msg = "No integration provider available for"
+
+        result = self.run_cli(cmd_env, sub_cmd + f"set '{key1}' --fqn '{fqn}'")
+        self.assertNotEqual(result.return_value, 0)
+        self.assertIn(invalid_fqn_msg, result.err())
+        self.assertIn(no_provider_msg, result.err())
+
+        # again, with a JMES path
+        result = self.run_cli(cmd_env, sub_cmd + f"set '{key1}' --fqn '{fqn}' --jmes '{jmes}'")
+        self.assertNotEqual(result.return_value, 0)
+        self.assertIn(invalid_fqn_msg, result.err())
+        self.assertIn(no_provider_msg, result.err())
+
+        #####################
+        # no such FQN, but a legit provider
+        fqn = "github://this-is-a-crazy/repo-path/that/does/not/exist"
+        no_integration_msg = "No integration available for"
+
+        result = self.run_cli(cmd_env, sub_cmd + f"set '{key1}' --fqn '{fqn}'")
+        self.assertNotEqual(result.return_value, 0)
+        self.assertIn(invalid_fqn_msg, result.err())
+        self.assertIn(no_integration_msg, result.err())
+
+        # again, with a JMES path
+        result = self.run_cli(cmd_env, sub_cmd + f"set '{key1}' --fqn '{fqn}' --jmes '{jmes}'")
+        self.assertNotEqual(result.return_value, 0)
+        self.assertIn(invalid_fqn_msg, result.err())
+        self.assertIn(no_integration_msg, result.err())
 
         # check that nothing was added
         sub_cmd = base_cmd + f" --project {proj_name} parameters "
@@ -1443,4 +1479,375 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
         # cleanup
         self.delete_environment(cmd_env, env_a)
         self.delete_environment(cmd_env, env_b)
+        self.delete_project(cmd_env, proj_name)
+
+    def test_parameter_types_basic(self):
+        base_cmd = self.get_cli_base_cmd()
+        cmd_env = self.get_cmd_env()
+
+        # add a new project
+        proj_name = self.make_name("test-basic-types")
+        self.create_project(cmd_env, proj_name)
+        param_cmd = base_cmd + f"--project {proj_name} param "
+        list_cmd = param_cmd + "ls -v -f csv"
+        type_err_msg = "Rule violation"
+
+        #####################
+        # boolean tests
+        bool_param = "param1"
+        bool_value = "true"
+        bool_type = "bool"
+
+        result = self.run_cli(cmd_env, param_cmd + f"set {bool_param} -t {bool_type} -v {bool_value}")
+        self.assertEqual(result.return_value, 0)
+        self.assertIn(f"Successfully updated parameter '{bool_param}'", result.out())
+
+        # see it in the display
+        result = self.run_cli(cmd_env, list_cmd)
+        self.assertIn(f"{bool_param},{bool_value},default,{bool_type},0,static,false", result.out())
+
+        # try to set value to non-bool value
+        result = self.run_cli(cmd_env, param_cmd + f"set {bool_param} -v not-a-bool")
+        self.assertNotEqual(result.return_value, 0)
+        self.assertIn(type_err_msg, result.err())
+        self.assertIn("Value is not of type bool", result.err())
+
+        # change the type back to string
+        self.set_param(cmd_env, proj_name, bool_param, bool_value, param_type="string")
+        result = self.run_cli(cmd_env, list_cmd)
+        self.assertIn(f"{bool_param},{bool_value},default,string,0,static,false", result.out())
+
+        # update back to bool
+        self.set_param(cmd_env, proj_name, bool_param, bool_value, param_type=bool_type)
+        result = self.run_cli(cmd_env, list_cmd)
+        self.assertIn(f"{bool_param},{bool_value},default,{bool_type},0,static,false", result.out())
+
+        # toggle to secret
+        self.set_param(cmd_env, proj_name, bool_param, bool_value, secret=True)
+        result = self.run_cli(cmd_env, list_cmd)
+        self.assertIn(f"{bool_param},{REDACTED},default,{bool_type},0,static,true", result.out())
+
+        # toggle back from secret
+        self.set_param(cmd_env, proj_name, bool_param, bool_value, secret=False)
+        result = self.run_cli(cmd_env, list_cmd)
+        self.assertIn(f"{bool_param},{bool_value},default,{bool_type},0,static,false", result.out())
+
+        #####################
+        # integer tests
+        int_param = "param2"
+        int_value = "-1234"
+        int_type = "integer"
+
+        result = self.run_cli(cmd_env, param_cmd + f"set {int_param} -t {int_type} -v {int_value}")
+        self.assertEqual(result.return_value, 0)
+        self.assertIn(f"Successfully updated parameter '{int_param}'", result.out())
+
+        # see it in the display
+        result = self.run_cli(cmd_env, list_cmd)
+        self.assertIn(f"{int_param},{int_value},default,{int_type},0,static,false", result.out())
+
+        # try to set value to non-integer value
+        result = self.run_cli(cmd_env, param_cmd + f"set {int_param} -v not-an-integer")
+        self.assertNotEqual(result.return_value, 0)
+        self.assertIn(type_err_msg, result.err())
+        self.assertIn("Value is not of type integer", result.err())
+
+        # change the type back to string
+        self.set_param(cmd_env, proj_name, int_param, int_value, param_type="string")
+        result = self.run_cli(cmd_env, list_cmd)
+        self.assertIn(f"{int_param},{int_value},default,string,0,static,false", result.out())
+
+        # update back to integer
+        self.set_param(cmd_env, proj_name, int_param, int_value, param_type=int_type)
+        result = self.run_cli(cmd_env, list_cmd)
+        self.assertIn(f"{int_param},{int_value},default,{int_type},0,static,false", result.out())
+
+        # toggle to secret
+        self.set_param(cmd_env, proj_name, int_param, int_value, secret=True)
+        result = self.run_cli(cmd_env, list_cmd)
+        self.assertIn(f"{int_param},{REDACTED},default,{int_type},0,static,true", result.out())
+
+        # toggle back from secret
+        self.set_param(cmd_env, proj_name, int_param, int_value, secret=False)
+        result = self.run_cli(cmd_env, list_cmd)
+        self.assertIn(f"{int_param},{int_value},default,{int_type},0,static,false", result.out())
+
+        # NOTE: no real need to test 'string' types, since that is the default and no illegal values
+
+        # cleanup
+        self.delete_project(cmd_env, proj_name)
+
+    def test_parameter_rules_strings(self):
+        base_cmd = self.get_cli_base_cmd()
+        cmd_env = self.get_cmd_env()
+
+        # add a new project
+        proj_name = self.make_name("test-string-rules")
+        self.create_project(cmd_env, proj_name)
+        param_cmd = base_cmd + f"--project {proj_name} param "
+        list_cmd = param_cmd + "ls -v -f csv"
+        rules_cmd = param_cmd + "ls --rules -f csv"
+        rule_err_msg = "Rule violation"
+
+        # create a basic parameter without a value, so the rule cannot be violated
+        param1 = "param1"
+        self.set_param(cmd_env, proj_name, param1, "some-value")
+        self.unset_param(cmd_env, proj_name, param1)
+
+        # see no rules
+        result = self.run_cli(cmd_env, rules_cmd)
+        self.assertEqual(result.return_value, 0)
+        self.assertIn("No parameter rules found in project", result.out())
+
+        set_cmd = param_cmd + f"set {param1} "
+        min_len = 10
+        max_len = 15
+        regex = "abc.*"
+
+        result = self.run_cli(cmd_env, set_cmd + f"--min-len {min_len} --max-len {max_len} --regex '{regex}'")
+        self.assertEqual(result.return_value, 0)
+
+        # see the 3 rules are registered
+        result = self.run_cli(cmd_env, list_cmd)
+        self.assertIn(f"{param1},-,,string,3,static,false", result.out())
+
+        # check the --rules output (csv)
+        result = self.run_cli(cmd_env, rules_cmd)
+        self.assertEqual(result.return_value, 0)
+        self.assertIn(f"{param1},max-len,{max_len}", result.out())
+        self.assertIn(f"{param1},min-len,{min_len}", result.out())
+        self.assertIn(f"{param1},regex,{regex}", result.out())
+
+        result = self.run_cli(cmd_env, param_cmd + "list --rules")
+        self.assertEqual(result.return_value, 0)
+        self.assertEqual(result.out(), """\
++--------+-----------+------------+
+| Name   | Rule Type | Constraint |
++--------+-----------+------------+
+| param1 | max-len   | 15         |
+| param1 | min-len   | 10         |
+| param1 | regex     | abc.*      |
++--------+-----------+------------+
+""")
+
+        # test min-len
+        value = "a" * (min_len - 1)
+        result = self.run_cli(cmd_env, set_cmd + f"-v {value}")
+        self.assertNotEqual(result.return_value, 0)
+        self.assertIn(rule_err_msg, result.err())
+        self.assertIn(f"Value must be at least {min_len} characters", result.err())
+
+        # test max-len
+        value = "a" * (max_len + 1)
+        result = self.run_cli(cmd_env, set_cmd + f"-v {value}")
+        self.assertNotEqual(result.return_value, 0)
+        self.assertIn(rule_err_msg, result.err())
+        self.assertIn(f"Value must be at most {max_len} characters", result.err())
+
+        # test regex
+        value = "a" * int((max_len + max_len) / 2)
+        result = self.run_cli(cmd_env, set_cmd + f"-v {value}")
+        self.assertNotEqual(result.return_value, 0)
+        self.assertIn(rule_err_msg, result.err())
+        self.assertIn("Value does not match regular expression", result.err())
+
+        # something in the middle, so it is successful
+        value = "abc" * int((max_len + min_len) / 6)
+        result = self.run_cli(cmd_env, set_cmd + f"-v {value}")
+        self.assertEqual(result.return_value, 0)
+
+        result = self.run_cli(cmd_env, list_cmd)
+        self.assertIn(f"{param1},{value},default,string,3,static,false", result.out())
+
+        #################
+        # update the rules
+        min_len = int(min_len / 2)
+        result = self.run_cli(cmd_env, set_cmd + f"--min-len {min_len}")
+        self.assertEqual(result.return_value, 0)
+
+        max_len = max_len * 2
+        result = self.run_cli(cmd_env, set_cmd + f"--max-len {max_len}")
+        self.assertEqual(result.return_value, 0)
+
+        regex = "a.*"
+        result = self.run_cli(cmd_env, set_cmd + f"--regex '{regex}'")
+        self.assertEqual(result.return_value, 0)
+
+        # see the 3 rules are registered
+        result = self.run_cli(cmd_env, list_cmd)
+        self.assertIn(f"{param1},{value},default,string,3,static,false", result.out())
+
+        # check the --rules output (csv)
+        result = self.run_cli(cmd_env, rules_cmd)
+        self.assertEqual(result.return_value, 0)
+        self.assertIn(f"{param1},max-len,{max_len}", result.out())
+        self.assertIn(f"{param1},min-len,{min_len}", result.out())
+        self.assertIn(f"{param1},regex,{regex}", result.out())
+
+        ################
+        # remove the rules, one by one
+
+        # regex
+        result = self.run_cli(cmd_env, set_cmd + "--no-regex")
+        self.assertEqual(result.return_value, 0)
+
+        result = self.run_cli(cmd_env, list_cmd)
+        self.assertIn(f"{param1},{value},default,string,2,static,false", result.out())
+
+        result = self.run_cli(cmd_env, rules_cmd)
+        self.assertIn(f"{param1},max-len,{max_len}", result.out())
+        self.assertIn(f"{param1},min-len,{min_len}", result.out())
+        self.assertNotIn("regex", result.out())
+
+        # max-len
+        result = self.run_cli(cmd_env, set_cmd + "--no-max-len")
+        self.assertEqual(result.return_value, 0)
+
+        result = self.run_cli(cmd_env, list_cmd)
+        self.assertIn(f"{param1},{value},default,string,1,static,false", result.out())
+
+        result = self.run_cli(cmd_env, rules_cmd)
+        self.assertIn(f"{param1},min-len,{min_len}", result.out())
+        self.assertNotIn("max-len", result.out())
+        self.assertNotIn("regex", result.out())
+
+        # min-len
+        result = self.run_cli(cmd_env, set_cmd + "--no-min-len")
+        self.assertEqual(result.return_value, 0)
+
+        result = self.run_cli(cmd_env, list_cmd)
+        self.assertIn(f"{param1},{value},default,string,0,static,false", result.out())
+
+        result = self.run_cli(cmd_env, rules_cmd)
+        self.assertIn("No parameter rules found in project", result.out())
+
+        # TODO: failed create/update with values in place
+        # TODO: negative tests for bad rule types: --max, and --min
+
+        # cleanup
+        self.delete_project(cmd_env, proj_name)
+
+    def test_parameter_rules_integer(self):
+        base_cmd = self.get_cli_base_cmd()
+        cmd_env = self.get_cmd_env()
+
+        # add a new project
+        proj_name = self.make_name("test-integer-rules")
+        self.create_project(cmd_env, proj_name)
+        param_cmd = base_cmd + f"--project {proj_name} param "
+        list_cmd = param_cmd + "ls -v -f csv"
+        rules_cmd = param_cmd + "ls --rules -f csv"
+        rule_err_msg = "Rule violation"
+
+        # create a basic parameter without a value, so the rule cannot be violated
+        param1 = "param1"
+        self.set_param(cmd_env, proj_name, param1, "2154", param_type="integer")
+        self.unset_param(cmd_env, proj_name, param1)
+
+        # see no rules
+        result = self.run_cli(cmd_env, rules_cmd)
+        self.assertEqual(result.return_value, 0)
+        self.assertIn("No parameter rules found in project", result.out())
+
+        #######################
+        # string stuff
+        set_cmd = param_cmd + f"set {param1} "
+        min_value = 1000
+        max_value = 3000
+
+        result = self.run_cli(cmd_env, set_cmd + f"--min {min_value} --max {max_value}")
+        self.assertEqual(result.return_value, 0)
+
+        # see the 2 rules are registered
+        result = self.run_cli(cmd_env, list_cmd)
+        self.assertIn(f"{param1},-,,integer,2,static,false", result.out())
+
+        # check the --rules output (csv)
+        result = self.run_cli(cmd_env, rules_cmd)
+        self.assertEqual(result.return_value, 0)
+        self.assertIn(f"{param1},max,{max_value}", result.out())
+        self.assertIn(f"{param1},min,{min_value}", result.out())
+
+        result = self.run_cli(cmd_env, param_cmd + "list --rules")
+        self.assertEqual(result.return_value, 0)
+        self.assertEqual(result.out(), """\
++--------+-----------+------------+
+| Name   | Rule Type | Constraint |
++--------+-----------+------------+
+| param1 | max       | 3000       |
+| param1 | min       | 1000       |
++--------+-----------+------------+
+""")
+
+        # test min
+        value = min_value - 1
+        result = self.run_cli(cmd_env, set_cmd + f"-v {value}")
+        self.assertNotEqual(result.return_value, 0)
+        self.assertIn(rule_err_msg, result.err())
+        self.assertIn(f"Value is less than the minimum value of {min_value}", result.err())
+
+        # test max
+        value = max_value + 1
+        result = self.run_cli(cmd_env, set_cmd + f"-v {value}")
+        self.assertNotEqual(result.return_value, 0)
+        self.assertIn(rule_err_msg, result.err())
+        self.assertIn(f"Value is greater than the maximum value of {max_value}", result.err())
+
+        # something in the middle, so it is successful
+        value = int((max_value + min_value) / 2)
+        result = self.run_cli(cmd_env, set_cmd + f"-v {value}")
+        self.assertEqual(result.return_value, 0)
+
+        result = self.run_cli(cmd_env, list_cmd)
+        self.assertIn(f"{param1},{value},default,integer,2,static,false", result.out())
+
+        #################
+        # update the rules
+        min_value = int(min_value / 2)
+        result = self.run_cli(cmd_env, set_cmd + f"--min {min_value}")
+        self.assertEqual(result.return_value, 0)
+
+        max_value = max_value * 2
+        result = self.run_cli(cmd_env, set_cmd + f"--max {max_value}")
+        self.assertEqual(result.return_value, 0)
+
+        # see the 2 rules are registered
+        result = self.run_cli(cmd_env, list_cmd)
+        self.assertIn(f"{param1},{value},default,integer,2,static,false", result.out())
+
+        # check the --rules output (csv)
+        result = self.run_cli(cmd_env, rules_cmd)
+        self.assertEqual(result.return_value, 0)
+        self.assertIn(f"{param1},max,{max_value}", result.out())
+        self.assertIn(f"{param1},min,{min_value}", result.out())
+
+        ################
+        # remove the rules, one by one
+
+        # max
+        result = self.run_cli(cmd_env, set_cmd + "--no-max")
+        self.assertEqual(result.return_value, 0)
+
+        result = self.run_cli(cmd_env, list_cmd)
+        self.assertIn(f"{param1},{value},default,integer,1,static,false", result.out())
+
+        result = self.run_cli(cmd_env, rules_cmd)
+        self.assertIn(f"{param1},min,{min_value}", result.out())
+        self.assertNotIn("max", result.out())
+        self.assertNotIn("regex", result.out())
+
+        # min
+        result = self.run_cli(cmd_env, set_cmd + "--no-min")
+        self.assertEqual(result.return_value, 0)
+
+        result = self.run_cli(cmd_env, list_cmd)
+        self.assertIn(f"{param1},{value},default,integer,0,static,false", result.out())
+
+        result = self.run_cli(cmd_env, rules_cmd)
+        self.assertIn("No parameter rules found in project", result.out())
+
+        # TODO: failed create/update with values in place
+        # TODO: negative tests for bad rule types: --max-len, --min-len, --regex
+
+        # cleanup
         self.delete_project(cmd_env, proj_name)
