@@ -10,7 +10,7 @@ pub use integrations::{IntegrationDetails, IntegrationError, Integrations};
 pub use openapi::OpenApiConfig;
 pub use parameters::{
     ParamExportFormat, ParamExportOptions, ParamRuleType, ParamType, ParameterDetailMap,
-    ParameterDetails, Parameters,
+    ParameterDetails, ParameterError, Parameters,
 };
 pub use projects::{ProjectDetails, ProjectError, Projects};
 pub use templates::{TemplateDetails, Templates};

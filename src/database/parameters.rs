@@ -312,39 +312,43 @@ pub struct ParamExportOptions {
 }
 
 #[derive(Debug)]
-pub enum ParameterValueError {
-    CreateError(Error<ProjectsParametersValuesCreateError>),
-    UpdateError(Error<ProjectsParametersValuesPartialUpdateError>),
+pub enum ParameterError {
+    CreateValueError(Error<ProjectsParametersValuesCreateError>),
+    UpdateValueError(Error<ProjectsParametersValuesPartialUpdateError>),
     InvalidFqnOrJmesPath(String),
     RuleViolation(String),
+    RuleError(String, String),
     UnhandledError(String),
 }
 
-impl fmt::Display for ParameterValueError {
+impl fmt::Display for ParameterError {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
-            ParameterValueError::InvalidFqnOrJmesPath(msg) => {
+            ParameterError::InvalidFqnOrJmesPath(msg) => {
                 write!(f, "Invalid FQN or JMES path expression: {}", msg)
             }
-            ParameterValueError::CreateError(e) => {
+            ParameterError::CreateValueError(e) => {
                 write!(f, "{}", e.to_string())
             }
-            ParameterValueError::UpdateError(e) => {
+            ParameterError::UpdateValueError(e) => {
                 write!(f, "{}", e.to_string())
             }
-            ParameterValueError::RuleViolation(msg) => {
+            ParameterError::RuleViolation(msg) => {
                 write!(f, "Rule violation: {}", msg)
             }
-            ParameterValueError::UnhandledError(msg) => {
+            ParameterError::RuleError(action, msg) => {
+                write!(f, "Rule {} error: {}", action, msg.replace("_len", "-len"))
+            }
+            ParameterError::UnhandledError(msg) => {
                 write!(f, "Unhandled error: {}", msg)
             }
         }
     }
 }
 
-impl error::Error for ParameterValueError {}
+impl error::Error for ParameterError {}
 
-fn extract_message(value: &serde_json::Value) -> String {
+fn extract_from_json(value: &serde_json::Value) -> String {
     if value.is_string() {
         return value
             .to_string()
@@ -360,7 +364,7 @@ fn extract_message(value: &serde_json::Value) -> String {
                 result.push_str("; ")
             }
             // recursively call into this until we have a string
-            let obj_str = extract_message(v);
+            let obj_str = extract_from_json(v);
             result.push_str(obj_str.as_str());
         }
         return result;
@@ -370,20 +374,29 @@ fn extract_message(value: &serde_json::Value) -> String {
 }
 
 /// This method is to handle the different errors currently emmited by Value create/update.
-fn extract_error(content: &str) -> ParameterValueError {
+fn extract_error(content: &str) -> ParameterError {
     let json_result: Result<serde_json::Value, serde_json::Error> = serde_json::from_str(content);
     if let Ok(value) = json_result {
         if let Some(item) = value.get("static_value") {
-            return ParameterValueError::RuleViolation(extract_message(item));
+            return ParameterError::RuleViolation(extract_from_json(item));
         }
         if let Some(item) = value.get("__all__") {
-            return ParameterValueError::InvalidFqnOrJmesPath(extract_message(item));
+            return ParameterError::InvalidFqnOrJmesPath(extract_from_json(item));
         }
         if let Some(item) = value.get("detail") {
-            return ParameterValueError::UnhandledError(extract_message(item));
+            return ParameterError::UnhandledError(extract_from_json(item));
         }
     }
-    ParameterValueError::UnhandledError(content.to_string())
+    ParameterError::UnhandledError(content.to_string())
+}
+
+/// Extracts a single string from the content without paying attention to dictionary structure.
+fn extract_message(content: &str) -> String {
+    let json_result: Result<serde_json::Value, serde_json::Error> = serde_json::from_str(content);
+    match json_result {
+        Ok(value) => extract_from_json(&value),
+        _ => "No details available".to_string(),
+    }
 }
 
 impl Parameters {
@@ -761,7 +774,7 @@ impl Parameters {
         value: Option<&str>,
         fqn: Option<&str>,
         jmes_path: Option<&str>,
-    ) -> Result<String, ParameterValueError> {
+    ) -> Result<String, ParameterError> {
         let dynamic = value.is_none() || fqn.is_some();
         let value_create = ValueCreate {
             environment: env_id.to_string(),
@@ -782,9 +795,9 @@ impl Parameters {
             Err(ResponseError(ref content)) => match content.status.as_u16() {
                 400 => Err(extract_error(&content.content)),
                 404 => Err(extract_error(&content.content)),
-                _ => Err(ParameterValueError::CreateError(response.unwrap_err())),
+                _ => Err(ParameterError::CreateValueError(response.unwrap_err())),
             },
-            Err(e) => Err(ParameterValueError::CreateError(e)),
+            Err(e) => Err(ParameterError::CreateValueError(e)),
         }
     }
 
@@ -799,7 +812,7 @@ impl Parameters {
         value: Option<&str>,
         fqn: Option<&str>,
         jmes_path: Option<&str>,
-    ) -> Result<String, ParameterValueError> {
+    ) -> Result<String, ParameterError> {
         let dynamic = fqn.is_some() || jmes_path.is_some();
         let value_update = PatchedValue {
             url: None,
@@ -829,9 +842,9 @@ impl Parameters {
             Err(ResponseError(ref content)) => match content.status.as_u16() {
                 400 => Err(extract_error(&content.content)),
                 404 => Err(extract_error(&content.content)),
-                _ => Err(ParameterValueError::UpdateError(response.unwrap_err())),
+                _ => Err(ParameterError::UpdateValueError(response.unwrap_err())),
             },
-            Err(e) => Err(ParameterValueError::UpdateError(e)),
+            Err(e) => Err(ParameterError::UpdateValueError(e)),
         }
     }
 
@@ -842,13 +855,21 @@ impl Parameters {
         param_id: &str,
         rule_type: ParamRuleType,
         constraint: &str,
-    ) -> Result<String, Error<ProjectsParametersRulesCreateError>> {
+    ) -> Result<String, ParameterError> {
         let rule_create = ParameterRuleCreate {
             _type: ParameterRuleTypeEnum::from(rule_type),
             constraint: constraint.to_string(),
         };
-        let response = projects_parameters_rules_create(rest_cfg, param_id, proj_id, rule_create)?;
-        Ok(response.id)
+        let response = projects_parameters_rules_create(rest_cfg, param_id, proj_id, rule_create);
+        let action = "create".to_string();
+        match response {
+            Ok(rule) => Ok(rule.id),
+            Err(ResponseError(ref content)) => Err(ParameterError::RuleError(
+                action,
+                extract_message(&content.content),
+            )),
+            Err(e) => Err(ParameterError::RuleError(action, e.to_string())),
+        }
     }
 
     pub fn update_parameter_rule(
@@ -859,7 +880,7 @@ impl Parameters {
         rule_id: &str,
         rule_type: Option<ParamRuleType>,
         constraint: Option<&str>,
-    ) -> Result<String, Error<ProjectsParametersRulesPartialUpdateError>> {
+    ) -> Result<String, ParameterError> {
         let patch_rule = PatchedParameterRule {
             url: None,
             id: None,
@@ -875,8 +896,16 @@ impl Parameters {
             param_id,
             proj_id,
             Some(patch_rule),
-        )?;
-        Ok(response.id)
+        );
+        let action = "update".to_string();
+        match response {
+            Ok(rule) => Ok(rule.id),
+            Err(ResponseError(ref content)) => Err(ParameterError::RuleError(
+                action,
+                extract_message(&content.content),
+            )),
+            Err(e) => Err(ParameterError::RuleError(action, e.to_string())),
+        }
     }
 
     pub fn delete_parameter_rule(
@@ -885,8 +914,16 @@ impl Parameters {
         proj_id: &str,
         param_id: &str,
         rule_id: &str,
-    ) -> Result<String, Error<ProjectsParametersRulesDestroyError>> {
-        let _response = projects_parameters_rules_destroy(rest_cfg, rule_id, param_id, proj_id)?;
-        Ok(rule_id.to_string())
+    ) -> Result<String, ParameterError> {
+        let response = projects_parameters_rules_destroy(rest_cfg, rule_id, param_id, proj_id);
+        let action = "delete".to_string();
+        match response {
+            Ok(_) => Ok(rule_id.to_string()),
+            Err(ResponseError(ref content)) => Err(ParameterError::RuleError(
+                action,
+                extract_message(&content.content),
+            )),
+            Err(e) => Err(ParameterError::RuleError(action, e.to_string())),
+        }
     }
 }

@@ -5,7 +5,7 @@ use crate::cli::{
 use crate::config::DEFAULT_ENV_NAME;
 use crate::database::{
     EnvironmentDetails, Environments, OpenApiConfig, ParamExportFormat, ParamExportOptions,
-    ParamRuleType, ParamType, ParameterDetails, Parameters,
+    ParamRuleType, ParamType, ParameterDetails, ParameterError, Parameters,
 };
 use crate::table::Table;
 use crate::{
@@ -585,34 +585,25 @@ fn set_rule_type(
     reuse: bool,
     rule_type: ParamRuleType,
     constraint: &str,
-) {
+) -> Result<(), ParameterError> {
     let rule_id = details.get_rule_id(rule_type);
     let param_id = &details.id;
     let create = !reuse || rule_id.is_none();
     if create {
-        let create_resp =
-            parameters.create_parameter_rule(rest_cfg, proj_id, param_id, rule_type, constraint);
-        if create_resp.is_err() {
-            let _ = warning_message(format!("Failed to create '{}' rule", rule_type));
-        }
+        let _ =
+            parameters.create_parameter_rule(rest_cfg, proj_id, param_id, rule_type, constraint)?;
     } else {
         // NOTE: not updating the rule_type, so just use None
-        let update_resp = parameters.update_parameter_rule(
+        let _ = parameters.update_parameter_rule(
             rest_cfg,
             proj_id,
             param_id,
             rule_id.as_ref().unwrap().as_str(),
             None,
             Some(constraint),
-        );
-        if update_resp.is_err() {
-            let _ = warning_message(format!(
-                "Failed to update '{}' rule (id='{}')",
-                rule_type,
-                rule_id.unwrap()
-            ));
-        }
+        )?;
     }
+    Ok(())
 }
 
 /// Convenience function to delete a rule of the specified type.
@@ -622,13 +613,11 @@ fn delete_rule_type(
     details: &ParameterDetails,
     proj_id: &str,
     rule_type: ParamRuleType,
-) {
+) -> Result<(), ParameterError> {
     if let Some(rule_id) = details.get_rule_id(rule_type) {
-        let del_resp = parameters.delete_parameter_rule(rest_cfg, proj_id, &details.id, &rule_id);
-        if del_resp.is_err() {
-            let _ = warning_message(format!("Failed to delete '{}' rule", rule_type));
-        }
+        let _ = parameters.delete_parameter_rule(rest_cfg, proj_id, &details.id, &rule_id)?;
     }
+    Ok(())
 }
 
 fn proc_param_set(
@@ -752,102 +741,71 @@ fn proc_param_set(
         )?;
     }
 
-    if delete_max {
-        delete_rule_type(parameters, rest_cfg, &updated, proj_id, ParamRuleType::Max);
-    }
-    if delete_min {
-        delete_rule_type(parameters, rest_cfg, &updated, proj_id, ParamRuleType::Min);
-    }
-    if delete_max_len {
-        delete_rule_type(
-            parameters,
-            rest_cfg,
-            &updated,
-            proj_id,
-            ParamRuleType::MaxLen,
-        );
-    }
-    if delete_min_len {
-        delete_rule_type(
-            parameters,
-            rest_cfg,
-            &updated,
-            proj_id,
-            ParamRuleType::MinLen,
-        );
-    }
-    if delete_regex {
-        delete_rule_type(
-            parameters,
-            rest_cfg,
-            &updated,
-            proj_id,
-            ParamRuleType::Regex,
-        );
-    }
-    if let Some(constraint) = max_rule {
-        set_rule_type(
-            parameters,
-            rest_cfg,
-            &updated,
-            proj_id,
-            !delete_max,
-            ParamRuleType::Max,
-            constraint,
-        );
+    let param_id = updated.id.as_str();
+    let mut rule_errors: Vec<ParameterError> = Vec::new();
+
+    struct RuleDeletion(ParamRuleType, bool);
+    let rule_deletions: Vec<RuleDeletion> = vec![
+        RuleDeletion(ParamRuleType::Max, delete_max),
+        RuleDeletion(ParamRuleType::Min, delete_min),
+        RuleDeletion(ParamRuleType::MaxLen, delete_max_len),
+        RuleDeletion(ParamRuleType::MinLen, delete_min_len),
+        RuleDeletion(ParamRuleType::Regex, delete_regex),
+    ];
+
+    for del in rule_deletions {
+        if del.1 {
+            if let Err(e) = delete_rule_type(parameters, rest_cfg, &updated, proj_id, del.0) {
+                rule_errors.push(e);
+            }
+        }
     }
 
-    if let Some(constraint) = min_rule {
-        set_rule_type(
-            parameters,
-            rest_cfg,
-            &updated,
-            proj_id,
-            !delete_min,
-            ParamRuleType::Min,
-            constraint,
-        );
+    // no need to add entries if we've already failed
+    if !rule_errors.is_empty() {
+        // make sure we don't leave stragglers around
+        if param_added {
+            // remove the parameter if added
+            let _ = parameters.delete_parameter_by_id(rest_cfg, proj_id, param_id);
+        }
+        for e in rule_errors {
+            error_message(e.to_string())?;
+        }
+        process::exit(11);
     }
 
-    if let Some(constraint) = max_len_rule {
-        set_rule_type(
-            parameters,
-            rest_cfg,
-            &updated,
-            proj_id,
-            !delete_max_len,
-            ParamRuleType::MaxLen,
-            constraint,
-        );
-    }
+    struct RuleDefinition<'a>(ParamRuleType, Option<&'a str>, bool);
+    let rule_defs: Vec<RuleDefinition> = vec![
+        RuleDefinition(ParamRuleType::Max, max_rule, !delete_max),
+        RuleDefinition(ParamRuleType::Min, min_rule, !delete_min),
+        RuleDefinition(ParamRuleType::MaxLen, max_len_rule, !delete_max_len),
+        RuleDefinition(ParamRuleType::MinLen, min_len_rule, !delete_min_len),
+        RuleDefinition(ParamRuleType::Regex, regex_rule, !delete_regex),
+    ];
 
-    if let Some(constraint) = min_len_rule {
-        set_rule_type(
-            parameters,
-            rest_cfg,
-            &updated,
-            proj_id,
-            !delete_min_len,
-            ParamRuleType::MinLen,
-            constraint,
-        );
+    for def in rule_defs {
+        if let Some(constraint) = def.1 {
+            if let Err(e) = set_rule_type(
+                parameters, rest_cfg, &updated, proj_id, def.2, def.0, constraint,
+            ) {
+                rule_errors.push(e);
+            }
+        }
     }
-
-    if let Some(constraint) = regex_rule {
-        set_rule_type(
-            parameters,
-            rest_cfg,
-            &updated,
-            proj_id,
-            !delete_regex,
-            ParamRuleType::Regex,
-            constraint,
-        );
+    if !rule_errors.is_empty() {
+        // make sure we don't leave stragglers around
+        if param_added {
+            // remove the parameter if added
+            let _ = parameters.delete_parameter_by_id(rest_cfg, proj_id, param_id);
+        }
+        for e in rule_errors {
+            error_message(e.to_string())?;
+        }
+        process::exit(12);
     }
 
     // don't do anything if there's nothing to do
     if value_field_update {
-        let param_id = updated.id.as_str();
         // if any existing environment does not match the desired environment
         if !updated.env_url.contains(env_id) {
             let value_add_result = parameters
