@@ -487,7 +487,7 @@ fn proc_param_list(
     } else if show_rules {
         // NOTE: do NOT worry about errors, since we're only concerned with params (not values)
         let mut table = Table::new("parameter");
-        let mut hdr = vec!["Name", "Rule Type", "Constraint"];
+        let mut hdr = vec!["Name", "Param Type", "Rule Type", "Constraint"];
         let mut added = false;
         if show_times {
             hdr.push("Created At");
@@ -503,6 +503,7 @@ fn proc_param_list(
                 let mut row: Vec<String>;
                 row = vec![
                     entry.key.clone(),
+                    entry.param_type.to_string(),
                     rule.rule_type.to_string(),
                     rule.constraint,
                 ];

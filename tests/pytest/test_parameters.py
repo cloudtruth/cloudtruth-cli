@@ -1616,20 +1616,20 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
         # check the --rules output (csv)
         result = self.run_cli(cmd_env, rules_cmd)
         self.assertEqual(result.return_value, 0)
-        self.assertIn(f"{param1},max-len,{max_len}", result.out())
-        self.assertIn(f"{param1},min-len,{min_len}", result.out())
-        self.assertIn(f"{param1},regex,{regex}", result.out())
+        self.assertIn(f"{param1},string,max-len,{max_len}", result.out())
+        self.assertIn(f"{param1},string,min-len,{min_len}", result.out())
+        self.assertIn(f"{param1},string,regex,{regex}", result.out())
 
         result = self.run_cli(cmd_env, param_cmd + "list --rules")
         self.assertEqual(result.return_value, 0)
         self.assertEqual(result.out(), """\
-+--------+-----------+------------+
-| Name   | Rule Type | Constraint |
-+--------+-----------+------------+
-| param1 | max-len   | 15         |
-| param1 | min-len   | 10         |
-| param1 | regex     | abc.*      |
-+--------+-----------+------------+
++--------+------------+-----------+------------+
+| Name   | Param Type | Rule Type | Constraint |
++--------+------------+-----------+------------+
+| param1 | string     | max-len   | 15         |
+| param1 | string     | min-len   | 10         |
+| param1 | string     | regex     | abc.*      |
++--------+------------+-----------+------------+
 """)
 
         # test min-len
@@ -1682,9 +1682,9 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
         # check the --rules output (csv)
         result = self.run_cli(cmd_env, rules_cmd)
         self.assertEqual(result.return_value, 0)
-        self.assertIn(f"{param1},max-len,{max_len}", result.out())
-        self.assertIn(f"{param1},min-len,{min_len}", result.out())
-        self.assertIn(f"{param1},regex,{regex}", result.out())
+        self.assertIn(f"{param1},string,max-len,{max_len}", result.out())
+        self.assertIn(f"{param1},string,min-len,{min_len}", result.out())
+        self.assertIn(f"{param1},string,regex,{regex}", result.out())
 
         ################
         # remove the rules, one by one
@@ -1697,8 +1697,8 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
         self.assertIn(f"{param1},{value},{env_name},string,2,static,false", result.out())
 
         result = self.run_cli(cmd_env, rules_cmd)
-        self.assertIn(f"{param1},max-len,{max_len}", result.out())
-        self.assertIn(f"{param1},min-len,{min_len}", result.out())
+        self.assertIn(f"{param1},string,max-len,{max_len}", result.out())
+        self.assertIn(f"{param1},string,min-len,{min_len}", result.out())
         self.assertNotIn("regex", result.out())
 
         result = self.run_cli(cmd_env, set_cmd + "--no-regex")
@@ -1712,7 +1712,7 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
         self.assertIn(f"{param1},{value},{env_name},string,1,static,false", result.out())
 
         result = self.run_cli(cmd_env, rules_cmd)
-        self.assertIn(f"{param1},min-len,{min_len}", result.out())
+        self.assertIn(f"{param1},string,min-len,{min_len}", result.out())
         self.assertNotIn("max-len", result.out())
         self.assertNotIn("regex", result.out())
 
@@ -1810,18 +1810,18 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
         # check the --rules output (csv)
         result = self.run_cli(cmd_env, rules_cmd)
         self.assertEqual(result.return_value, 0)
-        self.assertIn(f"{param1},max,{max_value}", result.out())
-        self.assertIn(f"{param1},min,{min_value}", result.out())
+        self.assertIn(f"{param1},integer,max,{max_value}", result.out())
+        self.assertIn(f"{param1},integer,min,{min_value}", result.out())
 
         result = self.run_cli(cmd_env, param_cmd + "list --rules")
         self.assertEqual(result.return_value, 0)
         self.assertEqual(result.out(), """\
-+--------+-----------+------------+
-| Name   | Rule Type | Constraint |
-+--------+-----------+------------+
-| param1 | max       | 3000       |
-| param1 | min       | 1000       |
-+--------+-----------+------------+
++--------+------------+-----------+------------+
+| Name   | Param Type | Rule Type | Constraint |
++--------+------------+-----------+------------+
+| param1 | integer    | max       | 3000       |
+| param1 | integer    | min       | 1000       |
++--------+------------+-----------+------------+
 """)
 
         # test min
@@ -1863,8 +1863,8 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
         # check the --rules output (csv)
         result = self.run_cli(cmd_env, rules_cmd)
         self.assertEqual(result.return_value, 0)
-        self.assertIn(f"{param1},max,{max_value}", result.out())
-        self.assertIn(f"{param1},min,{min_value}", result.out())
+        self.assertIn(f"{param1},integer,max,{max_value}", result.out())
+        self.assertIn(f"{param1},integer,min,{min_value}", result.out())
 
         ################
         # remove the rules, one by one
@@ -1877,7 +1877,7 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
         self.assertIn(f"{param1},{value},{env_name},integer,1,static,false", result.out())
 
         result = self.run_cli(cmd_env, rules_cmd)
-        self.assertIn(f"{param1},min,{min_value}", result.out())
+        self.assertIn(f"{param1},integer,min,{min_value}", result.out())
         self.assertNotIn("max", result.out())
         self.assertNotIn("regex", result.out())
 
