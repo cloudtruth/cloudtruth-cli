@@ -287,13 +287,6 @@ pub fn build_cli() -> App<'static, 'static> {
                     SubCommand::with_name(SET_SUBCMD)
                         .about(concat!("Set a value in the selected project/environment for ",
                             "an existing parameter or creates a new one if needed"))
-                        .long_about(concat!(
-                            "Set a value in the selected project/environment for ",
-                            "an existing parameter or creates a new one if needed.\n\n",
-                            "The parameter rule options have a 'no' version to delete the ",
-                            "rule. For example, to set the maximum length of a parameter use ",
-                            "'--max-len <value>', and remove it with '--no-max-len'."
-                        ))
                         .arg(key_arg().help("Name of parameter to set"))
                         .arg(description_option().help("Parameter description"))
                         .arg(Arg::with_name("FQN")
@@ -334,7 +327,6 @@ pub fn build_cli() -> App<'static, 'static> {
                             .help("Set parameter rule maximum value"))
                         .arg(Arg::with_name("NO-MAX")
                             .long("no-max")
-                            .hidden(true)
                             .help("Remove the parameter rule maximum value"))
                         .arg(Arg::with_name("MIN")
                             .long("min")
@@ -343,7 +335,6 @@ pub fn build_cli() -> App<'static, 'static> {
                             .help("Set parameter rule minimum value"))
                         .arg(Arg::with_name("NO-MIN")
                             .long("no-min")
-                            .hidden(true)
                             .help("Remove the parameter rule minimum value"))
                         .arg(Arg::with_name("MAX-LEN")
                             .long("max-len")
@@ -352,7 +343,6 @@ pub fn build_cli() -> App<'static, 'static> {
                             .help("Set parameter rule maximum length value"))
                         .arg(Arg::with_name("NO-MAX-LEN")
                             .long("no-max-len")
-                            .hidden(true)
                             .help("Remove the parameter rule maximum length value"))
                         .arg(Arg::with_name("MIN-LEN")
                             .long("min-len")
@@ -361,7 +351,6 @@ pub fn build_cli() -> App<'static, 'static> {
                             .help("Set parameter rule minimum length value"))
                         .arg(Arg::with_name("NO-MIN-LEN")
                             .long("no-min-len")
-                            .hidden(true)
                             .help("Remove the parameter rule minimum length value"))
                         .arg(Arg::with_name("REGEX")
                             .long("regex")
@@ -369,7 +358,6 @@ pub fn build_cli() -> App<'static, 'static> {
                             .help("Set parameter rule regex value"))
                         .arg(Arg::with_name("NO-REGEX")
                             .long("no-regex")
-                            .hidden(true)
                             .help("Remove the parameter rule regex value"))
                         .arg(Arg::with_name("value")
                             .short("v")
