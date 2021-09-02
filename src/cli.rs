@@ -291,7 +291,7 @@ pub fn build_cli() -> App<'static, 'static> {
                             "Set a value in the selected project/environment for ",
                             "an existing parameter or creates a new one if needed.\n\n",
                             "The parameter rule options have a 'no' version to delete the ",
-                            "rule. For example, to set the maximum length of a parameter use ",
+                            "rule. For example, to set the maximum\nlength of a parameter use ",
                             "'--max-len <value>', and remove it with '--no-max-len'."
                         ))
                         .arg(key_arg().help("Name of parameter to set"))
