@@ -170,9 +170,9 @@ fn default_param_value() -> &'static Value {
 impl From<&Parameter> for ParameterDetails {
     fn from(api_param: &Parameter) -> Self {
         let first = api_param.values.values().next();
-        let env_value: &Value = match first.unwrap() {
-            Some(opt) => opt,
-            None => default_param_value(),
+        let env_value: &Value = match first {
+            Some(Some(v)) => v,
+            _ => default_param_value(),
         };
 
         ParameterDetails {
@@ -190,7 +190,7 @@ impl From<&Parameter> for ParameterDetails {
             val_id: env_value.id.clone(),
             value: env_value.value.clone().unwrap_or_default(),
             env_url: env_value.environment.clone(),
-            env_name: "".to_owned(),
+            env_name: env_value.environment_name.clone(),
             dynamic: env_value.dynamic.unwrap_or(false),
             fqn: env_value.dynamic_fqn.clone().unwrap_or_default(),
             jmes_path: env_value.dynamic_filter.clone().unwrap_or_default(),
@@ -481,7 +481,6 @@ impl Parameters {
         &self,
         rest_cfg: &OpenApiConfig,
         proj_id: &str,
-        env_id: &str,
         key_name: &str,
         as_of: Option<String>,
     ) -> Option<String> {
@@ -490,7 +489,7 @@ impl Parameters {
             rest_cfg,
             proj_id,
             as_of,
-            Some(env_id),
+            None,
             Some(true),
             Some(key_name),
             None,
@@ -541,7 +540,7 @@ impl Parameters {
             None,
             PAGE_SIZE,
             Some(true),
-            Some(true),
+            None,
             WRAP_SECRETS,
         )?;
         if let Some(parameters) = response.results {
@@ -599,17 +598,19 @@ impl Parameters {
         as_of: Option<String>,
     ) -> Result<Vec<ParameterDetails>, Error<ProjectsParametersListError>> {
         let mut list: Vec<ParameterDetails> = Vec::new();
+        let env_arg = if include_values { Some(env_id) } else { None };
+        let value_arg = if include_values { None } else { Some(false) };
         let response = projects_parameters_list(
             rest_cfg,
             proj_id,
             as_of,
-            Some(env_id),
+            env_arg,
             Some(mask_secrets),
             None,
             None,
             PAGE_SIZE,
             Some(true),
-            Some(include_values),
+            value_arg,
             WRAP_SECRETS,
         )?;
         if let Some(parameters) = response.results {
@@ -622,24 +623,16 @@ impl Parameters {
     }
 
     /// Gets a map of parameter names to `ParameterDetails` in the specified environment.
-    #[allow(clippy::too_many_arguments)]
     pub fn get_parameter_detail_map(
         &self,
         rest_cfg: &OpenApiConfig,
         proj_id: &str,
         env_id: &str,
         mask_secrets: bool,
-        include_values: bool,
         as_of: Option<String>,
     ) -> Result<ParameterDetailMap, Error<ProjectsParametersListError>> {
-        let details = self.get_parameter_details(
-            rest_cfg,
-            proj_id,
-            env_id,
-            mask_secrets,
-            include_values,
-            as_of,
-        )?;
+        let details =
+            self.get_parameter_details(rest_cfg, proj_id, env_id, mask_secrets, true, as_of)?;
         let mut result = ParameterDetailMap::new();
         for entry in details {
             result.insert(entry.key.clone(), entry);

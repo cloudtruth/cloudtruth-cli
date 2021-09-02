@@ -31,8 +31,7 @@ fn proc_param_delete(
     let confirmed = subcmd_args.is_present(CONFIRM_FLAG);
     let proj_name = resolved.project_display_name();
     let proj_id = resolved.project_id();
-    let env_id = resolved.environment_id();
-    let param_id = parameters.get_id(rest_cfg, proj_id, env_id, key_name, None);
+    let param_id = parameters.get_id(rest_cfg, proj_id, key_name, None);
     if param_id.is_none() {
         println!(
             "Did not find parameter '{}' to delete from project '{}'.",
@@ -93,7 +92,6 @@ fn proc_param_diff(
     let show_secrets = subcmd_args.is_present(SECRETS_FLAG);
     let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
     let properties: Vec<&str> = subcmd_args.values_of("properties").unwrap().collect();
-    let include_values = properties.contains(&"value");
     let as_list: Vec<&str> = subcmd_args
         .values_of(AS_OF_ARG)
         .unwrap_or_default()
@@ -175,22 +173,10 @@ fn proc_param_diff(
     let env2_id = environments.id_from_map(&env2_name, &env_url_map)?;
 
     let proj_id = resolved.project_id();
-    let env1_values = parameters.get_parameter_detail_map(
-        rest_cfg,
-        proj_id,
-        &env1_id,
-        !show_secrets,
-        include_values,
-        as_of1,
-    )?;
-    let env2_values = parameters.get_parameter_detail_map(
-        rest_cfg,
-        proj_id,
-        &env2_id,
-        !show_secrets,
-        include_values,
-        as_of2,
-    )?;
+    let env1_values =
+        parameters.get_parameter_detail_map(rest_cfg, proj_id, &env1_id, !show_secrets, as_of1)?;
+    let env2_values =
+        parameters.get_parameter_detail_map(rest_cfg, proj_id, &env2_id, !show_secrets, as_of2)?;
 
     // get the names from both lists to make sure we get the added/deleted parameters, too
     let mut param_list: Vec<String> = env1_values.iter().map(|(k, _)| k.clone()).collect();
