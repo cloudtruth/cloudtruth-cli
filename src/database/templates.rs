@@ -9,6 +9,8 @@ use std::fmt;
 use std::fmt::Formatter;
 use std::result::Result;
 
+const NO_DETAILS_ERR: &str = "No details available";
+
 pub struct Templates {}
 
 #[derive(Debug)]
@@ -34,6 +36,9 @@ impl From<&Template> for TemplateDetails {
 pub enum TemplateError {
     AuthError(String),
     ListError(Error<ProjectsTemplatesListError>),
+    RetrieveApi(Error<ProjectsTemplatesRetrieveError>),
+    EvaluateApi(Error<ProjectsTemplatePreviewCreateError>),
+    EvaluateFailed(Vec<String>),
 }
 
 impl fmt::Display for TemplateError {
@@ -41,11 +46,59 @@ impl fmt::Display for TemplateError {
         match self {
             TemplateError::AuthError(msg) => write!(f, "Not Authenticated: {}", msg),
             TemplateError::ListError(e) => write!(f, "{}", e.to_string()),
+            TemplateError::RetrieveApi(e) => write!(f, "{}", e.to_string()),
+            TemplateError::EvaluateApi(e) => write!(f, "{}", e.to_string()),
+            TemplateError::EvaluateFailed(reasons) => {
+                write!(f, "Evaluation failed:\n  {}", reasons.join("\n  "))
+            }
         }
     }
 }
 
 impl error::Error for TemplateError {}
+
+fn unquote(orig: &str) -> String {
+    orig.trim_start_matches('"')
+        .trim_end_matches('"')
+        .to_string()
+}
+
+fn extract_reasons(content: &str) -> Vec<String> {
+    let mut reasons: Vec<String> = vec![];
+    let json_result: Result<serde_json::Value, serde_json::Error> = serde_json::from_str(content);
+    if let Ok(data) = json_result {
+        if let Some(details) = data.get("detail") {
+            if details.is_string() {
+                reasons.push(unquote(&details.to_string()))
+            } else if details.is_array() {
+                for failure in details.as_array().unwrap() {
+                    if failure.is_string() {
+                        reasons.push(unquote(&failure.to_string()))
+                    } else if failure.is_object() {
+                        if let Some(name) = failure.get("parameter_name") {
+                            if let Some(error) = failure.get("error_detail") {
+                                reasons.push(format!(
+                                    "{}: {}",
+                                    unquote(&name.to_string()),
+                                    unquote(&error.to_string())
+                                ));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    if reasons.is_empty() {
+        reasons.push(NO_DETAILS_ERR.to_string())
+    }
+    reasons
+}
+
+fn evaluation_error(content: &str) -> TemplateError {
+    TemplateError::EvaluateFailed(extract_reasons(content))
+}
 
 impl Templates {
     pub fn new() -> Self {
@@ -59,7 +112,7 @@ impl Templates {
         env_id: &str,
         template_name: &str,
         show_secrets: bool,
-    ) -> Result<Option<String>, Error<ProjectsTemplatesRetrieveError>> {
+    ) -> Result<Option<String>, TemplateError> {
         // TODO: convert template name to template id outside??
         let response = self.get_details_by_name(rest_cfg, proj_id, template_name);
 
@@ -70,8 +123,12 @@ impl Templates {
                 proj_id,
                 Some(env_id),
                 Some(!show_secrets),
-            )?;
-            Ok(response.body)
+            );
+            match response {
+                Ok(r) => Ok(r.body),
+                Err(ResponseError(r)) => Err(evaluation_error(&r.content)),
+                Err(e) => Err(TemplateError::RetrieveApi(e)),
+            }
         } else {
             // TODO: handle template not found??
             Ok(None)
@@ -208,7 +265,7 @@ impl Templates {
         env_id: &str,
         body: &str,
         show_secrets: bool,
-    ) -> Result<String, Error<ProjectsTemplatePreviewCreateError>> {
+    ) -> Result<String, TemplateError> {
         let preview = TemplatePreview {
             body: body.to_string(),
         };
@@ -218,7 +275,74 @@ impl Templates {
             preview,
             Some(env_id),
             Some(!show_secrets),
-        )?;
-        Ok(response.body)
+        );
+        match response {
+            Ok(r) => Ok(r.body),
+            Err(ResponseError(r)) => Err(evaluation_error(&r.content)),
+            Err(e) => Err(TemplateError::EvaluateApi(e)),
+        }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn parse_errors_empty() {
+        let values = vec![
+            "",
+            "{}",
+            "{\"detail\":[]}",
+            "{\"detail\":[{}]}",
+            "{\"detail\":[{\"error_code\": \"foo\"}]}",
+            "{\"detail\":[{\"parameter_name\":\"pname\"}]}",
+        ];
+        for content in values {
+            let results = extract_reasons(content);
+            assert_eq!(1, results.len());
+            let value = &results[0];
+            assert_eq!(value.as_str(), NO_DETAILS_ERR);
+        }
+    }
+
+    #[test]
+    fn parse_errors_single_string() {
+        let content = "{\"detail\":\"sample string\"}";
+        let results = extract_reasons(content);
+        assert_eq!(1, results.len());
+        let value = &results[0];
+        assert_eq!(value.as_str(), "sample string");
+    }
+
+    #[test]
+    fn parse_errors_multiple_string() {
+        let content = "{\"detail\":[\"sample string\",\"another string\"]}";
+        let results = extract_reasons(content);
+        assert_eq!(2, results.len());
+        let value = &results[0];
+        assert_eq!(value.as_str(), "sample string");
+        let value = &results[1];
+        assert_eq!(value.as_str(), "another string");
+    }
+
+    #[test]
+    fn parse_errors_single_struct() {
+        let content = "{\"detail\":[{\"error_code\":\"retrieval_error\",\"error_detail\":\"Error occurred while retrieving content from `test://foo/bar/`: unit test forced\",\"parameter_id\":\"c82b08af-6254-4967-85c1-66af5ffd9554\",\"parameter_name\":\"FriedRice\"}]}";
+        let results = extract_reasons(content);
+        assert_eq!(1, results.len());
+        let value = &results[0];
+        assert_eq!(value.as_str(), "FriedRice: Error occurred while retrieving content from `test://foo/bar/`: unit test forced");
+    }
+
+    #[test]
+    fn parse_errors_multiple_struct() {
+        let content = "{\"detail\":[{\"parameter_name\":\"pname\",\"error_detail\":\"some value\"},{\"parameter_name\":\"another\",\"error_detail\":\"detail two\"}]}";
+        let results = extract_reasons(content);
+        assert_eq!(2, results.len());
+        let value = &results[0];
+        assert_eq!(value.as_str(), "pname: some value");
+        let value = &results[1];
+        assert_eq!(value.as_str(), "another: detail two");
     }
 }
