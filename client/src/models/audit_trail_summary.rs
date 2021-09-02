@@ -13,13 +13,29 @@ pub struct AuditTrailSummary {
     /// The earliest audit record timestamp available.
     #[serde(rename = "earliest")]
     pub earliest: Option<String>,
+    /// The maximum number of days the system will save auditing records, based on your subscription.
+    #[serde(rename = "max_days")]
+    pub max_days: i32,
+    /// The maximum number of auditing records the system will save based on your subscription.
+    #[serde(rename = "max_records")]
+    pub max_records: i32,
     /// The total number of audit records available.
     #[serde(rename = "total")]
     pub total: i32,
 }
 
 impl AuditTrailSummary {
-    pub fn new(earliest: Option<String>, total: i32) -> AuditTrailSummary {
-        AuditTrailSummary { earliest, total }
+    pub fn new(
+        earliest: Option<String>,
+        max_days: i32,
+        max_records: i32,
+        total: i32,
+    ) -> AuditTrailSummary {
+        AuditTrailSummary {
+            earliest,
+            max_days,
+            max_records,
+            total,
+        }
     }
 }

@@ -93,6 +93,7 @@ fn proc_param_diff(
     let show_secrets = subcmd_args.is_present(SECRETS_FLAG);
     let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
     let properties: Vec<&str> = subcmd_args.values_of("properties").unwrap().collect();
+    let include_values = properties.contains(&"value");
     let as_list: Vec<&str> = subcmd_args
         .values_of(AS_OF_ARG)
         .unwrap_or_default()
@@ -180,6 +181,7 @@ fn proc_param_diff(
         proj_id,
         &env1_id,
         !show_secrets,
+        include_values,
         as_of1,
     )?;
     let env2_values = parameters.get_parameter_detail_map(
@@ -188,6 +190,7 @@ fn proc_param_diff(
         proj_id,
         &env2_id,
         !show_secrets,
+        include_values,
         as_of2,
     )?;
 
@@ -464,10 +467,17 @@ fn proc_param_list(
     let show_rules = subcmd_args.is_present("rules");
     let show_values =
         subcmd_args.is_present(VALUES_FLAG) || show_secrets || show_times || show_rules;
-    let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
-    let mut details =
-        parameters.get_parameter_details(rest_cfg, proj_id, env_id, !show_secrets, as_of)?;
     let references = subcmd_args.is_present("dynamic");
+    let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
+    let include_values = show_values && !show_rules && !references; // don't get values if not needed
+    let mut details = parameters.get_parameter_details(
+        rest_cfg,
+        proj_id,
+        env_id,
+        !show_secrets,
+        include_values,
+        as_of,
+    )?;
     let qualifier = if references { "dynamic " } else { "" };
     if references {
         // when displaying dynamic parameters, only show the dynamic ones

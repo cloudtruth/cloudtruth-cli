@@ -154,6 +154,7 @@ fn default_param_value() -> &'static Value {
         url: "".to_owned(),
         id: "".to_owned(),
         environment: "".to_owned(),
+        environment_name: "".to_owned(),
         parameter: "".to_owned(),
         dynamic: None,
         dynamic_fqn: None,
@@ -485,7 +486,7 @@ impl Parameters {
         key_name: &str,
         as_of: Option<String>,
     ) -> Option<String> {
-        // NOTE: should say "No Values" when that's an option
+        // no need to get values/secrets -- just need an ID
         let response = projects_parameters_list(
             rest_cfg,
             proj_id,
@@ -496,6 +497,7 @@ impl Parameters {
             None,
             PAGE_SIZE,
             Some(true),
+            Some(false),
             WRAP_SECRETS,
         );
         if let Ok(data) = response {
@@ -540,6 +542,7 @@ impl Parameters {
             None,
             PAGE_SIZE,
             Some(true),
+            Some(true),
             WRAP_SECRETS,
         )?;
         if let Some(parameters) = response.results {
@@ -563,10 +566,17 @@ impl Parameters {
         proj_id: &str,
         env_id: &str,
         mask_secrets: bool,
+        include_values: bool,
         as_of: Option<String>,
     ) -> Result<ParameterValueMap, Error<ProjectsParametersListError>> {
-        let parameters =
-            self.get_parameter_unresolved_details(rest_cfg, proj_id, env_id, mask_secrets, as_of)?;
+        let parameters = self.get_parameter_unresolved_details(
+            rest_cfg,
+            proj_id,
+            env_id,
+            mask_secrets,
+            include_values,
+            as_of,
+        )?;
         let mut env_vars = ParameterValueMap::new();
 
         for param in parameters {
@@ -586,10 +596,17 @@ impl Parameters {
         proj_id: &str,
         env_id: &str,
         mask_secrets: bool,
+        include_values: bool,
         as_of: Option<String>,
     ) -> Result<Vec<ParameterDetails>, Error<ProjectsParametersListError>> {
-        let mut list =
-            self.get_parameter_unresolved_details(rest_cfg, proj_id, env_id, mask_secrets, as_of)?;
+        let mut list = self.get_parameter_unresolved_details(
+            rest_cfg,
+            proj_id,
+            env_id,
+            mask_secrets,
+            include_values,
+            as_of,
+        )?;
 
         // now, resolve the source URL to the source environment name
         let environments = Environments::new();
@@ -622,6 +639,7 @@ impl Parameters {
         proj_id: &str,
         env_id: &str,
         mask_secrets: bool,
+        include_values: bool,
         as_of: Option<String>,
     ) -> Result<Vec<ParameterDetails>, Error<ProjectsParametersListError>> {
         let mut list: Vec<ParameterDetails> = Vec::new();
@@ -635,6 +653,7 @@ impl Parameters {
             None,
             PAGE_SIZE,
             Some(true),
+            Some(include_values),
             WRAP_SECRETS,
         )?;
         if let Some(parameters) = response.results {
@@ -647,6 +666,7 @@ impl Parameters {
     }
 
     /// Gets a map of parameter names to `ParameterDetails` in the specified environment.
+    #[allow(clippy::too_many_arguments)]
     pub fn get_parameter_detail_map(
         &self,
         rest_cfg: &OpenApiConfig,
@@ -654,10 +674,17 @@ impl Parameters {
         proj_id: &str,
         env_id: &str,
         mask_secrets: bool,
+        include_values: bool,
         as_of: Option<String>,
     ) -> Result<ParameterDetailMap, Error<ProjectsParametersListError>> {
-        let mut details =
-            self.get_parameter_unresolved_details(rest_cfg, proj_id, env_id, mask_secrets, as_of)?;
+        let mut details = self.get_parameter_unresolved_details(
+            rest_cfg,
+            proj_id,
+            env_id,
+            mask_secrets,
+            include_values,
+            as_of,
+        )?;
         self.resolve_environments(env_url_map, &mut details);
         let mut result = ParameterDetailMap::new();
         for entry in details {
@@ -686,6 +713,7 @@ impl Parameters {
             Some(param_name),
             None,
             PAGE_SIZE,
+            Some(true),
             Some(true),
             WRAP_SECRETS,
         )?;
@@ -818,6 +846,7 @@ impl Parameters {
             url: None,
             id: None,
             environment: None,
+            environment_name: None,
             parameter: None,
             secret: None,
             dynamic: Some(dynamic),

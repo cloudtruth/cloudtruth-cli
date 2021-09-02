@@ -20,6 +20,9 @@ pub struct Value {
     /// The environment this value is set in.
     #[serde(rename = "environment")]
     pub environment: String,
+    /// The environment name for this value.  This is a convenience to avoid another query against the server to resolve the environment url into a name.
+    #[serde(rename = "environment_name")]
+    pub environment_name: String,
     /// The parameter this value is for.
     #[serde(rename = "parameter")]
     pub parameter: String,
@@ -56,6 +59,7 @@ impl Value {
         url: String,
         id: String,
         environment: String,
+        environment_name: String,
         parameter: String,
         dynamic_error: Option<String>,
         value: Option<String>,
@@ -67,6 +71,7 @@ impl Value {
             url,
             id,
             environment,
+            environment_name,
             parameter,
             dynamic: None,
             dynamic_fqn: None,
