@@ -1,9 +1,10 @@
 use crate::database::environments::{EnvironmentUrlMap, Environments};
-use crate::database::openapi::{extract_details, OpenApiConfig, PAGE_SIZE, WRAP_SECRETS};
+use crate::database::openapi::{OpenApiConfig, PAGE_SIZE, WRAP_SECRETS};
 use cloudtruth_restapi::apis::projects_api::*;
 use cloudtruth_restapi::apis::Error::{self, ResponseError};
 use cloudtruth_restapi::models::{
-    Parameter, ParameterCreate, PatchedParameter, PatchedValue, Value, ValueCreate,
+    Parameter, ParameterCreate, ParameterRule, ParameterRuleCreate, ParameterRuleTypeEnum,
+    ParameterTypeEnum, PatchedParameter, PatchedParameterRule, PatchedValue, Value, ValueCreate,
 };
 use once_cell::sync::OnceCell;
 use std::collections::HashMap;
@@ -24,6 +25,8 @@ pub struct ParameterDetails {
     pub key: String,
     pub description: String,
     pub secret: bool,
+    pub param_type: ParamType,
+    pub rules: Vec<ParameterDetailRule>,
 
     // these come from the value for the specified environment
     pub val_id: String,
@@ -40,11 +43,37 @@ pub struct ParameterDetails {
     pub error: String,
 }
 
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub enum ParamType {
+    String,
+    Bool,
+    Integer,
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum ParamRuleType {
+    Max,
+    Min,
+    MaxLen,
+    MinLen,
+    Regex,
+}
+
+#[derive(Clone, Debug)]
+pub struct ParameterDetailRule {
+    pub id: String,
+    pub rule_type: ParamRuleType,
+    pub constraint: String,
+    pub created_at: String,
+    pub modified_at: String,
+}
+
 impl ParameterDetails {
     pub fn get_property(&self, property_name: &str) -> String {
         match property_name {
             "name" => self.key.clone(),
             "value" => self.value.clone(),
+            "type" => self.param_type.to_string(),
             "environment" => self.env_name.clone(),
             "fqn" => self.fqn.clone(),
             "jmes-path" => self.jmes_path.clone(),
@@ -74,6 +103,18 @@ impl ParameterDetails {
         self.modified_at = env_value.modified_at.clone();
         self.error = env_value.dynamic_error.clone().unwrap_or_default();
     }
+
+    /// Gets the first id matching the provided type
+    pub fn get_rule_id(&self, rule_type: ParamRuleType) -> Option<String> {
+        let mut result: Option<String> = None;
+        for rule in &self.rules {
+            if rule.rule_type == rule_type {
+                result = Some(rule.id.clone());
+                break;
+            }
+        }
+        result
+    }
 }
 
 impl Default for ParameterDetails {
@@ -83,6 +124,8 @@ impl Default for ParameterDetails {
             key: "".to_string(),
             description: "".to_string(),
             secret: false,
+            param_type: ParamType::String, // this is the default
+            rules: vec![],
             val_id: "".to_string(),
             value: DEFAULT_VALUE.to_string(),
             env_url: "".to_string(),
@@ -137,6 +180,12 @@ impl From<&Parameter> for ParameterDetails {
             key: api_param.name.clone(),
             secret: api_param.secret.unwrap_or(false) || env_value.secret.unwrap_or(false),
             description: api_param.description.clone().unwrap_or_default(),
+            param_type: ParamType::from(api_param._type.unwrap()),
+            rules: api_param
+                .rules
+                .iter()
+                .map(ParameterDetailRule::from)
+                .collect(),
 
             val_id: env_value.id.clone(),
             value: env_value.value.clone().unwrap_or_default(),
@@ -149,6 +198,84 @@ impl From<&Parameter> for ParameterDetails {
             modified_at: env_value.modified_at.clone(),
 
             error: env_value.dynamic_error.clone().unwrap_or_default(),
+        }
+    }
+}
+
+impl From<ParameterTypeEnum> for ParamType {
+    fn from(api: ParameterTypeEnum) -> Self {
+        match api {
+            ParameterTypeEnum::Bool => Self::Bool,
+            ParameterTypeEnum::String => Self::String,
+            ParameterTypeEnum::Integer => Self::Integer,
+        }
+    }
+}
+
+impl fmt::Display for ParamType {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Bool => write!(f, "bool"),
+            Self::Integer => write!(f, "integer"),
+            Self::String => write!(f, "string"),
+        }
+    }
+}
+
+impl ParamType {
+    pub fn to_api_enum(&self) -> ParameterTypeEnum {
+        match self {
+            Self::String => ParameterTypeEnum::String,
+            Self::Bool => ParameterTypeEnum::Bool,
+            Self::Integer => ParameterTypeEnum::Integer,
+        }
+    }
+}
+
+impl From<ParameterRuleTypeEnum> for ParamRuleType {
+    fn from(api: ParameterRuleTypeEnum) -> Self {
+        match api {
+            ParameterRuleTypeEnum::Max => Self::Max,
+            ParameterRuleTypeEnum::Min => Self::Min,
+            ParameterRuleTypeEnum::MaxLen => Self::MaxLen,
+            ParameterRuleTypeEnum::MinLen => Self::MinLen,
+            ParameterRuleTypeEnum::Regex => Self::Regex,
+        }
+    }
+}
+
+impl From<ParamRuleType> for ParameterRuleTypeEnum {
+    fn from(ct: ParamRuleType) -> Self {
+        match ct {
+            ParamRuleType::Max => Self::Max,
+            ParamRuleType::Min => Self::Min,
+            ParamRuleType::MaxLen => Self::MaxLen,
+            ParamRuleType::MinLen => Self::MinLen,
+            ParamRuleType::Regex => Self::Regex,
+        }
+    }
+}
+
+impl fmt::Display for ParamRuleType {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Max => write!(f, "max"),
+            Self::Min => write!(f, "min"),
+            Self::MaxLen => write!(f, "max-len"),
+            Self::MinLen => write!(f, "min-len"),
+            Self::Regex => write!(f, "regex"),
+        }
+    }
+}
+
+impl From<&ParameterRule> for ParameterDetailRule {
+    fn from(api: &ParameterRule) -> Self {
+        Self {
+            id: api.id.clone(),
+            rule_type: ParamRuleType::from(api._type),
+            constraint: api.constraint.clone(),
+            created_at: api.created_at.clone(),
+            modified_at: api.modified_at.clone(),
         }
     }
 }
@@ -185,33 +312,92 @@ pub struct ParamExportOptions {
 }
 
 #[derive(Debug)]
-pub enum ParameterValueError {
-    CreateError(Error<ProjectsParametersValuesCreateError>),
-    UpdateError(Error<ProjectsParametersValuesPartialUpdateError>),
+pub enum ParameterError {
+    CreateValueError(Error<ProjectsParametersValuesCreateError>),
+    UpdateValueError(Error<ProjectsParametersValuesPartialUpdateError>),
     InvalidFqnOrJmesPath(String),
-    FqnOrJmesPathNotFound(String),
+    RuleViolation(String),
+    RuleError(String, String),
+    UnhandledError(String),
 }
 
-impl fmt::Display for ParameterValueError {
+impl fmt::Display for ParameterError {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
-            ParameterValueError::InvalidFqnOrJmesPath(msg) => {
+            ParameterError::InvalidFqnOrJmesPath(msg) => {
                 write!(f, "Invalid FQN or JMES path expression: {}", msg)
             }
-            ParameterValueError::FqnOrJmesPathNotFound(msg) => {
-                write!(f, "Did not find FQN or JMES path: {}", msg)
-            }
-            ParameterValueError::CreateError(e) => {
+            ParameterError::CreateValueError(e) => {
                 write!(f, "{}", e.to_string())
             }
-            ParameterValueError::UpdateError(e) => {
+            ParameterError::UpdateValueError(e) => {
                 write!(f, "{}", e.to_string())
+            }
+            ParameterError::RuleViolation(msg) => {
+                write!(f, "Rule violation: {}", msg)
+            }
+            ParameterError::RuleError(action, msg) => {
+                write!(f, "Rule {} error: {}", action, msg.replace("_len", "-len"))
+            }
+            ParameterError::UnhandledError(msg) => {
+                write!(f, "Unhandled error: {}", msg)
             }
         }
     }
 }
 
-impl error::Error for ParameterValueError {}
+impl error::Error for ParameterError {}
+
+fn extract_from_json(value: &serde_json::Value) -> String {
+    if value.is_string() {
+        return value
+            .to_string()
+            .trim_start_matches('"')
+            .trim_end_matches('"')
+            .to_string();
+    }
+
+    if value.is_array() {
+        let mut result = "".to_string();
+        for v in value.as_array().unwrap() {
+            if !result.is_empty() {
+                result.push_str("; ")
+            }
+            // recursively call into this until we have a string
+            let obj_str = extract_from_json(v);
+            result.push_str(obj_str.as_str());
+        }
+        return result;
+    }
+
+    value.to_string()
+}
+
+/// This method is to handle the different errors currently emmited by Value create/update.
+fn extract_error(content: &str) -> ParameterError {
+    let json_result: Result<serde_json::Value, serde_json::Error> = serde_json::from_str(content);
+    if let Ok(value) = json_result {
+        if let Some(item) = value.get("static_value") {
+            return ParameterError::RuleViolation(extract_from_json(item));
+        }
+        if let Some(item) = value.get("__all__") {
+            return ParameterError::InvalidFqnOrJmesPath(extract_from_json(item));
+        }
+        if let Some(item) = value.get("detail") {
+            return ParameterError::UnhandledError(extract_from_json(item));
+        }
+    }
+    ParameterError::UnhandledError(content.to_string())
+}
+
+/// Extracts a single string from the content without paying attention to dictionary structure.
+fn extract_message(content: &str) -> String {
+    let json_result: Result<serde_json::Value, serde_json::Error> = serde_json::from_str(content);
+    match json_result {
+        Ok(value) => extract_from_json(&value),
+        _ => "No details available".to_string(),
+    }
+}
 
 impl Parameters {
     pub fn new() -> Self {
@@ -532,12 +718,13 @@ impl Parameters {
         key_name: &str,
         description: Option<&str>,
         secret: Option<bool>,
+        param_type: Option<ParamType>,
     ) -> Result<ParameterDetails, Error<ProjectsParametersCreateError>> {
         let param_new = ParameterCreate {
             name: key_name.to_string(),
             description: description.map(|x| x.to_string()),
             secret,
-            _type: None,
+            _type: param_type.map(|x| x.to_api_enum()),
         };
         let api_param = projects_parameters_create(rest_cfg, proj_id, param_new)?;
         Ok(ParameterDetails::from(&api_param))
@@ -546,6 +733,7 @@ impl Parameters {
     /// Updates the `Parameter` entry.
     ///
     /// It does not touch any associated `Value` entries.
+    #[allow(clippy::too_many_arguments)]
     pub fn update_parameter(
         &self,
         rest_cfg: &OpenApiConfig,
@@ -554,6 +742,7 @@ impl Parameters {
         key_name: &str,
         description: Option<&str>,
         secret: Option<bool>,
+        param_type: Option<ParamType>,
     ) -> Result<ParameterDetails, Error<ProjectsParametersPartialUpdateError>> {
         let param_update = PatchedParameter {
             url: None,
@@ -561,7 +750,7 @@ impl Parameters {
             name: Some(key_name.to_string()),
             description: description.map(String::from),
             secret,
-            _type: None,
+            _type: param_type.map(|x| x.to_api_enum()),
             rules: None,
             templates: None,
             values: None,
@@ -585,7 +774,7 @@ impl Parameters {
         value: Option<&str>,
         fqn: Option<&str>,
         jmes_path: Option<&str>,
-    ) -> Result<String, ParameterValueError> {
+    ) -> Result<String, ParameterError> {
         let dynamic = value.is_none() || fqn.is_some();
         let value_create = ValueCreate {
             environment: env_id.to_string(),
@@ -604,15 +793,11 @@ impl Parameters {
         match response {
             Ok(api_value) => Ok(api_value.id),
             Err(ResponseError(ref content)) => match content.status.as_u16() {
-                400 => Err(ParameterValueError::InvalidFqnOrJmesPath(extract_details(
-                    &content.content,
-                ))),
-                404 => Err(ParameterValueError::FqnOrJmesPathNotFound(extract_details(
-                    &content.content,
-                ))),
-                _ => Err(ParameterValueError::CreateError(response.unwrap_err())),
+                400 => Err(extract_error(&content.content)),
+                404 => Err(extract_error(&content.content)),
+                _ => Err(ParameterError::CreateValueError(response.unwrap_err())),
             },
-            Err(e) => Err(ParameterValueError::CreateError(e)),
+            Err(e) => Err(ParameterError::CreateValueError(e)),
         }
     }
 
@@ -627,7 +812,7 @@ impl Parameters {
         value: Option<&str>,
         fqn: Option<&str>,
         jmes_path: Option<&str>,
-    ) -> Result<String, ParameterValueError> {
+    ) -> Result<String, ParameterError> {
         let dynamic = fqn.is_some() || jmes_path.is_some();
         let value_update = PatchedValue {
             url: None,
@@ -655,15 +840,90 @@ impl Parameters {
         match response {
             Ok(api_value) => Ok(api_value.id),
             Err(ResponseError(ref content)) => match content.status.as_u16() {
-                400 => Err(ParameterValueError::InvalidFqnOrJmesPath(extract_details(
-                    &content.content,
-                ))),
-                404 => Err(ParameterValueError::FqnOrJmesPathNotFound(extract_details(
-                    &content.content,
-                ))),
-                _ => Err(ParameterValueError::UpdateError(response.unwrap_err())),
+                400 => Err(extract_error(&content.content)),
+                404 => Err(extract_error(&content.content)),
+                _ => Err(ParameterError::UpdateValueError(response.unwrap_err())),
             },
-            Err(e) => Err(ParameterValueError::UpdateError(e)),
+            Err(e) => Err(ParameterError::UpdateValueError(e)),
+        }
+    }
+
+    pub fn create_parameter_rule(
+        &self,
+        rest_cfg: &OpenApiConfig,
+        proj_id: &str,
+        param_id: &str,
+        rule_type: ParamRuleType,
+        constraint: &str,
+    ) -> Result<String, ParameterError> {
+        let rule_create = ParameterRuleCreate {
+            _type: ParameterRuleTypeEnum::from(rule_type),
+            constraint: constraint.to_string(),
+        };
+        let response = projects_parameters_rules_create(rest_cfg, param_id, proj_id, rule_create);
+        let action = "create".to_string();
+        match response {
+            Ok(rule) => Ok(rule.id),
+            Err(ResponseError(ref content)) => Err(ParameterError::RuleError(
+                action,
+                extract_message(&content.content),
+            )),
+            Err(e) => Err(ParameterError::RuleError(action, e.to_string())),
+        }
+    }
+
+    pub fn update_parameter_rule(
+        &self,
+        rest_cfg: &OpenApiConfig,
+        proj_id: &str,
+        param_id: &str,
+        rule_id: &str,
+        rule_type: Option<ParamRuleType>,
+        constraint: Option<&str>,
+    ) -> Result<String, ParameterError> {
+        let patch_rule = PatchedParameterRule {
+            url: None,
+            id: None,
+            parameter: None,
+            _type: rule_type.map(ParameterRuleTypeEnum::from),
+            constraint: constraint.map(String::from),
+            created_at: None,
+            modified_at: None,
+        };
+        let response = projects_parameters_rules_partial_update(
+            rest_cfg,
+            rule_id,
+            param_id,
+            proj_id,
+            Some(patch_rule),
+        );
+        let action = "update".to_string();
+        match response {
+            Ok(rule) => Ok(rule.id),
+            Err(ResponseError(ref content)) => Err(ParameterError::RuleError(
+                action,
+                extract_message(&content.content),
+            )),
+            Err(e) => Err(ParameterError::RuleError(action, e.to_string())),
+        }
+    }
+
+    pub fn delete_parameter_rule(
+        &self,
+        rest_cfg: &OpenApiConfig,
+        proj_id: &str,
+        param_id: &str,
+        rule_id: &str,
+    ) -> Result<String, ParameterError> {
+        let response = projects_parameters_rules_destroy(rest_cfg, rule_id, param_id, proj_id);
+        let action = "delete".to_string();
+        match response {
+            Ok(_) => Ok(rule_id.to_string()),
+            Err(ResponseError(ref content)) => Err(ParameterError::RuleError(
+                action,
+                extract_message(&content.content),
+            )),
+            Err(e) => Err(ParameterError::RuleError(action, e.to_string())),
         }
     }
 }

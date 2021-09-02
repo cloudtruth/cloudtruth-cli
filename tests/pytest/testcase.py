@@ -275,6 +275,7 @@ class TestCase(unittest.TestCase):
             secret: Optional[bool] = None,
             env: Optional[str] = None,
             desc: Optional[str] = None,
+            param_type: Optional[str] = None
     ) -> Result:
         cmd = self._base_cmd + f"--project '{proj}' "
         if env:
@@ -284,6 +285,8 @@ class TestCase(unittest.TestCase):
             cmd += f"--secret '{str(secret).lower()}' "
         if desc:
             cmd += f"--desc '{desc}' "
+        if param_type:
+            cmd += f"--type '{param_type}' "
         result = self.run_cli(cmd_env, cmd)
         self.assertEqual(result.return_value, 0)
         return result

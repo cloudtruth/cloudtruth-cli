@@ -276,6 +276,9 @@ pub fn build_cli() -> App<'static, 'static> {
                         .arg(Arg::with_name("dynamic")
                             .long("dynamic")
                             .help("Display the dynamic values and FQN/JMES path."))
+                        .arg(Arg::with_name("rules")
+                            .long("rules")
+                            .help("Display the parameter rules."))
                         .arg(values_flag().help("Display parameter information/values"))
                         .arg(param_as_of_arg())
                         .arg(show_times_arg())
@@ -284,6 +287,13 @@ pub fn build_cli() -> App<'static, 'static> {
                     SubCommand::with_name(SET_SUBCMD)
                         .about(concat!("Set a value in the selected project/environment for ",
                             "an existing parameter or creates a new one if needed"))
+                        .long_about(concat!(
+                            "Set a value in the selected project/environment for ",
+                            "an existing parameter or creates a new one if needed.\n\n",
+                            "The parameter rule options have a 'no' version to delete the ",
+                            "rule. For example, to set the maximum length of a parameter use ",
+                            "'--max-len <value>', and remove it with '--no-max-len'."
+                        ))
                         .arg(key_arg().help("Name of parameter to set"))
                         .arg(description_option().help("Parameter description"))
                         .arg(Arg::with_name("FQN")
@@ -311,10 +321,61 @@ pub fn build_cli() -> App<'static, 'static> {
                             .takes_value(true)
                             .possible_values(&["true", "false"])
                             .help("Flags whether this is a secret parameter"))
+                        .arg(Arg::with_name("param-type")
+                            .short("t")
+                            .long("type")
+                            .takes_value(true)
+                            .possible_values(&["bool", "string", "integer"])
+                            .help("The parameter type"))
+                        .arg(Arg::with_name("MAX")
+                            .long("max")
+                            .takes_value(true)
+                            .allow_hyphen_values(true)
+                            .help("Set parameter rule maximum value"))
+                        .arg(Arg::with_name("NO-MAX")
+                            .long("no-max")
+                            .hidden(true)
+                            .help("Remove the parameter rule maximum value"))
+                        .arg(Arg::with_name("MIN")
+                            .long("min")
+                            .takes_value(true)
+                            .allow_hyphen_values(true)
+                            .help("Set parameter rule minimum value"))
+                        .arg(Arg::with_name("NO-MIN")
+                            .long("no-min")
+                            .hidden(true)
+                            .help("Remove the parameter rule minimum value"))
+                        .arg(Arg::with_name("MAX-LEN")
+                            .long("max-len")
+                            .takes_value(true)
+                            .allow_hyphen_values(true)
+                            .help("Set parameter rule maximum length value"))
+                        .arg(Arg::with_name("NO-MAX-LEN")
+                            .long("no-max-len")
+                            .hidden(true)
+                            .help("Remove the parameter rule maximum length value"))
+                        .arg(Arg::with_name("MIN-LEN")
+                            .long("min-len")
+                            .takes_value(true)
+                            .allow_hyphen_values(true)
+                            .help("Set parameter rule minimum length value"))
+                        .arg(Arg::with_name("NO-MIN-LEN")
+                            .long("no-min-len")
+                            .hidden(true)
+                            .help("Remove the parameter rule minimum length value"))
+                        .arg(Arg::with_name("REGEX")
+                            .long("regex")
+                            .takes_value(true)
+                            .help("Set parameter rule regex value"))
+                        .arg(Arg::with_name("NO-REGEX")
+                            .long("no-regex")
+                            .hidden(true)
+                            .help("Remove the parameter rule regex value"))
                         .arg(Arg::with_name("value")
                             .short("v")
                             .long("value")
                             .takes_value(true)
+                            .allow_hyphen_values(true)
                             .help("Static parameter value")),
                     SubCommand::with_name("unset")
                         .about(concat!("Remove a value/override from the selected ",
@@ -335,6 +396,7 @@ pub fn build_cli() -> App<'static, 'static> {
                             .long("property")
                             .possible_values(&[
                                 "value",
+                                "type",
                                 "environment",
                                 "fqn",
                                 "jmes-path",

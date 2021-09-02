@@ -5,7 +5,7 @@ use crate::cli::{
 use crate::config::DEFAULT_ENV_NAME;
 use crate::database::{
     EnvironmentDetails, Environments, OpenApiConfig, ParamExportFormat, ParamExportOptions,
-    ParameterDetails, Parameters,
+    ParamRuleType, ParamType, ParameterDetails, ParameterError, Parameters,
 };
 use crate::table::Table;
 use crate::{
@@ -408,6 +408,8 @@ fn proc_param_get(
                 r#"
                   Name: {}
                   Value: {}
+                  Parameter Type: {}
+                  Rule Count: {}
                   Source: {}
                   Secret: {}
                   Description: {}
@@ -421,6 +423,8 @@ fn proc_param_get(
                 "#,
                 param.key,
                 param.value,
+                param.param_type,
+                param.rules.len(),
                 resolved.environment_display_name(),
                 param.secret,
                 param.description,
@@ -452,11 +456,15 @@ fn proc_param_list(
     resolved: &ResolvedIds,
 ) -> Result<()> {
     let proj_id = resolved.project_id();
+    let proj_name = resolved.project_display_name();
     let env_id = resolved.environment_id();
     let as_of = parse_datetime(subcmd_args.value_of(AS_OF_ARG));
     let show_secrets = subcmd_args.is_present(SECRETS_FLAG);
     let show_times = subcmd_args.is_present(SHOW_TIMES_FLAG);
-    let show_values = subcmd_args.is_present(VALUES_FLAG) || show_secrets || show_times;
+    let show_rules = subcmd_args.is_present("rules");
+    let show_values =
+        subcmd_args.is_present(VALUES_FLAG) || show_secrets || show_times || show_rules;
+    let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
     let mut details =
         parameters.get_parameter_details(rest_cfg, proj_id, env_id, !show_secrets, as_of)?;
     let references = subcmd_args.is_present("dynamic");
@@ -466,24 +474,66 @@ fn proc_param_list(
         details.retain(|x| x.dynamic)
     }
 
-    if details.is_empty() {
-        println!(
-            "No {}parameters found in project {}",
-            qualifier,
-            resolved.project_display_name()
-        );
+    if show_rules && references {
+        warning_message("Options for --dynamic and --rules are mutually exclusive".to_string())?;
+    } else if details.is_empty() {
+        println!("No {}parameters found in project {}", qualifier, proj_name,);
     } else if !show_values {
         let list = details
             .iter()
             .map(|d| d.key.clone())
             .collect::<Vec<String>>();
         println!("{}", list.join("\n"))
+    } else if show_rules {
+        // NOTE: do NOT worry about errors, since we're only concerned with params (not values)
+        let mut table = Table::new("parameter");
+        let mut hdr = vec!["Name", "Param Type", "Rule Type", "Constraint"];
+        let mut added = false;
+        if show_times {
+            hdr.push("Created At");
+            hdr.push("Modified At");
+        }
+        table.set_header(&hdr);
+        for entry in details {
+            if entry.rules.is_empty() {
+                continue;
+            }
+
+            for rule in entry.rules {
+                let mut row: Vec<String>;
+                row = vec![
+                    entry.key.clone(),
+                    entry.param_type.to_string(),
+                    rule.rule_type.to_string(),
+                    rule.constraint,
+                ];
+                if show_times {
+                    row.push(rule.created_at.clone());
+                    row.push(rule.modified_at.clone());
+                }
+                table.add_row(row);
+                added = true;
+            }
+        }
+        if added {
+            table.render(fmt)?;
+        } else {
+            println!("No parameter rules found in project '{}'", proj_name)
+        }
     } else {
-        let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
         let mut errors: Vec<String> = vec![];
         let mut table = Table::new("parameter");
         let mut hdr = if !references {
-            vec!["Name", "Value", "Source", "Type", "Secret", "Description"]
+            vec![
+                "Name",
+                "Value",
+                "Source",
+                "Param Type",
+                "Rules",
+                "Type",
+                "Secret",
+                "Description",
+            ]
         } else {
             vec!["Name", "FQN", "JMES"]
         };
@@ -505,6 +555,8 @@ fn proc_param_list(
                     entry.key,
                     entry.value,
                     entry.env_name,
+                    entry.param_type.to_string(),
+                    entry.rules.len().to_string(),
                     type_str.to_string(),
                     secret_str.to_string(),
                     entry.description,
@@ -525,6 +577,50 @@ fn proc_param_list(
     Ok(())
 }
 
+/// Convenience function to create or update a rule.
+fn set_rule_type(
+    parameters: &Parameters,
+    rest_cfg: &OpenApiConfig,
+    details: &ParameterDetails,
+    proj_id: &str,
+    reuse: bool,
+    rule_type: ParamRuleType,
+    constraint: &str,
+) -> Result<(), ParameterError> {
+    let rule_id = details.get_rule_id(rule_type);
+    let param_id = &details.id;
+    let create = !reuse || rule_id.is_none();
+    if create {
+        let _ =
+            parameters.create_parameter_rule(rest_cfg, proj_id, param_id, rule_type, constraint)?;
+    } else {
+        // NOTE: not updating the rule_type, so just use None
+        let _ = parameters.update_parameter_rule(
+            rest_cfg,
+            proj_id,
+            param_id,
+            rule_id.as_ref().unwrap().as_str(),
+            None,
+            Some(constraint),
+        )?;
+    }
+    Ok(())
+}
+
+/// Convenience function to delete a rule of the specified type.
+fn delete_rule_type(
+    parameters: &Parameters,
+    rest_cfg: &OpenApiConfig,
+    details: &ParameterDetails,
+    proj_id: &str,
+    rule_type: ParamRuleType,
+) -> Result<(), ParameterError> {
+    if let Some(rule_id) = details.get_rule_id(rule_type) {
+        let _ = parameters.delete_parameter_rule(rest_cfg, proj_id, &details.id, &rule_id)?;
+    }
+    Ok(())
+}
+
 fn proc_param_set(
     subcmd_args: &ArgMatches,
     rest_cfg: &OpenApiConfig,
@@ -532,7 +628,6 @@ fn proc_param_set(
     resolved: &ResolvedIds,
 ) -> Result<()> {
     let key_name = subcmd_args.value_of(KEY_ARG).unwrap();
-    let as_of = parse_datetime(subcmd_args.value_of(AS_OF_ARG));
     let proj_id = resolved.project_id();
     let env_id = resolved.environment_id();
     let prompt_user = subcmd_args.is_present("prompt");
@@ -545,10 +640,30 @@ fn proc_param_set(
     let rename = subcmd_args.value_of(RENAME_OPT);
     let final_name = rename.unwrap_or(key_name);
     let mut param_added = false;
+    let max_rule = subcmd_args.value_of("MAX");
+    let min_rule = subcmd_args.value_of("MIN");
+    let max_len_rule = subcmd_args.value_of("MAX-LEN");
+    let min_len_rule = subcmd_args.value_of("MIN-LEN");
+    let regex_rule = subcmd_args.value_of("REGEX");
+    let delete_max = subcmd_args.is_present("NO-MAX");
+    let delete_min = subcmd_args.is_present("NO-MIN");
+    let delete_max_len = subcmd_args.is_present("NO-MAX-LEN");
+    let delete_min_len = subcmd_args.is_present("NO-MIN-LEN");
+    let delete_regex = subcmd_args.is_present("NO-REGEX");
     let secret: Option<bool> = match subcmd_args.value_of("secret") {
         Some("false") => Some(false),
         Some("true") => Some(true),
         _ => None,
+    };
+    let param_type = match subcmd_args.value_of("param-type") {
+        None => None,
+        Some("string") => Some(ParamType::String),
+        Some("integer") => Some(ParamType::Integer),
+        Some("bool") => Some(ParamType::Bool),
+        Some(x) => {
+            warning_message(format!("Unhandled type '{}'", x))?;
+            None
+        }
     };
 
     // make sure the user did not over-specify
@@ -575,84 +690,151 @@ fn proc_param_set(
         value = Some(val_str.as_str());
     }
 
-    // make sure there is at least one parameter to updated
-    if description.is_none()
-        && secret.is_none()
-        && value.is_none()
-        && jmes_path.is_none()
-        && fqn.is_none()
-        && rename.is_none()
+    let rule_set = max_rule.is_some()
+        || min_rule.is_some()
+        || max_len_rule.is_some()
+        || min_len_rule.is_some()
+        || regex_rule.is_some();
+    let rule_del = delete_max || delete_min || delete_max_len || delete_min_len || delete_regex;
+    let param_field_update =
+        description.is_some() || secret.is_some() || param_type.is_some() || rename.is_some();
+    let value_field_update = value.is_some() || fqn.is_some() || jmes_path.is_some();
+
+    // make sure there is at least one item to updated
+    if !param_field_update && !value_field_update && !rule_set && !rule_del {
+        warn_user("Nothing changed. Please provide at least one update.".to_string())?;
+        return Ok(());
+    }
+
+    // get the original values, so that is not lost
+    let mut updated: ParameterDetails;
+    if let Some(original) =
+        parameters.get_details_by_name(rest_cfg, proj_id, env_id, key_name, true, None)?
     {
-        warn_user(
-            concat!(
-                "Nothing changed. Please provide at least one of: ",
-                "description, rename, secret, or value/fqn/jmes-path."
-            )
-            .to_string(),
-        )?;
+        // only update if there is something to update
+        if param_field_update {
+            updated = parameters.update_parameter(
+                rest_cfg,
+                proj_id,
+                &original.id,
+                final_name,
+                description,
+                secret,
+                param_type,
+            )?;
+            // copy a few fields to insure we detect the correct environment
+            updated.val_id = original.val_id;
+            updated.env_url = original.env_url;
+            updated.env_name = original.env_name;
+        } else {
+            // nothing to update here, but need to copy details
+            updated = original;
+        }
     } else {
-        // get the original values, so that is not lost
-        let mut updated: ParameterDetails;
-        if let Some(original) =
-            parameters.get_details_by_name(rest_cfg, proj_id, env_id, key_name, true, as_of)?
-        {
-            // only update if there is something to update
-            if description.is_some() || secret.is_some() || rename.is_some() {
-                updated = parameters.update_parameter(
-                    rest_cfg,
-                    proj_id,
-                    &original.id,
-                    final_name,
-                    description,
-                    secret,
-                )?;
-                // copy a few fields to insure we detect the correct environment
-                updated.val_id = original.val_id;
-                updated.env_url = original.env_url;
-                updated.env_name = original.env_name;
-            } else {
-                // nothing to update here, but need to copy details
-                updated = original;
+        param_added = true;
+        updated = parameters.create_parameter(
+            rest_cfg,
+            proj_id,
+            key_name,
+            description,
+            secret,
+            param_type,
+        )?;
+    }
+
+    let param_id = updated.id.as_str();
+    let mut rule_errors: Vec<ParameterError> = Vec::new();
+
+    struct RuleDeletion(ParamRuleType, bool);
+    let rule_deletions: Vec<RuleDeletion> = vec![
+        RuleDeletion(ParamRuleType::Max, delete_max),
+        RuleDeletion(ParamRuleType::Min, delete_min),
+        RuleDeletion(ParamRuleType::MaxLen, delete_max_len),
+        RuleDeletion(ParamRuleType::MinLen, delete_min_len),
+        RuleDeletion(ParamRuleType::Regex, delete_regex),
+    ];
+
+    for del in rule_deletions {
+        if del.1 {
+            if let Err(e) = delete_rule_type(parameters, rest_cfg, &updated, proj_id, del.0) {
+                rule_errors.push(e);
+            }
+        }
+    }
+
+    // no need to add entries if we've already failed
+    if !rule_errors.is_empty() {
+        // make sure we don't leave stragglers around
+        if param_added {
+            // remove the parameter if added
+            let _ = parameters.delete_parameter_by_id(rest_cfg, proj_id, param_id);
+        }
+        for e in rule_errors {
+            error_message(e.to_string())?;
+        }
+        process::exit(11);
+    }
+
+    struct RuleDefinition<'a>(ParamRuleType, Option<&'a str>, bool);
+    let rule_defs: Vec<RuleDefinition> = vec![
+        RuleDefinition(ParamRuleType::Max, max_rule, !delete_max),
+        RuleDefinition(ParamRuleType::Min, min_rule, !delete_min),
+        RuleDefinition(ParamRuleType::MaxLen, max_len_rule, !delete_max_len),
+        RuleDefinition(ParamRuleType::MinLen, min_len_rule, !delete_min_len),
+        RuleDefinition(ParamRuleType::Regex, regex_rule, !delete_regex),
+    ];
+
+    for def in rule_defs {
+        if let Some(constraint) = def.1 {
+            if let Err(e) = set_rule_type(
+                parameters, rest_cfg, &updated, proj_id, def.2, def.0, constraint,
+            ) {
+                rule_errors.push(e);
+            }
+        }
+    }
+    if !rule_errors.is_empty() {
+        // make sure we don't leave stragglers around
+        if param_added {
+            // remove the parameter if added
+            let _ = parameters.delete_parameter_by_id(rest_cfg, proj_id, param_id);
+        }
+        for e in rule_errors {
+            error_message(e.to_string())?;
+        }
+        process::exit(12);
+    }
+
+    // don't do anything if there's nothing to do
+    if value_field_update {
+        // if any existing environment does not match the desired environment
+        if !updated.env_url.contains(env_id) {
+            let value_add_result = parameters
+                .create_parameter_value(rest_cfg, proj_id, env_id, param_id, value, fqn, jmes_path);
+            if let Err(err) = value_add_result {
+                if param_added {
+                    let _ = parameters.delete_parameter_by_id(rest_cfg, proj_id, param_id);
+                }
+                return Err(Report::new(err));
             }
         } else {
-            param_added = true;
-            updated =
-                parameters.create_parameter(rest_cfg, proj_id, key_name, description, secret)?;
+            parameters.update_parameter_value(
+                rest_cfg,
+                proj_id,
+                param_id,
+                &updated.val_id,
+                value,
+                fqn,
+                jmes_path,
+            )?;
         }
-
-        // don't do anything if there's nothing to do
-        if value.is_some() || fqn.is_some() || jmes_path.is_some() {
-            let param_id = updated.id.as_str();
-            // if any existing environment does not match the desired environment
-            if !updated.env_url.contains(env_id) {
-                let value_add_result = parameters.create_parameter_value(
-                    rest_cfg, proj_id, env_id, param_id, value, fqn, jmes_path,
-                );
-                if let Err(err) = value_add_result {
-                    if param_added {
-                        let _ = parameters.delete_parameter_by_id(rest_cfg, proj_id, param_id);
-                    }
-                    return Err(Report::new(err));
-                }
-            } else {
-                parameters.update_parameter_value(
-                    rest_cfg,
-                    proj_id,
-                    param_id,
-                    &updated.val_id,
-                    value,
-                    fqn,
-                    jmes_path,
-                )?;
-            }
-        }
-        println!(
-            "Successfully updated parameter '{}' in project '{}' for environment '{}'.",
-            final_name,
-            resolved.project_display_name(),
-            resolved.environment_display_name(),
-        );
     }
+    println!(
+        "Successfully updated parameter '{}' in project '{}' for environment '{}'.",
+        final_name,
+        resolved.project_display_name(),
+        resolved.environment_display_name(),
+    );
     Ok(())
 }
 
@@ -664,31 +846,27 @@ fn proc_param_unset(
 ) -> Result<()> {
     let key_name = subcmd_args.value_of(KEY_ARG).unwrap();
     let proj_id = resolved.project_id();
+    let proj_name = resolved.project_display_name();
     let env_id = resolved.environment_id();
+    let env_name = resolved.environment_display_name();
     let result = parameters.delete_parameter_value(rest_cfg, proj_id, env_id, key_name);
     match result {
         Ok(Some(_)) => {
             println!(
                 "Successfully removed parameter value '{}' from project '{}' for environment '{}'.",
-                key_name,
-                resolved.project_display_name(),
-                resolved.environment_display_name()
+                key_name, proj_name, env_name,
             );
         }
         Ok(None) => {
             println!(
                 "Did not find parameter value '{}' to delete from project '{}' for environment '{}'.",
-                key_name,
-                resolved.project_display_name(),
-                resolved.environment_display_name()
+                key_name, proj_name, env_name,
             )
         }
         _ => {
             println!(
                 "Failed to remove parameter value '{}' from project '{}' for environment '{}'.",
-                key_name,
-                resolved.project_display_name(),
-                resolved.environment_display_name()
+                key_name, proj_name, env_name,
             );
         }
     };
