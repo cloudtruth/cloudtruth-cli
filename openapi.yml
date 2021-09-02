@@ -1722,13 +1722,14 @@ paths:
         name: environment
         schema:
           type: string
-          format: uuid
-        description: (Optional) ID of the environment to get parameter values for.
+        description: Name or id (uuid) of the environment to get parameter values
+          for.  Cannot be used with `values`.
       - in: query
         name: mask_secrets
         schema:
           type: boolean
-        description: If true, masks all secrets (defaults to false).
+          default: false
+        description: If true, masks all secrets.
       - in: query
         name: name
         schema:
@@ -1762,11 +1763,19 @@ paths:
           format: uuid
         required: true
       - in: query
+        name: values
+        schema:
+          type: boolean
+          default: true
+        description: 'If false, values are not returned: the `values` array will have
+          no entries. This speeds up retrieval if value content is not needed.  Cannot
+          be used with `environment`.'
+      - in: query
         name: wrap
         schema:
           type: boolean
-        description: If true, wraps all secrets (defaults to false) - see documentation
-          for more details.
+          default: false
+        description: If true, wraps all secrets - see documentation for more details.
       tags:
       - projects
       security:
@@ -2425,8 +2434,8 @@ paths:
         name: environment
         schema:
           type: string
-          format: uuid
-        description: (Optional) ID of the environment to get parameter values for.
+        description: Name or id (uuid) of the environment to get parameter values
+          for.  Cannot be used with `values`.
       - in: path
         name: id
         schema:
@@ -2438,7 +2447,8 @@ paths:
         name: mask_secrets
         schema:
           type: boolean
-        description: If true, masks all secrets (defaults to false).
+          default: false
+        description: If true, masks all secrets.
       - in: query
         name: partial_success
         schema:
@@ -2456,11 +2466,19 @@ paths:
           format: uuid
         required: true
       - in: query
+        name: values
+        schema:
+          type: boolean
+          default: true
+        description: 'If false, values are not returned: the `values` array will have
+          no entries. This speeds up retrieval if value content is not needed.  Cannot
+          be used with `environment`.'
+      - in: query
         name: wrap
         schema:
           type: boolean
-        description: If true, wraps all secrets (defaults to false) - see documentation
-          for more details.
+          default: false
+        description: If true, wraps all secrets - see documentation for more details.
       tags:
       - projects
       security:
@@ -3278,12 +3296,24 @@ components:
           nullable: true
           readOnly: true
           description: The earliest audit record timestamp available.
+        max_days:
+          type: integer
+          readOnly: true
+          description: The maximum number of days the system will save auditing records,
+            based on your subscription.
+        max_records:
+          type: integer
+          readOnly: true
+          description: The maximum number of auditing records the system will save
+            based on your subscription.
         total:
           type: integer
           readOnly: true
           description: The total number of audit records available.
       required:
       - earliest
+      - max_days
+      - max_records
       - total
     AwsEnabledRegionsEnum:
       enum:
@@ -4800,6 +4830,12 @@ components:
           format: uri
           readOnly: true
           description: The environment this value is set in.
+        environment_name:
+          type: string
+          readOnly: true
+          description: The environment name for this value.  This is a convenience
+            to avoid another query against the server to resolve the environment url
+            into a name.
         parameter:
           type: string
           format: uri
@@ -5260,6 +5296,12 @@ components:
           format: uri
           readOnly: true
           description: The environment this value is set in.
+        environment_name:
+          type: string
+          readOnly: true
+          description: The environment name for this value.  This is a convenience
+            to avoid another query against the server to resolve the environment url
+            into a name.
         parameter:
           type: string
           format: uri
@@ -5342,6 +5384,7 @@ components:
       - created_at
       - dynamic_error
       - environment
+      - environment_name
       - id
       - modified_at
       - parameter

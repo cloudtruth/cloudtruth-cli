@@ -20,6 +20,9 @@ pub struct PatchedValue {
     /// The environment this value is set in.
     #[serde(rename = "environment", skip_serializing_if = "Option::is_none")]
     pub environment: Option<String>,
+    /// The environment name for this value.  This is a convenience to avoid another query against the server to resolve the environment url into a name.
+    #[serde(rename = "environment_name", skip_serializing_if = "Option::is_none")]
+    pub environment_name: Option<String>,
     /// The parameter this value is for.
     #[serde(rename = "parameter", skip_serializing_if = "Option::is_none")]
     pub parameter: Option<String>,
@@ -57,6 +60,7 @@ impl PatchedValue {
             url: None,
             id: None,
             environment: None,
+            environment_name: None,
             parameter: None,
             dynamic: None,
             dynamic_fqn: None,

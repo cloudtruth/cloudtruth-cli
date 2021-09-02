@@ -31,8 +31,7 @@ fn proc_param_delete(
     let confirmed = subcmd_args.is_present(CONFIRM_FLAG);
     let proj_name = resolved.project_display_name();
     let proj_id = resolved.project_id();
-    let env_id = resolved.environment_id();
-    let param_id = parameters.get_id(rest_cfg, proj_id, env_id, key_name, None);
+    let param_id = parameters.get_id(rest_cfg, proj_id, key_name, None);
     if param_id.is_none() {
         println!(
             "Did not find parameter '{}' to delete from project '{}'.",
@@ -174,22 +173,10 @@ fn proc_param_diff(
     let env2_id = environments.id_from_map(&env2_name, &env_url_map)?;
 
     let proj_id = resolved.project_id();
-    let env1_values = parameters.get_parameter_detail_map(
-        rest_cfg,
-        &env_url_map,
-        proj_id,
-        &env1_id,
-        !show_secrets,
-        as_of1,
-    )?;
-    let env2_values = parameters.get_parameter_detail_map(
-        rest_cfg,
-        &env_url_map,
-        proj_id,
-        &env2_id,
-        !show_secrets,
-        as_of2,
-    )?;
+    let env1_values =
+        parameters.get_parameter_detail_map(rest_cfg, proj_id, &env1_id, !show_secrets, as_of1)?;
+    let env2_values =
+        parameters.get_parameter_detail_map(rest_cfg, proj_id, &env2_id, !show_secrets, as_of2)?;
 
     // get the names from both lists to make sure we get the added/deleted parameters, too
     let mut param_list: Vec<String> = env1_values.iter().map(|(k, _)| k.clone()).collect();
@@ -283,7 +270,6 @@ fn proc_param_env(
     let url_keys = get_env_order(&env_details);
     let param_values = parameters.get_parameter_environment_map(
         rest_cfg,
-        &env_url_map,
         proj_id,
         param_name,
         !show_secrets,
@@ -464,10 +450,17 @@ fn proc_param_list(
     let show_rules = subcmd_args.is_present("rules");
     let show_values =
         subcmd_args.is_present(VALUES_FLAG) || show_secrets || show_times || show_rules;
-    let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
-    let mut details =
-        parameters.get_parameter_details(rest_cfg, proj_id, env_id, !show_secrets, as_of)?;
     let references = subcmd_args.is_present("dynamic");
+    let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
+    let include_values = show_values && !show_rules && !references; // don't get values if not needed
+    let mut details = parameters.get_parameter_details(
+        rest_cfg,
+        proj_id,
+        env_id,
+        !show_secrets,
+        include_values,
+        as_of,
+    )?;
     let qualifier = if references { "dynamic " } else { "" };
     if references {
         // when displaying dynamic parameters, only show the dynamic ones

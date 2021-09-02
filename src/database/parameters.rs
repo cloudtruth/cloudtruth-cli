@@ -1,4 +1,3 @@
-use crate::database::environments::{EnvironmentUrlMap, Environments};
 use crate::database::openapi::{OpenApiConfig, PAGE_SIZE, WRAP_SECRETS};
 use cloudtruth_restapi::apis::projects_api::*;
 use cloudtruth_restapi::apis::Error::{self, ResponseError};
@@ -154,6 +153,7 @@ fn default_param_value() -> &'static Value {
         url: "".to_owned(),
         id: "".to_owned(),
         environment: "".to_owned(),
+        environment_name: "".to_owned(),
         parameter: "".to_owned(),
         dynamic: None,
         dynamic_fqn: None,
@@ -170,9 +170,9 @@ fn default_param_value() -> &'static Value {
 impl From<&Parameter> for ParameterDetails {
     fn from(api_param: &Parameter) -> Self {
         let first = api_param.values.values().next();
-        let env_value: &Value = match first.unwrap() {
-            Some(opt) => opt,
-            None => default_param_value(),
+        let env_value: &Value = match first {
+            Some(Some(v)) => v,
+            _ => default_param_value(),
         };
 
         ParameterDetails {
@@ -190,7 +190,7 @@ impl From<&Parameter> for ParameterDetails {
             val_id: env_value.id.clone(),
             value: env_value.value.clone().unwrap_or_default(),
             env_url: env_value.environment.clone(),
-            env_name: "".to_owned(),
+            env_name: env_value.environment_name.clone(),
             dynamic: env_value.dynamic.unwrap_or(false),
             fqn: env_value.dynamic_fqn.clone().unwrap_or_default(),
             jmes_path: env_value.dynamic_filter.clone().unwrap_or_default(),
@@ -481,21 +481,21 @@ impl Parameters {
         &self,
         rest_cfg: &OpenApiConfig,
         proj_id: &str,
-        env_id: &str,
         key_name: &str,
         as_of: Option<String>,
     ) -> Option<String> {
-        // NOTE: should say "No Values" when that's an option
+        // no need to get values/secrets -- just need an ID
         let response = projects_parameters_list(
             rest_cfg,
             proj_id,
             as_of,
-            Some(env_id),
+            None,
             Some(true),
             Some(key_name),
             None,
             PAGE_SIZE,
             Some(true),
+            Some(false),
             WRAP_SECRETS,
         );
         if let Ok(data) = response {
@@ -540,6 +540,7 @@ impl Parameters {
             None,
             PAGE_SIZE,
             Some(true),
+            None,
             WRAP_SECRETS,
         )?;
         if let Some(parameters) = response.results {
@@ -563,10 +564,17 @@ impl Parameters {
         proj_id: &str,
         env_id: &str,
         mask_secrets: bool,
+        include_values: bool,
         as_of: Option<String>,
     ) -> Result<ParameterValueMap, Error<ProjectsParametersListError>> {
-        let parameters =
-            self.get_parameter_unresolved_details(rest_cfg, proj_id, env_id, mask_secrets, as_of)?;
+        let parameters = self.get_parameter_details(
+            rest_cfg,
+            proj_id,
+            env_id,
+            mask_secrets,
+            include_values,
+            as_of,
+        )?;
         let mut env_vars = ParameterValueMap::new();
 
         for param in parameters {
@@ -586,55 +594,23 @@ impl Parameters {
         proj_id: &str,
         env_id: &str,
         mask_secrets: bool,
-        as_of: Option<String>,
-    ) -> Result<Vec<ParameterDetails>, Error<ProjectsParametersListError>> {
-        let mut list =
-            self.get_parameter_unresolved_details(rest_cfg, proj_id, env_id, mask_secrets, as_of)?;
-
-        // now, resolve the source URL to the source environment name
-        let environments = Environments::new();
-        let url_map = environments.get_url_name_map(rest_cfg);
-        self.resolve_environments(&url_map, &mut list);
-        Ok(list)
-    }
-
-    /// Resolves the `env_name` field in the `ParameterDetails` object by interrogating the
-    /// `EnvironmentUrlMap` with the `env_url` field.
-    fn resolve_environments(
-        &self,
-        env_url_map: &EnvironmentUrlMap,
-        list: &mut Vec<ParameterDetails>,
-    ) {
-        let default_key = "".to_string();
-        for details in list {
-            details.env_name = env_url_map
-                .get(&details.env_url)
-                .unwrap_or(&default_key)
-                .clone();
-        }
-    }
-
-    /// This internal function gets the `ParameterDetails`, but does not resolve the `source` from
-    /// the URL to the name.
-    fn get_parameter_unresolved_details(
-        &self,
-        rest_cfg: &OpenApiConfig,
-        proj_id: &str,
-        env_id: &str,
-        mask_secrets: bool,
+        include_values: bool,
         as_of: Option<String>,
     ) -> Result<Vec<ParameterDetails>, Error<ProjectsParametersListError>> {
         let mut list: Vec<ParameterDetails> = Vec::new();
+        let env_arg = if include_values { Some(env_id) } else { None };
+        let value_arg = if include_values { None } else { Some(false) };
         let response = projects_parameters_list(
             rest_cfg,
             proj_id,
             as_of,
-            Some(env_id),
+            env_arg,
             Some(mask_secrets),
             None,
             None,
             PAGE_SIZE,
             Some(true),
+            value_arg,
             WRAP_SECRETS,
         )?;
         if let Some(parameters) = response.results {
@@ -650,15 +626,13 @@ impl Parameters {
     pub fn get_parameter_detail_map(
         &self,
         rest_cfg: &OpenApiConfig,
-        env_url_map: &EnvironmentUrlMap,
         proj_id: &str,
         env_id: &str,
         mask_secrets: bool,
         as_of: Option<String>,
     ) -> Result<ParameterDetailMap, Error<ProjectsParametersListError>> {
-        let mut details =
-            self.get_parameter_unresolved_details(rest_cfg, proj_id, env_id, mask_secrets, as_of)?;
-        self.resolve_environments(env_url_map, &mut details);
+        let details =
+            self.get_parameter_details(rest_cfg, proj_id, env_id, mask_secrets, true, as_of)?;
         let mut result = ParameterDetailMap::new();
         for entry in details {
             result.insert(entry.key.clone(), entry);
@@ -670,7 +644,6 @@ impl Parameters {
     pub fn get_parameter_environment_map(
         &self,
         rest_cfg: &OpenApiConfig,
-        env_url_map: &EnvironmentUrlMap,
         proj_id: &str,
         param_name: &str,
         mask_secrets: bool,
@@ -687,19 +660,15 @@ impl Parameters {
             None,
             PAGE_SIZE,
             Some(true),
+            Some(true),
             WRAP_SECRETS,
         )?;
         if let Some(values) = response.results {
-            let default_env = "unknown".to_string();
             for api_param in values {
                 let mut details = ParameterDetails::from(&api_param);
                 for (_, api_value) in api_param.values {
                     if let Some(value) = api_value {
                         details.set_value(&value);
-                        details.env_name = env_url_map
-                            .get(&details.env_url)
-                            .unwrap_or(&default_env)
-                            .clone();
                         result.insert(details.env_url.clone(), details.clone());
                     }
                 }
@@ -818,6 +787,7 @@ impl Parameters {
             url: None,
             id: None,
             environment: None,
+            environment_name: None,
             parameter: None,
             secret: None,
             dynamic: Some(dynamic),

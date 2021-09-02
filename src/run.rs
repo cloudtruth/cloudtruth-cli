@@ -27,6 +27,7 @@ pub fn process_run_command(
         resolved.project_id(),
         resolved.environment_id(),
         false,
+        true,
         as_of,
     )?;
     let mut ct_vars = EnvSettings::new();
