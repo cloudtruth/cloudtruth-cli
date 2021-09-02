@@ -177,7 +177,6 @@ fn proc_param_diff(
     let proj_id = resolved.project_id();
     let env1_values = parameters.get_parameter_detail_map(
         rest_cfg,
-        &env_url_map,
         proj_id,
         &env1_id,
         !show_secrets,
@@ -186,7 +185,6 @@ fn proc_param_diff(
     )?;
     let env2_values = parameters.get_parameter_detail_map(
         rest_cfg,
-        &env_url_map,
         proj_id,
         &env2_id,
         !show_secrets,
@@ -286,7 +284,6 @@ fn proc_param_env(
     let url_keys = get_env_order(&env_details);
     let param_values = parameters.get_parameter_environment_map(
         rest_cfg,
-        &env_url_map,
         proj_id,
         param_name,
         !show_secrets,

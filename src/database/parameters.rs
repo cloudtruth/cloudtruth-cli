@@ -1,4 +1,3 @@
-use crate::database::environments::{EnvironmentUrlMap, Environments};
 use crate::database::openapi::{OpenApiConfig, PAGE_SIZE, WRAP_SECRETS};
 use cloudtruth_restapi::apis::projects_api::*;
 use cloudtruth_restapi::apis::Error::{self, ResponseError};
@@ -569,7 +568,7 @@ impl Parameters {
         include_values: bool,
         as_of: Option<String>,
     ) -> Result<ParameterValueMap, Error<ProjectsParametersListError>> {
-        let parameters = self.get_parameter_unresolved_details(
+        let parameters = self.get_parameter_details(
             rest_cfg,
             proj_id,
             env_id,
@@ -591,49 +590,6 @@ impl Parameters {
 
     /// Fetches the `ParameterDetails` for the specified project and environment.
     pub fn get_parameter_details(
-        &self,
-        rest_cfg: &OpenApiConfig,
-        proj_id: &str,
-        env_id: &str,
-        mask_secrets: bool,
-        include_values: bool,
-        as_of: Option<String>,
-    ) -> Result<Vec<ParameterDetails>, Error<ProjectsParametersListError>> {
-        let mut list = self.get_parameter_unresolved_details(
-            rest_cfg,
-            proj_id,
-            env_id,
-            mask_secrets,
-            include_values,
-            as_of,
-        )?;
-
-        // now, resolve the source URL to the source environment name
-        let environments = Environments::new();
-        let url_map = environments.get_url_name_map(rest_cfg);
-        self.resolve_environments(&url_map, &mut list);
-        Ok(list)
-    }
-
-    /// Resolves the `env_name` field in the `ParameterDetails` object by interrogating the
-    /// `EnvironmentUrlMap` with the `env_url` field.
-    fn resolve_environments(
-        &self,
-        env_url_map: &EnvironmentUrlMap,
-        list: &mut Vec<ParameterDetails>,
-    ) {
-        let default_key = "".to_string();
-        for details in list {
-            details.env_name = env_url_map
-                .get(&details.env_url)
-                .unwrap_or(&default_key)
-                .clone();
-        }
-    }
-
-    /// This internal function gets the `ParameterDetails`, but does not resolve the `source` from
-    /// the URL to the name.
-    fn get_parameter_unresolved_details(
         &self,
         rest_cfg: &OpenApiConfig,
         proj_id: &str,
@@ -670,14 +626,13 @@ impl Parameters {
     pub fn get_parameter_detail_map(
         &self,
         rest_cfg: &OpenApiConfig,
-        env_url_map: &EnvironmentUrlMap,
         proj_id: &str,
         env_id: &str,
         mask_secrets: bool,
         include_values: bool,
         as_of: Option<String>,
     ) -> Result<ParameterDetailMap, Error<ProjectsParametersListError>> {
-        let mut details = self.get_parameter_unresolved_details(
+        let details = self.get_parameter_details(
             rest_cfg,
             proj_id,
             env_id,
@@ -685,7 +640,6 @@ impl Parameters {
             include_values,
             as_of,
         )?;
-        self.resolve_environments(env_url_map, &mut details);
         let mut result = ParameterDetailMap::new();
         for entry in details {
             result.insert(entry.key.clone(), entry);
@@ -697,7 +651,6 @@ impl Parameters {
     pub fn get_parameter_environment_map(
         &self,
         rest_cfg: &OpenApiConfig,
-        env_url_map: &EnvironmentUrlMap,
         proj_id: &str,
         param_name: &str,
         mask_secrets: bool,
@@ -718,16 +671,11 @@ impl Parameters {
             WRAP_SECRETS,
         )?;
         if let Some(values) = response.results {
-            let default_env = "unknown".to_string();
             for api_param in values {
                 let mut details = ParameterDetails::from(&api_param);
                 for (_, api_value) in api_param.values {
                     if let Some(value) = api_value {
                         details.set_value(&value);
-                        details.env_name = env_url_map
-                            .get(&details.env_url)
-                            .unwrap_or(&default_env)
-                            .clone();
                         result.insert(details.env_url.clone(), details.clone());
                     }
                 }
