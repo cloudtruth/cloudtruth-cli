@@ -245,6 +245,7 @@ pub enum ProjectsTemplatesPartialUpdateError {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum ProjectsTemplatesRetrieveError {
+    Status422(crate::models::TemplateLookupError),
     UnknownValue(serde_json::Value),
 }
 

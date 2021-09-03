@@ -174,6 +174,8 @@ Class | Method | HTTP request | Description
  - [ServiceAccountCreateResponse](docs/ServiceAccountCreateResponse.md)
  - [Template](docs/Template.md)
  - [TemplateCreate](docs/TemplateCreate.md)
+ - [TemplateLookupError](docs/TemplateLookupError.md)
+ - [TemplateLookupErrorEntry](docs/TemplateLookupErrorEntry.md)
  - [TemplatePreview](docs/TemplatePreview.md)
  - [Timeline](docs/Timeline.md)
  - [TimelineEntry](docs/TimelineEntry.md)

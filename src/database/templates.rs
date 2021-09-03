@@ -249,6 +249,8 @@ impl Templates {
             description: description.map(String::from),
             body: body.map(String::from),
             parameters: None,
+            references: None,
+            referenced_by: None,
             has_secret: None,
             created_at: None,
             modified_at: None,
