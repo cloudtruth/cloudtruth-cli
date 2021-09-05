@@ -153,6 +153,12 @@ pub fn integrations_aws_create(
             content: local_var_content,
             entity: local_var_entity,
         };
+        if configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
         Err(Error::ResponseError(local_var_error))
     }
 }
@@ -220,6 +226,12 @@ pub fn integrations_aws_destroy(
             content: local_var_content,
             entity: local_var_entity,
         };
+        if configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
         Err(Error::ResponseError(local_var_error))
     }
 }
@@ -297,6 +309,12 @@ pub fn integrations_aws_list(
             content: local_var_content,
             entity: local_var_entity,
         };
+        if configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
         Err(Error::ResponseError(local_var_error))
     }
 }
@@ -361,6 +379,12 @@ pub fn integrations_aws_partial_update(
             content: local_var_content,
             entity: local_var_entity,
         };
+        if configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
         Err(Error::ResponseError(local_var_error))
     }
 }
@@ -428,6 +452,12 @@ pub fn integrations_aws_retrieve(
             content: local_var_content,
             entity: local_var_entity,
         };
+        if configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
         Err(Error::ResponseError(local_var_error))
     }
 }
@@ -492,6 +522,12 @@ pub fn integrations_aws_update(
             content: local_var_content,
             entity: local_var_entity,
         };
+        if configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
         Err(Error::ResponseError(local_var_error))
     }
 }
@@ -564,6 +600,12 @@ pub fn integrations_explore_list(
             content: local_var_content,
             entity: local_var_entity,
         };
+        if configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
         Err(Error::ResponseError(local_var_error))
     }
 }
@@ -624,6 +666,12 @@ pub fn integrations_github_create(
             content: local_var_content,
             entity: local_var_entity,
         };
+        if configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
         Err(Error::ResponseError(local_var_error))
     }
 }
@@ -691,6 +739,12 @@ pub fn integrations_github_destroy(
             content: local_var_content,
             entity: local_var_entity,
         };
+        if configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
         Err(Error::ResponseError(local_var_error))
     }
 }
@@ -763,6 +817,12 @@ pub fn integrations_github_list(
             content: local_var_content,
             entity: local_var_entity,
         };
+        if configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
         Err(Error::ResponseError(local_var_error))
     }
 }
@@ -830,6 +890,12 @@ pub fn integrations_github_retrieve(
             content: local_var_content,
             entity: local_var_entity,
         };
+        if configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
         Err(Error::ResponseError(local_var_error))
     }
 }

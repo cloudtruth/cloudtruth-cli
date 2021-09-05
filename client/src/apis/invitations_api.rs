@@ -134,6 +134,12 @@ pub fn invitations_accept_create(
             content: local_var_content,
             entity: local_var_entity,
         };
+        if configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
         Err(Error::ResponseError(local_var_error))
     }
 }
@@ -194,6 +200,12 @@ pub fn invitations_create(
             content: local_var_content,
             entity: local_var_entity,
         };
+        if configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
         Err(Error::ResponseError(local_var_error))
     }
 }
@@ -256,6 +268,12 @@ pub fn invitations_destroy(
             content: local_var_content,
             entity: local_var_entity,
         };
+        if configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
         Err(Error::ResponseError(local_var_error))
     }
 }
@@ -338,6 +356,12 @@ pub fn invitations_list(
             content: local_var_content,
             entity: local_var_entity,
         };
+        if configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
         Err(Error::ResponseError(local_var_error))
     }
 }
@@ -402,6 +426,12 @@ pub fn invitations_partial_update(
             content: local_var_content,
             entity: local_var_entity,
         };
+        if configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
         Err(Error::ResponseError(local_var_error))
     }
 }
@@ -465,6 +495,12 @@ pub fn invitations_resend_create(
             content: local_var_content,
             entity: local_var_entity,
         };
+        if configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
         Err(Error::ResponseError(local_var_error))
     }
 }
@@ -527,6 +563,12 @@ pub fn invitations_retrieve(
             content: local_var_content,
             entity: local_var_entity,
         };
+        if configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
         Err(Error::ResponseError(local_var_error))
     }
 }
@@ -591,6 +633,12 @@ pub fn invitations_update(
             content: local_var_content,
             entity: local_var_entity,
         };
+        if configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
         Err(Error::ResponseError(local_var_error))
     }
 }

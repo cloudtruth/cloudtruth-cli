@@ -129,6 +129,12 @@ pub fn audit_list(
             content: local_var_content,
             entity: local_var_entity,
         };
+        if configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
         Err(Error::ResponseError(local_var_error))
     }
 }
@@ -188,6 +194,12 @@ pub fn audit_retrieve(
             content: local_var_content,
             entity: local_var_entity,
         };
+        if configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
         Err(Error::ResponseError(local_var_error))
     }
 }
@@ -246,6 +258,12 @@ pub fn audit_summary_retrieve(
             content: local_var_content,
             entity: local_var_entity,
         };
+        if configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
         Err(Error::ResponseError(local_var_error))
     }
 }

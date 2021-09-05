@@ -317,6 +317,12 @@ pub fn projects_create(
             content: local_var_content,
             entity: local_var_entity,
         };
+        if configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
         Err(Error::ResponseError(local_var_error))
     }
 }
@@ -375,6 +381,12 @@ pub fn projects_destroy(
             content: local_var_content,
             entity: local_var_entity,
         };
+        if configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
         Err(Error::ResponseError(local_var_error))
     }
 }
@@ -447,6 +459,12 @@ pub fn projects_list(
             content: local_var_content,
             entity: local_var_entity,
         };
+        if configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
         Err(Error::ResponseError(local_var_error))
     }
 }
@@ -560,6 +578,12 @@ pub fn projects_parameter_export_list(
             content: local_var_content,
             entity: local_var_entity,
         };
+        if configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
         Err(Error::ResponseError(local_var_error))
     }
 }
@@ -624,6 +648,12 @@ pub fn projects_parameters_create(
             content: local_var_content,
             entity: local_var_entity,
         };
+        if configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
         Err(Error::ResponseError(local_var_error))
     }
 }
@@ -688,6 +718,12 @@ pub fn projects_parameters_destroy(
             content: local_var_content,
             entity: local_var_entity,
         };
+        if configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
         Err(Error::ResponseError(local_var_error))
     }
 }
@@ -795,6 +831,12 @@ pub fn projects_parameters_list(
             content: local_var_content,
             entity: local_var_entity,
         };
+        if configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
         Err(Error::ResponseError(local_var_error))
     }
 }
@@ -861,6 +903,12 @@ pub fn projects_parameters_partial_update(
             content: local_var_content,
             entity: local_var_entity,
         };
+        if configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
         Err(Error::ResponseError(local_var_error))
     }
 }
@@ -955,6 +1003,12 @@ pub fn projects_parameters_retrieve(
             content: local_var_content,
             entity: local_var_entity,
         };
+        if configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
         Err(Error::ResponseError(local_var_error))
     }
 }
@@ -1021,6 +1075,12 @@ pub fn projects_parameters_rules_create(
             content: local_var_content,
             entity: local_var_entity,
         };
+        if configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
         Err(Error::ResponseError(local_var_error))
     }
 }
@@ -1087,6 +1147,12 @@ pub fn projects_parameters_rules_destroy(
             content: local_var_content,
             entity: local_var_entity,
         };
+        if configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
         Err(Error::ResponseError(local_var_error))
     }
 }
@@ -1166,6 +1232,12 @@ pub fn projects_parameters_rules_list(
             content: local_var_content,
             entity: local_var_entity,
         };
+        if configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
         Err(Error::ResponseError(local_var_error))
     }
 }
@@ -1234,6 +1306,12 @@ pub fn projects_parameters_rules_partial_update(
             content: local_var_content,
             entity: local_var_entity,
         };
+        if configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
         Err(Error::ResponseError(local_var_error))
     }
 }
@@ -1300,6 +1378,12 @@ pub fn projects_parameters_rules_retrieve(
             content: local_var_content,
             entity: local_var_entity,
         };
+        if configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
         Err(Error::ResponseError(local_var_error))
     }
 }
@@ -1368,6 +1452,12 @@ pub fn projects_parameters_rules_update(
             content: local_var_content,
             entity: local_var_entity,
         };
+        if configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
         Err(Error::ResponseError(local_var_error))
     }
 }
@@ -1438,6 +1528,12 @@ pub fn projects_parameters_timeline_retrieve(
             content: local_var_content,
             entity: local_var_entity,
         };
+        if configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
         Err(Error::ResponseError(local_var_error))
     }
 }
@@ -1506,6 +1602,12 @@ pub fn projects_parameters_timelines_retrieve(
             content: local_var_content,
             entity: local_var_entity,
         };
+        if configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
         Err(Error::ResponseError(local_var_error))
     }
 }
@@ -1572,6 +1674,12 @@ pub fn projects_parameters_update(
             content: local_var_content,
             entity: local_var_entity,
         };
+        if configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
         Err(Error::ResponseError(local_var_error))
     }
 }
@@ -1644,6 +1752,12 @@ pub fn projects_parameters_values_create(
             content: local_var_content,
             entity: local_var_entity,
         };
+        if configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
         Err(Error::ResponseError(local_var_error))
     }
 }
@@ -1711,6 +1825,12 @@ pub fn projects_parameters_values_destroy(
             content: local_var_content,
             entity: local_var_entity,
         };
+        if configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
         Err(Error::ResponseError(local_var_error))
     }
 }
@@ -1806,6 +1926,12 @@ pub fn projects_parameters_values_list(
             content: local_var_content,
             entity: local_var_entity,
         };
+        if configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
         Err(Error::ResponseError(local_var_error))
     }
 }
@@ -1880,6 +2006,12 @@ pub fn projects_parameters_values_partial_update(
             content: local_var_content,
             entity: local_var_entity,
         };
+        if configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
         Err(Error::ResponseError(local_var_error))
     }
 }
@@ -1962,6 +2094,12 @@ pub fn projects_parameters_values_retrieve(
             content: local_var_content,
             entity: local_var_entity,
         };
+        if configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
         Err(Error::ResponseError(local_var_error))
     }
 }
@@ -2036,6 +2174,12 @@ pub fn projects_parameters_values_update(
             content: local_var_content,
             entity: local_var_entity,
         };
+        if configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
         Err(Error::ResponseError(local_var_error))
     }
 }
@@ -2096,6 +2240,12 @@ pub fn projects_partial_update(
             content: local_var_content,
             entity: local_var_entity,
         };
+        if configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
         Err(Error::ResponseError(local_var_error))
     }
 }
@@ -2154,6 +2304,12 @@ pub fn projects_retrieve(
             content: local_var_content,
             entity: local_var_entity,
         };
+        if configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
         Err(Error::ResponseError(local_var_error))
     }
 }
@@ -2229,6 +2385,12 @@ pub fn projects_template_preview_create(
             content: local_var_content,
             entity: local_var_entity,
         };
+        if configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
         Err(Error::ResponseError(local_var_error))
     }
 }
@@ -2293,6 +2455,12 @@ pub fn projects_templates_create(
             content: local_var_content,
             entity: local_var_entity,
         };
+        if configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
         Err(Error::ResponseError(local_var_error))
     }
 }
@@ -2357,6 +2525,12 @@ pub fn projects_templates_destroy(
             content: local_var_content,
             entity: local_var_entity,
         };
+        if configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
         Err(Error::ResponseError(local_var_error))
     }
 }
@@ -2434,6 +2608,12 @@ pub fn projects_templates_list(
             content: local_var_content,
             entity: local_var_entity,
         };
+        if configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
         Err(Error::ResponseError(local_var_error))
     }
 }
@@ -2500,6 +2680,12 @@ pub fn projects_templates_partial_update(
             content: local_var_content,
             entity: local_var_entity,
         };
+        if configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
         Err(Error::ResponseError(local_var_error))
     }
 }
@@ -2574,6 +2760,12 @@ pub fn projects_templates_retrieve(
             content: local_var_content,
             entity: local_var_entity,
         };
+        if configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
         Err(Error::ResponseError(local_var_error))
     }
 }
@@ -2640,6 +2832,12 @@ pub fn projects_templates_update(
             content: local_var_content,
             entity: local_var_entity,
         };
+        if configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
         Err(Error::ResponseError(local_var_error))
     }
 }
@@ -2700,6 +2898,12 @@ pub fn projects_update(
             content: local_var_content,
             entity: local_var_entity,
         };
+        if configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
         Err(Error::ResponseError(local_var_error))
     }
 }
