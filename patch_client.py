@@ -18,7 +18,7 @@ API_KEY_TEXT = """\
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
 """
-REST_DEBUG_TEXT = """\
+REST_DEBUG_PROFILING = """\
     let method = local_var_req.method().clone();
     let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
@@ -26,6 +26,12 @@ REST_DEBUG_TEXT = """\
         let duration = start.elapsed();
         println!(\"URL {} {} elapsed: {:?}\", method, &local_var_resp.url(), duration);
     }
+"""
+REST_DEBUG_ERRORS = """\
+        if configuration.rest_debug {
+            println!(\"RESP {} {}\", &local_var_error.status, &local_var_error.content);
+        }
+        Err(Error::ResponseError(local_var_error))
 """
 
 
@@ -129,7 +135,7 @@ def add_debug_profiling(srcdir: str) -> None:
     new_use = "use std::time::Instant;"
     old_use = "use reqwest;"
     execute = "    let mut local_var_resp = local_var_client.execute(local_var_req)?;"
-    assert execute in REST_DEBUG_TEXT, "Adding REST debug text must include execute()"
+    assert execute in REST_DEBUG_PROFILING, "Adding REST debug profiling must include execute()"
     for filename in filelist:
         orig = file_read_content(filename)
         temp = orig
@@ -139,9 +145,28 @@ def add_debug_profiling(srcdir: str) -> None:
             continue
 
         temp = temp.replace(old_use, old_use + "\n" + new_use)
-        temp = temp.replace(execute, REST_DEBUG_TEXT)
+        temp = temp.replace(execute, REST_DEBUG_PROFILING)
 
         print(f"Updating {filename} with debug profiling")
+        file_write_content(filename, temp)
+
+
+def add_debug_errors(srcdir: str) -> None:
+    filelist = glob.glob(f"{srcdir}/apis/*.rs")
+    raise_err = "        Err(Error::ResponseError(local_var_error))"
+    base_print = "\"RESP {} {}\""
+    assert raise_err in REST_DEBUG_ERRORS, "Adding REST debug error handling must return error"
+    assert base_print in REST_DEBUG_ERRORS, "Adding REST debug error handling must print error"
+    for filename in filelist:
+        orig = file_read_content(filename)
+
+        # if no need to print errors, or already print errors
+        if raise_err not in orig or base_print in orig:
+            continue
+
+        temp = orig.replace(raise_err, REST_DEBUG_ERRORS)
+
+        print(f"Updating {filename} with debug error printing")
         file_write_content(filename, temp)
 
 
@@ -154,3 +179,4 @@ if __name__ == "__main__":
     optional_values(srcdir)
     add_rest_debug_to_config(srcdir)
     add_debug_profiling(srcdir)
+    add_debug_errors(srcdir)

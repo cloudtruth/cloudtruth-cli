@@ -112,6 +112,12 @@ pub fn environments_create(
             content: local_var_content,
             entity: local_var_entity,
         };
+        if configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
         Err(Error::ResponseError(local_var_error))
     }
 }
@@ -174,6 +180,12 @@ pub fn environments_destroy(
             content: local_var_content,
             entity: local_var_entity,
         };
+        if configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
         Err(Error::ResponseError(local_var_error))
     }
 }
@@ -251,6 +263,12 @@ pub fn environments_list(
             content: local_var_content,
             entity: local_var_entity,
         };
+        if configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
         Err(Error::ResponseError(local_var_error))
     }
 }
@@ -315,6 +333,12 @@ pub fn environments_partial_update(
             content: local_var_content,
             entity: local_var_entity,
         };
+        if configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
         Err(Error::ResponseError(local_var_error))
     }
 }
@@ -377,6 +401,12 @@ pub fn environments_retrieve(
             content: local_var_content,
             entity: local_var_entity,
         };
+        if configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
         Err(Error::ResponseError(local_var_error))
     }
 }
@@ -441,6 +471,12 @@ pub fn environments_update(
             content: local_var_content,
             entity: local_var_entity,
         };
+        if configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
         Err(Error::ResponseError(local_var_error))
     }
 }
