@@ -3,7 +3,9 @@ use crate::database::openapi::{extract_details, OpenApiConfig, PAGE_SIZE};
 use cloudtruth_restapi::apis::projects_api::*;
 use cloudtruth_restapi::apis::Error;
 use cloudtruth_restapi::apis::Error::ResponseError;
-use cloudtruth_restapi::models::{PatchedTemplate, Template, TemplateCreate, TemplatePreview};
+use cloudtruth_restapi::models::{
+    PatchedTemplate, Template, TemplateCreate, TemplateLookupError, TemplatePreview,
+};
 use std::error;
 use std::fmt;
 use std::fmt::Formatter;
@@ -35,69 +37,37 @@ impl From<&Template> for TemplateDetails {
 #[derive(Debug)]
 pub enum TemplateError {
     AuthError(String),
-    ListError(Error<ProjectsTemplatesListError>),
-    RetrieveApi(Error<ProjectsTemplatesRetrieveError>),
-    EvaluateApi(Error<ProjectsTemplatePreviewCreateError>),
+    CreateApi(Error<ProjectsTemplatesCreateError>),
     EvaluateFailed(Vec<String>),
+    ListError(Error<ProjectsTemplatesListError>),
+    PreviewApi(Error<ProjectsTemplatePreviewCreateError>),
+    RetrieveApi(Error<ProjectsTemplatesRetrieveError>),
+    UpdateApi(Error<ProjectsTemplatesPartialUpdateError>),
 }
 
 impl fmt::Display for TemplateError {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
             TemplateError::AuthError(msg) => write!(f, "Not Authenticated: {}", msg),
-            TemplateError::ListError(e) => write!(f, "{}", e.to_string()),
-            TemplateError::RetrieveApi(e) => write!(f, "{}", e.to_string()),
-            TemplateError::EvaluateApi(e) => write!(f, "{}", e.to_string()),
             TemplateError::EvaluateFailed(reasons) => {
                 write!(f, "Evaluation failed:\n  {}", reasons.join("\n  "))
             }
+            e => write!(f, "{:?}", e),
         }
     }
 }
 
 impl error::Error for TemplateError {}
 
-fn unquote(orig: &str) -> String {
-    orig.trim_start_matches('"')
-        .trim_end_matches('"')
-        .to_string()
-}
-
-fn extract_reasons(content: &str) -> Vec<String> {
+fn evaluation_error(errors: &TemplateLookupError) -> TemplateError {
     let mut reasons: Vec<String> = vec![];
-    let json_result: Result<serde_json::Value, serde_json::Error> = serde_json::from_str(content);
-    if let Ok(data) = json_result {
-        if let Some(details) = data.get("detail") {
-            if details.is_string() {
-                reasons.push(unquote(&details.to_string()))
-            } else if details.is_array() {
-                for failure in details.as_array().unwrap() {
-                    if failure.is_string() {
-                        reasons.push(unquote(&failure.to_string()))
-                    } else if failure.is_object() {
-                        if let Some(name) = failure.get("parameter_name") {
-                            if let Some(error) = failure.get("error_detail") {
-                                reasons.push(format!(
-                                    "{}: {}",
-                                    unquote(&name.to_string()),
-                                    unquote(&error.to_string())
-                                ));
-                            }
-                        }
-                    }
-                }
-            }
-        }
+    for entry in &errors.detail {
+        reasons.push(format!("{}: {}", entry.parameter_name, entry.error_detail));
     }
-
     if reasons.is_empty() {
         reasons.push(NO_DETAILS_ERR.to_string())
     }
-    reasons
-}
-
-fn evaluation_error(content: &str) -> TemplateError {
-    TemplateError::EvaluateFailed(extract_reasons(content))
+    TemplateError::EvaluateFailed(reasons)
 }
 
 impl Templates {
@@ -126,11 +96,15 @@ impl Templates {
             );
             match response {
                 Ok(r) => Ok(r.body),
-                Err(ResponseError(r)) => Err(evaluation_error(&r.content)),
+                Err(ResponseError(ref content)) => match &content.entity {
+                    Some(ProjectsTemplatesRetrieveError::Status422(tle)) => {
+                        Err(evaluation_error(tle))
+                    }
+                    _ => Err(TemplateError::RetrieveApi(response.unwrap_err())),
+                },
                 Err(e) => Err(TemplateError::RetrieveApi(e)),
             }
         } else {
-            // TODO: handle template not found??
             Ok(None)
         }
     }
@@ -213,15 +187,21 @@ impl Templates {
         template_name: &str,
         body: &str,
         description: Option<&str>,
-    ) -> Result<Option<String>, Error<ProjectsTemplatesCreateError>> {
+    ) -> Result<Option<String>, TemplateError> {
         let template_create = TemplateCreate {
             name: template_name.to_string(),
             description: description.map(String::from),
             body: Some(body.to_string()),
         };
-        let response = projects_templates_create(rest_cfg, proj_id, template_create)?;
-        // TODO: `TemplateCreate` does not have an id, so return the name of the newly minted template
-        Ok(Some(response.name))
+        let response = projects_templates_create(rest_cfg, proj_id, template_create);
+        match response {
+            Ok(r) => Ok(Some(r.id)),
+            Err(ResponseError(ref content)) => match &content.entity {
+                Some(ProjectsTemplatesCreateError::Status422(tle)) => Err(evaluation_error(tle)),
+                _ => Err(TemplateError::CreateApi(response.unwrap_err())),
+            },
+            Err(e) => Err(TemplateError::CreateApi(e)),
+        }
     }
 
     pub fn delete_template(
@@ -241,7 +221,7 @@ impl Templates {
         template_name: &str,
         description: Option<&str>,
         body: Option<&str>,
-    ) -> Result<Option<String>, Error<ProjectsTemplatesPartialUpdateError>> {
+    ) -> Result<Option<String>, TemplateError> {
         let template = PatchedTemplate {
             url: None,
             id: None,
@@ -256,8 +236,17 @@ impl Templates {
             modified_at: None,
         };
         let response =
-            projects_templates_partial_update(rest_cfg, template_id, project_id, Some(template))?;
-        Ok(Some(response.id))
+            projects_templates_partial_update(rest_cfg, template_id, project_id, Some(template));
+        match response {
+            Ok(r) => Ok(Some(r.id)),
+            Err(ResponseError(ref content)) => match &content.entity {
+                Some(ProjectsTemplatesPartialUpdateError::Status422(tle)) => {
+                    Err(evaluation_error(tle))
+                }
+                _ => Err(TemplateError::UpdateApi(response.unwrap_err())),
+            },
+            Err(e) => Err(TemplateError::UpdateApi(e)),
+        }
     }
 
     pub fn preview_template(
@@ -280,71 +269,13 @@ impl Templates {
         );
         match response {
             Ok(r) => Ok(r.body),
-            Err(ResponseError(r)) => Err(evaluation_error(&r.content)),
-            Err(e) => Err(TemplateError::EvaluateApi(e)),
+            Err(ResponseError(ref content)) => match &content.entity {
+                Some(ProjectsTemplatePreviewCreateError::Status422(tle)) => {
+                    Err(evaluation_error(tle))
+                }
+                _ => Err(TemplateError::PreviewApi(response.unwrap_err())),
+            },
+            Err(e) => Err(TemplateError::PreviewApi(e)),
         }
-    }
-}
-
-#[cfg(test)]
-mod test {
-    use super::*;
-
-    #[test]
-    fn parse_errors_empty() {
-        let values = vec![
-            "",
-            "{}",
-            "{\"detail\":[]}",
-            "{\"detail\":[{}]}",
-            "{\"detail\":[{\"error_code\": \"foo\"}]}",
-            "{\"detail\":[{\"parameter_name\":\"pname\"}]}",
-        ];
-        for content in values {
-            let results = extract_reasons(content);
-            assert_eq!(1, results.len());
-            let value = &results[0];
-            assert_eq!(value.as_str(), NO_DETAILS_ERR);
-        }
-    }
-
-    #[test]
-    fn parse_errors_single_string() {
-        let content = "{\"detail\":\"sample string\"}";
-        let results = extract_reasons(content);
-        assert_eq!(1, results.len());
-        let value = &results[0];
-        assert_eq!(value.as_str(), "sample string");
-    }
-
-    #[test]
-    fn parse_errors_multiple_string() {
-        let content = "{\"detail\":[\"sample string\",\"another string\"]}";
-        let results = extract_reasons(content);
-        assert_eq!(2, results.len());
-        let value = &results[0];
-        assert_eq!(value.as_str(), "sample string");
-        let value = &results[1];
-        assert_eq!(value.as_str(), "another string");
-    }
-
-    #[test]
-    fn parse_errors_single_struct() {
-        let content = "{\"detail\":[{\"error_code\":\"retrieval_error\",\"error_detail\":\"Error occurred while retrieving content from `test://foo/bar/`: unit test forced\",\"parameter_id\":\"c82b08af-6254-4967-85c1-66af5ffd9554\",\"parameter_name\":\"FriedRice\"}]}";
-        let results = extract_reasons(content);
-        assert_eq!(1, results.len());
-        let value = &results[0];
-        assert_eq!(value.as_str(), "FriedRice: Error occurred while retrieving content from `test://foo/bar/`: unit test forced");
-    }
-
-    #[test]
-    fn parse_errors_multiple_struct() {
-        let content = "{\"detail\":[{\"parameter_name\":\"pname\",\"error_detail\":\"some value\"},{\"parameter_name\":\"another\",\"error_detail\":\"detail two\"}]}";
-        let results = extract_reasons(content);
-        assert_eq!(2, results.len());
-        let value = &results[0];
-        assert_eq!(value.as_str(), "pname: some value");
-        let value = &results[1];
-        assert_eq!(value.as_str(), "another: detail two");
     }
 }

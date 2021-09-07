@@ -210,6 +210,7 @@ pub enum ProjectsRetrieveError {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum ProjectsTemplatePreviewCreateError {
+    Status422(crate::models::TemplateLookupError),
     UnknownValue(serde_json::Value),
 }
 
@@ -217,6 +218,7 @@ pub enum ProjectsTemplatePreviewCreateError {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum ProjectsTemplatesCreateError {
+    Status422(crate::models::TemplateLookupError),
     UnknownValue(serde_json::Value),
 }
 
@@ -238,6 +240,7 @@ pub enum ProjectsTemplatesListError {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum ProjectsTemplatesPartialUpdateError {
+    Status422(crate::models::TemplateLookupError),
     UnknownValue(serde_json::Value),
 }
 
@@ -253,6 +256,7 @@ pub enum ProjectsTemplatesRetrieveError {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum ProjectsTemplatesUpdateError {
+    Status422(crate::models::TemplateLookupError),
     UnknownValue(serde_json::Value),
 }
 
@@ -2400,7 +2404,7 @@ pub fn projects_templates_create(
     configuration: &configuration::Configuration,
     project_pk: &str,
     template_create: crate::models::TemplateCreate,
-) -> Result<crate::models::TemplateCreate, Error<ProjectsTemplatesCreateError>> {
+) -> Result<crate::models::Template, Error<ProjectsTemplatesCreateError>> {
     let local_var_client = &configuration.client;
 
     let local_var_uri_str = format!(

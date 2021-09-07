@@ -2755,6 +2755,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/TemplatePreview'
           description: ''
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TemplateLookupError'
+          description: ''
   /api/v1/projects/{project_pk}/templates/:
     get:
       operationId: projects_templates_list
@@ -2826,7 +2832,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TemplateCreate'
+                $ref: '#/components/schemas/Template'
+          description: ''
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TemplateLookupError'
           description: ''
   /api/v1/projects/{project_pk}/templates/{id}/:
     get:
@@ -2918,6 +2930,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/Template'
           description: ''
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TemplateLookupError'
+          description: ''
     patch:
       operationId: projects_templates_partial_update
       description: ''
@@ -2957,6 +2975,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Template'
+          description: ''
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TemplateLookupError'
           description: ''
     delete:
       operationId: projects_templates_destroy
