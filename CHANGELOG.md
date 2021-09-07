@@ -1,3 +1,13 @@
+# 1.0.6 - 2021-09-07
+
+* Updated `parameters set` with type and rule arguments:
+  * Added `--type <string|integer|bool>` for parameter type.
+  * Added `--max`, `--min`, `--max-len`, `--min-len`, `--regex` to set the rules, and a `no` 
+    version of each (e.g. `--no-min-len`) to delete the rules.
+* Updated `parameters list` with type and rule information:
+  * Added "Param Type" and "Rules" (count) to the `--values` output.
+  * Added `--rules` view of existing rules.
+
 # 1.0.5 - 2021-08-30
 
 * Allow retrieving unevaluated template text using `template get --raw`.
