@@ -35,13 +35,13 @@ pub struct ParameterDetails {
     pub value: String,
     pub env_url: String,
     pub env_name: String,
-    pub dynamic: bool,
+    pub external: bool,
     pub fqn: String,
     pub jmes_path: String,
     pub created_at: String,
     pub modified_at: String,
 
-    // captures errors when fetching dynamic parameters
+    // captures errors when fetching external parameters
     pub error: String,
 }
 
@@ -98,7 +98,7 @@ impl ParameterDetails {
         self.val_id = env_value.id.clone();
         self.value = env_value.value.clone().unwrap_or_default();
         self.env_url = env_value.environment.clone();
-        self.dynamic = env_value.dynamic.unwrap_or(false);
+        self.external = env_value.dynamic.unwrap_or(false);
         self.fqn = env_value.dynamic_fqn.clone().unwrap_or_default();
         self.jmes_path = env_value.dynamic_filter.clone().unwrap_or_default();
         self.created_at = env_value.created_at.clone();
@@ -132,7 +132,7 @@ impl Default for ParameterDetails {
             value: DEFAULT_VALUE.to_string(),
             env_url: "".to_string(),
             env_name: "".to_string(),
-            dynamic: false,
+            external: false,
             fqn: "".to_string(),
             jmes_path: "".to_string(),
             created_at: "".to_string(),
@@ -194,7 +194,7 @@ impl From<&Parameter> for ParameterDetails {
             value: env_value.value.clone().unwrap_or_default(),
             env_url: env_value.environment.clone(),
             env_name: env_value.environment_name.clone(),
-            dynamic: env_value.dynamic.unwrap_or(false),
+            external: env_value.dynamic.unwrap_or(false),
             fqn: env_value.dynamic_fqn.clone().unwrap_or_default(),
             jmes_path: env_value.dynamic_filter.clone().unwrap_or_default(),
             created_at: env_value.created_at.clone(),

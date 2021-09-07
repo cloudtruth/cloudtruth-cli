@@ -452,7 +452,7 @@ fn proc_param_list(
     let show_rules = subcmd_args.is_present("rules");
     let show_values =
         subcmd_args.is_present(VALUES_FLAG) || show_secrets || show_times || show_rules;
-    let references = subcmd_args.is_present("dynamic");
+    let references = subcmd_args.is_present("external");
     let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
     let include_values = (show_values && !show_rules) || references; // don't get values if not needed
     let mut details = parameters.get_parameter_details(
@@ -463,14 +463,14 @@ fn proc_param_list(
         include_values,
         as_of,
     )?;
-    let qualifier = if references { "dynamic " } else { "" };
+    let qualifier = if references { "external " } else { "" };
     if references {
-        // when displaying dynamic parameters, only show the dynamic ones
-        details.retain(|x| x.dynamic)
+        // when displaying external parameters, only show the external ones
+        details.retain(|x| x.external)
     }
 
     if show_rules && references {
-        warning_message("Options for --dynamic and --rules are mutually exclusive".to_string())?;
+        warning_message("Options for --external and --rules are mutually exclusive".to_string())?;
     } else if details.is_empty() {
         println!("No {}parameters found in project {}", qualifier, proj_name,);
     } else if !show_values {
@@ -544,7 +544,11 @@ fn proc_param_list(
             }
             let mut row: Vec<String>;
             if !references {
-                let type_str = if entry.dynamic { "dynamic" } else { "static" };
+                let type_str = if entry.external {
+                    "external"
+                } else {
+                    "internal"
+                };
                 let secret_str = if entry.secret { "true" } else { "false" };
                 row = vec![
                     entry.key,
