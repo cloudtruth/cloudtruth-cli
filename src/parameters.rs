@@ -452,7 +452,7 @@ fn proc_param_list(
         subcmd_args.is_present(VALUES_FLAG) || show_secrets || show_times || show_rules;
     let references = subcmd_args.is_present("dynamic");
     let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
-    let include_values = show_values && !show_rules && !references; // don't get values if not needed
+    let include_values = show_values && !show_rules; // don't get values if not needed
     let mut details = parameters.get_parameter_details(
         rest_cfg,
         proj_id,
