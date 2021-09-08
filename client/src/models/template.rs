@@ -28,6 +28,10 @@ pub struct Template {
     pub body: Option<String>,
     #[serde(rename = "parameters")]
     pub parameters: Vec<String>,
+    #[serde(rename = "references")]
+    pub references: Vec<String>,
+    #[serde(rename = "referenced_by")]
+    pub referenced_by: Vec<String>,
     /// If True, this template contains secrets.
     #[serde(rename = "has_secret")]
     pub has_secret: bool,
@@ -44,6 +48,8 @@ impl Template {
         id: String,
         name: String,
         parameters: Vec<String>,
+        references: Vec<String>,
+        referenced_by: Vec<String>,
         has_secret: bool,
         created_at: String,
         modified_at: String,
@@ -55,6 +61,8 @@ impl Template {
             description: None,
             body: None,
             parameters,
+            references,
+            referenced_by,
             has_secret,
             created_at,
             modified_at,

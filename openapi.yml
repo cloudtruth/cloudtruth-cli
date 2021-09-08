@@ -1635,13 +1635,13 @@ paths:
         name: contains
         schema:
           type: string
-        description: (Optional) Only include parameters whose names contain the provided
+        description: Only include parameters with names that contain the provided
           string.
       - in: query
         name: endswith
         schema:
           type: string
-        description: (Optional) Only include parameters whose names end with the provided
+        description: Only include parameters with names that end with the provided
           string.
       - in: query
         name: environment
@@ -1653,13 +1653,14 @@ paths:
         name: explicit_export
         schema:
           type: boolean
-        description: If true, explicitly marks parameters with export, e.g. export
-          FOO=bar.  Defaults to false.
+          default: false
+        description: Explicitly marks parameters with export, e.g. `export FOO=bar`.
       - in: query
         name: mask_secrets
         schema:
           type: boolean
-        description: If true, masks all secrets in the template (defaults to false)
+          default: false
+        description: Masks all secrets in the template with `*****`.
       - in: query
         name: output
         schema:
@@ -1687,13 +1688,14 @@ paths:
         name: startswith
         schema:
           type: string
-        description: (Optional) Only include parameters whose names start with the
-          provided string.
+        description: Only include parameters with names that start with the provided
+          string.
       - in: query
         name: wrap
         schema:
           type: boolean
-        description: Indicates all secrets are wrapped.  For more information on secret
+          default: false
+        description: Indicates all secrets are wrapped. For more information on secret
           wrapping, see the documentation.
       tags:
       - projects
@@ -2107,8 +2109,8 @@ paths:
         name: mask_secrets
         schema:
           type: boolean
-        description: (Optional) If true, mask secret values in responses (defaults
-          to false).
+          default: false
+        description: Mask secret values in responses with `*****`.
       - name: page
         required: false
         in: query
@@ -2149,6 +2151,7 @@ paths:
         name: wrap
         schema:
           type: boolean
+          default: false
         description: 'For writes, indicates `static_value` is wrapped; for reads,
           indicates `value` is wrapped. For more information on secret wrapping, see
           the documentation. '
@@ -2230,8 +2233,8 @@ paths:
         name: mask_secrets
         schema:
           type: boolean
-        description: (Optional) If true, mask secret values in responses (defaults
-          to false).
+          default: false
+        description: Mask secret values in responses with `*****`.
       - in: path
         name: parameter_pk
         schema:
@@ -2260,6 +2263,7 @@ paths:
         name: wrap
         schema:
           type: boolean
+          default: false
         description: 'For writes, indicates `static_value` is wrapped; for reads,
           indicates `value` is wrapped. For more information on secret wrapping, see
           the documentation. '
@@ -2713,13 +2717,14 @@ paths:
         name: environment
         schema:
           type: string
-          format: uuid
-        description: (Optional) ID of the environment to use to instantiate this template
+        description: Name or id of the environment to use to instantiate this template.
+          If not specified then the default environment is used.
       - in: query
         name: mask_secrets
         schema:
           type: boolean
-        description: If true, masks all secrets in the template (defaults to false)
+          default: false
+        description: Masks all secrets in the template with `*****`.
       - in: path
         name: project_pk
         schema:
@@ -2744,11 +2749,17 @@ paths:
       - JWTAuth: []
       - ApiKeyAuth: []
       responses:
-        '201':
+        '200':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/TemplatePreview'
+          description: ''
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TemplateLookupError'
           description: ''
   /api/v1/projects/{project_pk}/templates/:
     get:
@@ -2821,7 +2832,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TemplateCreate'
+                $ref: '#/components/schemas/Template'
+          description: ''
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TemplateLookupError'
           description: ''
   /api/v1/projects/{project_pk}/templates/{id}/:
     get:
@@ -2833,7 +2850,8 @@ paths:
         schema:
           type: string
           format: uuid
-        description: (Optional) ID of the environment to use to instantiate this template
+        description: Name or id of the environment to use to evaluate this template.
+          If not specified then the original content is returned in the body.
       - in: path
         name: id
         schema:
@@ -2845,7 +2863,8 @@ paths:
         name: mask_secrets
         schema:
           type: boolean
-        description: If true, masks all secrets in the template (defaults to false)
+          default: false
+        description: Masks all secrets in the template with `*****`.
       - in: path
         name: project_pk
         schema:
@@ -2863,6 +2882,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Template'
+          description: ''
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TemplateLookupError'
           description: ''
     put:
       operationId: projects_templates_update
@@ -2905,6 +2930,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/Template'
           description: ''
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TemplateLookupError'
+          description: ''
     patch:
       operationId: projects_templates_partial_update
       description: ''
@@ -2944,6 +2975,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Template'
+          description: ''
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TemplateLookupError'
           description: ''
     delete:
       operationId: projects_templates_destroy
@@ -4800,6 +4837,18 @@ components:
             type: string
             format: uri
           readOnly: true
+        references:
+          type: array
+          items:
+            type: string
+            format: uri
+          readOnly: true
+        referenced_by:
+          type: array
+          items:
+            type: string
+            format: uri
+          readOnly: true
         has_secret:
           type: boolean
           readOnly: true
@@ -5098,6 +5147,18 @@ components:
             type: string
             format: uri
           readOnly: true
+        references:
+          type: array
+          items:
+            type: string
+            format: uri
+          readOnly: true
+        referenced_by:
+          type: array
+          items:
+            type: string
+            format: uri
+          readOnly: true
         has_secret:
           type: boolean
           readOnly: true
@@ -5117,6 +5178,8 @@ components:
       - modified_at
       - name
       - parameters
+      - referenced_by
+      - references
       - url
     TemplateCreate:
       type: object
@@ -5139,6 +5202,38 @@ components:
             substitution into the template result.
       required:
       - name
+    TemplateLookupError:
+      type: object
+      description: Indicates errors occurred while retrieving values to substitute
+        into the template.
+      properties:
+        detail:
+          type: array
+          items:
+            $ref: '#/components/schemas/TemplateLookupErrorEntry'
+      required:
+      - detail
+    TemplateLookupErrorEntry:
+      type: object
+      properties:
+        parameter_id:
+          type: string
+          format: uuid
+          description: The parameter id.
+        parameter_name:
+          type: string
+          description: The parameter name.
+        error_code:
+          type: string
+          description: The error code.
+        error_detail:
+          type: string
+          description: Details about the error.
+      required:
+      - error_code
+      - error_detail
+      - parameter_id
+      - parameter_name
     TemplatePreview:
       type: object
       properties:

@@ -73,6 +73,8 @@ docs/ServiceAccountCreateResponse.md
 docs/ServiceaccountsApi.md
 docs/Template.md
 docs/TemplateCreate.md
+docs/TemplateLookupError.md
+docs/TemplateLookupErrorEntry.md
 docs/TemplatePreview.md
 docs/Timeline.md
 docs/TimelineEntry.md
@@ -159,6 +161,8 @@ src/models/service_account_create_request.rs
 src/models/service_account_create_response.rs
 src/models/template.rs
 src/models/template_create.rs
+src/models/template_lookup_error.rs
+src/models/template_lookup_error_entry.rs
 src/models/template_preview.rs
 src/models/timeline.rs
 src/models/timeline_entry.rs

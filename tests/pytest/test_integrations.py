@@ -1,6 +1,8 @@
+import os
 import unittest
 
 from testcase import TestCase
+from testcase import write_file
 from urllib.parse import urlparse
 
 
@@ -8,6 +10,18 @@ class TestIntegrations(TestCase):
     def setUp(self) -> None:
         self.fqn = "github://rickporter-tuono/cloudtruth_test/main/short.yaml"
         self.jmes = "speicla.POrk_Egg_Foo_Young"
+
+        # the 'broken' parameters represent a project that's completely populated
+        self.broken = dict(
+            project="proj-int-broken",
+            param1="param1",  # internal
+            value1="value1",
+            param2="param2",  # external broken
+            fqn2="github://rickporter-tuono/hello-world/master/README.md",
+            param3="param3",  # external good
+            fqn3="github://rickporter-tuono/cloudtruth_test/main/README.md",
+            template="temp-int-broken",
+        )
         super().setUp()
 
     def test_integration_explore_errors(self):
@@ -75,7 +89,7 @@ class TestIntegrations(TestCase):
     def test_integration_parameters(self):
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
-        proj_name = self.make_name("test-param-names")
+        proj_name = self.make_name("test-int-params")
         empty_msg = f"No parameters found in project {proj_name}"
         param_cmd = base_cmd + f"--project '{proj_name}' param "
         show_cmd = param_cmd + "list -vsf csv"
@@ -150,5 +164,117 @@ class TestIntegrations(TestCase):
         expected = f"{param2},{self.fqn},{self.jmes}"
         self.assertIn(expected, result.out())
 
+        # param get shows the dynamic parameters
+        result = self.run_cli(cmd_env, param_cmd + f"get '{param2}' --details")
+        self.assertIn(f"FQN: {self.fqn}", result.out())
+        self.assertIn(f"JMES-path: {self.jmes}", result.out())
+
+        ######################
+        # templates with dynamic parameters
+        temp_cmd = base_cmd + f"--project '{proj_name}' template "
+        temp_name = "my-int-temp"
+        filename = "template.txt"
+        body = """\
+# this is a comment that references an external parameter
+PARAMETER_2 = PARAM2
+"""
+        write_file(filename, body.replace("PARAM2", f"{{{{{param2}}}}}"))
+        result = self.run_cli(cmd_env, temp_cmd + f"preview '{filename}'")
+        self.assertEqual(result.return_value, 0)
+        self.assertIn(body.replace("PARAM2\n", ""), result.out())  # evaluated to an unknown value
+
+        # create the template
+        result = self.run_cli(cmd_env, temp_cmd + f"set '{temp_name}' --body '{filename}'")
+        self.assertEqual(result.return_value, 0)
+
+        # get the evaluated template
+        result = self.run_cli(cmd_env, temp_cmd + f"get '{temp_name}'")
+        self.assertEqual(result.return_value, 0)
+        self.assertIn(body.replace("PARAM2\n", ""), result.out())  # evaluated to an unknown value
+
         # cleanup
+        os.remove(filename)
         self.delete_project(cmd_env, proj_name)
+
+    @unittest.skip("Need known integration parameters")
+    def test_integration_broken(self):
+        # NOTE: this test is a bit different than the others because everything needs to exist
+        base_cmd = self.get_cli_base_cmd()
+        cmd_env = self.get_cmd_env()
+
+        proj_name = self.broken.get("project")
+        temp_name = self.broken.get("template")
+        param1 = self.broken.get("param1")
+        value1 = self.broken.get("value1")
+        param2 = self.broken.get("param2")
+        fqn2 = self.broken.get("fqn2")
+        param3 = self.broken.get("param3")
+        fqn3 = self.broken.get("fqn3")
+
+        # make sure everything exists in the "correct" state
+        proj_cmd = base_cmd + f"--project {proj_name} "
+        result = self.run_cli(cmd_env, proj_cmd + "projects ls")
+        self.assertIn(proj_name, result.out())
+        result = self.run_cli(cmd_env, proj_cmd + "templates ls")
+        self.assertIn(temp_name, result.out())
+
+        missing_fqn2 = f"The dynamic content of `{fqn2}` is not present"
+        missing_param2 = f"{param2}: {missing_fqn2}"
+
+        ##########################
+        # parameter checks
+        result = self.run_cli(cmd_env, proj_cmd + "param list -f csv")
+        self.assertEqual(result.return_value, 0)
+        self.assertIn(param1, result.out())
+        self.assertIn(param2, result.out())
+        self.assertIn(param3, result.out())
+        self.assertEqual(result.err(), "")  # no errors reported, since not getting values
+
+        # parameter list should yield warnings, but still show everything
+        result = self.run_cli(cmd_env, proj_cmd + "param list -vsf csv")
+        self.assertEqual(result.return_value, 0)
+        self.assertIn(f"{param1},{value1},", result.out())
+        self.assertIn(f"{param2},,", result.out())  # empty value reported
+        self.assertIn(f"{param3},", result.out())  # do not worry about returned value
+        self.assertIn(missing_param2, result.err())
+        self.assertNotIn(param3, result.err())
+        self.assertNotIn(fqn3, result.err())
+
+        # list dynamic parameters with no values
+        result = self.run_cli(cmd_env, proj_cmd + "param list --dynamic -f csv")
+        self.assertEqual(result.return_value, 0)
+        self.assertIn(param2, result.out())
+        self.assertIn(param3, result.out())
+        self.assertEqual("", result.err())  # no warnings if not getting values
+
+        # list dynamic parameters with FQN/JMES
+        result = self.run_cli(cmd_env, proj_cmd + "param list --dynamic -vf csv")
+        self.assertEqual(result.return_value, 0)
+        self.assertIn(f"{param2},{fqn2}", result.out())
+        self.assertIn(f"{param3},{fqn3}", result.out())
+        self.assertIn(missing_param2, result.err())
+
+        # getting the broken parameter yields an empty value, and a warning
+        result = self.run_cli(cmd_env, proj_cmd + f"param get '{param2}'")
+        self.assertEqual(result.return_value, 0)
+        self.assertEqual("\n", result.out())
+        self.assertIn(missing_fqn2, result.err())
+
+        ##########################
+        # template checks
+        filename = "preview.txt"
+
+        result = self.run_cli(cmd_env, proj_cmd + f"template get '{temp_name}'")
+        self.assertNotEqual(result.return_value, 0)
+        self.assertIn(missing_param2, result.err())
+
+        # copy current body into a file
+        result = self.run_cli(cmd_env, proj_cmd + f"template get '{temp_name}' --raw")
+        write_file(filename, result.out())
+
+        result = self.run_cli(cmd_env, proj_cmd + f"template preview '{filename}'")
+        self.assertNotEqual(result.return_value, 0)
+        self.assertIn(missing_param2, result.err())
+
+        # NOTE: do NOT delete the project!!!
+        os.remove(filename)
