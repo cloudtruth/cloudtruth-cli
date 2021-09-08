@@ -3,12 +3,7 @@ import os
 from testcase import TestCase
 from testcase import CT_ENV
 from testcase import REDACTED
-
-
-def write_file(filename: str, content: str) -> None:
-    file = open(filename, "w")
-    file.write(content)
-    file.close()
+from testcase import write_file
 
 
 def empty_template(project: str) -> str:

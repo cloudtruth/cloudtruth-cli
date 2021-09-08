@@ -42,6 +42,13 @@ PROP_MODIFIED = "Modified At"
 PROP_VALUE = "Value"
 
 
+def write_file(filename: str, content: str) -> None:
+    """Simple utility to open set the filename content."""
+    file = open(filename, "w")
+    file.write(content)
+    file.close()
+
+
 def get_cli_base_cmd() -> str:
     """
     This is a separate function that does not reference the `self._base_cmd' so it can be called
