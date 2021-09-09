@@ -97,6 +97,8 @@ Class | Method | HTTP request | Description
 *ProjectsApi* | [**projects_templates_list**](docs/ProjectsApi.md#projects_templates_list) | **GET** /api/v1/projects/{project_pk}/templates/ | 
 *ProjectsApi* | [**projects_templates_partial_update**](docs/ProjectsApi.md#projects_templates_partial_update) | **PATCH** /api/v1/projects/{project_pk}/templates/{id}/ | 
 *ProjectsApi* | [**projects_templates_retrieve**](docs/ProjectsApi.md#projects_templates_retrieve) | **GET** /api/v1/projects/{project_pk}/templates/{id}/ | 
+*ProjectsApi* | [**projects_templates_timeline_retrieve**](docs/ProjectsApi.md#projects_templates_timeline_retrieve) | **GET** /api/v1/projects/{project_pk}/templates/{id}/timeline/ | 
+*ProjectsApi* | [**projects_templates_timelines_retrieve**](docs/ProjectsApi.md#projects_templates_timelines_retrieve) | **GET** /api/v1/projects/{project_pk}/templates/timelines/ | 
 *ProjectsApi* | [**projects_templates_update**](docs/ProjectsApi.md#projects_templates_update) | **PUT** /api/v1/projects/{project_pk}/templates/{id}/ | 
 *ProjectsApi* | [**projects_update**](docs/ProjectsApi.md#projects_update) | **PUT** /api/v1/projects/{id}/ | 
 *ServiceaccountsApi* | [**serviceaccounts_create**](docs/ServiceaccountsApi.md#serviceaccounts_create) | **POST** /api/v1/serviceaccounts/ | Create a ServiceAccount user.
@@ -154,6 +156,10 @@ Class | Method | HTTP request | Description
  - [ParameterRule](docs/ParameterRule.md)
  - [ParameterRuleCreate](docs/ParameterRuleCreate.md)
  - [ParameterRuleTypeEnum](docs/ParameterRuleTypeEnum.md)
+ - [ParameterTimeline](docs/ParameterTimeline.md)
+ - [ParameterTimelineEntry](docs/ParameterTimelineEntry.md)
+ - [ParameterTimelineEntryEnvironment](docs/ParameterTimelineEntryEnvironment.md)
+ - [ParameterTimelineEntryParameter](docs/ParameterTimelineEntryParameter.md)
  - [ParameterTypeEnum](docs/ParameterTypeEnum.md)
  - [PatchedAwsIntegration](docs/PatchedAwsIntegration.md)
  - [PatchedEnvironment](docs/PatchedEnvironment.md)
@@ -177,10 +183,9 @@ Class | Method | HTTP request | Description
  - [TemplateLookupError](docs/TemplateLookupError.md)
  - [TemplateLookupErrorEntry](docs/TemplateLookupErrorEntry.md)
  - [TemplatePreview](docs/TemplatePreview.md)
- - [Timeline](docs/Timeline.md)
- - [TimelineEntry](docs/TimelineEntry.md)
- - [TimelineEntryEnvironment](docs/TimelineEntryEnvironment.md)
- - [TimelineEntryParameter](docs/TimelineEntryParameter.md)
+ - [TemplateTimeline](docs/TemplateTimeline.md)
+ - [TemplateTimelineEntry](docs/TemplateTimelineEntry.md)
+ - [TemplateTimelineEntryTemplate](docs/TemplateTimelineEntryTemplate.md)
  - [User](docs/User.md)
  - [Value](docs/Value.md)
  - [ValueCreate](docs/ValueCreate.md)
