@@ -1,28 +1,50 @@
 import os
 import unittest
+from typing import List
 
 from testcase import TestCase
 from testcase import write_file
 from urllib.parse import urlparse
 
+CT_BROKEN_PROJ = "CLOUDTRUTH_TEST_BROKEN_PROJECT"
+CT_BROKEN_TEMP = "CLOUDTRUTH_TEST_BROKEN_TEMPLATE"
+CT_BROKEN_PARAM1 = "CLOUDTRUTH_TEST_BROKEN_PARAM1"
+CT_BROKEN_PARAM2 = "CLOUDTRUTH_TEST_BROKEN_PARAM2"
+CT_BROKEN_PARAM3 = "CLOUDTRUTH_TEST_BROKEN_PARAM3"
+CT_BROKEN_VALUE1 = "CLOUDTRUTH_TEST_BROKEN_VALUE1"
+CT_BROKEN_FQN2 = "CLOUDTRUTH_TEST_BROKEN_FQN2"
+CT_BROKEN_FQN3 = "CLOUDTRUTH_TEST_BROKEN_FQN3"
+CT_BROKEN_RUN = [
+    CT_BROKEN_PROJ,
+    CT_BROKEN_TEMP,
+    CT_BROKEN_PARAM1,
+    CT_BROKEN_PARAM2,
+    CT_BROKEN_PARAM3,
+    CT_BROKEN_VALUE1,
+    CT_BROKEN_FQN2,
+    CT_BROKEN_FQN3,
+]
+
+CT_EXP_FQN = "CLOUDTRUTH_TEST_EXPLORE_FQN"
+CT_EXP_JMES = "CLOUDTRUTH_TEST_EXPLORE_JMES"
+CT_EXPLORE_RUN = [
+    CT_EXP_FQN,
+    CT_EXP_JMES,
+]
+
+CT_PARAM_FQN = "CLOUDTRUTH_TEST_PARAMETERS_FQN"
+CT_PARAM_JMES = "CLOUDTRUTH_TEST_PARAMETERS_JMES"
+CT_PARAM_RUN = [
+    CT_PARAM_FQN,
+    CT_PARAM_JMES,
+]
+
+
+def missing_any(env_var_names: List[str]) -> bool:
+    return not all([os.environ.get(x) for x in env_var_names])
+
 
 class TestIntegrations(TestCase):
-    def setUp(self) -> None:
-        self.fqn = "github://rickporter-tuono/cloudtruth_test/main/short.yaml"
-        self.jmes = "speicla.POrk_Egg_Foo_Young"
-
-        # the 'broken' parameters represent a project that's completely populated
-        self.broken = dict(
-            project="proj-int-broken",
-            param1="param1",  # internal
-            value1="value1",
-            param2="param2",  # external broken
-            fqn2="github://rickporter-tuono/hello-world/master/README.md",
-            param3="param3",  # external good
-            fqn3="github://rickporter-tuono/cloudtruth_test/main/README.md",
-            template="temp-int-broken",
-        )
-        super().setUp()
 
     def test_integration_explore_errors(self):
         base_cmd = self.get_cli_base_cmd()
@@ -48,12 +70,14 @@ class TestIntegrations(TestCase):
         # cleanup
         self.delete_project(cmd_env, proj_name)
 
-    @unittest.skip("Need known integration parameters")
+    @unittest.skipIf(missing_any(CT_EXPLORE_RUN), "Need all CT_EXPLORE_RUN parameters")
     def test_integration_explore(self):
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
 
-        url = urlparse(self.fqn)
+        fqn = os.environ.get(CT_EXP_FQN)
+        jmes = os.environ.get(CT_EXP_JMES)
+        url = urlparse(fqn)
         base_fqn = f"{url.scheme}://{url.netloc}"
 
         # make sure we see the integration in the list
@@ -80,12 +104,12 @@ class TestIntegrations(TestCase):
             explore_path += "/" + name
 
         # in the "final" pass, it should contain the JMES path
-        expected = f"  {{{{ {self.jmes} }}}},{self.fqn}"
+        expected = f"  {{{{ {jmes} }}}},{fqn}"
         result = self.run_cli(cmd_env, explore_cmd + f"'{explore_path}'")
         self.assertEqual(0, result.return_value)
         self.assertIn(expected, result.out())
 
-    @unittest.skip("Need known integration parameters")
+    @unittest.skipIf(missing_any(CT_PARAM_RUN), "Need all CT_PARAM_RUN parameters")
     def test_integration_parameters(self):
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
@@ -94,6 +118,9 @@ class TestIntegrations(TestCase):
         param_cmd = base_cmd + f"--project '{proj_name}' param "
         show_cmd = param_cmd + "list -vsf csv"
         show_dyn = show_cmd + " --dynamic"
+
+        fqn = os.environ.get(CT_PARAM_FQN)
+        jmes = os.environ.get(CT_PARAM_JMES)
 
         # add a new project
         self.create_project(cmd_env, proj_name)
@@ -119,7 +146,7 @@ class TestIntegrations(TestCase):
 
         ######################
         # flip it to a dynamic value
-        result = self.run_cli(cmd_env, param_cmd + f"set {param1} -f {self.fqn} -j {self.jmes}")
+        result = self.run_cli(cmd_env, param_cmd + f"set {param1} -f {fqn} -j {jmes}")
         self.assertEqual(0, result.return_value)
         self.assertIn("Successfully update", result.out())
 
@@ -130,7 +157,7 @@ class TestIntegrations(TestCase):
 
         # see the dynamic parameter
         result = self.run_cli(cmd_env, show_dyn)
-        expected = f"{param1},{self.fqn},{self.jmes}"
+        expected = f"{param1},{fqn},{jmes}"
         self.assertIn(expected, result.out())
 
         ######################
@@ -149,7 +176,7 @@ class TestIntegrations(TestCase):
         ######################
         # create a dynamic value
         param2 = "eulers"
-        result = self.run_cli(cmd_env, param_cmd + f"set {param2} -f {self.fqn} -j {self.jmes}")
+        result = self.run_cli(cmd_env, param_cmd + f"set {param2} -f {fqn} -j {jmes}")
         self.assertEqual(0, result.return_value)
         self.assertIn("Successfully update", result.out())
 
@@ -161,13 +188,13 @@ class TestIntegrations(TestCase):
 
         # see the dynamic parameter
         result = self.run_cli(cmd_env, show_dyn)
-        expected = f"{param2},{self.fqn},{self.jmes}"
+        expected = f"{param2},{fqn},{jmes}"
         self.assertIn(expected, result.out())
 
         # param get shows the dynamic parameters
         result = self.run_cli(cmd_env, param_cmd + f"get '{param2}' --details")
-        self.assertIn(f"FQN: {self.fqn}", result.out())
-        self.assertIn(f"JMES-path: {self.jmes}", result.out())
+        self.assertIn(f"FQN: {fqn}", result.out())
+        self.assertIn(f"JMES-path: {jmes}", result.out())
 
         ######################
         # templates with dynamic parameters
@@ -196,20 +223,20 @@ PARAMETER_2 = PARAM2
         os.remove(filename)
         self.delete_project(cmd_env, proj_name)
 
-    @unittest.skip("Need known integration parameters")
+    @unittest.skipIf(missing_any(CT_BROKEN_RUN), "Need all CT_BROKEN_RUN parameters")
     def test_integration_broken(self):
         # NOTE: this test is a bit different than the others because everything needs to exist
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
 
-        proj_name = self.broken.get("project")
-        temp_name = self.broken.get("template")
-        param1 = self.broken.get("param1")
-        value1 = self.broken.get("value1")
-        param2 = self.broken.get("param2")
-        fqn2 = self.broken.get("fqn2")
-        param3 = self.broken.get("param3")
-        fqn3 = self.broken.get("fqn3")
+        proj_name = os.environ.get(CT_BROKEN_PROJ)
+        temp_name = os.environ.get(CT_BROKEN_TEMP)
+        param1 = os.environ.get(CT_BROKEN_PARAM1)
+        value1 = os.environ.get(CT_BROKEN_VALUE1)
+        param2 = os.environ.get(CT_BROKEN_PARAM2)
+        fqn2 = os.environ.get(CT_BROKEN_FQN2)
+        param3 = os.environ.get(CT_BROKEN_PARAM3)
+        fqn3 = os.environ.get(CT_BROKEN_FQN3)
 
         # make sure everything exists in the "correct" state
         proj_cmd = base_cmd + f"--project {proj_name} "
