@@ -9,7 +9,7 @@
  */
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct TimelineEntryEnvironment {
+pub struct ParameterTimelineEntryEnvironment {
     /// A unique identifier for the environment.
     #[serde(rename = "id")]
     pub id: String,
@@ -21,9 +21,9 @@ pub struct TimelineEntryEnvironment {
     pub _override: bool,
 }
 
-impl TimelineEntryEnvironment {
-    pub fn new(id: String, name: String, _override: bool) -> TimelineEntryEnvironment {
-        TimelineEntryEnvironment {
+impl ParameterTimelineEntryEnvironment {
+    pub fn new(id: String, name: String, _override: bool) -> ParameterTimelineEntryEnvironment {
+        ParameterTimelineEntryEnvironment {
             id,
             name,
             _override,

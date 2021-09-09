@@ -334,6 +334,7 @@ FLAGS:
 
 OPTIONS:
         --contains <contains>          Return parameters with keys containing search
+        --as-of <datetime>             Date/time of parameter value(s)
         --ends-with <ends_with>        Return parameters with keys ending with search
         --starts-with <starts_with>    Return parameters starting with search
 
@@ -586,12 +587,15 @@ cloudtruth-templates-preview
 Evaluate the provided template without storing
 
 USAGE:
-    cloudtruth templates preview [FLAGS] <FILE>
+    cloudtruth templates preview [FLAGS] [OPTIONS] <FILE>
 
 FLAGS:
     -h, --help       Prints help information
     -s, --secrets    Display secret values in evaluation
     -V, --version    Prints version information
+
+OPTIONS:
+        --as-of <datetime>    Date/time of parameter value(s)
 
 ARGS:
     <FILE>    File containing the template

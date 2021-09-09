@@ -2,6 +2,8 @@ import os
 
 from testcase import TestCase
 from testcase import CT_ENV
+from testcase import PROP_VALUE
+from testcase import PROP_MODIFIED
 from testcase import REDACTED
 from testcase import write_file
 
@@ -215,4 +217,53 @@ ANOTHER_PARAM=PARAM2
         os.remove(filename)
         self.delete_environment(cmd_env, env_b)
         self.delete_environment(cmd_env, env_a)
+        self.delete_project(cmd_env, proj_name)
+
+    def test_template_times(self):
+        base_cmd = self.get_cli_base_cmd()
+        cmd_env = self.get_cmd_env()
+
+        # add a new project
+        proj_name = self.make_name("test-temp-times")
+        self.create_project(cmd_env, proj_name)
+
+        param1 = "some_param"
+        value_a = "value first"
+        value_b = "value second"
+        self.set_param(cmd_env, proj_name, param1, value_a)
+
+        # fetch complete details for first set
+        details_a = self.get_param(cmd_env, proj_name, param1)
+        self.assertIsNotNone(details_a)
+        self.assertEqual(details_a.get(PROP_VALUE), value_a)
+
+        # get the newest time from the first set of changes
+        modified_at = details_a.get(PROP_MODIFIED)
+
+        # update value
+        self.set_param(cmd_env, proj_name, param1, value_b)
+
+        # sanity checks on updated values
+        details_b = self.get_param(cmd_env, proj_name, param1)
+        self.assertIsNotNone(details_b)
+        self.assertEqual(details_b.get(PROP_VALUE), value_b)
+
+        filename = self.make_name("test-temp-times") + ".txt"
+        body = """\
+# just a comment
+this.is.a.template.value=PARAM1
+"""
+        write_file(filename, body.replace("PARAM1", f"{{{{{param1}}}}}"))
+
+        # check the current evaluation
+        preview_cmd = base_cmd + f"--project {proj_name} template preview '{filename}' "
+        result = self.run_cli(cmd_env, preview_cmd)
+        self.assertEqual(result.out(), body.replace("PARAM1", value_b + "\n"))
+
+        # check the earlier evaluation
+        result = self.run_cli(cmd_env, preview_cmd + f"--as-of '{modified_at}'")
+        self.assertEqual(result.out(), body.replace("PARAM1", value_a + "\n"))
+
+        # cleanup
+        os.remove(filename)
         self.delete_project(cmd_env, proj_name)

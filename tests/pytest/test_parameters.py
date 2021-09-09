@@ -1476,6 +1476,15 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
             if item.get("Environment") == env_b:
                 self.assertTrue(equal_properties(item, details_b1))
 
+        ####################
+        # parameter export now supports specifying --as-of
+        export_cmd = base_cmd + f"--project '{proj_name}' --env '{env_a}' param export docker"
+        result = self.run_cli(cmd_env, export_cmd)
+        self.assertIn(f"{param1.upper()}={value_a2}", result.out())
+
+        result = self.run_cli(cmd_env, export_cmd + f" --as-of {modified_at}")
+        self.assertIn(f"{param1.upper()}={value_a1}", result.out())
+
         # cleanup
         self.delete_environment(cmd_env, env_a)
         self.delete_environment(cmd_env, env_b)

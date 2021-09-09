@@ -252,6 +252,20 @@ pub enum ProjectsTemplatesRetrieveError {
     UnknownValue(serde_json::Value),
 }
 
+/// struct for typed errors of method `projects_templates_timeline_retrieve`
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum ProjectsTemplatesTimelineRetrieveError {
+    UnknownValue(serde_json::Value),
+}
+
+/// struct for typed errors of method `projects_templates_timelines_retrieve`
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum ProjectsTemplatesTimelinesRetrieveError {
+    UnknownValue(serde_json::Value),
+}
+
 /// struct for typed errors of method `projects_templates_update`
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
@@ -478,14 +492,13 @@ pub fn projects_list(
 pub fn projects_parameter_export_list(
     configuration: &configuration::Configuration,
     project_pk: &str,
+    as_of: Option<String>,
     contains: Option<&str>,
     endswith: Option<&str>,
     environment: Option<&str>,
     explicit_export: Option<bool>,
     mask_secrets: Option<bool>,
     output: Option<&str>,
-    page: Option<i32>,
-    page_size: Option<i32>,
     startswith: Option<&str>,
     wrap: Option<bool>,
 ) -> Result<crate::models::ParameterExport, Error<ProjectsParameterExportListError>> {
@@ -499,6 +512,10 @@ pub fn projects_parameter_export_list(
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
 
+    if let Some(ref local_var_str) = as_of {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("as_of", &local_var_str.to_string())]);
+    }
     if let Some(ref local_var_str) = contains {
         local_var_req_builder =
             local_var_req_builder.query(&[("contains", &local_var_str.to_string())]);
@@ -522,14 +539,6 @@ pub fn projects_parameter_export_list(
     if let Some(ref local_var_str) = output {
         local_var_req_builder =
             local_var_req_builder.query(&[("output", &local_var_str.to_string())]);
-    }
-    if let Some(ref local_var_str) = page {
-        local_var_req_builder =
-            local_var_req_builder.query(&[("page", &local_var_str.to_string())]);
-    }
-    if let Some(ref local_var_str) = page_size {
-        local_var_req_builder =
-            local_var_req_builder.query(&[("page_size", &local_var_str.to_string())]);
     }
     if let Some(ref local_var_str) = startswith {
         local_var_req_builder =
@@ -1473,7 +1482,7 @@ pub fn projects_parameters_timeline_retrieve(
     id: &str,
     project_pk: &str,
     as_of: Option<String>,
-) -> Result<crate::models::Timeline, Error<ProjectsParametersTimelineRetrieveError>> {
+) -> Result<crate::models::ParameterTimeline, Error<ProjectsParametersTimelineRetrieveError>> {
     let local_var_client = &configuration.client;
 
     let local_var_uri_str = format!(
@@ -1548,7 +1557,7 @@ pub fn projects_parameters_timelines_retrieve(
     configuration: &configuration::Configuration,
     project_pk: &str,
     as_of: Option<String>,
-) -> Result<crate::models::Timeline, Error<ProjectsParametersTimelinesRetrieveError>> {
+) -> Result<crate::models::ParameterTimeline, Error<ProjectsParametersTimelinesRetrieveError>> {
     let local_var_client = &configuration.client;
 
     let local_var_uri_str = format!(
@@ -2319,11 +2328,12 @@ pub fn projects_retrieve(
     }
 }
 
-/// Endpoint for previewing a template.
+/// Endpoint for previewing a template.  Post the template content in the request body.
 pub fn projects_template_preview_create(
     configuration: &configuration::Configuration,
     project_pk: &str,
     template_preview: crate::models::TemplatePreview,
+    as_of: Option<String>,
     environment: Option<&str>,
     mask_secrets: Option<bool>,
 ) -> Result<crate::models::TemplatePreview, Error<ProjectsTemplatePreviewCreateError>> {
@@ -2337,6 +2347,10 @@ pub fn projects_template_preview_create(
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
 
+    if let Some(ref local_var_str) = as_of {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("as_of", &local_var_str.to_string())]);
+    }
     if let Some(ref local_var_str) = environment {
         local_var_req_builder =
             local_var_req_builder.query(&[("environment", &local_var_str.to_string())]);
@@ -2759,6 +2773,156 @@ pub fn projects_templates_retrieve(
         serde_json::from_str(&local_var_content).map_err(Error::from)
     } else {
         let local_var_entity: Option<ProjectsTemplatesRetrieveError> =
+            serde_json::from_str(&local_var_content).ok();
+        let local_var_error = ResponseContent {
+            status: local_var_status,
+            content: local_var_content,
+            entity: local_var_entity,
+        };
+        if configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
+        Err(Error::ResponseError(local_var_error))
+    }
+}
+
+/// Information about how a template has changed over time.  The time range of historical information available depends on your subscription. Any changes to the template itself is included.
+pub fn projects_templates_timeline_retrieve(
+    configuration: &configuration::Configuration,
+    id: &str,
+    project_pk: &str,
+    as_of: Option<String>,
+) -> Result<crate::models::TemplateTimeline, Error<ProjectsTemplatesTimelineRetrieveError>> {
+    let local_var_client = &configuration.client;
+
+    let local_var_uri_str = format!(
+        "{}/api/v1/projects/{project_pk}/templates/{id}/timeline/",
+        configuration.base_path,
+        id = id,
+        project_pk = project_pk
+    );
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+
+    if let Some(ref local_var_str) = as_of {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("as_of", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_user_agent) = configuration.user_agent {
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
+    }
+
+    if let Some(ref local_var_token) = configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
+    if let Some(ref local_var_apikey) = configuration.api_key {
+        let local_var_key = local_var_apikey.key.clone();
+        let local_var_value = match local_var_apikey.prefix {
+            Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
+            None => local_var_key,
+        };
+        local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
+    };
+
+    let local_var_req = local_var_req_builder.build()?;
+    let method = local_var_req.method().clone();
+    let start = Instant::now();
+    let mut local_var_resp = local_var_client.execute(local_var_req)?;
+    if configuration.rest_debug {
+        let duration = start.elapsed();
+        println!(
+            "URL {} {} elapsed: {:?}",
+            method,
+            &local_var_resp.url(),
+            duration
+        );
+    }
+
+    let local_var_status = local_var_resp.status();
+    let local_var_content = local_var_resp.text()?;
+
+    if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        serde_json::from_str(&local_var_content).map_err(Error::from)
+    } else {
+        let local_var_entity: Option<ProjectsTemplatesTimelineRetrieveError> =
+            serde_json::from_str(&local_var_content).ok();
+        let local_var_error = ResponseContent {
+            status: local_var_status,
+            content: local_var_content,
+            entity: local_var_entity,
+        };
+        if configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
+        Err(Error::ResponseError(local_var_error))
+    }
+}
+
+/// Information about how the templates of a project have changed over time.  The time range of historical information available depends on your subscription. Any changes to the project's templates is included.
+pub fn projects_templates_timelines_retrieve(
+    configuration: &configuration::Configuration,
+    project_pk: &str,
+    as_of: Option<String>,
+) -> Result<crate::models::TemplateTimeline, Error<ProjectsTemplatesTimelinesRetrieveError>> {
+    let local_var_client = &configuration.client;
+
+    let local_var_uri_str = format!(
+        "{}/api/v1/projects/{project_pk}/templates/timelines/",
+        configuration.base_path,
+        project_pk = project_pk
+    );
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+
+    if let Some(ref local_var_str) = as_of {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("as_of", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_user_agent) = configuration.user_agent {
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
+    }
+
+    if let Some(ref local_var_token) = configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
+    if let Some(ref local_var_apikey) = configuration.api_key {
+        let local_var_key = local_var_apikey.key.clone();
+        let local_var_value = match local_var_apikey.prefix {
+            Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
+            None => local_var_key,
+        };
+        local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
+    };
+
+    let local_var_req = local_var_req_builder.build()?;
+    let method = local_var_req.method().clone();
+    let start = Instant::now();
+    let mut local_var_resp = local_var_client.execute(local_var_req)?;
+    if configuration.rest_debug {
+        let duration = start.elapsed();
+        println!(
+            "URL {} {} elapsed: {:?}",
+            method,
+            &local_var_resp.url(),
+            duration
+        );
+    }
+
+    let local_var_status = local_var_resp.status();
+    let local_var_content = local_var_resp.text()?;
+
+    if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        serde_json::from_str(&local_var_content).map_err(Error::from)
+    } else {
+        let local_var_entity: Option<ProjectsTemplatesTimelinesRetrieveError> =
             serde_json::from_str(&local_var_content).ok();
         let local_var_error = ResponseContent {
             status: local_var_status,

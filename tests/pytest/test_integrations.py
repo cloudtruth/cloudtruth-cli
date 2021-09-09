@@ -260,6 +260,13 @@ PARAMETER_2 = PARAM2
         self.assertEqual("\n", result.out())
         self.assertIn(missing_fqn2, result.err())
 
+        # export will fail, and should provide details about what failed
+        result = self.run_cli(cmd_env, proj_cmd + "param export docker")
+        self.assertNotEqual(result.return_value, 0)
+        # TODO: once `param export` improves feedback, use it
+        # self.assertIn(missing_fqn2, result.err())
+        self.assertIn("422 Unprocessable Entity", result.err())
+
         ##########################
         # template checks
         filename = "preview.txt"
@@ -271,6 +278,11 @@ PARAMETER_2 = PARAM2
         # copy current body into a file
         result = self.run_cli(cmd_env, proj_cmd + f"template get '{temp_name}' --raw")
         write_file(filename, result.out())
+
+        # make sure the template has the references
+        self.assertIn(param1, result.out())
+        self.assertIn(param2, result.out())
+        self.assertIn(param3, result.out())
 
         result = self.run_cli(cmd_env, proj_cmd + f"template preview '{filename}'")
         self.assertNotEqual(result.return_value, 0)

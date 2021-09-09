@@ -1632,6 +1632,12 @@ paths:
         format will be omitted.
       parameters:
       - in: query
+        name: as_of
+        schema:
+          type: string
+          format: date-time
+        description: Specify a point in time to retrieve configuration from.
+      - in: query
         name: contains
         schema:
           type: string
@@ -1647,8 +1653,7 @@ paths:
         name: environment
         schema:
           type: string
-          format: uuid
-        description: (Optional) ID of the environment to use to instantiate this template
+        description: Name or id of the environment to use to retrieve parameter values.
       - in: query
         name: explicit_export
         schema:
@@ -1666,18 +1671,6 @@ paths:
         schema:
           type: string
         description: 'Format to output: One of ''docker'', ''dotenv'', ''shell''.'
-      - name: page
-        required: false
-        in: query
-        description: A page number within the paginated result set.
-        schema:
-          type: integer
-      - name: page_size
-        required: false
-        in: query
-        description: Number of results to return per page.
-        schema:
-          type: integer
       - in: path
         name: project_pk
         schema:
@@ -2673,7 +2666,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Timeline'
+                $ref: '#/components/schemas/ParameterTimeline'
           description: ''
   /api/v1/projects/{project_pk}/parameters/timelines/:
     get:
@@ -2706,13 +2699,20 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Timeline'
+                $ref: '#/components/schemas/ParameterTimeline'
           description: ''
   /api/v1/projects/{project_pk}/template-preview/:
     post:
       operationId: projects_template_preview_create
-      description: Endpoint for previewing a template.
+      description: Endpoint for previewing a template.  Post the template content
+        in the request body.
       parameters:
+      - in: query
+        name: as_of
+        schema:
+          type: string
+          format: date-time
+        description: Specify a point in time to retrieve configuration from.
       - in: query
         name: environment
         schema:
@@ -3007,6 +3007,79 @@ paths:
       responses:
         '204':
           description: No response body
+  /api/v1/projects/{project_pk}/templates/{id}/timeline/:
+    get:
+      operationId: projects_templates_timeline_retrieve
+      description: |-
+        Information about how a template has changed over time.
+
+        The time range of historical information available depends on your subscription.
+        Any changes to the template itself is included.
+      parameters:
+      - in: query
+        name: as_of
+        schema:
+          type: string
+          format: date-time
+        description: Specify a point in time to retrieve configuration from.
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+          description: A unique identifier for the template.
+        required: true
+      - in: path
+        name: project_pk
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - projects
+      security:
+      - JWTAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TemplateTimeline'
+          description: ''
+  /api/v1/projects/{project_pk}/templates/timelines/:
+    get:
+      operationId: projects_templates_timelines_retrieve
+      description: |-
+        Information about how the templates of a project have changed over time.
+
+        The time range of historical information available depends on your subscription.
+        Any changes to the project's templates is included.
+      parameters:
+      - in: query
+        name: as_of
+        schema:
+          type: string
+          format: date-time
+        description: Specify a point in time to retrieve configuration from.
+      - in: path
+        name: project_pk
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - projects
+      security:
+      - JWTAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TemplateTimeline'
+          description: ''
   /api/v1/serviceaccounts/:
     get:
       operationId: serviceaccounts_list
@@ -3840,6 +3913,7 @@ components:
       - Environment
       - Parameter
       - ParameterRule
+      - Template
       - Value
       type: string
     Organization:
@@ -4391,6 +4465,99 @@ components:
       - max_len
       - regex
       type: string
+    ParameterTimeline:
+      type: object
+      properties:
+        count:
+          type: integer
+          description: The number of records in this response.
+        next_as_of:
+          type: string
+          format: date-time
+          description: If present, additional history can be retrieved using this
+            timestamp in the next call for the as_of query parameter value.
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ParameterTimelineEntry'
+      required:
+      - count
+      - results
+    ParameterTimelineEntry:
+      type: object
+      description: Details about a single change.
+      properties:
+        history_date:
+          type: string
+          format: date-time
+        history_type:
+          allOf:
+          - $ref: '#/components/schemas/HistoryTypeEnum'
+          readOnly: true
+        history_user:
+          type: string
+          description: The unique identifier of a user.
+          nullable: true
+        history_environments:
+          type: array
+          items:
+            $ref: '#/components/schemas/ParameterTimelineEntryEnvironment'
+          readOnly: true
+          description: The affected environment(s).
+        history_model:
+          allOf:
+          - $ref: '#/components/schemas/HistoryModelEnum'
+          readOnly: true
+          description: The component of the parameter that changed.
+        history_parameter:
+          allOf:
+          - $ref: '#/components/schemas/ParameterTimelineEntryParameter'
+          readOnly: true
+          description: The affected parameter.
+      required:
+      - history_date
+      - history_environments
+      - history_model
+      - history_parameter
+      - history_type
+    ParameterTimelineEntryEnvironment:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+          description: A unique identifier for the environment.
+        name:
+          type: string
+          description: The environment name.
+          maxLength: 256
+        override:
+          type: boolean
+          readOnly: true
+          description: Indicates if the value change was direct or if it flowed into
+            the environment. If `true` then the value was actually set directly into
+            this environment. If `false` then the environment has no value set directly
+            so it inherited the value from its parent.
+      required:
+      - id
+      - name
+      - override
+    ParameterTimelineEntryParameter:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+          description: A unique identifier for the parameter.
+        name:
+          type: string
+          description: The parameter name.
+          maxLength: 256
+      required:
+      - id
+      - name
     ParameterTypeEnum:
       enum:
       - string
@@ -5241,43 +5408,31 @@ components:
           type: string
       required:
       - body
-    Timeline:
+    TemplateTimeline:
       type: object
       properties:
+        count:
+          type: integer
+          description: The number of records in this response.
         next_as_of:
           type: string
           format: date-time
           description: If present, additional history can be retrieved using this
-            timestamp in the next call in the as_of query parameter.
+            timestamp in the next call for the as_of query parameter value.
         results:
           type: array
           items:
-            $ref: '#/components/schemas/TimelineEntry'
+            $ref: '#/components/schemas/TemplateTimelineEntry'
       required:
+      - count
       - results
-    TimelineEntry:
+    TemplateTimelineEntry:
       type: object
       description: Details about a single change.
       properties:
         history_date:
           type: string
           format: date-time
-        history_environments:
-          type: array
-          items:
-            $ref: '#/components/schemas/TimelineEntryEnvironment'
-          readOnly: true
-          description: The affected environment(s).
-        history_model:
-          allOf:
-          - $ref: '#/components/schemas/HistoryModelEnum'
-          readOnly: true
-          description: The component of the parameter that changed.
-        history_parameter:
-          allOf:
-          - $ref: '#/components/schemas/TimelineEntryParameter'
-          readOnly: true
-          description: The affected parameter.
         history_type:
           allOf:
           - $ref: '#/components/schemas/HistoryTypeEnum'
@@ -5286,47 +5441,37 @@ components:
           type: string
           description: The unique identifier of a user.
           nullable: true
+        history_template:
+          allOf:
+          - $ref: '#/components/schemas/TemplateTimelineEntryTemplate'
+          readOnly: true
+          description: The template record as it was when archived for history.
       required:
       - history_date
-      - history_environments
-      - history_model
-      - history_parameter
+      - history_template
       - history_type
-    TimelineEntryEnvironment:
+    TemplateTimelineEntryTemplate:
       type: object
       properties:
         id:
           type: string
           format: uuid
           readOnly: true
-          description: A unique identifier for the environment.
+          description: A unique identifier for the template.
         name:
           type: string
-          description: The environment name.
+          description: The template name.
           maxLength: 256
-        override:
-          type: boolean
-          readOnly: true
-          description: Indicates if the value change was direct or if it flowed into
-            the environment. If `true` then the value was actually set directly into
-            this environment. If `false` then the environment has no value set directly
-            so it inherited the value from its parent.
-      required:
-      - id
-      - name
-      - override
-    TimelineEntryParameter:
-      type: object
-      properties:
-        id:
+        description:
           type: string
-          format: uuid
-          readOnly: true
-          description: A unique identifier for the parameter.
-        name:
+          description: A description of the template.  You may find it helpful to
+            document how this template is used to assist others when they need to
+            maintain software that uses this content.
+        body:
           type: string
-          description: The parameter name.
-          maxLength: 256
+          description: The content of the template.  Use mustache-style templating
+            delimiters of `{{` and `}}` to reference parameter values by name for
+            substitution into the template result.
       required:
       - id
       - name

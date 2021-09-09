@@ -1,4 +1,5 @@
 .gitignore
+.openapi-generator-ignore
 .travis.yml
 Cargo.toml
 README.md
@@ -51,6 +52,10 @@ docs/ParameterExport.md
 docs/ParameterRule.md
 docs/ParameterRuleCreate.md
 docs/ParameterRuleTypeEnum.md
+docs/ParameterTimeline.md
+docs/ParameterTimelineEntry.md
+docs/ParameterTimelineEntryEnvironment.md
+docs/ParameterTimelineEntryParameter.md
 docs/ParameterTypeEnum.md
 docs/PatchedAwsIntegration.md
 docs/PatchedEnvironment.md
@@ -76,10 +81,9 @@ docs/TemplateCreate.md
 docs/TemplateLookupError.md
 docs/TemplateLookupErrorEntry.md
 docs/TemplatePreview.md
-docs/Timeline.md
-docs/TimelineEntry.md
-docs/TimelineEntryEnvironment.md
-docs/TimelineEntryParameter.md
+docs/TemplateTimeline.md
+docs/TemplateTimelineEntry.md
+docs/TemplateTimelineEntryTemplate.md
 docs/User.md
 docs/UsersApi.md
 docs/Value.md
@@ -141,6 +145,10 @@ src/models/parameter_export.rs
 src/models/parameter_rule.rs
 src/models/parameter_rule_create.rs
 src/models/parameter_rule_type_enum.rs
+src/models/parameter_timeline.rs
+src/models/parameter_timeline_entry.rs
+src/models/parameter_timeline_entry_environment.rs
+src/models/parameter_timeline_entry_parameter.rs
 src/models/parameter_type_enum.rs
 src/models/patched_aws_integration.rs
 src/models/patched_environment.rs
@@ -164,10 +172,9 @@ src/models/template_create.rs
 src/models/template_lookup_error.rs
 src/models/template_lookup_error_entry.rs
 src/models/template_preview.rs
-src/models/timeline.rs
-src/models/timeline_entry.rs
-src/models/timeline_entry_environment.rs
-src/models/timeline_entry_parameter.rs
+src/models/template_timeline.rs
+src/models/template_timeline_entry.rs
+src/models/template_timeline_entry_template.rs
 src/models/user.rs
 src/models/value.rs
 src/models/value_create.rs

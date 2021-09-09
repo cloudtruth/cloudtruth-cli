@@ -11,8 +11,6 @@ use std::fmt;
 use std::fmt::Formatter;
 use std::result::Result;
 
-const NO_DETAILS_ERR: &str = "No details available";
-
 pub struct Templates {}
 
 #[derive(Debug)]
@@ -38,7 +36,7 @@ impl From<&Template> for TemplateDetails {
 pub enum TemplateError {
     AuthError(String),
     CreateApi(Error<ProjectsTemplatesCreateError>),
-    EvaluateFailed(Vec<String>),
+    EvaluateFailed(TemplateLookupError),
     ListError(Error<ProjectsTemplatesListError>),
     PreviewApi(Error<ProjectsTemplatePreviewCreateError>),
     RetrieveApi(Error<ProjectsTemplatesRetrieveError>),
@@ -49,8 +47,8 @@ impl fmt::Display for TemplateError {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
             TemplateError::AuthError(msg) => write!(f, "Not Authenticated: {}", msg),
-            TemplateError::EvaluateFailed(reasons) => {
-                write!(f, "Evaluation failed:\n  {}", reasons.join("\n  "))
+            TemplateError::EvaluateFailed(tle) => {
+                write!(f, "Evaluation failed:{}", template_eval_errors(tle))
             }
             e => write!(f, "{:?}", e),
         }
@@ -59,15 +57,17 @@ impl fmt::Display for TemplateError {
 
 impl error::Error for TemplateError {}
 
-fn evaluation_error(errors: &TemplateLookupError) -> TemplateError {
-    let mut reasons: Vec<String> = vec![];
-    for entry in &errors.detail {
-        reasons.push(format!("{}: {}", entry.parameter_name, entry.error_detail));
+pub fn template_eval_errors(tle: &TemplateLookupError) -> String {
+    let mut failures: Vec<String> = tle
+        .detail
+        .iter()
+        .map(|e| format!("{}: {}", e.parameter_name, e.error_detail))
+        .collect();
+    if failures.is_empty() {
+        failures.push("No details available".to_string());
     }
-    if reasons.is_empty() {
-        reasons.push(NO_DETAILS_ERR.to_string())
-    }
-    TemplateError::EvaluateFailed(reasons)
+    let prefix = "\n  ";
+    format!("{}{}", prefix, failures.join(prefix))
 }
 
 impl Templates {
@@ -98,7 +98,7 @@ impl Templates {
                 Ok(r) => Ok(r.body),
                 Err(ResponseError(ref content)) => match &content.entity {
                     Some(ProjectsTemplatesRetrieveError::Status422(tle)) => {
-                        Err(evaluation_error(tle))
+                        Err(TemplateError::EvaluateFailed(tle.clone()))
                     }
                     _ => Err(TemplateError::RetrieveApi(response.unwrap_err())),
                 },
@@ -197,7 +197,9 @@ impl Templates {
         match response {
             Ok(r) => Ok(Some(r.id)),
             Err(ResponseError(ref content)) => match &content.entity {
-                Some(ProjectsTemplatesCreateError::Status422(tle)) => Err(evaluation_error(tle)),
+                Some(ProjectsTemplatesCreateError::Status422(tle)) => {
+                    Err(TemplateError::EvaluateFailed(tle.clone()))
+                }
                 _ => Err(TemplateError::CreateApi(response.unwrap_err())),
             },
             Err(e) => Err(TemplateError::CreateApi(e)),
@@ -241,7 +243,7 @@ impl Templates {
             Ok(r) => Ok(Some(r.id)),
             Err(ResponseError(ref content)) => match &content.entity {
                 Some(ProjectsTemplatesPartialUpdateError::Status422(tle)) => {
-                    Err(evaluation_error(tle))
+                    Err(TemplateError::EvaluateFailed(tle.clone()))
                 }
                 _ => Err(TemplateError::UpdateApi(response.unwrap_err())),
             },
@@ -256,6 +258,7 @@ impl Templates {
         env_id: &str,
         body: &str,
         show_secrets: bool,
+        as_of: Option<String>,
     ) -> Result<String, TemplateError> {
         let preview = TemplatePreview {
             body: body.to_string(),
@@ -264,6 +267,7 @@ impl Templates {
             rest_cfg,
             project_id,
             preview,
+            as_of,
             Some(env_id),
             Some(!show_secrets),
         );
@@ -271,7 +275,7 @@ impl Templates {
             Ok(r) => Ok(r.body),
             Err(ResponseError(ref content)) => match &content.entity {
                 Some(ProjectsTemplatePreviewCreateError::Status422(tle)) => {
-                    Err(evaluation_error(tle))
+                    Err(TemplateError::EvaluateFailed(tle.clone()))
                 }
                 _ => Err(TemplateError::PreviewApi(response.unwrap_err())),
             },

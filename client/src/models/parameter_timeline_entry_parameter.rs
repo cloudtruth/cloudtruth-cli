@@ -9,7 +9,7 @@
  */
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct TimelineEntryParameter {
+pub struct ParameterTimelineEntryParameter {
     /// A unique identifier for the parameter.
     #[serde(rename = "id")]
     pub id: String,
@@ -18,8 +18,8 @@ pub struct TimelineEntryParameter {
     pub name: String,
 }
 
-impl TimelineEntryParameter {
-    pub fn new(id: String, name: String) -> TimelineEntryParameter {
-        TimelineEntryParameter { id, name }
+impl ParameterTimelineEntryParameter {
+    pub fn new(id: String, name: String) -> ParameterTimelineEntryParameter {
+        ParameterTimelineEntryParameter { id, name }
     }
 }

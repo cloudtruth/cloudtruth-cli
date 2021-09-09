@@ -9,17 +9,21 @@
  */
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct Timeline {
-    /// If present, additional history can be retrieved using this timestamp in the next call in the as_of query parameter.
+pub struct TemplateTimeline {
+    /// The number of records in this response.
+    #[serde(rename = "count")]
+    pub count: i32,
+    /// If present, additional history can be retrieved using this timestamp in the next call for the as_of query parameter value.
     #[serde(rename = "next_as_of", skip_serializing_if = "Option::is_none")]
     pub next_as_of: Option<String>,
     #[serde(rename = "results")]
-    pub results: Vec<crate::models::TimelineEntry>,
+    pub results: Vec<crate::models::TemplateTimelineEntry>,
 }
 
-impl Timeline {
-    pub fn new(results: Vec<crate::models::TimelineEntry>) -> Timeline {
-        Timeline {
+impl TemplateTimeline {
+    pub fn new(count: i32, results: Vec<crate::models::TemplateTimelineEntry>) -> TemplateTimeline {
+        TemplateTimeline {
+            count,
             next_as_of: None,
             results,
         }
