@@ -340,6 +340,7 @@ fn proc_param_export(
     let ends_with = subcmd_args.value_of("ends_with");
     let contains = subcmd_args.value_of("contains");
     let template_format = subcmd_args.value_of("FORMAT").unwrap();
+    let as_of = parse_datetime(subcmd_args.value_of(AS_OF_ARG));
     let export = subcmd_args.is_present("export");
     let secrets = subcmd_args.is_present(SECRETS_FLAG);
     let options = ParamExportOptions {
@@ -349,6 +350,7 @@ fn proc_param_export(
         contains: contains.map(|s| s.to_string()),
         export: Some(export),
         secrets: Some(secrets),
+        as_of,
     };
     let body = parameters.export_parameters(rest_cfg, proj_id, env_id, options)?;
 

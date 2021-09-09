@@ -1,12 +1,12 @@
 use crate::cli::{
-    CONFIRM_FLAG, DELETE_SUBCMD, EDIT_SUBCMD, FORMAT_OPT, GET_SUBCMD, LIST_SUBCMD, NAME_ARG,
-    RENAME_OPT, SECRETS_FLAG, SET_SUBCMD, TEMPLATE_FILE_OPT, VALUES_FLAG,
+    AS_OF_ARG, CONFIRM_FLAG, DELETE_SUBCMD, EDIT_SUBCMD, FORMAT_OPT, GET_SUBCMD, LIST_SUBCMD,
+    NAME_ARG, RENAME_OPT, SECRETS_FLAG, SET_SUBCMD, TEMPLATE_FILE_OPT, VALUES_FLAG,
 };
 use crate::database::{OpenApiConfig, Templates};
 use crate::table::Table;
 use crate::{
-    error_message, user_confirm, warn_missing_subcommand, warning_message, ResolvedIds,
-    DEL_CONFIRM, FILE_READ_ERR,
+    error_message, parse_datetime, user_confirm, warn_missing_subcommand, warning_message,
+    ResolvedIds, DEL_CONFIRM, FILE_READ_ERR,
 };
 use clap::ArgMatches;
 use color_eyre::eyre::Result;
@@ -170,7 +170,9 @@ fn proc_template_preview(
     let show_secrets = subcmd_args.is_present(SECRETS_FLAG);
     let filename = subcmd_args.value_of(TEMPLATE_FILE_OPT).unwrap();
     let body = fs::read_to_string(filename).expect(FILE_READ_ERR);
-    let result = templates.preview_template(rest_cfg, proj_id, env_id, &body, show_secrets)?;
+    let as_of = parse_datetime(subcmd_args.value_of(AS_OF_ARG));
+    let result =
+        templates.preview_template(rest_cfg, proj_id, env_id, &body, show_secrets, as_of)?;
     println!("{}", result);
     Ok(())
 }

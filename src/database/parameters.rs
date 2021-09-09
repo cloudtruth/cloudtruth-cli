@@ -309,6 +309,7 @@ pub struct ParamExportOptions {
     pub contains: Option<String>,
     pub export: Option<bool>,
     pub secrets: Option<bool>,
+    pub as_of: Option<String>,
 }
 
 #[derive(Debug)]
@@ -327,12 +328,6 @@ impl fmt::Display for ParameterError {
             ParameterError::InvalidFqnOrJmesPath(msg) => {
                 write!(f, "Invalid FQN or JMES path expression: {}", msg)
             }
-            ParameterError::CreateValueError(e) => {
-                write!(f, "{}", e.to_string())
-            }
-            ParameterError::UpdateValueError(e) => {
-                write!(f, "{}", e.to_string())
-            }
             ParameterError::RuleViolation(msg) => {
                 write!(f, "Rule violation: {}", msg)
             }
@@ -342,6 +337,7 @@ impl fmt::Display for ParameterError {
             ParameterError::UnhandledError(msg) => {
                 write!(f, "Unhandled error: {}", msg)
             }
+            e => write!(f, "{:?}", e),
         }
     }
 }
@@ -462,14 +458,13 @@ impl Parameters {
         let export = projects_parameter_export_list(
             rest_cfg,
             proj_id,
+            options.as_of,
             options.contains.as_deref(),
             options.ends_with.as_deref(),
             Some(env_id),
             options.export,
             mask_secrets,
             Some(out_fmt.as_str()),
-            None,
-            PAGE_SIZE,
             options.starts_with.as_deref(),
             WRAP_SECRETS,
         )?;

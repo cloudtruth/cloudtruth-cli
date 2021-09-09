@@ -245,6 +245,7 @@ pub fn build_cli() -> App<'static, 'static> {
                             .possible_value("dotenv")
                             .possible_value("shell")
                             .index(1))
+                        .arg(param_as_of_arg())
                         .arg(secrets_display_flag().help("Display the secret parameter values"))
                         .arg(Arg::with_name("starts_with")
                             .long("starts-with")
@@ -431,6 +432,7 @@ pub fn build_cli() -> App<'static, 'static> {
                     .about("Evaluate the provided template without storing")
                     .visible_aliases(&["prev", "pre"])
                     .arg(template_body().required(true).index(1))
+                    .arg(param_as_of_arg())
                     .arg(secrets_display_flag().help("Display secret values in evaluation")),
                 SubCommand::with_name(SET_SUBCMD)
                     .arg(name_arg().help("Template name"))
