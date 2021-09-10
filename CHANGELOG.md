@@ -1,3 +1,14 @@
+# 1.0.7 - 2021-09-10
+
+* Improved `templates` commands:
+  * Added `history` command.
+  * Better error feedback when `get` or `preview` fail due to external parameters.
+  * Added `--as-of` argument to `preview`.
+  * Added `--show-times` flag to `list`.
+* Added `--as-of` argument to `parameter export`.
+* Support additional date formats in `--as-of` arguments (e.g. `mm/dd/YYYY`, `mm-dd-YYYY`). 
+* Improved integration tests to use environment variables.
+
 # 1.0.6 - 2021-09-07
 
 * Updated `parameters set` with type and rule arguments:
