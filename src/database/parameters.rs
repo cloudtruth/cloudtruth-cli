@@ -2,7 +2,8 @@ use crate::database::openapi::key_from_config;
 use crate::database::{
     extract_details, extract_from_json, page_size, response_message, secret_encode_wrap,
     secret_unwrap_decode, CryptoAlgorithm, OpenApiConfig, ParamExportOptions, ParamRuleType,
-    ParamType, ParameterDetails, ParameterError, NO_PAGE_COUNT, NO_PAGE_SIZE, WRAP_SECRETS,
+    ParamType, ParameterDetails, ParameterError, ParameterHistory, NO_PAGE_COUNT, NO_PAGE_SIZE,
+    WRAP_SECRETS,
 };
 use cloudtruth_restapi::apis::projects_api::*;
 use cloudtruth_restapi::apis::Error::ResponseError;
@@ -696,6 +697,48 @@ impl Parameters {
         match response {
             Ok(_) => Ok(rule_id.to_string()),
             Err(ResponseError(ref content)) => Err(rule_error(action, &content.content)),
+            Err(e) => Err(ParameterError::UnhandledError(e.to_string())),
+        }
+    }
+
+    pub fn get_histories(
+        &self,
+        rest_cfg: &OpenApiConfig,
+        proj_id: &str,
+        as_of: Option<String>,
+        tag: Option<String>,
+    ) -> Result<Vec<ParameterHistory>, ParameterError> {
+        let response =
+            projects_parameters_timelines_retrieve(rest_cfg, proj_id, as_of, tag.as_deref());
+        match response {
+            Ok(data) => Ok(data.results.iter().map(ParameterHistory::from).collect()),
+            Err(ResponseError(ref content)) => {
+                Err(response_error(&content.status, &content.content))
+            }
+            Err(e) => Err(ParameterError::UnhandledError(e.to_string())),
+        }
+    }
+
+    pub fn get_history_for(
+        &self,
+        rest_cfg: &OpenApiConfig,
+        proj_id: &str,
+        param_id: &str,
+        as_of: Option<String>,
+        tag: Option<String>,
+    ) -> Result<Vec<ParameterHistory>, ParameterError> {
+        let response = projects_parameters_timeline_retrieve(
+            rest_cfg,
+            param_id,
+            proj_id,
+            as_of,
+            tag.as_deref(),
+        );
+        match response {
+            Ok(data) => Ok(data.results.iter().map(ParameterHistory::from).collect()),
+            Err(ResponseError(ref content)) => {
+                Err(response_error(&content.status, &content.content))
+            }
             Err(e) => Err(ParameterError::UnhandledError(e.to_string())),
         }
     }

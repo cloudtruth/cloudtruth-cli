@@ -25,6 +25,7 @@ mod openapi;
 mod parameter_details;
 mod parameter_error;
 mod parameter_export;
+mod parameter_history;
 mod parameter_rules;
 mod parameter_types;
 mod parameters;
@@ -73,6 +74,7 @@ pub use openapi::{
 pub use parameter_details::ParameterDetails;
 pub use parameter_error::ParameterError;
 pub use parameter_export::{ParamExportFormat, ParamExportOptions};
+pub use parameter_history::ParameterHistory;
 pub use parameter_rules::{ParamRuleType, ParameterDetailRule};
 pub use parameter_types::ParamType;
 pub use parameters::{ParameterDetailMap, Parameters};
