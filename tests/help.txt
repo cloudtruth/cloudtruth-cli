@@ -586,7 +586,7 @@ OPTIONS:
                               yaml]
 
 ARGS:
-    <NAME>    Template name
+    <NAME>    Template name (optional)
 ========================================
 cloudtruth-templates-list 
 List CloudTruth templates

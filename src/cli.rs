@@ -428,7 +428,7 @@ pub fn build_cli() -> App<'static, 'static> {
                     .arg(name_arg().help("Template name")),
                 SubCommand::with_name(HISTORY_SUBCMD)
                     .visible_aliases(HISTORY_ALIASES)
-                    .arg(name_arg().help("Template name").required(false))
+                    .arg(name_arg().help("Template name (optional)").required(false))
                     .arg(as_of_arg().help("Date/time of template history"))
                     .arg(table_format_options().help("Format for the template history"))
                     .about("Display template history"),
