@@ -319,6 +319,14 @@ fn parse_datetime(input: Option<&str>) -> Option<String> {
             let new_str = format!("{}T00:00:00Z", full_date.to_string());
             let dt = NaiveDateTime::parse_from_str(&new_str, ISO8601).unwrap();
             Some(dt.format(ISO8601).to_string())
+        } else if let Ok(us_date) = NaiveDate::parse_from_str(orig, "%m-%d-%Y") {
+            let new_str = format!("{}T00:00:00Z", us_date.to_string());
+            let dt = NaiveDateTime::parse_from_str(&new_str, ISO8601).unwrap();
+            Some(dt.format(ISO8601).to_string())
+        } else if let Ok(us_date) = NaiveDate::parse_from_str(orig, "%m/%d/%Y") {
+            let new_str = format!("{}T00:00:00Z", us_date.to_string());
+            let dt = NaiveDateTime::parse_from_str(&new_str, ISO8601).unwrap();
+            Some(dt.format(ISO8601).to_string())
         } else {
             // TODO: throw an error here? or just pass through the string?
             Some(orig.to_string())
@@ -569,6 +577,14 @@ mod main_test {
         // full date (no time)
         let output = parse_datetime(Some("2020-02-02")).unwrap();
         assert_eq!(output, String::from("2020-02-02T00:00:00Z"));
+
+        // US date with slashes
+        let output = parse_datetime(Some("01/19/2021")).unwrap();
+        assert_eq!(output, String::from("2021-01-19T00:00:00Z"));
+
+        // US date with dashes
+        let output = parse_datetime(Some("01-19-2021")).unwrap();
+        assert_eq!(output, String::from("2021-01-19T00:00:00Z"));
 
         // unfortunately, it lets this through too!
         let input = Some("this is bogus");
