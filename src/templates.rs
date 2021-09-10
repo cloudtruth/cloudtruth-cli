@@ -14,6 +14,8 @@ use color_eyre::eyre::Result;
 use std::fs;
 use std::process;
 
+const TEMPLATE_HISTORY_PROPERTIES: &[&str] = &["name", "description", "body"];
+
 fn proc_template_delete(
     subcmd_args: &ArgMatches,
     rest_cfg: &OpenApiConfig,
@@ -241,10 +243,15 @@ fn proc_template_set(
 }
 
 /// Looks for the earlier time than this... It relies on the reverse time order.
-fn find_previous(history: &[TemplateHistory], this: &TemplateHistory) -> Option<TemplateHistory> {
+fn find_previous(
+    history: &[TemplateHistory],
+    current: &TemplateHistory,
+) -> Option<TemplateHistory> {
     let mut found = None;
+    let curr_id = current.get_id();
+    let curr_date = current.get_date();
     for entry in history {
-        if entry.id == this.id && entry.date < this.date {
+        if entry.get_id() == curr_id && entry.get_date() < curr_date {
             found = Some(entry.clone());
             break;
         }
@@ -252,30 +259,28 @@ fn find_previous(history: &[TemplateHistory], this: &TemplateHistory) -> Option<
     found
 }
 
-fn get_changes(current: &TemplateHistory, previous: Option<TemplateHistory>) -> Vec<String> {
+fn get_changes(
+    current: &TemplateHistory,
+    previous: Option<TemplateHistory>,
+    properties: &[&str],
+) -> Vec<String> {
     let mut changes = vec![];
     if let Some(prev) = previous {
-        if current.change_type != HistoryAction::Delete {
-            if prev.name != current.name {
-                changes.push(format!("name: {}", current.name))
-            }
-            if prev.description != current.description {
-                changes.push(format!("description: {}", current.description))
-            }
-            if prev.body != current.body {
-                changes.push(format!("body: {}", current.body))
+        if current.get_action() != HistoryAction::Delete {
+            for property in properties {
+                let curr_value = current.get_property(property);
+                if prev.get_property(property) != curr_value {
+                    changes.push(format!("{}: {}", property, curr_value))
+                }
             }
         }
     } else {
         // NOTE: print this info even on a delete, if there's nothing earlier
-        if !current.name.is_empty() {
-            changes.push(format!("name: {}", current.name));
-        }
-        if !current.description.is_empty() {
-            changes.push(format!("description: {}", current.description))
-        }
-        if !current.body.is_empty() {
-            changes.push(format!("body: {}", current.body));
+        for property in properties {
+            let curr_value = current.get_property(property);
+            if !curr_value.is_empty() {
+                changes.push(format!("{}: {}", property, curr_value))
+            }
         }
     }
     changes
@@ -333,7 +338,7 @@ fn proc_template_history(
         let orig_list = history.clone();
         for ref entry in history {
             let prev = find_previous(&orig_list, entry);
-            let changes = get_changes(entry, prev);
+            let changes = get_changes(entry, prev, TEMPLATE_HISTORY_PROPERTIES);
             let mut row = vec![
                 entry.date.clone(),
                 entry.change_type.to_string(),

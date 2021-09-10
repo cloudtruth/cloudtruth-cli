@@ -67,6 +67,29 @@ impl From<&TemplateTimelineEntry> for TemplateHistory {
     }
 }
 
+impl TemplateHistory {
+    pub fn get_property(&self, name: &str) -> String {
+        match name {
+            "name" => self.name.clone(),
+            "body" => self.body.clone(),
+            "description" => self.description.clone(),
+            x => format!("Unhandled property: {}", x),
+        }
+    }
+
+    pub fn get_id(&self) -> String {
+        self.id.clone()
+    }
+
+    pub fn get_date(&self) -> String {
+        self.date.clone()
+    }
+
+    pub fn get_action(&self) -> HistoryAction {
+        self.change_type.clone()
+    }
+}
+
 #[derive(Debug)]
 pub enum TemplateError {
     AuthError(String),
