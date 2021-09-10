@@ -3,7 +3,7 @@ use crate::cli::{
     LIST_SUBCMD, NAME_ARG, RENAME_OPT, SECRETS_FLAG, SET_SUBCMD, SHOW_TIMES_FLAG,
     TEMPLATE_FILE_OPT, VALUES_FLAG,
 };
-use crate::database::{OpenApiConfig, TemplateHistory, Templates};
+use crate::database::{HistoryAction, OpenApiConfig, TemplateHistory, Templates};
 use crate::table::Table;
 use crate::{
     error_message, parse_datetime, user_confirm, warn_missing_subcommand, warning_message,
@@ -255,7 +255,7 @@ fn find_previous(history: &[TemplateHistory], this: &TemplateHistory) -> Option<
 fn get_changes(current: &TemplateHistory, previous: Option<TemplateHistory>) -> Vec<String> {
     let mut changes = vec![];
     if let Some(prev) = previous {
-        if current.change_type.as_str() != "delete" {
+        if current.change_type != HistoryAction::Delete {
             if prev.name != current.name {
                 changes.push(format!("name: {}", current.name))
             }
@@ -336,7 +336,7 @@ fn proc_template_history(
             let changes = get_changes(entry, prev);
             let mut row = vec![
                 entry.date.clone(),
-                entry.change_type.clone(),
+                entry.change_type.to_string(),
                 changes.join("\n"),
             ];
             if add_name {

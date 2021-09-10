@@ -1,5 +1,6 @@
 use crate::database::openapi::{extract_details, OpenApiConfig, PAGE_SIZE};
 
+use crate::database::HistoryAction;
 use cloudtruth_restapi::apis::projects_api::*;
 use cloudtruth_restapi::apis::Error;
 use cloudtruth_restapi::apis::Error::ResponseError;
@@ -10,6 +11,7 @@ use cloudtruth_restapi::models::{
 use std::error;
 use std::fmt;
 use std::fmt::Formatter;
+use std::ops::Deref;
 use std::result::Result;
 
 pub struct Templates {}
@@ -46,7 +48,7 @@ pub struct TemplateHistory {
 
     // these are from the timeline
     pub date: String,
-    pub change_type: String,
+    pub change_type: HistoryAction,
     pub user: String, // may need name and the id
 }
 
@@ -59,7 +61,7 @@ impl From<&TemplateTimelineEntry> for TemplateHistory {
             body: api.history_template.body.clone().unwrap_or_default(),
 
             date: api.history_date.clone(),
-            change_type: api.history_type.to_string(),
+            change_type: HistoryAction::from(*api.history_type.deref()),
             user: api.history_user.clone().unwrap_or_default(),
         }
     }
