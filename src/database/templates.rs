@@ -5,6 +5,7 @@ use cloudtruth_restapi::apis::Error;
 use cloudtruth_restapi::apis::Error::ResponseError;
 use cloudtruth_restapi::models::{
     PatchedTemplate, Template, TemplateCreate, TemplateLookupError, TemplatePreview,
+    TemplateTimelineEntry,
 };
 use std::error;
 use std::fmt;
@@ -19,6 +20,8 @@ pub struct TemplateDetails {
     pub name: String,
     pub description: String,
     pub body: String,
+    pub created_at: String,
+    pub modified_at: String,
 }
 
 impl From<&Template> for TemplateDetails {
@@ -28,6 +31,36 @@ impl From<&Template> for TemplateDetails {
             name: api_temp.name.clone(),
             description: api_temp.description.clone().unwrap_or_default(),
             body: api_temp.body.clone().unwrap_or_default(),
+            created_at: api_temp.created_at.clone(),
+            modified_at: api_temp.modified_at.clone(),
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct TemplateHistory {
+    pub id: String,
+    pub name: String,
+    pub description: String,
+    pub body: String,
+
+    // these are from the timeline
+    pub date: String,
+    pub change_type: String,
+    pub user: String, // may need name and the id
+}
+
+impl From<&TemplateTimelineEntry> for TemplateHistory {
+    fn from(api: &TemplateTimelineEntry) -> Self {
+        TemplateHistory {
+            id: api.history_template.id.clone(),
+            name: api.history_template.name.clone(),
+            description: api.history_template.description.clone().unwrap_or_default(),
+            body: api.history_template.body.clone().unwrap_or_default(),
+
+            date: api.history_date.clone(),
+            change_type: api.history_type.to_string(),
+            user: api.history_user.clone().unwrap_or_default(),
         }
     }
 }
@@ -281,5 +314,29 @@ impl Templates {
             },
             Err(e) => Err(TemplateError::PreviewApi(e)),
         }
+    }
+
+    /// Gets the template history for all templates in the project.
+    pub fn get_histories(
+        &self,
+        rest_cfg: &OpenApiConfig,
+        project_id: &str,
+        as_of: Option<String>,
+    ) -> Result<Vec<TemplateHistory>, Error<ProjectsTemplatesTimelinesRetrieveError>> {
+        let response = projects_templates_timelines_retrieve(rest_cfg, project_id, as_of)?;
+        Ok(response.results.iter().map(TemplateHistory::from).collect())
+    }
+
+    /// Gets the template history for a single template in the project.
+    pub fn get_history_for(
+        &self,
+        rest_cfg: &OpenApiConfig,
+        project_id: &str,
+        template_id: &str,
+        as_of: Option<String>,
+    ) -> Result<Vec<TemplateHistory>, Error<ProjectsTemplatesTimelineRetrieveError>> {
+        let response =
+            projects_templates_timeline_retrieve(rest_cfg, template_id, project_id, as_of)?;
+        Ok(response.results.iter().map(TemplateHistory::from).collect())
     }
 }

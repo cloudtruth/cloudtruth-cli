@@ -18,10 +18,12 @@ pub const VALUES_FLAG: &str = "values";
 pub const DELETE_SUBCMD: &str = "delete";
 pub const EDIT_SUBCMD: &str = "edit";
 pub const GET_SUBCMD: &str = "get";
+pub const HISTORY_SUBCMD: &str = "history";
 pub const LIST_SUBCMD: &str = "list";
 pub const SET_SUBCMD: &str = "set";
 
 const DELETE_ALIASES: &[&str] = &["del", "d"];
+const HISTORY_ALIASES: &[&str] = &["hist", "h"];
 const LIST_ALIASES: &[&str] = &["ls", "l"];
 
 pub fn binary_name() -> String {
@@ -81,11 +83,12 @@ fn key_arg() -> Arg<'static, 'static> {
     Arg::with_name(KEY_ARG).required(true).index(1)
 }
 
+fn as_of_arg() -> Arg<'static, 'static> {
+    Arg::with_name(AS_OF_ARG).long("as-of").takes_value(true)
+}
+
 fn param_as_of_arg() -> Arg<'static, 'static> {
-    Arg::with_name(AS_OF_ARG)
-        .long("as-of")
-        .takes_value(true)
-        .help("Date/time of parameter value(s)")
+    as_of_arg().help("Date/time of parameter value(s)")
 }
 
 fn show_times_arg() -> Arg<'static, 'static> {
@@ -423,11 +426,18 @@ pub fn build_cli() -> App<'static, 'static> {
                         .help("Get the raw, unevaluated template text"))
                     .arg(secrets_display_flag().help("Display secret values in evaluation"))
                     .arg(name_arg().help("Template name")),
+                SubCommand::with_name(HISTORY_SUBCMD)
+                    .visible_aliases(HISTORY_ALIASES)
+                    .arg(name_arg().help("Template name").required(false))
+                    .arg(as_of_arg().help("Date/time of template history"))
+                    .arg(table_format_options().help("Format for the template history"))
+                    .about("Display template history"),
                 SubCommand::with_name(LIST_SUBCMD)
                     .visible_aliases(LIST_ALIASES)
-                    .about("List CloudTruth templates")
                     .arg(values_flag().help("Display template information/values"))
-                    .arg(table_format_options().help("Format for template values data")),
+                    .arg(table_format_options().help("Format for template values data"))
+                    .arg(show_times_arg())
+                    .about("List CloudTruth templates"),
                 SubCommand::with_name("preview")
                     .about("Evaluate the provided template without storing")
                     .visible_aliases(&["prev", "pre"])

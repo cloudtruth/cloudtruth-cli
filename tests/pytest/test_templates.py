@@ -267,3 +267,107 @@ this.is.a.template.value=PARAM1
         # cleanup
         os.remove(filename)
         self.delete_project(cmd_env, proj_name)
+
+    def test_template_history(self):
+        base_cmd = self.get_cli_base_cmd()
+        cmd_env = self.get_cmd_env()
+
+        # add a new project
+        proj_name = self.make_name("test-temp-hist")
+        self.create_project(cmd_env, proj_name)
+
+        temp_cmd = base_cmd + f"--project {proj_name} temp "
+
+        # take a baseline before we have any template history
+        result = self.run_cli(cmd_env, temp_cmd + "history")
+        self.assertEqual(result.return_value, 0)
+        self.assertIn("No template history in project", result.out())
+
+        temp1 = "temp1"
+        body1a = "first body"
+        body1b = "second body"
+        desc1 = "simple desc"
+        temp2 = "temp2"
+        body2a = "# bogus text"
+        body2b = "different temp text"
+        filename = "history-template.txt"
+
+        # create the templates
+        write_file(filename, body1a)
+        result = self.run_cli(cmd_env, temp_cmd + f"set '{temp1}' -b '{filename}' -d '{desc1}'")
+        self.assertEqual(result.return_value, 0)
+
+        write_file(filename, body2a)
+        result = self.run_cli(cmd_env, temp_cmd + f"set '{temp2}' -b '{filename}'")
+        self.assertEqual(result.return_value, 0)
+
+        # get the modified time -- before making changes
+        result = self.run_cli(cmd_env, temp_cmd + "list --show-times -f json")
+        self.assertEqual(result.return_value, 0)
+        temp_info = eval(result.out())
+        modified_at = temp_info.get("template")[1].get("Modified At")
+
+        # update the template bodies
+        write_file(filename, body1b)
+        result = self.run_cli(cmd_env, temp_cmd + f"set '{temp1}' -b '{filename}'")
+        self.assertEqual(result.return_value, 0)
+
+        write_file(filename, body2b)
+        result = self.run_cli(cmd_env, temp_cmd + f"set '{temp2}' -b '{filename}'")
+        self.assertEqual(result.return_value, 0)
+
+        # get a complete history
+        result = self.run_cli(cmd_env, temp_cmd + "history -f csv")
+        self.assertEqual(result.return_value, 0)
+        self.assertIn("Date,Action,Name,Changes", result.out())
+        self.assertIn(f",create,{temp1},", result.out())
+        self.assertIn(body1a, result.out())
+        self.assertIn(f",update,{temp1},", result.out())
+        self.assertIn(body1b, result.out())
+        self.assertIn(desc1, result.out())
+        self.assertIn(f",create,{temp2},", result.out())
+        self.assertIn(body2a, result.out())
+        self.assertIn(f",update,{temp2},", result.out())
+        self.assertIn(body2b, result.out())
+
+        # get a focused history on just one
+        result = self.run_cli(cmd_env, temp_cmd + f"history '{temp2}' -f csv")
+        self.assertEqual(result.return_value, 0)
+        self.assertNotIn("Date,Action,Name,Changes", result.out())
+        self.assertNotIn(temp1, result.out())
+        self.assertNotIn(body1a, result.out())
+        self.assertNotIn(body1b, result.out())
+        self.assertNotIn(desc1, result.out())
+        self.assertIn("Date,Action,Changes", result.out())  # drop Name since it is given
+        self.assertIn(temp2, result.out())
+        self.assertIn(body2a, result.out())
+        self.assertIn(body2b, result.out())
+
+        # further focus on older updates
+        result = self.run_cli(cmd_env, temp_cmd + f"history '{temp2}' --as-of '{modified_at}'")
+        self.assertEqual(result.return_value, 0)
+        self.assertIn(temp2, result.out())
+        self.assertIn(body2a, result.out())
+        self.assertNotIn(body2b, result.out())  # filtered out by time
+
+        # delete both
+        result = self.run_cli(cmd_env, temp_cmd + f"del -y '{temp2}'")
+        self.assertEqual(result.return_value, 0)
+        result = self.run_cli(cmd_env, temp_cmd + f"del -y '{temp1}'")
+        self.assertEqual(result.return_value, 0)
+
+        # see that the deleted show up in the full history
+        result = self.run_cli(cmd_env, temp_cmd + "history -f csv")
+        self.assertEqual(result.return_value, 0)
+        self.assertIn("Date,Action,Name,Changes", result.out())
+        self.assertIn(f",delete,{temp1},", result.out())
+        self.assertIn(f",delete,{temp2},", result.out())
+
+        # now that it is deleted, see that we fail to resolve the template name
+        result = self.run_cli(cmd_env, temp_cmd + f"history '{temp1}'")
+        self.assertNotEqual(result.return_value, 0)
+        self.assertIn(f"Did not find '{temp1}' in project '{proj_name}'", result.err())
+
+        # cleanup
+        os.remove(filename)
+        self.delete_project(cmd_env, proj_name)

@@ -13,4 +13,4 @@ pub use parameters::{
     ParameterDetails, ParameterError, Parameters,
 };
 pub use projects::{ProjectDetails, ProjectError, Projects};
-pub use templates::{TemplateDetails, Templates};
+pub use templates::{TemplateDetails, TemplateHistory, Templates};

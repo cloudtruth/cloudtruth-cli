@@ -523,6 +523,7 @@ SUBCOMMANDS:
     edit       Edit the specified template
     get        Get an evaluated template from CloudTruth
     help       Prints this message or the help of the given subcommand(s)
+    history    Display template history [aliases: hist, h]
     list       List CloudTruth templates [aliases: ls, l]
     preview    Evaluate the provided template without storing [aliases: prev, pre]
     set        Set the CloudTruth template
@@ -569,6 +570,24 @@ FLAGS:
 ARGS:
     <NAME>    Template name
 ========================================
+cloudtruth-templates-history 
+Display template history
+
+USAGE:
+    cloudtruth templates history [OPTIONS] [NAME]
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+OPTIONS:
+        --as-of <datetime>    Date/time of template history
+    -f, --format <format>     Format for the template history [default: table]  [possible values: table, csv, json,
+                              yaml]
+
+ARGS:
+    <NAME>    Template name
+========================================
 cloudtruth-templates-list 
 List CloudTruth templates
 
@@ -576,9 +595,10 @@ USAGE:
     cloudtruth templates list [FLAGS] [OPTIONS]
 
 FLAGS:
-    -h, --help       Prints help information
-    -v, --values     Display template information/values
-    -V, --version    Prints version information
+    -h, --help          Prints help information
+        --show-times    Show create and modified times.
+    -v, --values        Display template information/values
+    -V, --version       Prints version information
 
 OPTIONS:
     -f, --format <format>    Format for template values data [default: table]  [possible values: table, csv, json, yaml]

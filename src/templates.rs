@@ -1,8 +1,9 @@
 use crate::cli::{
-    AS_OF_ARG, CONFIRM_FLAG, DELETE_SUBCMD, EDIT_SUBCMD, FORMAT_OPT, GET_SUBCMD, LIST_SUBCMD,
-    NAME_ARG, RENAME_OPT, SECRETS_FLAG, SET_SUBCMD, TEMPLATE_FILE_OPT, VALUES_FLAG,
+    AS_OF_ARG, CONFIRM_FLAG, DELETE_SUBCMD, EDIT_SUBCMD, FORMAT_OPT, GET_SUBCMD, HISTORY_SUBCMD,
+    LIST_SUBCMD, NAME_ARG, RENAME_OPT, SECRETS_FLAG, SET_SUBCMD, SHOW_TIMES_FLAG,
+    TEMPLATE_FILE_OPT, VALUES_FLAG,
 };
-use crate::database::{OpenApiConfig, Templates};
+use crate::database::{OpenApiConfig, TemplateHistory, Templates};
 use crate::table::Table;
 use crate::{
     error_message, parse_datetime, user_confirm, warn_missing_subcommand, warning_message,
@@ -103,21 +104,33 @@ fn proc_template_list(
 ) -> Result<()> {
     let proj_name = resolved.project_display_name();
     let proj_id = resolved.project_id();
+    let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
+    let show_times = subcmd_args.is_present(SHOW_TIMES_FLAG);
+    let show_values = subcmd_args.is_present(VALUES_FLAG) || show_times;
     let details = templates.get_template_details(rest_cfg, proj_id)?;
     if details.is_empty() {
         println!("No templates in project '{}'.", proj_name);
-    } else if !subcmd_args.is_present(VALUES_FLAG) {
+    } else if !show_values {
         let list = details
             .iter()
             .map(|n| n.name.clone())
             .collect::<Vec<String>>();
         println!("{}", list.join("\n"))
     } else {
-        let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
         let mut table = Table::new("template");
-        table.set_header(&["Name", "Description"]);
+        let mut hdr = vec!["Name", "Description"];
+        if show_times {
+            hdr.push("Created At");
+            hdr.push("Modified At");
+        }
+        table.set_header(&hdr);
         for entry in details {
-            table.add_row(vec![entry.name, entry.description]);
+            let mut row = vec![entry.name, entry.description];
+            if show_times {
+                row.push(entry.created_at);
+                row.push(entry.modified_at);
+            }
+            table.add_row(row);
         }
         table.render(fmt)?;
     }
@@ -227,6 +240,115 @@ fn proc_template_set(
     Ok(())
 }
 
+/// Looks for the earlier time than this... It relies on the reverse time order.
+fn find_previous(history: &[TemplateHistory], this: &TemplateHistory) -> Option<TemplateHistory> {
+    let mut found = None;
+    for entry in history {
+        if entry.id == this.id && entry.date < this.date {
+            found = Some(entry.clone());
+            break;
+        }
+    }
+    found
+}
+
+fn get_changes(current: &TemplateHistory, previous: Option<TemplateHistory>) -> Vec<String> {
+    let mut changes = vec![];
+    if let Some(prev) = previous {
+        if current.change_type.as_str() != "delete" {
+            if prev.name != current.name {
+                changes.push(format!("name: {}", current.name))
+            }
+            if prev.description != current.description {
+                changes.push(format!("description: {}", current.description))
+            }
+            if prev.body != current.body {
+                changes.push(format!("body: {}", current.body))
+            }
+        }
+    } else {
+        // NOTE: print this info even on a delete, if there's nothing earlier
+        if !current.name.is_empty() {
+            changes.push(format!("name: {}", current.name));
+        }
+        if !current.description.is_empty() {
+            changes.push(format!("description: {}", current.description))
+        }
+        if !current.body.is_empty() {
+            changes.push(format!("body: {}", current.body));
+        }
+    }
+    changes
+}
+
+fn proc_template_history(
+    subcmd_args: &ArgMatches,
+    rest_cfg: &OpenApiConfig,
+    templates: &Templates,
+    resolved: &ResolvedIds,
+) -> Result<()> {
+    let proj_name = resolved.project_display_name();
+    let proj_id = resolved.project_id();
+    let as_of = parse_datetime(subcmd_args.value_of(AS_OF_ARG));
+    let template_name = subcmd_args.value_of(NAME_ARG);
+    let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
+    let modifier;
+    let add_name;
+    let history: Vec<TemplateHistory>;
+
+    if let Some(temp_name) = template_name {
+        let template_id;
+        modifier = format!("for '{}' ", temp_name);
+        add_name = false;
+        if let Some(details) = templates.get_details_by_name(rest_cfg, proj_id, temp_name)? {
+            template_id = details.id;
+        } else {
+            error_message(format!(
+                "Did not find '{}' in project '{}'",
+                temp_name, proj_name
+            ))?;
+            process::exit(13);
+        }
+        history = templates.get_history_for(rest_cfg, proj_id, &template_id, as_of)?;
+    } else {
+        modifier = "".to_string();
+        add_name = true;
+        history = templates.get_histories(rest_cfg, proj_id, as_of)?;
+    };
+
+    if history.is_empty() {
+        println!(
+            "No template history {}in project '{}'.",
+            modifier, proj_name
+        );
+    } else {
+        let name_index = 2;
+        let mut table = Table::new("template-history");
+        let mut hdr: Vec<&str> = vec!["Date", "Action", "Changes"];
+        if add_name {
+            hdr.insert(name_index, "Name");
+        }
+        table.set_header(&hdr);
+
+        let orig_list = history.clone();
+        for ref entry in history {
+            let prev = find_previous(&orig_list, entry);
+            let changes = get_changes(entry, prev);
+            let mut row = vec![
+                entry.date.clone(),
+                entry.change_type.clone(),
+                changes.join("\n"),
+            ];
+            if add_name {
+                row.insert(name_index, entry.name.clone())
+            }
+            table.add_row(row);
+        }
+        table.render(fmt)?;
+    }
+    Ok(())
+}
+
 /// Process the 'templates' sub-command
 pub fn process_templates_command(
     subcmd_args: &ArgMatches,
@@ -246,6 +368,8 @@ pub fn process_templates_command(
         proc_template_preview(subcmd_args, rest_cfg, templates, resolved)?;
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(SET_SUBCMD) {
         proc_template_set(subcmd_args, rest_cfg, templates, resolved)?;
+    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(HISTORY_SUBCMD) {
+        proc_template_history(subcmd_args, rest_cfg, templates, resolved)?;
     } else {
         warn_missing_subcommand("templates")?;
     }
