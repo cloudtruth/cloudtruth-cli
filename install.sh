@@ -131,17 +131,21 @@ prerequisites() {
             if [ ${CT_DRY_RUN} -ne 0 ]; then
                 CT_PREREQ_DRY_RUN="--setopt tsflags=test"
             fi
+            echo "[cloudtruth] draft-release-id: ${CT_DRAFT_RELEASE_ID}"
             if [ -n "${CT_DRAFT_RELEASE_ID}" ] && [ "$(rpm -E "%{rhel}")" -eq 7 ]; then
               # jq is needed for draft release parsing, jq is in centos7 epel repository
+              echo "[cloudtruth] installing epel-release"
               yum -y install ${CT_PREREQ_DRY_RUN} epel-release
               yum repolist
             fi
+            echo "[cloudtruth] installing prerequisites: ${PREREQUISITES}"
             yum -y install ${CT_PREREQ_DRY_RUN} ${PREREQUISITES}
             ;;
     esac
 }
 
 if [ ${CT_INSTALL_PREREQUISITES} -eq 1 ]; then
+  echo "[cloudtruth] installing CT prerequisites: ${CT_INSTALL_PREREQUISITES}"
   prerequisites
 fi
 
@@ -243,9 +247,13 @@ if [ "${PKG}" = "rpm" ]; then
     CT_CLI_VERSION_STUB=$(echo "${CT_CLI_VERSION}" | sed 's/[^0-9.]*\([0-9.]*\).*/\1/')
     PACKAGE=cloudtruth-${CT_CLI_VERSION_STUB}-1.${ARCH}.rpm
     download "${PACKAGE}"
+    echo "[cloudtruth] downloaded ${PACKAGE}"
     if [ ${CT_DRY_RUN} -ne 0 ]; then
         echo "[dry-run] skipping install of ${PACKAGE}"
     else
+        echo "[cloudtruth] installing ${PACKAGE}"
+        ls -l "${PACKAGE_DIR}"
+        ls -l "${PACKAGE}"
         rpm -i "${PACKAGE}"
     fi
 fi
