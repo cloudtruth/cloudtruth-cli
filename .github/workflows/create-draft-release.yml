@@ -288,11 +288,11 @@ jobs:
           asset_content_type: application/octet-stream
 
       - name: Install cargo-generate-rpm
-        if: contains(matrix.build, 'linux-rpmbuild')
+        if: contains(matrix.build, 'linux')
         run: cargo install cargo-generate-rpm
 
       - name: Build RPM package
-        if: contains(matrix.build, 'linux-rpmbuild')
+        if: contains(matrix.build, 'linux')
         shell: bash
         run: |
           sed -i 's/TARGET/${{ matrix.target }}/g' Cargo.rpm.toml
@@ -306,7 +306,7 @@ jobs:
           echo RPM_NAME=$(basename $rpm_path) >> $GITHUB_ENV
 
       - name: Upload RPM package
-        if: contains(matrix.build, 'linux-rpmbuild')
+        if: contains(matrix.build, 'linux')
         uses: actions/upload-release-asset@v1.0.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
