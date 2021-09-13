@@ -8,8 +8,8 @@ jobs:
   centos:
     docker: true
     versions:
-      - "8"
       - "7"
+      - "8"
   debian:
     docker: true
     versions:
