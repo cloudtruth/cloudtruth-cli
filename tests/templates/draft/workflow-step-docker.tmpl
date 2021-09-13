@@ -9,5 +9,5 @@
             --build-arg DOWNLOAD_VERSION="${CT_DOWNLOAD_VERSION}" \
              -f tests/docker/draft/Dockerfile.{{ os }}-{{ version }} \
              -t cloudtruth:{{ os }}-{{ version }}
-          docker run -e CLOUDTRUTH_API_KEY --rm -v $(pwd):/truth -it cloudtruth:{{ os }}-{{ version }} cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
+          docker run -e CLOUDTRUTH_API_KEY --rm -v $(pwd):/truth -t cloudtruth:{{ os }}-{{ version }} cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
 
