@@ -109,7 +109,6 @@ class TestTiming(TestCase):
         rval["list-" + ENV_RESOLVE] = list_timing[0]
         rval["list-" + PROJ_RESOLVE] = list_timing[1]
         rval["list-param-list"] = list_timing[2]
-        rval["list-param-envs"] = list_timing[3]
         rval["list-total"] = list_total
         return rval
 
