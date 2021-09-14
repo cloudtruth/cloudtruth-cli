@@ -22,12 +22,12 @@ class TestRun(TestCase):
         # add the value to the run environment, and see it does not get in without inheritance
         cmd_env[param_name] = env_value
         result = self.run_cli(cmd_env, sub_cmd + "--inherit none" + print_env)
-        self.assertEqual(result.return_value, 0)
+        self.assertResultSuccess(result)
         self.assertNotIn(param_name, result.out())
 
         for inherit in ["underlay", "overlay", "exclusive"]:
             result = self.run_cli(cmd_env, sub_cmd + f"--inherit {inherit}" + print_env)
-            self.assertEqual(result.return_value, 0)
+            self.assertResultSuccess(result)
             self.assertIn(f"{param_name}={env_value}", result.out())
 
         self.delete_project(cmd_env, proj_name)
@@ -50,25 +50,24 @@ class TestRun(TestCase):
         self.set_param(cmd_env, proj_name, param_name, ct_value)
 
         result = self.run_cli(cmd_env, sub_cmd + "--inherit none" + print_env)
-        self.assertEqual(result.return_value, 0)
+        self.assertResultSuccess(result)
         self.assertIn(ct_str, result.out())
 
         result = self.run_cli(cmd_env, sub_cmd + "--inherit underlay" + print_env)
-        self.assertEqual(result.return_value, 0)
+        self.assertResultSuccess(result)
         self.assertIn(env_str, result.out())
 
         result = self.run_cli(cmd_env, sub_cmd + "--inherit overlay" + print_env)
-        self.assertEqual(result.return_value, 0)
+        self.assertResultSuccess(result)
         self.assertIn(ct_str, result.out())
 
         # unspecified is the same as overlay
         result = self.run_cli(cmd_env, sub_cmd + print_env)
-        self.assertEqual(result.return_value, 0)
+        self.assertResultSuccess(result)
         self.assertIn(ct_str, result.out())
 
         result = self.run_cli(cmd_env, sub_cmd + "--inherit exclusive" + print_env)
-        self.assertNotEqual(result.return_value, 0)
-        self.assertIn(f"Conflicting definitions in run environment for: {param_name}", result.err())
+        self.assertResultError(result, f"Conflicting definitions in run environment for: {param_name}")
 
         self.delete_param(cmd_env, proj_name, param_name)
         self.delete_project(cmd_env, proj_name)
@@ -89,11 +88,11 @@ class TestRun(TestCase):
         self.create_project(cmd_env, proj_name)
 
         result = self.run_cli(cmd_env, sub_cmd + print_env)
-        self.assertEqual(result.return_value, 0)
+        self.assertResultSuccess(result)
         self.assertNotIn(CT_API_KEY, result.out())
 
         result = self.run_cli(cmd_env, sub_cmd + "--permissive" + print_env)
-        self.assertEqual(result.return_value, 0)
+        self.assertResultSuccess(result)
         self.assertIn(CT_API_KEY, result.out())
 
         self.delete_project(cmd_env, proj_name)

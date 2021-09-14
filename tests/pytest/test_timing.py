@@ -84,12 +84,12 @@ class TestTiming(TestCase):
             create_total.append(delta_to_msecs(result.timediff))
 
             result = self.run_cli(cmd_env, get_cmd + f"'{self._param_name(index)}'")
-            self.assertEqual(result.return_value, 0)
+            self.assertResultSuccess(result)
             get_timing = parse_timing(get_timing, result.stdout)
             get_total.append(delta_to_msecs(result.timediff))
 
             result = self.run_cli(cmd_env, list_cmd)
-            self.assertEqual(result.return_value, 0)
+            self.assertResultSuccess(result)
             list_timing = parse_timing(list_timing, result.stdout)
             list_total.append(delta_to_msecs(result.timediff))
 

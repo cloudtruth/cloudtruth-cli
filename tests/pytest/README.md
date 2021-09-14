@@ -45,9 +45,10 @@ So, the `--pdb` option was added to allow for breaking into the debugger when th
 the parameters passed into the asserts can be examined.  The `--failfast` option can be used to stop
 after the first failure.
 
-The full integration suite may take several minutes to run. However, using the `--file <filename>`
-can be used to limit the number of tests that get run -- this is very useful when working on a new
-test in a specific file.
+The full integration suite may take several minutes to run. However, a `--filter <pattern>` argument
+can be used to filter the test cases based on the name -- this is very useful when working on a new
+test (so only that test gets run).  There is also a `--file <filename>` argument that can be used to
+limit the number of test cases run.  
 
 Logging
 -------
@@ -70,4 +71,3 @@ Future
 
 Some ideas for future enhancements:
 1. Add ability for `stdin` to be specified, so confirmation functions can be tested.
-2. Allow for filtering based on test name (not just file name).

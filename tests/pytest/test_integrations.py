@@ -58,14 +58,12 @@ class TestIntegrations(TestCase):
         # check that we get notification about no provider
         fqn = 'test://missing.provider/should-gets-warning'
         result = self.run_cli(cmd_env, exp_cmd + f"-v '{fqn}'")
-        self.assertNotEqual(result.return_value, 0)
-        self.assertIn(f"No integration provider available for `{fqn}`", result.err())
+        self.assertResultError(result, f"No integration provider available for `{fqn}`")
 
         # check that we get notification about no provider
         fqn = 'github://missing.provider/should-gets-warning'
         result = self.run_cli(cmd_env, exp_cmd + f"-v '{fqn}'")
-        self.assertNotEqual(result.return_value, 0)
-        self.assertIn(f"No integration available for `{fqn}`", result.err())
+        self.assertResultError(result, f"No integration available for `{fqn}`")
 
         # cleanup
         self.delete_project(cmd_env, proj_name)
@@ -82,12 +80,12 @@ class TestIntegrations(TestCase):
 
         # make sure we see the integration in the list
         result = self.run_cli(cmd_env, base_cmd + "int ls")
-        self.assertEqual(0, result.return_value)
+        self.assertResultSuccess(result)
         self.assertIn(f"{url.hostname}", result.out())
 
         # do it again with the CSV to see name and a baseline fqn
         result = self.run_cli(cmd_env, base_cmd + "integ ls -v --format csv")
-        self.assertEqual(0, result.return_value)
+        self.assertResultSuccess(result)
         self.assertIn(f"{url.hostname},{base_fqn}/,", result.out())
 
         # now, walk the path
@@ -97,7 +95,7 @@ class TestIntegrations(TestCase):
         for name in path_parts:
             expected = f"{name},{explore_path}/{name}"
             result = self.run_cli(cmd_env, explore_cmd + f"'{explore_path}'")
-            self.assertEqual(0, result.return_value)
+            self.assertResultSuccess(result)
             self.assertIn(expected, result.out())
 
             # update for next iteration
@@ -106,7 +104,7 @@ class TestIntegrations(TestCase):
         # in the "final" pass, it should contain the JMES path
         expected = f"  {{{{ {jmes} }}}},{fqn}"
         result = self.run_cli(cmd_env, explore_cmd + f"'{explore_path}'")
-        self.assertEqual(0, result.return_value)
+        self.assertResultSuccess(result)
         self.assertIn(expected, result.out())
 
     @unittest.skipIf(missing_any(CT_PARAM_RUN), "Need all CT_PARAM_RUN parameters")
@@ -127,7 +125,7 @@ class TestIntegrations(TestCase):
 
         # check that there are no parameters
         result = self.run_cli(cmd_env, show_cmd)
-        self.assertEqual(result.return_value, 0)
+        self.assertResultSuccess(result)
         self.assertIn(empty_msg, result.out())
 
         ######################
@@ -135,7 +133,7 @@ class TestIntegrations(TestCase):
         param1 = "pi"
         value1 = "3.14159"
         result = self.run_cli(cmd_env, param_cmd + f"set {param1} -v {value1}")
-        self.assertEqual(0, result.return_value)
+        self.assertResultSuccess(result)
 
         result = self.run_cli(cmd_env, show_cmd)
         self.assertIn(f"{param1},{value1}", result.out())
@@ -147,11 +145,11 @@ class TestIntegrations(TestCase):
         ######################
         # flip it to a dynamic value
         result = self.run_cli(cmd_env, param_cmd + f"set {param1} -f {fqn} -j {jmes}")
-        self.assertEqual(0, result.return_value)
+        self.assertResultSuccess(result)
         self.assertIn("Successfully update", result.out())
 
         result = self.run_cli(cmd_env, show_cmd)
-        self.assertEqual(0, result.return_value)
+        self.assertResultSuccess(result)
         self.assertIn(f"{param1},", result.out())
         self.assertNotIn(value1, result.out())
 
@@ -164,7 +162,7 @@ class TestIntegrations(TestCase):
         # flip back to static
         value2 = "are_round"
         result = self.run_cli(cmd_env, param_cmd + f"set {param1} -v {value2}")
-        self.assertEqual(0, result.return_value)
+        self.assertResultSuccess(result)
 
         result = self.run_cli(cmd_env, show_cmd)
         self.assertIn(f"{param1},{value2}", result.out())
@@ -177,11 +175,11 @@ class TestIntegrations(TestCase):
         # create a dynamic value
         param2 = "eulers"
         result = self.run_cli(cmd_env, param_cmd + f"set {param2} -f {fqn} -j {jmes}")
-        self.assertEqual(0, result.return_value)
+        self.assertResultSuccess(result)
         self.assertIn("Successfully update", result.out())
 
         result = self.run_cli(cmd_env, show_cmd)
-        self.assertEqual(0, result.return_value)
+        self.assertResultSuccess(result)
         self.assertIn(f"{param1},{value2}", result.out())
         self.assertIn(f"{param2},", result.out())
         self.assertNotIn(value1, result.out())
@@ -207,16 +205,16 @@ PARAMETER_2 = PARAM2
 """
         write_file(filename, body.replace("PARAM2", f"{{{{{param2}}}}}"))
         result = self.run_cli(cmd_env, temp_cmd + f"preview '{filename}'")
-        self.assertEqual(result.return_value, 0)
+        self.assertResultSuccess(result)
         self.assertIn(body.replace("PARAM2\n", ""), result.out())  # evaluated to an unknown value
 
         # create the template
         result = self.run_cli(cmd_env, temp_cmd + f"set '{temp_name}' --body '{filename}'")
-        self.assertEqual(result.return_value, 0)
+        self.assertResultSuccess(result)
 
         # get the evaluated template
         result = self.run_cli(cmd_env, temp_cmd + f"get '{temp_name}'")
-        self.assertEqual(result.return_value, 0)
+        self.assertResultSuccess(result)
         self.assertIn(body.replace("PARAM2\n", ""), result.out())  # evaluated to an unknown value
 
         # cleanup
@@ -251,56 +249,49 @@ PARAMETER_2 = PARAM2
         ##########################
         # parameter checks
         result = self.run_cli(cmd_env, proj_cmd + "param list -f csv")
-        self.assertEqual(result.return_value, 0)
+        self.assertResultSuccess(result)
         self.assertIn(param1, result.out())
         self.assertIn(param2, result.out())
         self.assertIn(param3, result.out())
-        self.assertEqual(result.err(), "")  # no errors reported, since not getting values
 
         # parameter list should yield warnings, but still show everything
         result = self.run_cli(cmd_env, proj_cmd + "param list -vsf csv")
-        self.assertEqual(result.return_value, 0)
+        self.assertResultWarning(result, missing_param2)
         self.assertIn(f"{param1},{value1},", result.out())
         self.assertIn(f"{param2},,", result.out())  # empty value reported
         self.assertIn(f"{param3},", result.out())  # do not worry about returned value
-        self.assertIn(missing_param2, result.err())
         self.assertNotIn(param3, result.err())
         self.assertNotIn(fqn3, result.err())
 
         # list dynamic parameters with no values
         result = self.run_cli(cmd_env, proj_cmd + "param list --dynamic -f csv")
-        self.assertEqual(result.return_value, 0)
+        self.assertResultSuccess(result)
         self.assertIn(param2, result.out())
         self.assertIn(param3, result.out())
-        self.assertEqual("", result.err())  # no warnings if not getting values
 
         # list dynamic parameters with FQN/JMES
         result = self.run_cli(cmd_env, proj_cmd + "param list --dynamic -vf csv")
-        self.assertEqual(result.return_value, 0)
+        self.assertResultWarning(result, missing_param2)
         self.assertIn(f"{param2},{fqn2}", result.out())
         self.assertIn(f"{param3},{fqn3}", result.out())
-        self.assertIn(missing_param2, result.err())
 
         # getting the broken parameter yields an empty value, and a warning
         result = self.run_cli(cmd_env, proj_cmd + f"param get '{param2}'")
-        self.assertEqual(result.return_value, 0)
+        self.assertResultWarning(result, missing_fqn2)
         self.assertEqual("\n", result.out())
-        self.assertIn(missing_fqn2, result.err())
 
         # export will fail, and should provide details about what failed
         result = self.run_cli(cmd_env, proj_cmd + "param export docker")
-        self.assertNotEqual(result.return_value, 0)
         # TODO: once `param export` improves feedback, use it
-        # self.assertIn(missing_fqn2, result.err())
-        self.assertIn("422 Unprocessable Entity", result.err())
+        # self.assertError(result, missing_fqn2)
+        self.assertResultError(result, "422 Unprocessable Entity")
 
         ##########################
         # template checks
         filename = "preview.txt"
 
         result = self.run_cli(cmd_env, proj_cmd + f"template get '{temp_name}'")
-        self.assertNotEqual(result.return_value, 0)
-        self.assertIn(missing_param2, result.err())
+        self.assertResultError(result, missing_param2)
 
         # copy current body into a file
         result = self.run_cli(cmd_env, proj_cmd + f"template get '{temp_name}' --raw")
@@ -312,8 +303,7 @@ PARAMETER_2 = PARAM2
         self.assertIn(param3, result.out())
 
         result = self.run_cli(cmd_env, proj_cmd + f"template preview '{filename}'")
-        self.assertNotEqual(result.return_value, 0)
-        self.assertIn(missing_param2, result.err())
+        self.assertResultError(result, missing_param2)
 
         # NOTE: do NOT delete the project!!!
         os.remove(filename)

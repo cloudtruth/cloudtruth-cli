@@ -116,8 +116,7 @@ class TestTopLevelArgs(TestCase):
         }.items():
             for alias in [subcmd] + aliases:
                 result = self.run_cli(cmd_env, base_cmd + alias)
-                self.assertEqual(result.return_value, 0)
-                self.assertIn(f"No '{subcmd}' sub-command executed", result.err())
+                self.assertResultWarning(result, f"No '{subcmd}' sub-command executed")
 
         self.delete_project(cmd_env, proj_name)
 
@@ -146,24 +145,20 @@ class TestTopLevelArgs(TestCase):
         eco_system = f"--project '{proj_name}' --env '{env_name}' "
         for cmd in checked_commands:
             result = self.run_cli(cmd_env, base_cmd + eco_system + cmd)
-            self.assertNotEqual(result.return_value, 0)
-            self.assertIn(missing_proj, result.err())
-            self.assertIn(missing_env, result.err())
+            self.assertResultError(result, missing_proj)
+            self.assertResultError(result, missing_env)
 
         for cmd in unchecked_commands:
             result = self.run_cli(cmd_env, base_cmd + eco_system + cmd)
-            self.assertEqual(result.return_value, 0)
-            self.assertNotIn(missing_proj, result.err())
-            self.assertNotIn(missing_env, result.err())
+            self.assertResultSuccess(result)
 
         ##############
         # Project present, missing environment
         self.create_project(cmd_env, proj_name)
         for cmd in checked_commands:
             result = self.run_cli(cmd_env, base_cmd + eco_system + cmd)
-            self.assertNotEqual(result.return_value, 0)
+            self.assertResultError(result, missing_env)
             self.assertNotIn(missing_proj, result.err())
-            self.assertIn(missing_env, result.err())
 
         ##############
         # Environment present, missing project
@@ -171,8 +166,7 @@ class TestTopLevelArgs(TestCase):
         self.create_environment(cmd_env, env_name)
         for cmd in checked_commands:
             result = self.run_cli(cmd_env, base_cmd + eco_system + cmd)
-            self.assertNotEqual(result.return_value, 0)
-            self.assertIn(missing_proj, result.err())
+            self.assertResultError(result, missing_proj)
             self.assertNotIn(missing_env, result.err())
 
         ##############
@@ -181,15 +175,11 @@ class TestTopLevelArgs(TestCase):
         self.create_environment(cmd_env, env_name)
         for cmd in checked_commands:
             result = self.run_cli(cmd_env, base_cmd + eco_system + cmd)
-            self.assertEqual(result.return_value, 0)
-            self.assertNotIn(missing_proj, result.err())
-            self.assertNotIn(missing_env, result.err())
+            self.assertResultSuccess(result)
 
         for cmd in unchecked_commands:
             result = self.run_cli(cmd_env, base_cmd + eco_system + cmd)
-            self.assertEqual(result.return_value, 0)
-            self.assertNotIn(missing_proj, result.err())
-            self.assertNotIn(missing_env, result.err())
+            self.assertResultSuccess(result)
 
         # cleanup
         self.delete_project(cmd_env, proj_name)
@@ -203,8 +193,7 @@ class TestTopLevelArgs(TestCase):
 
         cmd_env[CT_TIMEOUT] = "0"
         result = self.run_cli(cmd_env, base_cmd + cmd)
-        self.assertNotEqual(0, result.return_value)
-        self.assertIn("timed out", result.err())
+        self.assertResultError(result, "timed out")
 
     def test_arg_invalid_server(self):
         # NOTE: server_url is configurable via profile, but profiles are not integration tested
@@ -214,13 +203,11 @@ class TestTopLevelArgs(TestCase):
 
         cmd_env[CT_URL] = "0.0.0.0:0"
         result = self.run_cli(cmd_env, base_cmd + cmd)
-        self.assertNotEqual(0, result.return_value)
-        self.assertIn("relative URL without a base", result.err())
+        self.assertResultError(result, "relative URL without a base")
 
         cmd_env[CT_URL] = "https://0.0.0.0:0/graphql"
         result = self.run_cli(cmd_env, base_cmd + cmd)
-        self.assertNotEqual(0, result.return_value)
-        self.assertIn("error trying to connect", result.err())
+        self.assertResultError(result, "error trying to connect")
 
     def test_arg_authentication_errors(self):
         # NOTE: invalid key arguments override any profile or environment values.
@@ -238,6 +225,5 @@ class TestTopLevelArgs(TestCase):
         for user_cmd in commands:
             # test bogus key (means unauthenticated)
             result = self.run_cli(cmd_env, base_cmd + "--api-key abc123 " + user_cmd)
-            self.assertNotEqual(result.return_value, 0)
-            self.assertIn("Not Authenticated", result.err())
-            self.assertIn("Incorrect authentication credentials", result.err())
+            self.assertResultError(result, "Not Authenticated")
+            self.assertResultError(result, "Incorrect authentication credentials")
