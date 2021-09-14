@@ -133,11 +133,9 @@ prerequisites() {
             fi
             if [ -n "${CT_DRAFT_RELEASE_ID}" ] && [ "$(rpm -E "%{rhel}")" -eq 7 ]; then
               # jq is needed for draft release parsing, jq is in centos7 epel repository
-              echo "[cloudtruth] installing epel-release"
               yum -y install ${CT_PREREQ_DRY_RUN} epel-release
               yum repolist
             fi
-            echo "[cloudtruth] installing prerequisites"
             yum -y install ${CT_PREREQ_DRY_RUN} ${PREREQUISITES}
             ;;
     esac
@@ -248,9 +246,6 @@ if [ "${PKG}" = "rpm" ]; then
     if [ ${CT_DRY_RUN} -ne 0 ]; then
         echo "[dry-run] skipping install of ${PACKAGE}"
     else
-        echo "[cloudtruth] installing ${PACKAGE}"
-        ls -l "${PACKAGE}"
-        sum "${PACKAGE}"
         rpm -i "${PACKAGE}"
     fi
 fi

@@ -2,5 +2,5 @@ FROM ubuntu:focal
 ARG DOWNLOAD_VERSION=""
 ENV CT_DOWNLOAD_VERSION=$DOWNLOAD_VERSION
 COPY install.sh /tmp/ctinstall.sh
-RUN chmod 755 /tmp/ctinstall.sh && /tmp/ctinstall.sh --debug --version "${CT_DOWNLOAD_VERSION}"
+RUN chmod 755 /tmp/ctinstall.sh && /tmp/ctinstall.sh --version "${CT_DOWNLOAD_VERSION}"
 CMD cloudtruth --version
