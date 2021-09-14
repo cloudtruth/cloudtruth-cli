@@ -27,40 +27,40 @@ class TestTemplates(TestCase):
 
         sub_cmd = base_cmd + f"--project '{proj_name}' template "
         result = self.run_cli(cmd_env, sub_cmd + "ls -v")
-        self.assertEqual(result.return_value, 0)
+        self.assertResultSuccess(result)
         self.assertIn(empty_msg, result.out())
 
         # create with a description
         orig_desc = "Description on create"
         result = self.run_cli(cmd_env, sub_cmd + f"set {temp_name} --desc \"{orig_desc}\" --body '{filename}'")
-        self.assertEqual(result.return_value, 0)
+        self.assertResultSuccess(result)
         self.assertIn(f"Created template '{temp_name}'", result.out())
 
-        result = self.run_cli(cmd_env, sub_cmd + "ls -v")
-        self.assertTrue(result.out_contains_both(temp_name, orig_desc))
+        result = self.run_cli(cmd_env, sub_cmd + "ls -v -f csv")
+        self.assertIn(f"{temp_name},{orig_desc}", result.out())
 
         # check that we get back the "evaluated" text
         result = self.run_cli(cmd_env, sub_cmd + f"get {temp_name}")
-        self.assertEqual(result.return_value, 0)
+        self.assertResultSuccess(result)
         self.assertEqual(body, result.out())
 
         # update the description
         new_desc = "Updated description"
         result = self.run_cli(cmd_env, sub_cmd + f"set {temp_name} --desc \"{new_desc}\"")
-        self.assertEqual(result.return_value, 0)
+        self.assertResultSuccess(result)
         self.assertIn(f"Updated template '{temp_name}'", result.out())
-        result = self.run_cli(cmd_env, sub_cmd + "ls --values")
-        self.assertTrue(result.out_contains_both(temp_name, new_desc))
+        result = self.run_cli(cmd_env, sub_cmd + "ls --values -f csv")
+        self.assertIn(f"{temp_name},{new_desc}", result.out())
 
         # idempotent - do it again
         result = self.run_cli(cmd_env, sub_cmd + f"set {temp_name} --desc \"{new_desc}\"")
-        self.assertEqual(result.return_value, 0)
+        self.assertResultSuccess(result)
 
         # rename
         orig_name = temp_name
         temp_name = "renamed-temp"
         result = self.run_cli(cmd_env, sub_cmd + f"set {orig_name} --rename \"{temp_name}\"")
-        self.assertEqual(result.return_value, 0)
+        self.assertResultSuccess(result)
         self.assertIn(f"Updated template '{temp_name}'", result.out())
         result = self.run_cli(cmd_env, sub_cmd + "ls")
         self.assertIn(temp_name, result.out())
@@ -68,14 +68,13 @@ class TestTemplates(TestCase):
 
         # attempting to get template that does not exist yield error
         result = self.run_cli(cmd_env, sub_cmd + f"get '{orig_name}'")
-        self.assertNotEqual(result.return_value, 0)
-        self.assertIn(f"No template '{orig_name}' found in project '{proj_name}'", result.err())
+        self.assertResultError(result, f"No template '{orig_name}' found in project '{proj_name}'")
 
         # change the body
         body = "different fixed value\n"
         write_file(filename, body)
         result = self.run_cli(cmd_env, sub_cmd + f"set {temp_name} --body \"{filename}\"")
-        self.assertEqual(result.return_value, 0)
+        self.assertResultSuccess(result)
         self.assertIn(f"Updated template '{temp_name}'", result.out())
 
         # check the new body text
@@ -88,35 +87,27 @@ class TestTemplates(TestCase):
 
         # nothing to update
         result = self.run_cli(cmd_env, sub_cmd + f"set {temp_name}")
-        self.assertEqual(result.return_value, 0)
-        self.assertIn(
+        self.assertResultWarning(
+            result,
             f"Template '{temp_name}' not updated: no updated parameters provided",
-            result.err(),
         )
 
-        # test the list without the table
+        # test the list without the values
         result = self.run_cli(cmd_env, sub_cmd + "list")
-        self.assertEqual(result.return_value, 0)
-        self.assertTrue(result.out_contains_value(temp_name))
-        self.assertFalse(result.out_contains_both(temp_name, new_desc))
-
-        # test the csv output
-        result = self.run_cli(cmd_env, sub_cmd + "list -v -f csv")
-        self.assertEqual(result.return_value, 0)
-        self.assertTrue(result.out_contains_value(temp_name))
-        self.assertTrue(result.out_contains_both(temp_name, new_desc))
+        self.assertResultSuccess(result)
+        self.assertIn(temp_name, result.out())
+        self.assertNotIn(new_desc, result.out())
 
         # delete
         result = self.run_cli(cmd_env, sub_cmd + f"delete {temp_name} --confirm")
-        self.assertEqual(result.return_value, 0)
+        self.assertResultSuccess(result)
         result = self.run_cli(cmd_env, sub_cmd + "ls -v")
-        self.assertEqual(result.return_value, 0)
-        self.assertFalse(result.out_contains_value(temp_name))
+        self.assertResultSuccess(result)
+        self.assertNotIn(temp_name, result.out())
 
         # do it again, see we have success and a warning
         result = self.run_cli(cmd_env, sub_cmd + f"delete {temp_name} --confirm")
-        self.assertEqual(result.return_value, 0)
-        self.assertIn(f"Template '{temp_name}' does not exist for project '{proj_name}'", result.err())
+        self.assertResultWarning(result, f"Template '{temp_name}' does not exist for project '{proj_name}'")
 
         # cleanup
         os.remove(filename)
@@ -159,24 +150,24 @@ ANOTHER_PARAM=PARAM2
 
         sub_cmd = base_cmd + f"--project {proj_name} template "
         result = self.run_cli(cmd_env, sub_cmd + f"set {temp_name} -b {filename}")
-        self.assertEqual(result.return_value, 0)
+        self.assertResultSuccess(result)
 
         ##########################
         # Check environment A
         cmd_env[CT_ENV] = env_a
 
         result = self.run_cli(cmd_env, sub_cmd + f"get {temp_name}")
-        self.assertEqual(result.return_value, 0)
+        self.assertResultSuccess(result)
         self.assertIn(eval_a, result.out())
 
         # see that we get back the unresolved/unevaluated body
         result = self.run_cli(cmd_env, sub_cmd + f"get -r {temp_name}")
-        self.assertEqual(result.return_value, 0)
+        self.assertResultSuccess(result)
         self.assertIn(body, result.out())
 
         # check preview, too
         result = self.run_cli(cmd_env, sub_cmd + f"preview {filename}")
-        self.assertEqual(result.return_value, 0)
+        self.assertResultSuccess(result)
         self.assertIn(eval_a, result.out())
 
         # now, display the secrets
@@ -192,17 +183,17 @@ ANOTHER_PARAM=PARAM2
         cmd_env[CT_ENV] = env_b
 
         result = self.run_cli(cmd_env, sub_cmd + f"get {temp_name}")
-        self.assertEqual(result.return_value, 0)
+        self.assertResultSuccess(result)
         self.assertIn(eval_b, result.out())
 
         # see that we get back the unresolved/unevaluated body
         result = self.run_cli(cmd_env, sub_cmd + f"get {temp_name} -r")
-        self.assertEqual(result.return_value, 0)
+        self.assertResultSuccess(result)
         self.assertIn(body, result.out())
 
         # check preview, too
         result = self.run_cli(cmd_env, sub_cmd + f"preview {filename}")
-        self.assertEqual(result.return_value, 0)
+        self.assertResultSuccess(result)
         self.assertIn(eval_b, result.out())
 
         # now, display te secrets
@@ -280,7 +271,7 @@ this.is.a.template.value=PARAM1
 
         # take a baseline before we have any template history
         result = self.run_cli(cmd_env, temp_cmd + "history")
-        self.assertEqual(result.return_value, 0)
+        self.assertResultSuccess(result)
         self.assertIn("No template history in project", result.out())
 
         temp1 = "temp1"
@@ -295,30 +286,30 @@ this.is.a.template.value=PARAM1
         # create the templates
         write_file(filename, body1a)
         result = self.run_cli(cmd_env, temp_cmd + f"set '{temp1}' -b '{filename}' -d '{desc1}'")
-        self.assertEqual(result.return_value, 0)
+        self.assertResultSuccess(result)
 
         write_file(filename, body2a)
         result = self.run_cli(cmd_env, temp_cmd + f"set '{temp2}' -b '{filename}'")
-        self.assertEqual(result.return_value, 0)
+        self.assertResultSuccess(result)
 
         # get the modified time -- before making changes
         result = self.run_cli(cmd_env, temp_cmd + "list --show-times -f json")
-        self.assertEqual(result.return_value, 0)
+        self.assertResultSuccess(result)
         temp_info = eval(result.out())
         modified_at = temp_info.get("template")[1].get("Modified At")
 
         # update the template bodies
         write_file(filename, body1b)
         result = self.run_cli(cmd_env, temp_cmd + f"set '{temp1}' -b '{filename}'")
-        self.assertEqual(result.return_value, 0)
+        self.assertResultSuccess(result)
 
         write_file(filename, body2b)
         result = self.run_cli(cmd_env, temp_cmd + f"set '{temp2}' -b '{filename}'")
-        self.assertEqual(result.return_value, 0)
+        self.assertResultSuccess(result)
 
         # get a complete history
         result = self.run_cli(cmd_env, temp_cmd + "history -f csv")
-        self.assertEqual(result.return_value, 0)
+        self.assertResultSuccess(result)
         self.assertIn("Date,Action,Name,Changes", result.out())
         self.assertIn(f",create,{temp1},", result.out())
         self.assertIn(body1a, result.out())
@@ -332,7 +323,7 @@ this.is.a.template.value=PARAM1
 
         # get a focused history on just one
         result = self.run_cli(cmd_env, temp_cmd + f"history '{temp2}' -f csv")
-        self.assertEqual(result.return_value, 0)
+        self.assertResultSuccess(result)
         self.assertNotIn("Date,Action,Name,Changes", result.out())
         self.assertNotIn(temp1, result.out())
         self.assertNotIn(body1a, result.out())
@@ -345,28 +336,27 @@ this.is.a.template.value=PARAM1
 
         # further focus on older updates
         result = self.run_cli(cmd_env, temp_cmd + f"history '{temp2}' --as-of '{modified_at}'")
-        self.assertEqual(result.return_value, 0)
+        self.assertResultSuccess(result)
         self.assertIn(temp2, result.out())
         self.assertIn(body2a, result.out())
         self.assertNotIn(body2b, result.out())  # filtered out by time
 
         # delete both
         result = self.run_cli(cmd_env, temp_cmd + f"del -y '{temp2}'")
-        self.assertEqual(result.return_value, 0)
+        self.assertResultSuccess(result)
         result = self.run_cli(cmd_env, temp_cmd + f"del -y '{temp1}'")
-        self.assertEqual(result.return_value, 0)
+        self.assertResultSuccess(result)
 
         # see that the deleted show up in the full history
         result = self.run_cli(cmd_env, temp_cmd + "history -f csv")
-        self.assertEqual(result.return_value, 0)
+        self.assertResultSuccess(result)
         self.assertIn("Date,Action,Name,Changes", result.out())
         self.assertIn(f",delete,{temp1},", result.out())
         self.assertIn(f",delete,{temp2},", result.out())
 
         # now that it is deleted, see that we fail to resolve the template name
         result = self.run_cli(cmd_env, temp_cmd + f"history '{temp1}'")
-        self.assertNotEqual(result.return_value, 0)
-        self.assertIn(f"Did not find '{temp1}' in project '{proj_name}'", result.err())
+        self.assertResultError(result, f"Did not find '{temp1}' in project '{proj_name}'")
 
         # cleanup
         os.remove(filename)

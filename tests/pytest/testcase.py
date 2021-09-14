@@ -83,38 +83,8 @@ class Result:
     stderr: List = dataclasses.field(default_factory=list),
     timediff: timedelta = timedelta(0)
 
-    @staticmethod
-    def _first_line_contains(stream: List[str], value: str) -> Optional[str]:
-        for line in stream:
-            if value in line:
-                return line
-        return None
-
-    def _contains_value(self, stream: List[str], value: str) -> bool:
-        return self._first_line_contains(stream, value) is not None
-
-    def _contains_both(self, stream: List[str], one: str, two: str) -> bool:
-        line = self._first_line_contains(stream, one)
-        if line:
-            return two in line
-        return False
-
-    @staticmethod
-    def _equals(stream: List[str], value: str) -> bool:
-        total = "\n".join(stream)
-        return total == value
-
-    def out_contains_both(self, one: str, two: str) -> bool:
-        return self._contains_both(self.stdout, one, two)
-
-    def out_contains_value(self, one: str) -> bool:
-        return self._contains_value(self.stdout, one)
-
     def out(self) -> str:
         return "\n".join(self.stdout)
-
-    def err_contains_value(self, one: str) -> bool:
-        return self._contains_value(self.stderr, one)
 
     def err(self) -> str:
         return "\n".join(self.stderr)
@@ -178,6 +148,29 @@ class TestCase(unittest.TestCase):
             return "SET"
         return "printenv"
 
+    def assertResultSuccess(self, result: Result):
+        """
+        This is a convenience method to check the return code, and error output.
+        """
+        # check the error message is emtpty first, since it gives the most info about a failure
+        self.assertEqual(result.err(), "")
+        self.assertEqual(result.return_value, 0)
+
+    def assertResultWarning(self, result: Result, warn_msg: str):
+        """
+        This is a convenience method to check for successful CLI commands that emit a (partial) warning message
+        """
+        # check the message first, since it is more telling when the command fails
+        self.assertIn(warn_msg, result.err())
+        self.assertEqual(result.return_value, 0)
+
+    def assertResultError(self, result: Result, err_msg: str):
+        """
+        This is a convenience method to check for failed CLI commands with a specific (partial) error message
+        """
+        self.assertIn(err_msg, result.err())
+        self.assertNotEqual(result.return_value, 0)
+
     def run_cli(self, env: Dict[str, str], cmd) -> Result:
         # WARNING: DOS prompt does not like the single quotes, so use double
         cmd = cmd.replace("'", "\"")
@@ -234,7 +227,7 @@ class TestCase(unittest.TestCase):
 
     def get_profile(self, cmd_env, prof_name: str) -> Optional[Dict]:
         result = self.run_cli(cmd_env, self._base_cmd + "config list --values --format csv -s")
-        self.assertEqual(result.return_value, 0)
+        self.assertResultSuccess(result)
         needle = f"{prof_name},"
         for line in result.stdout:
             if line.startswith(needle):
@@ -251,12 +244,12 @@ class TestCase(unittest.TestCase):
     def create_project(self, cmd_env, proj_name: str) -> Result:
         result = self.run_cli(cmd_env,
                               self._base_cmd + f"proj set '{proj_name}' -d '{AUTO_DESCRIPTION}'")
-        self.assertEqual(result.return_value, 0)
+        self.assertResultSuccess(result)
         return result
 
     def delete_project(self, cmd_env, proj_name: str) -> Result:
         result = self.run_cli(cmd_env, self._base_cmd + f"proj delete '{proj_name}' --confirm")
-        self.assertEqual(result.return_value, 0)
+        self.assertResultSuccess(result)
         return result
 
     def create_environment(self, cmd_env, env_name: str, parent: Optional[str] = None) -> Result:
@@ -265,12 +258,12 @@ class TestCase(unittest.TestCase):
             cmd += f"-p '{parent}' "
         cmd += f"-d '{AUTO_DESCRIPTION}'"
         result = self.run_cli(cmd_env, cmd)
-        self.assertEqual(result.return_value, 0)
+        self.assertResultSuccess(result)
         return result
 
     def delete_environment(self, cmd_env, env_name: str) -> Result:
         result = self.run_cli(cmd_env, self._base_cmd + f"env del '{env_name}' --confirm")
-        self.assertEqual(result.return_value, 0)
+        self.assertResultSuccess(result)
         return result
 
     def set_param(
@@ -295,7 +288,7 @@ class TestCase(unittest.TestCase):
         if param_type:
             cmd += f"--type '{param_type}' "
         result = self.run_cli(cmd_env, cmd)
-        self.assertEqual(result.return_value, 0)
+        self.assertResultSuccess(result)
         return result
 
     def get_param(
@@ -316,7 +309,7 @@ class TestCase(unittest.TestCase):
         if secrets:
             cmd += "--secrets "
         result = self.run_cli(cmd_env, cmd)
-        self.assertEqual(result.return_value, 0)
+        self.assertResultSuccess(result)
         parameters = eval(result.out())
         for item in parameters["parameter"]:
             if item.get("Name") == name:
@@ -335,7 +328,7 @@ class TestCase(unittest.TestCase):
             cmd += f"--env '{env}' "
         cmd += f"param unset '{name}' "
         result = self.run_cli(cmd_env, cmd)
-        self.assertEqual(result.return_value, 0)
+        self.assertResultSuccess(result)
         return result
 
     def delete_param(self, cmd_env, proj: str, name: str, env: Optional[str] = None) -> Result:
@@ -344,7 +337,7 @@ class TestCase(unittest.TestCase):
             cmd += f"--env '{env}' "
         cmd += f"param delete -y '{name}'"
         result = self.run_cli(cmd_env, cmd)
-        self.assertEqual(result.return_value, 0)
+        self.assertResultSuccess(result)
         return result
 
     def verify_param(

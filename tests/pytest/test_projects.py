@@ -9,64 +9,56 @@ class TestProjects(TestCase):
         proj_name = self.make_name("test-proj-name")
         sub_cmd = base_cmd + "projects "
         result = self.run_cli(cmd_env, sub_cmd + "ls -v")
-        self.assertEqual(result.return_value, 0)
-        self.assertFalse(result.out_contains_value(proj_name))
+        self.assertResultSuccess(result)
+        self.assertNotIn(proj_name, result.out())
 
         # create with a description
         orig_desc = "Description on create"
         result = self.run_cli(cmd_env, sub_cmd + f"set {proj_name} --desc \"{orig_desc}\"")
-        self.assertEqual(result.return_value, 0)
-        result = self.run_cli(cmd_env, sub_cmd + "ls -v")
-        self.assertEqual(result.return_value, 0)
-        self.assertTrue(result.out_contains_both(proj_name, orig_desc))
+        self.assertResultSuccess(result)
+        result = self.run_cli(cmd_env, sub_cmd + "ls -v -f csv")
+        self.assertResultSuccess(result)
+        self.assertIn(f"{proj_name},{orig_desc}", result.out())
 
         # update the description
         new_desc = "Updated description"
         result = self.run_cli(cmd_env, sub_cmd + f"set {proj_name} --desc \"{new_desc}\"")
-        self.assertEqual(result.return_value, 0)
-        result = self.run_cli(cmd_env, sub_cmd + "ls --values")
-        self.assertEqual(result.return_value, 0)
-        self.assertTrue(result.out_contains_both(proj_name, new_desc))
+        self.assertResultSuccess(result)
+        result = self.run_cli(cmd_env, sub_cmd + "ls --values -f csv")
+        self.assertResultSuccess(result)
+        self.assertIn(f"{proj_name},{new_desc}", result.out())
 
         # idempotent - do it again
         result = self.run_cli(cmd_env, sub_cmd + f"set {proj_name} --desc \"{new_desc}\"")
-        self.assertEqual(result.return_value, 0)
+        self.assertResultSuccess(result)
 
         # rename
         orig_name = proj_name
         proj_name = self.make_name("test-proj-rename")
         result = self.run_cli(cmd_env, sub_cmd + f"set {orig_name} --rename \"{proj_name}\"")
-        self.assertEqual(result.return_value, 0)
+        self.assertResultSuccess(result)
         self.assertIn(f"Updated project '{proj_name}'", result.out())
 
         # nothing to update
         result = self.run_cli(cmd_env, sub_cmd + f"set {proj_name}")
-        self.assertEqual(result.return_value, 0)
-        self.assertIn(
+        self.assertResultWarning(
+            result,
             f"Project '{proj_name}' not updated: no updated parameters provided",
-            result.err(),
         )
 
-        # test the list without the table
+        # test the list without the values
         result = self.run_cli(cmd_env, sub_cmd + "list")
-        self.assertEqual(result.return_value, 0)
-        self.assertTrue(result.out_contains_value(proj_name))
-        self.assertFalse(result.out_contains_both(proj_name, new_desc))
-
-        # test the csv output
-        result = self.run_cli(cmd_env, sub_cmd + "list -v -f csv")
-        self.assertEqual(result.return_value, 0)
-        self.assertTrue(result.out_contains_value(proj_name))
-        self.assertTrue(result.out_contains_both(proj_name, new_desc))
+        self.assertResultSuccess(result)
+        self.assertIn(proj_name, result.out())
+        self.assertNotIn(new_desc, result.out())
 
         # delete
         result = self.run_cli(cmd_env, sub_cmd + f"delete {proj_name} --confirm")
-        self.assertEqual(result.return_value, 0)
+        self.assertResultSuccess(result)
         result = self.run_cli(cmd_env, sub_cmd + "ls -v")
-        self.assertEqual(result.return_value, 0)
-        self.assertFalse(result.out_contains_value(proj_name))
+        self.assertResultSuccess(result)
+        self.assertNotIn(proj_name, result.out())
 
         # do it again, see we have success and a warning
         result = self.run_cli(cmd_env, sub_cmd + f"delete {proj_name} --confirm")
-        self.assertEqual(result.return_value, 0)
-        self.assertTrue(result.err_contains_value(f"Project '{proj_name}' does not exist"))
+        self.assertResultWarning(result, f"Project '{proj_name}' does not exist")

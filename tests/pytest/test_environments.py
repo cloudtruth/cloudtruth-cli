@@ -10,66 +10,58 @@ class TestEnvironments(TestCase):
         env_name = self.make_name("test-env-name")
         sub_cmd = base_cmd + "environments "
         result = self.run_cli(cmd_env, sub_cmd + "ls -v")
-        self.assertEqual(result.return_value, 0)
-        self.assertFalse(result.out_contains_value(env_name))
+        self.assertResultSuccess(result)
+        self.assertNotIn(env_name, result.out())
 
         # create with a description
         orig_desc = "Description on create"
         result = self.run_cli(cmd_env, sub_cmd + f"set {env_name} --desc \"{orig_desc}\"")
-        self.assertEqual(result.return_value, 0)
-        result = self.run_cli(cmd_env, sub_cmd + "ls -v")
-        self.assertEqual(result.return_value, 0)
-        self.assertTrue(result.out_contains_both(env_name, orig_desc))
+        self.assertResultSuccess(result)
+        result = self.run_cli(cmd_env, sub_cmd + "ls -v -f csv")
+        self.assertResultSuccess(result)
+        self.assertIn(f"{env_name},default,{orig_desc}", result.out())
 
         # update the description
         new_desc = "Updated description"
         result = self.run_cli(cmd_env, sub_cmd + f"set {env_name} --desc \"{new_desc}\"")
-        self.assertEqual(result.return_value, 0)
-        result = self.run_cli(cmd_env, sub_cmd + "ls --values")
-        self.assertEqual(result.return_value, 0)
-        self.assertTrue(result.out_contains_both(env_name, new_desc))
+        self.assertResultSuccess(result)
+        result = self.run_cli(cmd_env, sub_cmd + "ls --values -f csv")
+        self.assertResultSuccess(result)
+        self.assertIn(f"{env_name},default,{new_desc}", result.out())
 
         # idempotent - do it again
         result = self.run_cli(cmd_env, sub_cmd + f"set {env_name} --desc \"{new_desc}\"")
-        self.assertEqual(result.return_value, 0)
+        self.assertResultSuccess(result)
 
         # rename the environment
         orig_name = env_name
         env_name = self.make_name("test-env-rename")
         result = self.run_cli(cmd_env, sub_cmd + f"set {orig_name} --rename \"{env_name}\"")
-        self.assertEqual(result.return_value, 0)
+        self.assertResultSuccess(result)
         self.assertIn(f"Updated environment '{env_name}'", result.out())
 
         # nothing to update
         result = self.run_cli(cmd_env, sub_cmd + f"set {env_name}")
-        self.assertEqual(result.return_value, 0)
-        self.assertIn(
+        self.assertResultWarning(
+            result,
             f"Environment '{env_name}' not updated: no updated parameters provided",
-            result.err(),
         )
 
-        # test the list without the table
+        # test the list without the values
         result = self.run_cli(cmd_env, sub_cmd + "list")
-        self.assertEqual(result.return_value, 0)
-        self.assertTrue(result.out_contains_value(env_name))
-        self.assertFalse(result.out_contains_both(env_name, new_desc))
+        self.assertResultSuccess(result)
+        self.assertIn(env_name, result.out())
+        self.assertNotIn(new_desc, result.out())
 
-        # test the csv output
-        result = self.run_cli(cmd_env, sub_cmd + "list -v -f csv")
-        self.assertEqual(result.return_value, 0)
-        self.assertTrue(result.out_contains_both(env_name, new_desc))
-
-        # delete the description
         result = self.run_cli(cmd_env, sub_cmd + f"delete {env_name} --confirm")
-        self.assertEqual(result.return_value, 0)
+        self.assertResultSuccess(result)
         result = self.run_cli(cmd_env, sub_cmd + "ls -v")
-        self.assertEqual(result.return_value, 0)
-        self.assertFalse(result.out_contains_value(env_name))
+        self.assertResultSuccess(result)
+        self.assertNotIn(env_name, result.out())
 
         # do it again, see we have success and a warning
         result = self.run_cli(cmd_env, sub_cmd + f"delete {env_name} --confirm")
-        self.assertEqual(result.return_value, 0)
-        self.assertTrue(result.err_contains_value(f"Environment '{env_name}' does not exist"))
+        self.assertResultWarning(result, f"Environment '{env_name}' does not exist")
 
     def test_environment_cannot_delete_default(self):
         base_cmd = self.get_cli_base_cmd()
@@ -85,8 +77,7 @@ class TestEnvironments(TestCase):
 
         # attempt to delete the default project and see failure
         result = self.run_cli(cmd_env, base_cmd + f"environment delete '{DEFAULT_ENV_NAME}' --confirm")
-        self.assertNotEqual(result.return_value, 0)
-        self.assertIn("Cannot delete the default environment", result.err())
+        self.assertResultError(result, "Cannot delete the default environment")
 
         # make sure we get the same parameter list
         after = self.run_cli(cmd_env, param_cmd)
@@ -113,7 +104,7 @@ class TestEnvironments(TestCase):
 
         # Use csv to validate, since the names may be variable
         result = self.run_cli(cmd_env, base_cmd + "env ls -v -f csv")
-        self.assertEqual(result.return_value, 0)
+        self.assertResultSuccess(result)
         self.assertIn(f"{env_name1},{DEFAULT_ENV_NAME},", result.out())
         self.assertIn(f"{env_name2},{env_name1},", result.out())
         self.assertIn(f"{env_name3},{env_name2},", result.out())
@@ -121,7 +112,7 @@ class TestEnvironments(TestCase):
 
         # basic 'tree' test
         result = self.run_cli(cmd_env, base_cmd + "env tree")
-        self.assertEqual(result.return_value, 0)
+        self.assertResultSuccess(result)
         expected = f"  {env_name1}\n    {env_name2}\n      {env_name4}\n      {env_name3}\n"
         self.assertIn(expected, result.out())
 
@@ -132,31 +123,27 @@ class TestEnvironments(TestCase):
 
         # invalid environment given
         result = self.run_cli(cmd_env, base_cmd + "env tree non-env")
-        self.assertEqual(result.return_value, 0)
-        self.assertIn("No environment 'non-env' found", result.err())
+        self.assertResultWarning(result, "No environment 'non-env' found")
 
         # attempt to delete something that is used elsewhere
         result = self.run_cli(cmd_env, base_cmd + f"environment delete '{env_name2}' --confirm")
-        self.assertNotEqual(result.return_value, 0)
-        self.assertIn("Cannot remove environment because it has children", result.err())
+        self.assertResultError(result, "Cannot remove environment because it has children")
 
         # attempt to create without an existing parent
         env_name5 = self.make_name("general")
         env_name6 = self.make_name("truthiness")
         result = self.run_cli(cmd_env, base_cmd + f"environments set '{env_name5}' --parent '{env_name6}'")
-        self.assertNotEqual(result.return_value, 0)
-        self.assertIn(f"No parent environment '{env_name6}' found", result.err())
+        self.assertResultError(result, f"No parent environment '{env_name6}' found")
 
         # attempt to update parent -- not allowed
         result = self.run_cli(cmd_env, base_cmd + f"environment set '{env_name4}' --parent '{env_name1}'")
-        self.assertNotEqual(result.return_value, 0)
-        self.assertIn(f"Environment '{env_name4}' parent cannot be updated", result.err())
+        self.assertResultError(result, f"Environment '{env_name4}' parent cannot be updated")
 
         # setting to same parent is ignored
         new_desc = "My new description"
         cmd = base_cmd + f"environment set '{env_name4}' --parent '{env_name2}' --desc '{new_desc}'"
         result = self.run_cli(cmd_env, cmd)
-        self.assertEqual(result.return_value, 0)
+        self.assertResultSuccess(result)
 
         # make sure description was updated, yet parent remains
         result = self.run_cli(cmd_env, base_cmd + "env ls -v -f csv")
