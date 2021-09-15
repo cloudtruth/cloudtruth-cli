@@ -88,6 +88,12 @@ class TestIntegrations(TestCase):
         self.assertResultSuccess(result)
         self.assertIn(f"{url.hostname},{base_fqn}/,", result.out())
 
+        # check that times are added
+        result = self.run_cli(cmd_env, base_cmd + "integ ls -v --format csv --show-times")
+        self.assertResultSuccess(result)
+        self.assertIn("Created At,Modified At", result.out())
+        self.assertIn(f"{url.hostname},{base_fqn}/,", result.out())
+
         # now, walk the path
         explore_cmd = base_cmd + "int ex -v -f csv "
         path_parts = [_ for _ in url.path.replace("/", "", 1).split("/") if _]

@@ -1,4 +1,4 @@
-use crate::cli::{FORMAT_OPT, LIST_SUBCMD, VALUES_FLAG};
+use crate::cli::{FORMAT_OPT, LIST_SUBCMD, SHOW_TIMES_FLAG, VALUES_FLAG};
 use crate::database::{Integrations, OpenApiConfig};
 use crate::table::Table;
 use crate::{error_message, warn_missing_subcommand};
@@ -49,26 +49,39 @@ fn proc_integ_list(
     integrations: &Integrations,
 ) -> Result<()> {
     let details = integrations.get_integration_details(rest_cfg)?;
+    let show_times = subcmd_args.is_present(SHOW_TIMES_FLAG);
+    let show_values = subcmd_args.is_present(VALUES_FLAG) || show_times;
+    let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
+
     if details.is_empty() {
         println!("No integrations found");
-    } else if !subcmd_args.is_present(VALUES_FLAG) {
+    } else if !show_values {
         let list = details
             .iter()
             .map(|d| d.name.clone())
             .collect::<Vec<String>>();
         println!("{}", list.join("\n"))
     } else {
-        let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
         let mut table = Table::new("integration");
-        table.set_header(&["Name", "FQN", "Status", "Updated", "Description"]);
+        let mut hdr = vec!["Name", "FQN", "Status", "Updated", "Description"];
+        if show_times {
+            hdr.push("Created At");
+            hdr.push("Modified At");
+        }
+        table.set_header(&hdr);
         for entry in details {
-            table.add_row(vec![
+            let mut row = vec![
                 entry.name,
                 entry.fqn,
                 entry.status,
                 entry.status_time,
                 entry.description,
-            ]);
+            ];
+            if show_times {
+                row.push(entry.created_at);
+                row.push(entry.modified_at);
+            }
+            table.add_row(row);
         }
         table.render(fmt)?;
     }
