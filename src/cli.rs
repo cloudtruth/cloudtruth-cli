@@ -169,6 +169,7 @@ pub fn build_cli() -> App<'static, 'static> {
                     SubCommand::with_name(LIST_SUBCMD)
                         .visible_aliases(LIST_ALIASES)
                         .about("List CloudTruth environments")
+                        .arg(show_times_arg())
                         .arg(values_flag().help("Display environment information/values"))
                         .arg(table_format_options().help("Format for environment values data")),
                     SubCommand::with_name(SET_SUBCMD)
@@ -512,6 +513,7 @@ pub fn build_cli() -> App<'static, 'static> {
                     SubCommand::with_name(LIST_SUBCMD)
                         .visible_aliases(LIST_ALIASES)
                         .about("List CloudTruth projects")
+                        .arg(show_times_arg())
                         .arg(values_flag().help("Display project information/values"))
                         .arg(table_format_options().help("Format for project values data")),
                     SubCommand::with_name(SET_SUBCMD)

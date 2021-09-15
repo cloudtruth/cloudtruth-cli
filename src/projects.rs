@@ -1,6 +1,6 @@
 use crate::cli::{
     CONFIRM_FLAG, DELETE_SUBCMD, FORMAT_OPT, LIST_SUBCMD, NAME_ARG, RENAME_OPT, SET_SUBCMD,
-    VALUES_FLAG,
+    SHOW_TIMES_FLAG, VALUES_FLAG,
 };
 use crate::database::{OpenApiConfig, Projects};
 use crate::table::Table;
@@ -41,20 +41,33 @@ fn proc_proj_list(
     projects: &Projects,
 ) -> Result<()> {
     let details = projects.get_project_details(rest_cfg)?;
+    let show_times = subcmd_args.is_present(SHOW_TIMES_FLAG);
+    let show_values = subcmd_args.is_present(VALUES_FLAG) || show_times;
+    let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
+
     if details.is_empty() {
         println!("No projects found.");
-    } else if !subcmd_args.is_present(VALUES_FLAG) {
+    } else if !show_values {
         let list = details
             .iter()
             .map(|v| v.name.clone())
             .collect::<Vec<String>>();
         println!("{}", list.join("\n"));
     } else {
-        let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
         let mut table = Table::new("project");
-        table.set_header(&["Name", "Description"]);
+        let mut hdr = vec!["Name", "Description"];
+        if show_times {
+            hdr.push("Created At");
+            hdr.push("Modified At");
+        }
+        table.set_header(&hdr);
         for entry in details {
-            table.add_row(vec![entry.name, entry.description]);
+            let mut row = vec![entry.name, entry.description];
+            if show_times {
+                row.push(entry.created_at);
+                row.push(entry.modified_at);
+            }
+            table.add_row(row);
         }
         table.render(fmt)?;
     }

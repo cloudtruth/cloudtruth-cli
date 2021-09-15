@@ -18,6 +18,8 @@ pub struct EnvironmentDetails {
     pub description: String,
     pub parent_url: String,
     pub parent_name: String,
+    pub created_at: String,
+    pub modified_at: String,
 }
 
 /// This is used to map from an Environment's URL to the Name.
@@ -35,6 +37,8 @@ impl From<&Environment> for EnvironmentDetails {
             description: api_env.description.clone().unwrap_or_default(),
             parent_url: api_env.parent.clone().unwrap_or_default(),
             parent_name: "".to_owned(),
+            created_at: api_env.created_at.clone(),
+            modified_at: api_env.modified_at.clone(),
         }
     }
 }

@@ -52,6 +52,13 @@ class TestProjects(TestCase):
         self.assertIn(proj_name, result.out())
         self.assertNotIn(new_desc, result.out())
 
+        # shows create/modified times
+        result = self.run_cli(cmd_env, sub_cmd + "list --show-times -f csv")
+        self.assertResultSuccess(result)
+        self.assertIn("Created At,Modified At", result.out())
+        self.assertIn(proj_name, result.out())
+        self.assertIn(new_desc, result.out())
+
         # delete
         result = self.run_cli(cmd_env, sub_cmd + f"delete {proj_name} --confirm")
         self.assertResultSuccess(result)
