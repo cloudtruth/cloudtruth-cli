@@ -16,6 +16,9 @@ pub struct Parameters {}
 
 static DEFAULT_PARAM_VALUE: OnceCell<Value> = OnceCell::new();
 const DEFAULT_VALUE: &str = "-";
+const PARTIAL_SUCCESS: Option<bool> = Some(true);
+const VALUES_FALSE: Option<bool> = Some(false);
+const VALUES_TRUE: Option<bool> = Some(true);
 
 #[derive(Clone, Debug)]
 pub struct ParameterDetails {
@@ -489,8 +492,8 @@ impl Parameters {
             Some(key_name),
             None,
             PAGE_SIZE,
-            Some(true),
-            Some(false),
+            PARTIAL_SUCCESS,
+            VALUES_FALSE,
             WRAP_SECRETS,
         );
         if let Ok(data) = response {
@@ -534,7 +537,7 @@ impl Parameters {
             Some(key_name),
             None,
             PAGE_SIZE,
-            Some(true),
+            PARTIAL_SUCCESS,
             None,
             WRAP_SECRETS,
         )?;
@@ -594,7 +597,7 @@ impl Parameters {
     ) -> Result<Vec<ParameterDetails>, Error<ProjectsParametersListError>> {
         let mut list: Vec<ParameterDetails> = Vec::new();
         let env_arg = if include_values { Some(env_id) } else { None };
-        let value_arg = if include_values { None } else { Some(false) };
+        let value_arg = if include_values { None } else { VALUES_FALSE };
         let response = projects_parameters_list(
             rest_cfg,
             proj_id,
@@ -604,7 +607,7 @@ impl Parameters {
             None,
             None,
             PAGE_SIZE,
-            Some(true),
+            PARTIAL_SUCCESS,
             value_arg,
             WRAP_SECRETS,
         )?;
@@ -654,8 +657,8 @@ impl Parameters {
             Some(param_name),
             None,
             PAGE_SIZE,
-            Some(true),
-            Some(true),
+            PARTIAL_SUCCESS,
+            VALUES_TRUE,
             WRAP_SECRETS,
         )?;
         if let Some(values) = response.results {
