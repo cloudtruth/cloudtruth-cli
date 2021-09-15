@@ -1621,6 +1621,7 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
         # change the type back to string
         self.set_param(cmd_env, proj_name, int_param, int_value, param_type="string")
         result = self.run_cli(cmd_env, list_cmd)
+        self.assertResultSuccess(result)
         self.assertIn(f"{int_param},{int_value},default,string,0,internal,false", result.out())
 
         # update back to integer
