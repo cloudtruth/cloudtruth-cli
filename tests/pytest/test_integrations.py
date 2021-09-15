@@ -136,10 +136,12 @@ class TestIntegrations(TestCase):
         self.assertResultSuccess(result)
 
         result = self.run_cli(cmd_env, show_cmd)
+        self.assertResultSuccess(result)
         self.assertIn(f"{param1},{value1}", result.out())
 
         # see there are not dynamic parameters
         result = self.run_cli(cmd_env, show_dyn)
+        self.assertResultSuccess(result)
         self.assertIn("No dynamic parameters found in project", result.out())
 
         ######################
@@ -155,6 +157,7 @@ class TestIntegrations(TestCase):
 
         # see the dynamic parameter
         result = self.run_cli(cmd_env, show_dyn)
+        self.assertResultSuccess(result)
         expected = f"{param1},{fqn},{jmes}"
         self.assertIn(expected, result.out())
 
@@ -165,10 +168,12 @@ class TestIntegrations(TestCase):
         self.assertResultSuccess(result)
 
         result = self.run_cli(cmd_env, show_cmd)
+        self.assertResultSuccess(result)
         self.assertIn(f"{param1},{value2}", result.out())
 
         # see there are not dynamic parameters
         result = self.run_cli(cmd_env, show_dyn)
+        self.assertResultSuccess(result)
         self.assertIn("No dynamic parameters found in project", result.out())
 
         ######################
@@ -186,11 +191,13 @@ class TestIntegrations(TestCase):
 
         # see the dynamic parameter
         result = self.run_cli(cmd_env, show_dyn)
+        self.assertResultSuccess(result)
         expected = f"{param2},{fqn},{jmes}"
         self.assertIn(expected, result.out())
 
         # param get shows the dynamic parameters
         result = self.run_cli(cmd_env, param_cmd + f"get '{param2}' --details")
+        self.assertResultSuccess(result)
         self.assertIn(f"FQN: {fqn}", result.out())
         self.assertIn(f"JMES-path: {jmes}", result.out())
 
@@ -239,8 +246,10 @@ PARAMETER_2 = PARAM2
         # make sure everything exists in the "correct" state
         proj_cmd = base_cmd + f"--project {proj_name} "
         result = self.run_cli(cmd_env, proj_cmd + "projects ls")
+        self.assertResultSuccess(result)
         self.assertIn(proj_name, result.out())
         result = self.run_cli(cmd_env, proj_cmd + "templates ls")
+        self.assertResultSuccess(result)
         self.assertIn(temp_name, result.out())
 
         missing_fqn2 = f"The dynamic content of `{fqn2}` is not present"
@@ -298,6 +307,7 @@ PARAMETER_2 = PARAM2
         write_file(filename, result.out())
 
         # make sure the template has the references
+        self.assertResultSuccess(result)
         self.assertIn(param1, result.out())
         self.assertIn(param2, result.out())
         self.assertIn(param3, result.out())

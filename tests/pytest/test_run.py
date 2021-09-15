@@ -138,10 +138,12 @@ class TestRun(TestCase):
 
         # run with the time specified
         result = self.run_cli(cmd_env, run_cmd + f"--as-of {orig_modified} -- {printenv}")
+        self.assertResultSuccess(result)
         self.assertIn(first_value, result.out())
         self.assertNotIn(second_value, result.out())
 
         # run again without the time specified, and see the first value
         result = self.run_cli(cmd_env, run_cmd + f"-- {printenv}")
+        self.assertResultSuccess(result)
         self.assertNotIn(first_value, result.out())
         self.assertIn(second_value, result.out())

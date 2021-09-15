@@ -37,6 +37,7 @@ class TestTemplates(TestCase):
         self.assertIn(f"Created template '{temp_name}'", result.out())
 
         result = self.run_cli(cmd_env, sub_cmd + "ls -v -f csv")
+        self.assertResultSuccess(result)
         self.assertIn(f"{temp_name},{orig_desc}", result.out())
 
         # check that we get back the "evaluated" text
@@ -63,6 +64,7 @@ class TestTemplates(TestCase):
         self.assertResultSuccess(result)
         self.assertIn(f"Updated template '{temp_name}'", result.out())
         result = self.run_cli(cmd_env, sub_cmd + "ls")
+        self.assertResultSuccess(result)
         self.assertIn(temp_name, result.out())
         self.assertNotIn(orig_name, result.out())
 
@@ -79,10 +81,12 @@ class TestTemplates(TestCase):
 
         # check the new body text
         result = self.run_cli(cmd_env, sub_cmd + f"get {temp_name}")
+        self.assertResultSuccess(result)
         self.assertEqual(body, result.out())
 
         # nothing variable, but quick test of API
         result = self.run_cli(cmd_env, sub_cmd + f"get {temp_name} --raw")
+        self.assertResultSuccess(result)
         self.assertEqual(body, result.out())
 
         # nothing to update
@@ -173,9 +177,11 @@ ANOTHER_PARAM=PARAM2
         # now, display the secrets
         eval_a = eval_a.replace(REDACTED, f"{value2a}")
         result = self.run_cli(cmd_env, sub_cmd + f"get {temp_name} -s")
+        self.assertResultSuccess(result)
         self.assertIn(eval_a, result.out())
 
         result = self.run_cli(cmd_env, sub_cmd + f"preview {filename} --secrets")
+        self.assertResultSuccess(result)
         self.assertIn(eval_a, result.out())
 
         ##########################
@@ -199,9 +205,11 @@ ANOTHER_PARAM=PARAM2
         # now, display te secrets
         eval_b = eval_b.replace(REDACTED, f"{value2b}")
         result = self.run_cli(cmd_env, sub_cmd + f"get {temp_name} -s")
+        self.assertResultSuccess(result)
         self.assertIn(eval_b, result.out())
 
         result = self.run_cli(cmd_env, sub_cmd + f"preview {filename} --secrets")
+        self.assertResultSuccess(result)
         self.assertIn(eval_b, result.out())
 
         # cleanup
@@ -249,10 +257,12 @@ this.is.a.template.value=PARAM1
         # check the current evaluation
         preview_cmd = base_cmd + f"--project {proj_name} template preview '{filename}' "
         result = self.run_cli(cmd_env, preview_cmd)
+        self.assertResultSuccess(result)
         self.assertEqual(result.out(), body.replace("PARAM1", value_b + "\n"))
 
         # check the earlier evaluation
         result = self.run_cli(cmd_env, preview_cmd + f"--as-of '{modified_at}'")
+        self.assertResultSuccess(result)
         self.assertEqual(result.out(), body.replace("PARAM1", value_a + "\n"))
 
         # cleanup
