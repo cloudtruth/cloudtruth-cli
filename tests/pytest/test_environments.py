@@ -126,6 +126,7 @@ class TestEnvironments(TestCase):
 
         # specifying the environment gets a filtered set
         result = self.run_cli(cmd_env, base_cmd + f"env tree '{env_name2}'")
+        self.assertResultSuccess(result)
         expected = f"{env_name2}\n  {env_name4}\n  {env_name3}\n"
         self.assertEqual(expected, result.out())
 
@@ -155,6 +156,7 @@ class TestEnvironments(TestCase):
 
         # make sure description was updated, yet parent remains
         result = self.run_cli(cmd_env, base_cmd + "env ls -v -f csv")
+        self.assertResultSuccess(result)
         self.assertIn(f"{env_name4},{env_name2},{new_desc}", result.out())
 
         # cleanup -- need to unwind in order

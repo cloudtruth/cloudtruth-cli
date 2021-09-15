@@ -40,10 +40,12 @@ class TestTopLevelArgs(TestCase):
         # check defaults are used
         if def_proj:
             result = self.run_cli(cmd_env, base_cmd + printenv)
+            self.assertResultSuccess(result)
             self.assertIn(f"{CT_PROJ}={def_proj}", result.out())
             self.assertIn(f"{CT_ENV}={def_env}", result.out())
 
             result = self.run_cli(cmd_env, base_cmd + cfg_cmd)
+            self.assertResultSuccess(result)
             self.assertIn(f"Project,{def_proj},{SRC_PROFILE} ({prof_name})", result.out())
             self.assertIn(f"Environment,{def_env},{SRC_DEFAULT}", result.out())
 
@@ -53,6 +55,7 @@ class TestTopLevelArgs(TestCase):
 
         # see items picked up from environment
         result = self.run_cli(cmd_env, base_cmd + printenv)
+        self.assertResultSuccess(result)
         self.assertIn(f"{CT_PROJ}={proj1}", result.out())
         self.assertIn(f"{CT_ENV}={env1}", result.out())
 
@@ -63,6 +66,7 @@ class TestTopLevelArgs(TestCase):
         cmd_env[CT_TIMEOUT] = timeout
         cmd_env[CT_URL] = url
         result = self.run_cli(cmd_env, base_cmd + cfg_cmd + " -x")
+        self.assertResultSuccess(result)
         self.assertIn(f"Project,{proj1},{SRC_ENV}", result.out())
         self.assertIn(f"Environment,{env1},{SRC_ENV}", result.out())
         self.assertIn(f"Server URL,{url},{SRC_ENV}", result.out())
@@ -76,19 +80,23 @@ class TestTopLevelArgs(TestCase):
 
         # see that CLI arguments override the environment
         result = self.run_cli(cmd_env, base_cmd + f"--project '{proj2}' --env '{env2}'" + printenv)
+        self.assertResultSuccess(result)
         self.assertIn(f"{CT_PROJ}={proj2}", result.out())
         self.assertIn(f"{CT_ENV}={env2}", result.out())
 
         result = self.run_cli(cmd_env, base_cmd + f"--project '{proj2}' --env '{env2}'" + cfg_cmd + " -x")
+        self.assertResultSuccess(result)
         self.assertIn(f"Project,{proj2},{SRC_ARG}", result.out())
         self.assertIn(f"Environment,{env2},{SRC_ARG}", result.out())
 
         # mix and match
         result = self.run_cli(cmd_env, base_cmd + f"--project '{proj2}'" + printenv)
+        self.assertResultSuccess(result)
         self.assertIn(f"{CT_PROJ}={proj2}", result.out())
         self.assertIn(f"{CT_ENV}={env1}", result.out())
 
         result = self.run_cli(cmd_env, base_cmd + f"--env '{env2}'" + printenv)
+        self.assertResultSuccess(result)
         self.assertIn(f"{CT_PROJ}={proj1}", result.out())
         self.assertIn(f"{CT_ENV}={env2}", result.out())
 
@@ -136,8 +144,10 @@ class TestTopLevelArgs(TestCase):
 
         # ensure not present
         result = self.run_cli(cmd_env, base_cmd + "proj ls")
+        self.assertResultSuccess(result)
         self.assertNotIn(proj_name, result.out())
         result = self.run_cli(cmd_env, base_cmd + "env ls")
+        self.assertResultSuccess(result)
         self.assertNotIn(env_name, result.out())
 
         ##############
