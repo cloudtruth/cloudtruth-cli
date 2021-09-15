@@ -80,6 +80,7 @@ class TestTiming(TestCase):
 
         for index in range(num_values):
             result = self.set_param(cmd_env, proj_name, self._param_name(index), "abc123", secret=secret)
+            self.assertResultSuccess(result)
             create_timing = parse_timing(create_timing, result.stdout)
             create_total.append(delta_to_msecs(result.timediff))
 
