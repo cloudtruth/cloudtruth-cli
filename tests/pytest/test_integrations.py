@@ -297,9 +297,9 @@ PARAMETER_2 = PARAM2
 
         # export will fail, and should provide details about what failed
         result = self.run_cli(cmd_env, proj_cmd + "param export docker")
+        self.assertResultError(result, "422 Unprocessable Entity")
         # TODO: once `param export` improves feedback, use it
         # self.assertError(result, missing_fqn2)
-        self.assertResultError(result, "422 Unprocessable Entity")
 
         ##########################
         # template checks
@@ -310,10 +310,9 @@ PARAMETER_2 = PARAM2
 
         # copy current body into a file
         result = self.run_cli(cmd_env, proj_cmd + f"template get '{temp_name}' --raw")
-        write_file(filename, result.out())
-
-        # make sure the template has the references
         self.assertResultSuccess(result)
+        # make sure the template has the references
+        write_file(filename, result.out())
         self.assertIn(param1, result.out())
         self.assertIn(param2, result.out())
         self.assertIn(param3, result.out())

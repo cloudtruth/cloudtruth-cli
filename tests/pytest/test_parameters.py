@@ -189,8 +189,8 @@ my_param,cRaZy value,default,string,0,static,false,this is just a test descripti
         key1 = "my_param"
         value1 = "super-SENSITIVE-vAluE"
         desc1 = "my secret value"
-        result = self.run_cli(cmd_env,
-                              sub_cmd + f"set {key1} --secret true --value '{value1}' --desc '{desc1}'")
+        create_cmd = sub_cmd + f"set {key1} --secret true --value '{value1}' --desc '{desc1}'"
+        result = self.run_cli(cmd_env, create_cmd)
         self.assertResultSuccess(result)
 
         result = self.run_cli(cmd_env, sub_cmd + "ls -v")
@@ -295,6 +295,7 @@ my_param,super-SENSITIVE-vAluE,default,string,0,static,true,my secret value
         self.assertIn(desc2, result.out())
 
         result = self.run_cli(cmd_env, sub_cmd + f"get {key1}")
+        self.assertResultSuccess(result)
         self.assertIn(value2, result.out())
 
         ########
@@ -1518,6 +1519,7 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
 
         env_cmd += f"--as-of {modified_at}"
         result = self.run_cli(cmd_env, env_cmd)
+        self.assertResultSuccess(result)
         data = eval(result.out())
         for item in data["parameter"]:
             if item.get("Environment") == env_a:
@@ -1801,6 +1803,7 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
         self.assertIn(f"{param1},{value},{env_name},string,0,static,false", result.out())
 
         result = self.run_cli(cmd_env, rules_cmd)
+        self.assertResultSuccess(result)
         self.assertIn("No parameter rules found in project", result.out())
 
         result = self.run_cli(cmd_env, set_cmd + "--no-min-len")
@@ -1971,6 +1974,7 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
         self.assertIn(f"{param1},{value},{env_name},integer,0,static,false", result.out())
 
         result = self.run_cli(cmd_env, rules_cmd)
+        self.assertResultSuccess(result)
         self.assertIn("No parameter rules found in project", result.out())
 
         # TODO: failed create/update with values in place
@@ -1992,9 +1996,11 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
         self.assertIn("min-len rules not valid for integer parameters", result.err())
 
         result = self.run_cli(cmd_env, list_cmd)
+        self.assertResultSuccess(result)
         self.assertIn(f"{param1},-,,integer,0,static,false", result.out())
 
         result = self.run_cli(cmd_env, rules_cmd)
+        self.assertResultSuccess(result)
         self.assertIn("No parameter rules found in project", result.out())
 
         #################
@@ -2058,6 +2064,7 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
         self.assertIn("min-len rules not valid for bool parameters", result.err())
 
         result = self.run_cli(cmd_env, list_cmd)
+        self.assertResultSuccess(result)
         self.assertIn(f"{param1},-,,bool,0,static,false", result.out())
 
         result = self.run_cli(cmd_env, rules_cmd)

@@ -51,6 +51,7 @@ class TestTemplates(TestCase):
         self.assertResultSuccess(result)
         self.assertIn(f"Updated template '{temp_name}'", result.out())
         result = self.run_cli(cmd_env, sub_cmd + "ls --values -f csv")
+        self.assertResultSuccess(result)
         self.assertIn(f"{temp_name},{new_desc}", result.out())
 
         # idempotent - do it again

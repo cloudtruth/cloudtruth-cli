@@ -242,8 +242,8 @@ class TestCase(unittest.TestCase):
         return None
 
     def create_project(self, cmd_env, proj_name: str) -> Result:
-        result = self.run_cli(cmd_env,
-                              self._base_cmd + f"proj set '{proj_name}' -d '{AUTO_DESCRIPTION}'")
+        proj_cmd = self._base_cmd + f"proj set '{proj_name}' -d '{AUTO_DESCRIPTION}'"
+        result = self.run_cli(cmd_env, proj_cmd)
         self.assertResultSuccess(result)
         return result
 
@@ -358,4 +358,5 @@ class TestCase(unittest.TestCase):
             cmd += f"--as-of '{time}' "
 
         result = self.run_cli(cmd_env, cmd)
+        self.assertResultSuccess(result)
         self.assertIn(value, result.out())
