@@ -214,6 +214,7 @@ pub fn build_cli() -> App<'static, 'static> {
                     SubCommand::with_name(LIST_SUBCMD)
                         .visible_aliases(LIST_ALIASES)
                         .about("List CloudTruth integrations")
+                        .arg(show_times_arg())
                         .arg(values_flag().help("Display integration information/values"))
                         .arg(table_format_options().help("Format for integration values data")),
                 ])
