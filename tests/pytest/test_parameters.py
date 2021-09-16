@@ -969,18 +969,23 @@ SECOND_SECRET='sensitive value with spaces'
         # verify `--external` flag causes specialized warning
         sub_cmd = base_cmd + f" --project {proj_name} parameters "
         empty_msg = f"No external parameters found in project {proj_name}"
-        result = self.run_cli(cmd_env, sub_cmd + "list --dynamic")
+        result = self.run_cli(cmd_env, sub_cmd + "list --external")
         self.assertResultSuccess(result)
         self.assertIn(empty_msg, result.out())
 
-        result = self.run_cli(cmd_env, sub_cmd + "list --dynamic -v")
+        result = self.run_cli(cmd_env, sub_cmd + "list --external -v")
         self.assertResultSuccess(result)
         self.assertIn(empty_msg, result.out())
 
-        result = self.run_cli(cmd_env, sub_cmd + "list --dynamic -v -s")
+        result = self.run_cli(cmd_env, sub_cmd + "list --external -v -s")
         self.assertResultSuccess(result)
         self.assertIn(empty_msg, result.out())
 
+        result = self.run_cli(cmd_env, sub_cmd + "list --external -v -s --show-times")
+        self.assertResultSuccess(result)
+        self.assertIn(empty_msg, result.out())
+
+        # test backward compatibility (--dynamic flag still works)
         result = self.run_cli(cmd_env, sub_cmd + "list --dynamic -v -s --show-times")
         self.assertResultSuccess(result)
         self.assertIn(empty_msg, result.out())

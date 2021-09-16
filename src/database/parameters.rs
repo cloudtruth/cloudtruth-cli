@@ -98,12 +98,12 @@ impl ParameterDetails {
         self.val_id = env_value.id.clone();
         self.value = env_value.value.clone().unwrap_or_default();
         self.env_url = env_value.environment.clone();
-        self.external = env_value.dynamic.unwrap_or(false);
-        self.fqn = env_value.dynamic_fqn.clone().unwrap_or_default();
-        self.jmes_path = env_value.dynamic_filter.clone().unwrap_or_default();
+        self.external = env_value.external.unwrap_or(false);
+        self.fqn = env_value.external_fqn.clone().unwrap_or_default();
+        self.jmes_path = env_value.external_filter.clone().unwrap_or_default();
         self.created_at = env_value.created_at.clone();
         self.modified_at = env_value.modified_at.clone();
-        self.error = env_value.dynamic_error.clone().unwrap_or_default();
+        self.error = env_value.external_error.clone().unwrap_or_default();
     }
 
     /// Gets the first id matching the provided type
@@ -158,15 +158,15 @@ fn default_param_value() -> &'static Value {
         environment: "".to_owned(),
         environment_name: "".to_owned(),
         parameter: "".to_owned(),
-        dynamic: None,
-        dynamic_fqn: None,
-        dynamic_filter: None,
+        external: None,
+        external_fqn: None,
+        external_filter: None,
         secret: None,
-        static_value: None,
+        internal_value: None,
         value: Some(DEFAULT_VALUE.to_owned()),
         created_at: "".to_owned(),
         modified_at: "".to_owned(),
-        dynamic_error: None,
+        external_error: None,
         earliest_tag: None,
     })
 }
@@ -195,13 +195,13 @@ impl From<&Parameter> for ParameterDetails {
             value: env_value.value.clone().unwrap_or_default(),
             env_url: env_value.environment.clone(),
             env_name: env_value.environment_name.clone(),
-            external: env_value.dynamic.unwrap_or(false),
-            fqn: env_value.dynamic_fqn.clone().unwrap_or_default(),
-            jmes_path: env_value.dynamic_filter.clone().unwrap_or_default(),
+            external: env_value.external.unwrap_or(false),
+            fqn: env_value.external_fqn.clone().unwrap_or_default(),
+            jmes_path: env_value.external_filter.clone().unwrap_or_default(),
             created_at: env_value.created_at.clone(),
             modified_at: env_value.modified_at.clone(),
 
-            error: env_value.dynamic_error.clone().unwrap_or_default(),
+            error: env_value.external_error.clone().unwrap_or_default(),
         }
     }
 }
@@ -378,7 +378,7 @@ fn extract_from_json(value: &serde_json::Value) -> String {
 fn extract_error(content: &str) -> ParameterError {
     let json_result: Result<serde_json::Value, serde_json::Error> = serde_json::from_str(content);
     if let Ok(value) = json_result {
-        if let Some(item) = value.get("static_value") {
+        if let Some(item) = value.get("internal_value") {
             return ParameterError::RuleViolation(extract_from_json(item));
         }
         if let Some(item) = value.get("__all__") {
@@ -760,13 +760,13 @@ impl Parameters {
         fqn: Option<&str>,
         jmes_path: Option<&str>,
     ) -> Result<String, ParameterError> {
-        let dynamic = value.is_none() || fqn.is_some();
+        let external = value.is_none() || fqn.is_some();
         let value_create = ValueCreate {
             environment: env_id.to_string(),
-            dynamic: Some(dynamic),
-            static_value: value.map(|v| v.to_string()),
-            dynamic_fqn: fqn.map(|v| v.to_string()),
-            dynamic_filter: jmes_path.map(|v| v.to_string()),
+            external: Some(external),
+            internal_value: value.map(|v| v.to_string()),
+            external_fqn: fqn.map(|v| v.to_string()),
+            external_filter: jmes_path.map(|v| v.to_string()),
         };
         let response = projects_parameters_values_create(
             rest_cfg,
@@ -798,7 +798,7 @@ impl Parameters {
         fqn: Option<&str>,
         jmes_path: Option<&str>,
     ) -> Result<String, ParameterError> {
-        let dynamic = fqn.is_some() || jmes_path.is_some();
+        let external = fqn.is_some() || jmes_path.is_some();
         let value_update = PatchedValue {
             url: None,
             id: None,
@@ -806,14 +806,14 @@ impl Parameters {
             environment_name: None,
             parameter: None,
             secret: None,
-            dynamic: Some(dynamic),
-            dynamic_fqn: fqn.map(String::from),
-            dynamic_filter: jmes_path.map(String::from),
-            static_value: value.map(String::from),
+            external: Some(external),
+            external_fqn: fqn.map(String::from),
+            external_filter: jmes_path.map(String::from),
+            internal_value: value.map(String::from),
             value: None,
             created_at: None,
             modified_at: None,
-            dynamic_error: None,
+            external_error: None,
             earliest_tag: None,
         };
         let response = projects_parameters_values_partial_update(

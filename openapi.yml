@@ -2019,8 +2019,8 @@ paths:
         description: |-
           Determine if the response is allowed to include a partial success.
 
-          A partial success can occur if one or more dynamic values cannot be retrieved, for example when an in-use integration is removed using the `leave` option, leaving the values untouched. When `true`, any error that occurs during dynamic value retrieval will be placed into a field named `dynamic_error` in the affected Value, and the `value` field will be empty.  When `false`, any such error will cause the entire request to fail.
-          Partial success allows clients to tolerate invalid dynamic values better.
+          A partial success can occur if one or more external values cannot be retrieved, for example when an in-use integration is removed using the `leave` option, leaving the values untouched. When `true`, any error that occurs during external value retrieval will be placed into a field named `external_error` in the affected Value, and the `value` field will be empty.  When `false`, any such error will cause the entire request to fail.
+          Partial success allows clients to tolerate invalid external values better.
       - in: path
         name: project_pk
         schema:
@@ -2366,6 +2366,13 @@ paths:
       summary: Retrieve values.
       parameters:
       - in: query
+        name: as_of
+        schema:
+          type: string
+          format: date-time
+        description: Specify a point in time to retrieve configuration from. Cannot
+          be specified with `tag`.
+      - in: query
         name: environment
         schema:
           type: string
@@ -2407,8 +2414,8 @@ paths:
         description: |-
           Determine if the response is allowed to include a partial success.
 
-          A partial success can occur if one or more dynamic values cannot be retrieved, for example when an in-use integration is removed using the `leave` option, leaving the values untouched. When `true`, any error that occurs during dynamic value retrieval will be placed into a field named `dynamic_error` in the affected Value, and the `value` field will be empty.  When `false`, any such error will cause the entire request to fail.
-          Partial success allows clients to tolerate invalid dynamic values better.
+          A partial success can occur if one or more external values cannot be retrieved, for example when an in-use integration is removed using the `leave` option, leaving the values untouched. When `true`, any error that occurs during external value retrieval will be placed into a field named `external_error` in the affected Value, and the `value` field will be empty.  When `false`, any such error will cause the entire request to fail.
+          Partial success allows clients to tolerate invalid external values better.
       - in: path
         name: project_pk
         schema:
@@ -2417,11 +2424,17 @@ paths:
         description: The project id.
         required: true
       - in: query
+        name: tag
+        schema:
+          type: string
+        description: Specify a tag to retrieve configuration from.  Cannot be specified
+          with `as_of`.
+      - in: query
         name: wrap
         schema:
           type: boolean
           default: false
-        description: 'For writes, indicates `static_value` is wrapped; for reads,
+        description: 'For writes, indicates `internal_value` is wrapped; for reads,
           indicates `value` is wrapped. For more information on secret wrapping, see
           the documentation. '
       tags:
@@ -2459,8 +2472,8 @@ paths:
         name: wrap
         schema:
           type: boolean
-        description: 'Indicates the `static_value` is a wrapped secret. For more information
-          on secret wrapping, see the documentation. '
+        description: 'Indicates the `internal_value` is a wrapped secret. For more
+          information on secret wrapping, see the documentation. '
       tags:
       - projects
       requestBody:
@@ -2491,6 +2504,13 @@ paths:
       description: Retrieve the value of a parameter in an environment.
       summary: Retrieve a value.
       parameters:
+      - in: query
+        name: as_of
+        schema:
+          type: string
+          format: date-time
+        description: Specify a point in time to retrieve configuration from. Cannot
+          be specified with `tag`.
       - in: path
         name: id
         schema:
@@ -2519,8 +2539,8 @@ paths:
         description: |-
           Determine if the response is allowed to include a partial success.
 
-          A partial success can occur if one or more dynamic values cannot be retrieved, for example when an in-use integration is removed using the `leave` option, leaving the values untouched. When `true`, any error that occurs during dynamic value retrieval will be placed into a field named `dynamic_error` in the affected Value, and the `value` field will be empty.  When `false`, any such error will cause the entire request to fail.
-          Partial success allows clients to tolerate invalid dynamic values better.
+          A partial success can occur if one or more external values cannot be retrieved, for example when an in-use integration is removed using the `leave` option, leaving the values untouched. When `true`, any error that occurs during external value retrieval will be placed into a field named `external_error` in the affected Value, and the `value` field will be empty.  When `false`, any such error will cause the entire request to fail.
+          Partial success allows clients to tolerate invalid external values better.
       - in: path
         name: project_pk
         schema:
@@ -2529,11 +2549,17 @@ paths:
         description: The project id.
         required: true
       - in: query
+        name: tag
+        schema:
+          type: string
+        description: Specify a tag to retrieve configuration from.  Cannot be specified
+          with `as_of`.
+      - in: query
         name: wrap
         schema:
           type: boolean
           default: false
-        description: 'For writes, indicates `static_value` is wrapped; for reads,
+        description: 'For writes, indicates `internal_value` is wrapped; for reads,
           indicates `value` is wrapped. For more information on secret wrapping, see
           the documentation. '
       tags:
@@ -2578,8 +2604,8 @@ paths:
         name: wrap
         schema:
           type: boolean
-        description: 'Indicates the `static_value` is a wrapped secret. For more information
-          on secret wrapping, see the documentation. '
+        description: 'Indicates the `internal_value` is a wrapped secret. For more
+          information on secret wrapping, see the documentation. '
       tags:
       - projects
       requestBody:
@@ -2633,8 +2659,8 @@ paths:
         name: wrap
         schema:
           type: boolean
-        description: 'Indicates the `static_value` is a wrapped secret. For more information
-          on secret wrapping, see the documentation. '
+        description: 'Indicates the `internal_value` is a wrapped secret. For more
+          information on secret wrapping, see the documentation. '
       tags:
       - projects
       requestBody:
@@ -2731,8 +2757,8 @@ paths:
         description: |-
           Determine if the response is allowed to include a partial success.
 
-          A partial success can occur if one or more dynamic values cannot be retrieved, for example when an in-use integration is removed using the `leave` option, leaving the values untouched. When `true`, any error that occurs during dynamic value retrieval will be placed into a field named `dynamic_error` in the affected Value, and the `value` field will be empty.  When `false`, any such error will cause the entire request to fail.
-          Partial success allows clients to tolerate invalid dynamic values better.
+          A partial success can occur if one or more external values cannot be retrieved, for example when an in-use integration is removed using the `leave` option, leaving the values untouched. When `true`, any error that occurs during external value retrieval will be placed into a field named `external_error` in the affected Value, and the `value` field will be empty.  When `false`, any such error will cause the entire request to fail.
+          Partial success allows clients to tolerate invalid external values better.
       - in: path
         name: project_pk
         schema:
@@ -2813,21 +2839,21 @@ paths:
                 $ref: '#/components/schemas/Parameter'
           description: ''
         '400':
-          description: While checking pre-conditions, a dynamic value was encountered
+          description: While checking pre-conditions, an external value was encountered
             that could not be resolved.
         '404':
           description: The given project id could not be found, or while checking
-            pre-conditions, a dynamic value was encountered that could not be resolved.
+            pre-conditions, an external value was encountered that could not be resolved.
         '415':
-          description: While checking pre-conditions, a dynamic value was encountered
+          description: While checking pre-conditions, an external value was encountered
             that has an invalid content type.
         '422':
           description: 'A pre-condition to modifying the `secret` setting of the parameter
-            failed, for example setting `secret: false` and having a dynamic value
+            failed, for example setting `secret: false` and having an external value
             that resolves to a value that is a secret.  In this case it would be unsafe
             to allow the `secret` setting to change.'
         '507':
-          description: While checking pre-conditions, a dynamic value was encountered
+          description: While checking pre-conditions, an external value was encountered
             that was too large to process.
     patch:
       operationId: projects_parameters_partial_update
@@ -2870,21 +2896,21 @@ paths:
                 $ref: '#/components/schemas/Parameter'
           description: ''
         '400':
-          description: While checking pre-conditions, a dynamic value was encountered
+          description: While checking pre-conditions, an external value was encountered
             that could not be resolved.
         '404':
           description: The given project id could not be found, or while checking
-            pre-conditions, a dynamic value was encountered that could not be resolved.
+            pre-conditions, an external value was encountered that could not be resolved.
         '415':
-          description: While checking pre-conditions, a dynamic value was encountered
+          description: While checking pre-conditions, an external value was encountered
             that has an invalid content type.
         '422':
           description: 'A pre-condition to modifying the `secret` setting of the parameter
-            failed, for example setting `secret: false` and having a dynamic value
+            failed, for example setting `secret: false` and having an external value
             that resolves to a value that is a secret.  In this case it would be unsafe
             to allow the `secret` setting to change.'
         '507':
-          description: While checking pre-conditions, a dynamic value was encountered
+          description: While checking pre-conditions, an external value was encountered
             that was too large to process.
     delete:
       operationId: projects_parameters_destroy
@@ -4231,6 +4257,7 @@ components:
       - Environment
       - Parameter
       - ParameterRule
+      - Project
       - Template
       - Value
       type: string
@@ -4644,10 +4671,10 @@ components:
         secret:
           type: boolean
           description: Indicates if this content is secret or not.  When a parameter
-            is considered to be a secret, any static values are stored in a dedicated
-            vault for your organization for maximum security.  Dynamic values are
+            is considered to be a secret, any internal values are stored in a dedicated
+            vault for your organization for maximum security.  External values are
             inspected on-demand to ensure they align with the parameter's secret setting
-            and if they do not, those dynamic values are not allowed to be used.
+            and if they do not, those external values are not allowed to be used.
         type:
           $ref: '#/components/schemas/ParameterTypeEnum'
         rules:
@@ -4719,10 +4746,10 @@ components:
         secret:
           type: boolean
           description: Indicates if this content is secret or not.  When a parameter
-            is considered to be a secret, any static values are stored in a dedicated
-            vault for your organization for maximum security.  Dynamic values are
+            is considered to be a secret, any internal values are stored in a dedicated
+            vault for your organization for maximum security.  External values are
             inspected on-demand to ensure they align with the parameter's secret setting
-            and if they do not, those dynamic values are not allowed to be used.
+            and if they do not, those external values are not allowed to be used.
         type:
           $ref: '#/components/schemas/ParameterTypeEnum'
       required:
@@ -5167,10 +5194,10 @@ components:
         secret:
           type: boolean
           description: Indicates if this content is secret or not.  When a parameter
-            is considered to be a secret, any static values are stored in a dedicated
-            vault for your organization for maximum security.  Dynamic values are
+            is considered to be a secret, any internal values are stored in a dedicated
+            vault for your organization for maximum security.  External values are
             inspected on-demand to ensure they align with the parameter's secret setting
-            and if they do not, those dynamic values are not allowed to be used.
+            and if they do not, those external values are not allowed to be used.
         type:
           $ref: '#/components/schemas/ParameterTypeEnum'
         rules:
@@ -5439,42 +5466,42 @@ components:
           format: uri
           readOnly: true
           description: The parameter this value is for.
-        dynamic:
+        external:
           type: boolean
-          description: A dynamic parameter leverages a CloudTruth integration to retrieve
-            content on-demand from an external source.  When this is `false` the value
-            is stored by CloudTruth.  When this is `true`, the `fqn` field must be
-            set.
-        dynamic_fqn:
+          description: An external parameter leverages a CloudTruth integration to
+            retrieve content on-demand from an external source.  When this is `false`
+            the value is stored by CloudTruth and considered to be _internal_.  When
+            this is `true`, the `external_fqn` field must be set.
+        external_fqn:
           type: string
           description: The FQN, or Fully-Qualified Name, is the path through the integration
             to get to the desired content.  This must be present and reference a valid
-            integration when the value is `dynamic`.
+            integration when the value is `external`.
           maxLength: 1024
-        dynamic_filter:
+        external_filter:
           type: string
-          description: If `dynamic`, the content returned by the integration can be
-            reduced by applying a JMESpath expression.  This is valid as long as the
-            content is structured and of a supported format.  We support JMESpath
-            expressions on `json`, `yaml`, and `dotenv` content.
+          description: If the value is `external`, the content returned by the integration
+            can be reduced by applying a JMESpath expression.  This is valid as long
+            as the content is structured and of a supported format.  JMESpath expressions
+            are supported on `json`, `yaml`, and `dotenv` content.
           maxLength: 1024
-        dynamic_error:
+        external_error:
           type: string
           nullable: true
           readOnly: true
-          description: If the value is dynamic, and an error occurs retrieving it,
+          description: If the value is external, and an error occurs retrieving it,
             the reason for the retrieval error will be placed into this field.  The
             query parameter `partial_success` can be used to control whether this
             condition causes an HTTP error response or not.
-        static_value:
+        internal_value:
           type: string
           nullable: true
-          description: This is the content to use when resolving the Value for a static
-            non-secret, or when storing a secret.  When storing a secret, this content
-            is stored in your organization's dedicated vault and this field is cleared.  This
-            field is required if the value is being created or updated and is not
-            dynamic.  This field cannot be specified when creating or updating a dynamic
-            value.
+          description: This is the content to use when resolving the Value for an
+            internal non-secret, or when storing a secret.  When storing a secret,
+            this content is stored in your organization's dedicated vault and this
+            field is cleared.  This field is required if the value is being created
+            or updated and is `internal`.  This field cannot be specified when creating
+            or updating an `external` value.
           maxLength: 16384
         value:
           type: string
@@ -5483,13 +5510,13 @@ components:
           description: |-
             This is the actual content of the Value for the given parameter in the given environment.  Depending on the settings in the Value, the following things occur to calculate the `value`:
 
-            For values that are not `dynamic` and parameters that are not `secret`, the system will use the content in `static_value` to satisfy the request.
+            For values that are not `external` and parameters that are not `secret`, the system will use the content in `internal_value` to satisfy the request.
 
-            For values that are not `dynamic` and parameters that are `secret`, the system will retrieve the content from your organization's dedicated vault.
+            For values that are not `external` and parameters that are `secret`, the system will retrieve the content from your organization's dedicated vault.
 
-            For values that are `dynamic`, the system will retrieve the content from the integration on-demand.  You can control the error handling behavior of the server through the `partial_success` query parameter.
+            For values that are `external`, the system will retrieve the content from the integration on-demand.  You can control the error handling behavior of the server through the `partial_success` query parameter.
 
-            If the content from the integration is `secret` and the parameter is not, an error will occur.  If a `dynamic_filter` is present then the content will have a JMESpath query applied, and that becomes the resulting value.
+            If the content from the integration is `secret` and the parameter is not, an error will occur.  If an `external_filter` is present then the content will have a JMESpath query applied, and that becomes the resulting value.
 
             If you request secret masking, no secret content will be included in the result and instead a series of asterisks will be used instead for the value.  If you request wrapping, the secret content will be wrapped in an envelope that is bound to your JWT token.  For more information about secret wrapping, see the docs.
 
@@ -5500,10 +5527,10 @@ components:
           readOnly: true
           description: Indicates the value content is a secret.  Normally this is
             `true` when the parameter is a secret, however it is possible for a parameter
-            to be a secret with a dynamic value that is not a secret.  It is not possible
-            to convert a parameter from a secret to a non-secret if any of the values
-            are dynamic and a secret.  Clients can check this condition by leveraging
-            this field.
+            to be a secret with a external value that is not a secret.  It is not
+            possible to convert a parameter from a secret to a non-secret if any of
+            the values are external and a secret.  Clients can check this condition
+            by leveraging this field.
         created_at:
           type: string
           format: date-time
@@ -6017,42 +6044,42 @@ components:
           format: uri
           readOnly: true
           description: The parameter this value is for.
-        dynamic:
+        external:
           type: boolean
-          description: A dynamic parameter leverages a CloudTruth integration to retrieve
-            content on-demand from an external source.  When this is `false` the value
-            is stored by CloudTruth.  When this is `true`, the `fqn` field must be
-            set.
-        dynamic_fqn:
+          description: An external parameter leverages a CloudTruth integration to
+            retrieve content on-demand from an external source.  When this is `false`
+            the value is stored by CloudTruth and considered to be _internal_.  When
+            this is `true`, the `external_fqn` field must be set.
+        external_fqn:
           type: string
           description: The FQN, or Fully-Qualified Name, is the path through the integration
             to get to the desired content.  This must be present and reference a valid
-            integration when the value is `dynamic`.
+            integration when the value is `external`.
           maxLength: 1024
-        dynamic_filter:
+        external_filter:
           type: string
-          description: If `dynamic`, the content returned by the integration can be
-            reduced by applying a JMESpath expression.  This is valid as long as the
-            content is structured and of a supported format.  We support JMESpath
-            expressions on `json`, `yaml`, and `dotenv` content.
+          description: If the value is `external`, the content returned by the integration
+            can be reduced by applying a JMESpath expression.  This is valid as long
+            as the content is structured and of a supported format.  JMESpath expressions
+            are supported on `json`, `yaml`, and `dotenv` content.
           maxLength: 1024
-        dynamic_error:
+        external_error:
           type: string
           nullable: true
           readOnly: true
-          description: If the value is dynamic, and an error occurs retrieving it,
+          description: If the value is external, and an error occurs retrieving it,
             the reason for the retrieval error will be placed into this field.  The
             query parameter `partial_success` can be used to control whether this
             condition causes an HTTP error response or not.
-        static_value:
+        internal_value:
           type: string
           nullable: true
-          description: This is the content to use when resolving the Value for a static
-            non-secret, or when storing a secret.  When storing a secret, this content
-            is stored in your organization's dedicated vault and this field is cleared.  This
-            field is required if the value is being created or updated and is not
-            dynamic.  This field cannot be specified when creating or updating a dynamic
-            value.
+          description: This is the content to use when resolving the Value for an
+            internal non-secret, or when storing a secret.  When storing a secret,
+            this content is stored in your organization's dedicated vault and this
+            field is cleared.  This field is required if the value is being created
+            or updated and is `internal`.  This field cannot be specified when creating
+            or updating an `external` value.
           maxLength: 16384
         value:
           type: string
@@ -6061,13 +6088,13 @@ components:
           description: |-
             This is the actual content of the Value for the given parameter in the given environment.  Depending on the settings in the Value, the following things occur to calculate the `value`:
 
-            For values that are not `dynamic` and parameters that are not `secret`, the system will use the content in `static_value` to satisfy the request.
+            For values that are not `external` and parameters that are not `secret`, the system will use the content in `internal_value` to satisfy the request.
 
-            For values that are not `dynamic` and parameters that are `secret`, the system will retrieve the content from your organization's dedicated vault.
+            For values that are not `external` and parameters that are `secret`, the system will retrieve the content from your organization's dedicated vault.
 
-            For values that are `dynamic`, the system will retrieve the content from the integration on-demand.  You can control the error handling behavior of the server through the `partial_success` query parameter.
+            For values that are `external`, the system will retrieve the content from the integration on-demand.  You can control the error handling behavior of the server through the `partial_success` query parameter.
 
-            If the content from the integration is `secret` and the parameter is not, an error will occur.  If a `dynamic_filter` is present then the content will have a JMESpath query applied, and that becomes the resulting value.
+            If the content from the integration is `secret` and the parameter is not, an error will occur.  If an `external_filter` is present then the content will have a JMESpath query applied, and that becomes the resulting value.
 
             If you request secret masking, no secret content will be included in the result and instead a series of asterisks will be used instead for the value.  If you request wrapping, the secret content will be wrapped in an envelope that is bound to your JWT token.  For more information about secret wrapping, see the docs.
 
@@ -6078,10 +6105,10 @@ components:
           readOnly: true
           description: Indicates the value content is a secret.  Normally this is
             `true` when the parameter is a secret, however it is possible for a parameter
-            to be a secret with a dynamic value that is not a secret.  It is not possible
-            to convert a parameter from a secret to a non-secret if any of the values
-            are dynamic and a secret.  Clients can check this condition by leveraging
-            this field.
+            to be a secret with a external value that is not a secret.  It is not
+            possible to convert a parameter from a secret to a non-secret if any of
+            the values are external and a secret.  Clients can check this condition
+            by leveraging this field.
         created_at:
           type: string
           format: date-time
@@ -6092,10 +6119,10 @@ components:
           readOnly: true
       required:
       - created_at
-      - dynamic_error
       - earliest_tag
       - environment
       - environment_name
+      - external_error
       - id
       - modified_at
       - parameter
@@ -6110,34 +6137,34 @@ components:
           type: string
           format: uri
           description: The environment this value is set in.
-        dynamic:
+        external:
           type: boolean
-          description: A dynamic parameter leverages a CloudTruth integration to retrieve
-            content on-demand from an external source.  When this is `false` the value
-            is stored by CloudTruth.  When this is `true`, the `fqn` field must be
-            set.
-        dynamic_fqn:
+          description: An external parameter leverages a CloudTruth integration to
+            retrieve content on-demand from an external source.  When this is `false`
+            the value is stored by CloudTruth and considered to be _internal_.  When
+            this is `true`, the `external_fqn` field must be set.
+        external_fqn:
           type: string
           description: The FQN, or Fully-Qualified Name, is the path through the integration
             to get to the desired content.  This must be present and reference a valid
-            integration when the value is `dynamic`.
+            integration when the value is `external`.
           maxLength: 1024
-        dynamic_filter:
+        external_filter:
           type: string
-          description: If `dynamic`, the content returned by the integration can be
-            reduced by applying a JMESpath expression.  This is valid as long as the
-            content is structured and of a supported format.  We support JMESpath
-            expressions on `json`, `yaml`, and `dotenv` content.
+          description: If the value is `external`, the content returned by the integration
+            can be reduced by applying a JMESpath expression.  This is valid as long
+            as the content is structured and of a supported format.  JMESpath expressions
+            are supported on `json`, `yaml`, and `dotenv` content.
           maxLength: 1024
-        static_value:
+        internal_value:
           type: string
           nullable: true
-          description: This is the content to use when resolving the Value for a static
-            non-secret, or when storing a secret.  When storing a secret, this content
-            is stored in your organization's dedicated vault and this field is cleared.  This
-            field is required if the value is being created or updated and is not
-            dynamic.  This field cannot be specified when creating or updating a dynamic
-            value.
+          description: This is the content to use when resolving the Value for an
+            internal non-secret, or when storing a secret.  When storing a secret,
+            this content is stored in your organization's dedicated vault and this
+            field is cleared.  This field is required if the value is being created
+            or updated and is `internal`.  This field cannot be specified when creating
+            or updating an `external` value.
           maxLength: 16384
       required:
       - environment

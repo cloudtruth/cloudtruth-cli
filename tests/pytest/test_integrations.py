@@ -258,7 +258,7 @@ PARAMETER_2 = PARAM2
         self.assertResultSuccess(result)
         self.assertIn(temp_name, result.out())
 
-        missing_fqn2 = f"The dynamic content of `{fqn2}` is not present"
+        missing_fqn2 = f"The external content of `{fqn2}` is not present"
         missing_param2 = f"{param2}: {missing_fqn2}"
 
         ##########################
