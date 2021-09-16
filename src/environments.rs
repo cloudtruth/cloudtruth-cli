@@ -1,5 +1,5 @@
 use crate::cli::{
-    CONFIRM_FLAG, DELETE_SUBCMD, FORMAT_OPT, LIST_SUBCMD, NAME_ARG, RENAME_OPT, SET_SUBCMD,
+    CONFIRM_FLAG, DELETE_SUBCMD, DESCRIPTION_OPT, FORMAT_OPT, LIST_SUBCMD, NAME_ARG, RENAME_OPT, SET_SUBCMD,
     SHOW_TIMES_FLAG, VALUES_FLAG,
 };
 use crate::config::DEFAULT_ENV_NAME;
@@ -82,7 +82,7 @@ fn proc_env_set(
 ) -> Result<()> {
     let env_name = subcmd_args.value_of(NAME_ARG).unwrap();
     let parent_name = subcmd_args.value_of("parent");
-    let description = subcmd_args.value_of("description");
+    let description = subcmd_args.value_of(DESCRIPTION_OPT);
     let rename = subcmd_args.value_of(RENAME_OPT);
     let details = environments.get_details_by_name(rest_cfg, env_name)?;
 

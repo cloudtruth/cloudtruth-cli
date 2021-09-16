@@ -1,6 +1,6 @@
 use crate::cli::{
-    AS_OF_ARG, CONFIRM_FLAG, DELETE_SUBCMD, EDIT_SUBCMD, FORMAT_OPT, GET_SUBCMD, HISTORY_SUBCMD,
-    LIST_SUBCMD, NAME_ARG, RENAME_OPT, SECRETS_FLAG, SET_SUBCMD, SHOW_TIMES_FLAG,
+    AS_OF_ARG, CONFIRM_FLAG, DELETE_SUBCMD, DESCRIPTION_OPT, EDIT_SUBCMD, FORMAT_OPT, GET_SUBCMD,
+    HISTORY_SUBCMD, LIST_SUBCMD, NAME_ARG, RENAME_OPT, SECRETS_FLAG, SET_SUBCMD, SHOW_TIMES_FLAG,
     TEMPLATE_FILE_OPT, VALUES_FLAG,
 };
 use crate::database::{HistoryAction, OpenApiConfig, TemplateHistory, Templates};
@@ -204,7 +204,7 @@ fn proc_template_set(
     let proj_name = resolved.project_display_name();
     let template_name = subcmd_args.value_of(NAME_ARG).unwrap();
     let rename = subcmd_args.value_of(RENAME_OPT);
-    let description = subcmd_args.value_of("description");
+    let description = subcmd_args.value_of(DESCRIPTION_OPT);
     let details = templates.get_details_by_name(rest_cfg, proj_id, template_name)?;
 
     if let Some(details) = details {
