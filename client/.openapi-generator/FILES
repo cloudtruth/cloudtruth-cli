@@ -42,6 +42,7 @@ docs/PaginatedParameterList.md
 docs/PaginatedParameterRuleList.md
 docs/PaginatedProjectList.md
 docs/PaginatedServiceAccountList.md
+docs/PaginatedTagList.md
 docs/PaginatedTemplateList.md
 docs/PaginatedUserList.md
 docs/PaginatedValueList.md
@@ -65,6 +66,7 @@ docs/PatchedParameter.md
 docs/PatchedParameterRule.md
 docs/PatchedProject.md
 docs/PatchedServiceAccount.md
+docs/PatchedTag.md
 docs/PatchedTemplate.md
 docs/PatchedValue.md
 docs/Project.md
@@ -75,6 +77,9 @@ docs/ServiceAccount.md
 docs/ServiceAccountCreateRequest.md
 docs/ServiceAccountCreateResponse.md
 docs/ServiceaccountsApi.md
+docs/Tag.md
+docs/TagCreate.md
+docs/TagReadUsage.md
 docs/Template.md
 docs/TemplateCreate.md
 docs/TemplateLookupError.md
@@ -135,6 +140,7 @@ src/models/paginated_parameter_list.rs
 src/models/paginated_parameter_rule_list.rs
 src/models/paginated_project_list.rs
 src/models/paginated_service_account_list.rs
+src/models/paginated_tag_list.rs
 src/models/paginated_template_list.rs
 src/models/paginated_user_list.rs
 src/models/paginated_value_list.rs
@@ -158,6 +164,7 @@ src/models/patched_parameter.rs
 src/models/patched_parameter_rule.rs
 src/models/patched_project.rs
 src/models/patched_service_account.rs
+src/models/patched_tag.rs
 src/models/patched_template.rs
 src/models/patched_value.rs
 src/models/project.rs
@@ -166,6 +173,9 @@ src/models/role_enum.rs
 src/models/service_account.rs
 src/models/service_account_create_request.rs
 src/models/service_account_create_response.rs
+src/models/tag.rs
+src/models/tag_create.rs
+src/models/tag_read_usage.rs
 src/models/template.rs
 src/models/template_create.rs
 src/models/template_lookup_error.rs

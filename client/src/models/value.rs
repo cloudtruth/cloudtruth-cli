@@ -23,6 +23,9 @@ pub struct Value {
     /// The environment name for this value.  This is a convenience to avoid another query against the server to resolve the environment url into a name.
     #[serde(rename = "environment_name")]
     pub environment_name: String,
+    /// The earliest tag name this value appears in (within the value's environment).
+    #[serde(rename = "earliest_tag")]
+    pub earliest_tag: Option<String>,
     /// The parameter this value is for.
     #[serde(rename = "parameter")]
     pub parameter: String,
@@ -60,6 +63,7 @@ impl Value {
         id: String,
         environment: String,
         environment_name: String,
+        earliest_tag: Option<String>,
         parameter: String,
         dynamic_error: Option<String>,
         value: Option<String>,
@@ -72,6 +76,7 @@ impl Value {
             id,
             environment,
             environment_name,
+            earliest_tag,
             parameter,
             dynamic: None,
             dynamic_fqn: None,

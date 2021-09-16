@@ -24,11 +24,11 @@ pub struct Organization {
     #[serde(rename = "subscription_expires_at")]
     pub subscription_expires_at: Option<String>,
     #[serde(rename = "subscription_id")]
-    pub subscription_id: String,
+    pub subscription_id: Option<String>,
     #[serde(rename = "subscription_plan_id")]
-    pub subscription_plan_id: String,
+    pub subscription_plan_id: Option<String>,
     #[serde(rename = "subscription_plan_name")]
-    pub subscription_plan_name: String,
+    pub subscription_plan_name: Option<String>,
     #[serde(rename = "created_at")]
     pub created_at: String,
     #[serde(rename = "modified_at")]
@@ -42,9 +42,9 @@ impl Organization {
         name: String,
         current: bool,
         subscription_expires_at: Option<String>,
-        subscription_id: String,
-        subscription_plan_id: String,
-        subscription_plan_name: String,
+        subscription_id: Option<String>,
+        subscription_plan_id: Option<String>,
+        subscription_plan_name: Option<String>,
         created_at: String,
         modified_at: String,
     ) -> Organization {

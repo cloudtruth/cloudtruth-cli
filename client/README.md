@@ -33,6 +33,12 @@ Class | Method | HTTP request | Description
 *EnvironmentsApi* | [**environments_list**](docs/EnvironmentsApi.md#environments_list) | **GET** /api/v1/environments/ | 
 *EnvironmentsApi* | [**environments_partial_update**](docs/EnvironmentsApi.md#environments_partial_update) | **PATCH** /api/v1/environments/{id}/ | 
 *EnvironmentsApi* | [**environments_retrieve**](docs/EnvironmentsApi.md#environments_retrieve) | **GET** /api/v1/environments/{id}/ | 
+*EnvironmentsApi* | [**environments_tags_create**](docs/EnvironmentsApi.md#environments_tags_create) | **POST** /api/v1/environments/{environment_pk}/tags/ | 
+*EnvironmentsApi* | [**environments_tags_destroy**](docs/EnvironmentsApi.md#environments_tags_destroy) | **DELETE** /api/v1/environments/{environment_pk}/tags/{id}/ | 
+*EnvironmentsApi* | [**environments_tags_list**](docs/EnvironmentsApi.md#environments_tags_list) | **GET** /api/v1/environments/{environment_pk}/tags/ | 
+*EnvironmentsApi* | [**environments_tags_partial_update**](docs/EnvironmentsApi.md#environments_tags_partial_update) | **PATCH** /api/v1/environments/{environment_pk}/tags/{id}/ | 
+*EnvironmentsApi* | [**environments_tags_retrieve**](docs/EnvironmentsApi.md#environments_tags_retrieve) | **GET** /api/v1/environments/{environment_pk}/tags/{id}/ | 
+*EnvironmentsApi* | [**environments_tags_update**](docs/EnvironmentsApi.md#environments_tags_update) | **PUT** /api/v1/environments/{environment_pk}/tags/{id}/ | 
 *EnvironmentsApi* | [**environments_update**](docs/EnvironmentsApi.md#environments_update) | **PUT** /api/v1/environments/{id}/ | 
 *IntegrationsApi* | [**integrations_aws_create**](docs/IntegrationsApi.md#integrations_aws_create) | **POST** /api/v1/integrations/aws/ | Establishes an AWS Integration.
 *IntegrationsApi* | [**integrations_aws_destroy**](docs/IntegrationsApi.md#integrations_aws_destroy) | **DELETE** /api/v1/integrations/aws/{id}/ | Delete an AWS integration.
@@ -147,6 +153,7 @@ Class | Method | HTTP request | Description
  - [PaginatedParameterRuleList](docs/PaginatedParameterRuleList.md)
  - [PaginatedProjectList](docs/PaginatedProjectList.md)
  - [PaginatedServiceAccountList](docs/PaginatedServiceAccountList.md)
+ - [PaginatedTagList](docs/PaginatedTagList.md)
  - [PaginatedTemplateList](docs/PaginatedTemplateList.md)
  - [PaginatedUserList](docs/PaginatedUserList.md)
  - [PaginatedValueList](docs/PaginatedValueList.md)
@@ -170,6 +177,7 @@ Class | Method | HTTP request | Description
  - [PatchedParameterRule](docs/PatchedParameterRule.md)
  - [PatchedProject](docs/PatchedProject.md)
  - [PatchedServiceAccount](docs/PatchedServiceAccount.md)
+ - [PatchedTag](docs/PatchedTag.md)
  - [PatchedTemplate](docs/PatchedTemplate.md)
  - [PatchedValue](docs/PatchedValue.md)
  - [Project](docs/Project.md)
@@ -178,6 +186,9 @@ Class | Method | HTTP request | Description
  - [ServiceAccount](docs/ServiceAccount.md)
  - [ServiceAccountCreateRequest](docs/ServiceAccountCreateRequest.md)
  - [ServiceAccountCreateResponse](docs/ServiceAccountCreateResponse.md)
+ - [Tag](docs/Tag.md)
+ - [TagCreate](docs/TagCreate.md)
+ - [TagReadUsage](docs/TagReadUsage.md)
  - [Template](docs/Template.md)
  - [TemplateCreate](docs/TemplateCreate.md)
  - [TemplateLookupError](docs/TemplateLookupError.md)

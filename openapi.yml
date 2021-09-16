@@ -314,6 +314,268 @@ paths:
               schema:
                 $ref: '#/components/schemas/Environment'
           description: ''
+  /api/v1/environments/{environment_pk}/tags/:
+    get:
+      operationId: environments_tags_list
+      description: |-
+        Tags allow you to name stable points in time for your configuration.
+
+        Any query API that accepts an `as_of` option will also accept a `tag` option,
+        however they are mutually exclusive.
+      parameters:
+      - in: query
+        name: description__icontains
+        schema:
+          type: string
+      - in: path
+        name: environment_pk
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: query
+        name: name
+        schema:
+          type: string
+      - in: query
+        name: name__icontains
+        schema:
+          type: string
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: timestamp
+        schema:
+          type: string
+          format: date-time
+      - in: query
+        name: timestamp__gte
+        schema:
+          type: string
+          format: date-time
+      - in: query
+        name: timestamp__lte
+        schema:
+          type: string
+          format: date-time
+      tags:
+      - environments
+      security:
+      - JWTAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedTagList'
+          description: ''
+    post:
+      operationId: environments_tags_create
+      description: |-
+        Tags allow you to name stable points in time for your configuration.
+
+        Any query API that accepts an `as_of` option will also accept a `tag` option,
+        however they are mutually exclusive.
+      parameters:
+      - in: path
+        name: environment_pk
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - environments
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TagCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TagCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TagCreate'
+        required: true
+      security:
+      - JWTAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tag'
+          description: ''
+  /api/v1/environments/{environment_pk}/tags/{id}/:
+    get:
+      operationId: environments_tags_retrieve
+      description: |-
+        Tags allow you to name stable points in time for your configuration.
+
+        Any query API that accepts an `as_of` option will also accept a `tag` option,
+        however they are mutually exclusive.
+      parameters:
+      - in: path
+        name: environment_pk
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+          description: A unique identifier for the tag.
+        required: true
+      tags:
+      - environments
+      security:
+      - JWTAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tag'
+          description: ''
+    put:
+      operationId: environments_tags_update
+      description: |-
+        Tags allow you to name stable points in time for your configuration.
+
+        Any query API that accepts an `as_of` option will also accept a `tag` option,
+        however they are mutually exclusive.
+      parameters:
+      - in: path
+        name: environment_pk
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+          description: A unique identifier for the tag.
+        required: true
+      tags:
+      - environments
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Tag'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Tag'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Tag'
+        required: true
+      security:
+      - JWTAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tag'
+          description: ''
+    patch:
+      operationId: environments_tags_partial_update
+      description: |-
+        Tags allow you to name stable points in time for your configuration.
+
+        Any query API that accepts an `as_of` option will also accept a `tag` option,
+        however they are mutually exclusive.
+      parameters:
+      - in: path
+        name: environment_pk
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+          description: A unique identifier for the tag.
+        required: true
+      tags:
+      - environments
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedTag'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedTag'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedTag'
+      security:
+      - JWTAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tag'
+          description: ''
+    delete:
+      operationId: environments_tags_destroy
+      description: |-
+        Tags allow you to name stable points in time for your configuration.
+
+        Any query API that accepts an `as_of` option will also accept a `tag` option,
+        however they are mutually exclusive.
+      parameters:
+      - in: path
+        name: environment_pk
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+          description: A unique identifier for the tag.
+        required: true
+      tags:
+      - environments
+      security:
+      - JWTAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '204':
+          description: No response body
   /api/v1/environments/{id}/:
     get:
       operationId: environments_retrieve
@@ -1636,7 +1898,8 @@ paths:
         schema:
           type: string
           format: date-time
-        description: Specify a point in time to retrieve configuration from.
+        description: Specify a point in time to retrieve configuration from. Cannot
+          be specified with `tag`.
       - in: query
         name: contains
         schema:
@@ -1684,6 +1947,12 @@ paths:
         description: Only include parameters with names that start with the provided
           string.
       - in: query
+        name: tag
+        schema:
+          type: string
+        description: Specify a tag to retrieve configuration from.  Cannot be specified
+          with `as_of`.
+      - in: query
         name: wrap
         schema:
           type: boolean
@@ -1712,7 +1981,8 @@ paths:
         schema:
           type: string
           format: date-time
-        description: Specify a point in time to retrieve configuration from.
+        description: Specify a point in time to retrieve configuration from. Cannot
+          be specified with `tag`.
       - in: query
         name: environment
         schema:
@@ -1757,6 +2027,12 @@ paths:
           type: string
           format: uuid
         required: true
+      - in: query
+        name: tag
+        schema:
+          type: string
+        description: Specify a tag to retrieve configuration from.  Cannot be specified
+          with `as_of`.
       - in: query
         name: values
         schema:
@@ -2093,11 +2369,11 @@ paths:
         name: environment
         schema:
           type: string
-        description: ID of the environment to limit the result to.  If this is not
-          specified then the result will contain a value for any environment in which
-          it is set.  You cannot use this option to retrieve the _effective_ value
-          of a parameter in an environment for which is is not explicitly set.  To
-          see _effective_ values use the Parameters API (see the `values` field).
+        description: Name or id of the environment to limit the result to. If this
+          is not specified then the result will contain a value for any environment
+          in which it is set. You cannot use this option to retrieve the _effective_
+          value of a parameter in an environment for which is is not explicitly set.
+          To see _effective_ values use the Parameters API (see the `values` field).
       - in: query
         name: mask_secrets
         schema:
@@ -2426,7 +2702,8 @@ paths:
         schema:
           type: string
           format: date-time
-        description: Specify a point in time to retrieve configuration from.
+        description: Specify a point in time to retrieve configuration from. Cannot
+          be specified with `tag`.
       - in: query
         name: environment
         schema:
@@ -2462,6 +2739,12 @@ paths:
           type: string
           format: uuid
         required: true
+      - in: query
+        name: tag
+        schema:
+          type: string
+        description: Specify a tag to retrieve configuration from.  Cannot be specified
+          with `as_of`.
       - in: query
         name: values
         schema:
@@ -2642,7 +2925,8 @@ paths:
         schema:
           type: string
           format: date-time
-        description: Specify a point in time to retrieve configuration from.
+        description: Specify a point in time to retrieve configuration from. Cannot
+          be specified with `tag`.
       - in: path
         name: id
         schema:
@@ -2656,6 +2940,12 @@ paths:
           type: string
           format: uuid
         required: true
+      - in: query
+        name: tag
+        schema:
+          type: string
+        description: Specify a tag to retrieve configuration from.  Cannot be specified
+          with `as_of`.
       tags:
       - projects
       security:
@@ -2682,13 +2972,20 @@ paths:
         schema:
           type: string
           format: date-time
-        description: Specify a point in time to retrieve configuration from.
+        description: Specify a point in time to retrieve configuration from. Cannot
+          be specified with `tag`.
       - in: path
         name: project_pk
         schema:
           type: string
           format: uuid
         required: true
+      - in: query
+        name: tag
+        schema:
+          type: string
+        description: Specify a tag to retrieve configuration from.  Cannot be specified
+          with `as_of`.
       tags:
       - projects
       security:
@@ -2712,7 +3009,8 @@ paths:
         schema:
           type: string
           format: date-time
-        description: Specify a point in time to retrieve configuration from.
+        description: Specify a point in time to retrieve configuration from. Cannot
+          be specified with `tag`.
       - in: query
         name: environment
         schema:
@@ -2731,6 +3029,12 @@ paths:
           type: string
           format: uuid
         required: true
+      - in: query
+        name: tag
+        schema:
+          type: string
+        description: Specify a tag to retrieve configuration from.  Cannot be specified
+          with `as_of`.
       tags:
       - projects
       requestBody:
@@ -3021,7 +3325,8 @@ paths:
         schema:
           type: string
           format: date-time
-        description: Specify a point in time to retrieve configuration from.
+        description: Specify a point in time to retrieve configuration from. Cannot
+          be specified with `tag`.
       - in: path
         name: id
         schema:
@@ -3035,6 +3340,12 @@ paths:
           type: string
           format: uuid
         required: true
+      - in: query
+        name: tag
+        schema:
+          type: string
+        description: Specify a tag to retrieve configuration from.  Cannot be specified
+          with `as_of`.
       tags:
       - projects
       security:
@@ -3061,13 +3372,20 @@ paths:
         schema:
           type: string
           format: date-time
-        description: Specify a point in time to retrieve configuration from.
+        description: Specify a point in time to retrieve configuration from. Cannot
+          be specified with `tag`.
       - in: path
         name: project_pk
         schema:
           type: string
           format: uuid
         required: true
+      - in: query
+        name: tag
+        schema:
+          type: string
+        description: Specify a tag to retrieve configuration from.  Cannot be specified
+          with `as_of`.
       tags:
       - projects
       security:
@@ -3943,12 +4261,15 @@ components:
           readOnly: true
         subscription_id:
           type: string
+          nullable: true
           readOnly: true
         subscription_plan_id:
           type: string
+          nullable: true
           readOnly: true
         subscription_plan_name:
           type: string
+          nullable: true
           readOnly: true
         created_at:
           type: string
@@ -4218,6 +4539,26 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ServiceAccount'
+    PaginatedTagList:
+      type: object
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Tag'
     PaginatedTemplateList:
       type: object
       properties:
@@ -4783,12 +5124,15 @@ components:
           readOnly: true
         subscription_id:
           type: string
+          nullable: true
           readOnly: true
         subscription_plan_id:
           type: string
+          nullable: true
           readOnly: true
         subscription_plan_name:
           type: string
+          nullable: true
           readOnly: true
         created_at:
           type: string
@@ -4970,6 +5314,38 @@ components:
           format: date-time
           readOnly: true
           description: The most recent date and time the service account was used.
+    PatchedTag:
+      type: object
+      description: The details of a tag.
+      properties:
+        url:
+          type: string
+          format: uri
+          readOnly: true
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+          description: A unique identifier for the tag.
+        name:
+          type: string
+          readOnly: true
+          description: The tag name. Tag names may contain alphanumeric, hyphen, underscore,
+            or period characters. Tag names are case sensitive. The name cannot be
+            modified.
+        description:
+          type: string
+          description: A description of the tag.  You may find it helpful to document
+            how this tag is used to assist others when they need to maintain software
+            that uses this content.
+        timestamp:
+          type: string
+          format: date-time
+          description: The point in time this tag represents.
+        usage:
+          allOf:
+          - $ref: '#/components/schemas/TagReadUsage'
+          nullable: true
     PatchedTemplate:
       type: object
       description: A parameter template in a given project, optionally instantiated
@@ -5052,6 +5428,12 @@ components:
           description: The environment name for this value.  This is a convenience
             to avoid another query against the server to resolve the environment url
             into a name.
+        earliest_tag:
+          type: string
+          nullable: true
+          readOnly: true
+          description: The earliest tag name this value appears in (within the value's
+            environment).
         parameter:
           type: string
           format: uri
@@ -5280,6 +5662,88 @@ components:
       - modified_at
       - url
       - user
+    Tag:
+      type: object
+      description: The details of a tag.
+      properties:
+        url:
+          type: string
+          format: uri
+          readOnly: true
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+          description: A unique identifier for the tag.
+        name:
+          type: string
+          readOnly: true
+          description: The tag name. Tag names may contain alphanumeric, hyphen, underscore,
+            or period characters. Tag names are case sensitive. The name cannot be
+            modified.
+        description:
+          type: string
+          description: A description of the tag.  You may find it helpful to document
+            how this tag is used to assist others when they need to maintain software
+            that uses this content.
+        timestamp:
+          type: string
+          format: date-time
+          description: The point in time this tag represents.
+        usage:
+          allOf:
+          - $ref: '#/components/schemas/TagReadUsage'
+          nullable: true
+      required:
+      - id
+      - name
+      - timestamp
+      - url
+      - usage
+    TagCreate:
+      type: object
+      description: Details for creating a tag.
+      properties:
+        name:
+          type: string
+          description: The tag name. Tag names may contain alphanumeric, hyphen, underscore,
+            or period characters. Tag names are case sensitive. The name cannot be
+            modified.
+          pattern: ^[\w.-]+$
+          maxLength: 64
+        description:
+          type: string
+          description: A description of the tag.  You may find it helpful to document
+            how this tag is used to assist others when they need to maintain software
+            that uses this content.
+        timestamp:
+          type: string
+          format: date-time
+          nullable: true
+          description: The point in time this tag represents. If not specified then
+            the current time will be used.
+      required:
+      - name
+    TagReadUsage:
+      type: object
+      description: The read usage details of a tag.
+      properties:
+        last_read:
+          type: string
+          format: date-time
+          nullable: true
+          description: The last time a configuration was retrieved with this tag.
+        last_read_by:
+          type: string
+          description: The last user (id) to use this tag to read configuration.
+          maxLength: 256
+        total_reads:
+          type: integer
+          description: The number of times the tag has been used to read configuration.
+      required:
+      - last_read
+      - last_read_by
+      - total_reads
     Template:
       type: object
       description: A parameter template in a given project, optionally instantiated
@@ -5542,6 +6006,12 @@ components:
           description: The environment name for this value.  This is a convenience
             to avoid another query against the server to resolve the environment url
             into a name.
+        earliest_tag:
+          type: string
+          nullable: true
+          readOnly: true
+          description: The earliest tag name this value appears in (within the value's
+            environment).
         parameter:
           type: string
           format: uri
@@ -5623,6 +6093,7 @@ components:
       required:
       - created_at
       - dynamic_error
+      - earliest_tag
       - environment
       - environment_name
       - id

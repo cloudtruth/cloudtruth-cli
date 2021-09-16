@@ -2,8 +2,8 @@ use crate::cli::AS_OF_ARG;
 use crate::database::{OpenApiConfig, Parameters};
 use crate::subprocess::{EnvSettings, Inheritance, SubProcess};
 use crate::{
-    format_param_error, parse_datetime, warn_missing_subcommand, warn_unresolved_params, warn_user,
-    ResolvedIds,
+    format_param_error, parse_datetime, parse_tag, warn_missing_subcommand, warn_unresolved_params,
+    warn_user, ResolvedIds,
 };
 use clap::ArgMatches;
 use color_eyre::eyre::Result;
@@ -18,6 +18,7 @@ pub fn process_run_command(
     resolved: &ResolvedIds,
 ) -> Result<()> {
     let as_of = parse_datetime(subcmd_args.value_of(AS_OF_ARG));
+    let tag = parse_tag(subcmd_args.value_of(AS_OF_ARG));
     let mut arguments: Vec<String>;
     let command: String;
 
@@ -29,6 +30,7 @@ pub fn process_run_command(
         false,
         true,
         as_of,
+        tag,
     )?;
     let mut ct_vars = EnvSettings::new();
     let mut errors: Vec<String> = vec![];

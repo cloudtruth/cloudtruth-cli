@@ -309,6 +309,7 @@ impl Templates {
         }
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn preview_template(
         &self,
         rest_cfg: &OpenApiConfig,
@@ -317,6 +318,7 @@ impl Templates {
         body: &str,
         show_secrets: bool,
         as_of: Option<String>,
+        tag: Option<String>,
     ) -> Result<String, TemplateError> {
         let preview = TemplatePreview {
             body: body.to_string(),
@@ -328,6 +330,7 @@ impl Templates {
             as_of,
             Some(env_id),
             Some(!show_secrets),
+            tag.as_deref(),
         );
         match response {
             Ok(r) => Ok(r.body),
@@ -347,8 +350,10 @@ impl Templates {
         rest_cfg: &OpenApiConfig,
         project_id: &str,
         as_of: Option<String>,
+        tag: Option<String>,
     ) -> Result<Vec<TemplateHistory>, Error<ProjectsTemplatesTimelinesRetrieveError>> {
-        let response = projects_templates_timelines_retrieve(rest_cfg, project_id, as_of)?;
+        let response =
+            projects_templates_timelines_retrieve(rest_cfg, project_id, as_of, tag.as_deref())?;
         Ok(response.results.iter().map(TemplateHistory::from).collect())
     }
 
@@ -359,9 +364,15 @@ impl Templates {
         project_id: &str,
         template_id: &str,
         as_of: Option<String>,
+        tag: Option<String>,
     ) -> Result<Vec<TemplateHistory>, Error<ProjectsTemplatesTimelineRetrieveError>> {
-        let response =
-            projects_templates_timeline_retrieve(rest_cfg, template_id, project_id, as_of)?;
+        let response = projects_templates_timeline_retrieve(
+            rest_cfg,
+            template_id,
+            project_id,
+            as_of,
+            tag.as_deref(),
+        )?;
         Ok(response.results.iter().map(TemplateHistory::from).collect())
     }
 }

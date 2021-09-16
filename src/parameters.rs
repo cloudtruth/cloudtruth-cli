@@ -9,8 +9,9 @@ use crate::database::{
 };
 use crate::table::Table;
 use crate::{
-    error_message, format_param_error, parse_datetime, user_confirm, warn_missing_subcommand,
-    warn_unresolved_params, warn_user, warning_message, ResolvedIds, DEL_CONFIRM, FILE_READ_ERR,
+    error_message, format_param_error, parse_datetime, parse_tag, user_confirm,
+    warn_missing_subcommand, warn_unresolved_params, warn_user, warning_message, ResolvedIds,
+    DEL_CONFIRM, FILE_READ_ERR,
 };
 use clap::ArgMatches;
 use color_eyre::eyre::Result;
@@ -31,7 +32,7 @@ fn proc_param_delete(
     let confirmed = subcmd_args.is_present(CONFIRM_FLAG);
     let proj_name = resolved.project_display_name();
     let proj_id = resolved.project_id();
-    let param_id = parameters.get_id(rest_cfg, proj_id, key_name, None);
+    let param_id = parameters.get_id(rest_cfg, proj_id, key_name, None, None);
     if param_id.is_none() {
         println!(
             "Did not find parameter '{}' to delete from project '{}'.",
@@ -127,21 +128,26 @@ fn proc_param_diff(
         env2_name = resolved.environment_display_name();
     }
 
-    let as_of1: Option<String>;
-    let as_of2: Option<String>;
+    let as_tag1: Option<&str>;
+    let as_tag2: Option<&str>;
     if as_list.len() == 2 {
-        as_of1 = parse_datetime(Some(as_list[0]));
-        as_of2 = parse_datetime(Some(as_list[1]));
+        as_tag1 = Some(as_list[0]);
+        as_tag2 = Some(as_list[1]);
     } else if as_list.len() == 1 {
         // puts the specified time in other column
-        as_of1 = None;
-        as_of2 = parse_datetime(Some(as_list[0]));
+        as_tag1 = None;
+        as_tag2 = Some(as_list[0]);
     } else {
-        as_of1 = None;
-        as_of2 = None;
+        as_tag1 = None;
+        as_tag2 = None;
     }
 
-    if env1_name == env2_name && as_of1 == as_of2 {
+    let as_of1 = parse_datetime(as_tag1);
+    let as_of2 = parse_datetime(as_tag2);
+    let tag1 = parse_tag(as_tag1);
+    let tag2 = parse_tag(as_tag2);
+
+    if env1_name == env2_name && as_tag1 == as_tag2 {
         warning_message("Invalid comparing an environment to itself".to_string())?;
         return Ok(());
     }
@@ -149,18 +155,18 @@ fn proc_param_diff(
     let header1: String;
     let header2: String;
     if env1_name == env2_name {
-        header1 = as_of1.clone().unwrap_or_else(|| "Current".to_string());
-        header2 = as_of2.clone().unwrap_or_else(|| "Unspecified".to_string());
-    } else if as_of1 == as_of2 {
+        header1 = as_tag1.unwrap_or("Current").to_string();
+        header2 = as_tag2.unwrap_or("Unspecified").to_string();
+    } else if as_tag1 == as_tag2 {
         header1 = env1_name.to_string();
         header2 = env2_name.to_string();
     } else {
-        header1 = match as_of1 {
-            Some(ref a) => format!("{} ({})", env1_name, a),
+        header1 = match as_tag1 {
+            Some(a) => format!("{} ({})", env1_name, a),
             _ => env1_name.to_string(),
         };
-        header2 = match as_of2 {
-            Some(ref a) => format!("{} ({})", env2_name, a),
+        header2 = match as_tag2 {
+            Some(a) => format!("{} ({})", env2_name, a),
             _ => env2_name.to_string(),
         };
     }
@@ -173,10 +179,22 @@ fn proc_param_diff(
     let env2_id = environments.id_from_map(&env2_name, &env_url_map)?;
 
     let proj_id = resolved.project_id();
-    let env1_values =
-        parameters.get_parameter_detail_map(rest_cfg, proj_id, &env1_id, !show_secrets, as_of1)?;
-    let env2_values =
-        parameters.get_parameter_detail_map(rest_cfg, proj_id, &env2_id, !show_secrets, as_of2)?;
+    let env1_values = parameters.get_parameter_detail_map(
+        rest_cfg,
+        proj_id,
+        &env1_id,
+        !show_secrets,
+        as_of1,
+        tag1,
+    )?;
+    let env2_values = parameters.get_parameter_detail_map(
+        rest_cfg,
+        proj_id,
+        &env2_id,
+        !show_secrets,
+        as_of2,
+        tag2,
+    )?;
 
     // get the names from both lists to make sure we get the added/deleted parameters, too
     let mut param_list: Vec<String> = env1_values.iter().map(|(k, _)| k.clone()).collect();
@@ -256,6 +274,7 @@ fn proc_param_env(
 ) -> Result<()> {
     let param_name = subcmd_args.value_of(KEY_ARG).unwrap();
     let as_of = parse_datetime(subcmd_args.value_of(AS_OF_ARG));
+    let tag = parse_tag(subcmd_args.value_of(AS_OF_ARG));
     let show_secrets = subcmd_args.is_present(SECRETS_FLAG);
     let show_times = subcmd_args.is_present(SHOW_TIMES_FLAG);
     let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
@@ -274,6 +293,7 @@ fn proc_param_env(
         param_name,
         !show_secrets,
         as_of,
+        tag,
     )?;
 
     if param_values.is_empty() {
@@ -341,6 +361,7 @@ fn proc_param_export(
     let contains = subcmd_args.value_of("contains");
     let template_format = subcmd_args.value_of("FORMAT").unwrap();
     let as_of = parse_datetime(subcmd_args.value_of(AS_OF_ARG));
+    let tag = parse_tag(subcmd_args.value_of(AS_OF_ARG));
     let export = subcmd_args.is_present("export");
     let secrets = subcmd_args.is_present(SECRETS_FLAG);
     let options = ParamExportOptions {
@@ -351,6 +372,7 @@ fn proc_param_export(
         export: Some(export),
         secrets: Some(secrets),
         as_of,
+        tag,
     };
     let body = parameters.export_parameters(rest_cfg, proj_id, env_id, options)?;
 
@@ -376,9 +398,11 @@ fn proc_param_get(
     let key = subcmd_args.value_of(KEY_ARG).unwrap();
     let show_details = subcmd_args.is_present("details");
     let as_of = parse_datetime(subcmd_args.value_of(AS_OF_ARG));
+    let tag = parse_tag(subcmd_args.value_of(AS_OF_ARG));
     let proj_id = resolved.project_id();
     let env_id = resolved.environment_id();
-    let parameter = parameters.get_details_by_name(rest_cfg, proj_id, env_id, key, false, as_of);
+    let parameter =
+        parameters.get_details_by_name(rest_cfg, proj_id, env_id, key, false, as_of, tag);
 
     if let Ok(details) = parameter {
         // Treat parameters without values set as if the value were simply empty, since
@@ -447,6 +471,7 @@ fn proc_param_list(
     let proj_name = resolved.project_display_name();
     let env_id = resolved.environment_id();
     let as_of = parse_datetime(subcmd_args.value_of(AS_OF_ARG));
+    let tag = parse_tag(subcmd_args.value_of(AS_OF_ARG));
     let show_secrets = subcmd_args.is_present(SECRETS_FLAG);
     let show_times = subcmd_args.is_present(SHOW_TIMES_FLAG);
     let show_rules = subcmd_args.is_present("rules");
@@ -462,6 +487,7 @@ fn proc_param_list(
         !show_secrets,
         include_values,
         as_of,
+        tag,
     )?;
     let qualifier = if references { "external " } else { "" };
     if references {
@@ -708,7 +734,7 @@ fn proc_param_set(
     // get the original values, so that is not lost
     let mut updated: ParameterDetails;
     if let Some(original) =
-        parameters.get_details_by_name(rest_cfg, proj_id, env_id, key_name, true, None)?
+        parameters.get_details_by_name(rest_cfg, proj_id, env_id, key_name, true, None, None)?
     {
         // only update if there is something to update
         if param_field_update {

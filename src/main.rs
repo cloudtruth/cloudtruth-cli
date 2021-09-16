@@ -296,6 +296,8 @@ fn process_completion_command(subcmd_args: &ArgMatches) {
 
 /// Takes an optional CLI argument (`Option<&str>`) attempts to parse it to a valid `DateTime`, and
 /// returns the ISO format that the API expects.
+///
+/// If this is not a recognized date-time format, it will return `None`.
 fn parse_datetime(input: Option<&str>) -> Option<String> {
     if let Some(orig) = input {
         if let Ok(rfc2822) = DateTime::parse_from_rfc2822(orig) {
@@ -303,6 +305,8 @@ fn parse_datetime(input: Option<&str>) -> Option<String> {
         } else if let Ok(rfc3339) = DateTime::parse_from_rfc3339(orig) {
             Some(rfc3339.format(ISO8601).to_string())
         } else if let Ok(datetime) = NaiveDateTime::parse_from_str(orig, ISO8601) {
+            Some(datetime.format(ISO8601).to_string())
+        } else if let Ok(datetime) = NaiveDateTime::parse_from_str(orig, "%Y-%m-%dT%H:%M:%S%.f") {
             Some(datetime.format(ISO8601).to_string())
         } else if let Ok(time_only) = NaiveTime::parse_from_str(orig, "%H:%M:%S%.f") {
             let now = Utc::now();
@@ -328,11 +332,19 @@ fn parse_datetime(input: Option<&str>) -> Option<String> {
             let dt = NaiveDateTime::parse_from_str(&new_str, ISO8601).unwrap();
             Some(dt.format(ISO8601).to_string())
         } else {
-            // TODO: throw an error here? or just pass through the string?
-            Some(orig.to_string())
+            None
         }
     } else {
         None
+    }
+}
+
+/// Returns a tag value, if the input value is not a recognized date-time format.
+fn parse_tag(input: Option<&str>) -> Option<String> {
+    if parse_datetime(input).is_some() {
+        None
+    } else {
+        input.map(String::from)
     }
 }
 
@@ -548,50 +560,71 @@ mod main_test {
     }
 
     #[test]
-    fn timedate_parsing() {
+    fn timedate_and_tag_parsing() {
         // full RFC2822
         let now = Utc::now();
         let input = now.to_rfc2822();
         let output = parse_datetime(Some(&input)).unwrap();
         assert_eq!(now.format("%FT%TZ").to_string(), output); // no fractional seconds
+        assert_eq!(parse_tag(Some(&input)), None);
 
         // full RFC23339
         let now = Utc::now();
         let input = now.to_rfc3339();
         let output = parse_datetime(Some(&input)).unwrap();
         assert_eq!(now.format(ISO8601).to_string(), output);
+        assert_eq!(parse_tag(Some(&input)), None);
 
         // ISO8601
         let input = Some("2021-07-27T18:34:23.270824Z");
         let expected = input.map(String::from);
         assert_eq!(parse_datetime(input), expected);
+        assert_eq!(parse_tag(input), None);
+
+        // ISO8601 - missing trailing Z
+        let input = Some("2021-07-27T18:34:23.270824");
+        let output = parse_datetime(input);
+        assert_eq!(true, output.unwrap().contains(input.unwrap()));
+        assert_eq!(parse_tag(input), None);
 
         // time only, without milliseconds
-        let output = parse_datetime(Some("02:04:08")).unwrap();
+        let input = Some("02:04:08");
+        let output = parse_datetime(input).unwrap();
         assert_eq!(true, output.contains("02:04:08"));
+        assert_eq!(parse_tag(input), None);
 
         // time only, with milliseconds
-        let output = parse_datetime(Some("03:05:12.345")).unwrap();
+        let input = Some("03:05:12.345");
+        let output = parse_datetime(input).unwrap();
         assert_eq!(true, output.contains("T03:05:12.345Z"));
+        assert_eq!(parse_tag(input), None);
 
         // full date (no time)
-        let output = parse_datetime(Some("2020-02-02")).unwrap();
+        let input = Some("2020-02-02");
+        let output = parse_datetime(input).unwrap();
         assert_eq!(output, String::from("2020-02-02T00:00:00Z"));
+        assert_eq!(parse_tag(input), None);
 
         // US date with slashes
-        let output = parse_datetime(Some("01/19/2021")).unwrap();
+        let input = Some("01/19/2021");
+        let output = parse_datetime(input).unwrap();
         assert_eq!(output, String::from("2021-01-19T00:00:00Z"));
+        assert_eq!(parse_tag(input), None);
 
         // US date with dashes
-        let output = parse_datetime(Some("01-19-2021")).unwrap();
+        let input = Some("01-19-2021");
+        let output = parse_datetime(input).unwrap();
         assert_eq!(output, String::from("2021-01-19T00:00:00Z"));
+        assert_eq!(parse_tag(input), None);
 
         // unfortunately, it lets this through too!
         let input = Some("this is bogus");
         let expected = input.map(String::from);
-        assert_eq!(parse_datetime(input), expected);
+        assert_eq!(parse_datetime(input), None);
+        assert_eq!(parse_tag(input), expected);
 
         // finally, no option given
         assert_eq!(parse_datetime(None), None);
+        assert_eq!(parse_tag(None), None);
     }
 }
