@@ -6,8 +6,8 @@ use crate::cli::{
 use crate::database::{HistoryAction, OpenApiConfig, TemplateHistory, Templates};
 use crate::table::Table;
 use crate::{
-    error_message, parse_datetime, user_confirm, warn_missing_subcommand, warning_message,
-    ResolvedIds, DEL_CONFIRM, FILE_READ_ERR,
+    error_message, parse_datetime, parse_tag, user_confirm, warn_missing_subcommand,
+    warning_message, ResolvedIds, DEL_CONFIRM, FILE_READ_ERR,
 };
 use clap::ArgMatches;
 use color_eyre::eyre::Result;
@@ -186,8 +186,9 @@ fn proc_template_preview(
     let filename = subcmd_args.value_of(TEMPLATE_FILE_OPT).unwrap();
     let body = fs::read_to_string(filename).expect(FILE_READ_ERR);
     let as_of = parse_datetime(subcmd_args.value_of(AS_OF_ARG));
+    let tag = parse_tag(subcmd_args.value_of(AS_OF_ARG));
     let result =
-        templates.preview_template(rest_cfg, proj_id, env_id, &body, show_secrets, as_of)?;
+        templates.preview_template(rest_cfg, proj_id, env_id, &body, show_secrets, as_of, tag)?;
     println!("{}", result);
     Ok(())
 }
@@ -295,6 +296,7 @@ fn proc_template_history(
     let proj_name = resolved.project_display_name();
     let proj_id = resolved.project_id();
     let as_of = parse_datetime(subcmd_args.value_of(AS_OF_ARG));
+    let tag = parse_tag(subcmd_args.value_of(AS_OF_ARG));
     let template_name = subcmd_args.value_of(NAME_ARG);
     let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
     let modifier;
@@ -314,11 +316,11 @@ fn proc_template_history(
             ))?;
             process::exit(13);
         }
-        history = templates.get_history_for(rest_cfg, proj_id, &template_id, as_of)?;
+        history = templates.get_history_for(rest_cfg, proj_id, &template_id, as_of, tag)?;
     } else {
         modifier = "".to_string();
         add_name = true;
-        history = templates.get_histories(rest_cfg, proj_id, as_of)?;
+        history = templates.get_histories(rest_cfg, proj_id, as_of, tag)?;
     };
 
     if history.is_empty() {

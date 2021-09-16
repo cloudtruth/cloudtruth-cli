@@ -170,6 +170,19 @@ def add_debug_errors(srcdir: str) -> None:
         file_write_content(filename, temp)
 
 
+def fix_tag_usage(srcdir: str) -> None:
+    filename = f"{srcdir}/models/tag.rs"
+    box_usage = "usage: Box::new(usage)"
+    opt_usage = "usage: usage.map(Box::new)"
+    orig = file_read_content(filename)
+    if box_usage not in orig or opt_usage in orig:
+        return
+
+    temp = orig.replace(box_usage, opt_usage)
+    print(f"Updating {filename} with tag usage fix")
+    file_write_content(filename, temp)
+
+
 if __name__ == "__main__":
     client_dir = os.getcwd() + "/client"
     srcdir = client_dir + "/src"
@@ -180,3 +193,4 @@ if __name__ == "__main__":
     add_rest_debug_to_config(srcdir)
     add_debug_profiling(srcdir)
     add_debug_errors(srcdir)
+    fix_tag_usage(srcdir)

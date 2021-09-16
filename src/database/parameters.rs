@@ -167,6 +167,7 @@ fn default_param_value() -> &'static Value {
         created_at: "".to_owned(),
         modified_at: "".to_owned(),
         dynamic_error: None,
+        earliest_tag: None,
     })
 }
 
@@ -313,6 +314,7 @@ pub struct ParamExportOptions {
     pub export: Option<bool>,
     pub secrets: Option<bool>,
     pub as_of: Option<String>,
+    pub tag: Option<String>,
 }
 
 #[derive(Debug)]
@@ -425,7 +427,8 @@ impl Parameters {
         key_name: &str,
     ) -> Result<Option<String>, Error<ProjectsParametersValuesDestroyError>> {
         // The only delete mechanism is by parameter ID, so start by querying the parameter info.
-        let response = self.get_details_by_name(rest_cfg, proj_id, env_id, key_name, true, None);
+        let response =
+            self.get_details_by_name(rest_cfg, proj_id, env_id, key_name, true, None, None);
 
         if let Ok(Some(details)) = response {
             if details.env_url.contains(env_id) {
@@ -469,6 +472,7 @@ impl Parameters {
             mask_secrets,
             Some(out_fmt.as_str()),
             options.starts_with.as_deref(),
+            options.tag.as_deref(),
             WRAP_SECRETS,
         )?;
         Ok(Some(export.body))
@@ -481,6 +485,7 @@ impl Parameters {
         proj_id: &str,
         key_name: &str,
         as_of: Option<String>,
+        tag: Option<String>,
     ) -> Option<String> {
         // no need to get values/secrets -- just need an ID
         let response = projects_parameters_list(
@@ -493,6 +498,7 @@ impl Parameters {
             None,
             PAGE_SIZE,
             PARTIAL_SUCCESS,
+            tag.as_deref(),
             VALUES_FALSE,
             WRAP_SECRETS,
         );
@@ -519,6 +525,7 @@ impl Parameters {
     ///
     /// NOTE: the `source` will be the URL, so we don't need another trip to the server to
     ///      change the URL to a name.
+    #[allow(clippy::too_many_arguments)]
     pub fn get_details_by_name(
         &self,
         rest_cfg: &OpenApiConfig,
@@ -527,6 +534,7 @@ impl Parameters {
         key_name: &str,
         mask_secrets: bool,
         as_of: Option<String>,
+        tag: Option<String>,
     ) -> Result<Option<ParameterDetails>, Error<ProjectsParametersListError>> {
         let response = projects_parameters_list(
             rest_cfg,
@@ -538,6 +546,7 @@ impl Parameters {
             None,
             PAGE_SIZE,
             PARTIAL_SUCCESS,
+            tag.as_deref(),
             None,
             WRAP_SECRETS,
         )?;
@@ -556,6 +565,7 @@ impl Parameters {
 
     /// Fetches a "dictionary" of environment variable name/values for the specified project and
     /// environment.
+    #[allow(clippy::too_many_arguments)]
     pub fn get_parameter_values(
         &self,
         rest_cfg: &OpenApiConfig,
@@ -564,6 +574,7 @@ impl Parameters {
         mask_secrets: bool,
         include_values: bool,
         as_of: Option<String>,
+        tag: Option<String>,
     ) -> Result<ParameterValueMap, Error<ProjectsParametersListError>> {
         let parameters = self.get_parameter_details(
             rest_cfg,
@@ -572,6 +583,7 @@ impl Parameters {
             mask_secrets,
             include_values,
             as_of,
+            tag,
         )?;
         let mut env_vars = ParameterValueMap::new();
 
@@ -586,6 +598,7 @@ impl Parameters {
     }
 
     /// Fetches the `ParameterDetails` for the specified project and environment.
+    #[allow(clippy::too_many_arguments)]
     pub fn get_parameter_details(
         &self,
         rest_cfg: &OpenApiConfig,
@@ -594,6 +607,7 @@ impl Parameters {
         mask_secrets: bool,
         include_values: bool,
         as_of: Option<String>,
+        tag: Option<String>,
     ) -> Result<Vec<ParameterDetails>, Error<ProjectsParametersListError>> {
         let mut list: Vec<ParameterDetails> = Vec::new();
         let env_arg = if include_values { Some(env_id) } else { None };
@@ -608,6 +622,7 @@ impl Parameters {
             None,
             PAGE_SIZE,
             PARTIAL_SUCCESS,
+            tag.as_deref(),
             value_arg,
             WRAP_SECRETS,
         )?;
@@ -628,9 +643,10 @@ impl Parameters {
         env_id: &str,
         mask_secrets: bool,
         as_of: Option<String>,
+        tag: Option<String>,
     ) -> Result<ParameterDetailMap, Error<ProjectsParametersListError>> {
         let details =
-            self.get_parameter_details(rest_cfg, proj_id, env_id, mask_secrets, true, as_of)?;
+            self.get_parameter_details(rest_cfg, proj_id, env_id, mask_secrets, true, as_of, tag)?;
         let mut result = ParameterDetailMap::new();
         for entry in details {
             result.insert(entry.key.clone(), entry);
@@ -646,6 +662,7 @@ impl Parameters {
         param_name: &str,
         mask_secrets: bool,
         as_of: Option<String>,
+        tag: Option<String>,
     ) -> Result<ParameterDetailMap, Error<ProjectsParametersListError>> {
         let mut result = ParameterDetailMap::new();
         let response = projects_parameters_list(
@@ -658,6 +675,7 @@ impl Parameters {
             None,
             PAGE_SIZE,
             PARTIAL_SUCCESS,
+            tag.as_deref(),
             VALUES_TRUE,
             WRAP_SECRETS,
         )?;
@@ -796,6 +814,7 @@ impl Parameters {
             created_at: None,
             modified_at: None,
             dynamic_error: None,
+            earliest_tag: None,
         };
         let response = projects_parameters_values_partial_update(
             rest_cfg,

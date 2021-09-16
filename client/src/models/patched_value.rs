@@ -23,6 +23,9 @@ pub struct PatchedValue {
     /// The environment name for this value.  This is a convenience to avoid another query against the server to resolve the environment url into a name.
     #[serde(rename = "environment_name", skip_serializing_if = "Option::is_none")]
     pub environment_name: Option<String>,
+    /// The earliest tag name this value appears in (within the value's environment).
+    #[serde(rename = "earliest_tag", skip_serializing_if = "Option::is_none")]
+    pub earliest_tag: Option<String>,
     /// The parameter this value is for.
     #[serde(rename = "parameter", skip_serializing_if = "Option::is_none")]
     pub parameter: Option<String>,
@@ -61,6 +64,7 @@ impl PatchedValue {
             id: None,
             environment: None,
             environment_name: None,
+            earliest_tag: None,
             parameter: None,
             dynamic: None,
             dynamic_fqn: None,

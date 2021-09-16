@@ -500,6 +500,7 @@ pub fn projects_parameter_export_list(
     mask_secrets: Option<bool>,
     output: Option<&str>,
     startswith: Option<&str>,
+    tag: Option<&str>,
     wrap: Option<bool>,
 ) -> Result<crate::models::ParameterExport, Error<ProjectsParameterExportListError>> {
     let local_var_client = &configuration.client;
@@ -543,6 +544,9 @@ pub fn projects_parameter_export_list(
     if let Some(ref local_var_str) = startswith {
         local_var_req_builder =
             local_var_req_builder.query(&[("startswith", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = tag {
+        local_var_req_builder = local_var_req_builder.query(&[("tag", &local_var_str.to_string())]);
     }
     if let Some(ref local_var_str) = wrap {
         local_var_req_builder =
@@ -752,6 +756,7 @@ pub fn projects_parameters_list(
     page: Option<i32>,
     page_size: Option<i32>,
     partial_success: Option<bool>,
+    tag: Option<&str>,
     values: Option<bool>,
     wrap: Option<bool>,
 ) -> Result<crate::models::PaginatedParameterList, Error<ProjectsParametersListError>> {
@@ -792,6 +797,9 @@ pub fn projects_parameters_list(
     if let Some(ref local_var_str) = partial_success {
         local_var_req_builder =
             local_var_req_builder.query(&[("partial_success", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = tag {
+        local_var_req_builder = local_var_req_builder.query(&[("tag", &local_var_str.to_string())]);
     }
     if let Some(ref local_var_str) = values {
         local_var_req_builder =
@@ -935,6 +943,7 @@ pub fn projects_parameters_retrieve(
     environment: Option<&str>,
     mask_secrets: Option<bool>,
     partial_success: Option<bool>,
+    tag: Option<&str>,
     values: Option<bool>,
     wrap: Option<bool>,
 ) -> Result<crate::models::Parameter, Error<ProjectsParametersRetrieveError>> {
@@ -964,6 +973,9 @@ pub fn projects_parameters_retrieve(
     if let Some(ref local_var_str) = partial_success {
         local_var_req_builder =
             local_var_req_builder.query(&[("partial_success", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = tag {
+        local_var_req_builder = local_var_req_builder.query(&[("tag", &local_var_str.to_string())]);
     }
     if let Some(ref local_var_str) = values {
         local_var_req_builder =
@@ -1482,6 +1494,7 @@ pub fn projects_parameters_timeline_retrieve(
     id: &str,
     project_pk: &str,
     as_of: Option<String>,
+    tag: Option<&str>,
 ) -> Result<crate::models::ParameterTimeline, Error<ProjectsParametersTimelineRetrieveError>> {
     let local_var_client = &configuration.client;
 
@@ -1497,6 +1510,9 @@ pub fn projects_parameters_timeline_retrieve(
     if let Some(ref local_var_str) = as_of {
         local_var_req_builder =
             local_var_req_builder.query(&[("as_of", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = tag {
+        local_var_req_builder = local_var_req_builder.query(&[("tag", &local_var_str.to_string())]);
     }
     if let Some(ref local_var_user_agent) = configuration.user_agent {
         local_var_req_builder =
@@ -1557,6 +1573,7 @@ pub fn projects_parameters_timelines_retrieve(
     configuration: &configuration::Configuration,
     project_pk: &str,
     as_of: Option<String>,
+    tag: Option<&str>,
 ) -> Result<crate::models::ParameterTimeline, Error<ProjectsParametersTimelinesRetrieveError>> {
     let local_var_client = &configuration.client;
 
@@ -1571,6 +1588,9 @@ pub fn projects_parameters_timelines_retrieve(
     if let Some(ref local_var_str) = as_of {
         local_var_req_builder =
             local_var_req_builder.query(&[("as_of", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = tag {
+        local_var_req_builder = local_var_req_builder.query(&[("tag", &local_var_str.to_string())]);
     }
     if let Some(ref local_var_user_agent) = configuration.user_agent {
         local_var_req_builder =
@@ -2336,6 +2356,7 @@ pub fn projects_template_preview_create(
     as_of: Option<String>,
     environment: Option<&str>,
     mask_secrets: Option<bool>,
+    tag: Option<&str>,
 ) -> Result<crate::models::TemplatePreview, Error<ProjectsTemplatePreviewCreateError>> {
     let local_var_client = &configuration.client;
 
@@ -2358,6 +2379,9 @@ pub fn projects_template_preview_create(
     if let Some(ref local_var_str) = mask_secrets {
         local_var_req_builder =
             local_var_req_builder.query(&[("mask_secrets", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = tag {
+        local_var_req_builder = local_var_req_builder.query(&[("tag", &local_var_str.to_string())]);
     }
     if let Some(ref local_var_user_agent) = configuration.user_agent {
         local_var_req_builder =
@@ -2795,6 +2819,7 @@ pub fn projects_templates_timeline_retrieve(
     id: &str,
     project_pk: &str,
     as_of: Option<String>,
+    tag: Option<&str>,
 ) -> Result<crate::models::TemplateTimeline, Error<ProjectsTemplatesTimelineRetrieveError>> {
     let local_var_client = &configuration.client;
 
@@ -2810,6 +2835,9 @@ pub fn projects_templates_timeline_retrieve(
     if let Some(ref local_var_str) = as_of {
         local_var_req_builder =
             local_var_req_builder.query(&[("as_of", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = tag {
+        local_var_req_builder = local_var_req_builder.query(&[("tag", &local_var_str.to_string())]);
     }
     if let Some(ref local_var_user_agent) = configuration.user_agent {
         local_var_req_builder =
@@ -2870,6 +2898,7 @@ pub fn projects_templates_timelines_retrieve(
     configuration: &configuration::Configuration,
     project_pk: &str,
     as_of: Option<String>,
+    tag: Option<&str>,
 ) -> Result<crate::models::TemplateTimeline, Error<ProjectsTemplatesTimelinesRetrieveError>> {
     let local_var_client = &configuration.client;
 
@@ -2884,6 +2913,9 @@ pub fn projects_templates_timelines_retrieve(
     if let Some(ref local_var_str) = as_of {
         local_var_req_builder =
             local_var_req_builder.query(&[("as_of", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = tag {
+        local_var_req_builder = local_var_req_builder.query(&[("tag", &local_var_str.to_string())]);
     }
     if let Some(ref local_var_user_agent) = configuration.user_agent {
         local_var_req_builder =
