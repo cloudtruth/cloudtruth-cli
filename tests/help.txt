@@ -367,7 +367,7 @@ USAGE:
     cloudtruth parameters list [FLAGS] [OPTIONS]
 
 FLAGS:
-        --dynamic       Display the dynamic values and FQN/JMES path.
+        --external      Display the external values and FQN/JMES path.
     -h, --help          Prints help information
         --rules         Display the parameter rules.
     -s, --secrets       Display the secret parameter values
@@ -397,8 +397,8 @@ FLAGS:
     -V, --version       Prints version information
 
 OPTIONS:
-    -f, --fqn <FQN>             Fully Qualified Name (FQN) reference for dynamic parameter.
-    -j, --jmes <JMES>           JMES path within FQN for dynamic parameter
+    -f, --fqn <FQN>             Fully Qualified Name (FQN) reference for external parameter.
+    -j, --jmes <JMES>           JMES path within FQN for external parameter
         --max <MAX>             Set parameter rule maximum value
         --max-len <MAX-LEN>     Set parameter rule maximum length value
         --min <MIN>             Set parameter rule minimum value

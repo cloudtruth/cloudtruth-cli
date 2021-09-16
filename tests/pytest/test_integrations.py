@@ -121,7 +121,7 @@ class TestIntegrations(TestCase):
         empty_msg = f"No parameters found in project {proj_name}"
         param_cmd = base_cmd + f"--project '{proj_name}' param "
         show_cmd = param_cmd + "list -vsf csv"
-        show_dyn = show_cmd + " --dynamic"
+        show_ext = show_cmd + " --external"
 
         fqn = os.environ.get(CT_PARAM_FQN)
         jmes = os.environ.get(CT_PARAM_JMES)
@@ -135,7 +135,7 @@ class TestIntegrations(TestCase):
         self.assertIn(empty_msg, result.out())
 
         ######################
-        # start with a boring static value
+        # start with a boring internal value
         param1 = "pi"
         value1 = "3.14159"
         result = self.run_cli(cmd_env, param_cmd + f"set {param1} -v {value1}")
@@ -145,13 +145,13 @@ class TestIntegrations(TestCase):
         self.assertResultSuccess(result)
         self.assertIn(f"{param1},{value1}", result.out())
 
-        # see there are not dynamic parameters
-        result = self.run_cli(cmd_env, show_dyn)
+        # see there are not external parameters
+        result = self.run_cli(cmd_env, show_ext)
         self.assertResultSuccess(result)
-        self.assertIn("No dynamic parameters found in project", result.out())
+        self.assertIn("No external parameters found in project", result.out())
 
         ######################
-        # flip it to a dynamic value
+        # flip it to an external value
         result = self.run_cli(cmd_env, param_cmd + f"set {param1} -f {fqn} -j {jmes}")
         self.assertResultSuccess(result)
         self.assertIn("Successfully update", result.out())
@@ -161,14 +161,14 @@ class TestIntegrations(TestCase):
         self.assertIn(f"{param1},", result.out())
         self.assertNotIn(value1, result.out())
 
-        # see the dynamic parameter
-        result = self.run_cli(cmd_env, show_dyn)
+        # see the external parameter
+        result = self.run_cli(cmd_env, show_ext)
         self.assertResultSuccess(result)
         expected = f"{param1},{fqn},{jmes}"
         self.assertIn(expected, result.out())
 
         ######################
-        # flip back to static
+        # flip back to internal
         value2 = "are_round"
         result = self.run_cli(cmd_env, param_cmd + f"set {param1} -v {value2}")
         self.assertResultSuccess(result)
@@ -177,13 +177,13 @@ class TestIntegrations(TestCase):
         self.assertResultSuccess(result)
         self.assertIn(f"{param1},{value2}", result.out())
 
-        # see there are not dynamic parameters
-        result = self.run_cli(cmd_env, show_dyn)
+        # see there are not external parameters
+        result = self.run_cli(cmd_env, show_ext)
         self.assertResultSuccess(result)
-        self.assertIn("No dynamic parameters found in project", result.out())
+        self.assertIn("No external parameters found in project", result.out())
 
         ######################
-        # create a dynamic value
+        # create a external value
         param2 = "eulers"
         result = self.run_cli(cmd_env, param_cmd + f"set {param2} -f {fqn} -j {jmes}")
         self.assertResultSuccess(result)
@@ -195,20 +195,20 @@ class TestIntegrations(TestCase):
         self.assertIn(f"{param2},", result.out())
         self.assertNotIn(value1, result.out())
 
-        # see the dynamic parameter
-        result = self.run_cli(cmd_env, show_dyn)
+        # see the external parameter
+        result = self.run_cli(cmd_env, show_ext)
         self.assertResultSuccess(result)
         expected = f"{param2},{fqn},{jmes}"
         self.assertIn(expected, result.out())
 
-        # param get shows the dynamic parameters
+        # param get shows the external parameter properties
         result = self.run_cli(cmd_env, param_cmd + f"get '{param2}' --details")
         self.assertResultSuccess(result)
         self.assertIn(f"FQN: {fqn}", result.out())
         self.assertIn(f"JMES-path: {jmes}", result.out())
 
         ######################
-        # templates with dynamic parameters
+        # templates with external parameters
         temp_cmd = base_cmd + f"--project '{proj_name}' template "
         temp_name = "my-int-temp"
         filename = "template.txt"
@@ -278,14 +278,14 @@ PARAMETER_2 = PARAM2
         self.assertNotIn(param3, result.err())
         self.assertNotIn(fqn3, result.err())
 
-        # list dynamic parameters with no values
-        result = self.run_cli(cmd_env, proj_cmd + "param list --dynamic -f csv")
+        # list external parameters with no values
+        result = self.run_cli(cmd_env, proj_cmd + "param list --external -f csv")
         self.assertResultSuccess(result)
         self.assertIn(param2, result.out())
         self.assertIn(param3, result.out())
 
-        # list dynamic parameters with FQN/JMES
-        result = self.run_cli(cmd_env, proj_cmd + "param list --dynamic -vf csv")
+        # list external parameters with FQN/JMES
+        result = self.run_cli(cmd_env, proj_cmd + "param list --external -vf csv")
         self.assertResultWarning(result, missing_param2)
         self.assertIn(f"{param2},{fqn2}", result.out())
         self.assertIn(f"{param3},{fqn3}", result.out())
