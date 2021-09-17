@@ -15,18 +15,18 @@ pub struct ValueCreate {
     /// The environment this value is set in.
     #[serde(rename = "environment")]
     pub environment: String,
-    /// A dynamic parameter leverages a CloudTruth integration to retrieve content on-demand from an external source.  When this is `false` the value is stored by CloudTruth.  When this is `true`, the `fqn` field must be set.
-    #[serde(rename = "dynamic", skip_serializing_if = "Option::is_none")]
-    pub dynamic: Option<bool>,
-    /// The FQN, or Fully-Qualified Name, is the path through the integration to get to the desired content.  This must be present and reference a valid integration when the value is `dynamic`.
-    #[serde(rename = "dynamic_fqn", skip_serializing_if = "Option::is_none")]
-    pub dynamic_fqn: Option<String>,
-    /// If `dynamic`, the content returned by the integration can be reduced by applying a JMESpath expression.  This is valid as long as the content is structured and of a supported format.  We support JMESpath expressions on `json`, `yaml`, and `dotenv` content.
-    #[serde(rename = "dynamic_filter", skip_serializing_if = "Option::is_none")]
-    pub dynamic_filter: Option<String>,
-    /// This is the content to use when resolving the Value for a static non-secret, or when storing a secret.  When storing a secret, this content is stored in your organization's dedicated vault and this field is cleared.  This field is required if the value is being created or updated and is not dynamic.  This field cannot be specified when creating or updating a dynamic value.
-    #[serde(rename = "static_value", skip_serializing_if = "Option::is_none")]
-    pub static_value: Option<String>,
+    /// An external parameter leverages a CloudTruth integration to retrieve content on-demand from an external source.  When this is `false` the value is stored by CloudTruth and considered to be _internal_.  When this is `true`, the `external_fqn` field must be set.
+    #[serde(rename = "external", skip_serializing_if = "Option::is_none")]
+    pub external: Option<bool>,
+    /// The FQN, or Fully-Qualified Name, is the path through the integration to get to the desired content.  This must be present and reference a valid integration when the value is `external`.
+    #[serde(rename = "external_fqn", skip_serializing_if = "Option::is_none")]
+    pub external_fqn: Option<String>,
+    /// If the value is `external`, the content returned by the integration can be reduced by applying a JMESpath expression.  This is valid as long as the content is structured and of a supported format.  JMESpath expressions are supported on `json`, `yaml`, and `dotenv` content.
+    #[serde(rename = "external_filter", skip_serializing_if = "Option::is_none")]
+    pub external_filter: Option<String>,
+    /// This is the content to use when resolving the Value for an internal non-secret, or when storing a secret.  When storing a secret, this content is stored in your organization's dedicated vault and this field is cleared.  This field is required if the value is being created or updated and is `internal`.  This field cannot be specified when creating or updating an `external` value.
+    #[serde(rename = "internal_value", skip_serializing_if = "Option::is_none")]
+    pub internal_value: Option<String>,
 }
 
 impl ValueCreate {
@@ -34,10 +34,10 @@ impl ValueCreate {
     pub fn new(environment: String) -> ValueCreate {
         ValueCreate {
             environment,
-            dynamic: None,
-            dynamic_fqn: None,
-            dynamic_filter: None,
-            static_value: None,
+            external: None,
+            external_fqn: None,
+            external_filter: None,
+            internal_value: None,
         }
     }
 }

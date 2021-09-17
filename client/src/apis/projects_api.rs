@@ -1874,11 +1874,13 @@ pub fn projects_parameters_values_list(
     configuration: &configuration::Configuration,
     parameter_pk: &str,
     project_pk: &str,
+    as_of: Option<String>,
     environment: Option<&str>,
     mask_secrets: Option<bool>,
     page: Option<i32>,
     page_size: Option<i32>,
     partial_success: Option<bool>,
+    tag: Option<&str>,
     wrap: Option<bool>,
 ) -> Result<crate::models::PaginatedValueList, Error<ProjectsParametersValuesListError>> {
     let local_var_client = &configuration.client;
@@ -1892,6 +1894,10 @@ pub fn projects_parameters_values_list(
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
 
+    if let Some(ref local_var_str) = as_of {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("as_of", &local_var_str.to_string())]);
+    }
     if let Some(ref local_var_str) = environment {
         local_var_req_builder =
             local_var_req_builder.query(&[("environment", &local_var_str.to_string())]);
@@ -1911,6 +1917,9 @@ pub fn projects_parameters_values_list(
     if let Some(ref local_var_str) = partial_success {
         local_var_req_builder =
             local_var_req_builder.query(&[("partial_success", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = tag {
+        local_var_req_builder = local_var_req_builder.query(&[("tag", &local_var_str.to_string())]);
     }
     if let Some(ref local_var_str) = wrap {
         local_var_req_builder =
@@ -2056,8 +2065,10 @@ pub fn projects_parameters_values_retrieve(
     id: &str,
     parameter_pk: &str,
     project_pk: &str,
+    as_of: Option<String>,
     mask_secrets: Option<bool>,
     partial_success: Option<bool>,
+    tag: Option<&str>,
     wrap: Option<bool>,
 ) -> Result<crate::models::Value, Error<ProjectsParametersValuesRetrieveError>> {
     let local_var_client = &configuration.client;
@@ -2072,6 +2083,10 @@ pub fn projects_parameters_values_retrieve(
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
 
+    if let Some(ref local_var_str) = as_of {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("as_of", &local_var_str.to_string())]);
+    }
     if let Some(ref local_var_str) = mask_secrets {
         local_var_req_builder =
             local_var_req_builder.query(&[("mask_secrets", &local_var_str.to_string())]);
@@ -2079,6 +2094,9 @@ pub fn projects_parameters_values_retrieve(
     if let Some(ref local_var_str) = partial_success {
         local_var_req_builder =
             local_var_req_builder.query(&[("partial_success", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = tag {
+        local_var_req_builder = local_var_req_builder.query(&[("tag", &local_var_str.to_string())]);
     }
     if let Some(ref local_var_str) = wrap {
         local_var_req_builder =

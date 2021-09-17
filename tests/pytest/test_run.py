@@ -110,7 +110,7 @@ class TestRun(TestCase):
         cmd = base_cmd + f"--project {proj_name} run  -i none -- '{printenv} > {filename}' {printenv}"
 
         result = self.run_cli(cmd_env, cmd)
-        # NOTE: don't care whether this paases or fails (may be different on each platform)
+        # NOTE: don't care whether this passes or fails (may be different on each platform)
         self.assertIn("command contains spaces, and may fail", result.err())
 
         # cleanup
