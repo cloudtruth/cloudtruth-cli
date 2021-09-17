@@ -111,7 +111,7 @@ SUBCOMMANDS:
     delete    Delete specified CloudTruth environment [aliases: del, d]
     help      Prints this message or the help of the given subcommand(s)
     list      List CloudTruth environments [aliases: ls, l]
-    set       Create/update a CloudTruth environment
+    set       Create/update a CloudTruth environment [aliases: s]
     tree      Show a tree representation of the environments [aliases: tr, t]
 ========================================
 cloudtruth-environments-delete 
@@ -265,7 +265,7 @@ SUBCOMMANDS:
     help           Prints this message or the help of the given subcommand(s)
     list           List CloudTruth parameters [aliases: ls, l]
     set            Set a value in the selected project/environment for an existing parameter or creates a new one if
-                   needed
+                   needed [aliases: s]
     unset          Remove a value/override from the selected project/environment and leaves the parameter in place.
 ========================================
 cloudtruth-parameters-delete 
@@ -441,7 +441,7 @@ SUBCOMMANDS:
     delete    Delete specified CloudTruth project [aliases: del, d]
     help      Prints this message or the help of the given subcommand(s)
     list      List CloudTruth projects [aliases: ls, l]
-    set       Create/update a CloudTruth project
+    set       Create/update a CloudTruth project [aliases: s]
 ========================================
 cloudtruth-projects-delete 
 Delete specified CloudTruth project
@@ -523,13 +523,13 @@ FLAGS:
 
 SUBCOMMANDS:
     delete     Delete the CloudTruth template [aliases: del, d]
-    edit       Edit the specified template
+    edit       Edit the specified template [aliases: ed, e]
     get        Get an evaluated template from CloudTruth
     help       Prints this message or the help of the given subcommand(s)
     history    Display template history [aliases: hist, h]
     list       List CloudTruth templates [aliases: ls, l]
     preview    Evaluate the provided template without storing [aliases: prev, pre]
-    set        Set the CloudTruth template
+    set        Set the CloudTruth template [aliases: s]
 ========================================
 cloudtruth-templates-delete 
 Delete the CloudTruth template

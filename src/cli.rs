@@ -23,8 +23,10 @@ pub const LIST_SUBCMD: &str = "list";
 pub const SET_SUBCMD: &str = "set";
 
 const DELETE_ALIASES: &[&str] = &["del", "d"];
+const EDIT_ALIASES: &[&str] = &["ed", "e"];
 const HISTORY_ALIASES: &[&str] = &["hist", "h"];
 const LIST_ALIASES: &[&str] = &["ls", "l"];
+const SET_ALIASES: &[&str] = &["s"];
 
 pub fn binary_name() -> String {
     option_env!("CARGO_PKG_NAME")
@@ -137,7 +139,7 @@ pub fn build_cli() -> App<'static, 'static> {
             .about("Configuration options for this application")
             .subcommands(vec![
                 SubCommand::with_name(EDIT_SUBCMD)
-                    .visible_aliases(&["ed", "e"])
+                    .visible_aliases(EDIT_ALIASES)
                     .about("Edit your configuration data for this application"),
                 SubCommand::with_name(LIST_SUBCMD)
                     .visible_aliases(LIST_ALIASES)
@@ -173,6 +175,7 @@ pub fn build_cli() -> App<'static, 'static> {
                         .arg(values_flag().help("Display environment information/values"))
                         .arg(table_format_options().help("Format for environment values data")),
                     SubCommand::with_name(SET_SUBCMD)
+                        .visible_aliases(SET_ALIASES)
                         .about("Create/update a CloudTruth environment")
                         .arg(name_arg().help("Environment name"))
                         .arg(description_option().help("Environment's description"))
@@ -292,6 +295,7 @@ pub fn build_cli() -> App<'static, 'static> {
                         .arg(table_format_options().help("Format for parameter values data"))
                         .arg(secrets_display_flag().help("Display the secret parameter values")),
                     SubCommand::with_name(SET_SUBCMD)
+                        .visible_aliases(SET_ALIASES)
                         .about(concat!("Set a value in the selected project/environment for ",
                             "an existing parameter or creates a new one if needed"))
                         .arg(key_arg().help("Name of parameter to set"))
@@ -419,6 +423,7 @@ pub fn build_cli() -> App<'static, 'static> {
                     .arg(confirm_flag())
                     .arg(name_arg().help("Template name")),
                 SubCommand::with_name(EDIT_SUBCMD)
+                    .visible_aliases(EDIT_ALIASES)
                     .about("Edit the specified template")
                     .arg(name_arg().help("Template name")),
                 SubCommand::with_name(GET_SUBCMD)
@@ -448,6 +453,7 @@ pub fn build_cli() -> App<'static, 'static> {
                     .arg(param_as_of_arg())
                     .arg(secrets_display_flag().help("Display secret values in evaluation")),
                 SubCommand::with_name(SET_SUBCMD)
+                    .visible_aliases(SET_ALIASES)
                     .arg(name_arg().help("Template name"))
                     .arg(template_body().takes_value(true).short("b").long("body"))
                     .arg(rename_option().help("New template name"))
@@ -519,6 +525,7 @@ pub fn build_cli() -> App<'static, 'static> {
                         .arg(values_flag().help("Display project information/values"))
                         .arg(table_format_options().help("Format for project values data")),
                     SubCommand::with_name(SET_SUBCMD)
+                        .visible_aliases(SET_ALIASES)
                         .about("Create/update a CloudTruth project")
                         .arg(name_arg().help("Project name"))
                         .arg(rename_option().help("New project name"))

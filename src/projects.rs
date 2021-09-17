@@ -1,6 +1,6 @@
 use crate::cli::{
-    CONFIRM_FLAG, DELETE_SUBCMD, FORMAT_OPT, LIST_SUBCMD, NAME_ARG, RENAME_OPT, SET_SUBCMD,
-    SHOW_TIMES_FLAG, VALUES_FLAG,
+    CONFIRM_FLAG, DELETE_SUBCMD, DESCRIPTION_OPT, FORMAT_OPT, LIST_SUBCMD, NAME_ARG, RENAME_OPT,
+    SET_SUBCMD, SHOW_TIMES_FLAG, VALUES_FLAG,
 };
 use crate::database::{OpenApiConfig, Projects};
 use crate::table::Table;
@@ -81,7 +81,7 @@ fn proc_proj_set(
 ) -> Result<()> {
     let proj_name = subcmd_args.value_of(NAME_ARG).unwrap();
     let rename = subcmd_args.value_of(RENAME_OPT);
-    let description = subcmd_args.value_of("description");
+    let description = subcmd_args.value_of(DESCRIPTION_OPT);
     let details = projects.get_details_by_name(rest_cfg, proj_name)?;
 
     if let Some(details) = details {

@@ -1,6 +1,6 @@
 use crate::cli::{
-    binary_name, AS_OF_ARG, CONFIRM_FLAG, DELETE_SUBCMD, FORMAT_OPT, GET_SUBCMD, KEY_ARG,
-    LIST_SUBCMD, RENAME_OPT, SECRETS_FLAG, SET_SUBCMD, SHOW_TIMES_FLAG, VALUES_FLAG,
+    binary_name, AS_OF_ARG, CONFIRM_FLAG, DELETE_SUBCMD, DESCRIPTION_OPT, FORMAT_OPT, GET_SUBCMD,
+    KEY_ARG, LIST_SUBCMD, RENAME_OPT, SECRETS_FLAG, SET_SUBCMD, SHOW_TIMES_FLAG, VALUES_FLAG,
 };
 use crate::config::DEFAULT_ENV_NAME;
 use crate::database::{
@@ -661,7 +661,7 @@ fn proc_param_set(
     let jmes_path = subcmd_args.value_of("JMES");
     let mut value = subcmd_args.value_of("value");
     let val_str: String;
-    let description = subcmd_args.value_of("description");
+    let description = subcmd_args.value_of(DESCRIPTION_OPT);
     let rename = subcmd_args.value_of(RENAME_OPT);
     let final_name = rename.unwrap_or(key_name);
     let mut param_added = false;

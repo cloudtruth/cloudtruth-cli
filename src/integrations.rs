@@ -11,6 +11,8 @@ fn proc_integ_explore(
     integrations: &Integrations,
 ) -> Result<()> {
     let fqn = subcmd_args.value_of("FQN");
+    let show_values = subcmd_args.is_present(VALUES_FLAG);
+    let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
     let nodes = integrations.get_integration_nodes(rest_cfg, fqn)?;
     let indent = "  ";
     if nodes.is_empty() {
@@ -19,7 +21,7 @@ fn proc_integ_explore(
         } else {
             error_message("No integrations found.".to_string())?;
         }
-    } else if !subcmd_args.is_present("values") {
+    } else if !show_values {
         for node in nodes {
             println!("{}", node.name);
             for key in node.content_keys {
@@ -27,7 +29,6 @@ fn proc_integ_explore(
             }
         }
     } else {
-        let fmt = subcmd_args.value_of("format").unwrap();
         let mut table = Table::new("integration");
         table.set_header(&["Name", "FQN"]);
         for node in nodes {
