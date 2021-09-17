@@ -2169,13 +2169,14 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
 
         ################
         # bad environment/tag combination testing
+        proj_base = base_cmd + f"--project '{proj_name}' "
         bad_tag = "no-such-tag"
-        result = self.run_cli(cmd_env, base_cmd + f"--env {env_name} param ls -v --as-of {bad_tag}")
+        result = self.run_cli(cmd_env, proj_base + f"--env '{env_name}' param ls -v --as-of {bad_tag}")
         # self.assertResultError(result, f"Tag '{bad_tag}' does not exist in environment '{env_name}'")
         self.assertResultError(result, not_found)
 
         bad_env = "default"
-        result = self.run_cli(cmd_env, base_cmd + f"--env {bad_env} param ls -v --as-of {tag_name}")
+        result = self.run_cli(cmd_env, proj_base + f"--env {bad_env} param ls -v --as-of {tag_name}")
         # self.assertResultError(result, f"Tag '{tag_name}' does not exist in environment '{bad_env}'")
         self.assertResultError(result, not_found)
 
