@@ -1553,12 +1553,13 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
         self.assertResultError(result, not_found)
         result = self.run_cli(cmd_env, param_cmd + f"export shell --as-of '{timestamp}'")
         self.assertResultError(result, not_found)
-        result = self.run_cli(cmd_env, param_cmd + f"get '{param1}' --as-of '{timestamp}'")
-        self.assertResultError(result, not_found)
         result = self.run_cli(cmd_env, param_cmd + f"diff --as-of '{timestamp}'")
         self.assertResultError(result, not_found)
-        result = self.run_cli(cmd_env, param_cmd + f"env --as-of '{timestamp}'")
-        self.assertResultError(result, not_found)
+        # result = self.run_cli(cmd_env, param_cmd + f"env '{param1}' --as-of '{timestamp}'")
+        # self.assertResultError(result, not_found)
+        result = self.run_cli(cmd_env, param_cmd + f"get '{param1}' --as-of '{timestamp}'")
+        self.assertResultSuccess(result)
+        self.assertIn(f"The parameter '{param1}' could not be found", result.out())
 
         # cleanup
         self.delete_environment(cmd_env, env_a)
@@ -2158,22 +2159,25 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
         self.assertResultError(result, not_found)
         result = self.run_cli(cmd_env, param_cmd + f"export docker --as-of '{tag_name}'")
         self.assertResultError(result, not_found)
-        result = self.run_cli(cmd_env, param_cmd + f"get '{param1}' --as-of '{tag_name}'")
-        self.assertResultError(result, not_found)
         result = self.run_cli(cmd_env, param_cmd + f"diff --as-of '{tag_name}'")
         self.assertResultError(result, not_found)
-        result = self.run_cli(cmd_env, param_cmd + f"env --as-of '{tag_name}'")
-        self.assertResultError(result, not_found)
+        # result = self.run_cli(cmd_env, param_cmd + f"env '{param1}' --as-of '{tag_name}'")
+        # self.assertResultError(result, not_found)
+        result = self.run_cli(cmd_env, param_cmd + f"get '{param1}' --as-of '{timestamp}'")
+        self.assertResultSuccess(result)
+        self.assertIn(f"The parameter '{param1}' could not be found", result.out())
 
         ################
         # bad environment/tag combination testing
         bad_tag = "no-such-tag"
         result = self.run_cli(cmd_env, base_cmd + f"--env {env_name} param ls -v --as-of {bad_tag}")
-        self.assertResultError(result, f"Tag '{bad_tag}' does not exist in environment '{env_name}'")
+        # self.assertResultError(result, f"Tag '{bad_tag}' does not exist in environment '{env_name}'")
+        self.assertResultError(result, not_found)
 
         bad_env = "default"
         result = self.run_cli(cmd_env, base_cmd + f"--env {bad_env} param ls -v --as-of {tag_name}")
-        self.assertResultError(result, f"Tag '{tag_name}' does not exist in environment '{bad_env}'")
+        # self.assertResultError(result, f"Tag '{tag_name}' does not exist in environment '{bad_env}'")
+        self.assertResultError(result, not_found)
 
         ################
         # cleanup
