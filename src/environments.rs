@@ -1,11 +1,14 @@
 use crate::cli::{
-    CONFIRM_FLAG, DELETE_SUBCMD, DESCRIPTION_OPT, FORMAT_OPT, LIST_SUBCMD, NAME_ARG, RENAME_OPT,
-    SET_SUBCMD, SHOW_TIMES_FLAG, VALUES_FLAG,
+    CONFIRM_FLAG, DELETE_SUBCMD, DESCRIPTION_OPT, ENV_NAME_ARG, FORMAT_OPT, LIST_SUBCMD, NAME_ARG,
+    RENAME_OPT, SET_SUBCMD, SHOW_TIMES_FLAG, TAG_NAME_ARG, TAG_SUBCMD, VALUES_FLAG,
 };
 use crate::config::DEFAULT_ENV_NAME;
 use crate::database::{EnvironmentDetails, Environments, OpenApiConfig};
 use crate::table::Table;
-use crate::{error_message, user_confirm, warn_missing_subcommand, warning_message, DEL_CONFIRM};
+use crate::{
+    error_message, error_no_environment_message, parse_datetime, user_confirm,
+    warn_missing_subcommand, warning_message, DEL_CONFIRM,
+};
 use clap::ArgMatches;
 use color_eyre::eyre::Result;
 use std::process;
@@ -153,6 +156,151 @@ fn proc_env_tree(
     Ok(())
 }
 
+fn proc_env_tag_delete(
+    subcmd_args: &ArgMatches,
+    rest_cfg: &OpenApiConfig,
+    environments: &Environments,
+) -> Result<()> {
+    let env_name = subcmd_args.value_of(ENV_NAME_ARG).unwrap();
+    let tag_name = subcmd_args.value_of(TAG_NAME_ARG).unwrap();
+    let mut confirmed = subcmd_args.is_present(CONFIRM_FLAG);
+
+    let environment_id = environments.get_id(rest_cfg, env_name)?;
+    if let Some(env_id) = environment_id {
+        if let Some(tag_id) = environments.get_tag_id(rest_cfg, &env_id, tag_name)? {
+            // NOTE: the server is responsible for checking if children exist
+            if !confirmed {
+                confirmed = user_confirm(
+                    format!("Delete tag '{}' from environment '{}'", tag_name, env_name),
+                    DEL_CONFIRM,
+                );
+            }
+
+            if !confirmed {
+                warning_message(format!(
+                    "Tag '{}' in environment '{}' not deleted!",
+                    tag_name, env_name
+                ))?;
+            } else {
+                environments.delete_env_tag(rest_cfg, &env_id, &tag_id)?;
+                println!("Deleted tag '{}' from environment '{}'", tag_name, env_name);
+            }
+        } else {
+            warning_message(format!(
+                "Environment '{}' does not have a tag '{}'!",
+                env_name, tag_name
+            ))?;
+        }
+    } else {
+        warning_message(format!("Environment '{}' does not exist!", env_name))?;
+    }
+    Ok(())
+}
+
+fn proc_env_tag_list(
+    subcmd_args: &ArgMatches,
+    rest_cfg: &OpenApiConfig,
+    environments: &Environments,
+) -> Result<()> {
+    let env_name = subcmd_args.value_of(ENV_NAME_ARG).unwrap();
+    let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
+    let show_usage = subcmd_args.is_present("usage");
+    let show_values = subcmd_args.is_present(VALUES_FLAG) || show_usage;
+    let environment_id = environments.get_id(rest_cfg, env_name)?;
+
+    if let Some(env_id) = environment_id {
+        let tags = environments.get_env_tags(rest_cfg, &env_id)?;
+
+        if tags.is_empty() {
+            println!("No tags found in environment {}", env_name,);
+        } else if !show_values {
+            let list = tags.iter().map(|t| t.name.clone()).collect::<Vec<String>>();
+            println!("{}", list.join("\n"))
+        } else {
+            let mut table = Table::new("environment-tags");
+            let mut hdr = vec!["Name", "Timestamp", "Description"];
+            if show_usage {
+                hdr.push("Total Reads");
+                hdr.push("Last User");
+                hdr.push("Last Time");
+            }
+            table.set_header(&hdr);
+            for entry in tags {
+                let mut row = vec![entry.name, entry.timestamp, entry.description];
+                if show_usage {
+                    row.push(entry.total_reads.to_string());
+                    row.push(entry.last_use_user);
+                    row.push(entry.last_use_time);
+                }
+                table.add_row(row);
+            }
+            table.render(fmt)?;
+        }
+    } else {
+        error_no_environment_message(env_name)?;
+        process::exit(14);
+    }
+    Ok(())
+}
+
+fn proc_env_tag_set(
+    subcmd_args: &ArgMatches,
+    rest_cfg: &OpenApiConfig,
+    environments: &Environments,
+) -> Result<()> {
+    let tag_name = subcmd_args.value_of(TAG_NAME_ARG).unwrap();
+    let env_name = subcmd_args.value_of(ENV_NAME_ARG).unwrap();
+    let description = subcmd_args.value_of(DESCRIPTION_OPT);
+
+    // make sure the user provided something useful for a timestamp
+    let time_opt = subcmd_args.value_of("timestamp");
+    if time_opt.is_some() && parse_datetime(time_opt).is_none() {
+        error_message("Invalid time value -- use an accepted timestamp format".to_string())?;
+        process::exit(16);
+    }
+
+    let timestamp = parse_datetime(time_opt);
+    let environment_id = environments.get_id(rest_cfg, env_name)?;
+    if let Some(env_id) = environment_id {
+        if let Some(tag_id) = environments.get_tag_id(rest_cfg, &env_id, tag_name)? {
+            let _ = environments.update_env_tag(
+                rest_cfg,
+                &env_id,
+                &tag_id,
+                tag_name,
+                description,
+                timestamp,
+            )?;
+            println!("Updated tag '{}' in environment '{}'.", tag_name, env_name);
+        } else {
+            let _ =
+                environments.create_env_tag(rest_cfg, &env_id, tag_name, description, timestamp)?;
+            println!("Created tag '{}' in environment '{}'.", tag_name, env_name);
+        }
+    } else {
+        error_no_environment_message(env_name)?;
+        process::exit(15);
+    }
+    Ok(())
+}
+
+fn proc_env_tag(
+    subcmd_args: &ArgMatches,
+    rest_cfg: &OpenApiConfig,
+    environments: &Environments,
+) -> Result<()> {
+    if let Some(subcmd_args) = subcmd_args.subcommand_matches(DELETE_SUBCMD) {
+        proc_env_tag_delete(subcmd_args, rest_cfg, environments)?;
+    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(LIST_SUBCMD) {
+        proc_env_tag_list(subcmd_args, rest_cfg, environments)?;
+    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(SET_SUBCMD) {
+        proc_env_tag_set(subcmd_args, rest_cfg, environments)?;
+    } else {
+        warn_missing_subcommand("environments tag")?;
+    }
+    Ok(())
+}
+
 /// Process the 'environment' sub-command
 pub fn process_environment_command(
     subcmd_args: &ArgMatches,
@@ -167,6 +315,8 @@ pub fn process_environment_command(
         proc_env_set(subcmd_args, rest_cfg, environments)?;
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("tree") {
         proc_env_tree(subcmd_args, rest_cfg, environments)?;
+    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(TAG_SUBCMD) {
+        proc_env_tag(subcmd_args, rest_cfg, environments)?;
     } else {
         warn_missing_subcommand("environments")?;
     }

@@ -164,3 +164,117 @@ class TestEnvironments(TestCase):
         self.delete_environment(cmd_env, env_name3)
         self.delete_environment(cmd_env, env_name2)
         self.delete_environment(cmd_env, env_name1)
+
+    def test_environment_tagging(self):
+        base_cmd = self.get_cli_base_cmd()
+        cmd_env = self.get_cmd_env()
+
+        proj_name = self.make_name("proj-env-tag")
+        self.create_project(cmd_env, proj_name)
+        env_name = self.make_name("test-env-tag")
+        self.create_environment(cmd_env, env_name)
+
+        # set a parameter
+        param_cmd = base_cmd + f"--env {env_name} --project '{proj_name}' param "
+        param1 = "my-param"
+        value1 = "temp value"
+        result = self.run_cli(cmd_env, param_cmd + f"set '{param1}' -v '{value1}'")
+        self.assertResultSuccess(result)
+
+        # make sure it is empty
+        tag_cmd = base_cmd + "env tag "
+        list_cmd = tag_cmd + f"list '{env_name}' "
+        empty_msg = f"No tags found in environment {env_name}"
+        for cmd in [list_cmd, list_cmd + "-v", list_cmd + "-f csv", list_cmd + "-u", list_cmd + "-vuf csv"]:
+            result = self.run_cli(cmd_env, cmd)
+            self.assertResultSuccess(result)
+            self.assertIn(empty_msg, result.out())
+
+        # create tag
+        tag1 = "my-orig-tag"
+        desc1a = "first description"
+        result = self.run_cli(cmd_env, tag_cmd + f"set '{env_name}' '{tag1}' -d '{desc1a}'")
+        self.assertResultSuccess(result)
+
+        # make sure we can see the entry
+        result = self.run_cli(cmd_env, list_cmd + "-vf csv")
+        self.assertResultSuccess(result)
+        self.assertIn(tag1, result.out())
+        self.assertIn(desc1a, result.out())
+        orig_time = result.stdout[1].split(",")[1]
+
+        # update the description
+        desc1b = "make it stop"
+        result = self.run_cli(cmd_env, tag_cmd + f"set '{env_name}' '{tag1}' -d '{desc1b}'")
+        self.assertResultSuccess(result)
+
+        # make sure we can see the entry, before it has been read
+        usage_cmd = list_cmd + "-uf json"
+        result = self.run_cli(cmd_env, usage_cmd)
+        self.assertResultSuccess(result)
+        tag_data = eval(result.out()).get("environment-tags")[0]
+        self.assertEqual(tag1, tag_data.get("Name"))
+        self.assertEqual(desc1b, tag_data.get("Description"))  # updated
+        self.assertEqual(orig_time, tag_data.get("Timestamp"))  # not updated
+        self.assertEqual("0", tag_data.get("Total Reads"))
+        self.assertEqual("", tag_data.get("Last User"))
+        # self.assertEqual("", tag_data.get("Last Time"))
+
+        # just do a sample read using the tag
+        param_list = param_cmd + f"ls --as-of '{tag1}' "
+        result = self.run_cli(cmd_env, param_list + "-v")
+        self.assertResultSuccess(result)
+        self.assertIn(param1, result.out())
+        self.assertIn(value1, result.out())
+
+        # do it again without values (issue seen during development)
+        result = self.run_cli(cmd_env, param_list)
+        self.assertResultSuccess(result)
+        self.assertIn(param1, result.out())
+        self.assertNotIn(value1, result.out())
+
+        # see the tag usage is updated
+        result = self.run_cli(cmd_env, usage_cmd)
+        self.assertResultSuccess(result)
+        tag_data = eval(result.out()).get("environment-tags")[0]
+        self.assertEqual("2", tag_data.get("Total Reads"))
+        self.assertNotEqual("", tag_data.get("Last User"))
+        self.assertNotEqual("", tag_data.get("Last Time"))
+
+        # set a timestamp -- we are pretty liberal about what we convert
+        timestamp = "03/24/2021"
+        result = self.run_cli(cmd_env, tag_cmd + f"set {env_name} {tag1} -t '{timestamp}'")
+        self.assertResultSuccess(result)
+
+        result = self.run_cli(cmd_env, list_cmd + "-u -f csv")
+        self.assertResultSuccess(result)
+        self.assertIn("2021-03-24", result.out())
+        self.assertIn(",Total Reads,Last User,Last Time", result.out())
+
+        # invalid timestamps -- make sure CLI catches the invalid things
+        for timestamp in ["abcd", "2000"]:
+            result = self.run_cli(cmd_env, tag_cmd + f"set {env_name} {tag1} -t '{timestamp}'")
+            self.assertResultError(result, "Invalid time value")
+
+        # delete the tag
+        del_cmd = tag_cmd + f"del {env_name} {tag1} -y"
+        result = self.run_cli(cmd_env, del_cmd)
+        self.assertResultSuccess(result)
+
+        # idempotent
+        result = self.run_cli(cmd_env, del_cmd)
+        self.assertResultWarning(result, f"Environment '{env_name}' does not have a tag '{tag1}'")
+
+        # set/list/delete unknown environment
+        bad_env = "nonesuch"
+        no_env_msg = f"The '{bad_env}' environment could not be found in your account"
+        result = self.run_cli(cmd_env, tag_cmd + f"list {bad_env}")
+        self.assertResultError(result, no_env_msg)
+        result = self.run_cli(cmd_env, tag_cmd + f"set {bad_env} {tag1}")
+        self.assertResultError(result, no_env_msg)
+        result = self.run_cli(cmd_env, tag_cmd + f"delete {bad_env} {tag1}")
+        self.assertResultWarning(result, f"Environment '{bad_env}' does not exist")
+
+        # cleanup
+        self.delete_project(cmd_env, proj_name)
+        self.delete_environment(cmd_env, env_name)

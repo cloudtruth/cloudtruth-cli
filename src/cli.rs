@@ -3,15 +3,17 @@ use clap::{
     Arg, Shell, SubCommand,
 };
 
-pub const AS_OF_ARG: &str = "datetime";
+pub const AS_OF_ARG: &str = "datetime|tag";
 pub const CONFIRM_FLAG: &str = "confirm";
 pub const DESCRIPTION_OPT: &str = "description";
+pub const ENV_NAME_ARG: &str = "env-name";
 pub const FORMAT_OPT: &str = "format";
 pub const KEY_ARG: &str = "KEY";
 pub const NAME_ARG: &str = "NAME";
 pub const RENAME_OPT: &str = "rename";
 pub const SHOW_TIMES_FLAG: &str = "show-time";
 pub const SECRETS_FLAG: &str = "secrets";
+pub const TAG_NAME_ARG: &str = "tag-name";
 pub const TEMPLATE_FILE_OPT: &str = "FILE";
 pub const VALUES_FLAG: &str = "values";
 
@@ -21,6 +23,7 @@ pub const GET_SUBCMD: &str = "get";
 pub const HISTORY_SUBCMD: &str = "history";
 pub const LIST_SUBCMD: &str = "list";
 pub const SET_SUBCMD: &str = "set";
+pub const TAG_SUBCMD: &str = "tag";
 
 const DELETE_ALIASES: &[&str] = &["del", "d"];
 const EDIT_ALIASES: &[&str] = &["ed", "e"];
@@ -90,7 +93,7 @@ fn as_of_arg() -> Arg<'static, 'static> {
 }
 
 fn param_as_of_arg() -> Arg<'static, 'static> {
-    as_of_arg().help("Date/time of parameter value(s)")
+    as_of_arg().help("Date/time (or tag) of parameter value(s)")
 }
 
 fn show_times_arg() -> Arg<'static, 'static> {
@@ -98,6 +101,20 @@ fn show_times_arg() -> Arg<'static, 'static> {
         .long("show-times")
         .takes_value(false)
         .help("Show create and modified times.")
+}
+
+fn env_name_arg() -> Arg<'static, 'static> {
+    Arg::with_name(ENV_NAME_ARG)
+        .takes_value(true)
+        .index(1)
+        .help("Environment name")
+}
+
+fn tag_name_arg() -> Arg<'static, 'static> {
+    Arg::with_name(TAG_NAME_ARG)
+        .takes_value(true)
+        .index(2)
+        .help("Tag name")
 }
 
 pub fn build_cli() -> App<'static, 'static> {
@@ -185,8 +202,35 @@ pub fn build_cli() -> App<'static, 'static> {
                             .long("parent")
                             .takes_value(true)
                             .help("Environment's parent name (only used for create)")),
+                    SubCommand::with_name(TAG_SUBCMD)
+                        .visible_aliases(&["ta"])
+                        .subcommands(vec![
+                            SubCommand::with_name(DELETE_SUBCMD)
+                                .visible_aliases(DELETE_ALIASES)
+                                .arg(env_name_arg())
+                                .arg(tag_name_arg())
+                                .arg(confirm_flag())
+                                .about("Delete an environment tag value"),
+                            SubCommand::with_name(LIST_SUBCMD)
+                                .visible_aliases(LIST_ALIASES)
+                                .arg(env_name_arg())
+                                .arg(Arg::with_name("usage")
+                                    .long("usage")
+                                    .short("u")
+                                    .help("Display tag usage data"))
+                                .arg(values_flag().help("Display environment tag information"))
+                                .arg(table_format_options().help("Format for environment tag values data"))
+                                .about("List CloudTruth environment tags"),
+                            SubCommand::with_name(SET_SUBCMD)
+                                .arg(env_name_arg())
+                                .arg(tag_name_arg())
+                                .arg(description_option().help("Tag's description"))
+                                .arg(Arg::with_name("timestamp").takes_value(true).short("t").long("time").help("Set the tag's timestamp value"))
+                                .about("Create/update an environment tag"),
+                        ])
+                        .about("View and manipulate environment tags"),
                     SubCommand::with_name("tree")
-                        .visible_aliases(&["tr", "t"])
+                        .visible_aliases(&["tr"])
                         .about("Show a tree representation of the environments")
                         .arg(name_arg()
                             .help("Show this environment with children")
@@ -437,7 +481,7 @@ pub fn build_cli() -> App<'static, 'static> {
                 SubCommand::with_name(HISTORY_SUBCMD)
                     .visible_aliases(HISTORY_ALIASES)
                     .arg(name_arg().help("Template name (optional)").required(false))
-                    .arg(as_of_arg().help("Date/time of template history"))
+                    .arg(as_of_arg().help("Date/time (or tag) of template history"))
                     .arg(table_format_options().help("Format for the template history"))
                     .about("Display template history"),
                 SubCommand::with_name(LIST_SUBCMD)

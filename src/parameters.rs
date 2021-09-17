@@ -32,7 +32,7 @@ fn proc_param_delete(
     let confirmed = subcmd_args.is_present(CONFIRM_FLAG);
     let proj_name = resolved.project_display_name();
     let proj_id = resolved.project_id();
-    let param_id = parameters.get_id(rest_cfg, proj_id, key_name, None, None);
+    let param_id = parameters.get_id(rest_cfg, proj_id, key_name);
     if param_id.is_none() {
         println!(
             "Did not find parameter '{}' to delete from project '{}'.",

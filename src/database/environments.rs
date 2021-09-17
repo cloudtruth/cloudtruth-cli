@@ -3,10 +3,15 @@ use crate::database::openapi::{extract_details, OpenApiConfig, PAGE_SIZE};
 use cloudtruth_restapi::apis::environments_api::*;
 use cloudtruth_restapi::apis::Error;
 use cloudtruth_restapi::apis::Error::ResponseError;
-use cloudtruth_restapi::models::{Environment, EnvironmentCreate, PatchedEnvironment};
+use cloudtruth_restapi::models::{
+    Environment, EnvironmentCreate, PatchedEnvironment, PatchedTag, Tag, TagCreate, TagReadUsage,
+};
+use once_cell::sync::OnceCell;
 use std::collections::HashMap;
 use std::error;
 use std::fmt::{self, Formatter};
+
+static DEFAULT_USAGE_VALUE: OnceCell<TagReadUsage> = OnceCell::new();
 
 pub struct Environments {}
 
@@ -75,6 +80,41 @@ impl fmt::Display for EnvironmentError {
 }
 
 impl error::Error for EnvironmentError {}
+
+#[derive(Debug)]
+pub struct EnvironmentTag {
+    pub id: String,
+    pub url: String,
+    pub name: String,
+    pub description: String,
+    pub timestamp: String,
+    pub last_use_user: String,
+    pub last_use_time: String,
+    pub total_reads: i32,
+}
+
+impl From<&Tag> for EnvironmentTag {
+    fn from(api: &Tag) -> Self {
+        let usage = match api.usage {
+            Some(ref u) => u,
+            _ => DEFAULT_USAGE_VALUE.get_or_init(|| TagReadUsage {
+                last_read: None,
+                last_read_by: "".to_string(),
+                total_reads: 0,
+            }),
+        };
+        Self {
+            id: api.id.clone(),
+            url: api.url.clone(),
+            name: api.name.clone(),
+            description: api.description.clone().unwrap_or_default(),
+            timestamp: api.clone().timestamp,
+            last_use_user: usage.last_read_by.clone(),
+            last_use_time: usage.last_read.clone().unwrap_or_default(),
+            total_reads: usage.total_reads,
+        }
+    }
+}
 
 /// The `BadRequest` content seems to be a list (instead of structured data like many other
 /// `ResponseError` cases). This handles what appears to be a list of string, instead of structured
@@ -301,5 +341,109 @@ impl Environments {
             result.insert(d.url.clone(), d.name.clone());
         }
         result
+    }
+
+    pub fn get_env_tags(
+        &self,
+        rest_cfg: &OpenApiConfig,
+        environment_id: &str,
+    ) -> Result<Vec<EnvironmentTag>, Error<EnvironmentsTagsListError>> {
+        let response = environments_tags_list(
+            rest_cfg,
+            environment_id,
+            None,
+            None,
+            None,
+            None,
+            None,
+            PAGE_SIZE,
+            None,
+            None,
+            None,
+        )?;
+        let mut result: Vec<EnvironmentTag> = vec![];
+        if let Some(list) = response.results {
+            for ref entry in list {
+                result.push(EnvironmentTag::from(entry));
+            }
+        }
+        Ok(result)
+    }
+
+    pub fn get_tag_id(
+        &self,
+        rest_cfg: &OpenApiConfig,
+        environment_id: &str,
+        tag_name: &str,
+    ) -> Result<Option<String>, Error<EnvironmentsTagsListError>> {
+        let response = environments_tags_list(
+            rest_cfg,
+            environment_id,
+            None,
+            Some(tag_name),
+            None,
+            None,
+            None,
+            PAGE_SIZE,
+            None,
+            None,
+            None,
+        )?;
+        let mut result = None;
+        if let Some(list) = response.results {
+            if !list.is_empty() {
+                result = Some(list[0].id.clone());
+            }
+        }
+        Ok(result)
+    }
+
+    pub fn create_env_tag(
+        &self,
+        rest_cfg: &OpenApiConfig,
+        environment_id: &str,
+        tag_name: &str,
+        description: Option<&str>,
+        timestamp: Option<String>,
+    ) -> Result<String, Error<EnvironmentsTagsCreateError>> {
+        let tag_create = TagCreate {
+            name: tag_name.to_string(),
+            description: description.map(String::from),
+            timestamp,
+        };
+        let response = environments_tags_create(rest_cfg, environment_id, tag_create)?;
+        Ok(response.id)
+    }
+
+    pub fn update_env_tag(
+        &self,
+        rest_cfg: &OpenApiConfig,
+        environment_id: &str,
+        tag_id: &str,
+        tag_name: &str,
+        description: Option<&str>,
+        timestamp: Option<String>,
+    ) -> Result<EnvironmentTag, Error<EnvironmentsTagsPartialUpdateError>> {
+        let tag_update = PatchedTag {
+            url: None,
+            id: None,
+            name: Some(tag_name.to_string()),
+            description: description.map(String::from),
+            timestamp,
+            usage: None,
+        };
+        let response =
+            environments_tags_partial_update(rest_cfg, environment_id, tag_id, Some(tag_update))?;
+        Ok(EnvironmentTag::from(&response))
+    }
+
+    pub fn delete_env_tag(
+        &self,
+        rest_cfg: &OpenApiConfig,
+        environment_id: &str,
+        tag_id: &str,
+    ) -> Result<String, Error<EnvironmentsTagsDestroyError>> {
+        let _ = environments_tags_destroy(rest_cfg, environment_id, tag_id)?;
+        Ok(tag_id.to_string())
     }
 }
