@@ -523,7 +523,7 @@ FLAGS:
 
 SUBCOMMANDS:
     delete     Delete the CloudTruth template [aliases: del, d]
-    edit       Edit the specified template
+    edit       Edit the specified template [aliases: ed, e]
     get        Get an evaluated template from CloudTruth
     help       Prints this message or the help of the given subcommand(s)
     history    Display template history [aliases: hist, h]

@@ -23,6 +23,7 @@ pub const LIST_SUBCMD: &str = "list";
 pub const SET_SUBCMD: &str = "set";
 
 const DELETE_ALIASES: &[&str] = &["del", "d"];
+const EDIT_ALIASES: &[&str] = &["ed", "e"];
 const HISTORY_ALIASES: &[&str] = &["hist", "h"];
 const LIST_ALIASES: &[&str] = &["ls", "l"];
 
@@ -137,7 +138,7 @@ pub fn build_cli() -> App<'static, 'static> {
             .about("Configuration options for this application")
             .subcommands(vec![
                 SubCommand::with_name(EDIT_SUBCMD)
-                    .visible_aliases(&["ed", "e"])
+                    .visible_aliases(EDIT_ALIASES)
                     .about("Edit your configuration data for this application"),
                 SubCommand::with_name(LIST_SUBCMD)
                     .visible_aliases(LIST_ALIASES)
@@ -419,6 +420,7 @@ pub fn build_cli() -> App<'static, 'static> {
                     .arg(confirm_flag())
                     .arg(name_arg().help("Template name")),
                 SubCommand::with_name(EDIT_SUBCMD)
+                    .visible_aliases(EDIT_ALIASES)
                     .about("Edit the specified template")
                     .arg(name_arg().help("Template name")),
                 SubCommand::with_name(GET_SUBCMD)
