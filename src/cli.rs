@@ -106,6 +106,7 @@ fn show_times_arg() -> Arg<'static, 'static> {
 fn env_name_arg() -> Arg<'static, 'static> {
     Arg::with_name(ENV_NAME_ARG)
         .takes_value(true)
+        .required(true)
         .index(1)
         .help("Environment name")
 }
@@ -113,6 +114,7 @@ fn env_name_arg() -> Arg<'static, 'static> {
 fn tag_name_arg() -> Arg<'static, 'static> {
     Arg::with_name(TAG_NAME_ARG)
         .takes_value(true)
+        .required(true)
         .index(2)
         .help("Tag name")
 }

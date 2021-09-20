@@ -183,7 +183,7 @@ cloudtruth-environments-tag-delete
 Delete an environment tag value
 
 USAGE:
-    cloudtruth environments tag delete [FLAGS] [ARGS]
+    cloudtruth environments tag delete [FLAGS] <env-name> <tag-name>
 
 FLAGS:
     -y, --yes        Avoid confirmation prompt(s)
@@ -198,7 +198,7 @@ cloudtruth-environments-tag-list
 List CloudTruth environment tags
 
 USAGE:
-    cloudtruth environments tag list [FLAGS] [OPTIONS] [env-name]
+    cloudtruth environments tag list [FLAGS] [OPTIONS] <env-name>
 
 FLAGS:
     -h, --help       Prints help information
@@ -217,7 +217,7 @@ cloudtruth-environments-tag-set
 Create/update an environment tag
 
 USAGE:
-    cloudtruth environments tag set [OPTIONS] [ARGS]
+    cloudtruth environments tag set [OPTIONS] <env-name> <tag-name>
 
 FLAGS:
     -h, --help       Prints help information
