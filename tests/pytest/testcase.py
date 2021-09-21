@@ -116,8 +116,9 @@ class TestCase(unittest.TestCase):
             cmd = self._base_cmd + f"proj del \"{proj}\" --confirm"
             subprocess.run(cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
-        # tear down any possibly lingering environments -- they should have been deleted
-        for env in self._environments:
+        # tear down any possibly lingering environments -- they should have been deleted in reverse
+        # order in case there are any children.
+        for env in reversed(self._environments):
             cmd = self._base_cmd + f"env del \"{env}\" --confirm"
             subprocess.run(cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
