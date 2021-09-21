@@ -1,9 +1,11 @@
 use crate::database::openapi::{OpenApiConfig, PAGE_SIZE, WRAP_SECRETS};
+use crate::database::parameter_rules::ParameterDetailRule;
+use crate::database::{ParamRuleType, ParamType};
 use cloudtruth_restapi::apis::projects_api::*;
 use cloudtruth_restapi::apis::Error::{self, ResponseError};
 use cloudtruth_restapi::models::{
-    Parameter, ParameterCreate, ParameterRule, ParameterRuleCreate, ParameterRuleTypeEnum,
-    ParameterTypeEnum, PatchedParameter, PatchedParameterRule, PatchedValue, Value, ValueCreate,
+    Parameter, ParameterCreate, ParameterRuleCreate, ParameterRuleTypeEnum, PatchedParameter,
+    PatchedParameterRule, PatchedValue, Value, ValueCreate,
 };
 use once_cell::sync::OnceCell;
 use std::collections::HashMap;
@@ -44,32 +46,6 @@ pub struct ParameterDetails {
     // captures errors when fetching external parameters
     pub error: String,
 }
-
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub enum ParamType {
-    String,
-    Bool,
-    Integer,
-}
-
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub enum ParamRuleType {
-    Max,
-    Min,
-    MaxLen,
-    MinLen,
-    Regex,
-}
-
-#[derive(Clone, Debug)]
-pub struct ParameterDetailRule {
-    pub id: String,
-    pub rule_type: ParamRuleType,
-    pub constraint: String,
-    pub created_at: String,
-    pub modified_at: String,
-}
-
 impl ParameterDetails {
     pub fn get_property(&self, property_name: &str) -> String {
         match property_name {
@@ -202,84 +178,6 @@ impl From<&Parameter> for ParameterDetails {
             modified_at: env_value.modified_at.clone(),
 
             error: env_value.external_error.clone().unwrap_or_default(),
-        }
-    }
-}
-
-impl From<ParameterTypeEnum> for ParamType {
-    fn from(api: ParameterTypeEnum) -> Self {
-        match api {
-            ParameterTypeEnum::Bool => Self::Bool,
-            ParameterTypeEnum::String => Self::String,
-            ParameterTypeEnum::Integer => Self::Integer,
-        }
-    }
-}
-
-impl fmt::Display for ParamType {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::Bool => write!(f, "bool"),
-            Self::Integer => write!(f, "integer"),
-            Self::String => write!(f, "string"),
-        }
-    }
-}
-
-impl ParamType {
-    pub fn to_api_enum(&self) -> ParameterTypeEnum {
-        match self {
-            Self::String => ParameterTypeEnum::String,
-            Self::Bool => ParameterTypeEnum::Bool,
-            Self::Integer => ParameterTypeEnum::Integer,
-        }
-    }
-}
-
-impl From<ParameterRuleTypeEnum> for ParamRuleType {
-    fn from(api: ParameterRuleTypeEnum) -> Self {
-        match api {
-            ParameterRuleTypeEnum::Max => Self::Max,
-            ParameterRuleTypeEnum::Min => Self::Min,
-            ParameterRuleTypeEnum::MaxLen => Self::MaxLen,
-            ParameterRuleTypeEnum::MinLen => Self::MinLen,
-            ParameterRuleTypeEnum::Regex => Self::Regex,
-        }
-    }
-}
-
-impl From<ParamRuleType> for ParameterRuleTypeEnum {
-    fn from(ct: ParamRuleType) -> Self {
-        match ct {
-            ParamRuleType::Max => Self::Max,
-            ParamRuleType::Min => Self::Min,
-            ParamRuleType::MaxLen => Self::MaxLen,
-            ParamRuleType::MinLen => Self::MinLen,
-            ParamRuleType::Regex => Self::Regex,
-        }
-    }
-}
-
-impl fmt::Display for ParamRuleType {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::Max => write!(f, "max"),
-            Self::Min => write!(f, "min"),
-            Self::MaxLen => write!(f, "max-len"),
-            Self::MinLen => write!(f, "min-len"),
-            Self::Regex => write!(f, "regex"),
-        }
-    }
-}
-
-impl From<&ParameterRule> for ParameterDetailRule {
-    fn from(api: &ParameterRule) -> Self {
-        Self {
-            id: api.id.clone(),
-            rule_type: ParamRuleType::from(api._type),
-            constraint: api.constraint.clone(),
-            created_at: api.created_at.clone(),
-            modified_at: api.modified_at.clone(),
         }
     }
 }
