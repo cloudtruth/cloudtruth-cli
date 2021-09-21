@@ -241,6 +241,20 @@ class TestEnvironments(TestCase):
         self.assertNotEqual("", tag_data.get("Last User"))
         self.assertNotEqual("", tag_data.get("Last Time"))
 
+        """
+        # update the timestamp with the --current
+        result = self.run_cli(cmd_env, tag_cmd + f"set '{env_name}' '{tag1}' --current")
+        self.assertResultSuccess(result)
+
+        usage_cmd = list_cmd + "-uf json"
+        result = self.run_cli(cmd_env, usage_cmd)
+        self.assertResultSuccess(result)
+        tag_data = eval(result.out()).get("environment-tags")[0]
+        self.assertEqual(tag1, tag_data.get("Name"))
+        self.assertEqual(desc1b, tag_data.get("Description"))
+        self.assertNotEqual(orig_time, tag_data.get("Timestamp"))  # updated
+        """
+
         # set a timestamp -- we are pretty liberal about what we convert
         timestamp = "03/24/2021"
         result = self.run_cli(cmd_env, tag_cmd + f"set {env_name} {tag1} -t '{timestamp}'")
@@ -250,6 +264,14 @@ class TestEnvironments(TestCase):
         self.assertResultSuccess(result)
         self.assertIn("2021-03-24", result.out())
         self.assertIn(",Total Reads,Last User,Last Time", result.out())
+
+        # warning when nothing is updated
+        result = self.run_cli(cmd_env, tag_cmd + f"set {env_name} {tag1}")
+        self.assertResultWarning(result, "Nothing changed")
+
+        # over specified
+        result = self.run_cli(cmd_env, tag_cmd + f"set {env_name} {tag1} --current --time 2021-10-01")
+        self.assertResultError(result, "Conflicting arguments: cannot specify both")
 
         # invalid timestamps -- make sure CLI catches the invalid things
         for timestamp in ["abcd", "2000"]:

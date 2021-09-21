@@ -227,7 +227,15 @@ pub fn build_cli() -> App<'static, 'static> {
                                 .arg(env_name_arg())
                                 .arg(tag_name_arg())
                                 .arg(description_option().help("Tag's description"))
-                                .arg(Arg::with_name("timestamp").takes_value(true).short("t").long("time").help("Set the tag's timestamp value"))
+                                .arg(Arg::with_name("timestamp")
+                                    .takes_value(true)
+                                    .short("t")
+                                    .long("time")
+                                    .help("Set the tag's timestamp value"))
+                                .arg(Arg::with_name("current")
+                                    .short("c")
+                                    .long("current")
+                                    .help("Update the tag's time to the current time"))
                                 .about("Create/update an environment tag"),
                         ])
                         .about("View and manipulate environment tags"),

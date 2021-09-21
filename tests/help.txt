@@ -217,9 +217,10 @@ cloudtruth-environments-tag-set
 Create/update an environment tag
 
 USAGE:
-    cloudtruth environments tag set [OPTIONS] <env-name> <tag-name>
+    cloudtruth environments tag set [FLAGS] [OPTIONS] <env-name> <tag-name>
 
 FLAGS:
+    -c, --current    Update the tag's time to the current time
     -h, --help       Prints help information
     -V, --version    Prints version information
 

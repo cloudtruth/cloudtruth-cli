@@ -251,6 +251,7 @@ fn proc_env_tag_set(
     let tag_name = subcmd_args.value_of(TAG_NAME_ARG).unwrap();
     let env_name = subcmd_args.value_of(ENV_NAME_ARG).unwrap();
     let description = subcmd_args.value_of(DESCRIPTION_OPT);
+    let current = subcmd_args.is_present("current");
 
     // make sure the user provided something useful for a timestamp
     let time_opt = subcmd_args.value_of("timestamp");
@@ -259,19 +260,37 @@ fn proc_env_tag_set(
         process::exit(16);
     }
 
+    // cannot over-specify
+    if time_opt.is_some() && current {
+        let msg = "Conflicting arguments: cannot specify both --current and --time.";
+        error_message(msg.to_string())?;
+        process::exit(17);
+    }
+
     let timestamp = parse_datetime(time_opt);
     let environment_id = environments.get_id(rest_cfg, env_name)?;
     if let Some(env_id) = environment_id {
         if let Some(tag_id) = environments.get_tag_id(rest_cfg, &env_id, tag_name)? {
-            let _ = environments.update_env_tag(
-                rest_cfg,
-                &env_id,
-                &tag_id,
-                tag_name,
-                description,
-                timestamp,
-            )?;
-            println!("Updated tag '{}' in environment '{}'.", tag_name, env_name);
+            if description.is_none() && timestamp.is_none() && !current {
+                warning_message(
+                    "Nothing changed. Please provide a description, time, or current.".to_string(),
+                )?;
+            } else {
+                let time_value = if current {
+                    Some("0000-00-00T00:00:00.000Z".to_string())
+                } else {
+                    timestamp
+                };
+                let _ = environments.update_env_tag(
+                    rest_cfg,
+                    &env_id,
+                    &tag_id,
+                    tag_name,
+                    description,
+                    time_value,
+                )?;
+                println!("Updated tag '{}' in environment '{}'.", tag_name, env_name);
+            }
         } else {
             let _ =
                 environments.create_env_tag(rest_cfg, &env_id, tag_name, description, timestamp)?;
