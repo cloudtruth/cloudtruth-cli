@@ -107,7 +107,7 @@ class TestCase(unittest.TestCase):
     def setUp(self) -> None:
         # start each test with empty sets for projects and environments
         self._projects = set()
-        self._environments = set()
+        self._environments = list()
         super().setUp()
 
     def tearDown(self) -> None:
@@ -116,8 +116,9 @@ class TestCase(unittest.TestCase):
             cmd = self._base_cmd + f"proj del \"{proj}\" --confirm"
             subprocess.run(cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
-        # tear down any possibly lingering environments -- they should have been deleted
-        for env in self._environments:
+        # tear down any possibly lingering environments -- they should have been deleted in reverse
+        # order in case there are any children.
+        for env in reversed(self._environments):
             cmd = self._base_cmd + f"env del \"{env}\" --confirm"
             subprocess.run(cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
@@ -191,11 +192,11 @@ class TestCase(unittest.TestCase):
             # if we're using any of our 'environments' aliases
             if set(args) & set(["environments", "environment", "envs", "env", "e"]):
                 env_name = _next_part(args, "set")
-                if env_name:
-                    self._environments.add(env_name)
+                if env_name and env_name not in self._environments:
+                    self._environments.append(env_name)
                 env_name = _next_part(args, "--rename") or _next_part(args, "-r")
-                if env_name:
-                    self._environments.add(env_name)
+                if env_name and env_name not in self._environments:
+                    self._environments.append(env_name)
             # if we're using any of our 'projects' aliases
             elif set(args) & set(["projects", "project", "proj"]):
                 proj_name = _next_part(args, "set")
