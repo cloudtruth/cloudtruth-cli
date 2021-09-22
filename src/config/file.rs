@@ -186,6 +186,12 @@ impl ConfigFile {
         Ok(result)
     }
 
+    pub fn remove_profile(config: &str, profile_name: &str) -> Result<String> {
+        let profile_text = ConfigFile::get_profile_text(config, profile_name);
+        let new_file = config.replace(&profile_text, "");
+        Ok(new_file)
+    }
+
     fn create_project_details(name: &str, profile: &Profile) -> ProfileDetails {
         ProfileDetails {
             api_key: profile.api_key.clone(),
@@ -212,6 +218,20 @@ impl ConfigFile {
         }
 
         Ok(profiles)
+    }
+
+    pub(crate) fn get_details_by_name(
+        config: &str,
+        profile_name: &str,
+    ) -> ConfigFileResult<Option<ProfileDetails>> {
+        let mut details: Option<ProfileDetails> = None;
+        if !config.is_empty() {
+            let config_file: ConfigFile = serde_yaml::from_str(config)?;
+            if let Some(cfg_prof) = config_file.profiles.get(profile_name) {
+                details = Some(ConfigFile::create_project_details(profile_name, cfg_prof));
+            }
+        }
+        Ok(details)
     }
 
     /// Gets an ordered list of `ProfileDetails` for the specified `profile_name` and it's parents.
@@ -287,6 +307,7 @@ impl ConfigFile {
 #[cfg(test)]
 mod tests {
     use crate::config::file::{ConfigFile, ConfigFileError};
+    use crate::config::profiles::ProfileDetails;
     use assert_matches::assert_matches;
     use indoc::indoc;
 
@@ -616,6 +637,61 @@ mod tests {
     }
 
     #[test]
+    fn profile_details_by_name_found() {
+        let config = indoc!(
+            r#"
+        profiles:
+            default:
+                api_key: default_key
+                server_url: http://localhost:7001/graphql
+
+            grandparent-profile:
+                api_key: grandparent_key
+        "#
+        );
+
+        let result = ConfigFile::get_details_by_name(config, "grandparent-profile");
+        assert!(result.is_ok());
+        let maybe_profile: Option<ProfileDetails> = result.unwrap();
+        assert!(maybe_profile.is_some());
+        let profile = maybe_profile.unwrap();
+        assert_eq!(
+            profile,
+            ProfileDetails {
+                name: "grandparent-profile".to_string(),
+                api_key: Some("grandparent_key".to_string()),
+                description: None,
+                environment: None,
+                parent: None,
+                project: None,
+                server_url: None,
+                rest_debug: None,
+                request_timeout: None,
+            },
+        );
+    }
+
+    #[test]
+    fn profile_details_by_name_not_found() {
+        let config = indoc!(
+            r#"
+        profiles:
+            default:
+                api_key: default_key
+                server_url: http://localhost:7001/graphql
+
+            grandparent-profile:
+                api_key: grandparent_key
+        "#
+        );
+
+        let result = ConfigFile::get_details_by_name(config, "missing-profile");
+        assert!(result.is_ok());
+        let maybe_profile: Option<ProfileDetails> = result.unwrap();
+        assert!(maybe_profile.is_none());
+    }
+
+    #[test]
     fn profile_set_add() {
         let config = indoc!(
             r#"
@@ -812,6 +888,37 @@ mod tests {
         );
         let result =
             ConfigFile::set_profile(config, "grandparent-profile", Some(""), None, None, None);
+        assert!(result.is_ok());
+        let result = result.unwrap();
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn profile_delete() {
+        let config = indoc!(
+            r#"
+        profiles:
+          default:
+            # comment lost -- not ideal
+            api_key: default_key
+            server_url: http://localhost:7001/graphql
+
+          grandparent-profile:
+            # Comments get lost, keys reordered, and quotes maybe added -- reasonable first pass
+            api_key: grandparent_key
+        "#
+        );
+        let expected = indoc!(
+            r#"
+        profiles:
+          default:
+            # comment lost -- not ideal
+            api_key: default_key
+            server_url: http://localhost:7001/graphql
+
+        "#
+        );
+        let result = ConfigFile::remove_profile(config, "grandparent-profile");
         assert!(result.is_ok());
         let result = result.unwrap();
         assert_eq!(result, expected);

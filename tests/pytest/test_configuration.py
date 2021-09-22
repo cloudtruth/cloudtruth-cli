@@ -1,0 +1,168 @@
+import subprocess
+
+from testcase import TestCase
+from testcase import CT_PROFILE, REDACTED
+
+
+class TestConfiguration(TestCase):
+    basic_prof_name = "cli-int-basic-prof-test"
+    current_prof_name = "cli-int-curr-prof-test"
+
+    def tearDown(self) -> None:
+        # clean up any stranded profiles
+        for profile in [self.basic_prof_name, self.current_prof_name]:
+            cmd = self.get_cli_base_cmd() + f"profile delete -y '{profile}'"
+            subprocess.run(cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+        super().tearDown()
+
+    def test_configuration_profile_basic(self):
+        base_cmd = self.get_cli_base_cmd()
+        cmd_env = self.get_cmd_env()
+        conf_cmd = base_cmd + "conf "
+        list_cmd = conf_cmd + "prof ls "
+        set_cmd = conf_cmd + "profile set "
+        prof_name = self.basic_prof_name
+        desc1 = "Profile to use for something"
+        desc2 = "alternate description"
+        api_key1 = "bogus-key-value"
+        env1 = "some-environment"
+        proj1 = "my-proj-name"
+
+        # make sure it is not already present
+        result = self.run_cli(cmd_env, list_cmd)
+        self.assertResultSuccess(result)
+        self.assertNotIn(prof_name, result.out())
+
+        # create it
+        result = self.run_cli(cmd_env, set_cmd + f"'{prof_name}' -k '{api_key1}'")
+        self.assertResultSuccess(result)
+
+        # verify it was created
+        result = self.run_cli(cmd_env, list_cmd)
+        self.assertResultSuccess(result)
+        self.assertIn(prof_name, result.out())
+
+        # update some fields
+        result = self.run_cli(cmd_env, set_cmd + f"'{prof_name}' -d '{desc1}' -e '{env1}'")
+        self.assertResultSuccess(result)
+
+        # make sure API key is not shown, but other parameters are
+        result = self.run_cli(cmd_env, list_cmd + "-vf csv")
+        self.assertResultSuccess(result)
+        self.assertIn(f"{prof_name},{REDACTED},{env1},,{desc1}", result.out())
+
+        # update some fields
+        result = self.run_cli(cmd_env, set_cmd + f"'{prof_name}' -p '{proj1}' -d '{desc2}'")
+        self.assertResultSuccess(result)
+
+        # make sure API key is not shown, but other parameters are
+        result = self.run_cli(cmd_env, list_cmd + "-svf csv")
+        self.assertResultSuccess(result)
+        self.assertIn(f"{prof_name},{api_key1},{env1},{proj1},{desc2}", result.out())
+
+        # update without any properties produces warning
+        result = self.run_cli(cmd_env, set_cmd + f"'{prof_name}'")
+        self.assertResultWarning(result, f"Nothing to change for profile '{prof_name}'")
+
+        result = self.run_cli(cmd_env, list_cmd + "-svf json")
+        self.assertResultSuccess(result)
+        profiles = eval(result.out())
+        for i in profiles.get("profile"):
+            if i.get("Name") == prof_name:
+                prof = i
+                break
+        self.assertEqual(api_key1, prof.get("API"))
+        self.assertEqual(env1, prof.get("Environment"))
+        self.assertEqual(proj1, prof.get("Project"))
+        self.assertEqual(desc2, prof.get("Description"))
+
+        # delete it
+        result = self.run_cli(cmd_env, conf_cmd + f"p d -y '{prof_name}'")
+        self.assertResultSuccess(result)
+
+        # verify it is gone
+        result = self.run_cli(cmd_env, list_cmd)
+        self.assertResultSuccess(result)
+        self.assertNotIn(prof_name, result.out())
+
+        # see deletion is idempotent
+        result = self.run_cli(cmd_env, conf_cmd + f"profile delete -y '{prof_name}'")
+        self.assertResultWarning(result, f"Profile '{prof_name}' does not exist")
+
+    def test_configuration_current(self):
+        base_cmd = self.get_cli_base_cmd()
+        cmd_env = self.get_cmd_env()
+        conf_cmd = base_cmd + "conf "
+        curr_cmd = conf_cmd + "curr "
+
+        prof_name = self.current_prof_name
+        api_key = "bogus-key-value"
+        env_name = "some-environment"
+        proj_name = "my-proj-name"
+        set_cmd = conf_cmd + f"prof set '{prof_name}' "
+
+        result = self.run_cli(cmd_env, curr_cmd)
+        self.assertResultSuccess(result)
+        orig_env = result.out()
+
+        # create the profile
+        result = self.run_cli(cmd_env, set_cmd + f"-k '{api_key}' -e '{env_name}' -p '{proj_name}'")
+        self.assertResultSuccess(result)
+
+        # nothing changed, since did not setup to use new profile
+        result = self.run_cli(cmd_env, curr_cmd)
+        self.assertResultSuccess(result)
+        self.assertEqual(orig_env, result.out())
+
+        # now, set the environment to use the profile
+        cmd_env[CT_PROFILE] = prof_name
+
+        # see that things have changed
+        result = self.run_cli(cmd_env, curr_cmd)
+        self.assertResultSuccess(result)
+        self.assertNotEqual(orig_env, result.out())
+        self.assertIn(prof_name, result.out())
+
+        # check the "all" parameters
+        result = self.run_cli(cmd_env, curr_cmd + "-sf json")
+        self.assertResultSuccess(result)
+        profile = eval(result.out()).get("profile")
+        this_profile = f"profile ({prof_name})"
+        for param in profile:
+            param_name = param.get("Parameter")
+            param_value = param.get("Value")
+            param_source = param.get("Source")
+            if param_name == "Profile":
+                self.assertEqual(param_source, "shell")
+                self.assertEqual(param_value, prof_name)
+            elif param_name == "API key":
+                if param_source == this_profile:
+                    self.assertEqual(param_value, api_key)
+                else:
+                    self.assertNotEqual(param_value, api_key)
+            elif param_name == "Project":
+                if param_source == this_profile:
+                    self.assertEqual(param_value, proj_name)
+                else:
+                    self.assertNotEqual(param_value, proj_name)
+            elif param_name == "Environment":
+                if param_source == this_profile:
+                    self.assertEqual(param_value, env_name)
+                else:
+                    self.assertNotEqual(param_value, env_name)
+            else:
+                self.assertFalse(True, f"Unchecked parameter '{param_name}'")
+
+        # delete the profile
+        result = self.run_cli(cmd_env, conf_cmd + f"p d -y '{prof_name}'")
+        self.assertResultSuccess(result)
+
+        # when profile is not found, command succeeds without the bits from the config
+        result = self.run_cli(cmd_env, curr_cmd + "-s")
+        self.assertResultSuccess(result)
+        self.assertIn(prof_name, result.out())
+        self.assertNotIn(api_key, result.out())
+        self.assertNotIn(env_name, result.out())
+        self.assertNotIn(proj_name, result.out())
+        self.assertNotIn(this_profile, result.out())

@@ -22,7 +22,7 @@ pub struct Profile {
 }
 
 // TODO: Rick Porter 4/21, fix this so don't have to udpate when Profile is updated
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct ProfileDetails {
     pub api_key: Option<String>,
     pub description: Option<String>,

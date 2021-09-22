@@ -3,6 +3,7 @@ use clap::{
     Arg, Shell, SubCommand,
 };
 
+pub const API_KEY_OPT: &str = "api_key";
 pub const AS_OF_ARG: &str = "datetime|tag";
 pub const CONFIRM_FLAG: &str = "confirm";
 pub const DESCRIPTION_OPT: &str = "description";
@@ -119,16 +120,18 @@ fn tag_name_arg() -> Arg<'static, 'static> {
         .help("Tag name")
 }
 
+fn api_key_arg() -> Arg<'static, 'static> {
+    Arg::with_name(API_KEY_OPT)
+        .short("k")
+        .long("api-key")
+        .help("CloudTruth API key")
+        .takes_value(true)
+}
+
 pub fn build_cli() -> App<'static, 'static> {
     app_from_crate!()
         .setting(AppSettings::SubcommandRequiredElseHelp)
-        .arg(
-            Arg::with_name("api_key")
-                .short("k")
-                .long("api-key")
-                .help("CloudTruth API key")
-                .takes_value(true),
-        )
+        .arg(api_key_arg())
         .arg(
             Arg::with_name("env")
                 .short("e")
@@ -160,12 +163,38 @@ pub fn build_cli() -> App<'static, 'static> {
                 SubCommand::with_name(EDIT_SUBCMD)
                     .visible_aliases(EDIT_ALIASES)
                     .about("Edit your configuration data for this application"),
-                SubCommand::with_name(LIST_SUBCMD)
-                    .visible_aliases(LIST_ALIASES)
-                    .arg(values_flag().help("Display profile information/values"))
-                    .arg(table_format_options().help("Display profile value info format"))
-                    .arg(secrets_display_flag().help("Display API key values"))
-                    .about("List CloudTruth profiles in the local config file"),
+                SubCommand::with_name("profiles")
+                    .visible_aliases(&["profile", "prof", "pr", "p"])
+                    .about("Work with CloudTruth CLI profiles")
+                    .subcommands(vec![
+                        SubCommand::with_name(DELETE_SUBCMD)
+                            .visible_aliases(DELETE_ALIASES)
+                            .about("Delete specified CLI profile")
+                            .arg(name_arg().help("Profile name"))
+                            .arg(confirm_flag()),
+                        SubCommand::with_name(LIST_SUBCMD)
+                            .visible_aliases(LIST_ALIASES)
+                            .about("List CLI profiles")
+                            .arg(values_flag().help("Display profile information/values"))
+                            .arg(table_format_options().help("Display profile value info format"))
+                            .arg(secrets_display_flag().help("Display API key values")),
+                        SubCommand::with_name(SET_SUBCMD)
+                            .visible_aliases(SET_ALIASES)
+                            .about("Create/modify CLI profile settings")
+                            .arg(name_arg().help("Profile name"))
+                            .arg(description_option().help("Profile's description"))
+                            .arg(api_key_arg())
+                            .arg(Arg::with_name("PROJECT")
+                                .short("-p")
+                                .long("--proj")
+                                .takes_value(true)
+                                .help("Default project for profile (use \"\" to remove)"))
+                            .arg(Arg::with_name("ENVIRONMENT")
+                                .short("-e")
+                                .long("--env")
+                                .takes_value(true)
+                                .help("Default environment for profile (use \"\" to remove)"))
+                    ]),
                 SubCommand::with_name("current")
                     .visible_aliases(&["curr", "cur", "c"])
                     .arg(table_format_options().help("Display table format"))

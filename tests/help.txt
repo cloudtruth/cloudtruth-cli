@@ -52,10 +52,10 @@ FLAGS:
     -V, --version    Prints version information
 
 SUBCOMMANDS:
-    current    Show the current arguments and their sources. [aliases: curr, cur, c]
-    edit       Edit your configuration data for this application [aliases: ed, e]
-    help       Prints this message or the help of the given subcommand(s)
-    list       List CloudTruth profiles in the local config file [aliases: ls, l]
+    current     Show the current arguments and their sources. [aliases: curr, cur, c]
+    edit        Edit your configuration data for this application [aliases: ed, e]
+    help        Prints this message or the help of the given subcommand(s)
+    profiles    Work with CloudTruth CLI profiles [aliases: profile, prof, pr, p]
 ========================================
 cloudtruth-configuration-current 
 Show the current arguments and their sources.
@@ -81,11 +81,41 @@ FLAGS:
     -h, --help       Prints help information
     -V, --version    Prints version information
 ========================================
-cloudtruth-configuration-list 
-List CloudTruth profiles in the local config file
+cloudtruth-configuration-profiles 
+Work with CloudTruth CLI profiles
 
 USAGE:
-    cloudtruth configuration list [FLAGS] [OPTIONS]
+    cloudtruth configuration profiles [SUBCOMMAND]
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+SUBCOMMANDS:
+    delete    Delete specified CLI profile [aliases: del, d]
+    help      Prints this message or the help of the given subcommand(s)
+    list      List CLI profiles [aliases: ls, l]
+    set       Create/modify CLI profile settings [aliases: s]
+====================
+cloudtruth-configuration-profiles-delete 
+Delete specified CLI profile
+
+USAGE:
+    cloudtruth configuration profiles delete [FLAGS] <NAME>
+
+FLAGS:
+    -y, --yes        Avoid confirmation prompt(s)
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+ARGS:
+    <NAME>    Profile name
+====================
+cloudtruth-configuration-profiles-list 
+List CLI profiles
+
+USAGE:
+    cloudtruth configuration profiles list [FLAGS] [OPTIONS]
 
 FLAGS:
     -h, --help       Prints help information
@@ -96,6 +126,25 @@ FLAGS:
 OPTIONS:
     -f, --format <format>    Display profile value info format [default: table]  [possible values: table, csv, json,
                              yaml]
+====================
+cloudtruth-configuration-profiles-set 
+Create/modify CLI profile settings
+
+USAGE:
+    cloudtruth configuration profiles set [OPTIONS] <NAME>
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+OPTIONS:
+    -e, --env <ENVIRONMENT>     Default environment for profile (use "" to remove)
+    -p, --proj <PROJECT>        Default project for profile (use "" to remove)
+    -k, --api-key <api_key>     CloudTruth API key
+    -d, --desc <description>    Profile's description
+
+ARGS:
+    <NAME>    Profile name
 ============================================================
 cloudtruth-environments 
 Work with CloudTruth environments
