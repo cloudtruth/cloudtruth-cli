@@ -298,6 +298,12 @@ fn process_completion_command(subcmd_args: &ArgMatches) {
     );
 }
 
+/// Quick pass at providing a current-time in an acceptable time format for the server.
+fn current_time() -> String {
+    let now = Utc::now();
+    now.format(ISO8601).to_string()
+}
+
 /// Takes an optional CLI argument (`Option<&str>`) attempts to parse it to a valid `DateTime`, and
 /// returns the ISO format that the API expects.
 ///

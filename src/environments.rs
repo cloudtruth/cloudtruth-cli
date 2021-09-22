@@ -6,7 +6,7 @@ use crate::config::DEFAULT_ENV_NAME;
 use crate::database::{EnvironmentDetails, Environments, OpenApiConfig};
 use crate::table::Table;
 use crate::{
-    error_message, error_no_environment_message, parse_datetime, user_confirm,
+    current_time, error_message, error_no_environment_message, parse_datetime, user_confirm,
     warn_missing_subcommand, warning_message, DEL_CONFIRM,
 };
 use clap::ArgMatches;
@@ -277,7 +277,7 @@ fn proc_env_tag_set(
                 )?;
             } else {
                 let time_value = if current {
-                    Some("0000-00-00T00:00:00.000Z".to_string())
+                    Some(current_time())
                 } else {
                     timestamp
                 };
