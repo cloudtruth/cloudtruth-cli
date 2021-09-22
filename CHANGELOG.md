@@ -1,3 +1,14 @@
+# 1.0.8 - 2021-09-22
+
+* Added `environments tag` command with the following sub-commands:
+  * `list` - display tags for a specific environment.
+  * `set` - create/update environment tag properties.
+  * `delete` - delete environment tag.
+* Added `--show-times` to `list` for `integrations`, `projects`, and `environments`.
+* Changed parameter properties `dynamic` to `external`, and `static` to `internal`.
+* Added Centos-8 RPM support.
+* Improved debugging for failed tests.
+
 # 1.0.7 - 2021-09-10
 
 * Improved `templates` commands:
