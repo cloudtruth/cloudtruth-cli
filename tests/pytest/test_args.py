@@ -116,6 +116,7 @@ class TestTopLevelArgs(TestCase):
         for (subcmd, aliases) in {
             "configuration": ["config", "conf", "con"],
             "environments": ["environment", "envs", "env", "e"],
+            "environments tag": ["environment tag", "env ta"],
             "integrations": ["integration", "integrate", "int"],
             "parameters": ["parameter", "params", "param", "p"],
             "projects": ["project", "proj"],
@@ -142,13 +143,13 @@ class TestTopLevelArgs(TestCase):
         missing_proj = f"The '{proj_name}' project could not be found in your account."
         missing_env = f"The '{env_name}' environment could not be found in your account."
 
-        # ensure not present
-        result = self.run_cli(cmd_env, base_cmd + "proj ls")
+        # ensure not present -- csv is used to avoid errors when super-set names in use
+        result = self.run_cli(cmd_env, base_cmd + "proj ls -f csv")
         self.assertResultSuccess(result)
-        self.assertNotIn(proj_name, result.out())
-        result = self.run_cli(cmd_env, base_cmd + "env ls")
+        self.assertNotIn(f"{proj_name},", result.out())
+        result = self.run_cli(cmd_env, base_cmd + "env ls -f csv")
         self.assertResultSuccess(result)
-        self.assertNotIn(env_name, result.out())
+        self.assertNotIn(f"{env_name},", result.out())
 
         ##############
         # Neither present

@@ -10,7 +10,8 @@ use cloudtruth_restapi::models::{
 use once_cell::sync::OnceCell;
 use std::collections::HashMap;
 use std::error;
-use std::fmt::{self, Formatter};
+use std::fmt;
+use std::fmt::Formatter;
 use std::result::Result;
 use std::str::FromStr;
 
@@ -272,7 +273,7 @@ fn extract_from_json(value: &serde_json::Value) -> String {
     value.to_string()
 }
 
-/// This method is to handle the different errors currently emmited by Value create/update.
+/// This method is to handle the different errors currently emitted by Value create/update.
 fn extract_error(content: &str) -> ParameterError {
     let json_result: Result<serde_json::Value, serde_json::Error> = serde_json::from_str(content);
     if let Ok(value) = json_result {
@@ -382,21 +383,22 @@ impl Parameters {
         rest_cfg: &OpenApiConfig,
         proj_id: &str,
         key_name: &str,
-        as_of: Option<String>,
-        tag: Option<String>,
     ) -> Option<String> {
-        // no need to get values/secrets -- just need an ID
+        // no need to get values/secrets -- just need an ID (and not tag/time values)
+        let as_of_arg = None;
+        let env_arg = None;
+        let tag_arg = None;
         let response = projects_parameters_list(
             rest_cfg,
             proj_id,
-            as_of,
-            None,
-            Some(true),
+            as_of_arg,
+            env_arg,
+            Some(true), // no need to fetch secrets
             Some(key_name),
             None,
             PAGE_SIZE,
             PARTIAL_SUCCESS,
-            tag.as_deref(),
+            tag_arg,
             VALUES_FALSE,
             WRAP_SECRETS,
         );
@@ -507,9 +509,9 @@ impl Parameters {
         as_of: Option<String>,
         tag: Option<String>,
     ) -> Result<Vec<ParameterDetails>, Error<ProjectsParametersListError>> {
-        let mut list: Vec<ParameterDetails> = Vec::new();
-        let env_arg = if include_values { Some(env_id) } else { None };
-        let value_arg = if include_values { None } else { VALUES_FALSE };
+        let has_values = include_values || tag.is_some();
+        let env_arg = if has_values { Some(env_id) } else { None };
+        let value_arg = if has_values { None } else { VALUES_FALSE };
         let response = projects_parameters_list(
             rest_cfg,
             proj_id,
@@ -524,6 +526,7 @@ impl Parameters {
             value_arg,
             WRAP_SECRETS,
         )?;
+        let mut list: Vec<ParameterDetails> = Vec::new();
         if let Some(parameters) = response.results {
             for param in parameters {
                 list.push(ParameterDetails::from(&param));

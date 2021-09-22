@@ -1473,11 +1473,11 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
         ####################
         # verify the 'get' command returns the correct values
         # NOTE: this leverages the verify_param(), since it uses the 'param get' command
-        self.verify_param(cmd_env, proj_name, param1, value_a1, env=env_a, time=details_a1.get(PROP_MODIFIED))
-        self.verify_param(cmd_env, proj_name, param1, value_b1, env=env_b, time=details_b1.get(PROP_MODIFIED))
+        self.verify_param(cmd_env, proj_name, param1, value_a1, env=env_a, as_of=details_a1.get(PROP_MODIFIED))
+        self.verify_param(cmd_env, proj_name, param1, value_b1, env=env_b, as_of=details_b1.get(PROP_MODIFIED))
 
-        self.verify_param(cmd_env, proj_name, param1, value_a2, env=env_a, time=details_a2.get(PROP_MODIFIED))
-        self.verify_param(cmd_env, proj_name, param1, value_b2, env=env_b, time=details_b2.get(PROP_MODIFIED))
+        self.verify_param(cmd_env, proj_name, param1, value_a2, env=env_a, as_of=details_a2.get(PROP_MODIFIED))
+        self.verify_param(cmd_env, proj_name, param1, value_b2, env=env_b, as_of=details_b2.get(PROP_MODIFIED))
 
         # check with details turned on
         cmd = base_cmd + f"--project '{proj_name}' --env '{env_a}' param get '{param1}' -d"
@@ -1501,8 +1501,8 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
         self.assertEqual(details_a2, self.get_param(cmd_env, proj_name, param1, env=env_a))
         self.assertEqual(details_b2, self.get_param(cmd_env, proj_name, param1, env=env_b))
 
-        self.assertEqual(details_a1, self.get_param(cmd_env, proj_name, param1, env=env_a, time=modified_at))
-        self.assertEqual(details_b1, self.get_param(cmd_env, proj_name, param1, env=env_b, time=modified_at))
+        self.assertEqual(details_a1, self.get_param(cmd_env, proj_name, param1, env=env_a, as_of=modified_at))
+        self.assertEqual(details_b1, self.get_param(cmd_env, proj_name, param1, env=env_b, as_of=modified_at))
 
         ####################
         # verify the 'environments' command returns the correct values
@@ -1542,6 +1542,24 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
         result = self.run_cli(cmd_env, export_cmd + f" --as-of {modified_at}")
         self.assertResultSuccess(result)
         self.assertIn(f"{param1.upper()}={value_a1}", result.out())
+
+        ####################
+        # negative cases with times before when the project was created
+        timestamp = "3/24/2021"
+        # TODO: these errors should be improved
+        not_found = "Not Found"
+        param_cmd = base_cmd + f"--project '{proj_name}' param "
+        result = self.run_cli(cmd_env, param_cmd + f"ls -v --as-of '{timestamp}'")
+        self.assertResultError(result, not_found)
+        result = self.run_cli(cmd_env, param_cmd + f"export shell --as-of '{timestamp}'")
+        self.assertResultError(result, not_found)
+        result = self.run_cli(cmd_env, param_cmd + f"diff --as-of '{timestamp}'")
+        self.assertResultError(result, not_found)
+        # result = self.run_cli(cmd_env, param_cmd + f"env '{param1}' --as-of '{timestamp}'")
+        # self.assertResultError(result, not_found)
+        result = self.run_cli(cmd_env, param_cmd + f"get '{param1}' --as-of '{timestamp}'")
+        self.assertResultSuccess(result)
+        self.assertIn(f"The parameter '{param1}' could not be found", result.out())
 
         # cleanup
         self.delete_environment(cmd_env, env_a)
@@ -2090,3 +2108,79 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
 
         # cleanup
         self.delete_project(cmd_env, proj_name)
+        self.delete_environment(cmd_env, env_name)
+
+    def test_parameter_tagging(self):
+        base_cmd = self.get_cli_base_cmd()
+        cmd_env = self.get_cmd_env()
+
+        # add a new project
+        proj_name = self.make_name("test-param-tags")
+        self.create_project(cmd_env, proj_name)
+        env_name = self.make_name("ptag-env")
+        self.create_environment(cmd_env, env_name)
+
+        param1 = "param1"
+        value1a = "original"
+        value1b = "updated"
+        value1c = "final"
+
+        self.set_param(cmd_env, proj_name, param1, value1a, env=env_name)
+        details1a = self.get_param(cmd_env, proj_name, param1, env=env_name)
+
+        self.set_param(cmd_env, proj_name, param1, value1b, env=env_name)
+        details1b = self.get_param(cmd_env, proj_name, param1, env=env_name)
+
+        # set tag here
+        tag_name = "my-tag"  # scoped to an environment, so no need to 'make_name()'
+        tag_set = base_cmd + f"env tag set '{env_name}' '{tag_name}' "
+        result = self.run_cli(cmd_env, tag_set + "--desc 'quick tag'")
+        self.assertResultSuccess(result)
+
+        # set a value after the tag
+        self.set_param(cmd_env, proj_name, param1, value1c, env=env_name)
+
+        details = self.get_param(cmd_env, proj_name, param1, env=env_name, as_of=tag_name)
+        self.assertEqual(details1b, details)
+
+        details = self.get_param(cmd_env, proj_name, param1, env=env_name, as_of=details1a.get(PROP_MODIFIED))
+        self.assertEqual(details1a, details)
+
+        ################
+        # error case where the timestamp is in the back
+        timestamp = "2021-01-20"
+        result = self.run_cli(cmd_env, tag_set + f"--time '{timestamp}'")
+        self.assertResultSuccess(result)
+
+        # TODO: these errors should be improved
+        not_found = "Not Found"
+        param_cmd = base_cmd + f"--env '{env_name}' --project '{proj_name}' param "
+        result = self.run_cli(cmd_env, param_cmd + f"ls -v --as-of '{tag_name}'")
+        self.assertResultError(result, not_found)
+        result = self.run_cli(cmd_env, param_cmd + f"export docker --as-of '{tag_name}'")
+        self.assertResultError(result, not_found)
+        result = self.run_cli(cmd_env, param_cmd + f"diff --as-of '{tag_name}'")
+        self.assertResultError(result, not_found)
+        # result = self.run_cli(cmd_env, param_cmd + f"env '{param1}' --as-of '{tag_name}'")
+        # self.assertResultError(result, not_found)
+        result = self.run_cli(cmd_env, param_cmd + f"get '{param1}' --as-of '{timestamp}'")
+        self.assertResultSuccess(result)
+        self.assertIn(f"The parameter '{param1}' could not be found", result.out())
+
+        ################
+        # bad environment/tag combination testing
+        proj_base = base_cmd + f"--project '{proj_name}' "
+        bad_tag = "no-such-tag"
+        result = self.run_cli(cmd_env, proj_base + f"--env '{env_name}' param ls -v --as-of {bad_tag}")
+        # self.assertResultError(result, f"Tag '{bad_tag}' does not exist in environment '{env_name}'")
+        self.assertResultError(result, not_found)
+
+        bad_env = "default"
+        result = self.run_cli(cmd_env, proj_base + f"--env {bad_env} param ls -v --as-of {tag_name}")
+        # self.assertResultError(result, f"Tag '{tag_name}' does not exist in environment '{bad_env}'")
+        self.assertResultError(result, not_found)
+
+        ################
+        # cleanup
+        self.delete_project(cmd_env, proj_name)
+        self.delete_environment(cmd_env, env_name)

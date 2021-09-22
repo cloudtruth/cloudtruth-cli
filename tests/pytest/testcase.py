@@ -299,14 +299,14 @@ class TestCase(unittest.TestCase):
         name: str,
         env: Optional[str] = None,
         secrets: Optional[bool] = None,
-        time: Optional[str] = None,
+        as_of: Optional[str] = None,
     ) -> Optional[Dict]:
         cmd = self._base_cmd + f"--project '{proj}' "
         if env:
             cmd += f"--env '{env}' "
         cmd += "param list --show-times --format json "
-        if time:
-            cmd += f"--as-of {time}"
+        if as_of:
+            cmd += f"--as-of '{as_of}' "
         if secrets:
             cmd += "--secrets "
         result = self.run_cli(cmd_env, cmd)
@@ -348,15 +348,15 @@ class TestCase(unittest.TestCase):
         name: str,
         value: str,
         env: Optional[str] = None,
-        time: Optional[str] = None,
+        as_of: Optional[str] = None,
     ):
         cmd = self._base_cmd + f"--project '{proj}' "
         if env:
             cmd += f"--env '{env}' "
         # check the output using the 'get' command
         cmd += f"param get '{name}' "
-        if time:
-            cmd += f"--as-of '{time}' "
+        if as_of:
+            cmd += f"--as-of '{as_of}' "
 
         result = self.run_cli(cmd_env, cmd)
         self.assertResultSuccess(result)

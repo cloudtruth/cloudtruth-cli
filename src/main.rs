@@ -121,6 +121,13 @@ fn help_message(message: String) -> Result<()> {
     stderr_message(message, Color::Cyan)
 }
 
+fn error_no_environment_message(env_name: &str) -> Result<()> {
+    error_message(format!(
+        "The '{}' environment could not be found in your account.",
+        env_name,
+    ))
+}
+
 /// Insures the configuration is valid.
 ///
 /// If there are errors, it will print the error/help and exit.
@@ -224,10 +231,7 @@ fn resolve_ids(config: &Config, rest_cfg: &OpenApiConfig) -> Result<ResolvedIds>
     let environments = Environments::new();
     let env_id = environments.get_id(rest_cfg, env)?;
     if env_id.is_none() {
-        error_message(format!(
-            "The '{}' environment could not be found in your account.",
-            env,
-        ))?;
+        error_no_environment_message(env)?;
         err = true;
     }
 
@@ -292,6 +296,12 @@ fn process_completion_command(subcmd_args: &ArgMatches) {
         shell.parse().unwrap(),
         &mut io::stdout(),
     );
+}
+
+/// Quick pass at providing a current-time in an acceptable time format for the server.
+fn current_time() -> String {
+    let now = Utc::now();
+    now.format(ISO8601).to_string()
 }
 
 /// Takes an optional CLI argument (`Option<&str>`) attempts to parse it to a valid `DateTime`, and
