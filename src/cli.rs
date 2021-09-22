@@ -224,6 +224,7 @@ pub fn build_cli() -> App<'static, 'static> {
                                 .arg(table_format_options().help("Format for environment tag values data"))
                                 .about("List CloudTruth environment tags"),
                             SubCommand::with_name(SET_SUBCMD)
+                                .visible_aliases(SET_ALIASES)
                                 .arg(env_name_arg())
                                 .arg(tag_name_arg())
                                 .arg(description_option().help("Tag's description"))
