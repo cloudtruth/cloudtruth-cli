@@ -1,6 +1,6 @@
 [package]
 name = "cloudtruth"
-version = "1.0.7"
+version = "1.0.8"
 description = "A command-line interface to the CloudTruth configuration management service."
 authors = ["CloudTruth <support@cloudtruth.com>"]
 edition = "2018"
