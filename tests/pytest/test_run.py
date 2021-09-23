@@ -148,3 +148,6 @@ class TestRun(TestCase):
         self.assertResultSuccess(result)
         self.assertNotIn(first_value, result.out())
         self.assertIn(second_value, result.out())
+
+        # cleanup
+        self.delete_project(cmd_env, proj_name)
