@@ -203,7 +203,7 @@ ANOTHER_PARAM=PARAM2
         self.assertResultSuccess(result)
         self.assertIn(eval_b, result.out())
 
-        # now, display te secrets
+        # now, display the secrets
         eval_b = eval_b.replace(REDACTED, f"{value2b}")
         result = self.run_cli(cmd_env, sub_cmd + f"get {temp_name} -s")
         self.assertResultSuccess(result)
@@ -212,6 +212,11 @@ ANOTHER_PARAM=PARAM2
         result = self.run_cli(cmd_env, sub_cmd + f"preview {filename} --secrets")
         self.assertResultSuccess(result)
         self.assertIn(eval_b, result.out())
+
+        ############
+        # see that we cannot delete a parameter with the template using it
+        result = self.run_cli(cmd_env, base_cmd + f"--project {proj_name} param del -y '{param1}' ")
+        self.assertResultError(result, f"Cannot delete {param1} as it is used in the following templates: {temp_name}")
 
         # cleanup
         os.remove(filename)

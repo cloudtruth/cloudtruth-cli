@@ -64,9 +64,10 @@ fn proc_param_delete(
         }
     }
 
-    let result = parameters.delete_parameter_by_id(rest_cfg, proj_id, param_id.unwrap().as_str());
+    let result =
+        parameters.delete_parameter_by_id(rest_cfg, proj_id, param_id.unwrap().as_str())?;
     match result {
-        Ok(Some(_)) => {
+        Some(_) => {
             println!(
                 "Successfully removed parameter '{}' from project '{}'.",
                 key_name,
