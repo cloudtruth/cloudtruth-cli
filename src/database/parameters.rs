@@ -100,7 +100,7 @@ impl fmt::Display for ParameterError {
 impl error::Error for ParameterError {}
 
 /// This method is to handle the different errors currently emitted by Value create/update.
-fn extract_error(content: &str) -> ParameterError {
+fn param_value_error(content: &str) -> ParameterError {
     let json_result: Result<serde_json::Value, serde_json::Error> = serde_json::from_str(content);
     if let Ok(value) = json_result {
         if let Some(item) = value.get("internal_value") {
@@ -502,8 +502,8 @@ impl Parameters {
         match response {
             Ok(api_value) => Ok(api_value.id),
             Err(ResponseError(ref content)) => match content.status.as_u16() {
-                400 => Err(extract_error(&content.content)),
-                404 => Err(extract_error(&content.content)),
+                400 => Err(param_value_error(&content.content)),
+                404 => Err(param_value_error(&content.content)),
                 _ => Err(ParameterError::ResponseError(generic_response_message(
                     &content.status,
                     &content.content,
@@ -554,8 +554,8 @@ impl Parameters {
         match response {
             Ok(api_value) => Ok(api_value.id),
             Err(ResponseError(ref content)) => match content.status.as_u16() {
-                400 => Err(extract_error(&content.content)),
-                404 => Err(extract_error(&content.content)),
+                400 => Err(param_value_error(&content.content)),
+                404 => Err(param_value_error(&content.content)),
                 _ => Err(ParameterError::ResponseError(generic_response_message(
                     &content.status,
                     &content.content,
