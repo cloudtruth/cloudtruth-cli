@@ -248,6 +248,32 @@ impl Config {
         Ok(())
     }
 
+    pub fn delete_profile(profile_name: &str) -> Result<()> {
+        if let Some(filename) = Self::config_file() {
+            let content: String;
+            if filename.exists() {
+                content = Self::read_config(filename.as_path())?;
+            } else {
+                content = ConfigFile::config_file_template().to_string();
+            }
+            let updated = ConfigFile::remove_profile(&content, profile_name)?;
+            fs::write(filename.as_path(), updated)?;
+        }
+        Ok(())
+    }
+
+    /// Gets a single profile details (or None) by name
+    pub fn get_profile_details_by_name(profile_name: &str) -> Result<Option<ProfileDetails>> {
+        let mut details: Option<ProfileDetails> = None;
+        if let Some(config_file) = Self::config_file() {
+            if config_file.exists() {
+                let config = Self::read_config(config_file.as_path())?;
+                details = ConfigFile::get_details_by_name(&config, profile_name)?;
+            }
+        }
+        Ok(details)
+    }
+
     pub fn get_profile_details() -> Result<Vec<ProfileDetails>> {
         let mut profiles: Vec<ProfileDetails> = Vec::new();
         if let Some(config_file) = Self::config_file() {
@@ -298,7 +324,7 @@ impl Config {
         }
     }
 
-    fn profile_details_for(profile_name: &str) -> Vec<ProfileDetails> {
+    fn profile_details_list_for(profile_name: &str) -> Vec<ProfileDetails> {
         let mut profiles: Vec<ProfileDetails> = Vec::new();
         if let Some(config_file) = Self::config_file() {
             if config_file.exists() {
@@ -341,7 +367,7 @@ impl Config {
         });
 
         // get the list of profiles and values
-        let profiles = Config::profile_details_for(&resolve_profile);
+        let profiles = Config::profile_details_list_for(&resolve_profile);
 
         //////////////////
         // API key

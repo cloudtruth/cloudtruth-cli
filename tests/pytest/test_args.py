@@ -114,7 +114,8 @@ class TestTopLevelArgs(TestCase):
         cmd_env[CT_PROJ] = proj_name
 
         for (subcmd, aliases) in {
-            "configuration": ["config", "conf", "con"],
+            "configuration": ["config", "conf", "con", "c"],
+            "configuration profiles": ["config profile", "conf prof", "c p"],
             "environments": ["environment", "envs", "env", "e"],
             "environments tag": ["environment tag", "env ta"],
             "integrations": ["integration", "integrate", "int"],
@@ -139,7 +140,7 @@ class TestTopLevelArgs(TestCase):
             "templates ls -v",
             f"run -i none -c {self.get_display_env_command()}",
         ]
-        unchecked_commands = ["config ls -v", "proj ls -v", "env ls -v", "completions bash"]
+        unchecked_commands = ["config prof ls -v", "proj ls -v", "env ls -v", "completions bash"]
         missing_proj = f"The '{proj_name}' project could not be found in your account."
         missing_env = f"The '{env_name}' environment could not be found in your account."
 

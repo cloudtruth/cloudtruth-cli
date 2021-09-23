@@ -227,7 +227,7 @@ class TestCase(unittest.TestCase):
         return result
 
     def get_profile(self, cmd_env, prof_name: str) -> Optional[Dict]:
-        result = self.run_cli(cmd_env, self._base_cmd + "config list --values --format csv -s")
+        result = self.run_cli(cmd_env, self._base_cmd + "config prof list --values --format csv -s")
         self.assertResultSuccess(result)
         needle = f"{prof_name},"
         for line in result.stdout:
