@@ -218,6 +218,15 @@ ANOTHER_PARAM=PARAM2
         result = self.run_cli(cmd_env, base_cmd + f"--project {proj_name} param del -y '{param1}' ")
         self.assertResultError(result, f"Cannot delete {param1} as it is used in the following templates: {temp_name}")
 
+        ###########
+        # check error message with unresolved variables
+        no_param = "my-missing-param"
+        body = base.replace("PARAM1", f"{{{{{no_param}}}}}").replace("PARAM2", f"{{{{{param2}}}}}")
+        write_file(filename, body)
+        result = self.run_cli(cmd_env, sub_cmd + f"preview {filename} --secrets")
+        self.assertResultError(result, "Template references parameter(s) that do not exist")
+        self.assertIn(no_param, result.err())
+
         # cleanup
         os.remove(filename)
         self.delete_environment(cmd_env, env_b)

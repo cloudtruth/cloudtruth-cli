@@ -27,6 +27,50 @@ pub fn extract_details(content: &str) -> String {
         .to_string()
 }
 
+pub fn extract_from_json(value: &serde_json::Value) -> String {
+    if value.is_string() {
+        return value
+            .to_string()
+            .trim_start_matches('"')
+            .trim_end_matches('"')
+            .to_string();
+    }
+
+    if value.is_array() {
+        let mut result = "".to_string();
+        for v in value.as_array().unwrap() {
+            if !result.is_empty() {
+                result.push_str("; ")
+            }
+            // recursively call into this until we have a string
+            let obj_str = extract_from_json(v);
+            result.push_str(obj_str.as_str());
+        }
+        return result;
+    }
+
+    value.to_string()
+}
+
+/// Extracts a single string from the content without paying attention to dictionary structure.
+pub fn extract_message(content: &str) -> String {
+    let json_result: Result<serde_json::Value, serde_json::Error> = serde_json::from_str(content);
+    match json_result {
+        Ok(value) => extract_from_json(&value),
+        _ => "No details available".to_string(),
+    }
+}
+
+/// This extracts information from the content
+pub fn generic_response_message(status: &reqwest::StatusCode, content: &str) -> String {
+    format!(
+        "{} ({}): {}",
+        status.canonical_reason().unwrap_or("Unknown Reason"),
+        status.as_u16(),
+        extract_message(content)
+    )
+}
+
 fn user_agent_name() -> String {
     format!(
         "{}/{}/{}",

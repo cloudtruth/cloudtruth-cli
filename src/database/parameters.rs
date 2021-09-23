@@ -1,5 +1,8 @@
 use crate::database::openapi::{OpenApiConfig, PAGE_SIZE, WRAP_SECRETS};
-use crate::database::{ParamRuleType, ParamType, ParameterDetails};
+use crate::database::{
+    extract_from_json, extract_message, generic_response_message, ParamRuleType, ParamType,
+    ParameterDetails,
+};
 use cloudtruth_restapi::apis::projects_api::*;
 use cloudtruth_restapi::apis::Error::{self, ResponseError};
 use cloudtruth_restapi::models::{
@@ -96,31 +99,6 @@ impl fmt::Display for ParameterError {
 
 impl error::Error for ParameterError {}
 
-fn extract_from_json(value: &serde_json::Value) -> String {
-    if value.is_string() {
-        return value
-            .to_string()
-            .trim_start_matches('"')
-            .trim_end_matches('"')
-            .to_string();
-    }
-
-    if value.is_array() {
-        let mut result = "".to_string();
-        for v in value.as_array().unwrap() {
-            if !result.is_empty() {
-                result.push_str("; ")
-            }
-            // recursively call into this until we have a string
-            let obj_str = extract_from_json(v);
-            result.push_str(obj_str.as_str());
-        }
-        return result;
-    }
-
-    value.to_string()
-}
-
 /// This method is to handle the different errors currently emitted by Value create/update.
 fn extract_error(content: &str) -> ParameterError {
     let json_result: Result<serde_json::Value, serde_json::Error> = serde_json::from_str(content);
@@ -136,26 +114,6 @@ fn extract_error(content: &str) -> ParameterError {
         }
     }
     ParameterError::UnhandledError(content.to_string())
-}
-
-/// Extracts a single string from the content without paying attention to dictionary structure.
-fn extract_message(content: &str) -> String {
-    let json_result: Result<serde_json::Value, serde_json::Error> = serde_json::from_str(content);
-    match json_result {
-        Ok(value) => extract_from_json(&value),
-        _ => "No details available".to_string(),
-    }
-}
-
-/// This extracts information from the content
-fn generic_response_error(status: &reqwest::StatusCode, content: &str) -> ParameterError {
-    let msg = format!(
-        "{} ({}): {}",
-        status.canonical_reason().unwrap_or("Unknown Reason"),
-        status.as_u16(),
-        extract_message(content)
-    );
-    ParameterError::ResponseError(msg)
 }
 
 impl Parameters {
@@ -175,9 +133,9 @@ impl Parameters {
         let response = projects_parameters_destroy(rest_cfg, param_id, proj_id);
         match response {
             Ok(_) => Ok(Some(param_id.to_string())),
-            Err(ResponseError(ref content)) => {
-                Err(generic_response_error(&content.status, &content.content))
-            }
+            Err(ResponseError(ref content)) => Err(ParameterError::ResponseError(
+                generic_response_message(&content.status, &content.content),
+            )),
             Err(e) => Err(ParameterError::UnhandledError(format!("{:?}", e))),
         }
     }
@@ -546,7 +504,10 @@ impl Parameters {
             Err(ResponseError(ref content)) => match content.status.as_u16() {
                 400 => Err(extract_error(&content.content)),
                 404 => Err(extract_error(&content.content)),
-                _ => Err(ParameterError::CreateValueError(response.unwrap_err())),
+                _ => Err(ParameterError::ResponseError(generic_response_message(
+                    &content.status,
+                    &content.content,
+                ))),
             },
             Err(e) => Err(ParameterError::CreateValueError(e)),
         }
@@ -595,7 +556,10 @@ impl Parameters {
             Err(ResponseError(ref content)) => match content.status.as_u16() {
                 400 => Err(extract_error(&content.content)),
                 404 => Err(extract_error(&content.content)),
-                _ => Err(ParameterError::UpdateValueError(response.unwrap_err())),
+                _ => Err(ParameterError::ResponseError(generic_response_message(
+                    &content.status,
+                    &content.content,
+                ))),
             },
             Err(e) => Err(ParameterError::UpdateValueError(e)),
         }

@@ -12,7 +12,9 @@ mod templates;
 pub use environments::{EnvironmentDetails, EnvironmentError, EnvironmentUrlMap, Environments};
 pub use history::HistoryAction;
 pub use integrations::{IntegrationDetails, IntegrationError, Integrations};
-pub use openapi::OpenApiConfig;
+pub use openapi::{
+    extract_details, extract_from_json, extract_message, generic_response_message, OpenApiConfig,
+};
 pub use parameter_details::ParameterDetails;
 pub use parameter_rules::{ParamRuleType, ParameterDetailRule};
 pub use parameter_types::ParamType;

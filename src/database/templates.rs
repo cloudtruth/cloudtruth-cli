@@ -1,6 +1,6 @@
 use crate::database::openapi::{extract_details, OpenApiConfig, PAGE_SIZE};
 
-use crate::database::HistoryAction;
+use crate::database::{generic_response_message, HistoryAction};
 use cloudtruth_restapi::apis::projects_api::*;
 use cloudtruth_restapi::apis::Error;
 use cloudtruth_restapi::apis::Error::ResponseError;
@@ -99,12 +99,14 @@ pub enum TemplateError {
     PreviewApi(Error<ProjectsTemplatePreviewCreateError>),
     RetrieveApi(Error<ProjectsTemplatesRetrieveError>),
     UpdateApi(Error<ProjectsTemplatesPartialUpdateError>),
+    ResponseError(String),
 }
 
 impl fmt::Display for TemplateError {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
             TemplateError::AuthError(msg) => write!(f, "Not Authenticated: {}", msg),
+            TemplateError::ResponseError(msg) => write!(f, "{}", msg),
             TemplateError::EvaluateFailed(tle) => {
                 write!(f, "Evaluation failed:{}", template_eval_errors(tle))
             }
@@ -158,7 +160,10 @@ impl Templates {
                     Some(ProjectsTemplatesRetrieveError::Status422(tle)) => {
                         Err(TemplateError::EvaluateFailed(tle.clone()))
                     }
-                    _ => Err(TemplateError::RetrieveApi(response.unwrap_err())),
+                    _ => Err(TemplateError::ResponseError(generic_response_message(
+                        &content.status,
+                        &content.content,
+                    ))),
                 },
                 Err(e) => Err(TemplateError::RetrieveApi(e)),
             }
@@ -193,7 +198,10 @@ impl Templates {
             Err(ResponseError(ref content)) => match content.status.as_u16() {
                 401 => Err(TemplateError::AuthError(extract_details(&content.content))),
                 403 => Err(TemplateError::AuthError(extract_details(&content.content))),
-                _ => Err(TemplateError::ListError(response.unwrap_err())),
+                _ => Err(TemplateError::ResponseError(generic_response_message(
+                    &content.status,
+                    &content.content,
+                ))),
             },
             Err(e) => Err(TemplateError::ListError(e)),
         }
@@ -258,7 +266,10 @@ impl Templates {
                 Some(ProjectsTemplatesCreateError::Status422(tle)) => {
                     Err(TemplateError::EvaluateFailed(tle.clone()))
                 }
-                _ => Err(TemplateError::CreateApi(response.unwrap_err())),
+                _ => Err(TemplateError::ResponseError(generic_response_message(
+                    &content.status,
+                    &content.content,
+                ))),
             },
             Err(e) => Err(TemplateError::CreateApi(e)),
         }
@@ -303,7 +314,10 @@ impl Templates {
                 Some(ProjectsTemplatesPartialUpdateError::Status422(tle)) => {
                     Err(TemplateError::EvaluateFailed(tle.clone()))
                 }
-                _ => Err(TemplateError::UpdateApi(response.unwrap_err())),
+                _ => Err(TemplateError::ResponseError(generic_response_message(
+                    &content.status,
+                    &content.content,
+                ))),
             },
             Err(e) => Err(TemplateError::UpdateApi(e)),
         }
@@ -338,7 +352,10 @@ impl Templates {
                 Some(ProjectsTemplatePreviewCreateError::Status422(tle)) => {
                     Err(TemplateError::EvaluateFailed(tle.clone()))
                 }
-                _ => Err(TemplateError::PreviewApi(response.unwrap_err())),
+                _ => Err(TemplateError::ResponseError(generic_response_message(
+                    &content.status,
+                    &content.content,
+                ))),
             },
             Err(e) => Err(TemplateError::PreviewApi(e)),
         }
