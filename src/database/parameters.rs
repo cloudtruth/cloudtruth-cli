@@ -1,13 +1,11 @@
 use crate::database::openapi::{OpenApiConfig, PAGE_SIZE, WRAP_SECRETS};
-use crate::database::parameter_rules::ParameterDetailRule;
-use crate::database::{ParamRuleType, ParamType};
+use crate::database::{ParamRuleType, ParamType, ParameterDetails};
 use cloudtruth_restapi::apis::projects_api::*;
 use cloudtruth_restapi::apis::Error::{self, ResponseError};
 use cloudtruth_restapi::models::{
-    Parameter, ParameterCreate, ParameterRuleCreate, ParameterRuleTypeEnum, PatchedParameter,
-    PatchedParameterRule, PatchedValue, Value, ValueCreate,
+    ParameterCreate, ParameterRuleCreate, ParameterRuleTypeEnum, PatchedParameter,
+    PatchedParameterRule, PatchedValue, ValueCreate,
 };
-use once_cell::sync::OnceCell;
 use std::collections::HashMap;
 use std::error;
 use std::fmt;
@@ -17,107 +15,9 @@ use std::str::FromStr;
 
 pub struct Parameters {}
 
-static DEFAULT_PARAM_VALUE: OnceCell<Value> = OnceCell::new();
-const DEFAULT_VALUE: &str = "-";
 const PARTIAL_SUCCESS: Option<bool> = Some(true);
 const VALUES_FALSE: Option<bool> = Some(false);
 const VALUES_TRUE: Option<bool> = Some(true);
-
-#[derive(Clone, Debug)]
-pub struct ParameterDetails {
-    // the top few are the parameter, across all environments
-    pub id: String,
-    pub key: String,
-    pub description: String,
-    pub secret: bool,
-    pub param_type: ParamType,
-    pub rules: Vec<ParameterDetailRule>,
-
-    // these come from the value for the specified environment
-    pub val_id: String,
-    pub value: String,
-    pub env_url: String,
-    pub env_name: String,
-    pub external: bool,
-    pub fqn: String,
-    pub jmes_path: String,
-    pub created_at: String,
-    pub modified_at: String,
-
-    // captures errors when fetching external parameters
-    pub error: String,
-}
-impl ParameterDetails {
-    pub fn get_property(&self, property_name: &str) -> String {
-        match property_name {
-            "name" => self.key.clone(),
-            "value" => self.value.clone(),
-            "type" => self.param_type.to_string(),
-            "environment" => self.env_name.clone(),
-            "fqn" => self.fqn.clone(),
-            "jmes-path" => self.jmes_path.clone(),
-            "description" => self.description.clone(),
-            "secret" => format!("{}", self.secret),
-            "created-at" => self.created_at.clone(),
-            "modified-at" => self.modified_at.clone(),
-            _ => format!("Unhandled property name '{}'", property_name),
-        }
-    }
-
-    pub fn get_properties(&self, fields: &[&str]) -> Vec<String> {
-        fields.iter().map(|p| self.get_property(p)).collect()
-    }
-
-    /// Updates the values associated with an API `Value`.
-    ///
-    /// This is used for iteration over a list of values.
-    pub fn set_value(&mut self, env_value: &Value) {
-        self.val_id = env_value.id.clone();
-        self.value = env_value.value.clone().unwrap_or_default();
-        self.env_url = env_value.environment.clone();
-        self.external = env_value.external.unwrap_or(false);
-        self.fqn = env_value.external_fqn.clone().unwrap_or_default();
-        self.jmes_path = env_value.external_filter.clone().unwrap_or_default();
-        self.created_at = env_value.created_at.clone();
-        self.modified_at = env_value.modified_at.clone();
-        self.error = env_value.external_error.clone().unwrap_or_default();
-    }
-
-    /// Gets the first id matching the provided type
-    pub fn get_rule_id(&self, rule_type: ParamRuleType) -> Option<String> {
-        let mut result: Option<String> = None;
-        for rule in &self.rules {
-            if rule.rule_type == rule_type {
-                result = Some(rule.id.clone());
-                break;
-            }
-        }
-        result
-    }
-}
-
-impl Default for ParameterDetails {
-    fn default() -> Self {
-        ParameterDetails {
-            id: "".to_string(),
-            key: "".to_string(),
-            description: "".to_string(),
-            secret: false,
-            param_type: ParamType::String, // this is the default
-            rules: vec![],
-            val_id: "".to_string(),
-            value: DEFAULT_VALUE.to_string(),
-            env_url: "".to_string(),
-            env_name: "".to_string(),
-            external: false,
-            fqn: "".to_string(),
-            jmes_path: "".to_string(),
-            created_at: "".to_string(),
-            modified_at: "".to_string(),
-            error: "".to_string(),
-        }
-    }
-}
 
 pub struct ParameterValueEntry {
     pub value: String,
@@ -126,62 +26,6 @@ pub struct ParameterValueEntry {
 
 pub type ParameterDetailMap = HashMap<String, ParameterDetails>;
 pub type ParameterValueMap = HashMap<String, ParameterValueEntry>;
-
-/// Gets the singleton default `Value`
-fn default_param_value() -> &'static Value {
-    DEFAULT_PARAM_VALUE.get_or_init(|| Value {
-        url: "".to_owned(),
-        id: "".to_owned(),
-        environment: "".to_owned(),
-        environment_name: "".to_owned(),
-        parameter: "".to_owned(),
-        external: None,
-        external_fqn: None,
-        external_filter: None,
-        secret: None,
-        internal_value: None,
-        value: Some(DEFAULT_VALUE.to_owned()),
-        created_at: "".to_owned(),
-        modified_at: "".to_owned(),
-        external_error: None,
-        earliest_tag: None,
-    })
-}
-
-impl From<&Parameter> for ParameterDetails {
-    fn from(api_param: &Parameter) -> Self {
-        let first = api_param.values.values().next();
-        let env_value: &Value = match first {
-            Some(Some(v)) => v,
-            _ => default_param_value(),
-        };
-
-        ParameterDetails {
-            id: api_param.id.clone(),
-            key: api_param.name.clone(),
-            secret: api_param.secret.unwrap_or(false) || env_value.secret.unwrap_or(false),
-            description: api_param.description.clone().unwrap_or_default(),
-            param_type: ParamType::from(api_param._type.unwrap()),
-            rules: api_param
-                .rules
-                .iter()
-                .map(ParameterDetailRule::from)
-                .collect(),
-
-            val_id: env_value.id.clone(),
-            value: env_value.value.clone().unwrap_or_default(),
-            env_url: env_value.environment.clone(),
-            env_name: env_value.environment_name.clone(),
-            external: env_value.external.unwrap_or(false),
-            fqn: env_value.external_fqn.clone().unwrap_or_default(),
-            jmes_path: env_value.external_filter.clone().unwrap_or_default(),
-            created_at: env_value.created_at.clone(),
-            modified_at: env_value.modified_at.clone(),
-
-            error: env_value.external_error.clone().unwrap_or_default(),
-        }
-    }
-}
 
 #[derive(Debug)]
 pub enum ParamExportFormat {
