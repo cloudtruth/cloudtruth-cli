@@ -543,6 +543,10 @@ pub fn build_cli() -> App<'static, 'static> {
                     .arg(rename_option().help("New template name"))
                     .arg(description_option().help("Template description"))
                     .about("Set the CloudTruth template"),
+                SubCommand::with_name("validate")
+                    .visible_aliases(&["valid", "val", "v"])
+                    .arg(name_arg().help("Template name"))
+                    .about("Validate a CloudTruth template"),
             ])
         )
         .subcommand(

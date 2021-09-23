@@ -356,6 +356,32 @@ fn proc_template_history(
     Ok(())
 }
 
+fn proc_template_validate(
+    subcmd_args: &ArgMatches,
+    rest_cfg: &OpenApiConfig,
+    templates: &Templates,
+    resolved: &ResolvedIds,
+) -> Result<()> {
+    let proj_name = resolved.project_display_name();
+    let proj_id = resolved.project_id();
+    let env_id = resolved.environment_id();
+    let template_name = subcmd_args.value_of(NAME_ARG).unwrap();
+    let show_secrets = true; // make sure we're completely evaluating
+
+    let response =
+        templates.get_body_by_name(rest_cfg, proj_id, env_id, template_name, show_secrets)?;
+    if response.is_some() {
+        println!("Success");
+    } else {
+        error_message(format!(
+            "No template '{}' found in project '{}'.",
+            template_name, proj_name
+        ))?;
+        process::exit(9);
+    }
+    Ok(())
+}
+
 /// Process the 'templates' sub-command
 pub fn process_templates_command(
     subcmd_args: &ArgMatches,
@@ -377,6 +403,8 @@ pub fn process_templates_command(
         proc_template_set(subcmd_args, rest_cfg, templates, resolved)?;
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(HISTORY_SUBCMD) {
         proc_template_history(subcmd_args, rest_cfg, templates, resolved)?;
+    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("validate") {
+        proc_template_validate(subcmd_args, rest_cfg, templates, resolved)?;
     } else {
         warn_missing_subcommand("templates")?;
     }
