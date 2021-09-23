@@ -11,6 +11,12 @@ pub const PAGE_SIZE: Option<i32> = None;
 /// This is a placeholder for secret wrapping.
 pub const WRAP_SECRETS: Option<bool> = None;
 
+fn unquote(orig: &str) -> String {
+    orig.trim_start_matches('"')
+        .trim_end_matches('"')
+        .to_string()
+}
+
 /// Extracts the "detail" from the content string, where the content string is a JSON object
 /// that contains a "detail" field string value.
 pub fn extract_details(content: &str) -> String {
@@ -22,18 +28,12 @@ pub fn extract_details(content: &str) -> String {
         },
         _ => "Did not find details.".to_owned(),
     };
-    info.trim_start_matches('\"')
-        .trim_end_matches('\"')
-        .to_string()
+    unquote(&info)
 }
 
 pub fn extract_from_json(value: &serde_json::Value) -> String {
     if value.is_string() {
-        return value
-            .to_string()
-            .trim_start_matches('"')
-            .trim_end_matches('"')
-            .to_string();
+        return value.as_str().unwrap().to_string();
     }
 
     if value.is_array() {
@@ -47,6 +47,15 @@ pub fn extract_from_json(value: &serde_json::Value) -> String {
             result.push_str(obj_str.as_str());
         }
         return result;
+    }
+
+    if value.is_object() {
+        if let Some(obj) = value.as_object() {
+            if let Some(detail) = obj.get("detail") {
+                // recursively get the data out of the string
+                return extract_from_json(detail);
+            }
+        }
     }
 
     value.to_string()

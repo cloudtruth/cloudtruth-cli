@@ -258,7 +258,7 @@ impl Parameters {
         mask_secrets: bool,
         as_of: Option<String>,
         tag: Option<String>,
-    ) -> Result<Option<ParameterDetails>, Error<ProjectsParametersListError>> {
+    ) -> Result<Option<ParameterDetails>, ParameterError> {
         let response = projects_parameters_list(
             rest_cfg,
             proj_id,
@@ -272,17 +272,24 @@ impl Parameters {
             tag.as_deref(),
             None,
             WRAP_SECRETS,
-        )?;
-        if let Some(parameters) = response.results {
-            if parameters.is_empty() {
-                Ok(None)
-            } else {
-                // TODO: handle more than one??
-                let param = &parameters[0];
-                Ok(Some(ParameterDetails::from(param)))
-            }
-        } else {
-            Ok(None)
+        );
+        match response {
+            Ok(data) => match data.results {
+                Some(parameters) => {
+                    if parameters.is_empty() {
+                        Ok(None)
+                    } else {
+                        // TODO: handle more than one??
+                        let param = &parameters[0];
+                        Ok(Some(ParameterDetails::from(param)))
+                    }
+                }
+                _ => Ok(None),
+            },
+            Err(ResponseError(ref content)) => Err(ParameterError::ResponseError(
+                generic_response_message(&content.status, &content.content),
+            )),
+            Err(e) => Err(ParameterError::UnhandledError(format!("{:?}", e))),
         }
     }
 
@@ -298,7 +305,7 @@ impl Parameters {
         include_values: bool,
         as_of: Option<String>,
         tag: Option<String>,
-    ) -> Result<ParameterValueMap, Error<ProjectsParametersListError>> {
+    ) -> Result<ParameterValueMap, ParameterError> {
         let parameters = self.get_parameter_details(
             rest_cfg,
             proj_id,
@@ -331,7 +338,7 @@ impl Parameters {
         include_values: bool,
         as_of: Option<String>,
         tag: Option<String>,
-    ) -> Result<Vec<ParameterDetails>, Error<ProjectsParametersListError>> {
+    ) -> Result<Vec<ParameterDetails>, ParameterError> {
         let has_values = include_values || tag.is_some();
         let env_arg = if has_values { Some(env_id) } else { None };
         let value_arg = if has_values { None } else { VALUES_FALSE };
@@ -348,15 +355,23 @@ impl Parameters {
             tag.as_deref(),
             value_arg,
             WRAP_SECRETS,
-        )?;
-        let mut list: Vec<ParameterDetails> = Vec::new();
-        if let Some(parameters) = response.results {
-            for param in parameters {
-                list.push(ParameterDetails::from(&param));
+        );
+        match response {
+            Ok(data) => {
+                let mut list: Vec<ParameterDetails> = Vec::new();
+                if let Some(parameters) = data.results {
+                    for param in parameters {
+                        list.push(ParameterDetails::from(&param));
+                    }
+                    list.sort_by(|l, r| l.key.cmp(&r.key));
+                }
+                Ok(list)
             }
-            list.sort_by(|l, r| l.key.cmp(&r.key));
+            Err(ResponseError(ref content)) => Err(ParameterError::ResponseError(
+                generic_response_message(&content.status, &content.content),
+            )),
+            Err(e) => Err(ParameterError::UnhandledError(format!("{:?}", e))),
         }
-        Ok(list)
     }
 
     /// Gets a map of parameter names to `ParameterDetails` in the specified environment.
@@ -368,7 +383,7 @@ impl Parameters {
         mask_secrets: bool,
         as_of: Option<String>,
         tag: Option<String>,
-    ) -> Result<ParameterDetailMap, Error<ProjectsParametersListError>> {
+    ) -> Result<ParameterDetailMap, ParameterError> {
         let details =
             self.get_parameter_details(rest_cfg, proj_id, env_id, mask_secrets, true, as_of, tag)?;
         let mut result = ParameterDetailMap::new();
@@ -387,8 +402,7 @@ impl Parameters {
         mask_secrets: bool,
         as_of: Option<String>,
         tag: Option<String>,
-    ) -> Result<ParameterDetailMap, Error<ProjectsParametersListError>> {
-        let mut result = ParameterDetailMap::new();
+    ) -> Result<ParameterDetailMap, ParameterError> {
         let response = projects_parameters_list(
             rest_cfg,
             proj_id,
@@ -402,19 +416,28 @@ impl Parameters {
             tag.as_deref(),
             VALUES_TRUE,
             WRAP_SECRETS,
-        )?;
-        if let Some(values) = response.results {
-            for api_param in values {
-                let mut details = ParameterDetails::from(&api_param);
-                for (_, api_value) in api_param.values {
-                    if let Some(value) = api_value {
-                        details.set_value(&value);
-                        result.insert(details.env_url.clone(), details.clone());
+        );
+        match response {
+            Ok(data) => {
+                let mut result = ParameterDetailMap::new();
+                if let Some(values) = data.results {
+                    for api_param in values {
+                        let mut details = ParameterDetails::from(&api_param);
+                        for (_, api_value) in api_param.values {
+                            if let Some(value) = api_value {
+                                details.set_value(&value);
+                                result.insert(details.env_url.clone(), details.clone());
+                            }
+                        }
                     }
                 }
+                Ok(result)
             }
+            Err(ResponseError(ref content)) => Err(ParameterError::ResponseError(
+                generic_response_message(&content.status, &content.content),
+            )),
+            Err(e) => Err(ParameterError::UnhandledError(format!("{:?}", e))),
         }
-        Ok(result)
     }
 
     /// Creates the `Parameter` entry.
