@@ -15,15 +15,17 @@ fn proc_config_edit() -> Result<()> {
 }
 
 fn proc_config_prof_list(subcmd_args: &ArgMatches) -> Result<()> {
+    let show_secrets = subcmd_args.is_present(SECRETS_FLAG);
+    let show_values = subcmd_args.is_present(VALUES_FLAG) || show_secrets;
+    let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
     let details = Config::get_profile_details()?;
+
     if details.is_empty() {
         println!("No profiles exist in config.");
-    } else if !subcmd_args.is_present(VALUES_FLAG) {
+    } else if !show_values {
         let profile_names: Vec<String> = details.iter().map(|v| v.name.clone()).collect();
         println!("{}", profile_names.join("\n"));
     } else {
-        let show_secrets = subcmd_args.is_present(SECRETS_FLAG);
-        let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
         let mut table = Table::new("profile");
         table.set_header(&["Name", "API", "Environment", "Project", "Description"]);
         for entry in details {
