@@ -68,6 +68,7 @@ pub enum ParameterError {
     RuleViolation(String),
     RuleError(String, String),
     UnhandledError(String),
+    ResponseError(String),
 }
 
 impl fmt::Display for ParameterError {
@@ -84,6 +85,9 @@ impl fmt::Display for ParameterError {
             }
             ParameterError::UnhandledError(msg) => {
                 write!(f, "Unhandled error: {}", msg)
+            }
+            ParameterError::ResponseError(msg) => {
+                write!(f, "{}", msg)
             }
             e => write!(f, "{:?}", e),
         }
@@ -143,6 +147,17 @@ fn extract_message(content: &str) -> String {
     }
 }
 
+/// This extracts information from the content
+fn generic_response_error(status: &reqwest::StatusCode, content: &str) -> ParameterError {
+    let msg = format!(
+        "{} ({}): {}",
+        status.canonical_reason().unwrap_or("Unknown Reason"),
+        status.as_u16(),
+        extract_message(content)
+    );
+    ParameterError::ResponseError(msg)
+}
+
 impl Parameters {
     pub fn new() -> Self {
         Self {}
@@ -156,9 +171,15 @@ impl Parameters {
         rest_cfg: &OpenApiConfig,
         proj_id: &str,
         param_id: &str,
-    ) -> Result<Option<String>, Error<ProjectsParametersDestroyError>> {
-        projects_parameters_destroy(rest_cfg, param_id, proj_id)?;
-        Ok(Some(param_id.to_string()))
+    ) -> Result<Option<String>, ParameterError> {
+        let response = projects_parameters_destroy(rest_cfg, param_id, proj_id);
+        match response {
+            Ok(_) => Ok(Some(param_id.to_string())),
+            Err(ResponseError(ref content)) => {
+                Err(generic_response_error(&content.status, &content.content))
+            }
+            Err(e) => Err(ParameterError::UnhandledError(format!("{:?}", e))),
+        }
     }
 
     /// Deletes the "override" for the specified environment.
