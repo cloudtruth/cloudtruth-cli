@@ -1610,7 +1610,7 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
 
         result = self.run_cli(cmd_env, param_cmd + f"set {bool_param} -t {bool_type} -v {bool_value}")
         self.assertResultSuccess(result)
-        self.assertIn(f"Successfully updated parameter '{bool_param}'", result.out())
+        self.assertIn(f"Successfully set parameter '{bool_param}'", result.out())
 
         # see it in the display
         result = self.run_cli(cmd_env, list_cmd)
