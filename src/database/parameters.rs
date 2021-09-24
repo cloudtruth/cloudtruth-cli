@@ -413,19 +413,18 @@ impl Parameters {
         param_name: &str,
         mask_secrets: bool,
         as_of: Option<String>,
-        tag: Option<String>,
     ) -> Result<ParameterDetailMap, ParameterError> {
         let response = projects_parameters_list(
             rest_cfg,
             proj_id,
             as_of,
-            None,
+            None, // cannot give an environment, or it will only get for that environment
             Some(mask_secrets),
             Some(param_name),
             None,
             PAGE_SIZE,
             PARTIAL_SUCCESS,
-            tag.as_deref(),
+            None, // cannot use a tag without an environment
             VALUES_TRUE,
             WRAP_SECRETS,
         );

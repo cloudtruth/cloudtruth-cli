@@ -1448,7 +1448,7 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
         self.delete_environment(cmd_env, env_b)
         self.delete_project(cmd_env, proj_name)
 
-    def test_parameter_times(self):
+    def test_parameter_as_of_time(self):
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
 
@@ -1575,8 +1575,8 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
         self.assertResultError(result, no_project)
         result = self.run_cli(cmd_env, param_cmd + f"diff --as-of '{timestamp}'")
         self.assertResultError(result, no_project)
-        # result = self.run_cli(cmd_env, param_cmd + f"env '{param1}' --as-of '{timestamp}'")
-        # self.assertResultError(result, no_environment)
+        result = self.run_cli(cmd_env, param_cmd + f"env '{param1}' --as-of '{timestamp}'")
+        self.assertResultError(result, no_project)
 
         no_environment = "No HistoricalEnvironment matches the given query"
         result = self.run_cli(cmd_env, param_cmd + f"export shell --as-of '{timestamp}'")
@@ -2135,7 +2135,7 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
         self.delete_project(cmd_env, proj_name)
         self.delete_environment(cmd_env, env_name)
 
-    def test_parameter_tagging(self):
+    def test_parameter_as_of_tag(self):
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
 
@@ -2183,8 +2183,8 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
         self.assertResultError(result, no_project)
         result = self.run_cli(cmd_env, param_cmd + f"diff --as-of '{tag_name}'")
         self.assertResultError(result, no_project)
-        # result = self.run_cli(cmd_env, param_cmd + f"env '{param1}' --as-of '{tag_name}'")
-        # self.assertResultError(result, no_project)
+        result = self.run_cli(cmd_env, param_cmd + f"env '{param1}' --as-of '{tag_name}'")
+        self.assertResultError(result, no_project)
 
         result = self.run_cli(cmd_env, param_cmd + f"export docker --as-of '{tag_name}'")
         self.assertResultError(result, no_project)

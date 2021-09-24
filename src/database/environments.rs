@@ -398,6 +398,36 @@ impl Environments {
         Ok(result)
     }
 
+    pub fn get_tag_by_name(
+        &self,
+        rest_cfg: &OpenApiConfig,
+        environment_id: &str,
+        tag_name: &str,
+    ) -> Result<Option<EnvironmentTag>, Error<EnvironmentsTagsListError>> {
+        let response = environments_tags_list(
+            rest_cfg,
+            environment_id,
+            None,
+            Some(tag_name),
+            None,
+            None,
+            None,
+            PAGE_SIZE,
+            None,
+            None,
+            None,
+        )?;
+        if let Some(list) = response.results {
+            if !list.is_empty() {
+                Ok(Some(EnvironmentTag::from(&list[0])))
+            } else {
+                Ok(None)
+            }
+        } else {
+            Ok(None)
+        }
+    }
+
     pub fn create_env_tag(
         &self,
         rest_cfg: &OpenApiConfig,
