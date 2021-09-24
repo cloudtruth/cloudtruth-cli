@@ -308,6 +308,9 @@ PARAMETER_2 = PARAM2
         result = self.run_cli(cmd_env, proj_cmd + f"template get '{temp_name}'")
         self.assertResultError(result, missing_param2)
 
+        result = self.run_cli(cmd_env, proj_cmd + f"template validate '{temp_name}'")
+        self.assertResultError(result, missing_param2)
+
         # copy current body into a file
         result = self.run_cli(cmd_env, proj_cmd + f"template get '{temp_name}' --raw")
         self.assertResultSuccess(result)

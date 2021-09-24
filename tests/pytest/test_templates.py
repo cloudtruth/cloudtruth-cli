@@ -45,6 +45,10 @@ class TestTemplates(TestCase):
         self.assertResultSuccess(result)
         self.assertEqual(body, result.out())
 
+        result = self.run_cli(cmd_env, sub_cmd + f"validate {temp_name}")
+        self.assertResultSuccess(result)
+        self.assertIn("Success", result.out())
+
         # update the description
         new_desc = "Updated description"
         result = self.run_cli(cmd_env, sub_cmd + f"set {temp_name} --desc \"{new_desc}\"")
