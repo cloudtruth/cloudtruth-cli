@@ -116,6 +116,11 @@ fn param_value_error(content: &str) -> ParameterError {
     ParameterError::UnhandledError(content.to_string())
 }
 
+/// Creates a `ParameterError::ResponseError` from the provided `status` and `content`
+fn param_response_error(status: &reqwest::StatusCode, content: &str) -> ParameterError {
+    ParameterError::ResponseError(generic_response_message(status, content))
+}
+
 impl Parameters {
     pub fn new() -> Self {
         Self {}
@@ -133,9 +138,9 @@ impl Parameters {
         let response = projects_parameters_destroy(rest_cfg, param_id, proj_id);
         match response {
             Ok(_) => Ok(Some(param_id.to_string())),
-            Err(ResponseError(ref content)) => Err(ParameterError::ResponseError(
-                generic_response_message(&content.status, &content.content),
-            )),
+            Err(ResponseError(ref content)) => {
+                Err(param_response_error(&content.status, &content.content))
+            }
             Err(e) => Err(ParameterError::UnhandledError(format!("{:?}", e))),
         }
     }
@@ -180,10 +185,10 @@ impl Parameters {
         proj_id: &str,
         env_id: &str,
         options: ParamExportOptions,
-    ) -> Result<Option<String>, Error<ProjectsParameterExportListError>> {
+    ) -> Result<Option<String>, ParameterError> {
         let out_fmt = format!("{:?}", options.format).to_lowercase();
         let mask_secrets = Some(!options.secrets.unwrap_or(false));
-        let export = projects_parameter_export_list(
+        let response = projects_parameter_export_list(
             rest_cfg,
             proj_id,
             options.as_of,
@@ -196,8 +201,14 @@ impl Parameters {
             options.starts_with.as_deref(),
             options.tag.as_deref(),
             WRAP_SECRETS,
-        )?;
-        Ok(Some(export.body))
+        );
+        match response {
+            Ok(export) => Ok(Some(export.body)),
+            Err(ResponseError(ref content)) => {
+                Err(param_response_error(&content.status, &content.content))
+            }
+            Err(e) => Err(ParameterError::UnhandledError(format!("{:?}", e))),
+        }
     }
 
     /// Gets the `Parameter` identifier.
@@ -286,9 +297,9 @@ impl Parameters {
                 }
                 _ => Ok(None),
             },
-            Err(ResponseError(ref content)) => Err(ParameterError::ResponseError(
-                generic_response_message(&content.status, &content.content),
-            )),
+            Err(ResponseError(ref content)) => {
+                Err(param_response_error(&content.status, &content.content))
+            }
             Err(e) => Err(ParameterError::UnhandledError(format!("{:?}", e))),
         }
     }
@@ -367,9 +378,9 @@ impl Parameters {
                 }
                 Ok(list)
             }
-            Err(ResponseError(ref content)) => Err(ParameterError::ResponseError(
-                generic_response_message(&content.status, &content.content),
-            )),
+            Err(ResponseError(ref content)) => {
+                Err(param_response_error(&content.status, &content.content))
+            }
             Err(e) => Err(ParameterError::UnhandledError(format!("{:?}", e))),
         }
     }
@@ -433,9 +444,9 @@ impl Parameters {
                 }
                 Ok(result)
             }
-            Err(ResponseError(ref content)) => Err(ParameterError::ResponseError(
-                generic_response_message(&content.status, &content.content),
-            )),
+            Err(ResponseError(ref content)) => {
+                Err(param_response_error(&content.status, &content.content))
+            }
             Err(e) => Err(ParameterError::UnhandledError(format!("{:?}", e))),
         }
     }
@@ -527,10 +538,7 @@ impl Parameters {
             Err(ResponseError(ref content)) => match content.status.as_u16() {
                 400 => Err(param_value_error(&content.content)),
                 404 => Err(param_value_error(&content.content)),
-                _ => Err(ParameterError::ResponseError(generic_response_message(
-                    &content.status,
-                    &content.content,
-                ))),
+                _ => Err(param_response_error(&content.status, &content.content)),
             },
             Err(e) => Err(ParameterError::CreateValueError(e)),
         }
@@ -579,10 +587,7 @@ impl Parameters {
             Err(ResponseError(ref content)) => match content.status.as_u16() {
                 400 => Err(param_value_error(&content.content)),
                 404 => Err(param_value_error(&content.content)),
-                _ => Err(ParameterError::ResponseError(generic_response_message(
-                    &content.status,
-                    &content.content,
-                ))),
+                _ => Err(param_response_error(&content.status, &content.content)),
             },
             Err(e) => Err(ParameterError::UpdateValueError(e)),
         }

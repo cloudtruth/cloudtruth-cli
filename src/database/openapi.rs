@@ -36,9 +36,9 @@ pub fn extract_from_json(value: &serde_json::Value) -> String {
         return value.as_str().unwrap().to_string();
     }
 
-    if value.is_array() {
+    if let Some(arr) = value.as_array() {
         let mut result = "".to_string();
-        for v in value.as_array().unwrap() {
+        for v in arr {
             if !result.is_empty() {
                 result.push_str("; ")
             }
@@ -49,12 +49,10 @@ pub fn extract_from_json(value: &serde_json::Value) -> String {
         return result;
     }
 
-    if value.is_object() {
-        if let Some(obj) = value.as_object() {
-            if let Some(detail) = obj.get("detail") {
-                // recursively get the data out of the string
-                return extract_from_json(detail);
-            }
+    if let Some(obj) = value.as_object() {
+        if let Some(detail) = obj.get("detail") {
+            // recursively get the data out of the string
+            return extract_from_json(detail);
         }
     }
 
