@@ -1546,17 +1546,19 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
         ####################
         # negative cases with times before when the project was created
         timestamp = "3/24/2021"
-        # TODO: these errors should be improved
-        not_found = "Not Found"
+        no_project = "No HistoricalProject matches the given query"
         param_cmd = base_cmd + f"--project '{proj_name}' param "
         result = self.run_cli(cmd_env, param_cmd + f"ls -v --as-of '{timestamp}'")
-        self.assertResultError(result, not_found)
-        result = self.run_cli(cmd_env, param_cmd + f"export shell --as-of '{timestamp}'")
-        self.assertResultError(result, not_found)
+        self.assertResultError(result, no_project)
         result = self.run_cli(cmd_env, param_cmd + f"diff --as-of '{timestamp}'")
-        self.assertResultError(result, not_found)
+        self.assertResultError(result, no_project)
         # result = self.run_cli(cmd_env, param_cmd + f"env '{param1}' --as-of '{timestamp}'")
-        # self.assertResultError(result, not_found)
+        # self.assertResultError(result, no_environment)
+
+        no_environment = "No HistoricalEnvironment matches the given query"
+        result = self.run_cli(cmd_env, param_cmd + f"export shell --as-of '{timestamp}'")
+        self.assertResultError(result, no_environment)
+
         result = self.run_cli(cmd_env, param_cmd + f"get '{param1}' --as-of '{timestamp}'")
         self.assertResultSuccess(result)
         self.assertIn(f"The parameter '{param1}' could not be found", result.out())
@@ -2152,17 +2154,18 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
         result = self.run_cli(cmd_env, tag_set + f"--time '{timestamp}'")
         self.assertResultSuccess(result)
 
-        # TODO: these errors should be improved
-        not_found = "Not Found"
+        no_project = "No HistoricalProject matches the given query"
         param_cmd = base_cmd + f"--env '{env_name}' --project '{proj_name}' param "
         result = self.run_cli(cmd_env, param_cmd + f"ls -v --as-of '{tag_name}'")
-        self.assertResultError(result, not_found)
-        result = self.run_cli(cmd_env, param_cmd + f"export docker --as-of '{tag_name}'")
-        self.assertResultError(result, not_found)
+        self.assertResultError(result, no_project)
         result = self.run_cli(cmd_env, param_cmd + f"diff --as-of '{tag_name}'")
-        self.assertResultError(result, not_found)
+        self.assertResultError(result, no_project)
         # result = self.run_cli(cmd_env, param_cmd + f"env '{param1}' --as-of '{tag_name}'")
-        # self.assertResultError(result, not_found)
+        # self.assertResultError(result, no_project)
+
+        result = self.run_cli(cmd_env, param_cmd + f"export docker --as-of '{tag_name}'")
+        self.assertResultError(result, no_project)
+
         result = self.run_cli(cmd_env, param_cmd + f"get '{param1}' --as-of '{timestamp}'")
         self.assertResultSuccess(result)
         self.assertIn(f"The parameter '{param1}' could not be found", result.out())
@@ -2172,13 +2175,11 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
         proj_base = base_cmd + f"--project '{proj_name}' "
         bad_tag = "no-such-tag"
         result = self.run_cli(cmd_env, proj_base + f"--env '{env_name}' param ls -v --as-of {bad_tag}")
-        # self.assertResultError(result, f"Tag '{bad_tag}' does not exist in environment '{env_name}'")
-        self.assertResultError(result, not_found)
+        self.assertResultError(result, f"Tag `{bad_tag}` could not be found in environment `{env_name}`")
 
         bad_env = "default"
         result = self.run_cli(cmd_env, proj_base + f"--env {bad_env} param ls -v --as-of {tag_name}")
-        # self.assertResultError(result, f"Tag '{tag_name}' does not exist in environment '{bad_env}'")
-        self.assertResultError(result, not_found)
+        self.assertResultError(result, f"Tag `{tag_name}` could not be found in environment `{bad_env}`")
 
         ################
         # cleanup

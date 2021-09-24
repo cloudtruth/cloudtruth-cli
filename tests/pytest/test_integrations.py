@@ -297,9 +297,7 @@ PARAMETER_2 = PARAM2
 
         # export will fail, and should provide details about what failed
         result = self.run_cli(cmd_env, proj_cmd + "param export docker")
-        self.assertResultError(result, "422 Unprocessable Entity")
-        # TODO: once `param export` improves feedback, use it
-        # self.assertError(result, missing_fqn2)
+        self.assertResultError(result, missing_fqn2)
 
         ##########################
         # template checks

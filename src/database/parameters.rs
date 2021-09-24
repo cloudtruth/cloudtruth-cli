@@ -100,7 +100,7 @@ impl fmt::Display for ParameterError {
 impl error::Error for ParameterError {}
 
 /// This method is to handle the different errors currently emitted by Value create/update.
-fn extract_error(content: &str) -> ParameterError {
+fn param_value_error(content: &str) -> ParameterError {
     let json_result: Result<serde_json::Value, serde_json::Error> = serde_json::from_str(content);
     if let Ok(value) = json_result {
         if let Some(item) = value.get("internal_value") {
@@ -114,6 +114,11 @@ fn extract_error(content: &str) -> ParameterError {
         }
     }
     ParameterError::UnhandledError(content.to_string())
+}
+
+/// Creates a `ParameterError::ResponseError` from the provided `status` and `content`
+fn param_response_error(status: &reqwest::StatusCode, content: &str) -> ParameterError {
+    ParameterError::ResponseError(generic_response_message(status, content))
 }
 
 impl Parameters {
@@ -133,9 +138,9 @@ impl Parameters {
         let response = projects_parameters_destroy(rest_cfg, param_id, proj_id);
         match response {
             Ok(_) => Ok(Some(param_id.to_string())),
-            Err(ResponseError(ref content)) => Err(ParameterError::ResponseError(
-                generic_response_message(&content.status, &content.content),
-            )),
+            Err(ResponseError(ref content)) => {
+                Err(param_response_error(&content.status, &content.content))
+            }
             Err(e) => Err(ParameterError::UnhandledError(format!("{:?}", e))),
         }
     }
@@ -180,10 +185,10 @@ impl Parameters {
         proj_id: &str,
         env_id: &str,
         options: ParamExportOptions,
-    ) -> Result<Option<String>, Error<ProjectsParameterExportListError>> {
+    ) -> Result<Option<String>, ParameterError> {
         let out_fmt = format!("{:?}", options.format).to_lowercase();
         let mask_secrets = Some(!options.secrets.unwrap_or(false));
-        let export = projects_parameter_export_list(
+        let response = projects_parameter_export_list(
             rest_cfg,
             proj_id,
             options.as_of,
@@ -196,8 +201,15 @@ impl Parameters {
             options.starts_with.as_deref(),
             options.tag.as_deref(),
             WRAP_SECRETS,
-        )?;
-        Ok(Some(export.body))
+        );
+        match response {
+            Ok(export) => Ok(Some(export.body)),
+            // TODO: once fixed in schema, should create ParameterError::EvaluationError with the TemplateLookupError
+            Err(ResponseError(ref content)) => {
+                Err(param_response_error(&content.status, &content.content))
+            }
+            Err(e) => Err(ParameterError::UnhandledError(format!("{:?}", e))),
+        }
     }
 
     /// Gets the `Parameter` identifier.
@@ -258,7 +270,7 @@ impl Parameters {
         mask_secrets: bool,
         as_of: Option<String>,
         tag: Option<String>,
-    ) -> Result<Option<ParameterDetails>, Error<ProjectsParametersListError>> {
+    ) -> Result<Option<ParameterDetails>, ParameterError> {
         let response = projects_parameters_list(
             rest_cfg,
             proj_id,
@@ -272,17 +284,24 @@ impl Parameters {
             tag.as_deref(),
             None,
             WRAP_SECRETS,
-        )?;
-        if let Some(parameters) = response.results {
-            if parameters.is_empty() {
-                Ok(None)
-            } else {
-                // TODO: handle more than one??
-                let param = &parameters[0];
-                Ok(Some(ParameterDetails::from(param)))
+        );
+        match response {
+            Ok(data) => match data.results {
+                Some(parameters) => {
+                    if parameters.is_empty() {
+                        Ok(None)
+                    } else {
+                        // TODO: handle more than one??
+                        let param = &parameters[0];
+                        Ok(Some(ParameterDetails::from(param)))
+                    }
+                }
+                _ => Ok(None),
+            },
+            Err(ResponseError(ref content)) => {
+                Err(param_response_error(&content.status, &content.content))
             }
-        } else {
-            Ok(None)
+            Err(e) => Err(ParameterError::UnhandledError(format!("{:?}", e))),
         }
     }
 
@@ -298,7 +317,7 @@ impl Parameters {
         include_values: bool,
         as_of: Option<String>,
         tag: Option<String>,
-    ) -> Result<ParameterValueMap, Error<ProjectsParametersListError>> {
+    ) -> Result<ParameterValueMap, ParameterError> {
         let parameters = self.get_parameter_details(
             rest_cfg,
             proj_id,
@@ -331,7 +350,7 @@ impl Parameters {
         include_values: bool,
         as_of: Option<String>,
         tag: Option<String>,
-    ) -> Result<Vec<ParameterDetails>, Error<ProjectsParametersListError>> {
+    ) -> Result<Vec<ParameterDetails>, ParameterError> {
         let has_values = include_values || tag.is_some();
         let env_arg = if has_values { Some(env_id) } else { None };
         let value_arg = if has_values { None } else { VALUES_FALSE };
@@ -348,15 +367,23 @@ impl Parameters {
             tag.as_deref(),
             value_arg,
             WRAP_SECRETS,
-        )?;
-        let mut list: Vec<ParameterDetails> = Vec::new();
-        if let Some(parameters) = response.results {
-            for param in parameters {
-                list.push(ParameterDetails::from(&param));
+        );
+        match response {
+            Ok(data) => {
+                let mut list: Vec<ParameterDetails> = Vec::new();
+                if let Some(parameters) = data.results {
+                    for param in parameters {
+                        list.push(ParameterDetails::from(&param));
+                    }
+                    list.sort_by(|l, r| l.key.cmp(&r.key));
+                }
+                Ok(list)
             }
-            list.sort_by(|l, r| l.key.cmp(&r.key));
+            Err(ResponseError(ref content)) => {
+                Err(param_response_error(&content.status, &content.content))
+            }
+            Err(e) => Err(ParameterError::UnhandledError(format!("{:?}", e))),
         }
-        Ok(list)
     }
 
     /// Gets a map of parameter names to `ParameterDetails` in the specified environment.
@@ -368,7 +395,7 @@ impl Parameters {
         mask_secrets: bool,
         as_of: Option<String>,
         tag: Option<String>,
-    ) -> Result<ParameterDetailMap, Error<ProjectsParametersListError>> {
+    ) -> Result<ParameterDetailMap, ParameterError> {
         let details =
             self.get_parameter_details(rest_cfg, proj_id, env_id, mask_secrets, true, as_of, tag)?;
         let mut result = ParameterDetailMap::new();
@@ -387,8 +414,7 @@ impl Parameters {
         mask_secrets: bool,
         as_of: Option<String>,
         tag: Option<String>,
-    ) -> Result<ParameterDetailMap, Error<ProjectsParametersListError>> {
-        let mut result = ParameterDetailMap::new();
+    ) -> Result<ParameterDetailMap, ParameterError> {
         let response = projects_parameters_list(
             rest_cfg,
             proj_id,
@@ -402,19 +428,28 @@ impl Parameters {
             tag.as_deref(),
             VALUES_TRUE,
             WRAP_SECRETS,
-        )?;
-        if let Some(values) = response.results {
-            for api_param in values {
-                let mut details = ParameterDetails::from(&api_param);
-                for (_, api_value) in api_param.values {
-                    if let Some(value) = api_value {
-                        details.set_value(&value);
-                        result.insert(details.env_url.clone(), details.clone());
+        );
+        match response {
+            Ok(data) => {
+                let mut result = ParameterDetailMap::new();
+                if let Some(values) = data.results {
+                    for api_param in values {
+                        let mut details = ParameterDetails::from(&api_param);
+                        for (_, api_value) in api_param.values {
+                            if let Some(value) = api_value {
+                                details.set_value(&value);
+                                result.insert(details.env_url.clone(), details.clone());
+                            }
+                        }
                     }
                 }
+                Ok(result)
             }
+            Err(ResponseError(ref content)) => {
+                Err(param_response_error(&content.status, &content.content))
+            }
+            Err(e) => Err(ParameterError::UnhandledError(format!("{:?}", e))),
         }
-        Ok(result)
     }
 
     /// Creates the `Parameter` entry.
@@ -502,12 +537,9 @@ impl Parameters {
         match response {
             Ok(api_value) => Ok(api_value.id),
             Err(ResponseError(ref content)) => match content.status.as_u16() {
-                400 => Err(extract_error(&content.content)),
-                404 => Err(extract_error(&content.content)),
-                _ => Err(ParameterError::ResponseError(generic_response_message(
-                    &content.status,
-                    &content.content,
-                ))),
+                400 => Err(param_value_error(&content.content)),
+                404 => Err(param_value_error(&content.content)),
+                _ => Err(param_response_error(&content.status, &content.content)),
             },
             Err(e) => Err(ParameterError::CreateValueError(e)),
         }
@@ -554,12 +586,9 @@ impl Parameters {
         match response {
             Ok(api_value) => Ok(api_value.id),
             Err(ResponseError(ref content)) => match content.status.as_u16() {
-                400 => Err(extract_error(&content.content)),
-                404 => Err(extract_error(&content.content)),
-                _ => Err(ParameterError::ResponseError(generic_response_message(
-                    &content.status,
-                    &content.content,
-                ))),
+                400 => Err(param_value_error(&content.content)),
+                404 => Err(param_value_error(&content.content)),
+                _ => Err(param_response_error(&content.status, &content.content)),
             },
             Err(e) => Err(ParameterError::UpdateValueError(e)),
         }
