@@ -274,13 +274,25 @@ fn proc_param_env(
     resolved: &ResolvedIds,
 ) -> Result<()> {
     let param_name = subcmd_args.value_of(KEY_ARG).unwrap();
-    let as_of = parse_datetime(subcmd_args.value_of(AS_OF_ARG));
+    let mut as_of = parse_datetime(subcmd_args.value_of(AS_OF_ARG));
     let tag = parse_tag(subcmd_args.value_of(AS_OF_ARG));
     let show_secrets = subcmd_args.is_present(SECRETS_FLAG);
     let show_times = subcmd_args.is_present(SHOW_TIMES_FLAG);
     let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
     let all_envs = subcmd_args.is_present("all");
     let proj_id = resolved.project_id();
+
+    // assume the provided tag applies to this environment... we cannot use a tag without an
+    // environment, so resolve it to an as-of time value
+    if let Some(tag_name) = tag {
+        let environments = Environments::new();
+        if let Some(tag_info) =
+            environments.get_tag_by_name(rest_cfg, resolved.environment_id(), &tag_name)?
+        {
+            // update the 'as-of' to take the timestamp of the tag
+            as_of = Some(tag_info.timestamp);
+        }
+    }
 
     // fetch all environments once, and then determine id's from the same map that is
     // used to resolve the environment names.
@@ -294,7 +306,6 @@ fn proc_param_env(
         param_name,
         !show_secrets,
         as_of,
-        tag,
     )?;
 
     if param_values.is_empty() {
