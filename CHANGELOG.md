@@ -1,3 +1,12 @@
+# 1.0.9 - 2021-09-24
+
+* Enhanced `parameters set` to allow parameter creation without a value for any environment.
+* Added `template validate` to check if an existing template still works.
+* Fixed `parameters environment --as-of` issue when using a tag name.
+* Added `configuration profile` commands to avoid need to modify configuration file with editor.
+  * Move `configuration list` functionality into `configuration profile list`.
+* Improved handling for many error responses to provide more understandable information.
+
 # 1.0.8 - 2021-09-22
 
 * Added `environments tag` command with the following sub-commands:
