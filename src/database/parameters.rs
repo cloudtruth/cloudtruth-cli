@@ -204,6 +204,7 @@ impl Parameters {
         );
         match response {
             Ok(export) => Ok(Some(export.body)),
+            // TODO: once fixed in schema, should create ParameterError::EvaluationError with the TemplateLookupError
             Err(ResponseError(ref content)) => {
                 Err(param_response_error(&content.status, &content.content))
             }
