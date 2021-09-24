@@ -123,7 +123,8 @@ my_param,cRaZy value,default,string,0,internal,false,this is just a test descrip
         ########
         # no updates provided
         result = self.run_cli(cmd_env, sub_cmd + f"set {key1}")
-        self.assertResultWarning(result, "Please provide at least one update")
+        self.assertResultSuccess(result)
+        self.assertIn("Successfully updated parameter", result.out())
 
         result = self.run_cli(cmd_env, sub_cmd + "ls -v")
         self.assertResultSuccess(result)
@@ -156,10 +157,21 @@ my_param,cRaZy value,default,string,0,internal,false,this is just a test descrip
         self.assertResultSuccess(result)
         self.assertIn(empty_msg, result.out())
 
+        ###########
+        # create a parameter with no value
+        result = self.run_cli(cmd_env, sub_cmd + f"set '{key1}'")
+        self.assertResultSuccess(result)
+        self.assertIn("Successfully created parameter", result.out())
+        self.assertNotIn("for environment", result.out())
+
+        result = self.run_cli(cmd_env, sub_cmd + "list --values -f csv")
+        self.assertResultSuccess(result)
+        self.assertIn(f"{key1},{DEFAULT_PARAM_VALUE},,string,0,internal,false", result.out())
+
         # delete the project
         self.delete_project(cmd_env, proj_name)
 
-    def test_parameter_secret(self):
+    def test_parameter_secret_basic(self):
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
 
@@ -318,6 +330,17 @@ my_param,super-SENSITIVE-vAluE,default,string,0,internal,true,my secret value
         result = self.run_cli(cmd_env, sub_cmd + "list --values --secrets")
         self.assertResultSuccess(result)
         self.assertIn(empty_msg, result.out())
+
+        ###########
+        # create a secret with no value
+        result = self.run_cli(cmd_env, sub_cmd + f"set '{key1}' --secret true")
+        self.assertResultSuccess(result)
+        self.assertIn("Successfully created parameter", result.out())
+        self.assertNotIn("for environment", result.out())
+
+        result = self.run_cli(cmd_env, sub_cmd + "list --values -f csv")
+        self.assertResultSuccess(result)
+        self.assertIn(f"{key1},{DEFAULT_PARAM_VALUE},,string,0,internal,true", result.out())
 
         # delete the project
         self.delete_project(cmd_env, proj_name)
@@ -1587,7 +1610,7 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
 
         result = self.run_cli(cmd_env, param_cmd + f"set {bool_param} -t {bool_type} -v {bool_value}")
         self.assertResultSuccess(result)
-        self.assertIn(f"Successfully updated parameter '{bool_param}'", result.out())
+        self.assertIn(f"Successfully set parameter '{bool_param}'", result.out())
 
         # see it in the display
         result = self.run_cli(cmd_env, list_cmd)
@@ -1631,7 +1654,7 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
 
         result = self.run_cli(cmd_env, param_cmd + f"set {int_param} -t {int_type} -v {int_value}")
         self.assertResultSuccess(result)
-        self.assertIn(f"Successfully updated parameter '{int_param}'", result.out())
+        self.assertIn(f"Successfully set parameter '{int_param}'", result.out())
 
         # see it in the display
         result = self.run_cli(cmd_env, list_cmd)

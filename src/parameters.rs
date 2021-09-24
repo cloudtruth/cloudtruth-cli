@@ -10,8 +10,8 @@ use crate::database::{
 use crate::table::Table;
 use crate::{
     error_message, format_param_error, parse_datetime, parse_tag, user_confirm,
-    warn_missing_subcommand, warn_unresolved_params, warn_user, warning_message, ResolvedIds,
-    DEL_CONFIRM, FILE_READ_ERR,
+    warn_missing_subcommand, warn_unresolved_params, warning_message, ResolvedIds, DEL_CONFIRM,
+    FILE_READ_ERR,
 };
 use clap::ArgMatches;
 use color_eyre::eyre::Result;
@@ -666,6 +666,8 @@ fn proc_param_set(
     let rename = subcmd_args.value_of(RENAME_OPT);
     let final_name = rename.unwrap_or(key_name);
     let mut param_added = false;
+    let mut set_action = "updated";
+    let mut env_changed = "".to_string();
     let max_rule = subcmd_args.value_of("MAX");
     let min_rule = subcmd_args.value_of("MIN");
     let max_len_rule = subcmd_args.value_of("MAX-LEN");
@@ -716,21 +718,9 @@ fn proc_param_set(
         value = Some(val_str.as_str());
     }
 
-    let rule_set = max_rule.is_some()
-        || min_rule.is_some()
-        || max_len_rule.is_some()
-        || min_len_rule.is_some()
-        || regex_rule.is_some();
-    let rule_del = delete_max || delete_min || delete_max_len || delete_min_len || delete_regex;
     let param_field_update =
         description.is_some() || secret.is_some() || param_type.is_some() || rename.is_some();
     let value_field_update = value.is_some() || fqn.is_some() || jmes_path.is_some();
-
-    // make sure there is at least one item to updated
-    if !param_field_update && !value_field_update && !rule_set && !rule_del {
-        warn_user("Nothing changed. Please provide at least one update.".to_string())?;
-        return Ok(());
-    }
 
     // get the original values, so that is not lost
     let mut updated: ParameterDetails;
@@ -758,6 +748,7 @@ fn proc_param_set(
         }
     } else {
         param_added = true;
+        set_action = "created";
         updated = parameters.create_parameter(
             rest_cfg,
             proj_id,
@@ -833,8 +824,10 @@ fn proc_param_set(
 
     // don't do anything if there's nothing to do
     if value_field_update {
+        env_changed = format!(" for environment '{}'", resolved.environment_display_name());
         // if any existing environment does not match the desired environment
         if !updated.env_url.contains(env_id) {
+            set_action = "set";
             let value_add_result = parameters
                 .create_parameter_value(rest_cfg, proj_id, env_id, param_id, value, fqn, jmes_path);
             if let Err(err) = value_add_result {
@@ -856,10 +849,11 @@ fn proc_param_set(
         }
     }
     println!(
-        "Successfully updated parameter '{}' in project '{}' for environment '{}'.",
+        "Successfully {} parameter '{}' in project '{}'{}.",
+        set_action,
         final_name,
         resolved.project_display_name(),
-        resolved.environment_display_name(),
+        env_changed,
     );
     Ok(())
 }
