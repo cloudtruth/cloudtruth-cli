@@ -1654,7 +1654,7 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
 
         result = self.run_cli(cmd_env, param_cmd + f"set {int_param} -t {int_type} -v {int_value}")
         self.assertResultSuccess(result)
-        self.assertIn(f"Successfully updated parameter '{int_param}'", result.out())
+        self.assertIn(f"Successfully set parameter '{int_param}'", result.out())
 
         # see it in the display
         result = self.run_cli(cmd_env, list_cmd)
