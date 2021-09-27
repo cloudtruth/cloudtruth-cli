@@ -113,7 +113,7 @@ fn proc_config_prof_set(subcmd_args: &ArgMatches) -> Result<()> {
     } else {
         let pre_exists = Config::get_profile_details_by_name(prof_name)?.is_some();
         Config::update_profile(prof_name, api_key, description, environment, project)?;
-        let post_exists = Config::get_profile_details_by_name(prof_name)?.is_none();
+        let post_exists = Config::get_profile_details_by_name(prof_name)?.is_some();
         let action = if !post_exists {
             "Deleted"
         } else if !pre_exists {
