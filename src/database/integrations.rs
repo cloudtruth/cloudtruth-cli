@@ -1,93 +1,12 @@
-use crate::database::openapi::{extract_details, OpenApiConfig, PAGE_SIZE};
+use crate::database::{
+    extract_details, IntegrationDetails, IntegrationNode, OpenApiConfig, PAGE_SIZE,
+};
 use cloudtruth_restapi::apis::integrations_api::*;
 use cloudtruth_restapi::apis::Error;
 use cloudtruth_restapi::apis::Error::ResponseError;
-use cloudtruth_restapi::models::{AwsIntegration, GitHubIntegration, IntegrationExplorer};
 use std::error;
-use std::fmt::{self, Formatter};
-
-#[derive(Debug)]
-pub struct IntegrationDetails {
-    pub id: String,
-    pub name: String,
-    pub description: String,
-    pub provider: String,
-    pub fqn: String,
-    pub status: String,
-    pub status_detail: String,
-    pub status_time: String,
-    pub created_at: String,
-    pub modified_at: String,
-}
-
-impl From<&AwsIntegration> for IntegrationDetails {
-    fn from(aws: &AwsIntegration) -> Self {
-        IntegrationDetails {
-            id: aws.id.clone(),
-            provider: "aws".to_string(),
-            name: aws.name.clone(),
-            description: aws.description.clone().unwrap_or_default(),
-            fqn: aws.fqn.clone(),
-            status: aws.status.clone(),
-            status_detail: aws.status_detail.clone(),
-            status_time: aws.status_last_checked_at.clone(),
-            created_at: aws.created_at.clone(),
-            modified_at: aws.modified_at.clone(),
-        }
-    }
-}
-
-impl From<&GitHubIntegration> for IntegrationDetails {
-    fn from(github: &GitHubIntegration) -> Self {
-        IntegrationDetails {
-            id: github.id.clone(),
-            provider: "github".to_string(),
-            name: github.name.clone(),
-            description: github.description.clone().unwrap_or_default(),
-            fqn: github.fqn.clone(),
-            status: github.status.clone(),
-            status_detail: github.status_detail.clone(),
-            status_time: github.status_last_checked_at.clone(),
-            created_at: github.created_at.clone(),
-            modified_at: github.modified_at.clone(),
-        }
-    }
-}
-
-#[derive(Debug)]
-pub struct IntegrationNode {
-    pub fqn: String,
-    pub node_type: String,
-    pub secret: bool,
-    pub name: String,
-    pub content_type: String,
-    pub content_size: i32,
-    pub content_data: String,
-    pub content_keys: Vec<String>,
-}
-
-fn get_name(name: &Option<String>, fqn: &str) -> String {
-    if let Some(name) = name {
-        name.clone()
-    } else {
-        fqn.split('/').last().unwrap().to_string()
-    }
-}
-
-impl From<&IntegrationExplorer> for IntegrationNode {
-    fn from(node: &IntegrationExplorer) -> Self {
-        IntegrationNode {
-            fqn: node.fqn.clone(),
-            name: get_name(&node.name, &node.fqn),
-            node_type: format!("{:?}", node.node_type),
-            secret: node.secret.unwrap_or(false),
-            content_type: node.content_type.clone().unwrap_or_default(),
-            content_size: node.content_size.unwrap_or(0),
-            content_data: node.content_data.clone().unwrap_or_default(),
-            content_keys: node.content_keys.clone().unwrap_or_default(),
-        }
-    }
-}
+use std::fmt;
+use std::fmt::Formatter;
 
 #[derive(Debug)]
 pub enum IntegrationError {
