@@ -1,94 +1,19 @@
-use crate::database::openapi::{extract_details, OpenApiConfig, PAGE_SIZE};
-
-use crate::database::{generic_response_message, HistoryAction};
+use crate::database::{
+    extract_details, generic_response_message, OpenApiConfig, TemplateDetails, TemplateHistory,
+    PAGE_SIZE,
+};
 use cloudtruth_restapi::apis::projects_api::*;
 use cloudtruth_restapi::apis::Error;
 use cloudtruth_restapi::apis::Error::ResponseError;
 use cloudtruth_restapi::models::{
-    PatchedTemplate, Template, TemplateCreate, TemplateLookupError, TemplatePreview,
-    TemplateTimelineEntry,
+    PatchedTemplate, TemplateCreate, TemplateLookupError, TemplatePreview,
 };
 use std::error;
 use std::fmt;
 use std::fmt::Formatter;
-use std::ops::Deref;
 use std::result::Result;
 
 pub struct Templates {}
-
-#[derive(Debug)]
-pub struct TemplateDetails {
-    pub id: String,
-    pub name: String,
-    pub description: String,
-    pub body: String,
-    pub created_at: String,
-    pub modified_at: String,
-}
-
-impl From<&Template> for TemplateDetails {
-    fn from(api_temp: &Template) -> Self {
-        TemplateDetails {
-            id: api_temp.id.clone(),
-            name: api_temp.name.clone(),
-            description: api_temp.description.clone().unwrap_or_default(),
-            body: api_temp.body.clone().unwrap_or_default(),
-            created_at: api_temp.created_at.clone(),
-            modified_at: api_temp.modified_at.clone(),
-        }
-    }
-}
-
-#[derive(Debug, Clone)]
-pub struct TemplateHistory {
-    pub id: String,
-    pub name: String,
-    pub description: String,
-    pub body: String,
-
-    // these are from the timeline
-    pub date: String,
-    pub change_type: HistoryAction,
-    pub user: String, // may need name and the id
-}
-
-impl From<&TemplateTimelineEntry> for TemplateHistory {
-    fn from(api: &TemplateTimelineEntry) -> Self {
-        TemplateHistory {
-            id: api.history_template.id.clone(),
-            name: api.history_template.name.clone(),
-            description: api.history_template.description.clone().unwrap_or_default(),
-            body: api.history_template.body.clone().unwrap_or_default(),
-
-            date: api.history_date.clone(),
-            change_type: HistoryAction::from(*api.history_type.deref()),
-            user: api.history_user.clone().unwrap_or_default(),
-        }
-    }
-}
-
-impl TemplateHistory {
-    pub fn get_property(&self, name: &str) -> String {
-        match name {
-            "name" => self.name.clone(),
-            "body" => self.body.clone(),
-            "description" => self.description.clone(),
-            x => format!("Unhandled property: {}", x),
-        }
-    }
-
-    pub fn get_id(&self) -> String {
-        self.id.clone()
-    }
-
-    pub fn get_date(&self) -> String {
-        self.date.clone()
-    }
-
-    pub fn get_action(&self) -> HistoryAction {
-        self.change_type.clone()
-    }
-}
 
 #[derive(Debug)]
 pub enum TemplateError {

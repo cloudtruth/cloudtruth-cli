@@ -1,52 +1,19 @@
-use crate::database::openapi::{extract_details, OpenApiConfig, PAGE_SIZE};
+use crate::database::{extract_details, OpenApiConfig, PAGE_SIZE};
 
+use crate::database::{EnvironmentDetails, EnvironmentTag};
 use cloudtruth_restapi::apis::environments_api::*;
 use cloudtruth_restapi::apis::Error;
 use cloudtruth_restapi::apis::Error::ResponseError;
-use cloudtruth_restapi::models::{
-    Environment, EnvironmentCreate, PatchedEnvironment, PatchedTag, Tag, TagCreate, TagReadUsage,
-};
-use once_cell::sync::OnceCell;
+use cloudtruth_restapi::models::{EnvironmentCreate, PatchedEnvironment, PatchedTag, TagCreate};
 use std::collections::HashMap;
 use std::error;
-use std::fmt::{self, Formatter};
-
-static DEFAULT_USAGE_VALUE: OnceCell<TagReadUsage> = OnceCell::new();
+use std::fmt;
+use std::fmt::Formatter;
 
 pub struct Environments {}
 
-#[derive(Debug)]
-pub struct EnvironmentDetails {
-    pub id: String,
-    pub url: String,
-    pub name: String,
-    pub description: String,
-    pub parent_url: String,
-    pub parent_name: String,
-    pub created_at: String,
-    pub modified_at: String,
-}
-
 /// This is used to map from an Environment's URL to the Name.
 pub type EnvironmentUrlMap = HashMap<String, String>;
-
-/// Converts the OpenApi `Environment` reference into a CloudTruth `EnvironmentDetails` object.
-///
-/// The `parent_name` is filled in later, so it can be done with a map of URLs to names.
-impl From<&Environment> for EnvironmentDetails {
-    fn from(api_env: &Environment) -> Self {
-        EnvironmentDetails {
-            id: api_env.id.clone(),
-            url: api_env.url.clone(),
-            name: api_env.name.clone(),
-            description: api_env.description.clone().unwrap_or_default(),
-            parent_url: api_env.parent.clone().unwrap_or_default(),
-            parent_name: "".to_owned(),
-            created_at: api_env.created_at.clone(),
-            modified_at: api_env.modified_at.clone(),
-        }
-    }
-}
 
 #[derive(Debug)]
 pub enum EnvironmentError {
@@ -80,41 +47,6 @@ impl fmt::Display for EnvironmentError {
 }
 
 impl error::Error for EnvironmentError {}
-
-#[derive(Debug)]
-pub struct EnvironmentTag {
-    pub id: String,
-    pub url: String,
-    pub name: String,
-    pub description: String,
-    pub timestamp: String,
-    pub last_use_user: String,
-    pub last_use_time: String,
-    pub total_reads: i32,
-}
-
-impl From<&Tag> for EnvironmentTag {
-    fn from(api: &Tag) -> Self {
-        let usage = match api.usage {
-            Some(ref u) => u,
-            _ => DEFAULT_USAGE_VALUE.get_or_init(|| TagReadUsage {
-                last_read: None,
-                last_read_by: "".to_string(),
-                total_reads: 0,
-            }),
-        };
-        Self {
-            id: api.id.clone(),
-            url: api.url.clone(),
-            name: api.name.clone(),
-            description: api.description.clone().unwrap_or_default(),
-            timestamp: api.clone().timestamp,
-            last_use_user: usage.last_read_by.clone(),
-            last_use_time: usage.last_read.clone().unwrap_or_default(),
-            total_reads: usage.total_reads,
-        }
-    }
-}
 
 /// The `BadRequest` content seems to be a list (instead of structured data like many other
 /// `ResponseError` cases). This handles what appears to be a list of string, instead of structured
