@@ -377,7 +377,7 @@ FLAGS:
 SUBCOMMANDS:
     delete         Delete the parameter from the project [aliases: del, d]
     differences    Show differences between properties from two environments [aliases: difference, differ, diff]
-    environment    Shows values across environments [aliases: environ, env]
+    environment    Shows the environments with parameter overrides [aliases: environ, env]
     export         Export selected parameters to a known output format. Exported parameters are limited to
                    alphanumeric and underscore  in key names. Formats available are: dotenv, docker, and shell.
     get            Gets value for parameter in the selected environment
@@ -421,7 +421,7 @@ OPTIONS:
                                       type, environment, fqn, jmes-path, secret, created-at, modified-at]
 ========================================
 cloudtruth-parameters-environment 
-Shows values across environments
+Shows the environments with parameter overrides
 
 USAGE:
     cloudtruth parameters environment [FLAGS] [OPTIONS] <KEY>
