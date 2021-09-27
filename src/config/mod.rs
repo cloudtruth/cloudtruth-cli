@@ -305,11 +305,13 @@ impl Config {
                 message: "The API key is missing.".to_string(),
                 help_message: formatdoc!(
                     r#"
-                        Please either set the `api_key` setting in the configuration file
-                        (e.g., run "{} config edit"), pass it as the `--api-key` flag, or
-                        supply the API key via the `{}` environment variable."#,
+                        Please set the `api_key` using one of the following `{}` methods:
+                        1. Update the configuration profile `api_key` value
+                           using "login", "config edit", or "config profile set" commands,
+                        2. Provide an `--api-key` value, or
+                        3. Supply the API key via the `{}` environment variable."#,
+                    binary_name(),
                     CT_API_KEY,
-                    binary_name()
                 ),
             });
         }
