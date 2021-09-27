@@ -37,6 +37,7 @@ class TestConfiguration(TestCase):
         # create it
         result = self.run_cli(cmd_env, set_cmd + f"'{prof_name}' -k '{api_key1}'")
         self.assertResultSuccess(result)
+        self.assertIn(f"Created profile '{prof_name}'", result.out())
 
         # verify it was created
         result = self.run_cli(cmd_env, list_cmd)
@@ -46,6 +47,7 @@ class TestConfiguration(TestCase):
         # update some fields
         result = self.run_cli(cmd_env, set_cmd + f"'{prof_name}' -d '{desc1}' -e '{env1}'")
         self.assertResultSuccess(result)
+        self.assertIn(f"Updated profile '{prof_name}'", result.out())
 
         # make sure API key is not shown, but other parameters are
         result = self.run_cli(cmd_env, list_cmd + "-vf csv")
@@ -80,6 +82,7 @@ class TestConfiguration(TestCase):
         # delete it
         result = self.run_cli(cmd_env, conf_cmd + f"p d -y '{prof_name}'")
         self.assertResultSuccess(result)
+        self.assertIn(f"Deleted profile '{prof_name}'", result.out())
 
         # verify it is gone
         result = self.run_cli(cmd_env, list_cmd)
