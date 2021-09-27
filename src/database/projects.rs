@@ -1,35 +1,13 @@
-use crate::database::openapi::{extract_details, OpenApiConfig, PAGE_SIZE};
+use crate::database::{extract_details, OpenApiConfig, ProjectDetails, PAGE_SIZE};
 
 use cloudtruth_restapi::apis::projects_api::*;
 use cloudtruth_restapi::apis::Error::{self, ResponseError};
-use cloudtruth_restapi::models::{PatchedProject, Project, ProjectCreate};
+use cloudtruth_restapi::models::{PatchedProject, ProjectCreate};
 use std::error;
 use std::fmt::{self, Formatter};
 use std::result::Result;
 
 pub struct Projects {}
-
-#[derive(Debug)]
-pub struct ProjectDetails {
-    pub id: String,
-    pub name: String,
-    pub description: String,
-    pub created_at: String,
-    pub modified_at: String,
-}
-
-/// Converts from the OpenApi `Project` model to the CloudTruth `ProjectDetails`
-impl From<&Project> for ProjectDetails {
-    fn from(api_proj: &Project) -> Self {
-        ProjectDetails {
-            id: api_proj.id.clone(),
-            name: api_proj.name.clone(),
-            description: api_proj.description.clone().unwrap_or_default(),
-            created_at: api_proj.created_at.clone(),
-            modified_at: api_proj.modified_at.clone(),
-        }
-    }
-}
 
 #[derive(Debug)]
 pub enum ProjectError {
