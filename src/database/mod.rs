@@ -2,6 +2,8 @@ mod environment_details;
 mod environment_tag;
 mod environments;
 mod history;
+mod integration_details;
+mod integration_node;
 mod integrations;
 mod openapi;
 mod parameter_details;
@@ -18,7 +20,9 @@ pub use environment_details::EnvironmentDetails;
 pub use environment_tag::EnvironmentTag;
 pub use environments::{EnvironmentError, EnvironmentUrlMap, Environments};
 pub use history::HistoryAction;
-pub use integrations::{IntegrationDetails, IntegrationError, Integrations};
+pub use integration_details::IntegrationDetails;
+pub use integration_node::IntegrationNode;
+pub use integrations::{IntegrationError, Integrations};
 pub use openapi::{
     extract_details, extract_from_json, extract_message, generic_response_message, OpenApiConfig,
     PAGE_SIZE, WRAP_SECRETS,
