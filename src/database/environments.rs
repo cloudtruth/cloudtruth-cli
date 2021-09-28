@@ -1,5 +1,5 @@
 use crate::database::{
-    auth_details, extract_details, generic_response_message, EnvironmentDetails, EnvironmentTag,
+    auth_details, extract_details, response_message, EnvironmentDetails, EnvironmentTag,
     OpenApiConfig, PAGE_SIZE,
 };
 use cloudtruth_restapi::apis::environments_api::*;
@@ -59,7 +59,7 @@ fn bad_request_details(content: &str) -> String {
 }
 
 fn response_error(status: &reqwest::StatusCode, content: &str) -> EnvironmentError {
-    EnvironmentError::ResponseError(generic_response_message(status, content))
+    EnvironmentError::ResponseError(response_message(status, content))
 }
 
 fn auth_error(content: &str) -> EnvironmentError {

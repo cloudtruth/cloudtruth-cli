@@ -1,5 +1,5 @@
 use crate::database::{
-    auth_details, extract_details, generic_response_message, IntegrationDetails, IntegrationNode,
+    auth_details, extract_details, response_message, IntegrationDetails, IntegrationNode,
     OpenApiConfig, PAGE_SIZE,
 };
 use cloudtruth_restapi::apis::integrations_api::*;
@@ -30,7 +30,7 @@ impl fmt::Display for IntegrationError {
 impl error::Error for IntegrationError {}
 
 fn response_error(status: &reqwest::StatusCode, content: &str) -> IntegrationError {
-    IntegrationError::ResponseError(generic_response_message(status, content))
+    IntegrationError::ResponseError(response_message(status, content))
 }
 
 fn auth_error(content: &str) -> IntegrationError {

@@ -73,7 +73,7 @@ pub fn auth_details(content: &str) -> String {
 }
 
 /// This extracts information from the content
-pub fn generic_response_message(status: &reqwest::StatusCode, content: &str) -> String {
+pub fn response_message(status: &reqwest::StatusCode, content: &str) -> String {
     format!(
         "{} ({}): {}",
         status.canonical_reason().unwrap_or("Unknown Reason"),

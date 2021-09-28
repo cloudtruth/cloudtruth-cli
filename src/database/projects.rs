@@ -1,6 +1,4 @@
-use crate::database::{
-    auth_details, generic_response_message, OpenApiConfig, ProjectDetails, PAGE_SIZE,
-};
+use crate::database::{auth_details, response_message, OpenApiConfig, ProjectDetails, PAGE_SIZE};
 
 use cloudtruth_restapi::apis::projects_api::*;
 use cloudtruth_restapi::apis::Error::ResponseError;
@@ -32,7 +30,7 @@ impl fmt::Display for ProjectError {
 impl error::Error for ProjectError {}
 
 fn response_error(status: &reqwest::StatusCode, content: &str) -> ProjectError {
-    ProjectError::ResponseError(generic_response_message(status, content))
+    ProjectError::ResponseError(response_message(status, content))
 }
 
 fn auth_error(content: &str) -> ProjectError {

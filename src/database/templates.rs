@@ -1,6 +1,5 @@
 use crate::database::{
-    auth_details, generic_response_message, OpenApiConfig, TemplateDetails, TemplateHistory,
-    PAGE_SIZE,
+    auth_details, response_message, OpenApiConfig, TemplateDetails, TemplateHistory, PAGE_SIZE,
 };
 use cloudtruth_restapi::apis::projects_api::*;
 use cloudtruth_restapi::apis::Error;
@@ -55,7 +54,7 @@ pub fn template_eval_errors(tle: &TemplateLookupError) -> String {
 }
 
 fn response_error(status: &reqwest::StatusCode, content: &str) -> TemplateError {
-    TemplateError::ResponseError(generic_response_message(status, content))
+    TemplateError::ResponseError(response_message(status, content))
 }
 
 fn auth_error(content: &str) -> TemplateError {

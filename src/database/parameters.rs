@@ -1,6 +1,6 @@
 use crate::database::openapi::{OpenApiConfig, PAGE_SIZE, WRAP_SECRETS};
 use crate::database::{
-    extract_from_json, extract_message, generic_response_message, ParamRuleType, ParamType,
+    extract_from_json, extract_message, response_message, ParamRuleType, ParamType,
     ParameterDetails,
 };
 use cloudtruth_restapi::apis::projects_api::*;
@@ -118,7 +118,7 @@ fn param_value_error(content: &str) -> ParameterError {
 
 /// Creates a `ParameterError::ResponseError` from the provided `status` and `content`
 fn param_response_error(status: &reqwest::StatusCode, content: &str) -> ParameterError {
-    ParameterError::ResponseError(generic_response_message(status, content))
+    ParameterError::ResponseError(response_message(status, content))
 }
 
 impl Parameters {
