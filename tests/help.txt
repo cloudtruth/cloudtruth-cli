@@ -884,9 +884,9 @@ FLAGS:
     -V, --version    Prints version information
 
 OPTIONS:
-        --as-of <datetime>    Date/time for parameter history
-    -f, --format <format>     Format for parameter history output [default: table]  [possible values: table, csv, json,
-                              yaml]
+        --as-of <datetime|tag>    Date/time (or tag) for parameter history
+    -f, --format <format>         Format for parameter history output [default: table]  [possible values: table, csv,
+                                  json, yaml]
 
 ARGS:
     <KEY>    Parameter name (optional)
