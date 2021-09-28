@@ -345,7 +345,7 @@ pub fn build_cli() -> App<'static, 'static> {
                             .takes_value(true)),
                     SubCommand::with_name("environment")
                         .visible_aliases(&["environ", "env"])
-                        .about("Shows values across environments")
+                        .about("Shows the environments with parameter overrides")
                         .arg(key_arg().help("Name of parameter to show environment values"))
                         .arg(Arg::with_name("all")
                             .short("a")
