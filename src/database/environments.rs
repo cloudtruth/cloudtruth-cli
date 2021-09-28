@@ -48,16 +48,6 @@ impl fmt::Display for EnvironmentError {
 
 impl error::Error for EnvironmentError {}
 
-/// The `BadRequest` content seems to be a list (instead of structured data like many other
-/// `ResponseError` cases). This handles what appears to be a list of string, instead of structured
-/// data handled in `extract_details()`.
-fn bad_request_details(content: &str) -> String {
-    content
-        .trim_start_matches("[\"")
-        .trim_end_matches("\"]")
-        .to_string()
-}
-
 fn response_error(status: &reqwest::StatusCode, content: &str) -> EnvironmentError {
     EnvironmentError::ResponseError(response_message(status, content))
 }
@@ -236,7 +226,7 @@ impl Environments {
         match response {
             Ok(_) => Ok(environment_id),
             Err(ResponseError(ref content)) => match content.status.as_u16() {
-                400 => Err(EnvironmentError::DeleteNotAllowed(bad_request_details(
+                400 => Err(EnvironmentError::DeleteNotAllowed(extract_details(
                     &content.content,
                 ))),
                 409 => Err(EnvironmentError::DeleteNotAllowed(extract_details(
