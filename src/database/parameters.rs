@@ -711,7 +711,11 @@ impl Parameters {
         let response =
             projects_parameters_timelines_retrieve(rest_cfg, proj_id, as_of, tag.as_deref());
         match response {
-            Ok(data) => Ok(data.results.iter().map(ParameterHistory::from).collect()),
+            Ok(timeline) => Ok(timeline
+                .results
+                .iter()
+                .map(ParameterHistory::from)
+                .collect()),
             Err(ResponseError(ref content)) => {
                 Err(response_error(&content.status, &content.content))
             }
@@ -735,7 +739,11 @@ impl Parameters {
             tag.as_deref(),
         );
         match response {
-            Ok(data) => Ok(data.results.iter().map(ParameterHistory::from).collect()),
+            Ok(timeline) => Ok(timeline
+                .results
+                .iter()
+                .map(ParameterHistory::from)
+                .collect()),
             Err(ResponseError(ref content)) => {
                 Err(response_error(&content.status, &content.content))
             }
