@@ -26,12 +26,18 @@ pub struct Template {
     /// The content of the template.  Use mustache-style templating delimiters of `{{` and `}}` to reference parameter values by name for substitution into the template result.
     #[serde(rename = "body", skip_serializing_if = "Option::is_none")]
     pub body: Option<String>,
-    #[serde(rename = "parameters")]
-    pub parameters: Vec<String>,
-    #[serde(rename = "references")]
-    pub references: Vec<String>,
-    #[serde(rename = "referenced_by")]
-    pub referenced_by: Vec<String>,
+    /// Parameters that this template references.
+    #[serde(rename = "referenced_parameters")]
+    pub referenced_parameters: Vec<String>,
+    /// Other templates that this template references.
+    #[serde(rename = "referenced_templates")]
+    pub referenced_templates: Vec<String>,
+    /// Other templates that reference this template.
+    #[serde(rename = "referencing_templates")]
+    pub referencing_templates: Vec<String>,
+    /// The dynamic values that reference this template.
+    #[serde(rename = "referencing_values")]
+    pub referencing_values: Vec<String>,
     /// If True, this template contains secrets.
     #[serde(rename = "has_secret")]
     pub has_secret: bool,
@@ -47,9 +53,10 @@ impl Template {
         url: String,
         id: String,
         name: String,
-        parameters: Vec<String>,
-        references: Vec<String>,
-        referenced_by: Vec<String>,
+        referenced_parameters: Vec<String>,
+        referenced_templates: Vec<String>,
+        referencing_templates: Vec<String>,
+        referencing_values: Vec<String>,
         has_secret: bool,
         created_at: String,
         modified_at: String,
@@ -60,9 +67,10 @@ impl Template {
             name,
             description: None,
             body: None,
-            parameters,
-            references,
-            referenced_by,
+            referenced_parameters,
+            referenced_templates,
+            referencing_templates,
+            referencing_values,
             has_secret,
             created_at,
             modified_at,

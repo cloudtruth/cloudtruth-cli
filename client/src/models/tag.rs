@@ -27,7 +27,7 @@ pub struct Tag {
     #[serde(rename = "timestamp")]
     pub timestamp: String,
     #[serde(rename = "usage")]
-    pub usage: Option<Box<crate::models::TagReadUsage>>,
+    pub usage: Box<crate::models::TagReadUsage>,
 }
 
 impl Tag {
@@ -37,7 +37,7 @@ impl Tag {
         id: String,
         name: String,
         timestamp: String,
-        usage: Option<crate::models::TagReadUsage>,
+        usage: crate::models::TagReadUsage,
     ) -> Tag {
         Tag {
             url,
@@ -45,7 +45,7 @@ impl Tag {
             name,
             description: None,
             timestamp,
-            usage: usage.map(Box::new),
+            usage: Box::new(usage),
         }
     }
 }

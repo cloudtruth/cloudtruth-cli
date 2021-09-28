@@ -16,8 +16,8 @@ pub struct TagReadUsage {
     #[serde(rename = "last_read")]
     pub last_read: Option<String>,
     /// The last user (id) to use this tag to read configuration.
-    #[serde(rename = "last_read_by")]
-    pub last_read_by: String,
+    #[serde(rename = "last_read_by", skip_serializing_if = "Option::is_none")]
+    pub last_read_by: Option<String>,
     /// The number of times the tag has been used to read configuration.
     #[serde(rename = "total_reads")]
     pub total_reads: i32,
@@ -25,10 +25,10 @@ pub struct TagReadUsage {
 
 impl TagReadUsage {
     /// The read usage details of a tag.
-    pub fn new(last_read: Option<String>, last_read_by: String, total_reads: i32) -> TagReadUsage {
+    pub fn new(last_read: Option<String>, total_reads: i32) -> TagReadUsage {
         TagReadUsage {
             last_read,
-            last_read_by,
+            last_read_by: None,
             total_reads,
         }
     }

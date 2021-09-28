@@ -26,12 +26,27 @@ pub struct PatchedTemplate {
     /// The content of the template.  Use mustache-style templating delimiters of `{{` and `}}` to reference parameter values by name for substitution into the template result.
     #[serde(rename = "body", skip_serializing_if = "Option::is_none")]
     pub body: Option<String>,
-    #[serde(rename = "parameters", skip_serializing_if = "Option::is_none")]
-    pub parameters: Option<Vec<String>>,
-    #[serde(rename = "references", skip_serializing_if = "Option::is_none")]
-    pub references: Option<Vec<String>>,
-    #[serde(rename = "referenced_by", skip_serializing_if = "Option::is_none")]
-    pub referenced_by: Option<Vec<String>>,
+    /// Parameters that this template references.
+    #[serde(
+        rename = "referenced_parameters",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub referenced_parameters: Option<Vec<String>>,
+    /// Other templates that this template references.
+    #[serde(
+        rename = "referenced_templates",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub referenced_templates: Option<Vec<String>>,
+    /// Other templates that reference this template.
+    #[serde(
+        rename = "referencing_templates",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub referencing_templates: Option<Vec<String>>,
+    /// The dynamic values that reference this template.
+    #[serde(rename = "referencing_values", skip_serializing_if = "Option::is_none")]
+    pub referencing_values: Option<Vec<String>>,
     /// If True, this template contains secrets.
     #[serde(rename = "has_secret", skip_serializing_if = "Option::is_none")]
     pub has_secret: Option<bool>,
@@ -50,9 +65,10 @@ impl PatchedTemplate {
             name: None,
             description: None,
             body: None,
-            parameters: None,
-            references: None,
-            referenced_by: None,
+            referenced_parameters: None,
+            referenced_templates: None,
+            referencing_templates: None,
+            referencing_values: None,
             has_secret: None,
             created_at: None,
             modified_at: None,
