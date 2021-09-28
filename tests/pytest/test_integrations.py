@@ -3,7 +3,6 @@ import unittest
 from typing import List
 
 from testcase import TestCase
-from testcase import write_file
 from urllib.parse import urlparse
 
 CT_BROKEN_PROJ = "CLOUDTRUTH_TEST_BROKEN_PROJECT"
@@ -216,7 +215,7 @@ class TestIntegrations(TestCase):
 # this is a comment that references an external parameter
 PARAMETER_2 = PARAM2
 """
-        write_file(filename, body.replace("PARAM2", f"{{{{{param2}}}}}"))
+        self.write_file(filename, body.replace("PARAM2", f"{{{{{param2}}}}}"))
         result = self.run_cli(cmd_env, temp_cmd + f"preview '{filename}'")
         self.assertResultSuccess(result)
         self.assertIn(body.replace("PARAM2\n", ""), result.out())  # evaluated to an unknown value
@@ -231,7 +230,7 @@ PARAMETER_2 = PARAM2
         self.assertIn(body.replace("PARAM2\n", ""), result.out())  # evaluated to an unknown value
 
         # cleanup
-        os.remove(filename)
+        self.delete_file(filename)
         self.delete_project(cmd_env, proj_name)
 
     @unittest.skipIf(missing_any(CT_BROKEN_RUN), "Need all CT_BROKEN_RUN parameters")
@@ -313,7 +312,7 @@ PARAMETER_2 = PARAM2
         result = self.run_cli(cmd_env, proj_cmd + f"template get '{temp_name}' --raw")
         self.assertResultSuccess(result)
         # make sure the template has the references
-        write_file(filename, result.out())
+        self.write_file(filename, result.out())
         self.assertIn(param1, result.out())
         self.assertIn(param2, result.out())
         self.assertIn(param3, result.out())
@@ -322,4 +321,4 @@ PARAMETER_2 = PARAM2
         self.assertResultError(result, missing_param2)
 
         # NOTE: do NOT delete the project!!!
-        os.remove(filename)
+        self.delete_file(filename)

@@ -1,5 +1,4 @@
 import datetime
-import os
 
 from typing import Tuple, Dict
 from testcase import TestCase, DEFAULT_ENV_NAME, REDACTED, DEFAULT_PARAM_VALUE
@@ -829,9 +828,7 @@ SECOND_SECRET='sensitive value with spaces'
         # create the file with the value
         filename = self.make_name("value")
         value1 = "static val from file"
-        file = open(filename, "w")
-        file.write(value1)
-        file.close()
+        self.write_file(filename, value1)
 
         # add a new project
         proj_name = self.make_name("test-local-file")
@@ -879,9 +876,7 @@ SECOND_SECRET='sensitive value with spaces'
 
         # update with a different value from file
         value3 = "another-static-file"
-        file = open(filename, "w")
-        file.write(value3)
-        file.close()
+        self.write_file(filename, value3)
 
         result = self.run_cli(cmd_env, sub_cmd + f"set {key1} --input '{filename}'")
         self.assertResultSuccess(result)
@@ -897,7 +892,7 @@ SECOND_SECRET='sensitive value with spaces'
 """)
 
         # cleanup
-        os.remove(filename)
+        self.delete_file(filename)
         self.delete_project(cmd_env, proj_name)
 
     def test_parameter_integration_errors(self):

@@ -1,11 +1,8 @@
-import os
-
 from testcase import TestCase
 from testcase import CT_ENV
 from testcase import PROP_VALUE
 from testcase import PROP_MODIFIED
 from testcase import REDACTED
-from testcase import write_file
 
 
 def empty_template(project: str) -> str:
@@ -20,7 +17,7 @@ class TestTemplates(TestCase):
         temp_name = "orig-template"  # templates are scoped to a project, so no need to "randomize"
         filename = self.make_name("basic-body") + ".txt"
         body = "Text with no params\n"
-        write_file(filename, body)
+        self.write_file(filename, body)
         empty_msg = empty_template(proj_name)
 
         self.create_project(cmd_env, proj_name)
@@ -79,7 +76,7 @@ class TestTemplates(TestCase):
 
         # change the body
         body = "different fixed value\n"
-        write_file(filename, body)
+        self.write_file(filename, body)
         result = self.run_cli(cmd_env, sub_cmd + f"set {temp_name} --body \"{filename}\"")
         self.assertResultSuccess(result)
         self.assertIn(f"Updated template '{temp_name}'", result.out())
@@ -119,7 +116,7 @@ class TestTemplates(TestCase):
         self.assertResultWarning(result, f"Template '{temp_name}' does not exist for project '{proj_name}'")
 
         # cleanup
-        os.remove(filename)
+        self.delete_file(filename)
         self.delete_project(cmd_env, proj_name)
 
     def test_template_evaluate_environments(self) -> None:
@@ -155,7 +152,7 @@ ANOTHER_PARAM=PARAM2
         body = base.replace("PARAM1", f"{{{{{param1}}}}}").replace("PARAM2", f"{{{{{param2}}}}}")
         eval_a = base.replace("PARAM1", value1a).replace("PARAM2", REDACTED)
         eval_b = base.replace("PARAM1", value1b).replace("PARAM2", REDACTED)
-        write_file(filename, body)
+        self.write_file(filename, body)
 
         sub_cmd = base_cmd + f"--project {proj_name} template "
         result = self.run_cli(cmd_env, sub_cmd + f"set {temp_name} -b {filename}")
@@ -226,13 +223,13 @@ ANOTHER_PARAM=PARAM2
         # check error message with unresolved variables
         no_param = "my-missing-param"
         body = base.replace("PARAM1", f"{{{{{no_param}}}}}").replace("PARAM2", f"{{{{{param2}}}}}")
-        write_file(filename, body)
+        self.write_file(filename, body)
         result = self.run_cli(cmd_env, sub_cmd + f"preview {filename} --secrets")
         self.assertResultError(result, "Template references parameter(s) that do not exist")
         self.assertIn(no_param, result.err())
 
         # cleanup
-        os.remove(filename)
+        self.delete_file(filename)
         self.delete_environment(cmd_env, env_b)
         self.delete_environment(cmd_env, env_a)
         self.delete_project(cmd_env, proj_name)
@@ -271,7 +268,7 @@ ANOTHER_PARAM=PARAM2
 # just a comment
 this.is.a.template.value=PARAM1
 """
-        write_file(filename, body.replace("PARAM1", f"{{{{{param1}}}}}"))
+        self.write_file(filename, body.replace("PARAM1", f"{{{{{param1}}}}}"))
 
         # check the current evaluation
         preview_cmd = base_cmd + f"--project {proj_name} template preview '{filename}' "
@@ -285,7 +282,7 @@ this.is.a.template.value=PARAM1
         self.assertEqual(result.out(), body.replace("PARAM1", value_a + "\n"))
 
         # cleanup
-        os.remove(filename)
+        self.delete_file(filename)
         self.delete_project(cmd_env, proj_name)
 
     def test_template_history(self):
@@ -313,11 +310,11 @@ this.is.a.template.value=PARAM1
         filename = "history-template.txt"
 
         # create the templates
-        write_file(filename, body1a)
+        self.write_file(filename, body1a)
         result = self.run_cli(cmd_env, temp_cmd + f"set '{temp1}' -b '{filename}' -d '{desc1}'")
         self.assertResultSuccess(result)
 
-        write_file(filename, body2a)
+        self.write_file(filename, body2a)
         result = self.run_cli(cmd_env, temp_cmd + f"set '{temp2}' -b '{filename}'")
         self.assertResultSuccess(result)
 
@@ -328,11 +325,11 @@ this.is.a.template.value=PARAM1
         modified_at = temp_info.get("template")[1].get("Modified At")
 
         # update the template bodies
-        write_file(filename, body1b)
+        self.write_file(filename, body1b)
         result = self.run_cli(cmd_env, temp_cmd + f"set '{temp1}' -b '{filename}'")
         self.assertResultSuccess(result)
 
-        write_file(filename, body2b)
+        self.write_file(filename, body2b)
         result = self.run_cli(cmd_env, temp_cmd + f"set '{temp2}' -b '{filename}'")
         self.assertResultSuccess(result)
 
@@ -388,5 +385,5 @@ this.is.a.template.value=PARAM1
         self.assertResultError(result, f"Did not find '{temp1}' in project '{proj_name}'")
 
         # cleanup
-        os.remove(filename)
+        self.delete_file(filename)
         self.delete_project(cmd_env, proj_name)
