@@ -1,6 +1,6 @@
 use crate::database::{
-    extract_details, extract_from_json, response_message, OpenApiConfig, ParamRuleType, ParamType,
-    ParameterDetails, ParameterError, PAGE_SIZE, WRAP_SECRETS,
+    extract_details, extract_from_json, response_message, OpenApiConfig, ParamExportOptions,
+    ParamRuleType, ParamType, ParameterDetails, ParameterError, PAGE_SIZE, WRAP_SECRETS,
 };
 use cloudtruth_restapi::apis::projects_api::*;
 use cloudtruth_restapi::apis::Error;
@@ -11,7 +11,6 @@ use cloudtruth_restapi::models::{
 };
 use std::collections::HashMap;
 use std::result::Result;
-use std::str::FromStr;
 
 pub struct Parameters {}
 
@@ -26,39 +25,6 @@ pub struct ParameterValueEntry {
 
 pub type ParameterDetailMap = HashMap<String, ParameterDetails>;
 pub type ParameterValueMap = HashMap<String, ParameterValueEntry>;
-
-#[derive(Debug)]
-pub enum ParamExportFormat {
-    Docker,
-    Dotenv,
-    Shell,
-}
-
-/// Converts to ParamExportFormat from a &str.
-impl FromStr for ParamExportFormat {
-    type Err = ();
-
-    fn from_str(input: &str) -> Result<ParamExportFormat, Self::Err> {
-        match input {
-            "docker" => Ok(ParamExportFormat::Docker),
-            "dotenv" => Ok(ParamExportFormat::Dotenv),
-            "shell" => Ok(ParamExportFormat::Shell),
-            _ => Err(()),
-        }
-    }
-}
-
-#[derive(Debug)]
-pub struct ParamExportOptions {
-    pub format: ParamExportFormat,
-    pub starts_with: Option<String>,
-    pub ends_with: Option<String>,
-    pub contains: Option<String>,
-    pub export: Option<bool>,
-    pub secrets: Option<bool>,
-    pub as_of: Option<String>,
-    pub tag: Option<String>,
-}
 
 /// This method is to handle the different errors currently emitted by Value create/update.
 fn param_value_error(content: &str) -> ParameterError {
