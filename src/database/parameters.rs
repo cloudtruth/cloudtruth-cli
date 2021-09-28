@@ -460,8 +460,9 @@ impl Parameters {
             secret,
             _type: param_type.map(|x| x.to_api_enum()),
             rules: None,
-            templates: None,
             values: None,
+            referencing_templates: None,
+            referencing_values: None,
             created_at: None,
             modified_at: None,
         };
@@ -490,6 +491,7 @@ impl Parameters {
             internal_value: value.map(|v| v.to_string()),
             external_fqn: fqn.map(|v| v.to_string()),
             external_filter: jmes_path.map(|v| v.to_string()),
+            interpolated: None,
         };
         let response = projects_parameters_values_create(
             rest_cfg,
@@ -538,6 +540,9 @@ impl Parameters {
             modified_at: None,
             external_error: None,
             earliest_tag: None,
+            interpolated: None,
+            referenced_parameters: None,
+            referenced_templates: None,
         };
         let response = projects_parameters_values_partial_update(
             rest_cfg,

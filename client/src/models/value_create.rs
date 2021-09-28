@@ -27,6 +27,9 @@ pub struct ValueCreate {
     /// This is the content to use when resolving the Value for an internal non-secret, or when storing a secret.  When storing a secret, this content is stored in your organization's dedicated vault and this field is cleared.  This field is required if the value is being created or updated and is `internal`.  This field cannot be specified when creating or updating an `external` value.
     #[serde(rename = "internal_value", skip_serializing_if = "Option::is_none")]
     pub internal_value: Option<String>,
+    /// If `true`, apply template substitution rules to this value.  If `false`, this value is a literal value.  Note: secrets cannot be interpolated.
+    #[serde(rename = "interpolated", skip_serializing_if = "Option::is_none")]
+    pub interpolated: Option<bool>,
 }
 
 impl ValueCreate {
@@ -38,6 +41,7 @@ impl ValueCreate {
             external_fqn: None,
             external_filter: None,
             internal_value: None,
+            interpolated: None,
         }
     }
 }

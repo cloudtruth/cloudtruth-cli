@@ -253,7 +253,6 @@ paths:
   /api/v1/environments/:
     get:
       operationId: environments_list
-      description: ''
       parameters:
       - in: query
         name: name
@@ -289,7 +288,6 @@ paths:
           description: ''
     post:
       operationId: environments_create
-      description: ''
       tags:
       - environments
       requestBody:
@@ -579,7 +577,6 @@ paths:
   /api/v1/environments/{id}/:
     get:
       operationId: environments_retrieve
-      description: ''
       parameters:
       - in: path
         name: id
@@ -602,7 +599,6 @@ paths:
           description: ''
     put:
       operationId: environments_update
-      description: ''
       parameters:
       - in: path
         name: id
@@ -637,7 +633,6 @@ paths:
           description: ''
     patch:
       operationId: environments_partial_update
-      description: ''
       parameters:
       - in: path
         name: id
@@ -671,7 +666,6 @@ paths:
           description: ''
     delete:
       operationId: environments_destroy
-      description: ''
       parameters:
       - in: path
         name: id
@@ -693,7 +687,6 @@ paths:
   /api/v1/integrations/aws/:
     get:
       operationId: integrations_aws_list
-      description: ''
       parameters:
       - in: query
         name: aws_account_id
@@ -768,7 +761,6 @@ paths:
   /api/v1/integrations/aws/{id}/:
     get:
       operationId: integrations_aws_retrieve
-      description: ''
       summary: Get details of an AWS Integration.
       parameters:
       - in: path
@@ -797,7 +789,6 @@ paths:
           description: ''
     put:
       operationId: integrations_aws_update
-      description: ''
       parameters:
       - in: path
         name: id
@@ -832,7 +823,6 @@ paths:
           description: ''
     patch:
       operationId: integrations_aws_partial_update
-      description: ''
       parameters:
       - in: path
         name: id
@@ -866,7 +856,6 @@ paths:
           description: ''
     delete:
       operationId: integrations_aws_destroy
-      description: ''
       summary: Delete an AWS integration.
       parameters:
       - in: path
@@ -954,7 +943,6 @@ paths:
   /api/v1/integrations/github/:
     get:
       operationId: integrations_github_list
-      description: ''
       parameters:
       - in: query
         name: gh_organization_slug
@@ -1025,7 +1013,6 @@ paths:
   /api/v1/integrations/github/{id}/:
     get:
       operationId: integrations_github_retrieve
-      description: ''
       summary: Get details of a GitHub Integration.
       parameters:
       - in: path
@@ -1054,7 +1041,6 @@ paths:
           description: ''
     delete:
       operationId: integrations_github_destroy
-      description: ''
       summary: Delete a GitHub integration.
       parameters:
       - in: path
@@ -1092,7 +1078,6 @@ paths:
   /api/v1/invitations/:
     get:
       operationId: invitations_list
-      description: ''
       parameters:
       - in: query
         name: email
@@ -1179,7 +1164,6 @@ paths:
   /api/v1/invitations/{id}/:
     get:
       operationId: invitations_retrieve
-      description: ''
       parameters:
       - in: path
         name: id
@@ -1202,7 +1186,6 @@ paths:
           description: ''
     put:
       operationId: invitations_update
-      description: ''
       parameters:
       - in: path
         name: id
@@ -1237,7 +1220,6 @@ paths:
           description: ''
     patch:
       operationId: invitations_partial_update
-      description: ''
       parameters:
       - in: path
         name: id
@@ -1271,7 +1253,6 @@ paths:
           description: ''
     delete:
       operationId: invitations_destroy
-      description: ''
       parameters:
       - in: path
         name: id
@@ -1361,7 +1342,6 @@ paths:
   /api/v1/memberships/:
     get:
       operationId: memberships_list
-      description: ''
       parameters:
       - name: page
         required: false
@@ -1404,7 +1384,6 @@ paths:
           description: ''
     post:
       operationId: memberships_create
-      description: ''
       tags:
       - memberships
       requestBody:
@@ -1432,7 +1411,6 @@ paths:
   /api/v1/memberships/{id}/:
     get:
       operationId: memberships_retrieve
-      description: ''
       parameters:
       - in: path
         name: id
@@ -1455,7 +1433,6 @@ paths:
           description: ''
     put:
       operationId: memberships_update
-      description: ''
       parameters:
       - in: path
         name: id
@@ -1490,7 +1467,6 @@ paths:
           description: ''
     patch:
       operationId: memberships_partial_update
-      description: ''
       parameters:
       - in: path
         name: id
@@ -1524,7 +1500,6 @@ paths:
           description: ''
     delete:
       operationId: memberships_destroy
-      description: ''
       parameters:
       - in: path
         name: id
@@ -1544,7 +1519,6 @@ paths:
   /api/v1/organizations/:
     get:
       operationId: organizations_list
-      description: ''
       parameters:
       - in: query
         name: name
@@ -1576,7 +1550,6 @@ paths:
           description: ''
     post:
       operationId: organizations_create
-      description: ''
       tags:
       - organizations
       requestBody:
@@ -1604,7 +1577,6 @@ paths:
   /api/v1/organizations/{id}/:
     get:
       operationId: organizations_retrieve
-      description: ''
       parameters:
       - in: path
         name: id
@@ -1626,7 +1598,6 @@ paths:
           description: ''
     put:
       operationId: organizations_update
-      description: ''
       parameters:
       - in: path
         name: id
@@ -1660,7 +1631,6 @@ paths:
           description: ''
     patch:
       operationId: organizations_partial_update
-      description: ''
       parameters:
       - in: path
         name: id
@@ -1693,7 +1663,6 @@ paths:
           description: ''
     delete:
       operationId: organizations_destroy
-      description: ''
       parameters:
       - in: path
         name: id
@@ -1712,7 +1681,6 @@ paths:
   /api/v1/projects/:
     get:
       operationId: projects_list
-      description: ''
       parameters:
       - in: query
         name: name
@@ -1744,7 +1712,6 @@ paths:
           description: ''
     post:
       operationId: projects_create
-      description: ''
       tags:
       - projects
       requestBody:
@@ -1772,7 +1739,6 @@ paths:
   /api/v1/projects/{id}/:
     get:
       operationId: projects_retrieve
-      description: ''
       parameters:
       - in: path
         name: id
@@ -1795,7 +1761,6 @@ paths:
           description: ''
     put:
       operationId: projects_update
-      description: ''
       parameters:
       - in: path
         name: id
@@ -1830,7 +1795,6 @@ paths:
           description: ''
     patch:
       operationId: projects_partial_update
-      description: ''
       parameters:
       - in: path
         name: id
@@ -1864,7 +1828,6 @@ paths:
           description: ''
     delete:
       operationId: projects_destroy
-      description: ''
       parameters:
       - in: path
         name: id
@@ -1974,7 +1937,6 @@ paths:
   /api/v1/projects/{project_pk}/parameters/:
     get:
       operationId: projects_parameters_list
-      description: ''
       parameters:
       - in: query
         name: as_of
@@ -2061,7 +2023,6 @@ paths:
           description: ''
     post:
       operationId: projects_parameters_create
-      description: ''
       parameters:
       - in: path
         name: project_pk
@@ -2096,7 +2057,6 @@ paths:
   /api/v1/projects/{project_pk}/parameters/{parameter_pk}/rules/:
     get:
       operationId: projects_parameters_rules_list
-      description: ''
       parameters:
       - name: page
         required: false
@@ -2148,7 +2108,6 @@ paths:
           description: ''
     post:
       operationId: projects_parameters_rules_create
-      description: ''
       parameters:
       - in: path
         name: parameter_pk
@@ -2191,7 +2150,6 @@ paths:
   /api/v1/projects/{project_pk}/parameters/{parameter_pk}/rules/{id}/:
     get:
       operationId: projects_parameters_rules_retrieve
-      description: ''
       parameters:
       - in: path
         name: id
@@ -2228,7 +2186,6 @@ paths:
           description: ''
     put:
       operationId: projects_parameters_rules_update
-      description: ''
       parameters:
       - in: path
         name: id
@@ -2277,7 +2234,6 @@ paths:
           description: ''
     patch:
       operationId: projects_parameters_rules_partial_update
-      description: ''
       parameters:
       - in: path
         name: id
@@ -2325,7 +2281,6 @@ paths:
           description: ''
     delete:
       operationId: projects_parameters_rules_destroy
-      description: ''
       parameters:
       - in: path
         name: id
@@ -2721,7 +2676,6 @@ paths:
   /api/v1/projects/{project_pk}/parameters/{id}/:
     get:
       operationId: projects_parameters_retrieve
-      description: ''
       parameters:
       - in: query
         name: as_of
@@ -2799,7 +2753,6 @@ paths:
           description: ''
     put:
       operationId: projects_parameters_update
-      description: ''
       parameters:
       - in: path
         name: id
@@ -2857,7 +2810,6 @@ paths:
             that was too large to process.
     patch:
       operationId: projects_parameters_partial_update
-      description: ''
       parameters:
       - in: path
         name: id
@@ -2914,7 +2866,6 @@ paths:
             that was too large to process.
     delete:
       operationId: projects_parameters_destroy
-      description: ''
       parameters:
       - in: path
         name: id
@@ -3094,7 +3045,6 @@ paths:
   /api/v1/projects/{project_pk}/templates/:
     get:
       operationId: projects_templates_list
-      description: ''
       parameters:
       - in: query
         name: name
@@ -3132,7 +3082,6 @@ paths:
           description: ''
     post:
       operationId: projects_templates_create
-      description: ''
       parameters:
       - in: path
         name: project_pk
@@ -3173,7 +3122,6 @@ paths:
   /api/v1/projects/{project_pk}/templates/{id}/:
     get:
       operationId: projects_templates_retrieve
-      description: ''
       parameters:
       - in: query
         name: environment
@@ -3221,7 +3169,6 @@ paths:
           description: ''
     put:
       operationId: projects_templates_update
-      description: ''
       parameters:
       - in: path
         name: id
@@ -3268,7 +3215,6 @@ paths:
           description: ''
     patch:
       operationId: projects_templates_partial_update
-      description: ''
       parameters:
       - in: path
         name: id
@@ -3314,7 +3260,6 @@ paths:
           description: ''
     delete:
       operationId: projects_templates_destroy
-      description: ''
       parameters:
       - in: path
         name: id
@@ -3427,7 +3372,6 @@ paths:
   /api/v1/serviceaccounts/:
     get:
       operationId: serviceaccounts_list
-      description: ''
       parameters:
       - name: page
         required: false
@@ -3491,7 +3435,6 @@ paths:
   /api/v1/serviceaccounts/{id}/:
     get:
       operationId: serviceaccounts_retrieve
-      description: ''
       parameters:
       - in: path
         name: id
@@ -3513,7 +3456,6 @@ paths:
           description: ''
     put:
       operationId: serviceaccounts_update
-      description: ''
       parameters:
       - in: path
         name: id
@@ -3546,7 +3488,6 @@ paths:
           description: ''
     patch:
       operationId: serviceaccounts_partial_update
-      description: ''
       parameters:
       - in: path
         name: id
@@ -3579,7 +3520,6 @@ paths:
           description: ''
     delete:
       operationId: serviceaccounts_destroy
-      description: ''
       parameters:
       - in: path
         name: id
@@ -3598,7 +3538,6 @@ paths:
   /api/v1/users/:
     get:
       operationId: users_list
-      description: ''
       parameters:
       - name: page
         required: false
@@ -3631,7 +3570,6 @@ paths:
   /api/v1/users/{id}/:
     get:
       operationId: users_retrieve
-      description: ''
       parameters:
       - in: path
         name: id
@@ -4682,14 +4620,21 @@ components:
           items:
             $ref: '#/components/schemas/ParameterRule'
           readOnly: true
-          description: Rules applied to this parameter
-        templates:
+          description: Rules applied to this parameter.
+        referencing_templates:
           type: array
           items:
             type: string
             format: uri
           readOnly: true
           description: Templates that reference this Parameter.
+        referencing_values:
+          type: array
+          items:
+            type: string
+            format: uri
+          readOnly: true
+          description: Dynamic values that reference this Parameter.
         values:
           type: object
           additionalProperties:
@@ -4726,8 +4671,9 @@ components:
       - id
       - modified_at
       - name
+      - referencing_templates
+      - referencing_values
       - rules
-      - templates
       - url
       - values
     ParameterCreate:
@@ -5205,14 +5151,21 @@ components:
           items:
             $ref: '#/components/schemas/ParameterRule'
           readOnly: true
-          description: Rules applied to this parameter
-        templates:
+          description: Rules applied to this parameter.
+        referencing_templates:
           type: array
           items:
             type: string
             format: uri
           readOnly: true
           description: Templates that reference this Parameter.
+        referencing_values:
+          type: array
+          items:
+            type: string
+            format: uri
+          readOnly: true
+          description: Dynamic values that reference this Parameter.
         values:
           type: object
           additionalProperties:
@@ -5370,9 +5323,7 @@ components:
           format: date-time
           description: The point in time this tag represents.
         usage:
-          allOf:
-          - $ref: '#/components/schemas/TagReadUsage'
-          nullable: true
+          $ref: '#/components/schemas/TagReadUsage'
     PatchedTemplate:
       type: object
       description: A parameter template in a given project, optionally instantiated
@@ -5401,24 +5352,34 @@ components:
           description: The content of the template.  Use mustache-style templating
             delimiters of `{{` and `}}` to reference parameter values by name for
             substitution into the template result.
-        parameters:
+        referenced_parameters:
           type: array
           items:
             type: string
             format: uri
           readOnly: true
-        references:
+          description: Parameters that this template references.
+        referenced_templates:
           type: array
           items:
             type: string
             format: uri
           readOnly: true
-        referenced_by:
+          description: Other templates that this template references.
+        referencing_templates:
           type: array
           items:
             type: string
             format: uri
           readOnly: true
+          description: Other templates that reference this template.
+        referencing_values:
+          type: array
+          items:
+            type: string
+            format: uri
+          readOnly: true
+          description: The dynamic values that reference this template.
         has_secret:
           type: boolean
           readOnly: true
@@ -5503,6 +5464,10 @@ components:
             or updated and is `internal`.  This field cannot be specified when creating
             or updating an `external` value.
           maxLength: 16384
+        interpolated:
+          type: boolean
+          description: 'If `true`, apply template substitution rules to this value.  If
+            `false`, this value is a literal value.  Note: secrets cannot be interpolated.'
         value:
           type: string
           nullable: true
@@ -5531,6 +5496,20 @@ components:
             possible to convert a parameter from a secret to a non-secret if any of
             the values are external and a secret.  Clients can check this condition
             by leveraging this field.
+        referenced_parameters:
+          type: array
+          items:
+            type: string
+            format: uri
+          readOnly: true
+          description: The parameters this value references, if interpolated.
+        referenced_templates:
+          type: array
+          items:
+            type: string
+            format: uri
+          readOnly: true
+          description: The templates this value references, if interpolated.
         created_at:
           type: string
           format: date-time
@@ -5718,9 +5697,7 @@ components:
           format: date-time
           description: The point in time this tag represents.
         usage:
-          allOf:
-          - $ref: '#/components/schemas/TagReadUsage'
-          nullable: true
+          $ref: '#/components/schemas/TagReadUsage'
       required:
       - id
       - name
@@ -5769,7 +5746,6 @@ components:
           description: The number of times the tag has been used to read configuration.
       required:
       - last_read
-      - last_read_by
       - total_reads
     Template:
       type: object
@@ -5799,24 +5775,34 @@ components:
           description: The content of the template.  Use mustache-style templating
             delimiters of `{{` and `}}` to reference parameter values by name for
             substitution into the template result.
-        parameters:
+        referenced_parameters:
           type: array
           items:
             type: string
             format: uri
           readOnly: true
-        references:
+          description: Parameters that this template references.
+        referenced_templates:
           type: array
           items:
             type: string
             format: uri
           readOnly: true
-        referenced_by:
+          description: Other templates that this template references.
+        referencing_templates:
           type: array
           items:
             type: string
             format: uri
           readOnly: true
+          description: Other templates that reference this template.
+        referencing_values:
+          type: array
+          items:
+            type: string
+            format: uri
+          readOnly: true
+          description: The dynamic values that reference this template.
         has_secret:
           type: boolean
           readOnly: true
@@ -5835,9 +5821,10 @@ components:
       - id
       - modified_at
       - name
-      - parameters
-      - referenced_by
-      - references
+      - referenced_parameters
+      - referenced_templates
+      - referencing_templates
+      - referencing_values
       - url
     TemplateCreate:
       type: object
@@ -6081,6 +6068,10 @@ components:
             or updated and is `internal`.  This field cannot be specified when creating
             or updating an `external` value.
           maxLength: 16384
+        interpolated:
+          type: boolean
+          description: 'If `true`, apply template substitution rules to this value.  If
+            `false`, this value is a literal value.  Note: secrets cannot be interpolated.'
         value:
           type: string
           nullable: true
@@ -6109,6 +6100,20 @@ components:
             possible to convert a parameter from a secret to a non-secret if any of
             the values are external and a secret.  Clients can check this condition
             by leveraging this field.
+        referenced_parameters:
+          type: array
+          items:
+            type: string
+            format: uri
+          readOnly: true
+          description: The parameters this value references, if interpolated.
+        referenced_templates:
+          type: array
+          items:
+            type: string
+            format: uri
+          readOnly: true
+          description: The templates this value references, if interpolated.
         created_at:
           type: string
           format: date-time
@@ -6126,6 +6131,8 @@ components:
       - id
       - modified_at
       - parameter
+      - referenced_parameters
+      - referenced_templates
       - secret
       - url
       - value
@@ -6166,6 +6173,10 @@ components:
             or updated and is `internal`.  This field cannot be specified when creating
             or updating an `external` value.
           maxLength: 16384
+        interpolated:
+          type: boolean
+          description: 'If `true`, apply template substitution rules to this value.  If
+            `false`, this value is a literal value.  Note: secrets cannot be interpolated.'
       required:
       - environment
   securitySchemes:
