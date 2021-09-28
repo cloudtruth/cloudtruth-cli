@@ -208,7 +208,7 @@ impl Templates {
                 }
                 _ => Err(response_error(&content.status, &content.content)),
             },
-            Err(e) => Err(TemplateError::UpdateApi(e)),
+            Err(e) => Err(TemplateError::UnhandledError(e.to_string())),
         }
     }
 
@@ -243,7 +243,7 @@ impl Templates {
                 }
                 _ => Err(response_error(&content.status, &content.content)),
             },
-            Err(e) => Err(TemplateError::PreviewApi(e)),
+            Err(e) => Err(TemplateError::UnhandledError(e.to_string())),
         }
     }
 

@@ -505,7 +505,7 @@ impl Parameters {
                 404 => Err(param_value_error(&content.content)),
                 _ => Err(response_error(&content.status, &content.content)),
             },
-            Err(e) => Err(ParameterError::CreateValueError(e)),
+            Err(e) => Err(ParameterError::UnhandledError(e.to_string())),
         }
     }
 
@@ -554,7 +554,7 @@ impl Parameters {
                 404 => Err(param_value_error(&content.content)),
                 _ => Err(response_error(&content.status, &content.content)),
             },
-            Err(e) => Err(ParameterError::UpdateValueError(e)),
+            Err(e) => Err(ParameterError::UnhandledError(e.to_string())),
         }
     }
 

@@ -1,7 +1,3 @@
-use cloudtruth_restapi::apis::projects_api::{
-    ProjectsTemplatePreviewCreateError, ProjectsTemplatesPartialUpdateError,
-};
-use cloudtruth_restapi::apis::Error;
 use cloudtruth_restapi::models::TemplateLookupError;
 use std::error;
 use std::fmt;
@@ -11,8 +7,6 @@ use std::fmt::Formatter;
 pub enum TemplateError {
     Authentication(String),
     EvaluateFailed(TemplateLookupError),
-    PreviewApi(Error<ProjectsTemplatePreviewCreateError>),
-    UpdateApi(Error<ProjectsTemplatesPartialUpdateError>),
     UnhandledError(String),
     ResponseError(String),
 }
@@ -39,7 +33,6 @@ impl fmt::Display for TemplateError {
             TemplateError::EvaluateFailed(tle) => {
                 write!(f, "Evaluation failed:{}", template_eval_errors(tle))
             }
-            e => write!(f, "{:?}", e),
         }
     }
 }
