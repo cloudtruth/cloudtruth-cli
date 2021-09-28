@@ -1,33 +1,9 @@
 use crate::database::{
-    auth_details, extract_details, response_message, IntegrationDetails, IntegrationNode,
-    OpenApiConfig, PAGE_SIZE,
+    auth_details, extract_details, response_message, IntegrationDetails, IntegrationError,
+    IntegrationNode, OpenApiConfig, PAGE_SIZE,
 };
 use cloudtruth_restapi::apis::integrations_api::*;
 use cloudtruth_restapi::apis::Error::ResponseError;
-use std::error;
-use std::fmt;
-use std::fmt::Formatter;
-
-#[derive(Debug)]
-pub enum IntegrationError {
-    NotFound(String),
-    Authentication(String),
-    ResponseError(String),
-    UnhandledError(String),
-}
-
-impl fmt::Display for IntegrationError {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        match self {
-            IntegrationError::NotFound(msg) => write!(f, "{}", msg),
-            IntegrationError::Authentication(msg) => write!(f, "Not Authenticated: {}", msg),
-            IntegrationError::ResponseError(msg) => write!(f, "{}", msg),
-            IntegrationError::UnhandledError(msg) => write!(f, "{}", msg),
-        }
-    }
-}
-
-impl error::Error for IntegrationError {}
 
 fn response_error(status: &reqwest::StatusCode, content: &str) -> IntegrationError {
     IntegrationError::ResponseError(response_message(status, content))

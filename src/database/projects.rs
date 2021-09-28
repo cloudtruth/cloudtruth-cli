@@ -1,33 +1,13 @@
-use crate::database::{auth_details, response_message, OpenApiConfig, ProjectDetails, PAGE_SIZE};
+use crate::database::{
+    auth_details, response_message, OpenApiConfig, ProjectDetails, ProjectError, PAGE_SIZE,
+};
 
 use cloudtruth_restapi::apis::projects_api::*;
 use cloudtruth_restapi::apis::Error::ResponseError;
 use cloudtruth_restapi::models::{PatchedProject, ProjectCreate};
-use std::error;
-use std::fmt;
-use std::fmt::Formatter;
 use std::result::Result;
 
 pub struct Projects {}
-
-#[derive(Debug)]
-pub enum ProjectError {
-    Authentication(String),
-    ResponseError(String),
-    UnhandledError(String),
-}
-
-impl fmt::Display for ProjectError {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        match self {
-            ProjectError::Authentication(msg) => write!(f, "Not Authenticated: {}", msg),
-            ProjectError::ResponseError(msg) => write!(f, "{}", msg),
-            ProjectError::UnhandledError(msg) => write!(f, "Unhandled error: {}", msg),
-        }
-    }
-}
-
-impl error::Error for ProjectError {}
 
 fn response_error(status: &reqwest::StatusCode, content: &str) -> ProjectError {
     ProjectError::ResponseError(response_message(status, content))
