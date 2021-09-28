@@ -1,18 +1,15 @@
-use crate::database::openapi::{OpenApiConfig, PAGE_SIZE, WRAP_SECRETS};
 use crate::database::{
-    extract_from_json, extract_message, generic_response_message, ParamRuleType, ParamType,
-    ParameterDetails,
+    extract_details, extract_from_json, response_message, OpenApiConfig, ParamRuleType, ParamType,
+    ParameterDetails, ParameterError, PAGE_SIZE, WRAP_SECRETS,
 };
 use cloudtruth_restapi::apis::projects_api::*;
-use cloudtruth_restapi::apis::Error::{self, ResponseError};
+use cloudtruth_restapi::apis::Error;
+use cloudtruth_restapi::apis::Error::ResponseError;
 use cloudtruth_restapi::models::{
     ParameterCreate, ParameterRuleCreate, ParameterRuleTypeEnum, PatchedParameter,
     PatchedParameterRule, PatchedValue, ValueCreate,
 };
 use std::collections::HashMap;
-use std::error;
-use std::fmt;
-use std::fmt::Formatter;
 use std::result::Result;
 use std::str::FromStr;
 
@@ -63,42 +60,6 @@ pub struct ParamExportOptions {
     pub tag: Option<String>,
 }
 
-#[derive(Debug)]
-pub enum ParameterError {
-    CreateValueError(Error<ProjectsParametersValuesCreateError>),
-    UpdateValueError(Error<ProjectsParametersValuesPartialUpdateError>),
-    InvalidFqnOrJmesPath(String),
-    RuleViolation(String),
-    RuleError(String, String),
-    UnhandledError(String),
-    ResponseError(String),
-}
-
-impl fmt::Display for ParameterError {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        match self {
-            ParameterError::InvalidFqnOrJmesPath(msg) => {
-                write!(f, "Invalid FQN or JMES path expression: {}", msg)
-            }
-            ParameterError::RuleViolation(msg) => {
-                write!(f, "Rule violation: {}", msg)
-            }
-            ParameterError::RuleError(action, msg) => {
-                write!(f, "Rule {} error: {}", action, msg.replace("_len", "-len"))
-            }
-            ParameterError::UnhandledError(msg) => {
-                write!(f, "Unhandled error: {}", msg)
-            }
-            ParameterError::ResponseError(msg) => {
-                write!(f, "{}", msg)
-            }
-            e => write!(f, "{:?}", e),
-        }
-    }
-}
-
-impl error::Error for ParameterError {}
-
 /// This method is to handle the different errors currently emitted by Value create/update.
 fn param_value_error(content: &str) -> ParameterError {
     let json_result: Result<serde_json::Value, serde_json::Error> = serde_json::from_str(content);
@@ -117,8 +78,12 @@ fn param_value_error(content: &str) -> ParameterError {
 }
 
 /// Creates a `ParameterError::ResponseError` from the provided `status` and `content`
-fn param_response_error(status: &reqwest::StatusCode, content: &str) -> ParameterError {
-    ParameterError::ResponseError(generic_response_message(status, content))
+fn response_error(status: &reqwest::StatusCode, content: &str) -> ParameterError {
+    ParameterError::ResponseError(response_message(status, content))
+}
+
+fn rule_error(action: String, content: &str) -> ParameterError {
+    ParameterError::RuleError(action, extract_details(content))
 }
 
 impl Parameters {
@@ -139,9 +104,9 @@ impl Parameters {
         match response {
             Ok(_) => Ok(Some(param_id.to_string())),
             Err(ResponseError(ref content)) => {
-                Err(param_response_error(&content.status, &content.content))
+                Err(response_error(&content.status, &content.content))
             }
-            Err(e) => Err(ParameterError::UnhandledError(format!("{:?}", e))),
+            Err(e) => Err(ParameterError::UnhandledError(e.to_string())),
         }
     }
 
@@ -206,9 +171,9 @@ impl Parameters {
             Ok(export) => Ok(Some(export.body)),
             // TODO: once fixed in schema, should create ParameterError::EvaluationError with the TemplateLookupError
             Err(ResponseError(ref content)) => {
-                Err(param_response_error(&content.status, &content.content))
+                Err(response_error(&content.status, &content.content))
             }
-            Err(e) => Err(ParameterError::UnhandledError(format!("{:?}", e))),
+            Err(e) => Err(ParameterError::UnhandledError(e.to_string())),
         }
     }
 
@@ -299,9 +264,9 @@ impl Parameters {
                 _ => Ok(None),
             },
             Err(ResponseError(ref content)) => {
-                Err(param_response_error(&content.status, &content.content))
+                Err(response_error(&content.status, &content.content))
             }
-            Err(e) => Err(ParameterError::UnhandledError(format!("{:?}", e))),
+            Err(e) => Err(ParameterError::UnhandledError(e.to_string())),
         }
     }
 
@@ -380,9 +345,9 @@ impl Parameters {
                 Ok(list)
             }
             Err(ResponseError(ref content)) => {
-                Err(param_response_error(&content.status, &content.content))
+                Err(response_error(&content.status, &content.content))
             }
-            Err(e) => Err(ParameterError::UnhandledError(format!("{:?}", e))),
+            Err(e) => Err(ParameterError::UnhandledError(e.to_string())),
         }
     }
 
@@ -445,9 +410,9 @@ impl Parameters {
                 Ok(result)
             }
             Err(ResponseError(ref content)) => {
-                Err(param_response_error(&content.status, &content.content))
+                Err(response_error(&content.status, &content.content))
             }
-            Err(e) => Err(ParameterError::UnhandledError(format!("{:?}", e))),
+            Err(e) => Err(ParameterError::UnhandledError(e.to_string())),
         }
     }
 
@@ -538,9 +503,9 @@ impl Parameters {
             Err(ResponseError(ref content)) => match content.status.as_u16() {
                 400 => Err(param_value_error(&content.content)),
                 404 => Err(param_value_error(&content.content)),
-                _ => Err(param_response_error(&content.status, &content.content)),
+                _ => Err(response_error(&content.status, &content.content)),
             },
-            Err(e) => Err(ParameterError::CreateValueError(e)),
+            Err(e) => Err(ParameterError::UnhandledError(e.to_string())),
         }
     }
 
@@ -587,9 +552,9 @@ impl Parameters {
             Err(ResponseError(ref content)) => match content.status.as_u16() {
                 400 => Err(param_value_error(&content.content)),
                 404 => Err(param_value_error(&content.content)),
-                _ => Err(param_response_error(&content.status, &content.content)),
+                _ => Err(response_error(&content.status, &content.content)),
             },
-            Err(e) => Err(ParameterError::UpdateValueError(e)),
+            Err(e) => Err(ParameterError::UnhandledError(e.to_string())),
         }
     }
 
@@ -609,11 +574,8 @@ impl Parameters {
         let action = "create".to_string();
         match response {
             Ok(rule) => Ok(rule.id),
-            Err(ResponseError(ref content)) => Err(ParameterError::RuleError(
-                action,
-                extract_message(&content.content),
-            )),
-            Err(e) => Err(ParameterError::RuleError(action, e.to_string())),
+            Err(ResponseError(ref content)) => Err(rule_error(action, &content.content)),
+            Err(e) => Err(ParameterError::UnhandledError(e.to_string())),
         }
     }
 
@@ -645,11 +607,8 @@ impl Parameters {
         let action = "update".to_string();
         match response {
             Ok(rule) => Ok(rule.id),
-            Err(ResponseError(ref content)) => Err(ParameterError::RuleError(
-                action,
-                extract_message(&content.content),
-            )),
-            Err(e) => Err(ParameterError::RuleError(action, e.to_string())),
+            Err(ResponseError(ref content)) => Err(rule_error(action, &content.content)),
+            Err(e) => Err(ParameterError::UnhandledError(e.to_string())),
         }
     }
 
@@ -664,11 +623,8 @@ impl Parameters {
         let action = "delete".to_string();
         match response {
             Ok(_) => Ok(rule_id.to_string()),
-            Err(ResponseError(ref content)) => Err(ParameterError::RuleError(
-                action,
-                extract_message(&content.content),
-            )),
-            Err(e) => Err(ParameterError::RuleError(action, e.to_string())),
+            Err(ResponseError(ref content)) => Err(rule_error(action, &content.content)),
+            Err(e) => Err(ParameterError::UnhandledError(e.to_string())),
         }
     }
 }

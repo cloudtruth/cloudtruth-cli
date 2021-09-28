@@ -1,61 +1,23 @@
-use crate::database::{extract_details, OpenApiConfig, PAGE_SIZE};
-
-use crate::database::{EnvironmentDetails, EnvironmentTag};
+use crate::database::{
+    auth_details, extract_details, response_message, EnvironmentDetails, EnvironmentError,
+    EnvironmentTag, OpenApiConfig, PAGE_SIZE,
+};
 use cloudtruth_restapi::apis::environments_api::*;
-use cloudtruth_restapi::apis::Error;
 use cloudtruth_restapi::apis::Error::ResponseError;
 use cloudtruth_restapi::models::{EnvironmentCreate, PatchedEnvironment, PatchedTag, TagCreate};
 use std::collections::HashMap;
-use std::error;
-use std::fmt;
-use std::fmt::Formatter;
 
 pub struct Environments {}
 
 /// This is used to map from an Environment's URL to the Name.
 pub type EnvironmentUrlMap = HashMap<String, String>;
 
-#[derive(Debug)]
-pub enum EnvironmentError {
-    ListError(Error<EnvironmentsListError>),
-    DeleteError(Error<EnvironmentsDestroyError>),
-    AuthError(String),
-    DeleteNotAllowed(String),
-    NotFound(String),
+fn response_error(status: &reqwest::StatusCode, content: &str) -> EnvironmentError {
+    EnvironmentError::ResponseError(response_message(status, content))
 }
 
-impl fmt::Display for EnvironmentError {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        match self {
-            EnvironmentError::AuthError(msg) => {
-                write!(f, "Not Authenticated: {}", msg)
-            }
-            EnvironmentError::DeleteNotAllowed(msg) => {
-                write!(f, "Delete not allowed: {}", msg)
-            }
-            EnvironmentError::DeleteError(e) => {
-                write!(f, "{}", e.to_string())
-            }
-            EnvironmentError::ListError(e) => {
-                write!(f, "{}", e.to_string())
-            }
-            EnvironmentError::NotFound(name) => {
-                write!(f, "Did not find environment '{}'", name)
-            }
-        }
-    }
-}
-
-impl error::Error for EnvironmentError {}
-
-/// The `BadRequest` content seems to be a list (instead of structured data like many other
-/// `ResponseError` cases). This handles what appears to be a list of string, instead of structured
-/// data handled in `extract_details()`.
-fn bad_request_details(content: &str) -> String {
-    content
-        .trim_start_matches("[\"")
-        .trim_end_matches("\"]")
-        .to_string()
+fn auth_error(content: &str) -> EnvironmentError {
+    EnvironmentError::Authentication(auth_details(content))
 }
 
 impl Environments {
@@ -139,15 +101,11 @@ impl Environments {
                 None => Ok(None),
             },
             Err(ResponseError(ref content)) => match content.status.as_u16() {
-                401 => Err(EnvironmentError::AuthError(extract_details(
-                    &content.content,
-                ))),
-                403 => Err(EnvironmentError::AuthError(extract_details(
-                    &content.content,
-                ))),
-                _ => Err(EnvironmentError::ListError(response.unwrap_err())),
+                401 => Err(auth_error(&content.content)),
+                403 => Err(auth_error(&content.content)),
+                _ => Err(response_error(&content.status, &content.content)),
             },
-            Err(e) => Err(EnvironmentError::ListError(e)),
+            Err(e) => Err(EnvironmentError::UnhandledError(e.to_string())),
         }
     }
 
@@ -193,15 +151,11 @@ impl Environments {
                 None => Ok(vec![]),
             },
             Err(ResponseError(ref content)) => match content.status.as_u16() {
-                401 => Err(EnvironmentError::AuthError(extract_details(
-                    &content.content,
-                ))),
-                403 => Err(EnvironmentError::AuthError(extract_details(
-                    &content.content,
-                ))),
-                _ => Err(EnvironmentError::ListError(response.unwrap_err())),
+                401 => Err(auth_error(&content.content)),
+                403 => Err(auth_error(&content.content)),
+                _ => Err(response_error(&content.status, &content.content)),
             },
-            Err(e) => Err(EnvironmentError::ListError(e)),
+            Err(e) => Err(EnvironmentError::UnhandledError(e.to_string())),
         }
     }
 
@@ -211,15 +165,20 @@ impl Environments {
         env_name: &str,
         description: Option<&str>,
         parent_url: &str,
-    ) -> Result<Option<String>, Error<EnvironmentsCreateError>> {
+    ) -> Result<Option<String>, EnvironmentError> {
         let new_env = EnvironmentCreate {
             name: env_name.to_string(),
             description: description.map(String::from),
             parent: Some(parent_url.to_string()),
         };
-        let response = environments_create(rest_cfg, new_env)?;
-        // return the id of the new environment (likely same as the old)
-        Ok(Some(response.id))
+        let response = environments_create(rest_cfg, new_env);
+        match response {
+            Ok(env) => Ok(Some(env.id)),
+            Err(ResponseError(ref content)) => {
+                Err(response_error(&content.status, &content.content))
+            }
+            Err(e) => Err(EnvironmentError::UnhandledError(e.to_string())),
+        }
     }
 
     pub fn delete_environment(
@@ -231,15 +190,15 @@ impl Environments {
         match response {
             Ok(_) => Ok(environment_id),
             Err(ResponseError(ref content)) => match content.status.as_u16() {
-                400 => Err(EnvironmentError::DeleteNotAllowed(bad_request_details(
+                400 => Err(EnvironmentError::DeleteNotAllowed(extract_details(
                     &content.content,
                 ))),
                 409 => Err(EnvironmentError::DeleteNotAllowed(extract_details(
                     &content.content,
                 ))),
-                _ => Err(EnvironmentError::DeleteError(response.unwrap_err())),
+                _ => Err(response_error(&content.status, &content.content)),
             },
-            Err(e) => Err(EnvironmentError::DeleteError(e)),
+            Err(e) => Err(EnvironmentError::UnhandledError(e.to_string())),
         }
     }
 
@@ -249,7 +208,7 @@ impl Environments {
         environment_id: &str,
         environment_name: &str,
         description: Option<&str>,
-    ) -> Result<Option<String>, Error<EnvironmentsPartialUpdateError>> {
+    ) -> Result<Option<String>, EnvironmentError> {
         let env = PatchedEnvironment {
             url: None,
             id: None,
@@ -259,8 +218,14 @@ impl Environments {
             created_at: None,
             modified_at: None,
         };
-        let response = environments_partial_update(rest_cfg, environment_id, Some(env))?;
-        Ok(Some(response.id))
+        let response = environments_partial_update(rest_cfg, environment_id, Some(env));
+        match response {
+            Ok(env) => Ok(Some(env.id)),
+            Err(ResponseError(ref content)) => {
+                Err(response_error(&content.status, &content.content))
+            }
+            Err(e) => Err(EnvironmentError::UnhandledError(e.to_string())),
+        }
     }
 
     /// Converts a list of `EnvironmentDetails` to an `EnvironmentUrlMap`.
@@ -279,7 +244,7 @@ impl Environments {
         &self,
         rest_cfg: &OpenApiConfig,
         environment_id: &str,
-    ) -> Result<Vec<EnvironmentTag>, Error<EnvironmentsTagsListError>> {
+    ) -> Result<Vec<EnvironmentTag>, EnvironmentError> {
         let response = environments_tags_list(
             rest_cfg,
             environment_id,
@@ -292,14 +257,22 @@ impl Environments {
             None,
             None,
             None,
-        )?;
-        let mut result: Vec<EnvironmentTag> = vec![];
-        if let Some(list) = response.results {
-            for ref entry in list {
-                result.push(EnvironmentTag::from(entry));
+        );
+        match response {
+            Ok(data) => {
+                let mut result: Vec<EnvironmentTag> = vec![];
+                if let Some(list) = data.results {
+                    for ref entry in list {
+                        result.push(EnvironmentTag::from(entry));
+                    }
+                }
+                Ok(result)
             }
+            Err(ResponseError(ref content)) => {
+                Err(response_error(&content.status, &content.content))
+            }
+            Err(e) => Err(EnvironmentError::UnhandledError(e.to_string())),
         }
-        Ok(result)
     }
 
     pub fn get_tag_id(
@@ -307,7 +280,7 @@ impl Environments {
         rest_cfg: &OpenApiConfig,
         environment_id: &str,
         tag_name: &str,
-    ) -> Result<Option<String>, Error<EnvironmentsTagsListError>> {
+    ) -> Result<Option<String>, EnvironmentError> {
         let response = environments_tags_list(
             rest_cfg,
             environment_id,
@@ -320,14 +293,22 @@ impl Environments {
             None,
             None,
             None,
-        )?;
-        let mut result = None;
-        if let Some(list) = response.results {
-            if !list.is_empty() {
-                result = Some(list[0].id.clone());
+        );
+        match response {
+            Ok(data) => {
+                let mut result = None;
+                if let Some(list) = data.results {
+                    if !list.is_empty() {
+                        result = Some(list[0].id.clone());
+                    }
+                }
+                Ok(result)
             }
+            Err(ResponseError(ref content)) => {
+                Err(response_error(&content.status, &content.content))
+            }
+            Err(e) => Err(EnvironmentError::UnhandledError(e.to_string())),
         }
-        Ok(result)
     }
 
     pub fn get_tag_by_name(
@@ -335,7 +316,7 @@ impl Environments {
         rest_cfg: &OpenApiConfig,
         environment_id: &str,
         tag_name: &str,
-    ) -> Result<Option<EnvironmentTag>, Error<EnvironmentsTagsListError>> {
+    ) -> Result<Option<EnvironmentTag>, EnvironmentError> {
         let response = environments_tags_list(
             rest_cfg,
             environment_id,
@@ -348,15 +329,22 @@ impl Environments {
             None,
             None,
             None,
-        )?;
-        if let Some(list) = response.results {
-            if !list.is_empty() {
-                Ok(Some(EnvironmentTag::from(&list[0])))
-            } else {
-                Ok(None)
+        );
+        match response {
+            Ok(data) => match data.results {
+                Some(list) => {
+                    if !list.is_empty() {
+                        Ok(Some(EnvironmentTag::from(&list[0])))
+                    } else {
+                        Ok(None)
+                    }
+                }
+                _ => Ok(None),
+            },
+            Err(ResponseError(ref content)) => {
+                Err(response_error(&content.status, &content.content))
             }
-        } else {
-            Ok(None)
+            Err(e) => Err(EnvironmentError::UnhandledError(e.to_string())),
         }
     }
 
@@ -367,14 +355,20 @@ impl Environments {
         tag_name: &str,
         description: Option<&str>,
         timestamp: Option<String>,
-    ) -> Result<String, Error<EnvironmentsTagsCreateError>> {
+    ) -> Result<String, EnvironmentError> {
         let tag_create = TagCreate {
             name: tag_name.to_string(),
             description: description.map(String::from),
             timestamp,
         };
-        let response = environments_tags_create(rest_cfg, environment_id, tag_create)?;
-        Ok(response.id)
+        let response = environments_tags_create(rest_cfg, environment_id, tag_create);
+        match response {
+            Ok(tag) => Ok(tag.id),
+            Err(ResponseError(ref content)) => {
+                Err(response_error(&content.status, &content.content))
+            }
+            Err(e) => Err(EnvironmentError::UnhandledError(e.to_string())),
+        }
     }
 
     pub fn update_env_tag(
@@ -385,7 +379,7 @@ impl Environments {
         tag_name: &str,
         description: Option<&str>,
         timestamp: Option<String>,
-    ) -> Result<EnvironmentTag, Error<EnvironmentsTagsPartialUpdateError>> {
+    ) -> Result<EnvironmentTag, EnvironmentError> {
         let tag_update = PatchedTag {
             url: None,
             id: None,
@@ -395,8 +389,14 @@ impl Environments {
             usage: None,
         };
         let response =
-            environments_tags_partial_update(rest_cfg, environment_id, tag_id, Some(tag_update))?;
-        Ok(EnvironmentTag::from(&response))
+            environments_tags_partial_update(rest_cfg, environment_id, tag_id, Some(tag_update));
+        match response {
+            Ok(tag) => Ok(EnvironmentTag::from(&tag)),
+            Err(ResponseError(ref content)) => {
+                Err(response_error(&content.status, &content.content))
+            }
+            Err(e) => Err(EnvironmentError::UnhandledError(e.to_string())),
+        }
     }
 
     pub fn delete_env_tag(
@@ -404,8 +404,14 @@ impl Environments {
         rest_cfg: &OpenApiConfig,
         environment_id: &str,
         tag_id: &str,
-    ) -> Result<String, Error<EnvironmentsTagsDestroyError>> {
-        let _ = environments_tags_destroy(rest_cfg, environment_id, tag_id)?;
-        Ok(tag_id.to_string())
+    ) -> Result<String, EnvironmentError> {
+        let response = environments_tags_destroy(rest_cfg, environment_id, tag_id);
+        match response {
+            Ok(_) => Ok(tag_id.to_string()),
+            Err(ResponseError(ref content)) => {
+                Err(response_error(&content.status, &content.content))
+            }
+            Err(e) => Err(EnvironmentError::UnhandledError(e.to_string())),
+        }
     }
 }

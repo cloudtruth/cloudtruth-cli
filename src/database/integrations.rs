@@ -1,35 +1,17 @@
 use crate::database::{
-    extract_details, IntegrationDetails, IntegrationNode, OpenApiConfig, PAGE_SIZE,
+    auth_details, extract_details, response_message, IntegrationDetails, IntegrationError,
+    IntegrationNode, OpenApiConfig, PAGE_SIZE,
 };
 use cloudtruth_restapi::apis::integrations_api::*;
-use cloudtruth_restapi::apis::Error;
 use cloudtruth_restapi::apis::Error::ResponseError;
-use std::error;
-use std::fmt;
-use std::fmt::Formatter;
 
-#[derive(Debug)]
-pub enum IntegrationError {
-    NotFound(String),
-    AuthError(String),
-    ExploreListError(Error<IntegrationsExploreListError>),
-    AwsListError(Error<IntegrationsAwsListError>),
-    GitHubListError(Error<IntegrationsGithubListError>),
+fn response_error(status: &reqwest::StatusCode, content: &str) -> IntegrationError {
+    IntegrationError::ResponseError(response_message(status, content))
 }
 
-impl fmt::Display for IntegrationError {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        match self {
-            IntegrationError::NotFound(msg) => write!(f, "{}", msg),
-            IntegrationError::AuthError(msg) => write!(f, "Not Authenticated: {}", msg),
-            IntegrationError::ExploreListError(e) => write!(f, "{}", e.to_string()),
-            IntegrationError::AwsListError(e) => write!(f, "{}", e.to_string()),
-            IntegrationError::GitHubListError(e) => write!(f, "{}", e.to_string()),
-        }
-    }
+fn auth_error(content: &str) -> IntegrationError {
+    IntegrationError::Authentication(auth_details(content))
 }
-
-impl error::Error for IntegrationError {}
 
 /// Creates an `IntetgrationNode` for a binary file.
 ///
@@ -91,16 +73,14 @@ impl Integrations {
             }
         } else if let Err(ResponseError(ref content)) = response {
             return match content.status.as_u16() {
-                401 => Err(IntegrationError::AuthError(extract_details(
-                    &content.content,
-                ))),
-                403 => Err(IntegrationError::AuthError(extract_details(
-                    &content.content,
-                ))),
-                _ => Err(IntegrationError::GitHubListError(response.unwrap_err())),
+                401 => Err(auth_error(&content.content)),
+                403 => Err(auth_error(&content.content)),
+                _ => Err(response_error(&content.status, &content.content)),
             };
         } else {
-            return Err(IntegrationError::GitHubListError(response.unwrap_err()));
+            return Err(IntegrationError::UnhandledError(
+                response.unwrap_err().to_string(),
+            ));
         }
 
         let response = integrations_aws_list(rest_cfg, None, None, None, PAGE_SIZE);
@@ -112,16 +92,14 @@ impl Integrations {
             }
         } else if let Err(ResponseError(ref content)) = response {
             return match content.status.as_u16() {
-                401 => Err(IntegrationError::AuthError(extract_details(
-                    &content.content,
-                ))),
-                403 => Err(IntegrationError::AuthError(extract_details(
-                    &content.content,
-                ))),
-                _ => Err(IntegrationError::AwsListError(response.unwrap_err())),
+                401 => Err(auth_error(&content.content)),
+                403 => Err(auth_error(&content.content)),
+                _ => Err(response_error(&content.status, &content.content)),
             };
         } else {
-            return Err(IntegrationError::AwsListError(response.unwrap_err()));
+            return Err(IntegrationError::UnhandledError(
+                response.unwrap_err().to_string(),
+            ));
         }
 
         Ok(result)
@@ -150,20 +128,22 @@ impl Integrations {
                 .filter(|&x| !x.is_empty())
                 .last()
                 .unwrap_or_default();
-            let err_msg = extract_details(&content.content);
+            let details = extract_details(&content.content);
             if content.status == 415 {
-                Ok(vec![binary_node(fqn, name, &err_msg)])
+                Ok(vec![binary_node(fqn, name, &details)])
             } else if content.status == 507 {
-                Ok(vec![large_node(fqn, name, &err_msg)])
+                Ok(vec![large_node(fqn, name, &details)])
             } else if content.status == 401 || content.status == 403 {
-                Err(IntegrationError::AuthError(err_msg))
+                Err(auth_error(&content.content))
             } else if content.status == 400 || content.status == 404 {
-                Err(IntegrationError::NotFound(err_msg))
+                Err(IntegrationError::NotFound(details))
             } else {
-                Err(IntegrationError::ExploreListError(response.unwrap_err()))
+                Err(response_error(&content.status, &content.content))
             }
         } else {
-            Err(IntegrationError::ExploreListError(response.unwrap_err()))
+            Err(IntegrationError::UnhandledError(
+                response.unwrap_err().to_string(),
+            ))
         }
     }
 }

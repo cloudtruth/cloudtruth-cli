@@ -1,30 +1,21 @@
-use crate::database::{extract_details, OpenApiConfig, ProjectDetails, PAGE_SIZE};
+use crate::database::{
+    auth_details, response_message, OpenApiConfig, ProjectDetails, ProjectError, PAGE_SIZE,
+};
 
 use cloudtruth_restapi::apis::projects_api::*;
-use cloudtruth_restapi::apis::Error::{self, ResponseError};
+use cloudtruth_restapi::apis::Error::ResponseError;
 use cloudtruth_restapi::models::{PatchedProject, ProjectCreate};
-use std::error;
-use std::fmt::{self, Formatter};
 use std::result::Result;
 
 pub struct Projects {}
 
-#[derive(Debug)]
-pub enum ProjectError {
-    AuthError(String),
-    ListError(Error<ProjectsListError>),
+fn response_error(status: &reqwest::StatusCode, content: &str) -> ProjectError {
+    ProjectError::ResponseError(response_message(status, content))
 }
 
-impl fmt::Display for ProjectError {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        match self {
-            ProjectError::AuthError(msg) => write!(f, "Not Authenticated: {}", msg),
-            ProjectError::ListError(e) => write!(f, "{}", e.to_string()),
-        }
-    }
+fn auth_error(content: &str) -> ProjectError {
+    ProjectError::Authentication(auth_details(content))
 }
-
-impl error::Error for ProjectError {}
 
 impl Projects {
     pub fn new() -> Self {
@@ -53,11 +44,11 @@ impl Projects {
                 _ => Ok(None),
             },
             Err(ResponseError(ref content)) => match content.status.as_u16() {
-                401 => Err(ProjectError::AuthError(extract_details(&content.content))),
-                403 => Err(ProjectError::AuthError(extract_details(&content.content))),
-                _ => Err(ProjectError::ListError(response.unwrap_err())),
+                401 => Err(auth_error(&content.content)),
+                403 => Err(auth_error(&content.content)),
+                _ => Err(response_error(&content.status, &content.content)),
             },
-            Err(e) => Err(ProjectError::ListError(e)),
+            Err(e) => Err(ProjectError::UnhandledError(e.to_string())),
         }
     }
 
@@ -92,11 +83,11 @@ impl Projects {
                 None => Ok(vec![]),
             },
             Err(ResponseError(ref content)) => match content.status.as_u16() {
-                401 => Err(ProjectError::AuthError(extract_details(&content.content))),
-                403 => Err(ProjectError::AuthError(extract_details(&content.content))),
-                _ => Err(ProjectError::ListError(response.unwrap_err())),
+                401 => Err(auth_error(&content.content)),
+                403 => Err(auth_error(&content.content)),
+                _ => Err(response_error(&content.status, &content.content)),
             },
-            Err(e) => Err(ProjectError::ListError(e)),
+            Err(e) => Err(ProjectError::UnhandledError(e.to_string())),
         }
     }
 
@@ -106,14 +97,20 @@ impl Projects {
         rest_cfg: &OpenApiConfig,
         proj_name: &str,
         description: Option<&str>,
-    ) -> Result<Option<String>, Error<ProjectsCreateError>> {
+    ) -> Result<Option<String>, ProjectError> {
         let proj = ProjectCreate {
             name: proj_name.to_string(),
             description: description.map(String::from),
         };
-        let response = projects_create(rest_cfg, proj)?;
-        // return the project id of the newly minted project
-        Ok(Some(response.id))
+        let response = projects_create(rest_cfg, proj);
+        match response {
+            // return the project id of the newly minted project
+            Ok(project) => Ok(Some(project.id)),
+            Err(ResponseError(ref content)) => {
+                Err(response_error(&content.status, &content.content))
+            }
+            Err(e) => Err(ProjectError::UnhandledError(e.to_string())),
+        }
     }
 
     /// Delete the specified project
@@ -121,9 +118,15 @@ impl Projects {
         &self,
         rest_cfg: &OpenApiConfig,
         project_id: &str,
-    ) -> Result<Option<String>, Error<ProjectsDestroyError>> {
-        projects_destroy(rest_cfg, project_id)?;
-        Ok(Some(project_id.to_string()))
+    ) -> Result<Option<String>, ProjectError> {
+        let response = projects_destroy(rest_cfg, project_id);
+        match response {
+            Ok(_) => Ok(Some(project_id.to_string())),
+            Err(ResponseError(ref content)) => {
+                Err(response_error(&content.status, &content.content))
+            }
+            Err(e) => Err(ProjectError::UnhandledError(e.to_string())),
+        }
     }
 
     /// Update the specified project
@@ -133,7 +136,7 @@ impl Projects {
         project_name: &str,
         project_id: &str,
         description: Option<&str>,
-    ) -> Result<Option<String>, Error<ProjectsPartialUpdateError>> {
+    ) -> Result<Option<String>, ProjectError> {
         let proj = PatchedProject {
             url: None,
             id: None,
@@ -142,7 +145,13 @@ impl Projects {
             created_at: None,
             modified_at: None,
         };
-        let response = projects_partial_update(rest_cfg, project_id, Some(proj))?;
-        Ok(Some(response.id))
+        let response = projects_partial_update(rest_cfg, project_id, Some(proj));
+        match response {
+            Ok(project) => Ok(Some(project.id)),
+            Err(ResponseError(ref content)) => {
+                Err(response_error(&content.status, &content.content))
+            }
+            Err(e) => Err(ProjectError::UnhandledError(e.to_string())),
+        }
     }
 }
