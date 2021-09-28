@@ -1,7 +1,6 @@
-use crate::database::openapi::{OpenApiConfig, PAGE_SIZE, WRAP_SECRETS};
 use crate::database::{
-    extract_from_json, extract_message, response_message, ParamRuleType, ParamType,
-    ParameterDetails,
+    extract_details, extract_from_json, response_message, OpenApiConfig, ParamRuleType, ParamType,
+    ParameterDetails, PAGE_SIZE, WRAP_SECRETS,
 };
 use cloudtruth_restapi::apis::projects_api::*;
 use cloudtruth_restapi::apis::Error::{self, ResponseError};
@@ -611,7 +610,7 @@ impl Parameters {
             Ok(rule) => Ok(rule.id),
             Err(ResponseError(ref content)) => Err(ParameterError::RuleError(
                 action,
-                extract_message(&content.content),
+                extract_details(&content.content),
             )),
             Err(e) => Err(ParameterError::RuleError(action, e.to_string())),
         }
@@ -647,7 +646,7 @@ impl Parameters {
             Ok(rule) => Ok(rule.id),
             Err(ResponseError(ref content)) => Err(ParameterError::RuleError(
                 action,
-                extract_message(&content.content),
+                extract_details(&content.content),
             )),
             Err(e) => Err(ParameterError::RuleError(action, e.to_string())),
         }
@@ -666,7 +665,7 @@ impl Parameters {
             Ok(_) => Ok(rule_id.to_string()),
             Err(ResponseError(ref content)) => Err(ParameterError::RuleError(
                 action,
-                extract_message(&content.content),
+                extract_details(&content.content),
             )),
             Err(e) => Err(ParameterError::RuleError(action, e.to_string())),
         }

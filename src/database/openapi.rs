@@ -11,26 +11,6 @@ pub const PAGE_SIZE: Option<i32> = None;
 /// This is a placeholder for secret wrapping.
 pub const WRAP_SECRETS: Option<bool> = None;
 
-fn unquote(orig: &str) -> String {
-    orig.trim_start_matches('"')
-        .trim_end_matches('"')
-        .to_string()
-}
-
-/// Extracts the "detail" from the content string, where the content string is a JSON object
-/// that contains a "detail" field string value.
-pub fn extract_details(content: &str) -> String {
-    let json_result: Result<serde_json::Value, serde_json::Error> = serde_json::from_str(content);
-    let info = match json_result {
-        Ok(data) => match data.get("detail") {
-            Some(value) => value.to_string(),
-            _ => "No details provided.".to_owned(),
-        },
-        _ => "Did not find details.".to_owned(),
-    };
-    unquote(&info)
-}
-
 pub fn extract_from_json(value: &serde_json::Value) -> String {
     if value.is_string() {
         return value.as_str().unwrap().to_string();
@@ -60,7 +40,7 @@ pub fn extract_from_json(value: &serde_json::Value) -> String {
 }
 
 /// Extracts a single string from the content without paying attention to dictionary structure.
-pub fn extract_message(content: &str) -> String {
+pub fn extract_details(content: &str) -> String {
     let json_result: Result<serde_json::Value, serde_json::Error> = serde_json::from_str(content);
     match json_result {
         Ok(value) => extract_from_json(&value),
@@ -78,7 +58,7 @@ pub fn response_message(status: &reqwest::StatusCode, content: &str) -> String {
         "{} ({}): {}",
         status.canonical_reason().unwrap_or("Unknown Reason"),
         status.as_u16(),
-        extract_message(content)
+        extract_details(content)
     )
 }
 
@@ -156,15 +136,24 @@ mod tests {
     #[test]
     fn extract_details_test() {
         let content = "";
-        let expected = "Did not find details.";
+        let expected = "No details available";
         assert_eq!(expected.to_string(), extract_details(content));
 
         let content = "{\"speicla\":\"Integration for `github://foo/bar` could not be found.\"}";
-        let expected = "No details provided.";
+        let expected = content; // full content returned, since there are no "details"
         assert_eq!(expected.to_string(), extract_details(content));
 
         let content = "{\"detail\":\"Integration for `github://foo/bar` could not be found.\"}";
         let expected = "Integration for `github://foo/bar` could not be found.";
+        assert_eq!(expected.to_string(), extract_details(content));
+
+        let content = "[\"Integration for `github://foo/bar` could not be found.\"]";
+        let expected = "Integration for `github://foo/bar` could not be found.";
+        assert_eq!(expected.to_string(), extract_details(content));
+
+        // multiple strings in the list are concatenated
+        let content = "[\"my first string\", \"second string\"]";
+        let expected = "my first string; second string";
         assert_eq!(expected.to_string(), extract_details(content));
     }
 }
