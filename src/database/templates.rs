@@ -1,5 +1,5 @@
 use crate::database::{
-    extract_details, generic_response_message, OpenApiConfig, TemplateDetails, TemplateHistory,
+    auth_details, generic_response_message, OpenApiConfig, TemplateDetails, TemplateHistory,
     PAGE_SIZE,
 };
 use cloudtruth_restapi::apis::projects_api::*;
@@ -17,21 +17,20 @@ pub struct Templates {}
 
 #[derive(Debug)]
 pub enum TemplateError {
-    AuthError(String),
-    CreateApi(Error<ProjectsTemplatesCreateError>),
+    Authentication(String),
     EvaluateFailed(TemplateLookupError),
-    ListError(Error<ProjectsTemplatesListError>),
     PreviewApi(Error<ProjectsTemplatePreviewCreateError>),
-    RetrieveApi(Error<ProjectsTemplatesRetrieveError>),
     UpdateApi(Error<ProjectsTemplatesPartialUpdateError>),
+    UnhandledError(String),
     ResponseError(String),
 }
 
 impl fmt::Display for TemplateError {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
-            TemplateError::AuthError(msg) => write!(f, "Not Authenticated: {}", msg),
+            TemplateError::Authentication(msg) => write!(f, "Not Authenticated: {}", msg),
             TemplateError::ResponseError(msg) => write!(f, "{}", msg),
+            TemplateError::UnhandledError(msg) => write!(f, "{}", msg),
             TemplateError::EvaluateFailed(tle) => {
                 write!(f, "Evaluation failed:{}", template_eval_errors(tle))
             }
@@ -53,6 +52,14 @@ pub fn template_eval_errors(tle: &TemplateLookupError) -> String {
     }
     let prefix = "\n  ";
     format!("{}{}", prefix, failures.join(prefix))
+}
+
+fn response_error(status: &reqwest::StatusCode, content: &str) -> TemplateError {
+    TemplateError::ResponseError(generic_response_message(status, content))
+}
+
+fn auth_error(content: &str) -> TemplateError {
+    TemplateError::Authentication(auth_details(content))
 }
 
 impl Templates {
@@ -85,12 +92,9 @@ impl Templates {
                     Some(ProjectsTemplatesRetrieveError::Status422(tle)) => {
                         Err(TemplateError::EvaluateFailed(tle.clone()))
                     }
-                    _ => Err(TemplateError::ResponseError(generic_response_message(
-                        &content.status,
-                        &content.content,
-                    ))),
+                    _ => Err(response_error(&content.status, &content.content)),
                 },
-                Err(e) => Err(TemplateError::RetrieveApi(e)),
+                Err(e) => Err(TemplateError::UnhandledError(e.to_string())),
             }
         } else {
             Ok(None)
@@ -121,14 +125,11 @@ impl Templates {
                 _ => Ok(None),
             },
             Err(ResponseError(ref content)) => match content.status.as_u16() {
-                401 => Err(TemplateError::AuthError(extract_details(&content.content))),
-                403 => Err(TemplateError::AuthError(extract_details(&content.content))),
-                _ => Err(TemplateError::ResponseError(generic_response_message(
-                    &content.status,
-                    &content.content,
-                ))),
+                401 => Err(auth_error(&content.content)),
+                403 => Err(auth_error(&content.content)),
+                _ => Err(response_error(&content.status, &content.content)),
             },
-            Err(e) => Err(TemplateError::ListError(e)),
+            Err(e) => Err(TemplateError::UnhandledError(e.to_string())),
         }
     }
 
@@ -137,20 +138,26 @@ impl Templates {
         rest_cfg: &OpenApiConfig,
         proj_id: &str,
         template_name: &str,
-    ) -> Result<Option<TemplateDetails>, Error<ProjectsTemplatesListError>> {
+    ) -> Result<Option<TemplateDetails>, TemplateError> {
         let response =
-            projects_templates_list(rest_cfg, proj_id, Some(template_name), None, PAGE_SIZE)?;
-
-        if let Some(templates) = response.results {
-            if templates.is_empty() {
-                Ok(None)
-            } else {
-                // TODO: handle more than one?
-                let template = &templates[0];
-                Ok(Some(TemplateDetails::from(template)))
+            projects_templates_list(rest_cfg, proj_id, Some(template_name), None, PAGE_SIZE);
+        match response {
+            Ok(data) => match data.results {
+                Some(templates) => {
+                    if templates.is_empty() {
+                        Ok(None)
+                    } else {
+                        // TODO: handle more than one?
+                        let template = &templates[0];
+                        Ok(Some(TemplateDetails::from(template)))
+                    }
+                }
+                None => Ok(None),
+            },
+            Err(ResponseError(ref content)) => {
+                Err(response_error(&content.status, &content.content))
             }
-        } else {
-            Ok(None)
+            Err(e) => Err(TemplateError::UnhandledError(e.to_string())),
         }
     }
 
@@ -158,17 +165,24 @@ impl Templates {
         &self,
         rest_cfg: &OpenApiConfig,
         proj_id: &str,
-    ) -> Result<Vec<TemplateDetails>, Error<ProjectsTemplatesListError>> {
-        let response = projects_templates_list(rest_cfg, proj_id, None, None, PAGE_SIZE)?;
-        let mut list: Vec<TemplateDetails> = Vec::new();
-
-        if let Some(templates) = response.results {
-            for template in templates {
-                list.push(TemplateDetails::from(&template));
+    ) -> Result<Vec<TemplateDetails>, TemplateError> {
+        let response = projects_templates_list(rest_cfg, proj_id, None, None, PAGE_SIZE);
+        match response {
+            Ok(data) => {
+                let mut list: Vec<TemplateDetails> = Vec::new();
+                if let Some(templates) = data.results {
+                    for template in templates {
+                        list.push(TemplateDetails::from(&template));
+                    }
+                    list.sort_by(|l, r| l.name.cmp(&r.name));
+                }
+                Ok(list)
             }
-            list.sort_by(|l, r| l.name.cmp(&r.name));
+            Err(ResponseError(ref content)) => {
+                Err(response_error(&content.status, &content.content))
+            }
+            Err(e) => Err(TemplateError::UnhandledError(e.to_string())),
         }
-        Ok(list)
     }
 
     pub fn create_template(
@@ -191,12 +205,9 @@ impl Templates {
                 Some(ProjectsTemplatesCreateError::Status422(tle)) => {
                     Err(TemplateError::EvaluateFailed(tle.clone()))
                 }
-                _ => Err(TemplateError::ResponseError(generic_response_message(
-                    &content.status,
-                    &content.content,
-                ))),
+                _ => Err(response_error(&content.status, &content.content)),
             },
-            Err(e) => Err(TemplateError::CreateApi(e)),
+            Err(e) => Err(TemplateError::UnhandledError(e.to_string())),
         }
     }
 
@@ -239,10 +250,7 @@ impl Templates {
                 Some(ProjectsTemplatesPartialUpdateError::Status422(tle)) => {
                     Err(TemplateError::EvaluateFailed(tle.clone()))
                 }
-                _ => Err(TemplateError::ResponseError(generic_response_message(
-                    &content.status,
-                    &content.content,
-                ))),
+                _ => Err(response_error(&content.status, &content.content)),
             },
             Err(e) => Err(TemplateError::UpdateApi(e)),
         }
@@ -277,10 +285,7 @@ impl Templates {
                 Some(ProjectsTemplatePreviewCreateError::Status422(tle)) => {
                     Err(TemplateError::EvaluateFailed(tle.clone()))
                 }
-                _ => Err(TemplateError::ResponseError(generic_response_message(
-                    &content.status,
-                    &content.content,
-                ))),
+                _ => Err(response_error(&content.status, &content.content)),
             },
             Err(e) => Err(TemplateError::PreviewApi(e)),
         }

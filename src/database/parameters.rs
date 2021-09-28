@@ -141,7 +141,7 @@ impl Parameters {
             Err(ResponseError(ref content)) => {
                 Err(param_response_error(&content.status, &content.content))
             }
-            Err(e) => Err(ParameterError::UnhandledError(format!("{:?}", e))),
+            Err(e) => Err(ParameterError::UnhandledError(e.to_string())),
         }
     }
 
@@ -208,7 +208,7 @@ impl Parameters {
             Err(ResponseError(ref content)) => {
                 Err(param_response_error(&content.status, &content.content))
             }
-            Err(e) => Err(ParameterError::UnhandledError(format!("{:?}", e))),
+            Err(e) => Err(ParameterError::UnhandledError(e.to_string())),
         }
     }
 
@@ -301,7 +301,7 @@ impl Parameters {
             Err(ResponseError(ref content)) => {
                 Err(param_response_error(&content.status, &content.content))
             }
-            Err(e) => Err(ParameterError::UnhandledError(format!("{:?}", e))),
+            Err(e) => Err(ParameterError::UnhandledError(e.to_string())),
         }
     }
 
@@ -382,7 +382,7 @@ impl Parameters {
             Err(ResponseError(ref content)) => {
                 Err(param_response_error(&content.status, &content.content))
             }
-            Err(e) => Err(ParameterError::UnhandledError(format!("{:?}", e))),
+            Err(e) => Err(ParameterError::UnhandledError(e.to_string())),
         }
     }
 
@@ -447,7 +447,7 @@ impl Parameters {
             Err(ResponseError(ref content)) => {
                 Err(param_response_error(&content.status, &content.content))
             }
-            Err(e) => Err(ParameterError::UnhandledError(format!("{:?}", e))),
+            Err(e) => Err(ParameterError::UnhandledError(e.to_string())),
         }
     }
 

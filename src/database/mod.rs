@@ -24,8 +24,8 @@ pub use integration_details::IntegrationDetails;
 pub use integration_node::IntegrationNode;
 pub use integrations::{IntegrationError, Integrations};
 pub use openapi::{
-    extract_details, extract_from_json, extract_message, generic_response_message, OpenApiConfig,
-    PAGE_SIZE, WRAP_SECRETS,
+    auth_details, extract_details, extract_from_json, extract_message, generic_response_message,
+    OpenApiConfig, PAGE_SIZE, WRAP_SECRETS,
 };
 pub use parameter_details::ParameterDetails;
 pub use parameter_rules::{ParamRuleType, ParameterDetailRule};

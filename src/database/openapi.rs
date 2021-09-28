@@ -68,6 +68,10 @@ pub fn extract_message(content: &str) -> String {
     }
 }
 
+pub fn auth_details(content: &str) -> String {
+    extract_details(content)
+}
+
 /// This extracts information from the content
 pub fn generic_response_message(status: &reqwest::StatusCode, content: &str) -> String {
     format!(
