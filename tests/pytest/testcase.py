@@ -42,13 +42,6 @@ PROP_MODIFIED = "Modified At"
 PROP_VALUE = "Value"
 
 
-def write_file(filename: str, content: str) -> None:
-    """Simple utility to open set the filename content."""
-    file = open(filename, "w")
-    file.write(content)
-    file.close()
-
-
 def get_cli_base_cmd() -> str:
     """
     This is a separate function that does not reference the `self._base_cmd' so it can be called
@@ -101,6 +94,7 @@ class TestCase(unittest.TestCase):
         self.job_id = os.environ.get(CT_TEST_JOB_ID, "")
         self._projects = None
         self._environments = None
+        self._filenames = None
         super().__init__(*args, **kwargs)
         self.maxDiff = None
 
@@ -108,6 +102,7 @@ class TestCase(unittest.TestCase):
         # start each test with empty sets for projects and environments
         self._projects = set()
         self._environments = list()
+        self._filenames = set()
         super().setUp()
 
     def tearDown(self) -> None:
@@ -122,7 +117,25 @@ class TestCase(unittest.TestCase):
             cmd = self._base_cmd + f"env del \"{env}\" --confirm"
             subprocess.run(cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
+        # remove any added files
+        for fname in self._filenames:
+            os.remove(fname)
+
         super().tearDown()
+
+    def write_file(self, filename: str, content: str) -> None:
+        """
+        Utility to open set the filename content, and save the name in the list
+        for deletion.
+        """
+        self._filenames.add(filename)
+        file = open(filename, "w")
+        file.write(content)
+        file.close()
+
+    def delete_file(self, filename):
+        self._filenames.remove(filename)
+        os.remove(filename)
 
     def make_name(self, name: str) -> str:
         """
