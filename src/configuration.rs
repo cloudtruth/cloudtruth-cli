@@ -4,9 +4,12 @@ use crate::cli::{
 };
 use crate::config::Config;
 use crate::table::Table;
-use crate::{user_confirm, warn_missing_subcommand, warning_message, DEL_CONFIRM, REDACTED};
+use crate::{
+    error_message, user_confirm, warn_missing_subcommand, warning_message, DEL_CONFIRM, REDACTED,
+};
 use clap::ArgMatches;
 use color_eyre::eyre::Result;
+use std::process;
 
 fn proc_config_edit() -> Result<()> {
     Config::edit()?;
@@ -107,12 +110,36 @@ fn proc_config_prof_set(subcmd_args: &ArgMatches) -> Result<()> {
     let description = subcmd_args.value_of(DESCRIPTION_OPT);
     let project = subcmd_args.value_of("PROJECT");
     let environment = subcmd_args.value_of("ENVIRONMENT");
+    let source = subcmd_args.value_of("SOURCE");
 
-    if api_key.is_none() && description.is_none() && project.is_none() && environment.is_none() {
+    // make sure there's a parent profile
+    if let Some(source_profile) = source {
+        if Config::get_profile_details_by_name(source_profile)?.is_none() {
+            error_message(format!(
+                "Source profile '{}' does not exist",
+                source_profile
+            ))?;
+            process::exit(18);
+        }
+    }
+
+    if api_key.is_none()
+        && description.is_none()
+        && project.is_none()
+        && environment.is_none()
+        && source.is_none()
+    {
         warning_message(format!("Nothing to change for profile '{}'", prof_name))?;
     } else {
         let pre_exists = Config::get_profile_details_by_name(prof_name)?.is_some();
-        Config::update_profile(prof_name, api_key, description, environment, project)?;
+        Config::update_profile(
+            prof_name,
+            api_key,
+            description,
+            environment,
+            project,
+            source,
+        )?;
         let post_exists = Config::get_profile_details_by_name(prof_name)?.is_some();
         let action = if !post_exists {
             "Deleted"

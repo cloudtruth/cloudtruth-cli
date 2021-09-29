@@ -115,7 +115,7 @@ pub fn process_login_command(subcmd_args: &ArgMatches, config: &Config) -> Resul
         return Ok(());
     }
 
-    Config::update_profile(profile_name, Some(input.as_str()), None, None, None)?;
+    Config::update_profile(profile_name, Some(input.as_str()), None, None, None, None)?;
     println!(
         "Updated profile '{}' in {}",
         profile_name,

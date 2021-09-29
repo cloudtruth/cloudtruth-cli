@@ -6,11 +6,12 @@ from testcase import CT_PROFILE, REDACTED
 
 class TestConfiguration(TestCase):
     basic_prof_name = "cli-int-basic-prof-test"
+    basic_child_prof = "cli-int-basic-child-test"
     current_prof_name = "cli-int-curr-prof-test"
 
     def tearDown(self) -> None:
         # clean up any stranded profiles
-        for profile in [self.basic_prof_name, self.current_prof_name]:
+        for profile in [self.basic_prof_name, self.current_prof_name, self.basic_child_prof]:
             cmd = self.get_cli_base_cmd() + f"profile delete -y '{profile}'"
             subprocess.run(cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
@@ -23,6 +24,7 @@ class TestConfiguration(TestCase):
         list_cmd = conf_cmd + "prof ls "
         set_cmd = conf_cmd + "profile set "
         prof_name = self.basic_prof_name
+        child_name = self.basic_child_prof
         desc1 = "Profile to use for something"
         desc2 = "alternate description"
         api_key1 = "bogus-key-value"
@@ -69,15 +71,33 @@ class TestConfiguration(TestCase):
 
         result = self.run_cli(cmd_env, list_cmd + "-svf json")
         self.assertResultSuccess(result)
-        profiles = eval(result.out())
-        for i in profiles.get("profile"):
-            if i.get("Name") == prof_name:
-                prof = i
-                break
+        profiles = eval(result.out()).get("profile")
+        prof = [p for p in profiles if p.get("Name") == prof_name][0]
         self.assertEqual(api_key1, prof.get("API"))
         self.assertEqual(env1, prof.get("Environment"))
         self.assertEqual(proj1, prof.get("Project"))
         self.assertEqual(desc2, prof.get("Description"))
+
+        # create a child
+        child_project = "this-is-a-bogus-project-name"
+        result = self.run_cli(cmd_env, set_cmd + f"'{child_name}' -s '{prof_name}' -p '{child_project}'")
+        self.assertResultSuccess(result)
+
+        # verify child was created
+        result = self.run_cli(cmd_env, list_cmd + "-v -f csv")
+        self.assertResultSuccess(result)
+        self.assertIn(child_name, result.out())
+        self.assertIn(child_project, result.out())
+
+        # see that creating with a non-existent source/parent fails
+        missing_child = "cli-int-prof-missing-child"
+        new_child = "cli-int-prof-never-created"
+        result = self.run_cli(cmd_env, set_cmd + f"'{new_child}' -s '{missing_child}'")
+        self.assertResultError(result, f"Source profile '{missing_child}' does not exist")
+
+        # delete the child
+        result = self.run_cli(cmd_env, conf_cmd + f"p d -y '{child_name}'")
+        self.assertResultSuccess(result)
 
         # delete it
         result = self.run_cli(cmd_env, conf_cmd + f"p d -y '{prof_name}'")
