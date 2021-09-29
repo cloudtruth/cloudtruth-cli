@@ -84,7 +84,7 @@ pub fn process_logout_command(subcmd_args: &ArgMatches, config: &Config) -> Resu
     }
 
     // NOTE: setting api_key to an empty string forces it to be removed.
-    Config::update_profile(profile_name, Some(""), None, None, None)?;
+    Config::update_profile(profile_name, Some(""), None, None, None, None)?;
     println!(
         "Updated profile '{}' in {}",
         profile_name,

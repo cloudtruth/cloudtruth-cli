@@ -18,7 +18,7 @@ pub struct Profile {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub server_url: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub(crate) source_profile: Option<String>,
+    pub source_profile: Option<String>,
 }
 
 // TODO: Rick Porter 4/21, fix this so don't have to udpate when Profile is updated

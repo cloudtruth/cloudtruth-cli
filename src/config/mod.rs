@@ -229,6 +229,7 @@ impl Config {
         description: Option<&str>,
         environment: Option<&str>,
         project: Option<&str>,
+        source: Option<&str>,
     ) -> Result<()> {
         if let Some(filename) = Self::config_file() {
             if !filename.exists() {
@@ -242,6 +243,7 @@ impl Config {
                 description,
                 environment,
                 project,
+                source,
             )?;
             fs::write(filename.as_path(), updated)?;
         }

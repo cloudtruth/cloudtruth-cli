@@ -140,6 +140,7 @@ impl ConfigFile {
         description: Option<&str>,
         environment: Option<&str>,
         project: Option<&str>,
+        source: Option<&str>,
     ) -> ConfigFileResult<String> {
         let result: String;
         let mut config_file: ConfigFile = serde_yaml::from_str(config)?;
@@ -151,7 +152,7 @@ impl ConfigFile {
             request_timeout: None,
             rest_debug: None,
             server_url: None,
-            source_profile: None,
+            source_profile: source.map(String::from),
         };
 
         let profiles = config_file.profiles.borrow_mut();
@@ -722,6 +723,7 @@ mod tests {
             None,
             None,
             None,
+            None,
         );
         assert!(result.is_ok());
         let result = result.unwrap();
@@ -762,6 +764,7 @@ mod tests {
             config,
             "grandparent-profile",
             Some("my_new_key"),
+            None,
             None,
             None,
             None,
@@ -809,6 +812,54 @@ mod tests {
             None,
             None,
             Some("YourFirstProject"),
+            None,
+        );
+        assert!(result.is_ok());
+        let result = result.unwrap();
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn profile_set_missing_source_added() {
+        let config = indoc!(
+            r#"
+        profiles:
+          default:
+            # comment lost -- not ideal
+            api_key: default_key
+            server_url: http://localhost:7001/graphql
+
+          grandparent-profile:
+            server_url: https://localhost:8000
+            # Comments get lost, keys reordered, and quotes maybe added -- reasonable first pass
+            api_key: grandparent_key
+        "#
+        );
+        let expected = indoc!(
+            r#"
+        profiles:
+          default:
+            # comment lost -- not ideal
+            api_key: default_key
+            server_url: http://localhost:7001/graphql
+
+          grandparent-profile:
+            server_url: https://localhost:8000
+            # Comments get lost, keys reordered, and quotes maybe added -- reasonable first pass
+            api_key: grandparent_key
+
+          new-profile-name:
+            source_profile: are-you-my-mother
+        "#
+        );
+        let result = ConfigFile::set_profile(
+            config,
+            "new-profile-name",
+            None,
+            None,
+            None,
+            None,
+            Some("are-you-my-mother"),
         );
         assert!(result.is_ok());
         let result = result.unwrap();
@@ -831,7 +882,8 @@ mod tests {
             api_key: grandparent_key
         "#
         );
-        let result = ConfigFile::set_profile(config, "new-profile-name", None, None, None, None);
+        let result =
+            ConfigFile::set_profile(config, "new-profile-name", None, None, None, None, None);
         assert!(result.is_ok());
         let result = result.unwrap();
         assert_eq!(result, config);
@@ -853,8 +905,15 @@ mod tests {
             api_key: grandparent_key
         "#
         );
-        let result =
-            ConfigFile::set_profile(config, "default", Some("default_key"), None, None, None);
+        let result = ConfigFile::set_profile(
+            config,
+            "default",
+            Some("default_key"),
+            None,
+            None,
+            None,
+            None,
+        );
         assert!(result.is_ok());
         let result = result.unwrap();
         assert_eq!(result, config);
@@ -886,8 +945,15 @@ mod tests {
           grandparent-profile: {}
         "#
         );
-        let result =
-            ConfigFile::set_profile(config, "grandparent-profile", Some(""), None, None, None);
+        let result = ConfigFile::set_profile(
+            config,
+            "grandparent-profile",
+            Some(""),
+            None,
+            None,
+            None,
+            None,
+        );
         assert!(result.is_ok());
         let result = result.unwrap();
         assert_eq!(result, expected);
