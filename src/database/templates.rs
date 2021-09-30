@@ -3,7 +3,6 @@ use crate::database::{
     PAGE_SIZE,
 };
 use cloudtruth_restapi::apis::projects_api::*;
-use cloudtruth_restapi::apis::Error;
 use cloudtruth_restapi::apis::Error::ResponseError;
 use cloudtruth_restapi::models::{PatchedTemplate, TemplateCreate, TemplatePreview};
 use std::result::Result;
@@ -172,8 +171,15 @@ impl Templates {
         rest_cfg: &OpenApiConfig,
         proj_id: &str,
         template_id: &str,
-    ) -> Result<(), Error<ProjectsTemplatesDestroyError>> {
-        projects_templates_destroy(rest_cfg, template_id, proj_id)
+    ) -> Result<(), TemplateError> {
+        let response = projects_templates_destroy(rest_cfg, template_id, proj_id);
+        match response {
+            Ok(_) => Ok(()),
+            Err(ResponseError(ref content)) => {
+                Err(response_error(&content.status, &content.content))
+            }
+            Err(e) => Err(TemplateError::UnhandledError(e.to_string())),
+        }
     }
 
     pub fn update_template(
@@ -255,10 +261,16 @@ impl Templates {
         project_id: &str,
         as_of: Option<String>,
         tag: Option<String>,
-    ) -> Result<Vec<TemplateHistory>, Error<ProjectsTemplatesTimelinesRetrieveError>> {
+    ) -> Result<Vec<TemplateHistory>, TemplateError> {
         let response =
-            projects_templates_timelines_retrieve(rest_cfg, project_id, as_of, tag.as_deref())?;
-        Ok(response.results.iter().map(TemplateHistory::from).collect())
+            projects_templates_timelines_retrieve(rest_cfg, project_id, as_of, tag.as_deref());
+        match response {
+            Ok(data) => Ok(data.results.iter().map(TemplateHistory::from).collect()),
+            Err(ResponseError(ref content)) => {
+                Err(response_error(&content.status, &content.content))
+            }
+            Err(e) => Err(TemplateError::UnhandledError(e.to_string())),
+        }
     }
 
     /// Gets the template history for a single template in the project.
@@ -269,14 +281,20 @@ impl Templates {
         template_id: &str,
         as_of: Option<String>,
         tag: Option<String>,
-    ) -> Result<Vec<TemplateHistory>, Error<ProjectsTemplatesTimelineRetrieveError>> {
+    ) -> Result<Vec<TemplateHistory>, TemplateError> {
         let response = projects_templates_timeline_retrieve(
             rest_cfg,
             template_id,
             project_id,
             as_of,
             tag.as_deref(),
-        )?;
-        Ok(response.results.iter().map(TemplateHistory::from).collect())
+        );
+        match response {
+            Ok(data) => Ok(data.results.iter().map(TemplateHistory::from).collect()),
+            Err(ResponseError(ref content)) => {
+                Err(response_error(&content.status, &content.content))
+            }
+            Err(e) => Err(TemplateError::UnhandledError(e.to_string())),
+        }
     }
 }

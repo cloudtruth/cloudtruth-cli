@@ -3,7 +3,6 @@ use crate::database::{
     ParamRuleType, ParamType, ParameterDetails, ParameterError, PAGE_SIZE, WRAP_SECRETS,
 };
 use cloudtruth_restapi::apis::projects_api::*;
-use cloudtruth_restapi::apis::Error;
 use cloudtruth_restapi::apis::Error::ResponseError;
 use cloudtruth_restapi::models::{
     ParameterCreate, ParameterRuleCreate, ParameterRuleTypeEnum, PatchedParameter,
@@ -83,20 +82,26 @@ impl Parameters {
         proj_id: &str,
         env_id: &str,
         key_name: &str,
-    ) -> Result<Option<String>, Error<ProjectsParametersValuesDestroyError>> {
+    ) -> Result<Option<String>, ParameterError> {
         // The only delete mechanism is by parameter ID, so start by querying the parameter info.
         let response =
             self.get_details_by_name(rest_cfg, proj_id, env_id, key_name, true, None, None);
 
         if let Ok(Some(details)) = response {
             if details.env_url.contains(env_id) {
-                projects_parameters_values_destroy(
+                let del_resp = projects_parameters_values_destroy(
                     rest_cfg,
                     &details.val_id,
                     &details.id,
                     proj_id,
-                )?;
-                Ok(Some(details.val_id))
+                );
+                match del_resp {
+                    Ok(_) => Ok(Some(details.val_id)),
+                    Err(ResponseError(ref content)) => {
+                        Err(response_error(&content.status, &content.content))
+                    }
+                    Err(e) => Err(ParameterError::UnhandledError(e.to_string())),
+                }
             } else {
                 // the "discovered" value is not for this environment
                 Ok(None)
@@ -393,15 +398,21 @@ impl Parameters {
         description: Option<&str>,
         secret: Option<bool>,
         param_type: Option<ParamType>,
-    ) -> Result<ParameterDetails, Error<ProjectsParametersCreateError>> {
+    ) -> Result<ParameterDetails, ParameterError> {
         let param_new = ParameterCreate {
             name: key_name.to_string(),
             description: description.map(|x| x.to_string()),
             secret,
             _type: param_type.map(|x| x.to_api_enum()),
         };
-        let api_param = projects_parameters_create(rest_cfg, proj_id, param_new)?;
-        Ok(ParameterDetails::from(&api_param))
+        let response = projects_parameters_create(rest_cfg, proj_id, param_new);
+        match response {
+            Ok(api_param) => Ok(ParameterDetails::from(&api_param)),
+            Err(ResponseError(ref content)) => {
+                Err(response_error(&content.status, &content.content))
+            }
+            Err(e) => Err(ParameterError::UnhandledError(e.to_string())),
+        }
     }
 
     /// Updates the `Parameter` entry.
@@ -417,7 +428,7 @@ impl Parameters {
         description: Option<&str>,
         secret: Option<bool>,
         param_type: Option<ParamType>,
-    ) -> Result<ParameterDetails, Error<ProjectsParametersPartialUpdateError>> {
+    ) -> Result<ParameterDetails, ParameterError> {
         let param_update = PatchedParameter {
             url: None,
             id: None,
@@ -432,9 +443,15 @@ impl Parameters {
             created_at: None,
             modified_at: None,
         };
-        let api_param =
-            projects_parameters_partial_update(rest_cfg, param_id, proj_id, Some(param_update))?;
-        Ok(ParameterDetails::from(&api_param))
+        let response =
+            projects_parameters_partial_update(rest_cfg, param_id, proj_id, Some(param_update));
+        match response {
+            Ok(api_param) => Ok(ParameterDetails::from(&api_param)),
+            Err(ResponseError(ref content)) => {
+                Err(response_error(&content.status, &content.content))
+            }
+            Err(e) => Err(ParameterError::UnhandledError(e.to_string())),
+        }
     }
 
     /// Creates a `Value` entry associated with the `Parameter` identified by the
