@@ -285,13 +285,10 @@ fn proc_param_env(
     // assume the provided tag applies to this environment... we cannot use a tag without an
     // environment, so resolve it to an as-of time value
     if let Some(tag_name) = tag {
+        let env_id = resolved.environment_id();
+        let env_name = resolved.environment_display_name();
         let environments = Environments::new();
-        if let Some(tag_info) =
-            environments.get_tag_by_name(rest_cfg, resolved.environment_id(), &tag_name)?
-        {
-            // update the 'as-of' to take the timestamp of the tag
-            as_of = Some(tag_info.timestamp);
-        }
+        as_of = Some(environments.get_tag_time(rest_cfg, env_id, &env_name, &tag_name)?);
     }
 
     // fetch all environments once, and then determine id's from the same map that is
@@ -414,20 +411,14 @@ fn proc_param_get(
     let proj_id = resolved.project_id();
     let env_id = resolved.environment_id();
     let parameter =
-        parameters.get_details_by_name(rest_cfg, proj_id, env_id, key, false, as_of, tag);
+        parameters.get_details_by_name(rest_cfg, proj_id, env_id, key, false, as_of, tag)?;
 
-    if let Ok(details) = parameter {
+    if let Some(param) = parameter {
         // Treat parameters without values set as if the value were simply empty, since
         // we need to display something sensible to the user.
-        let mut param_value = "".to_string();
-        let mut err_msg = "".to_string();
-        if let Some(ref param) = details {
-            param_value = param.value.clone();
-            err_msg = param.error.clone();
-        }
         if !show_details {
-            println!("{}", param_value);
-        } else if let Some(param) = details {
+            println!("{}", param.value);
+        } else {
             printdoc!(
                 r#"
                   Name: {}
@@ -461,8 +452,8 @@ fn proc_param_get(
                 param.modified_at,
             );
         }
-        if !err_msg.is_empty() {
-            warning_message(err_msg)?;
+        if !param.error.is_empty() {
+            warning_message(param.error)?;
         }
     } else {
         println!(

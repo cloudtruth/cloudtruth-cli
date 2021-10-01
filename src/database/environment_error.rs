@@ -25,9 +25,10 @@ impl fmt::Display for EnvironmentError {
                 write!(f, "Did not find environment '{}'", name)
             }
             EnvironmentError::TagNotFound(env_name, tag_name) => {
+                // match the server error, including the yucky backticks
                 write!(
                     f,
-                    "Did not find tag '{}' in environment '{}'",
+                    "Tag `{}` could not be found in environment `{}`",
                     tag_name, env_name
                 )
             }

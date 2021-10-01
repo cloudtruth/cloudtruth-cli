@@ -1578,8 +1578,7 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
         self.assertResultError(result, no_environment)
 
         result = self.run_cli(cmd_env, param_cmd + f"get '{param1}' --as-of '{timestamp}'")
-        self.assertResultSuccess(result)
-        self.assertIn(f"The parameter '{param1}' could not be found", result.out())
+        self.assertResultError(result, no_project)
 
         # cleanup
         self.delete_environment(cmd_env, env_a)
@@ -2180,24 +2179,39 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
         self.assertResultError(result, no_project)
         result = self.run_cli(cmd_env, param_cmd + f"env '{param1}' --as-of '{tag_name}'")
         self.assertResultError(result, no_project)
-
         result = self.run_cli(cmd_env, param_cmd + f"export docker --as-of '{tag_name}'")
         self.assertResultError(result, no_project)
-
         result = self.run_cli(cmd_env, param_cmd + f"get '{param1}' --as-of '{timestamp}'")
-        self.assertResultSuccess(result)
-        self.assertIn(f"The parameter '{param1}' could not be found", result.out())
+        self.assertResultError(result, no_project)
 
         ################
         # bad environment/tag combination testing
-        proj_base = base_cmd + f"--project '{proj_name}' "
         bad_tag = "no-such-tag"
-        result = self.run_cli(cmd_env, proj_base + f"--env '{env_name}' param ls -v --as-of {bad_tag}")
-        self.assertResultError(result, f"Tag `{bad_tag}` could not be found in environment `{env_name}`")
+        tag_msg = f"Tag `{bad_tag}` could not be found in environment `{env_name}`"
+        result = self.run_cli(cmd_env, param_cmd + f"ls -v --as-of {bad_tag}")
+        self.assertResultError(result, tag_msg)
+        result = self.run_cli(cmd_env, param_cmd + f"diff --as-of '{bad_tag}'")
+        self.assertResultError(result, tag_msg)
+        result = self.run_cli(cmd_env, param_cmd + f"env '{param1}' --as-of '{bad_tag}'")
+        self.assertResultError(result, tag_msg)
+        result = self.run_cli(cmd_env, param_cmd + f"export docker --as-of '{bad_tag}'")
+        self.assertResultError(result, tag_msg)
+        result = self.run_cli(cmd_env, param_cmd + f"get '{param1}' --as-of '{bad_tag}'")
+        self.assertResultError(result, tag_msg)
 
         bad_env = "default"
-        result = self.run_cli(cmd_env, proj_base + f"--env {bad_env} param ls -v --as-of {tag_name}")
-        self.assertResultError(result, f"Tag `{tag_name}` could not be found in environment `{bad_env}`")
+        param_cmd = base_cmd + f"--project '{proj_name}' --env '{bad_env}' param "
+        env_msg = f"Tag `{tag_name}` could not be found in environment `{bad_env}`"
+        result = self.run_cli(cmd_env, param_cmd + f"ls -v --as-of {tag_name}")
+        self.assertResultError(result, env_msg)
+        result = self.run_cli(cmd_env, param_cmd + f"diff --as-of '{tag_name}'")
+        self.assertResultError(result, env_msg)
+        result = self.run_cli(cmd_env, param_cmd + f"env '{param1}' --as-of '{tag_name}'")
+        self.assertResultError(result, env_msg)
+        result = self.run_cli(cmd_env, param_cmd + f"export docker --as-of '{tag_name}'")
+        self.assertResultError(result, env_msg)
+        result = self.run_cli(cmd_env, param_cmd + f"get '{param1}' --as-of '{tag_name}'")
+        self.assertResultError(result, env_msg)
 
         ################
         # cleanup
