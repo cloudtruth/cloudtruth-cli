@@ -1,3 +1,12 @@
+# 1.0.10 - 2021-10-01
+
+* Added `--as-of` to `templates get` for raw or evaluated template at specified date/time (or tag).
+* Changes to `configuration profile set`:
+  * Fixed issue with reporting wrong action.
+  * Added ability to set a source-profile using `--source`.
+* Improved error handling to provide more understandable information.
+* Updated several help strings.
+
 # 1.0.9 - 2021-09-24
 
 * Enhanced `parameters set` to allow parameter creation without a value for any environment.
