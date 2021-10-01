@@ -521,6 +521,7 @@ pub fn build_cli() -> App<'static, 'static> {
                         .short("r")
                         .long("raw")
                         .help("Get the raw, unevaluated template text"))
+                    .arg(as_of_arg().help(" Date/time (or tag) of template (and parameters)"))
                     .arg(secrets_display_flag().help("Display secret values in evaluation"))
                     .arg(name_arg().help("Template name")),
                 SubCommand::with_name(HISTORY_SUBCMD)

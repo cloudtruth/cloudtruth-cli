@@ -684,13 +684,16 @@ cloudtruth-templates-get
 Get an evaluated template from CloudTruth
 
 USAGE:
-    cloudtruth templates get [FLAGS] <NAME>
+    cloudtruth templates get [FLAGS] [OPTIONS] <NAME>
 
 FLAGS:
     -h, --help       Prints help information
     -r, --raw        Get the raw, unevaluated template text
     -s, --secrets    Display secret values in evaluation
     -V, --version    Prints version information
+
+OPTIONS:
+        --as-of <datetime|tag>     Date/time (or tag) of template (and parameters)
 
 ARGS:
     <NAME>    Template name

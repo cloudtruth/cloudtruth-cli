@@ -3,7 +3,7 @@ use crate::cli::{
     HISTORY_SUBCMD, LIST_SUBCMD, NAME_ARG, RENAME_OPT, SECRETS_FLAG, SET_SUBCMD, SHOW_TIMES_FLAG,
     TEMPLATE_FILE_OPT, VALUES_FLAG,
 };
-use crate::database::{HistoryAction, OpenApiConfig, TemplateHistory, Templates};
+use crate::database::{Environments, HistoryAction, OpenApiConfig, TemplateHistory, Templates};
 use crate::table::Table;
 use crate::{
     error_message, parse_datetime, parse_tag, user_confirm, warn_missing_subcommand,
@@ -152,15 +152,50 @@ fn proc_template_get(
     let show_secrets = subcmd_args.is_present(SECRETS_FLAG);
     let raw = subcmd_args.is_present("raw");
 
-    let body = if raw {
-        let result = templates.get_unevaluated_details(rest_cfg, proj_id, template_name)?;
-        match result {
-            Some(details) => Some(details.body),
-            _ => None,
+    // The template history queries do NOT provide tag options. So, resolve any tag to a time.
+    let mut as_of = parse_datetime(subcmd_args.value_of(AS_OF_ARG));
+    let tag = parse_tag(subcmd_args.value_of(AS_OF_ARG));
+    if let Some(tag_name) = tag {
+        let env_name = resolved.environment_display_name();
+        let environments = Environments::new();
+        as_of = Some(environments.get_tag_time(rest_cfg, env_id, &env_name, &tag_name)?);
+    }
+
+    let mut body: Option<String> = None;
+    if as_of.is_some() {
+        // If have a time, get the body from historical records.
+        let detail_resp = templates.get_details_by_name(rest_cfg, proj_id, template_name)?;
+        if let Some(details) = detail_resp {
+            let hist_list =
+                templates.get_history_for(rest_cfg, proj_id, &details.id, as_of.clone(), None)?;
+            if !hist_list.is_empty() {
+                let item = &hist_list[0];
+                if raw {
+                    body = Some(item.body.clone())
+                } else {
+                    // use the preview to evaluate at that point in time
+                    let preview = templates.preview_template(
+                        rest_cfg,
+                        proj_id,
+                        env_id,
+                        &item.body,
+                        show_secrets,
+                        as_of,
+                        None,
+                    )?;
+                    body = Some(preview);
+                }
+            }
+        }
+    } else if raw {
+        let response = templates.get_unevaluated_details(rest_cfg, proj_id, template_name)?;
+        if let Some(details) = response {
+            body = Some(details.body);
         }
     } else {
-        templates.get_body_by_name(rest_cfg, proj_id, env_id, template_name, show_secrets)?
-    };
+        body =
+            templates.get_body_by_name(rest_cfg, proj_id, env_id, template_name, show_secrets)?;
+    }
 
     if let Some(body) = body {
         println!("{}", body)

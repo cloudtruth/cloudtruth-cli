@@ -1,6 +1,5 @@
 from testcase import TestCase
 from testcase import CT_ENV
-from testcase import PROP_VALUE
 from testcase import PROP_MODIFIED
 from testcase import REDACTED
 
@@ -234,7 +233,7 @@ ANOTHER_PARAM=PARAM2
         self.delete_environment(cmd_env, env_a)
         self.delete_project(cmd_env, proj_name)
 
-    def test_template_times(self):
+    def test_template_as_of_time(self):
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
 
@@ -242,28 +241,71 @@ ANOTHER_PARAM=PARAM2
         proj_name = self.make_name("test-temp-times")
         self.create_project(cmd_env, proj_name)
 
+        ##################
+        # create a couple parameters
         param1 = "some_param"
-        value_a = "value first"
-        value_b = "value second"
-        self.set_param(cmd_env, proj_name, param1, value_a)
+        value1a = "value first"
+        value1b = "value second"
+        self.set_param(cmd_env, proj_name, param1, value1a)
 
-        # fetch complete details for first set
-        details_a = self.get_param(cmd_env, proj_name, param1)
-        self.assertIsNotNone(details_a)
-        self.assertEqual(details_a.get(PROP_VALUE), value_a)
+        param2 = "another-param"
+        value2a = "devops"
+        value2b = "sre"
+        self.set_param(cmd_env, proj_name, param2, value2a)
 
-        # get the newest time from the first set of changes
-        modified_at = details_a.get(PROP_MODIFIED)
-
-        # update value
-        self.set_param(cmd_env, proj_name, param1, value_b)
-
-        # sanity checks on updated values
-        details_b = self.get_param(cmd_env, proj_name, param1)
-        self.assertIsNotNone(details_b)
-        self.assertEqual(details_b.get(PROP_VALUE), value_b)
-
+        #################
+        # create a template
+        temp_name = "my-test-template"
+        temp_cmd = base_cmd + f"--project '{proj_name}' template "
         filename = self.make_name("test-temp-times") + ".txt"
+
+        body = """\
+# just a different template
+references = PARAM
+"""
+        self.write_file(filename, body.replace("PARAM", f"{{{{{param1}}}}}"))
+        result = self.run_cli(cmd_env, temp_cmd + f"set '{temp_name}' -b {filename}")
+        self.assertResultSuccess(result)
+
+        result = self.run_cli(cmd_env, temp_cmd + "list --show-times -f json")
+        self.assertResultSuccess(result)
+        item = eval(result.out()).get("template")[0]
+        modified_at = item.get(PROP_MODIFIED)
+
+        #################
+        # update values
+        self.set_param(cmd_env, proj_name, param1, value1b)
+        self.set_param(cmd_env, proj_name, param2, value2b)
+
+        self.write_file(filename, body.replace("PARAM", f"{{{{{param2}}}}}"))
+        result = self.run_cli(cmd_env, temp_cmd + f"set '{temp_name}' -b {filename}")
+        self.assertResultSuccess(result)
+
+        ##################
+        # check template get
+        get_cmd = temp_cmd + f"get '{temp_name}' "
+        result = self.run_cli(cmd_env, get_cmd)
+        self.assertResultSuccess(result)
+        self.assertEqual(result.out(), body.replace("PARAM", f"{value2b}"))
+
+        result = self.run_cli(cmd_env, get_cmd + "--raw")
+        self.assertResultSuccess(result)
+        self.assertEqual(result.out(), body.replace("PARAM", f"{{{{{param2}}}}}"))
+
+        result = self.run_cli(cmd_env, get_cmd + f"--as-of '{modified_at}'")
+        self.assertResultSuccess(result)
+        self.assertEqual(result.out(), body.replace("PARAM", f"{value1a}"))
+
+        result = self.run_cli(cmd_env, get_cmd + f"--raw --as-of '{modified_at}'")
+        self.assertResultSuccess(result)
+        self.assertEqual(result.out(), body.replace("PARAM", f"{{{{{param1}}}}}"))
+
+        # this is before the project exists
+        result = self.run_cli(cmd_env, get_cmd + "--as-of 2020-02-02")
+        self.assertResultError(result, "No HistoricalProject matches the given query")
+
+        ##################
+        # check preview
         body = """\
 # just a comment
 this.is.a.template.value=PARAM1
@@ -271,15 +313,125 @@ this.is.a.template.value=PARAM1
         self.write_file(filename, body.replace("PARAM1", f"{{{{{param1}}}}}"))
 
         # check the current evaluation
-        preview_cmd = base_cmd + f"--project {proj_name} template preview '{filename}' "
+        preview_cmd = temp_cmd + f"preview '{filename}' "
         result = self.run_cli(cmd_env, preview_cmd)
         self.assertResultSuccess(result)
-        self.assertEqual(result.out(), body.replace("PARAM1", value_b + "\n"))
+        self.assertEqual(result.out(), body.replace("PARAM1", value1b + "\n"))
 
         # check the earlier evaluation
         result = self.run_cli(cmd_env, preview_cmd + f"--as-of '{modified_at}'")
         self.assertResultSuccess(result)
-        self.assertEqual(result.out(), body.replace("PARAM1", value_a + "\n"))
+        self.assertEqual(result.out(), body.replace("PARAM1", value1a + "\n"))
+
+        # this is before the project exists
+        result = self.run_cli(cmd_env, preview_cmd + "--as-of 2020-02-02")
+        self.assertResultError(result, "No HistoricalProject matches the given query")
+
+        # cleanup
+        self.delete_file(filename)
+        self.delete_project(cmd_env, proj_name)
+
+    def test_template_as_of_tag(self):
+        base_cmd = self.get_cli_base_cmd()
+        cmd_env = self.get_cmd_env()
+
+        # add a new project
+        proj_name = self.make_name("test-temp-tag")
+        self.create_project(cmd_env, proj_name)
+
+        # add an environment (needed for tagging)
+        env_name = self.make_name("test-tag-temp")
+        self.create_environment(cmd_env, env_name)
+
+        ##################
+        # create a couple parameters
+        param1 = "some_param"
+        value1a = "value first"
+        value1b = "value second"
+        self.set_param(cmd_env, proj_name, param1, value1a, env=env_name)
+
+        param2 = "another-param"
+        value2a = "devops"
+        value2b = "sre"
+        self.set_param(cmd_env, proj_name, param2, value2a, env=env_name)
+
+        #################
+        # create a template
+        temp_name = "my-test-template"
+        temp_cmd = base_cmd + f"--project '{proj_name}' --env '{env_name}' template "
+        filename = self.make_name("test-temp-tag") + ".txt"
+
+        body = """\
+# just a different template
+references = PARAM
+"""
+        self.write_file(filename, body.replace("PARAM", f"{{{{{param1}}}}}"))
+        result = self.run_cli(cmd_env, temp_cmd + f"set '{temp_name}' -b {filename}")
+        self.assertResultSuccess(result)
+
+        # put down a tag
+        tag_name = "template-tag"
+        result = self.run_cli(cmd_env, base_cmd + f"env tag set '{env_name}' '{tag_name}'")
+        self.assertResultSuccess(result)
+
+        #################
+        # update values
+        self.set_param(cmd_env, proj_name, param1, value1b, env=env_name)
+        self.set_param(cmd_env, proj_name, param2, value2b, env=env_name)
+
+        self.write_file(filename, body.replace("PARAM", f"{{{{{param2}}}}}"))
+        result = self.run_cli(cmd_env, temp_cmd + f"set '{temp_name}' -b {filename}")
+        self.assertResultSuccess(result)
+
+        ##################
+        # check template get
+        get_cmd = temp_cmd + f"get '{temp_name}' "
+        result = self.run_cli(cmd_env, get_cmd)
+        self.assertResultSuccess(result)
+        self.assertEqual(result.out(), body.replace("PARAM", f"{value2b}"))
+
+        result = self.run_cli(cmd_env, get_cmd + "--raw")
+        self.assertResultSuccess(result)
+        self.assertEqual(result.out(), body.replace("PARAM", f"{{{{{param2}}}}}"))
+
+        result = self.run_cli(cmd_env, get_cmd + f"--as-of '{tag_name}'")
+        self.assertResultSuccess(result)
+        self.assertEqual(result.out(), body.replace("PARAM", f"{value1a}"))
+
+        result = self.run_cli(cmd_env, get_cmd + f"--raw --as-of '{tag_name}'")
+        self.assertResultSuccess(result)
+        self.assertEqual(result.out(), body.replace("PARAM", f"{{{{{param1}}}}}"))
+
+        # this is before the project exists
+        missing_tag = "my-missing-tag"
+        err_msg = f"Did not find tag '{missing_tag}' in environment '{env_name}'"
+        result = self.run_cli(cmd_env, get_cmd + f"--as-of {missing_tag}")
+        self.assertResultError(result, err_msg)
+
+        ##################
+        # check preview
+        body = """\
+# just a comment
+this.is.a.template.value=PARAM1
+"""
+        self.write_file(filename, body.replace("PARAM1", f"{{{{{param1}}}}}"))
+
+        # check the current evaluation
+        preview_cmd = temp_cmd + f"preview '{filename}' "
+        result = self.run_cli(cmd_env, preview_cmd)
+        self.assertResultSuccess(result)
+        self.assertEqual(result.out(), body.replace("PARAM1", value1b + "\n"))
+
+        # check the earlier evaluation
+        result = self.run_cli(cmd_env, preview_cmd + f"--as-of '{tag_name}'")
+        self.assertResultSuccess(result)
+        self.assertEqual(result.out(), body.replace("PARAM1", value1a + "\n"))
+
+        # this is before the project exists
+        missing_tag = "another-tag-gone"
+        err_msg = f"Tag `{missing_tag}` could not be found in environment `{env_name}`"
+        result = self.run_cli(cmd_env, preview_cmd + f"--as-of {missing_tag}")
+        self.assertResultError(result, err_msg)
 
         # cleanup
         self.delete_file(filename)

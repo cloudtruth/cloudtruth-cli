@@ -348,6 +348,23 @@ impl Environments {
         }
     }
 
+    pub fn get_tag_time(
+        &self,
+        rest_cfg: &OpenApiConfig,
+        environment_id: &str,
+        environment_name: &str,
+        tag_name: &str,
+    ) -> Result<String, EnvironmentError> {
+        let result = self.get_tag_by_name(rest_cfg, environment_id, tag_name)?;
+        match result {
+            Some(details) => Ok(details.timestamp),
+            _ => Err(EnvironmentError::TagNotFound(
+                environment_name.to_string(),
+                tag_name.to_string(),
+            )),
+        }
+    }
+
     pub fn create_env_tag(
         &self,
         rest_cfg: &OpenApiConfig,
