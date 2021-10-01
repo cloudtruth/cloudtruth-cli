@@ -404,7 +404,7 @@ references = PARAM
 
         # this is before the project exists
         missing_tag = "my-missing-tag"
-        err_msg = f"Did not find tag '{missing_tag}' in environment '{env_name}'"
+        err_msg = f"Tag `{missing_tag}` could not be found in environment `{env_name}`"
         result = self.run_cli(cmd_env, get_cmd + f"--as-of {missing_tag}")
         self.assertResultError(result, err_msg)
 
