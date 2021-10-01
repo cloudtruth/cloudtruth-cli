@@ -7,6 +7,7 @@ pub enum EnvironmentError {
     Authentication(String),
     DeleteNotAllowed(String),
     NotFound(String),
+    TagNotFound(String, String),
     ResponseError(String),
     UnhandledError(String),
 }
@@ -22,6 +23,13 @@ impl fmt::Display for EnvironmentError {
             }
             EnvironmentError::NotFound(name) => {
                 write!(f, "Did not find environment '{}'", name)
+            }
+            EnvironmentError::TagNotFound(env_name, tag_name) => {
+                write!(
+                    f,
+                    "Did not find tag '{}' in environment '{}'",
+                    tag_name, env_name
+                )
             }
             EnvironmentError::ResponseError(msg) => {
                 write!(f, "{}", msg)
