@@ -435,6 +435,7 @@ this.is.a.template.value=PARAM1
 
         # cleanup
         self.delete_file(filename)
+        self.delete_environment(cmd_env, env_name)
         self.delete_project(cmd_env, proj_name)
 
     def test_template_history(self):
