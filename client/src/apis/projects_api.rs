@@ -751,6 +751,7 @@ pub fn projects_parameters_list(
     project_pk: &str,
     as_of: Option<String>,
     environment: Option<&str>,
+    evaluate: Option<bool>,
     mask_secrets: Option<bool>,
     name: Option<&str>,
     page: Option<i32>,
@@ -777,6 +778,10 @@ pub fn projects_parameters_list(
     if let Some(ref local_var_str) = environment {
         local_var_req_builder =
             local_var_req_builder.query(&[("environment", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = evaluate {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("evaluate", &local_var_str.to_string())]);
     }
     if let Some(ref local_var_str) = mask_secrets {
         local_var_req_builder =
@@ -941,6 +946,7 @@ pub fn projects_parameters_retrieve(
     project_pk: &str,
     as_of: Option<String>,
     environment: Option<&str>,
+    evaluate: Option<bool>,
     mask_secrets: Option<bool>,
     partial_success: Option<bool>,
     tag: Option<&str>,
@@ -965,6 +971,10 @@ pub fn projects_parameters_retrieve(
     if let Some(ref local_var_str) = environment {
         local_var_req_builder =
             local_var_req_builder.query(&[("environment", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = evaluate {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("evaluate", &local_var_str.to_string())]);
     }
     if let Some(ref local_var_str) = mask_secrets {
         local_var_req_builder =
@@ -1876,6 +1886,7 @@ pub fn projects_parameters_values_list(
     project_pk: &str,
     as_of: Option<String>,
     environment: Option<&str>,
+    evaluate: Option<bool>,
     mask_secrets: Option<bool>,
     page: Option<i32>,
     page_size: Option<i32>,
@@ -1901,6 +1912,10 @@ pub fn projects_parameters_values_list(
     if let Some(ref local_var_str) = environment {
         local_var_req_builder =
             local_var_req_builder.query(&[("environment", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = evaluate {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("evaluate", &local_var_str.to_string())]);
     }
     if let Some(ref local_var_str) = mask_secrets {
         local_var_req_builder =
@@ -2066,6 +2081,7 @@ pub fn projects_parameters_values_retrieve(
     parameter_pk: &str,
     project_pk: &str,
     as_of: Option<String>,
+    evaluate: Option<bool>,
     mask_secrets: Option<bool>,
     partial_success: Option<bool>,
     tag: Option<&str>,
@@ -2086,6 +2102,10 @@ pub fn projects_parameters_values_retrieve(
     if let Some(ref local_var_str) = as_of {
         local_var_req_builder =
             local_var_req_builder.query(&[("as_of", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = evaluate {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("evaluate", &local_var_str.to_string())]);
     }
     if let Some(ref local_var_str) = mask_secrets {
         local_var_req_builder =

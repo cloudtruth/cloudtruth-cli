@@ -116,6 +116,7 @@ fn default_param_value() -> &'static Value {
         secret: None,
         internal_value: None,
         interpolated: None,
+        evaluated: false,
         referenced_parameters: vec![],
         referenced_templates: vec![],
         value: Some(DEFAULT_VALUE.to_owned()),

@@ -164,7 +164,8 @@ impl Parameters {
             proj_id,
             as_of_arg,
             env_arg,
-            Some(true), // no need to fetch secrets
+            Some(false), // no need to evaluate references to get id
+            Some(true),  // no need to fetch secrets
             Some(key_name),
             None,
             PAGE_SIZE,
@@ -212,6 +213,7 @@ impl Parameters {
             proj_id,
             as_of,
             Some(env_id),
+            Some(true), // for now, always evaluate interpolated parameters
             Some(mask_secrets),
             Some(key_name),
             None,
@@ -290,11 +292,13 @@ impl Parameters {
         let has_values = include_values || tag.is_some();
         let env_arg = if has_values { Some(env_id) } else { None };
         let value_arg = if has_values { None } else { VALUES_FALSE };
+        let eval_arg = Some(include_values);
         let response = projects_parameters_list(
             rest_cfg,
             proj_id,
             as_of,
             env_arg,
+            eval_arg,
             Some(mask_secrets),
             None,
             None,
@@ -350,11 +354,13 @@ impl Parameters {
         mask_secrets: bool,
         as_of: Option<String>,
     ) -> Result<ParameterDetailMap, ParameterError> {
+        let eval_arg = VALUES_TRUE;
         let response = projects_parameters_list(
             rest_cfg,
             proj_id,
             as_of,
             None, // cannot give an environment, or it will only get for that environment
+            eval_arg,
             Some(mask_secrets),
             Some(param_name),
             None,
@@ -524,6 +530,7 @@ impl Parameters {
             external_error: None,
             earliest_tag: None,
             interpolated: None,
+            evaluated: None,
             referenced_parameters: None,
             referenced_templates: None,
         };
