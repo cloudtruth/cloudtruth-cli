@@ -255,6 +255,15 @@ class TestCase(unittest.TestCase):
                 }
         return None
 
+    def get_current_config(self, cmd_env, property_name: str) -> Optional[str]:
+        result = self.run_cli(cmd_env, self._base_cmd + "config curr --format json")
+        self.assertResultSuccess(result)
+        profile_props = eval(result.out()).get("profile", [])
+        for prop in profile_props:
+            if prop.get("Parameter") == property_name:
+                return prop.get("Value", None)
+        return None
+
     def create_project(self, cmd_env, proj_name: str) -> Result:
         proj_cmd = self._base_cmd + f"proj set '{proj_name}' -d '{AUTO_DESCRIPTION}'"
         result = self.run_cli(cmd_env, proj_cmd)

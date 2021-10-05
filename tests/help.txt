@@ -377,7 +377,7 @@ FLAGS:
 
 SUBCOMMANDS:
     delete         Delete the parameter from the project [aliases: del, d]
-    differences    Show differences between properties from two environments [aliases: difference, differ, diff]
+    differences    Show differences between properties from two environments [aliases: difference, differ, diff, di]
     environment    Shows the environments with parameter overrides [aliases: environ, env]
     export         Export selected parameters to a known output format. Exported parameters are limited to
                    alphanumeric and underscore  in key names. Formats available are: dotenv, docker, and shell.
@@ -643,15 +643,16 @@ FLAGS:
     -V, --version    Prints version information
 
 SUBCOMMANDS:
-    delete      Delete the CloudTruth template [aliases: del, d]
-    edit        Edit the specified template [aliases: ed, e]
-    get         Get an evaluated template from CloudTruth
-    help        Prints this message or the help of the given subcommand(s)
-    history     Display template history [aliases: hist, h]
-    list        List CloudTruth templates [aliases: ls, l]
-    preview     Evaluate the provided template without storing [aliases: prev, pre]
-    set         Set the CloudTruth template [aliases: s]
-    validate    Validate a CloudTruth template [aliases: valid, val, v]
+    delete         Delete the CloudTruth template [aliases: del, d]
+    differences    Show differences between templates [aliases: difference, differ, diff, di]
+    edit           Edit the specified template [aliases: ed, e]
+    get            Get an evaluated template from CloudTruth
+    help           Prints this message or the help of the given subcommand(s)
+    history        Display template history [aliases: hist, h]
+    list           List CloudTruth templates [aliases: ls, l]
+    preview        Evaluate the provided template without storing [aliases: prev, pre]
+    set            Set the CloudTruth template [aliases: s]
+    validate       Validate a CloudTruth template [aliases: valid, val, v]
 ========================================
 cloudtruth-templates-delete 
 Delete the CloudTruth template
@@ -663,6 +664,26 @@ FLAGS:
     -y, --yes        Avoid confirmation prompt(s)
     -h, --help       Prints help information
     -V, --version    Prints version information
+
+ARGS:
+    <NAME>    Template name
+========================================
+cloudtruth-templates-differences 
+Show differences between templates
+
+USAGE:
+    cloudtruth templates differences [FLAGS] [OPTIONS] <NAME>
+
+FLAGS:
+    -h, --help       Prints help information
+    -r, --raw        Compare unevaluated template bodies
+    -s, --secrets    Compare evaluated secret values
+    -V, --version    Prints version information
+
+OPTIONS:
+    -e, --env <ENV>...               Up to two environment(s) to be compared.
+        --as-of <datetime|tag>...    Up to two times to be compared
+    -c, --context <lines>            Number of lines of difference context [default: 3]
 
 ARGS:
     <NAME>    Template name
@@ -688,7 +709,7 @@ USAGE:
 
 FLAGS:
     -h, --help       Prints help information
-    -r, --raw        Get the raw, unevaluated template text
+    -r, --raw        Display unevaluated template body
     -s, --secrets    Display secret values in evaluation
     -V, --version    Prints version information
 

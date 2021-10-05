@@ -3,6 +3,9 @@ from testcase import CT_ENV
 from testcase import PROP_MODIFIED
 from testcase import REDACTED
 
+# This definition allows us to fake-out flake8, and not have it complain about trailing whitespace.
+fake_flake8 = ""
+
 
 def empty_template(project: str) -> str:
     return f"No templates in project '{project}'"
@@ -538,4 +541,342 @@ this.is.a.template.value=PARAM1
 
         # cleanup
         self.delete_file(filename)
+        self.delete_project(cmd_env, proj_name)
+
+    # pylint: disable=trailing-whitespace
+    def test_template_diff(self):
+        base_cmd = self.get_cli_base_cmd()
+        cmd_env = self.get_cmd_env()
+
+        # add a new project
+        proj_name = self.make_name("test-template-diff")
+        self.create_project(cmd_env, proj_name)
+
+        # add a couple environments
+        env_a = self.make_name("env_a")
+        self.create_environment(cmd_env, env_a)
+        env_b = self.make_name("env-b")
+        self.create_environment(cmd_env, env_b)
+
+        # add a couple parameters
+        param1 = "param1"
+        param2 = "secret1"
+
+        # add some parameters to ENV A
+        value1a = "some_value"
+        value2a = "ssshhhh"
+        self.set_param(cmd_env, proj_name, param1, value1a, env=env_a)
+        self.set_param(cmd_env, proj_name, param2, value2a, env=env_a, secret=True)
+
+        proj_cmd = base_cmd + f"--project '{proj_name}' "
+        sub_cmd = proj_cmd + "temp "
+
+        # setup the template that references both parameters
+        body = """\
+# This us a comment common to all environments/times
+SECRET=PARAM2
+
+# this is a longer comment to
+# demonstrated that text
+# gets clipped in
+# a unified diff (by default)
+# it is not important what is here
+# just that the unified diff
+# does not show
+# every line
+# even when there
+# are
+# too
+# many
+# lines
+PARAMETER=PARAM1
+
+"""
+        temp_name = "my-template"
+        filename = self.make_name("temp-diff") + ".txt"
+        self.write_file(filename, body.replace("PARAM1", f"{{{{{param1}}}}}").replace("PARAM2", f"{{{{{param2}}}}}"))
+        result = self.run_cli(cmd_env, sub_cmd + f"set '{temp_name}'  -b '{filename}'")
+        self.assertResultSuccess(result)
+
+        # first set of comparisons
+        diff_cmd = sub_cmd + f"diff '{temp_name}' "
+        result = self.run_cli(cmd_env, diff_cmd + f"-e '{env_a}' --env '{env_b}' ")
+        self.assertResultSuccess(result)
+        self.assertEqual(result.out(), f"""\
+--- {temp_name} ({env_a} at current)
++++ {temp_name} ({env_b} at current)
+@@ -1,5 +1,5 @@
+ # This us a comment common to all environments/times
+-SECRET={REDACTED}
++SECRET=
+ {fake_flake8}
+ # this is a longer comment to
+ # demonstrated that text
+@@ -14,4 +14,4 @@
+ # too
+ # many
+ # lines
+-PARAMETER={value1a}
+\\ No newline at end of file
++PARAMETER=
+\\ No newline at end of file
+""")
+
+        # set some stuff in the current default environment
+        def_env = self.get_current_config(cmd_env, "Environment")
+        value1d = "different"
+        value2d = "be qwiet"
+        self.set_param(cmd_env, proj_name, param1, value1d)
+        self.set_param(cmd_env, proj_name, param2, value2d)
+
+        # show differences (including secrets) between default and
+        result = self.run_cli(cmd_env, diff_cmd + f"-e '{env_a}' -s ")
+        self.assertResultSuccess(result)
+        self.assertEqual(result.out(), f"""\
+--- {temp_name} ({env_a} at current)
++++ {temp_name} ({def_env} at current)
+@@ -1,5 +1,5 @@
+ # This us a comment common to all environments/times
+-SECRET={value2a}
++SECRET={value2d}
+ {fake_flake8}
+ # this is a longer comment to
+ # demonstrated that text
+@@ -14,4 +14,4 @@
+ # too
+ # many
+ # lines
+-PARAMETER={value1a}
+\\ No newline at end of file
++PARAMETER={value1d}
+\\ No newline at end of file
+""")
+
+        # now, set some different values
+        same = "matchers"
+        value2b = "im hunting wabbits"
+        self.set_param(cmd_env, proj_name, param1, same, env=env_a)
+        self.set_param(cmd_env, proj_name, param1, same, env=env_b)
+        self.set_param(cmd_env, proj_name, param2, value2b, env=env_b)
+
+        # set to have more context than the file
+        result = self.run_cli(cmd_env, diff_cmd + f"-e '{env_a}' -e '{env_b}' -s --context 1000")
+        self.assertResultSuccess(result)
+        self.assertEqual(result.out(), f"""\
+--- {temp_name} ({env_a} at current)
++++ {temp_name} ({env_b} at current)
+@@ -1,17 +1,17 @@
+ # This us a comment common to all environments/times
+-SECRET={value2a}
++SECRET={value2b}
+ {fake_flake8}
+ # this is a longer comment to
+ # demonstrated that text
+ # gets clipped in
+ # a unified diff (by default)
+ # it is not important what is here
+ # just that the unified diff
+ # does not show
+ # every line
+ # even when there
+ # are
+ # too
+ # many
+ # lines
+ PARAMETER={same}
+\\ No newline at end of file
+""")
+
+        # raw: no differences between environments
+        result = self.run_cli(cmd_env, diff_cmd + f"-e '{env_a}' -e '{env_b}' --raw")
+        self.assertResultSuccess(result)
+        self.assertEqual(result.out(), "")
+
+        # raw: no differences between environments, even with lots of context
+        result = self.run_cli(cmd_env, diff_cmd + f"-e '{env_a}' -e '{env_b}' -r -c 100")
+        self.assertResultSuccess(result)
+        self.assertEqual(result.out(), "")
+
+        # get the original modified date
+        result = self.run_cli(cmd_env, proj_cmd + "temp ls --show-times -f json")
+        self.assertResultSuccess(result)
+        item = eval(result.out()).get("template")[0]
+        modified_at = item.get(PROP_MODIFIED)
+
+        #####################
+        # Update the template
+        body = f"""\
+# This us a comment common to all environments/times
+SECRET={{{{{param2}}}}}
+PARAMETER={{{{{param1}}}}}
+
+"""
+        self.write_file(filename, body)
+        result = self.run_cli(cmd_env, proj_cmd + f"temp set '{temp_name}' -b '{filename}'")
+        self.assertResultSuccess(result)
+
+        #####################
+        # check with the time
+        result = self.run_cli(cmd_env, diff_cmd + f"--as-of {modified_at} --raw")
+        self.assertResultSuccess(result)
+        self.assertEqual(result.out(), f"""\
+--- {temp_name} ({def_env} at {modified_at})
++++ {temp_name} ({def_env} at current)
+@@ -1,17 +1,3 @@
+ # This us a comment common to all environments/times
+ SECRET={{{{{param2}}}}}
+-
+-# this is a longer comment to
+-# demonstrated that text
+-# gets clipped in
+-# a unified diff (by default)
+-# it is not important what is here
+-# just that the unified diff
+-# does not show
+-# every line
+-# even when there
+-# are
+-# too
+-# many
+-# lines
+ PARAMETER={{{{{param1}}}}}
+\\ No newline at end of file
+""")
+
+        result = self.run_cli(cmd_env, diff_cmd + f"--as-of {modified_at} --env {env_a} -s")
+        self.assertResultSuccess(result)
+        self.assertEqual(result.out(), f"""\
+--- {temp_name} ({env_a} at {modified_at})
++++ {temp_name} ({def_env} at current)
+@@ -1,17 +1,3 @@
+ # This us a comment common to all environments/times
+-SECRET={value2a}
+-
+-# this is a longer comment to
+-# demonstrated that text
+-# gets clipped in
+-# a unified diff (by default)
+-# it is not important what is here
+-# just that the unified diff
+-# does not show
+-# every line
+-# even when there
+-# are
+-# too
+-# many
+-# lines
+-PARAMETER={value1a}
+\\ No newline at end of file
++SECRET={value2d}
++PARAMETER={value1d}
+\\ No newline at end of file
+""")
+
+        #####################
+        # Tag testing
+        tag_name = "my-tag"
+        result = self.run_cli(cmd_env, proj_cmd + f"env tag set {env_b} {tag_name}")
+        self.assertResultSuccess(result)
+
+        # compare a tag in one environment
+        result = self.run_cli(cmd_env, diff_cmd + f"-e {env_b} --as-of {tag_name}")
+        self.assertResultSuccess(result)
+        self.assertEqual(result.out(), f"""\
+--- {temp_name} ({env_b} at {tag_name})
++++ {temp_name} ({def_env} at current)
+@@ -1,3 +1,3 @@
+ # This us a comment common to all environments/times
+ SECRET={REDACTED}
+-PARAMETER={same}
+\\ No newline at end of file
++PARAMETER={value1d}
+\\ No newline at end of file
+""")
+
+        # see no differences between tag now in env_b
+        result = self.run_cli(cmd_env, diff_cmd + f"-e {env_b} --as-of {tag_name} -e {env_b}")
+        self.assertResultSuccess(result)
+        self.assertEqual(result.out(), "")
+
+        # compare tag and times with different environments
+        future = "2024-10-12"
+        diff_args = f"-s --env {env_b} --as-of {tag_name} --env {env_a} --as-of {future}"
+        result = self.run_cli(cmd_env, diff_cmd + diff_args)
+        self.assertResultSuccess(result)
+        self.assertEqual(result.out(), f"""\
+--- {temp_name} ({env_b} at {tag_name})
++++ {temp_name} ({env_a} at {future})
+@@ -1,3 +1,3 @@
+ # This us a comment common to all environments/times
+-SECRET={value2b}
++SECRET={value2a}
+ PARAMETER={same}
+\\ No newline at end of file
+""")
+
+        #####################
+        # Error cases
+
+        # TODO: fix unknown template -- should produce an error
+        unknown_template = "my-missing-temp"
+        result = self.run_cli(cmd_env, sub_cmd + f"diff {unknown_template} --env {env_a}")
+        self.assertResultSuccess(result)
+        self.assertEqual(result.out(), "")
+
+        result = self.run_cli(cmd_env, diff_cmd + f"-c foo --env {env_a}")
+        self.assertResultError(result, "invalid digit found in string")
+
+        bad_tag = "no-such-tag"
+        tag_err = f"Tag `{bad_tag}` could not be found in environment `{env_b}`"
+        result = self.run_cli(cmd_env, diff_cmd + f"-e {env_b} --as-of {bad_tag} -e {env_b}")
+        self.assertResultError(result, tag_err)
+
+        # env/tag mismatch
+        tag_err = f"Tag `{tag_name}` could not be found in environment `{env_a}`"
+        result = self.run_cli(cmd_env, diff_cmd + f"-e {env_a} --as-of {tag_name}")
+        self.assertResultError(result, tag_err)
+
+        # before the project exists
+        no_proj_err = "No HistoricalProject matches the given query"
+        result = self.run_cli(cmd_env, sub_cmd + f"difference '{temp_name}' --as-of 2021-01-20")
+        self.assertResultError(result, no_proj_err)
+
+        # no comparing to yourself
+        result = self.run_cli(cmd_env, sub_cmd + f"difference '{temp_name}'")
+        self.assertResultWarning(result, "Invalid comparing an environment to itself")
+
+        # even when a non-existing template
+        result = self.run_cli(cmd_env, sub_cmd + "difference 'does-not-exist'")
+        self.assertResultWarning(result, "Invalid comparing an environment to itself")
+
+        matched_envs = f"-e '{env_a}' " * 2
+        result = self.run_cli(cmd_env, sub_cmd + f"difference '{temp_name}' {matched_envs}")
+        self.assertResultWarning(result, "Invalid comparing an environment to itself")
+
+        matched_times = "--as-of 2021-08-27 " * 2
+        result = self.run_cli(cmd_env, sub_cmd + f"difference '{temp_name}' {matched_times}")
+        self.assertResultWarning(result, "Invalid comparing an environment to itself")
+
+        result = self.run_cli(cmd_env, sub_cmd + f"difference '{temp_name}' {matched_times} {matched_envs}")
+        self.assertResultWarning(result, "Invalid comparing an environment to itself")
+
+        # first environment DNE
+        result = self.run_cli(cmd_env, sub_cmd + f"differ '{temp_name}' -e 'charlie-foxtrot' -e '{env_b}'")
+        self.assertResultError(result, "Did not find environment 'charlie-foxtrot'")
+
+        # second environment DNE
+        result = self.run_cli(cmd_env, sub_cmd + f"differences '{temp_name}' -e '{env_a}' -e 'missing'")
+        self.assertResultError(result, "Did not find environment 'missing'")
+
+        # too many specified
+        result = self.run_cli(cmd_env, sub_cmd + f"diff '{temp_name}' -e env1 --env env2 -e env3")
+        self.assertResultWarning(result, "Can specify a maximum of 2 environment values")
+
+        as_of = "--as-of 2021-08-01 --as-of 2021-08-02 --as-of 2021-08-03"
+        result = self.run_cli(cmd_env, sub_cmd + f"diff '{temp_name}' {as_of}")
+        self.assertResultWarning(result, "Can specify a maximum of 2 as-of values")
+
+        # cleanup
+        self.delete_environment(cmd_env, env_a)
+        self.delete_environment(cmd_env, env_b)
         self.delete_project(cmd_env, proj_name)
