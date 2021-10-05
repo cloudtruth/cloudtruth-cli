@@ -27,9 +27,9 @@ fn proc_template_delete(
     let proj_name = resolved.project_display_name();
     let proj_id = resolved.project_id();
     let template_name = subcmd_args.value_of(NAME_ARG).unwrap();
-    let details = templates.get_details_by_name(rest_cfg, proj_id, template_name)?;
+    let response = templates.get_details_by_name(rest_cfg, &proj_name, proj_id, template_name);
 
-    if let Some(details) = details {
+    if let Ok(details) = response {
         let mut confirmed = subcmd_args.is_present(CONFIRM_FLAG);
         if !confirmed {
             confirmed = user_confirm(
@@ -71,31 +71,24 @@ fn proc_template_edit(
     let proj_name = resolved.project_display_name();
     let proj_id = resolved.project_id();
     let template_name = subcmd_args.value_of(NAME_ARG).unwrap();
-    let result = templates.get_unevaluated_details(rest_cfg, proj_id, template_name)?;
-
-    if let Some(details) = result {
-        let new_body = edit::edit(details.body.as_bytes())?;
-        if new_body != details.body {
-            templates.update_template(
-                rest_cfg,
-                proj_id,
-                &details.id,
-                template_name,
-                None,
-                Some(&new_body),
-            )?;
-            println!(
-                "Updated template '{}' in project '{}'",
-                template_name, proj_name
-            );
-        } else {
-            println!("Nothing to update in template '{}'", template_name);
-        }
-    } else {
+    let details =
+        templates.get_unevaluated_details(rest_cfg, &proj_name, proj_id, template_name)?;
+    let new_body = edit::edit(details.body.as_bytes())?;
+    if new_body != details.body {
+        templates.update_template(
+            rest_cfg,
+            proj_id,
+            &details.id,
+            template_name,
+            None,
+            Some(&new_body),
+        )?;
         println!(
-            "Template '{}' does not exist for project '{}'",
+            "Updated template '{}' in project '{}'",
             template_name, proj_name
         );
+    } else {
+        println!("Nothing to update in template '{}'", template_name);
     }
     Ok(())
 }
@@ -150,6 +143,7 @@ fn proc_template_list(
 fn get_template_body(
     rest_cfg: &OpenApiConfig,
     templates: &Templates,
+    proj_name: &str,
     proj_id: &str,
     template_name: &str,
     env_id: &str,
@@ -169,37 +163,40 @@ fn get_template_body(
     let mut body: Option<String> = None;
     if when.is_some() {
         // If have a time, get the body from historical records.
-        let detail_resp = templates.get_details_by_name(rest_cfg, proj_id, template_name)?;
-        if let Some(details) = detail_resp {
-            let hist_list =
-                templates.get_history_for(rest_cfg, proj_id, &details.id, when.clone(), None)?;
-            if !hist_list.is_empty() {
-                let item = &hist_list[0];
-                if raw {
-                    body = Some(item.body.clone())
-                } else {
-                    // use the preview to evaluate at that point in time
-                    let preview = templates.preview_template(
-                        rest_cfg,
-                        proj_id,
-                        env_id,
-                        &item.body,
-                        show_secrets,
-                        when,
-                        None,
-                    )?;
-                    body = Some(preview);
-                }
+        let details = templates.get_details_by_name(rest_cfg, proj_name, proj_id, template_name)?;
+        let hist_list =
+            templates.get_history_for(rest_cfg, proj_id, &details.id, when.clone(), None)?;
+        if !hist_list.is_empty() {
+            let item = &hist_list[0];
+            if raw {
+                body = Some(item.body.clone())
+            } else {
+                // use the preview to evaluate at that point in time
+                let preview = templates.preview_template(
+                    rest_cfg,
+                    proj_id,
+                    env_id,
+                    &item.body,
+                    show_secrets,
+                    when,
+                    None,
+                )?;
+                body = Some(preview);
             }
         }
     } else if raw {
-        let response = templates.get_unevaluated_details(rest_cfg, proj_id, template_name)?;
-        if let Some(details) = response {
-            body = Some(details.body);
-        }
+        let details =
+            templates.get_unevaluated_details(rest_cfg, proj_name, proj_id, template_name)?;
+        body = Some(details.body);
     } else {
-        body =
-            templates.get_body_by_name(rest_cfg, proj_id, env_id, template_name, show_secrets)?;
+        body = templates.get_body_by_name(
+            rest_cfg,
+            proj_name,
+            proj_id,
+            env_id,
+            template_name,
+            show_secrets,
+        )?;
     }
     Ok(body)
 }
@@ -223,6 +220,7 @@ fn proc_template_get(
     let body = get_template_body(
         rest_cfg,
         templates,
+        &proj_name,
         proj_id,
         template_name,
         env_id,
@@ -255,6 +253,7 @@ fn proc_template_diff(
     let template_name = subcmd_args.value_of(NAME_ARG).unwrap();
     let context = subcmd_args.value_of("lines").unwrap().parse::<usize>()?;
     let proj_id = resolved.project_id();
+    let proj_name = resolved.project_display_name();
     let as_list: Vec<&str> = subcmd_args
         .values_of(AS_OF_ARG)
         .unwrap_or_default()
@@ -337,6 +336,7 @@ fn proc_template_diff(
     let body1 = get_template_body(
         rest_cfg,
         templates,
+        &proj_name,
         proj_id,
         template_name,
         &env1_id,
@@ -350,6 +350,7 @@ fn proc_template_diff(
     let body2 = get_template_body(
         rest_cfg,
         templates,
+        &proj_name,
         proj_id,
         template_name,
         &env2_id,
@@ -401,9 +402,9 @@ fn proc_template_set(
     let template_name = subcmd_args.value_of(NAME_ARG).unwrap();
     let rename = subcmd_args.value_of(RENAME_OPT);
     let description = subcmd_args.value_of(DESCRIPTION_OPT);
-    let details = templates.get_details_by_name(rest_cfg, proj_id, template_name)?;
+    let response = templates.get_details_by_name(rest_cfg, &proj_name, proj_id, template_name);
 
-    if let Some(details) = details {
+    if let Ok(details) = response {
         if description.is_none() && rename.is_none() && filename.is_none() {
             warning_message(format!(
                 "Template '{}' not updated: no updated parameters provided",
@@ -503,15 +504,8 @@ fn proc_template_history(
         let template_id;
         modifier = format!("for '{}' ", temp_name);
         add_name = false;
-        if let Some(details) = templates.get_details_by_name(rest_cfg, proj_id, temp_name)? {
-            template_id = details.id;
-        } else {
-            error_message(format!(
-                "Did not find '{}' in project '{}'",
-                temp_name, proj_name
-            ))?;
-            process::exit(13);
-        }
+        let details = templates.get_details_by_name(rest_cfg, &proj_name, proj_id, temp_name)?;
+        template_id = details.id;
         history = templates.get_history_for(rest_cfg, proj_id, &template_id, as_of, tag)?;
     } else {
         modifier = "".to_string();
@@ -564,8 +558,14 @@ fn proc_template_validate(
     let template_name = subcmd_args.value_of(NAME_ARG).unwrap();
     let show_secrets = true; // make sure we're completely evaluating
 
-    let response =
-        templates.get_body_by_name(rest_cfg, proj_id, env_id, template_name, show_secrets)?;
+    let response = templates.get_body_by_name(
+        rest_cfg,
+        &proj_name,
+        proj_id,
+        env_id,
+        template_name,
+        show_secrets,
+    )?;
     if response.is_some() {
         println!("Success");
     } else {

@@ -9,6 +9,7 @@ pub enum TemplateError {
     EvaluateFailed(TemplateLookupError),
     UnhandledError(String),
     ResponseError(String),
+    NotFound(String, String),
 }
 
 pub fn template_eval_errors(tle: &TemplateLookupError) -> String {
@@ -33,6 +34,11 @@ impl fmt::Display for TemplateError {
             TemplateError::EvaluateFailed(tle) => {
                 write!(f, "Evaluation failed:{}", template_eval_errors(tle))
             }
+            TemplateError::NotFound(template, project) => write!(
+                f,
+                "No template '{}' found in project '{}'",
+                template, project
+            ),
         }
     }
 }

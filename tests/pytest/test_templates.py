@@ -537,7 +537,7 @@ this.is.a.template.value=PARAM1
 
         # now that it is deleted, see that we fail to resolve the template name
         result = self.run_cli(cmd_env, temp_cmd + f"history '{temp1}'")
-        self.assertResultError(result, f"Did not find '{temp1}' in project '{proj_name}'")
+        self.assertResultError(result, f"No template '{temp1}' found in project '{proj_name}'")
 
         # cleanup
         self.delete_file(filename)
@@ -817,11 +817,10 @@ PARAMETER={{{{{param1}}}}}
         #####################
         # Error cases
 
-        # TODO: fix unknown template -- should produce an error
         unknown_template = "my-missing-temp"
+        temp_err = f"No template '{unknown_template}' found in project '{proj_name}'"
         result = self.run_cli(cmd_env, sub_cmd + f"diff {unknown_template} --env {env_a}")
-        self.assertResultSuccess(result)
-        self.assertEqual(result.out(), "")
+        self.assertResultError(result, temp_err)
 
         result = self.run_cli(cmd_env, diff_cmd + f"-c foo --env {env_a}")
         self.assertResultError(result, "invalid digit found in string")
