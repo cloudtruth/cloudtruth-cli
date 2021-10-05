@@ -30,6 +30,9 @@ env:
   CLOUDTRUTH_TEST_PARAMETERS_FQN: github://rickporter-tuono/cloudtruth_test/my-branch/short.yaml
   CLOUDTRUTH_TEST_PARAMETERS_JMES: speicla.POrk_Egg_Foo_Young
 
+  CLOUDTRUTH_TEST_TEMPLATE_FQN: github://rickporter-tuono/cloudtruth_test/main/ci_test_template.txt
+  CLOUDTRUTH_TEST_TEMPLATE_PARAM1: my-param-name
+
 jobs:
   lint:
     name: Lint

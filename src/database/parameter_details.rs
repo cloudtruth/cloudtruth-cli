@@ -23,6 +23,8 @@ pub struct ParameterDetails {
     pub external: bool,
     pub fqn: String,
     pub jmes_path: String,
+    pub evaluated: bool,
+    pub raw_value: String, // the unevaluated value
     pub created_at: String,
     pub modified_at: String,
 
@@ -43,6 +45,19 @@ impl ParameterDetails {
             "secret" => format!("{}", self.secret),
             "created-at" => self.created_at.clone(),
             "modified-at" => self.modified_at.clone(),
+            "rule-count" => self.rules.len().to_string(),
+            "raw" => self.raw_value.clone(),
+            "scope" => {
+                let mut scope = String::from(if self.external {
+                    "external"
+                } else {
+                    "internal"
+                });
+                if self.evaluated {
+                    scope.push_str("-evaluated");
+                }
+                scope
+            }
             _ => format!("Unhandled property name '{}'", property_name),
         }
     }
@@ -61,6 +76,8 @@ impl ParameterDetails {
         self.external = env_value.external.unwrap_or(false);
         self.fqn = env_value.external_fqn.clone().unwrap_or_default();
         self.jmes_path = env_value.external_filter.clone().unwrap_or_default();
+        self.evaluated = env_value.interpolated.unwrap_or(false);
+        self.raw_value = env_value.internal_value.clone().unwrap_or_default();
         self.created_at = env_value.created_at.clone();
         self.modified_at = env_value.modified_at.clone();
         self.error = env_value.external_error.clone().unwrap_or_default();
@@ -95,6 +112,8 @@ impl Default for ParameterDetails {
             external: false,
             fqn: "".to_string(),
             jmes_path: "".to_string(),
+            evaluated: false,
+            raw_value: "".to_string(),
             created_at: "".to_string(),
             modified_at: "".to_string(),
             error: "".to_string(),
@@ -154,6 +173,8 @@ impl From<&Parameter> for ParameterDetails {
             external: env_value.external.unwrap_or(false),
             fqn: env_value.external_fqn.clone().unwrap_or_default(),
             jmes_path: env_value.external_filter.clone().unwrap_or_default(),
+            evaluated: env_value.interpolated.unwrap_or(false),
+            raw_value: env_value.internal_value.clone().unwrap_or_default(),
             created_at: env_value.created_at.clone(),
             modified_at: env_value.modified_at.clone(),
 

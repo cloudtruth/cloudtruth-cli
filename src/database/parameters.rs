@@ -38,6 +38,10 @@ fn param_value_error(content: &str) -> ParameterError {
         if let Some(item) = value.get("detail") {
             return ParameterError::UnhandledError(extract_from_json(item));
         }
+        // template evaluation failures seems to produce an array of strings...
+        if value.is_array() {
+            return ParameterError::EvaluationError(extract_from_json(&value));
+        }
     }
     ParameterError::UnhandledError(content.to_string())
 }
@@ -472,6 +476,7 @@ impl Parameters {
         value: Option<&str>,
         fqn: Option<&str>,
         jmes_path: Option<&str>,
+        evaluated: Option<bool>,
     ) -> Result<String, ParameterError> {
         let external = value.is_none() || fqn.is_some();
         let value_create = ValueCreate {
@@ -480,7 +485,7 @@ impl Parameters {
             internal_value: value.map(|v| v.to_string()),
             external_fqn: fqn.map(|v| v.to_string()),
             external_filter: jmes_path.map(|v| v.to_string()),
-            interpolated: None,
+            interpolated: evaluated,
         };
         let response = projects_parameters_values_create(
             rest_cfg,
@@ -511,6 +516,7 @@ impl Parameters {
         value: Option<&str>,
         fqn: Option<&str>,
         jmes_path: Option<&str>,
+        evaluated: Option<bool>,
     ) -> Result<String, ParameterError> {
         let external = fqn.is_some() || jmes_path.is_some();
         let value_update = PatchedValue {
@@ -529,7 +535,7 @@ impl Parameters {
             modified_at: None,
             external_error: None,
             earliest_tag: None,
-            interpolated: None,
+            interpolated: evaluated,
             evaluated: None,
             referenced_parameters: None,
             referenced_templates: None,

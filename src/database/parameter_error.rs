@@ -9,6 +9,7 @@ pub enum ParameterError {
     RuleError(String, String),
     UnhandledError(String),
     ResponseError(String),
+    EvaluationError(String),
 }
 
 impl fmt::Display for ParameterError {
@@ -28,6 +29,9 @@ impl fmt::Display for ParameterError {
             }
             ParameterError::ResponseError(msg) => {
                 write!(f, "{}", msg)
+            }
+            ParameterError::EvaluationError(msg) => {
+                write!(f, "Evaluation error: {}", msg)
             }
         }
     }
