@@ -3,7 +3,6 @@ import unittest
 from typing import List
 
 from testcase import TestCase
-from testcase import DEFAULT_PARAM_VALUE
 from testcase import PROP_NAME
 from testcase import PROP_TYPE
 from testcase import PROP_VALUE
@@ -309,27 +308,7 @@ PARAMETER_2 = PARAM2
         result = self.run_cli(cmd_env, proj_cmd + "param export docker")
         self.assertResultError(result, missing_fqn2)
 
-        ##########################
-        # parameter reference checks
-        param4 = "param4"
-        value4 = f"{{{{ {param2} }}}}"
-        self.set_param(cmd_env, proj_name, param4, value=value4, evaluate=True)
-
-        missing_param4 = f"{param4}: {missing_fqn2}"
-        result = self.run_cli(cmd_env, proj_cmd + "param ls -v -f csv")
-        self.assertResultWarning(result, missing_param2)
-        # TODO: this warning should also be present (in some form)
-        # self.assertIn(missing_param4, result.err())
-        self.assertIn(f"{param2},,", result.out())
-        self.assertIn(f"{param4},,", result.out())
-
-        result = self.run_cli(cmd_env, proj_cmd + f"param get '{param4}' --details")
-        self.assertResultWarning(result, missing_param4)
-        self.assertNotIn(missing_param2, result.out())
-        # TODO: this should be the evaluated version (a bit further below)
-        self.assertIn(f"Raw: {{{{ {param2} }}}}", result.out())
-        # self.assertIn(f"Raw: {value4}", result.out())
-        self.assertIn(f"Value: {DEFAULT_PARAM_VALUE}", result.out())
+        # TODO: "add" param4 with reference to param3, see values passed bck
 
         ##########################
         # template checks
