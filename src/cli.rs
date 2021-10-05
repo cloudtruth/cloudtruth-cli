@@ -11,6 +11,7 @@ pub const ENV_NAME_ARG: &str = "env-name";
 pub const FORMAT_OPT: &str = "format";
 pub const KEY_ARG: &str = "KEY";
 pub const NAME_ARG: &str = "NAME";
+pub const RAW_FLAG: &str = "raw";
 pub const RENAME_OPT: &str = "rename";
 pub const SHOW_TIMES_FLAG: &str = "show-time";
 pub const SECRETS_FLAG: &str = "secrets";
@@ -19,6 +20,7 @@ pub const TEMPLATE_FILE_OPT: &str = "FILE";
 pub const VALUES_FLAG: &str = "values";
 
 pub const DELETE_SUBCMD: &str = "delete";
+pub const DIFF_SUBCMD: &str = "differences";
 pub const EDIT_SUBCMD: &str = "edit";
 pub const GET_SUBCMD: &str = "get";
 pub const HISTORY_SUBCMD: &str = "history";
@@ -27,6 +29,7 @@ pub const SET_SUBCMD: &str = "set";
 pub const TAG_SUBCMD: &str = "tag";
 
 const DELETE_ALIASES: &[&str] = &["del", "d"];
+const DIFF_ALIASES: &[&str] = &["difference", "differ", "diff", "di"];
 const EDIT_ALIASES: &[&str] = &["ed", "e"];
 const HISTORY_ALIASES: &[&str] = &["hist", "h"];
 const LIST_ALIASES: &[&str] = &["ls", "l"];
@@ -112,6 +115,15 @@ fn env_name_arg() -> Arg<'static, 'static> {
         .help("Environment name")
 }
 
+fn multi_env_name_arg() -> Arg<'static, 'static> {
+    Arg::with_name("ENV")
+        .short("e")
+        .long("env")
+        .takes_value(true)
+        .multiple(true)
+        .help("Up to two environment(s) to be compared.")
+}
+
 fn tag_name_arg() -> Arg<'static, 'static> {
     Arg::with_name(TAG_NAME_ARG)
         .takes_value(true)
@@ -126,6 +138,10 @@ fn api_key_arg() -> Arg<'static, 'static> {
         .long("api-key")
         .help("CloudTruth API key")
         .takes_value(true)
+}
+
+fn raw_template_arg() -> Arg<'static, 'static> {
+    Arg::with_name(RAW_FLAG).short("r").long("raw")
 }
 
 pub fn build_cli() -> App<'static, 'static> {
@@ -469,16 +485,10 @@ pub fn build_cli() -> App<'static, 'static> {
                         .about(concat!("Remove a value/override from the selected ",
                             "project/environment and leaves the parameter in place."))
                         .arg(key_arg().help("Name of parameter to unset")),
-                    SubCommand::with_name("differences")
-                        .visible_aliases(&["difference", "differ", "diff"])
+                    SubCommand::with_name(DIFF_SUBCMD)
+                        .visible_aliases(DIFF_ALIASES)
                         .about("Show differences between properties from two environments")
-                        .arg(Arg::with_name("ENV")
-                            .short("e")
-                            .long("env")
-                            .takes_value(true)
-                            .multiple(true)
-                            .help("Up to two environment(s) to be compared.")
-                        )
+                        .arg(multi_env_name_arg())
                         .arg(Arg::with_name("properties")
                             .short("p")
                             .long("property")
@@ -511,16 +521,27 @@ pub fn build_cli() -> App<'static, 'static> {
                     .about("Delete the CloudTruth template")
                     .arg(confirm_flag())
                     .arg(name_arg().help("Template name")),
+                SubCommand::with_name(DIFF_SUBCMD)
+                    .visible_aliases(DIFF_ALIASES)
+                    .arg(name_arg().help("Template name"))
+                    .arg(Arg::with_name("lines")
+                        .long("context")
+                        .short("c")
+                        .takes_value(true)
+                        .default_value("3")
+                        .help("Number of lines of difference context"))
+                    .arg(secrets_display_flag().help("Compare evaluated secret values"))
+                    .arg(raw_template_arg().help("Compare unevaluated template bodies"))
+                    .arg(multi_env_name_arg())
+                    .arg(as_of_arg().multiple(true).help("Up to two times to be compared"))
+                    .about("Show differences between templates"),
                 SubCommand::with_name(EDIT_SUBCMD)
                     .visible_aliases(EDIT_ALIASES)
                     .about("Edit the specified template")
                     .arg(name_arg().help("Template name")),
                 SubCommand::with_name(GET_SUBCMD)
                     .about("Get an evaluated template from CloudTruth")
-                    .arg(Arg::with_name("raw")
-                        .short("r")
-                        .long("raw")
-                        .help("Get the raw, unevaluated template text"))
+                    .arg(raw_template_arg().help("Display unevaluated template body"))
                     .arg(as_of_arg().help(" Date/time (or tag) of template (and parameters)"))
                     .arg(secrets_display_flag().help("Display secret values in evaluation"))
                     .arg(name_arg().help("Template name")),

@@ -54,6 +54,7 @@ serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0.64"
 serde_yaml = "0.8"
 sha2 = "0.9.5"
+similar = "2.0.0"
 subprocess = "0.1"
 termcolor = "1.1"
 webbrowser = "0.5.5"

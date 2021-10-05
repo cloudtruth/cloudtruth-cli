@@ -25,43 +25,40 @@ impl Templates {
     pub fn get_body_by_name(
         &self,
         rest_cfg: &OpenApiConfig,
+        proj_name: &str,
         proj_id: &str,
         env_id: &str,
         template_name: &str,
         show_secrets: bool,
     ) -> Result<Option<String>, TemplateError> {
         // TODO: convert template name to template id outside??
-        let response = self.get_details_by_name(rest_cfg, proj_id, template_name);
-
-        if let Ok(Some(details)) = response {
-            let response = projects_templates_retrieve(
-                rest_cfg,
-                &details.id,
-                proj_id,
-                Some(env_id),
-                Some(!show_secrets),
-            );
-            match response {
-                Ok(r) => Ok(r.body),
-                Err(ResponseError(ref content)) => match &content.entity {
-                    Some(ProjectsTemplatesRetrieveError::Status422(tle)) => {
-                        Err(TemplateError::EvaluateFailed(tle.clone()))
-                    }
-                    _ => Err(response_error(&content.status, &content.content)),
-                },
-                Err(e) => Err(TemplateError::UnhandledError(e.to_string())),
-            }
-        } else {
-            Ok(None)
+        let details = self.get_details_by_name(rest_cfg, proj_name, proj_id, template_name)?;
+        let response = projects_templates_retrieve(
+            rest_cfg,
+            &details.id,
+            proj_id,
+            Some(env_id),
+            Some(!show_secrets),
+        );
+        match response {
+            Ok(r) => Ok(r.body),
+            Err(ResponseError(ref content)) => match &content.entity {
+                Some(ProjectsTemplatesRetrieveError::Status422(tle)) => {
+                    Err(TemplateError::EvaluateFailed(tle.clone()))
+                }
+                _ => Err(response_error(&content.status, &content.content)),
+            },
+            Err(e) => Err(TemplateError::UnhandledError(e.to_string())),
         }
     }
 
     pub fn get_unevaluated_details(
         &self,
         rest_cfg: &OpenApiConfig,
+        proj_name: &str,
         proj_id: &str,
         template_name: &str,
-    ) -> Result<Option<TemplateDetails>, TemplateError> {
+    ) -> Result<TemplateDetails, TemplateError> {
         // Currently, the only way to get the unevaluated body is to list the templates.
         let response =
             projects_templates_list(rest_cfg, proj_id, Some(template_name), None, PAGE_SIZE);
@@ -70,14 +67,19 @@ impl Templates {
             Ok(data) => match data.results {
                 Some(list) => {
                     if list.is_empty() {
-                        Ok(None)
+                        Err(TemplateError::NotFound(
+                            template_name.to_string(),
+                            proj_name.to_string(),
+                        ))
                     } else {
-                        // TODO: handle more than one??
                         let template = &list[0];
-                        Ok(Some(TemplateDetails::from(template)))
+                        Ok(TemplateDetails::from(template))
                     }
                 }
-                _ => Ok(None),
+                _ => Err(TemplateError::NotFound(
+                    template_name.to_string(),
+                    proj_name.to_string(),
+                )),
             },
             Err(ResponseError(ref content)) => match content.status.as_u16() {
                 401 => Err(auth_error(&content.content)),
@@ -91,23 +93,29 @@ impl Templates {
     pub fn get_details_by_name(
         &self,
         rest_cfg: &OpenApiConfig,
+        proj_name: &str,
         proj_id: &str,
         template_name: &str,
-    ) -> Result<Option<TemplateDetails>, TemplateError> {
+    ) -> Result<TemplateDetails, TemplateError> {
         let response =
             projects_templates_list(rest_cfg, proj_id, Some(template_name), None, PAGE_SIZE);
         match response {
             Ok(data) => match data.results {
                 Some(templates) => {
                     if templates.is_empty() {
-                        Ok(None)
+                        Err(TemplateError::NotFound(
+                            template_name.to_string(),
+                            proj_name.to_string(),
+                        ))
                     } else {
-                        // TODO: handle more than one?
                         let template = &templates[0];
-                        Ok(Some(TemplateDetails::from(template)))
+                        Ok(TemplateDetails::from(template))
                     }
                 }
-                None => Ok(None),
+                None => Err(TemplateError::NotFound(
+                    template_name.to_string(),
+                    proj_name.to_string(),
+                )),
             },
             Err(ResponseError(ref content)) => {
                 Err(response_error(&content.status, &content.content))

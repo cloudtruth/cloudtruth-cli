@@ -1,6 +1,7 @@
 use crate::cli::{
-    binary_name, AS_OF_ARG, CONFIRM_FLAG, DELETE_SUBCMD, DESCRIPTION_OPT, FORMAT_OPT, GET_SUBCMD,
-    KEY_ARG, LIST_SUBCMD, RENAME_OPT, SECRETS_FLAG, SET_SUBCMD, SHOW_TIMES_FLAG, VALUES_FLAG,
+    binary_name, AS_OF_ARG, CONFIRM_FLAG, DELETE_SUBCMD, DESCRIPTION_OPT, DIFF_SUBCMD, FORMAT_OPT,
+    GET_SUBCMD, KEY_ARG, LIST_SUBCMD, RENAME_OPT, SECRETS_FLAG, SET_SUBCMD, SHOW_TIMES_FLAG,
+    VALUES_FLAG,
 };
 use crate::config::DEFAULT_ENV_NAME;
 use crate::database::{
@@ -914,7 +915,7 @@ pub fn process_parameters_command(
         proc_param_export(subcmd_args, rest_cfg, parameters, resolved)?;
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("unset") {
         proc_param_unset(subcmd_args, rest_cfg, parameters, resolved)?;
-    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("differences") {
+    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(DIFF_SUBCMD) {
         proc_param_diff(subcmd_args, rest_cfg, parameters, resolved)?;
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("environment") {
         proc_param_env(subcmd_args, rest_cfg, parameters, resolved)?;
