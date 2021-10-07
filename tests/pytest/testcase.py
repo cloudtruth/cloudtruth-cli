@@ -39,7 +39,10 @@ DEFAULT_PARAM_VALUE = "-"
 # properties
 PROP_CREATED = "Created At"
 PROP_MODIFIED = "Modified At"
+PROP_NAME = "Name"
+PROP_TYPE = "Type"
 PROP_VALUE = "Value"
+PROP_RAW = "Raw"
 
 
 def get_cli_base_cmd() -> str:
@@ -166,7 +169,7 @@ class TestCase(unittest.TestCase):
         """
         This is a convenience method to check the return code, and error output.
         """
-        # check the error message is emtpty first, since it gives the most info about a failure
+        # check the error message is empty first, since it gives the most info about a failure
         self.assertEqual(result.err(), "")
         self.assertEqual(result.return_value, 0)
 
@@ -294,22 +297,33 @@ class TestCase(unittest.TestCase):
             cmd_env,
             proj: str,
             name: str,
-            value: str,
+            value: Optional[str] = None,
             secret: Optional[bool] = None,
             env: Optional[str] = None,
             desc: Optional[str] = None,
-            param_type: Optional[str] = None
+            param_type: Optional[str] = None,
+            fqn: Optional[str] = None,
+            jmes: Optional[str] = None,
+            evaluate: Optional[bool] = None,
     ) -> Result:
         cmd = self._base_cmd + f"--project '{proj}' "
         if env:
             cmd += f"--env '{env}' "
-        cmd += f"param set '{name}' --value '{value}' "
+        cmd += f"param set '{name}' "
+        if value:
+            cmd += f"--value '{value}' "
         if secret is not None:
             cmd += f"--secret '{str(secret).lower()}' "
         if desc:
             cmd += f"--desc '{desc}' "
         if param_type:
             cmd += f"--type '{param_type}' "
+        if fqn:
+            cmd += f"--fqn '{fqn}' "
+        if jmes:
+            cmd += f"--jmes '{jmes}' "
+        if evaluate is not None:
+            cmd += f"--evaluate '{str(evaluate).lower()}' "
         result = self.run_cli(cmd_env, cmd)
         self.assertResultSuccess(result)
         return result
@@ -383,3 +397,42 @@ class TestCase(unittest.TestCase):
         result = self.run_cli(cmd_env, cmd)
         self.assertResultSuccess(result)
         self.assertIn(value, result.out())
+
+    def list_params(
+            self,
+            cmd_env,
+            proj: str,
+            env: Optional[str] = None,
+            show_values: bool = True,
+            secrets: bool = False,
+            fmt: Optional[str] = None,
+            as_of: Optional[str] = None,
+            show_times: bool = False,
+            show_rules: bool = False,
+            show_external: bool = False,
+            show_evaluated: bool = False,
+    ) -> Result:
+        cmd = self._base_cmd + f"--project '{proj}' "
+        if env:
+            cmd += f"--env '{env}' "
+        cmd += "param ls "
+        if fmt:
+            cmd += f"-f {fmt} "
+        if as_of:
+            cmd += f"--as-of '{as_of}' "
+        if secrets:
+            cmd += "-s "
+        if show_values:
+            cmd += "-v "
+        if show_times:
+            cmd += "--show-times "
+        if show_rules:
+            cmd += "--rules "
+        if show_external:
+            cmd += "--external "
+        if show_evaluated:
+            cmd += "--evaluated "
+
+        result = self.run_cli(cmd_env, cmd)
+        self.assertResultSuccess(result)
+        return result

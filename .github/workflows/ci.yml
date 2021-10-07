@@ -20,6 +20,7 @@ env:
   CLOUDTRUTH_TEST_BROKEN_PARAM1: param1
   CLOUDTRUTH_TEST_BROKEN_PARAM2: param2
   CLOUDTRUTH_TEST_BROKEN_PARAM3: param3
+  CLOUDTRUTH_TEST_BROKEN_PARAM4: param4
   CLOUDTRUTH_TEST_BROKEN_VALUE1: value1
   CLOUDTRUTH_TEST_BROKEN_FQN2: github://rickporter-tuono/hello-world/master/README.md
   CLOUDTRUTH_TEST_BROKEN_FQN3: github://rickporter-tuono/cloudtruth_test/main/README.md
@@ -29,6 +30,9 @@ env:
 
   CLOUDTRUTH_TEST_PARAMETERS_FQN: github://rickporter-tuono/cloudtruth_test/my-branch/short.yaml
   CLOUDTRUTH_TEST_PARAMETERS_JMES: speicla.POrk_Egg_Foo_Young
+
+  CLOUDTRUTH_TEST_TEMPLATE_FQN: github://rickporter-tuono/cloudtruth_test/main/ci_test_template.txt
+  CLOUDTRUTH_TEST_TEMPLATE_PARAM1: my-param-name
 
 jobs:
   lint:

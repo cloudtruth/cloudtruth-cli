@@ -3,6 +3,9 @@ import unittest
 from typing import List
 
 from testcase import TestCase
+from testcase import PROP_NAME
+from testcase import PROP_TYPE
+from testcase import PROP_VALUE
 from urllib.parse import urlparse
 
 CT_BROKEN_PROJ = "CLOUDTRUTH_TEST_BROKEN_PROJECT"
@@ -10,6 +13,7 @@ CT_BROKEN_TEMP = "CLOUDTRUTH_TEST_BROKEN_TEMPLATE"
 CT_BROKEN_PARAM1 = "CLOUDTRUTH_TEST_BROKEN_PARAM1"
 CT_BROKEN_PARAM2 = "CLOUDTRUTH_TEST_BROKEN_PARAM2"
 CT_BROKEN_PARAM3 = "CLOUDTRUTH_TEST_BROKEN_PARAM3"
+CT_BROKEN_PARAM4 = "CLOUDTRUTH_TEST_BROKEN_PARAM4"
 CT_BROKEN_VALUE1 = "CLOUDTRUTH_TEST_BROKEN_VALUE1"
 CT_BROKEN_FQN2 = "CLOUDTRUTH_TEST_BROKEN_FQN2"
 CT_BROKEN_FQN3 = "CLOUDTRUTH_TEST_BROKEN_FQN3"
@@ -19,6 +23,7 @@ CT_BROKEN_RUN = [
     CT_BROKEN_PARAM1,
     CT_BROKEN_PARAM2,
     CT_BROKEN_PARAM3,
+    CT_BROKEN_PARAM4,
     CT_BROKEN_VALUE1,
     CT_BROKEN_FQN2,
     CT_BROKEN_FQN3,
@@ -36,6 +41,13 @@ CT_PARAM_JMES = "CLOUDTRUTH_TEST_PARAMETERS_JMES"
 CT_PARAM_RUN = [
     CT_PARAM_FQN,
     CT_PARAM_JMES,
+]
+
+CT_TEMP_FQN = "CLOUDTRUTH_TEST_TEMPLATE_FQN"
+CT_TEMP_PARAM1 = "CLOUDTRUTH_TEST_TEMPLATE_PARAM1"
+CT_TEMP_RUN = [
+    CT_TEMP_FQN,
+    CT_TEMP_PARAM1,
 ]
 
 
@@ -247,6 +259,7 @@ PARAMETER_2 = PARAM2
         fqn2 = os.environ.get(CT_BROKEN_FQN2)
         param3 = os.environ.get(CT_BROKEN_PARAM3)
         fqn3 = os.environ.get(CT_BROKEN_FQN3)
+        param4 = os.environ.get(CT_BROKEN_PARAM4)
 
         # make sure everything exists in the "correct" state
         proj_cmd = base_cmd + f"--project {proj_name} "
@@ -298,6 +311,15 @@ PARAMETER_2 = PARAM2
         result = self.run_cli(cmd_env, proj_cmd + "param export docker")
         self.assertResultError(result, missing_fqn2)
 
+        # see that adding param4 with a reference to param2 is not allowed
+        value4 = f"{{{{{param2}}}}}"
+        result = self.run_cli(cmd_env, proj_cmd + f"param set '{param4}' -v '{value4}' -e true")
+        self.assertResultError(result, missing_fqn2)  # TODO: improve evaluation error message
+
+        result = self.run_cli(cmd_env, proj_cmd + "param list -vsf csv")
+        self.assertResultWarning(result, missing_param2)
+        self.assertNotIn(param4, result.out())
+
         ##########################
         # template checks
         filename = "preview.txt"
@@ -322,3 +344,52 @@ PARAMETER_2 = PARAM2
 
         # NOTE: do NOT delete the project!!!
         self.delete_file(filename)
+
+    @unittest.skipIf(missing_any(CT_TEMP_RUN), "Need all CT_TEMP_RUN parameters")
+    def test_integration_external_template(self):
+        # in this test, we create a parameter (param1) that has an external reference to a template
+        # that references an internal parameter (param2)
+        base_cmd = self.get_cli_base_cmd()
+        cmd_env = self.get_cmd_env()
+
+        # add a new project
+        proj_name = self.make_name("test-int-explore-errors")
+        self.create_project(cmd_env, proj_name)
+        proj_cmd = base_cmd + f"--project '{proj_name}' "
+
+        temp_fqn = os.environ.get(CT_TEMP_FQN)
+        param1 = os.environ.get(CT_TEMP_PARAM1)
+        value1 = "this-is the param1 value"
+        param2 = "param-refs-ext-template"
+        self.set_param(cmd_env, proj_name, param1, value1)
+        self.set_param(cmd_env, proj_name, param2, evaluate=True, fqn=temp_fqn)
+
+        # see the evaluated template shows up
+        result = self.list_params(cmd_env, proj_name, fmt="json")
+        entries = eval(result.out()).get("parameter")
+        entry1 = [e for e in entries if e.get(PROP_NAME) == param1][0]
+        self.assertEqual(entry1.get(PROP_VALUE), value1)
+        self.assertEqual(entry1.get(PROP_TYPE), "internal")
+        entry2 = [e for e in entries if e.get(PROP_NAME) == param2][0]
+        self.assertIn(value1, entry2.get(PROP_VALUE))
+        self.assertEqual(entry2.get(PROP_TYPE), "external-evaluated")
+
+        result = self.run_cli(cmd_env, proj_cmd + f"param del -y '{param1}'")
+        self.assertResultSuccess(result)  # TODO: should be error due to being referenced??
+
+        # delete external parameter
+        result = self.run_cli(cmd_env, proj_cmd + f"param del -y '{param2}'")
+        self.assertResultSuccess(result)
+
+        result = self.run_cli(cmd_env, proj_cmd + f"param del -y '{param1}'")
+        self.assertResultSuccess(result)
+        self.assertIn("Did not find parameter", result.out())  # TODO: message goes away
+
+        # attempt adding in other order -- adding external template with broken references
+        result = self.run_cli(cmd_env, proj_cmd + f"param set {param2} -f '{temp_fqn}' -e true")
+        eval_err = "Evaluation error: Template references parameter(s) that do not exist"
+        self.assertResultError(result, eval_err)
+        self.assertIn(param1, result.err())
+
+        # cleanup
+        self.delete_project(cmd_env, proj_name)

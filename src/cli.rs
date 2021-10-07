@@ -28,6 +28,8 @@ pub const LIST_SUBCMD: &str = "list";
 pub const SET_SUBCMD: &str = "set";
 pub const TAG_SUBCMD: &str = "tag";
 
+const TRUE_FALSE_VALUES: &[&str] = &["true", "false"];
+
 const DELETE_ALIASES: &[&str] = &["del", "d"];
 const DIFF_ALIASES: &[&str] = &["difference", "differ", "diff", "di"];
 const EDIT_ALIASES: &[&str] = &["ed", "e"];
@@ -39,6 +41,14 @@ pub fn binary_name() -> String {
     option_env!("CARGO_PKG_NAME")
         .unwrap_or("cloudtruth")
         .to_string()
+}
+
+pub fn true_false_option(input: Option<&str>) -> Option<bool> {
+    match input {
+        Some("true") => Some(true),
+        Some("false") => Some(false),
+        _ => None,
+    }
 }
 
 fn table_format_options() -> Arg<'static, 'static> {
@@ -394,6 +404,9 @@ pub fn build_cli() -> App<'static, 'static> {
                         .arg(Arg::with_name("rules")
                             .long("rules")
                             .help("Display the parameter rules."))
+                        .arg(Arg::with_name("evaluated")
+                            .long("evaluated")
+                            .help("Display the evaluated values"))
                         .arg(values_flag().help("Display parameter information/values"))
                         .arg(param_as_of_arg())
                         .arg(show_times_arg())
@@ -428,8 +441,16 @@ pub fn build_cli() -> App<'static, 'static> {
                         .arg(Arg::with_name("secret")
                             .long("secret")
                             .takes_value(true)
-                            .possible_values(&["true", "false"])
+                            .possible_values(TRUE_FALSE_VALUES)
                             .help("Flags whether this is a secret parameter"))
+                        .arg(Arg::with_name("evaluate")
+                            .long("evaluate")
+                            .short("e")
+                            .alias("eval")
+                            .takes_value(true)
+                            .possible_values(TRUE_FALSE_VALUES)
+                            .help("Flags whether this value gets evaluated")
+                        )
                         .arg(Arg::with_name("param-type")
                             .short("t")
                             .long("type")
@@ -498,6 +519,8 @@ pub fn build_cli() -> App<'static, 'static> {
                                 "environment",
                                 "fqn",
                                 "jmes-path",
+                                "raw",
+                                "rule-count",
                                 "secret",
                                 "created-at",
                                 "modified-at",

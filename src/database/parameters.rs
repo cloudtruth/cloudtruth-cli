@@ -38,6 +38,10 @@ fn param_value_error(content: &str) -> ParameterError {
         if let Some(item) = value.get("detail") {
             return ParameterError::UnhandledError(extract_from_json(item));
         }
+        // template evaluation failures seems to produce an array of strings...
+        if value.is_array() {
+            return ParameterError::EvaluationError(extract_from_json(&value));
+        }
     }
     ParameterError::UnhandledError(content.to_string())
 }
@@ -164,7 +168,8 @@ impl Parameters {
             proj_id,
             as_of_arg,
             env_arg,
-            Some(true), // no need to fetch secrets
+            Some(false), // no need to evaluate references to get id
+            Some(true),  // no need to fetch secrets
             Some(key_name),
             None,
             PAGE_SIZE,
@@ -212,6 +217,7 @@ impl Parameters {
             proj_id,
             as_of,
             Some(env_id),
+            Some(true), // for now, always evaluate interpolated parameters
             Some(mask_secrets),
             Some(key_name),
             None,
@@ -290,11 +296,13 @@ impl Parameters {
         let has_values = include_values || tag.is_some();
         let env_arg = if has_values { Some(env_id) } else { None };
         let value_arg = if has_values { None } else { VALUES_FALSE };
+        let eval_arg = Some(include_values);
         let response = projects_parameters_list(
             rest_cfg,
             proj_id,
             as_of,
             env_arg,
+            eval_arg,
             Some(mask_secrets),
             None,
             None,
@@ -350,11 +358,13 @@ impl Parameters {
         mask_secrets: bool,
         as_of: Option<String>,
     ) -> Result<ParameterDetailMap, ParameterError> {
+        let eval_arg = VALUES_TRUE;
         let response = projects_parameters_list(
             rest_cfg,
             proj_id,
             as_of,
             None, // cannot give an environment, or it will only get for that environment
+            eval_arg,
             Some(mask_secrets),
             Some(param_name),
             None,
@@ -466,6 +476,7 @@ impl Parameters {
         value: Option<&str>,
         fqn: Option<&str>,
         jmes_path: Option<&str>,
+        evaluated: Option<bool>,
     ) -> Result<String, ParameterError> {
         let external = value.is_none() || fqn.is_some();
         let value_create = ValueCreate {
@@ -474,7 +485,7 @@ impl Parameters {
             internal_value: value.map(|v| v.to_string()),
             external_fqn: fqn.map(|v| v.to_string()),
             external_filter: jmes_path.map(|v| v.to_string()),
-            interpolated: None,
+            interpolated: evaluated,
         };
         let response = projects_parameters_values_create(
             rest_cfg,
@@ -505,6 +516,7 @@ impl Parameters {
         value: Option<&str>,
         fqn: Option<&str>,
         jmes_path: Option<&str>,
+        evaluated: Option<bool>,
     ) -> Result<String, ParameterError> {
         let external = fqn.is_some() || jmes_path.is_some();
         let value_update = PatchedValue {
@@ -523,7 +535,8 @@ impl Parameters {
             modified_at: None,
             external_error: None,
             earliest_tag: None,
-            interpolated: None,
+            interpolated: evaluated,
+            evaluated: None,
             referenced_parameters: None,
             referenced_templates: None,
         };

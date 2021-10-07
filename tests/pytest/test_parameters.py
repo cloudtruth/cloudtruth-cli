@@ -1,8 +1,13 @@
 import datetime
 
 from typing import Tuple, Dict
-from testcase import TestCase, DEFAULT_ENV_NAME, REDACTED, DEFAULT_PARAM_VALUE
-from testcase import PROP_CREATED, PROP_MODIFIED, PROP_VALUE
+from testcase import TestCase
+from testcase import DEFAULT_ENV_NAME
+from testcase import DEFAULT_PARAM_VALUE
+from testcase import PROP_CREATED
+from testcase import PROP_MODIFIED
+from testcase import PROP_VALUE
+from testcase import REDACTED
 
 
 class TestParameters(TestCase):
@@ -166,6 +171,15 @@ my_param,cRaZy value,default,string,0,internal,false,this is just a test descrip
         result = self.run_cli(cmd_env, sub_cmd + "list --values -f csv")
         self.assertResultSuccess(result)
         self.assertIn(f"{key1},{DEFAULT_PARAM_VALUE},,string,0,internal,false", result.out())
+
+        # make sure we error out on conflicting args
+        mutually_exclusive = "are mutually exclusive"
+        result = self.run_cli(cmd_env, sub_cmd + "list --rules --external")
+        self.assertResultWarning(result, mutually_exclusive)
+        result = self.run_cli(cmd_env, sub_cmd + "list --rules --evaluated")
+        self.assertResultWarning(result, mutually_exclusive)
+        result = self.run_cli(cmd_env, sub_cmd + "list --external --evaluated")
+        self.assertResultWarning(result, mutually_exclusive)
 
         # delete the project
         self.delete_project(cmd_env, proj_name)
@@ -1585,6 +1599,168 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
         self.delete_environment(cmd_env, env_b)
         self.delete_project(cmd_env, proj_name)
 
+    def test_parameter_evaluated(self):
+        base_cmd = self.get_cli_base_cmd()
+        cmd_env = self.get_cmd_env()
+
+        # add a new project, and a couple environments
+        proj_name = self.make_name("test-evaluated")
+        self.create_project(cmd_env, proj_name)
+        env_name_a = self.make_name("test-eval-a")
+        self.create_environment(cmd_env, env_name_a)
+        env_name_b = self.make_name("test-eval-b")
+        self.create_environment(cmd_env, env_name_b)
+
+        # create an internal parameter
+        param1 = "param1"
+        value1a = "first value"
+        value1b = "other value"
+        self.set_param(cmd_env, proj_name, param1, value1a, env=env_name_a)
+        self.set_param(cmd_env, proj_name, param1, value1b, env=env_name_b)
+
+        # verify `--evaluated` flag causes specialized warning
+        sub_cmd = base_cmd + f" --project {proj_name} parameters "
+        empty_msg = f"No evaluated parameters found in project {proj_name}"
+        result = self.run_cli(cmd_env, sub_cmd + "list --evaluated")
+        self.assertResultSuccess(result)
+        self.assertIn(empty_msg, result.out())
+
+        result = self.run_cli(cmd_env, sub_cmd + "list --evaluated -v -s --show-times")
+        self.assertResultSuccess(result)
+        self.assertIn(empty_msg, result.out())
+
+        # create another parameter -- keep one value evaluated and the other not (even though
+        # nothing to evaluate) to prove it is a value property
+        param2 = "param2"
+        value2a = "my-value"
+        value2b = "your-value"
+        self.set_param(cmd_env, proj_name, param2, value2a, env=env_name_a, evaluate=True)
+        self.set_param(cmd_env, proj_name, param2, value2b, env=env_name_b, evaluate=False)
+
+        csv_unevaluated = "string,0,internal,false,"
+        csv_evaluated = "string,0,internal-evaluated,false"
+        result = self.list_params(cmd_env, proj_name, env=env_name_a, fmt="csv")
+        self.assertIn(f"{param1},{value1a},{env_name_a},{csv_unevaluated}", result.out())
+        self.assertIn(f"{param2},{value2a},{env_name_a},{csv_evaluated}", result.out())
+
+        result = self.list_params(cmd_env, proj_name, env=env_name_b, fmt="csv")
+        self.assertIn(f"{param1},{value1b},{env_name_b},{csv_unevaluated}", result.out())
+        self.assertIn(f"{param2},{value2b},{env_name_b},{csv_unevaluated}", result.out())
+
+        ####################
+        # add a "real" evaluated parameter
+        param3 = "param3"
+        value3a = f"{{{{ {param1} }}}}"
+        value3b = f"{{{{ {param2} }}}}"
+        self.set_param(cmd_env, proj_name, param3, value3a, env=env_name_a, evaluate=True)
+        self.set_param(cmd_env, proj_name, param3, value3b, env=env_name_b, evaluate=True)
+
+        # in env-a, the value points at param1
+        result = self.run_cli(cmd_env, base_cmd + f"--project '{proj_name}' --env '{env_name_a}' param get '{param3}'")
+        self.assertResultSuccess(result)
+        self.assertIn(value1a, result.out())
+
+        result = self.list_params(cmd_env, proj_name, env=env_name_a, fmt="csv")
+        self.assertIn(f"{param1},{value1a},{env_name_a},{csv_unevaluated}", result.out())
+        self.assertIn(f"{param2},{value2a},{env_name_a},{csv_evaluated}", result.out())
+        self.assertIn(f"{param3},{value1a},{env_name_a},{csv_evaluated}", result.out())
+
+        result = self.list_params(cmd_env, proj_name, env=env_name_b, fmt="csv")
+        self.assertIn(f"{param1},{value1b},{env_name_b},{csv_unevaluated}", result.out())
+        self.assertIn(f"{param2},{value2b},{env_name_b},{csv_unevaluated}", result.out())
+        self.assertIn(f"{param3},{value2b},{env_name_b},{csv_evaluated}", result.out())
+
+        ##################
+        # recursion: param4={{param3}} => value1a
+        param4 = "param4"
+        value4a = f"{{{{ {param3} }}}}"
+        self.set_param(cmd_env, proj_name, param4, value=value4a, env=env_name_a, evaluate=True)
+
+        result = self.list_params(cmd_env, proj_name, env=env_name_a, show_values=True, show_evaluated=True, fmt="csv")
+        self.assertResultSuccess(result)
+        self.assertIn(f"{param4},{value1a},{value4a}", result.out())
+
+        ##################
+        # invalid parameter value -- see that value does not get updated
+        bad_param = "cloudtruth.parameters.unknown"
+        param_a_cmd = base_cmd + f"--project '{proj_name}' --env '{env_name_a}' param "
+        missing_cmd = param_a_cmd + f"set '{param3}' --value '{{{{ {bad_param} }}}}'"
+        result = self.run_cli(cmd_env, missing_cmd)
+        self.assertResultError(result, "Evaluation error")
+        self.assertIn("reference automatic parameter that does not exist", result.err())
+        self.assertIn(bad_param, result.err())
+
+        result = self.list_params(cmd_env, proj_name, env=env_name_a, fmt="csv")
+        self.assertResultSuccess(result)
+        self.assertIn(f"{param3},{value1a},{env_name_a},{csv_evaluated}", result.out())
+
+        ####################
+        # set param3 to not evaluate in one environment, but verify it evaluates in the other
+        self.set_param(cmd_env, proj_name, param3, env=env_name_a, evaluate=False)
+
+        result = self.list_params(cmd_env, proj_name, env=env_name_a, fmt="csv")
+        self.assertIn(f"{param1},{value1a},{env_name_a},{csv_unevaluated}", result.out())
+        self.assertIn(f"{param2},{value2a},{env_name_a},{csv_evaluated}", result.out())
+        self.assertIn(f"{param3},{value3a},{env_name_a},{csv_unevaluated}", result.out())
+        self.assertIn(f"{param4},{value3a},{env_name_a},{csv_evaluated}", result.out())
+
+        result = self.list_params(cmd_env, proj_name, env=env_name_b, fmt="csv")
+        self.assertIn(f"{param1},{value1b},{env_name_b},{csv_unevaluated}", result.out())
+        self.assertIn(f"{param2},{value2b},{env_name_b},{csv_unevaluated}", result.out())
+        self.assertIn(f"{param3},{value2b},{env_name_b},{csv_evaluated}", result.out())
+        self.assertIn(f"{param4},{DEFAULT_PARAM_VALUE},,{csv_unevaluated}", result.out())
+
+        detail_cmd = f"param get '{param3}' --details"
+        get_cmd = base_cmd + f"--project '{proj_name}' --env '{env_name_a}' " + detail_cmd
+        result = self.run_cli(cmd_env, get_cmd)
+        self.assertResultSuccess(result)
+        self.assertIn(f"Name: {param3}", result.out())
+        self.assertIn(f"Value: {{{{ {param1} }}}}", result.out())
+        self.assertIn(f"Source: {env_name_a}", result.out())
+        self.assertIn("Evaluated: false", result.out())
+
+        get_cmd = base_cmd + f"--project '{proj_name}' --env '{env_name_b}' " + detail_cmd
+        result = self.run_cli(cmd_env, get_cmd)
+        self.assertResultSuccess(result)
+        self.assertIn(f"Name: {param3}", result.out())
+        self.assertIn(f"Value: {value2b}", result.out())
+        self.assertIn(f"Source: {env_name_b}", result.out())
+        self.assertIn("Evaluated: true", result.out())
+        self.assertIn(f"Raw: {{{{ {param2} }}}}", result.out())
+
+        ####################
+        # set param3 no longer evaluated
+        self.set_param(cmd_env, proj_name, param3, env=env_name_b, evaluate=False)
+
+        result = self.list_params(cmd_env, proj_name, env=env_name_a, fmt="csv")
+        self.assertIn(f"{param1},{value1a},{env_name_a},{csv_unevaluated}", result.out())
+        self.assertIn(f"{param2},{value2a},{env_name_a},{csv_evaluated}", result.out())
+        self.assertIn(f"{param3},{value3a},{env_name_a},{csv_unevaluated}", result.out())
+        self.assertIn(f"{param4},{value3a},{env_name_a},{csv_evaluated}", result.out())
+
+        result = self.list_params(cmd_env, proj_name, env=env_name_b, fmt="csv")
+        self.assertIn(f"{param1},{value1b},{env_name_b},{csv_unevaluated}", result.out())
+        self.assertIn(f"{param2},{value2b},{env_name_b},{csv_unevaluated}", result.out())
+        self.assertIn(f"{param3},{{{{ {param2} }}}},{env_name_b},{csv_unevaluated}", result.out())
+        self.assertIn(f"{param4},{DEFAULT_PARAM_VALUE},,{csv_unevaluated}", result.out())
+
+        ##################
+        # use one of the "pre-defined" values
+        value3c = "{{ cloudtruth.environment }}"
+        self.set_param(cmd_env, proj_name, param3, value=value3c, env=env_name_a, evaluate=True)
+        result = self.list_params(cmd_env, proj_name, env=env_name_a, show_evaluated=True, fmt="csv")
+        self.assertResultSuccess(result)
+        self.assertIn(f"{param2},{value2a},{value2a}", result.out())
+        self.assertIn(f"{param3},{env_name_a},{value3c}", result.out())
+
+        # TODO: remove this -- should not be required to remove evaluated parameter
+        self.delete_param(cmd_env, proj_name, param4)
+
+        # cleanup
+        self.delete_project(cmd_env, proj_name)
+        self.delete_environment(cmd_env, env_name_a)
+        self.delete_environment(cmd_env, env_name_b)
+
     def test_parameter_types_basic(self):
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
@@ -1700,7 +1876,7 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
         self.create_environment(cmd_env, env_name)
         param_cmd = base_cmd + f"--project {proj_name} --env {env_name} param "
         list_cmd = param_cmd + "ls -v -f csv"
-        rules_cmd = param_cmd + "ls --rules -f csv"
+        rules_cmd = param_cmd + "ls --rules -v -f csv"
         rule_err_msg = "Rule violation"
         create_err_msg = "Rule create error"
 
@@ -1735,6 +1911,10 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
         self.assertIn(f"{param1},string,regex,{regex}", result.out())
 
         result = self.run_cli(cmd_env, param_cmd + "list --rules")
+        self.assertResultSuccess(result)
+        self.assertEqual(result.out(), f"{param1}\n")
+
+        result = self.run_cli(cmd_env, param_cmd + "list --rules -v")
         self.assertResultSuccess(result)
         self.assertEqual(result.out(), """\
 +--------+------------+-----------+------------+
@@ -1903,7 +2083,7 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
         self.create_environment(cmd_env, env_name)
         param_cmd = base_cmd + f"--project {proj_name} --env {env_name} param "
         list_cmd = param_cmd + "ls -v -f csv"
-        rules_cmd = param_cmd + "ls --rules -f csv"
+        rules_cmd = param_cmd + "ls --rules -vf csv"
         rule_err_msg = "Rule violation"
         create_err_msg = "Rule create error"
 
@@ -1938,6 +2118,10 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
         self.assertIn(f"{param1},integer,min,{min_value}", result.out())
 
         result = self.run_cli(cmd_env, param_cmd + "list --rules")
+        self.assertResultSuccess(result)
+        self.assertEqual(result.out(), f"{param1}\n")
+
+        result = self.run_cli(cmd_env, param_cmd + "list --rules -v")
         self.assertResultSuccess(result)
         self.assertEqual(result.out(), """\
 +--------+------------+-----------+------------+
@@ -2072,7 +2256,7 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
         self.create_environment(cmd_env, env_name)
         param_cmd = base_cmd + f"--project {proj_name} --env {env_name} param "
         list_cmd = param_cmd + "ls -v -f csv"
-        rules_cmd = param_cmd + "ls --rules -f csv"
+        rules_cmd = param_cmd + "ls --rules -f csv -v"
         create_err_msg = "Rule create error"
 
         # create a basic parameter without a value, so the rule cannot be violated

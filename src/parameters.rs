@@ -1,7 +1,7 @@
 use crate::cli::{
-    binary_name, AS_OF_ARG, CONFIRM_FLAG, DELETE_SUBCMD, DESCRIPTION_OPT, DIFF_SUBCMD, FORMAT_OPT,
-    GET_SUBCMD, KEY_ARG, LIST_SUBCMD, RENAME_OPT, SECRETS_FLAG, SET_SUBCMD, SHOW_TIMES_FLAG,
-    VALUES_FLAG,
+    binary_name, true_false_option, AS_OF_ARG, CONFIRM_FLAG, DELETE_SUBCMD, DESCRIPTION_OPT,
+    DIFF_SUBCMD, FORMAT_OPT, GET_SUBCMD, KEY_ARG, LIST_SUBCMD, RENAME_OPT, SECRETS_FLAG,
+    SET_SUBCMD, SHOW_TIMES_FLAG, VALUES_FLAG,
 };
 use crate::config::DEFAULT_ENV_NAME;
 use crate::database::{
@@ -373,14 +373,14 @@ fn proc_param_export(
     let as_of = parse_datetime(subcmd_args.value_of(AS_OF_ARG));
     let tag = parse_tag(subcmd_args.value_of(AS_OF_ARG));
     let export = subcmd_args.is_present("export");
-    let secrets = subcmd_args.is_present(SECRETS_FLAG);
+    let show_secrets = subcmd_args.is_present(SECRETS_FLAG);
     let options = ParamExportOptions {
         format: ParamExportFormat::from_str(template_format).unwrap(),
         starts_with: starts_with.map(|s| s.to_string()),
         ends_with: ends_with.map(|s| s.to_string()),
         contains: contains.map(|s| s.to_string()),
         export: Some(export),
-        secrets: Some(secrets),
+        secrets: Some(show_secrets),
         as_of,
         tag,
     };
@@ -420,6 +420,11 @@ fn proc_param_get(
         if !show_details {
             println!("{}", param.value);
         } else {
+            let internal = if param.evaluated {
+                param.raw_value
+            } else {
+                "".to_string()
+            };
             printdoc!(
                 r#"
                   Name: {}
@@ -431,6 +436,8 @@ fn proc_param_get(
                   Description: {}
                   FQN: {}
                   JMES-path: {}
+                  Evaluated: {}
+                  Raw: {}
                   Parameter-ID: {}
                   Value-ID: {}
                   Environment-ID: {}
@@ -446,6 +453,8 @@ fn proc_param_get(
                 param.description,
                 param.fqn,
                 param.jmes_path,
+                param.evaluated,
+                internal,
                 param.id,
                 param.val_id,
                 env_id,
@@ -478,12 +487,12 @@ fn proc_param_list(
     let tag = parse_tag(subcmd_args.value_of(AS_OF_ARG));
     let show_secrets = subcmd_args.is_present(SECRETS_FLAG);
     let show_times = subcmd_args.is_present(SHOW_TIMES_FLAG);
+    let show_values = subcmd_args.is_present(VALUES_FLAG) || show_secrets || show_times;
     let show_rules = subcmd_args.is_present("rules");
-    let show_values =
-        subcmd_args.is_present(VALUES_FLAG) || show_secrets || show_times || show_rules;
-    let references = subcmd_args.is_present("external");
+    let show_external = subcmd_args.is_present("external");
+    let show_evaluated = subcmd_args.is_present("evaluated");
     let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
-    let include_values = (show_values && !show_rules) || references; // don't get values if not needed
+    let include_values = (show_values && !show_rules) || show_external || show_evaluated; // don't get values if not needed
     let mut details = parameters.get_parameter_details(
         rest_cfg,
         proj_id,
@@ -493,16 +502,29 @@ fn proc_param_list(
         as_of,
         tag,
     )?;
-    let qualifier = if references { "external " } else { "" };
-    if references {
+    let mut description = "parameters";
+    if show_external {
         // when displaying external parameters, only show the external ones
-        details.retain(|x| x.external)
+        description = "external parameters";
+        details.retain(|x| x.external);
+    }
+    if show_evaluated {
+        description = "evaluated parameters";
+        details.retain(|x| x.evaluated);
+    }
+    if show_rules {
+        description = "parameter rules";
+        details.retain(|x| !x.rules.is_empty());
     }
 
-    if show_rules && references {
-        warning_message("Options for --external and --rules are mutually exclusive".to_string())?;
+    if (show_rules && show_external)
+        || (show_rules && show_evaluated)
+        || (show_evaluated && show_external)
+    {
+        let msg = "Options for --rules, --external, and --evaluated are mutually exclusive";
+        warning_message(msg.to_string())?;
     } else if details.is_empty() {
-        println!("No {}parameters found in project {}", qualifier, proj_name,);
+        println!("No {} found in project {}", description, proj_name,);
     } else if !show_values {
         let list = details
             .iter()
@@ -513,17 +535,12 @@ fn proc_param_list(
         // NOTE: do NOT worry about errors, since we're only concerned with params (not values)
         let mut table = Table::new("parameter");
         let mut hdr = vec!["Name", "Param Type", "Rule Type", "Constraint"];
-        let mut added = false;
         if show_times {
             hdr.push("Created At");
             hdr.push("Modified At");
         }
         table.set_header(&hdr);
         for entry in details {
-            if entry.rules.is_empty() {
-                continue;
-            }
-
             for rule in entry.rules {
                 let mut row: Vec<String>;
                 row = vec![
@@ -537,19 +554,23 @@ fn proc_param_list(
                     row.push(rule.modified_at.clone());
                 }
                 table.add_row(row);
-                added = true;
             }
         }
-        if added {
-            table.render(fmt)?;
-        } else {
-            println!("No parameter rules found in project '{}'", proj_name)
-        }
+        table.render(fmt)?;
     } else {
         let mut errors: Vec<String> = vec![];
-        let mut table = Table::new("parameter");
-        let mut hdr = if !references {
-            vec![
+        let mut hdr: Vec<&str>;
+        let mut properties: Vec<&str>;
+
+        // setup the table headers and properties
+        if show_external {
+            hdr = vec!["Name", "FQN", "JMES"];
+            properties = vec!["name", "fqn", "jmes-path"];
+        } else if show_evaluated {
+            hdr = vec!["Name", "Value", "Raw"];
+            properties = vec!["name", "value", "raw"];
+        } else {
+            hdr = vec![
                 "Name",
                 "Value",
                 "Source",
@@ -558,46 +579,33 @@ fn proc_param_list(
                 "Type",
                 "Secret",
                 "Description",
-            ]
-        } else {
-            vec!["Name", "FQN", "JMES"]
-        };
+            ];
+            properties = vec![
+                "name",
+                "value",
+                "environment",
+                "type",
+                "rule-count",
+                "scope",
+                "secret",
+                "description",
+            ];
+        }
         if show_times {
             hdr.push("Created At");
             hdr.push("Modified At");
+            properties.push("created-at");
+            properties.push("modified-at");
         }
+
+        let mut table = Table::new("parameter");
         table.set_header(&hdr);
 
         for entry in details {
             if !entry.error.is_empty() {
                 errors.push(format_param_error(&entry.key, &entry.error));
             }
-            let mut row: Vec<String>;
-            if !references {
-                let type_str = if entry.external {
-                    "external"
-                } else {
-                    "internal"
-                };
-                let secret_str = if entry.secret { "true" } else { "false" };
-                row = vec![
-                    entry.key,
-                    entry.value,
-                    entry.env_name,
-                    entry.param_type.to_string(),
-                    entry.rules.len().to_string(),
-                    type_str.to_string(),
-                    secret_str.to_string(),
-                    entry.description,
-                ];
-            } else {
-                row = vec![entry.key, entry.fqn, entry.jmes_path];
-            }
-            if show_times {
-                row.push(entry.created_at);
-                row.push(entry.modified_at);
-            }
-            table.add_row(row);
+            table.add_row(entry.get_properties(&properties));
         }
         table.render(fmt)?;
 
@@ -681,11 +689,8 @@ fn proc_param_set(
     let delete_max_len = subcmd_args.is_present("NO-MAX-LEN");
     let delete_min_len = subcmd_args.is_present("NO-MIN-LEN");
     let delete_regex = subcmd_args.is_present("NO-REGEX");
-    let secret: Option<bool> = match subcmd_args.value_of("secret") {
-        Some("false") => Some(false),
-        Some("true") => Some(true),
-        _ => None,
-    };
+    let secret: Option<bool> = true_false_option(subcmd_args.value_of("secret"));
+    let evaluated: Option<bool> = true_false_option(subcmd_args.value_of("evaluate"));
     let param_type = match subcmd_args.value_of("param-type") {
         None => None,
         Some("string") => Some(ParamType::String),
@@ -723,7 +728,8 @@ fn proc_param_set(
 
     let param_field_update =
         description.is_some() || secret.is_some() || param_type.is_some() || rename.is_some();
-    let value_field_update = value.is_some() || fqn.is_some() || jmes_path.is_some();
+    let value_field_update =
+        value.is_some() || fqn.is_some() || jmes_path.is_some() || evaluated.is_some();
 
     // get the original values, so that is not lost
     let mut updated: ParameterDetails;
@@ -831,8 +837,9 @@ fn proc_param_set(
         // if any existing environment does not match the desired environment
         if !updated.env_url.contains(env_id) {
             set_action = "set";
-            let value_add_result = parameters
-                .create_parameter_value(rest_cfg, proj_id, env_id, param_id, value, fqn, jmes_path);
+            let value_add_result = parameters.create_parameter_value(
+                rest_cfg, proj_id, env_id, param_id, value, fqn, jmes_path, evaluated,
+            );
             if let Err(err) = value_add_result {
                 if param_added {
                     let _ = parameters.delete_parameter_by_id(rest_cfg, proj_id, param_id);
@@ -848,6 +855,7 @@ fn proc_param_set(
                 value,
                 fqn,
                 jmes_path,
+                evaluated,
             )?;
         }
     }

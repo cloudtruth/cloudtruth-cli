@@ -1,6 +1,9 @@
 from testcase import TestCase
 from testcase import CT_ENV
 from testcase import PROP_MODIFIED
+from testcase import PROP_NAME
+from testcase import PROP_RAW
+from testcase import PROP_VALUE
 from testcase import REDACTED
 
 # This definition allows us to fake-out flake8, and not have it complain about trailing whitespace.
@@ -544,7 +547,6 @@ this.is.a.template.value=PARAM1
         self.delete_file(filename)
         self.delete_project(cmd_env, proj_name)
 
-    # pylint: disable=trailing-whitespace
     def test_template_diff(self):
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
@@ -879,4 +881,76 @@ PARAMETER={{{{{param1}}}}}
         # cleanup
         self.delete_environment(cmd_env, env_a)
         self.delete_environment(cmd_env, env_b)
+
+    def test_template_ref_by_param(self):
+        base_cmd = self.get_cli_base_cmd()
+        cmd_env = self.get_cmd_env()
+        temp_name = "param-template"  # templates are scoped to a project, so no need to "randomize"
+
+        filename = self.make_name("ref-body") + ".txt"
+        body1 = "nothing to evaluate here"
+        self.write_file(filename, body1)
+
+        proj_name = self.make_name("test-temp-ref-param")
+        self.create_project(cmd_env, proj_name)
+
+        # create a simple template with nothing to be evaluated
+        sub_cmd = base_cmd + f"--project '{proj_name}' template "
+        result = self.run_cli(cmd_env, sub_cmd + f"set {temp_name} --body '{filename}'")
+        self.assertResultSuccess(result)
+
+        param1 = "my-parameter"
+        value1 = f"{{{{ cloudtruth.template.{temp_name} }}}}"
+        self.set_param(cmd_env, proj_name, param1, value1, evaluate=True)
+
+        # see that we get the template back as the parameter value
+        result = self.list_params(cmd_env, proj_name, show_values=True, show_evaluated=True, fmt="json")
+        item = eval(result.out()).get("parameter")[0]
+        self.assertEqual(item.get(PROP_NAME), param1)
+        self.assertEqual(item.get(PROP_VALUE), body1)
+        self.assertEqual(item.get(PROP_RAW), value1)
+
+        # see that we cannot delete the template that is referenced by a parameter
+        result = self.run_cli(cmd_env, sub_cmd + f"del -y {temp_name}")
+        # TODO: this should not be an 500
+        self.assertResultError(result, "Internal Server Error")
+
+        # see that we catch the circular error
+        body2 = f"new-param-name = {{{{ {param1} }}}}"
+        self.write_file(filename, body2)
+        result = self.run_cli(cmd_env, sub_cmd + f"set {temp_name} -b '{filename}'")
+        self.assertResultError(result, "introduces a dependency loop")
+
+        # create another parameter to refer to
+        param2 = "param2"
+        value2 = "sample value"
+        self.set_param(cmd_env, proj_name, param2, value=value2)
+
+        # make the template refer to the new parameter
+        body3 = f"new-param-name = {{{{ {param2} }}}}"
+        self.write_file(filename, body3)
+        result = self.run_cli(cmd_env, sub_cmd + f"set {temp_name} -b '{filename}'")
+        self.assertResultSuccess(result)
+
+        # check that we get back the evaluated template
+        result = self.list_params(cmd_env, proj_name, fmt="json")
+        parameters = eval(result.out()).get("parameter")
+        self.assertEqual(len(parameters), 2)
+        entry1 = [p for p in parameters if p.get(PROP_NAME) == param1][0]
+        self.assertEqual(entry1.get(PROP_VALUE), f"new-param-name = {value2}")
+        entry2 = [p for p in parameters if p.get(PROP_NAME) == param2][0]
+        self.assertEqual(entry2.get(PROP_VALUE), value2)
+
+        # see we get both evaluated an unevaluated
+        result = self.list_params(cmd_env, proj_name, fmt="json", show_evaluated=True, show_values=True)
+        parameters = eval(result.out()).get("parameter")
+        entry1 = [p for p in parameters if p.get(PROP_NAME) == param1][0]
+        self.assertEqual(entry1.get(PROP_VALUE), f"new-param-name = {value2}")
+        self.assertEqual(entry1.get(PROP_RAW), value1)
+
+        # TODO: remove next block of code to allow cleanup -- remove this after bug is fixed
+        self.delete_param(cmd_env, proj_name, param1)
+
+        # cleanup
+        self.delete_file(filename)
         self.delete_project(cmd_env, proj_name)

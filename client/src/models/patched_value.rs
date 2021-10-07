@@ -50,6 +50,9 @@ pub struct PatchedValue {
     /// This is the actual content of the Value for the given parameter in the given environment.  Depending on the settings in the Value, the following things occur to calculate the `value`:  For values that are not `external` and parameters that are not `secret`, the system will use the content in `internal_value` to satisfy the request.  For values that are not `external` and parameters that are `secret`, the system will retrieve the content from your organization's dedicated vault.  For values that are `external`, the system will retrieve the content from the integration on-demand.  You can control the error handling behavior of the server through the `partial_success` query parameter.  If the content from the integration is `secret` and the parameter is not, an error will occur.  If an `external_filter` is present then the content will have a JMESpath query applied, and that becomes the resulting value.  If you request secret masking, no secret content will be included in the result and instead a series of asterisks will be used instead for the value.  If you request wrapping, the secret content will be wrapped in an envelope that is bound to your JWT token.  For more information about secret wrapping, see the docs.  Clients applying this value to a shell environment should set `<parameter_name>=<value>` even if `value` is the empty string.  If `value` is `null`, the client should unset that shell environment variable.
     #[serde(rename = "value", skip_serializing_if = "Option::is_none")]
     pub value: Option<String>,
+    /// If true, the `value` field has undergone template evaluation.
+    #[serde(rename = "evaluated", skip_serializing_if = "Option::is_none")]
+    pub evaluated: Option<bool>,
     /// Indicates the value content is a secret.  Normally this is `true` when the parameter is a secret, however it is possible for a parameter to be a secret with a external value that is not a secret.  It is not possible to convert a parameter from a secret to a non-secret if any of the values are external and a secret.  Clients can check this condition by leveraging this field.
     #[serde(rename = "secret", skip_serializing_if = "Option::is_none")]
     pub secret: Option<bool>,
@@ -88,6 +91,7 @@ impl PatchedValue {
             internal_value: None,
             interpolated: None,
             value: None,
+            evaluated: None,
             secret: None,
             referenced_parameters: None,
             referenced_templates: None,
