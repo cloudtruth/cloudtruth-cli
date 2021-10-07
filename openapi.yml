@@ -4561,8 +4561,9 @@ components:
           format: date-time
           readOnly: true
         allow:
-          allOf:
-          - $ref: '#/components/schemas/AllowEnum'
+          type: array
+          items:
+            $ref: '#/components/schemas/AllowEnum'
           description: The actions to allow.
         fqn:
           type: string
@@ -4623,8 +4624,9 @@ components:
           type: string
           description: The optional description for the integration.
         allow:
-          allOf:
-          - $ref: '#/components/schemas/AllowEnum'
+          type: array
+          items:
+            $ref: '#/components/schemas/AllowEnum'
           description: The actions to allow.
         aws_account_id:
           type: string
@@ -5075,8 +5077,9 @@ components:
           format: date-time
           readOnly: true
         allow:
-          allOf:
-          - $ref: '#/components/schemas/AllowEnum'
+          type: array
+          items: 
+            $ref: '#/components/schemas/AllowEnum'
           description: The actions to allow.
         fqn:
           type: string
@@ -5106,8 +5109,9 @@ components:
           type: string
           description: The optional description for the integration.
         allow:
-          allOf:
-          - $ref: '#/components/schemas/AllowEnum'
+          type: array
+          items:
+            $ref: '#/components/schemas/AllowEnum'
           description: The actions to allow.
         gh_installation_id:
           type: integer
@@ -6074,8 +6078,9 @@ components:
           format: date-time
           readOnly: true
         allow:
-          allOf:
-          - $ref: '#/components/schemas/AllowEnum'
+          type: array
+          items:
+            $ref: '#/components/schemas/AllowEnum'
           description: The actions to allow.
         fqn:
           type: string

@@ -15,7 +15,7 @@ pub struct AwsIntegrationCreate {
     pub description: Option<String>,
     /// The actions to allow.
     #[serde(rename = "allow", skip_serializing_if = "Option::is_none")]
-    pub allow: Option<Box<crate::models::AllowEnum>>,
+    pub allow: Option<Vec<crate::models::AllowEnum>>,
     /// The AWS Account ID.
     #[serde(rename = "aws_account_id")]
     pub aws_account_id: String,

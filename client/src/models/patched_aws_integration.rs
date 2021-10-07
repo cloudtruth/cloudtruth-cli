@@ -41,7 +41,7 @@ pub struct PatchedAwsIntegration {
     pub modified_at: Option<String>,
     /// The actions to allow.
     #[serde(rename = "allow", skip_serializing_if = "Option::is_none")]
-    pub allow: Option<Box<crate::models::AllowEnum>>,
+    pub allow: Option<Vec<crate::models::AllowEnum>>,
     #[serde(rename = "fqn", skip_serializing_if = "Option::is_none")]
     pub fqn: Option<String>,
     /// The AWS Account ID.

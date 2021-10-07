@@ -15,7 +15,7 @@ pub struct GitHubIntegrationCreate {
     pub description: Option<String>,
     /// The actions to allow.
     #[serde(rename = "allow", skip_serializing_if = "Option::is_none")]
-    pub allow: Option<Box<crate::models::AllowEnum>>,
+    pub allow: Option<Vec<crate::models::AllowEnum>>,
     #[serde(rename = "gh_installation_id")]
     pub gh_installation_id: i32,
 }
