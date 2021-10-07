@@ -162,6 +162,7 @@ paths:
           enum:
           - create
           - delete
+          - push
           - update
         description: The action that was taken.
       - in: query
@@ -180,6 +181,12 @@ paths:
           type: string
       - in: query
         name: object_type
+        schema:
+          type: string
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
         schema:
           type: string
       - name: page
@@ -255,7 +262,21 @@ paths:
       operationId: environments_list
       parameters:
       - in: query
+        name: description__icontains
+        schema:
+          type: string
+      - in: query
         name: name
+        schema:
+          type: string
+      - in: query
+        name: name__icontains
+        schema:
+          type: string
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
         schema:
           type: string
       - name: page
@@ -272,6 +293,10 @@ paths:
           type: integer
       - in: query
         name: parent__name
+        schema:
+          type: string
+      - in: query
+        name: parent__name__icontains
         schema:
           type: string
       tags:
@@ -311,6 +336,49 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Environment'
+          description: ''
+  /api/v1/environments/{environment_pk}/pushes/:
+    get:
+      operationId: environments_pushes_list
+      description: The complete history of push operations that this parameter was
+        involved in.
+      summary: List push operations.
+      parameters:
+      - in: path
+        name: environment_pk
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - environments
+      security:
+      - JWTAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAwsPushTaskStepList'
           description: ''
   /api/v1/environments/{environment_pk}/tags/:
     get:
@@ -696,6 +764,12 @@ paths:
         name: aws_role_name
         schema:
           type: string
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
       - name: page
         required: false
         in: query
@@ -758,6 +832,508 @@ paths:
               schema:
                 $ref: '#/components/schemas/AwsIntegration'
           description: ''
+  /api/v1/integrations/aws/{awsintegration_pk}/pushes/:
+    get:
+      operationId: integrations_aws_pushes_list
+      parameters:
+      - in: path
+        name: awsintegration_pk
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: query
+        name: description__icontains
+        schema:
+          type: string
+      - in: query
+        name: name
+        schema:
+          type: string
+      - in: query
+        name: name__icontains
+        schema:
+          type: string
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - integrations
+      security:
+      - JWTAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAwsPushList'
+          description: ''
+    post:
+      operationId: integrations_aws_pushes_create
+      parameters:
+      - in: path
+        name: awsintegration_pk
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - integrations
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AwsPush'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AwsPush'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AwsPush'
+        required: true
+      security:
+      - JWTAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AwsPush'
+          description: ''
+  /api/v1/integrations/aws/{awsintegration_pk}/pushes/{awspush_pk}/tasks/:
+    get:
+      operationId: integrations_aws_pushes_tasks_list
+      parameters:
+      - in: path
+        name: awsintegration_pk
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: awspush_pk
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: query
+        name: modified_at
+        schema:
+          type: string
+          format: date-time
+      - in: query
+        name: modified_at__gte
+        schema:
+          type: string
+          format: date-time
+      - in: query
+        name: modified_at__lte
+        schema:
+          type: string
+          format: date-time
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: state
+        schema:
+          type: string
+          enum:
+          - failure
+          - queued
+          - running
+          - success
+        description: The current state of this task.
+      tags:
+      - integrations
+      security:
+      - JWTAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAwsPushTaskList'
+          description: ''
+  /api/v1/integrations/aws/{awsintegration_pk}/pushes/{awspush_pk}/tasks/{awspushtask_pk}/steps/:
+    get:
+      operationId: integrations_aws_pushes_tasks_steps_list
+      parameters:
+      - in: path
+        name: awsintegration_pk
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: awspush_pk
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: awspushtask_pk
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: query
+        name: fqn
+        schema:
+          type: string
+      - in: query
+        name: modified_at
+        schema:
+          type: string
+          format: date-time
+      - in: query
+        name: modified_at__gte
+        schema:
+          type: string
+          format: date-time
+      - in: query
+        name: modified_at__lte
+        schema:
+          type: string
+          format: date-time
+      - in: query
+        name: operation
+        schema:
+          type: string
+          enum:
+          - create
+          - delete
+          - update
+        description: The operation performed by this step.
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: success
+        schema:
+          type: boolean
+      - in: query
+        name: venue_id
+        schema:
+          type: string
+      - in: query
+        name: venue_id__icontains
+        schema:
+          type: string
+      - in: query
+        name: venue_name
+        schema:
+          type: string
+      - in: query
+        name: venue_name__icontains
+        schema:
+          type: string
+      tags:
+      - integrations
+      security:
+      - JWTAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAwsPushTaskStepList'
+          description: ''
+  /api/v1/integrations/aws/{awsintegration_pk}/pushes/{awspush_pk}/tasks/{awspushtask_pk}/steps/{id}/:
+    get:
+      operationId: integrations_aws_pushes_tasks_steps_retrieve
+      parameters:
+      - in: path
+        name: awsintegration_pk
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: awspush_pk
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: awspushtask_pk
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+          description: The unique identifier for the push action task step.
+        required: true
+      tags:
+      - integrations
+      security:
+      - JWTAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AwsPushTaskStep'
+          description: ''
+  /api/v1/integrations/aws/{awsintegration_pk}/pushes/{awspush_pk}/tasks/{id}/:
+    get:
+      operationId: integrations_aws_pushes_tasks_retrieve
+      parameters:
+      - in: path
+        name: awsintegration_pk
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: awspush_pk
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+          description: The unique identifier for the push action task.
+        required: true
+      tags:
+      - integrations
+      security:
+      - JWTAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AwsPushTask'
+          description: ''
+  /api/v1/integrations/aws/{awsintegration_pk}/pushes/{id}/:
+    get:
+      operationId: integrations_aws_pushes_retrieve
+      parameters:
+      - in: path
+        name: awsintegration_pk
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+          description: The unique identifier for the push action.
+        required: true
+      tags:
+      - integrations
+      security:
+      - JWTAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AwsPush'
+          description: ''
+    put:
+      operationId: integrations_aws_pushes_update
+      parameters:
+      - in: path
+        name: awsintegration_pk
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+          description: The unique identifier for the push action.
+        required: true
+      tags:
+      - integrations
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AwsPushUpdate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AwsPushUpdate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AwsPushUpdate'
+        required: true
+      security:
+      - JWTAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AwsPushUpdate'
+          description: ''
+    patch:
+      operationId: integrations_aws_pushes_partial_update
+      parameters:
+      - in: path
+        name: awsintegration_pk
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+          description: The unique identifier for the push action.
+        required: true
+      tags:
+      - integrations
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAwsPushUpdate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAwsPushUpdate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAwsPushUpdate'
+      security:
+      - JWTAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AwsPushUpdate'
+          description: ''
+    delete:
+      operationId: integrations_aws_pushes_destroy
+      parameters:
+      - in: path
+        name: awsintegration_pk
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+          description: The unique identifier for the push action.
+        required: true
+      tags:
+      - integrations
+      security:
+      - JWTAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/integrations/aws/{awsintegration_pk}/pushes/{id}/sync/:
+    post:
+      operationId: integrations_aws_pushes_sync_create
+      description: Enqueue a push synchronization task.
+      parameters:
+      - in: path
+        name: awsintegration_pk
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+          description: The unique identifier for the push action.
+        required: true
+      tags:
+      - integrations
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AwsPush'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AwsPush'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AwsPush'
+        required: true
+      security:
+      - JWTAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '204':
+          description: Synchronization task enqueued.
   /api/v1/integrations/aws/{id}/:
     get:
       operationId: integrations_aws_retrieve
@@ -907,6 +1483,12 @@ paths:
           type: string
           format: uri
         description: FQN (URL-like) for third-party integration.
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
       - name: page
         required: false
         in: query
@@ -946,6 +1528,12 @@ paths:
       parameters:
       - in: query
         name: gh_organization_slug
+        schema:
+          type: string
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
         schema:
           type: string
       - name: page
@@ -1081,6 +1669,12 @@ paths:
       parameters:
       - in: query
         name: email
+        schema:
+          type: string
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
         schema:
           type: string
       - name: page
@@ -1343,6 +1937,12 @@ paths:
     get:
       operationId: memberships_list
       parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
       - name: page
         required: false
         in: query
@@ -1524,6 +2124,12 @@ paths:
         name: name
         schema:
           type: string
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
       - name: page
         required: false
         in: query
@@ -1683,7 +2289,21 @@ paths:
       operationId: projects_list
       parameters:
       - in: query
+        name: description__icontains
+        schema:
+          type: string
+      - in: query
         name: name
+        schema:
+          type: string
+      - in: query
+        name: name__icontains
+        schema:
+          type: string
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
         schema:
           type: string
       - name: page
@@ -1892,6 +2512,12 @@ paths:
           type: boolean
           default: false
         description: Masks all secrets in the template with `*****`.
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
       - in: query
         name: output
         schema:
@@ -1967,6 +2593,12 @@ paths:
         description: If true, masks all secrets.
       - in: query
         name: name
+        schema:
+          type: string
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
         schema:
           type: string
       - name: page
@@ -2062,10 +2694,78 @@ paths:
               schema:
                 $ref: '#/components/schemas/Parameter'
           description: ''
+  /api/v1/projects/{project_pk}/parameters/{parameter_pk}/pushes/:
+    get:
+      operationId: projects_parameters_pushes_list
+      description: The complete history of push operations that this parameter was
+        involved in.
+      summary: List push operations.
+      parameters:
+      - in: query
+        name: as_of
+        schema:
+          type: string
+          format: date-time
+        description: Specify a point in time to retrieve configuration from. Cannot
+          be specified with `tag`.
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: path
+        name: parameter_pk
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: project_pk
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: query
+        name: tag
+        schema:
+          type: string
+        description: Specify a tag to retrieve configuration from.  Cannot be specified
+          with `as_of`.
+      tags:
+      - projects
+      security:
+      - JWTAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAwsPushTaskStepList'
+          description: ''
   /api/v1/projects/{project_pk}/parameters/{parameter_pk}/rules/:
     get:
       operationId: projects_parameters_rules_list
       parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
       - name: page
         required: false
         in: query
@@ -2353,6 +3053,16 @@ paths:
           If `true`, runs template evaluation on this parameter.  If `false`, returns the value's template.
           No effect on values that are not interpolated.
       - in: query
+        name: exclude
+        schema:
+          type: string
+        description: A comma-separated list of field names to exclude from the response.
+      - in: query
+        name: include
+        schema:
+          type: string
+        description: A comma-separated list of field names to include in the response.
+      - in: query
         name: mask_secrets
         schema:
           type: boolean
@@ -2425,6 +3135,14 @@ paths:
       description: Set the value of a parameter in an environment.
       summary: Set a value.
       parameters:
+      - in: query
+        name: evaluate
+        schema:
+          type: boolean
+          default: true
+        description: |-
+          If `true`, runs template evaluation on this parameter.  If `false`, returns the value's template.
+          No effect on values that are not interpolated.
       - in: path
         name: parameter_pk
         schema:
@@ -2490,6 +3208,11 @@ paths:
         description: |-
           If `true`, runs template evaluation on this parameter.  If `false`, returns the value's template.
           No effect on values that are not interpolated.
+      - in: query
+        name: exclude
+        schema:
+          type: string
+        description: A comma-separated list of field names to exclude from the response.
       - in: path
         name: id
         schema:
@@ -2497,6 +3220,11 @@ paths:
           format: uuid
           description: A unique identifier for the value.
         required: true
+      - in: query
+        name: include
+        schema:
+          type: string
+        description: A comma-separated list of field names to include in the response.
       - in: query
         name: mask_secrets
         schema:
@@ -2558,6 +3286,14 @@ paths:
       description: Update the value of a parameter in an environment.
       summary: Update a value.
       parameters:
+      - in: query
+        name: evaluate
+        schema:
+          type: boolean
+          default: true
+        description: |-
+          If `true`, runs template evaluation on this parameter.  If `false`, returns the value's template.
+          No effect on values that are not interpolated.
       - in: path
         name: id
         schema:
@@ -2613,6 +3349,14 @@ paths:
       description: Update the value of a parameter in an environment.
       summary: Update a value.
       parameters:
+      - in: query
+        name: evaluate
+        schema:
+          type: boolean
+          default: true
+        description: |-
+          If `true`, runs template evaluation on this parameter.  If `false`, returns the value's template.
+          No effect on values that are not interpolated.
       - in: path
         name: id
         schema:
@@ -2668,6 +3412,14 @@ paths:
       description: Destroy the value of a parameter in an environment.
       summary: Destroy a value.
       parameters:
+      - in: query
+        name: evaluate
+        schema:
+          type: boolean
+          default: true
+        description: |-
+          If `true`, runs template evaluation on this parameter.  If `false`, returns the value's template.
+          No effect on values that are not interpolated.
       - in: path
         name: id
         schema:
@@ -3082,6 +3834,12 @@ paths:
         name: name
         schema:
           type: string
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
       - name: page
         required: false
         in: query
@@ -3405,6 +4163,12 @@ paths:
     get:
       operationId: serviceaccounts_list
       parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
       - name: page
         required: false
         in: query
@@ -3571,6 +4335,12 @@ paths:
     get:
       operationId: users_list
       parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
       - name: page
         required: false
         in: query
@@ -3663,6 +4433,11 @@ paths:
             - Did the Bearer token belong to the User being deleted?
 components:
   schemas:
+    AllowEnum:
+      enum:
+      - pull
+      - push
+      type: string
     AuditTrail:
       type: object
       properties:
@@ -3739,38 +4514,6 @@ components:
       - max_days
       - max_records
       - total
-    AwsEnabledRegionsEnum:
-      enum:
-      - af-south-1
-      - ap-east-1
-      - ap-northeast-1
-      - ap-northeast-2
-      - ap-northeast-3
-      - ap-south-1
-      - ap-southeast-1
-      - ap-southeast-2
-      - ca-central-1
-      - cn-north-1
-      - cn-northwest-1
-      - eu-central-1
-      - eu-north-1
-      - eu-south-1
-      - eu-west-1
-      - eu-west-2
-      - eu-west-3
-      - me-south-1
-      - sa-east-1
-      - us-east-1
-      - us-east-2
-      - us-west-1
-      - us-west-2
-      type: string
-    AwsEnabledServicesEnum:
-      enum:
-      - s3
-      - secretsmanager
-      - ssm
-      type: string
     AwsIntegration:
       type: object
       properties:
@@ -3817,6 +4560,10 @@ components:
           type: string
           format: date-time
           readOnly: true
+        allow:
+          allOf:
+          - $ref: '#/components/schemas/AllowEnum'
+          description: The actions to allow.
         fqn:
           type: string
           readOnly: true
@@ -3829,12 +4576,12 @@ components:
         aws_enabled_regions:
           type: array
           items:
-            $ref: '#/components/schemas/AwsEnabledRegionsEnum'
+            $ref: '#/components/schemas/AwsRegionEnum'
           description: The AWS regions to integrate with.
         aws_enabled_services:
           type: array
           items:
-            $ref: '#/components/schemas/AwsEnabledServicesEnum'
+            $ref: '#/components/schemas/AwsServiceEnum'
           description: The AWS services to integrate with.
         aws_external_id:
           type: string
@@ -3875,6 +4622,10 @@ components:
         description:
           type: string
           description: The optional description for the integration.
+        allow:
+          allOf:
+          - $ref: '#/components/schemas/AllowEnum'
+          description: The actions to allow.
         aws_account_id:
           type: string
           description: The AWS Account ID.
@@ -3884,12 +4635,12 @@ components:
         aws_enabled_regions:
           type: array
           items:
-            $ref: '#/components/schemas/AwsEnabledRegionsEnum'
+            $ref: '#/components/schemas/AwsRegionEnum'
           description: The AWS regions to integrate with.
         aws_enabled_services:
           type: array
           items:
-            $ref: '#/components/schemas/AwsEnabledServicesEnum'
+            $ref: '#/components/schemas/AwsServiceEnum'
           description: The AWS services to integrate with.
         aws_external_id:
           type: string
@@ -3914,6 +4665,304 @@ components:
       - aws_enabled_regions
       - aws_enabled_services
       - aws_role_name
+    AwsPush:
+      type: object
+      description: Push action for an AWS integration.
+      properties:
+        url:
+          type: string
+          format: uri
+          readOnly: true
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+          description: The unique identifier for the push action.
+        name:
+          type: string
+          description: The push action name.
+          maxLength: 256
+        description:
+          type: string
+          description: The optional description for the push action.
+        projects:
+          type: array
+          items:
+            type: string
+            format: uri
+          description: Projects that are included in the push.
+        tags:
+          type: array
+          items:
+            type: string
+            format: uri
+          description: Tags are used to select parameters by environment from the
+            projects included in the push.  You cannot have two tags from the same
+            environment in the same push.
+        region:
+          allOf:
+          - $ref: '#/components/schemas/AwsRegionEnum'
+          description: The AWS region this push targets.  This region must be enabled
+            in the integration.
+        service:
+          allOf:
+          - $ref: '#/components/schemas/AwsServiceEnum'
+          description: The AWS service this push targets.  This service must be enabled
+            in the integration.
+        resource:
+          type: string
+          description: |-
+            Defines a path through the integration to the location where values will be pushed.
+
+            The following mustache-style substitutions can be used in the string:
+
+              - ``{{ environment }}`` to insert the environment name
+              - ``{{ parameter }}`` to insert the parameter name
+              - ``{{ project }}`` to insert the project name
+              - ``{{ push }}`` to insert the push name
+              - ``{{ tag }}`` to insert the tag name
+
+            We recommend that you use project, environment, and parameter at a minimum to disambiguate your pushed resource identifiers.
+          maxLength: 1024
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        modified_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - modified_at
+      - name
+      - projects
+      - region
+      - resource
+      - service
+      - tags
+      - url
+    AwsPushTask:
+      type: object
+      description: Push task for an AWS integration.
+      properties:
+        url:
+          type: string
+          format: uri
+          readOnly: true
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+          description: The unique identifier for the push action task.
+        reason:
+          type: string
+          nullable: true
+          description: The reason why this task was triggered.
+          maxLength: 256
+        state:
+          allOf:
+          - $ref: '#/components/schemas/StateEnum'
+          description: The current state of this task.
+        error_code:
+          type: string
+          nullable: true
+          description: An error code, if not successful.  This usually indicates an
+            error occurred very early during processing, before attempting to push.
+          maxLength: 256
+        error_detail:
+          type: string
+          nullable: true
+          description: Details on the error from the integration.  This usually indicates
+            an error occurred very early during processing, before attempting to push.
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        modified_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - modified_at
+      - url
+    AwsPushTaskStep:
+      type: object
+      description: Push task step for an AWS integration.
+      properties:
+        url:
+          type: string
+          format: uri
+          readOnly: true
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+          description: The unique identifier for the push action task step.
+        operation:
+          type: string
+          readOnly: true
+          description: The operation performed by this step.
+        success:
+          type: boolean
+          readOnly: true
+          description: Indicates if the step was successful.
+        fqn:
+          type: string
+          readOnly: true
+          description: The fully-qualified name (FQN) this step processed.
+        environment:
+          type: string
+          format: uri
+          readOnly: true
+          nullable: true
+          description: The environment of the value this step pushed.
+        parameter:
+          type: string
+          format: uri
+          readOnly: true
+          nullable: true
+          description: The parameter this step pushed.
+        venue_id:
+          type: string
+          readOnly: true
+          description: The integration-native id for the resource.
+        venue_name:
+          type: string
+          readOnly: true
+          description: The name of the item or resource as known by the integration.
+        error_code:
+          type: string
+          readOnly: true
+          description: An error code, if not successful.
+        error_detail:
+          type: string
+          readOnly: true
+          description: Details on the error from the integration.
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        modified_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - environment
+      - error_code
+      - error_detail
+      - fqn
+      - id
+      - modified_at
+      - operation
+      - parameter
+      - success
+      - url
+      - venue_id
+      - venue_name
+    AwsPushUpdate:
+      type: object
+      description: Update a push.  The `region` and `service` cannot be changed on
+        an existing push.
+      properties:
+        url:
+          type: string
+          format: uri
+          readOnly: true
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+          description: The unique identifier for the push action.
+        name:
+          type: string
+          description: The push action name.
+          maxLength: 256
+        description:
+          type: string
+          description: The optional description for the push action.
+        projects:
+          type: array
+          items:
+            type: string
+            format: uri
+          description: Projects that are included in the push.
+        tags:
+          type: array
+          items:
+            type: string
+            format: uri
+          description: Tags are used to select parameters by environment from the
+            projects included in the push.  You cannot have two tags from the same
+            environment in the same push.
+        resource:
+          type: string
+          description: |-
+            Defines a path through the integration to the location where values will be pushed.
+
+            The following mustache-style substitutions can be used in the string:
+
+              - ``{{ environment }}`` to insert the environment name
+              - ``{{ parameter }}`` to insert the parameter name
+              - ``{{ project }}`` to insert the project name
+              - ``{{ push }}`` to insert the push name
+              - ``{{ tag }}`` to insert the tag name
+
+            We recommend that you use project, environment, and parameter at a minimum to disambiguate your pushed resource identifiers.
+          maxLength: 1024
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        modified_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - modified_at
+      - name
+      - projects
+      - resource
+      - tags
+      - url
+    AwsRegionEnum:
+      enum:
+      - af-south-1
+      - ap-east-1
+      - ap-northeast-1
+      - ap-northeast-2
+      - ap-northeast-3
+      - ap-south-1
+      - ap-southeast-1
+      - ap-southeast-2
+      - ca-central-1
+      - cn-north-1
+      - cn-northwest-1
+      - eu-central-1
+      - eu-north-1
+      - eu-south-1
+      - eu-west-1
+      - eu-west-2
+      - eu-west-3
+      - me-south-1
+      - sa-east-1
+      - us-east-1
+      - us-east-2
+      - us-west-1
+      - us-west-2
+      type: string
+    AwsServiceEnum:
+      enum:
+      - s3
+      - secretsmanager
+      - ssm
+      type: string
     Environment:
       type: object
       properties:
@@ -4025,6 +5074,10 @@ components:
           type: string
           format: date-time
           readOnly: true
+        allow:
+          allOf:
+          - $ref: '#/components/schemas/AllowEnum'
+          description: The actions to allow.
         fqn:
           type: string
           readOnly: true
@@ -4052,6 +5105,10 @@ components:
         description:
           type: string
           description: The optional description for the integration.
+        allow:
+          allOf:
+          - $ref: '#/components/schemas/AllowEnum'
+          description: The actions to allow.
         gh_installation_id:
           type: integer
       required:
@@ -4336,6 +5393,66 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/AwsIntegration'
+    PaginatedAwsPushList:
+      type: object
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/AwsPush'
+    PaginatedAwsPushTaskList:
+      type: object
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/AwsPushTask'
+    PaginatedAwsPushTaskStepList:
+      type: object
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/AwsPushTaskStep'
     PaginatedEnvironmentList:
       type: object
       properties:
@@ -4956,6 +6073,10 @@ components:
           type: string
           format: date-time
           readOnly: true
+        allow:
+          allOf:
+          - $ref: '#/components/schemas/AllowEnum'
+          description: The actions to allow.
         fqn:
           type: string
           readOnly: true
@@ -4968,12 +6089,12 @@ components:
         aws_enabled_regions:
           type: array
           items:
-            $ref: '#/components/schemas/AwsEnabledRegionsEnum'
+            $ref: '#/components/schemas/AwsRegionEnum'
           description: The AWS regions to integrate with.
         aws_enabled_services:
           type: array
           items:
-            $ref: '#/components/schemas/AwsEnabledServicesEnum'
+            $ref: '#/components/schemas/AwsServiceEnum'
           description: The AWS services to integrate with.
         aws_external_id:
           type: string
@@ -4993,6 +6114,64 @@ components:
             your AWS Administrator.
           pattern: ^[\w+=,.@\-]+$
           maxLength: 64
+    PatchedAwsPushUpdate:
+      type: object
+      description: Update a push.  The `region` and `service` cannot be changed on
+        an existing push.
+      properties:
+        url:
+          type: string
+          format: uri
+          readOnly: true
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+          description: The unique identifier for the push action.
+        name:
+          type: string
+          description: The push action name.
+          maxLength: 256
+        description:
+          type: string
+          description: The optional description for the push action.
+        projects:
+          type: array
+          items:
+            type: string
+            format: uri
+          description: Projects that are included in the push.
+        tags:
+          type: array
+          items:
+            type: string
+            format: uri
+          description: Tags are used to select parameters by environment from the
+            projects included in the push.  You cannot have two tags from the same
+            environment in the same push.
+        resource:
+          type: string
+          description: |-
+            Defines a path through the integration to the location where values will be pushed.
+
+            The following mustache-style substitutions can be used in the string:
+
+              - ``{{ environment }}`` to insert the environment name
+              - ``{{ parameter }}`` to insert the parameter name
+              - ``{{ project }}`` to insert the project name
+              - ``{{ push }}`` to insert the push name
+              - ``{{ tag }}`` to insert the tag name
+
+            We recommend that you use project, environment, and parameter at a minimum to disambiguate your pushed resource identifiers.
+          maxLength: 1024
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        modified_at:
+          type: string
+          format: date-time
+          readOnly: true
     PatchedEnvironment:
       type: object
       properties:
@@ -5287,6 +6466,11 @@ components:
           description: A description of the project.  You may find it helpful to document
             how this project is used to assist others when they need to maintain software
             that uses this content.
+        pushes:
+          type: array
+          items:
+            $ref: '#/components/schemas/AwsPush'
+          readOnly: true
         created_at:
           type: string
           format: date-time
@@ -5354,6 +6538,11 @@ components:
           type: string
           format: date-time
           description: The point in time this tag represents.
+        pushes:
+          type: array
+          items:
+            $ref: '#/components/schemas/AwsPush'
+          readOnly: true
         usage:
           allOf:
           - $ref: '#/components/schemas/TagReadUsage'
@@ -5577,6 +6766,11 @@ components:
           description: A description of the project.  You may find it helpful to document
             how this project is used to assist others when they need to maintain software
             that uses this content.
+        pushes:
+          type: array
+          items:
+            $ref: '#/components/schemas/AwsPush'
+          readOnly: true
         created_at:
           type: string
           format: date-time
@@ -5590,6 +6784,7 @@ components:
       - id
       - modified_at
       - name
+      - pushes
       - url
     ProjectCreate:
       type: object
@@ -5706,6 +6901,13 @@ components:
       - modified_at
       - url
       - user
+    StateEnum:
+      enum:
+      - queued
+      - running
+      - success
+      - failure
+      type: string
     Tag:
       type: object
       description: The details of a tag.
@@ -5734,6 +6936,11 @@ components:
           type: string
           format: date-time
           description: The point in time this tag represents.
+        pushes:
+          type: array
+          items:
+            $ref: '#/components/schemas/AwsPush'
+          readOnly: true
         usage:
           allOf:
           - $ref: '#/components/schemas/TagReadUsage'
@@ -5741,6 +6948,7 @@ components:
       required:
       - id
       - name
+      - pushes
       - timestamp
       - url
       - usage

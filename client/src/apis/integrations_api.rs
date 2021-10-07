@@ -43,6 +43,83 @@ pub enum IntegrationsAwsPartialUpdateError {
     UnknownValue(serde_json::Value),
 }
 
+/// struct for typed errors of method `integrations_aws_pushes_create`
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum IntegrationsAwsPushesCreateError {
+    UnknownValue(serde_json::Value),
+}
+
+/// struct for typed errors of method `integrations_aws_pushes_destroy`
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum IntegrationsAwsPushesDestroyError {
+    UnknownValue(serde_json::Value),
+}
+
+/// struct for typed errors of method `integrations_aws_pushes_list`
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum IntegrationsAwsPushesListError {
+    UnknownValue(serde_json::Value),
+}
+
+/// struct for typed errors of method `integrations_aws_pushes_partial_update`
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum IntegrationsAwsPushesPartialUpdateError {
+    UnknownValue(serde_json::Value),
+}
+
+/// struct for typed errors of method `integrations_aws_pushes_retrieve`
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum IntegrationsAwsPushesRetrieveError {
+    UnknownValue(serde_json::Value),
+}
+
+/// struct for typed errors of method `integrations_aws_pushes_sync_create`
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum IntegrationsAwsPushesSyncCreateError {
+    UnknownValue(serde_json::Value),
+}
+
+/// struct for typed errors of method `integrations_aws_pushes_tasks_list`
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum IntegrationsAwsPushesTasksListError {
+    UnknownValue(serde_json::Value),
+}
+
+/// struct for typed errors of method `integrations_aws_pushes_tasks_retrieve`
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum IntegrationsAwsPushesTasksRetrieveError {
+    UnknownValue(serde_json::Value),
+}
+
+/// struct for typed errors of method `integrations_aws_pushes_tasks_steps_list`
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum IntegrationsAwsPushesTasksStepsListError {
+    UnknownValue(serde_json::Value),
+}
+
+/// struct for typed errors of method `integrations_aws_pushes_tasks_steps_retrieve`
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum IntegrationsAwsPushesTasksStepsRetrieveError {
+    UnknownValue(serde_json::Value),
+}
+
+/// struct for typed errors of method `integrations_aws_pushes_update`
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum IntegrationsAwsPushesUpdateError {
+    UnknownValue(serde_json::Value),
+}
+
 /// struct for typed errors of method `integrations_aws_retrieve`
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
@@ -240,6 +317,7 @@ pub fn integrations_aws_list(
     configuration: &configuration::Configuration,
     aws_account_id: Option<&str>,
     aws_role_name: Option<&str>,
+    ordering: Option<&str>,
     page: Option<i32>,
     page_size: Option<i32>,
 ) -> Result<crate::models::PaginatedAwsIntegrationList, Error<IntegrationsAwsListError>> {
@@ -256,6 +334,10 @@ pub fn integrations_aws_list(
     if let Some(ref local_var_str) = aws_role_name {
         local_var_req_builder =
             local_var_req_builder.query(&[("aws_role_name", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = ordering {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("ordering", &local_var_str.to_string())]);
     }
     if let Some(ref local_var_str) = page {
         local_var_req_builder =
@@ -373,6 +455,908 @@ pub fn integrations_aws_partial_update(
         serde_json::from_str(&local_var_content).map_err(Error::from)
     } else {
         let local_var_entity: Option<IntegrationsAwsPartialUpdateError> =
+            serde_json::from_str(&local_var_content).ok();
+        let local_var_error = ResponseContent {
+            status: local_var_status,
+            content: local_var_content,
+            entity: local_var_entity,
+        };
+        if configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
+        Err(Error::ResponseError(local_var_error))
+    }
+}
+
+pub fn integrations_aws_pushes_create(
+    configuration: &configuration::Configuration,
+    awsintegration_pk: &str,
+    aws_push: crate::models::AwsPush,
+) -> Result<crate::models::AwsPush, Error<IntegrationsAwsPushesCreateError>> {
+    let local_var_client = &configuration.client;
+
+    let local_var_uri_str = format!(
+        "{}/api/v1/integrations/aws/{awsintegration_pk}/pushes/",
+        configuration.base_path,
+        awsintegration_pk = awsintegration_pk
+    );
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
+
+    if let Some(ref local_var_user_agent) = configuration.user_agent {
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
+    }
+
+    if let Some(ref local_var_token) = configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
+    if let Some(ref local_var_apikey) = configuration.api_key {
+        let local_var_key = local_var_apikey.key.clone();
+        let local_var_value = match local_var_apikey.prefix {
+            Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
+            None => local_var_key,
+        };
+        local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
+    };
+    local_var_req_builder = local_var_req_builder.json(&aws_push);
+
+    let local_var_req = local_var_req_builder.build()?;
+    let method = local_var_req.method().clone();
+    let start = Instant::now();
+    let mut local_var_resp = local_var_client.execute(local_var_req)?;
+    if configuration.rest_debug {
+        let duration = start.elapsed();
+        println!(
+            "URL {} {} elapsed: {:?}",
+            method,
+            &local_var_resp.url(),
+            duration
+        );
+    }
+
+    let local_var_status = local_var_resp.status();
+    let local_var_content = local_var_resp.text()?;
+
+    if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        serde_json::from_str(&local_var_content).map_err(Error::from)
+    } else {
+        let local_var_entity: Option<IntegrationsAwsPushesCreateError> =
+            serde_json::from_str(&local_var_content).ok();
+        let local_var_error = ResponseContent {
+            status: local_var_status,
+            content: local_var_content,
+            entity: local_var_entity,
+        };
+        if configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
+        Err(Error::ResponseError(local_var_error))
+    }
+}
+
+pub fn integrations_aws_pushes_destroy(
+    configuration: &configuration::Configuration,
+    awsintegration_pk: &str,
+    id: &str,
+) -> Result<(), Error<IntegrationsAwsPushesDestroyError>> {
+    let local_var_client = &configuration.client;
+
+    let local_var_uri_str = format!(
+        "{}/api/v1/integrations/aws/{awsintegration_pk}/pushes/{id}/",
+        configuration.base_path,
+        awsintegration_pk = awsintegration_pk,
+        id = id
+    );
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::DELETE, local_var_uri_str.as_str());
+
+    if let Some(ref local_var_user_agent) = configuration.user_agent {
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
+    }
+
+    if let Some(ref local_var_token) = configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
+    if let Some(ref local_var_apikey) = configuration.api_key {
+        let local_var_key = local_var_apikey.key.clone();
+        let local_var_value = match local_var_apikey.prefix {
+            Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
+            None => local_var_key,
+        };
+        local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
+    };
+
+    let local_var_req = local_var_req_builder.build()?;
+    let method = local_var_req.method().clone();
+    let start = Instant::now();
+    let mut local_var_resp = local_var_client.execute(local_var_req)?;
+    if configuration.rest_debug {
+        let duration = start.elapsed();
+        println!(
+            "URL {} {} elapsed: {:?}",
+            method,
+            &local_var_resp.url(),
+            duration
+        );
+    }
+
+    let local_var_status = local_var_resp.status();
+    let local_var_content = local_var_resp.text()?;
+
+    if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        Ok(())
+    } else {
+        let local_var_entity: Option<IntegrationsAwsPushesDestroyError> =
+            serde_json::from_str(&local_var_content).ok();
+        let local_var_error = ResponseContent {
+            status: local_var_status,
+            content: local_var_content,
+            entity: local_var_entity,
+        };
+        if configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
+        Err(Error::ResponseError(local_var_error))
+    }
+}
+
+pub fn integrations_aws_pushes_list(
+    configuration: &configuration::Configuration,
+    awsintegration_pk: &str,
+    description__icontains: Option<&str>,
+    name: Option<&str>,
+    name__icontains: Option<&str>,
+    ordering: Option<&str>,
+    page: Option<i32>,
+    page_size: Option<i32>,
+) -> Result<crate::models::PaginatedAwsPushList, Error<IntegrationsAwsPushesListError>> {
+    let local_var_client = &configuration.client;
+
+    let local_var_uri_str = format!(
+        "{}/api/v1/integrations/aws/{awsintegration_pk}/pushes/",
+        configuration.base_path,
+        awsintegration_pk = awsintegration_pk
+    );
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+
+    if let Some(ref local_var_str) = description__icontains {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("description__icontains", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = name {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("name", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = name__icontains {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("name__icontains", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = ordering {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("ordering", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = page {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("page", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = page_size {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("page_size", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_user_agent) = configuration.user_agent {
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
+    }
+
+    if let Some(ref local_var_token) = configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
+    if let Some(ref local_var_apikey) = configuration.api_key {
+        let local_var_key = local_var_apikey.key.clone();
+        let local_var_value = match local_var_apikey.prefix {
+            Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
+            None => local_var_key,
+        };
+        local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
+    };
+
+    let local_var_req = local_var_req_builder.build()?;
+    let method = local_var_req.method().clone();
+    let start = Instant::now();
+    let mut local_var_resp = local_var_client.execute(local_var_req)?;
+    if configuration.rest_debug {
+        let duration = start.elapsed();
+        println!(
+            "URL {} {} elapsed: {:?}",
+            method,
+            &local_var_resp.url(),
+            duration
+        );
+    }
+
+    let local_var_status = local_var_resp.status();
+    let local_var_content = local_var_resp.text()?;
+
+    if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        serde_json::from_str(&local_var_content).map_err(Error::from)
+    } else {
+        let local_var_entity: Option<IntegrationsAwsPushesListError> =
+            serde_json::from_str(&local_var_content).ok();
+        let local_var_error = ResponseContent {
+            status: local_var_status,
+            content: local_var_content,
+            entity: local_var_entity,
+        };
+        if configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
+        Err(Error::ResponseError(local_var_error))
+    }
+}
+
+pub fn integrations_aws_pushes_partial_update(
+    configuration: &configuration::Configuration,
+    awsintegration_pk: &str,
+    id: &str,
+    patched_aws_push_update: Option<crate::models::PatchedAwsPushUpdate>,
+) -> Result<crate::models::AwsPushUpdate, Error<IntegrationsAwsPushesPartialUpdateError>> {
+    let local_var_client = &configuration.client;
+
+    let local_var_uri_str = format!(
+        "{}/api/v1/integrations/aws/{awsintegration_pk}/pushes/{id}/",
+        configuration.base_path,
+        awsintegration_pk = awsintegration_pk,
+        id = id
+    );
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::PATCH, local_var_uri_str.as_str());
+
+    if let Some(ref local_var_user_agent) = configuration.user_agent {
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
+    }
+
+    if let Some(ref local_var_token) = configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
+    if let Some(ref local_var_apikey) = configuration.api_key {
+        let local_var_key = local_var_apikey.key.clone();
+        let local_var_value = match local_var_apikey.prefix {
+            Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
+            None => local_var_key,
+        };
+        local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
+    };
+    local_var_req_builder = local_var_req_builder.json(&patched_aws_push_update);
+
+    let local_var_req = local_var_req_builder.build()?;
+    let method = local_var_req.method().clone();
+    let start = Instant::now();
+    let mut local_var_resp = local_var_client.execute(local_var_req)?;
+    if configuration.rest_debug {
+        let duration = start.elapsed();
+        println!(
+            "URL {} {} elapsed: {:?}",
+            method,
+            &local_var_resp.url(),
+            duration
+        );
+    }
+
+    let local_var_status = local_var_resp.status();
+    let local_var_content = local_var_resp.text()?;
+
+    if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        serde_json::from_str(&local_var_content).map_err(Error::from)
+    } else {
+        let local_var_entity: Option<IntegrationsAwsPushesPartialUpdateError> =
+            serde_json::from_str(&local_var_content).ok();
+        let local_var_error = ResponseContent {
+            status: local_var_status,
+            content: local_var_content,
+            entity: local_var_entity,
+        };
+        if configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
+        Err(Error::ResponseError(local_var_error))
+    }
+}
+
+pub fn integrations_aws_pushes_retrieve(
+    configuration: &configuration::Configuration,
+    awsintegration_pk: &str,
+    id: &str,
+) -> Result<crate::models::AwsPush, Error<IntegrationsAwsPushesRetrieveError>> {
+    let local_var_client = &configuration.client;
+
+    let local_var_uri_str = format!(
+        "{}/api/v1/integrations/aws/{awsintegration_pk}/pushes/{id}/",
+        configuration.base_path,
+        awsintegration_pk = awsintegration_pk,
+        id = id
+    );
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+
+    if let Some(ref local_var_user_agent) = configuration.user_agent {
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
+    }
+
+    if let Some(ref local_var_token) = configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
+    if let Some(ref local_var_apikey) = configuration.api_key {
+        let local_var_key = local_var_apikey.key.clone();
+        let local_var_value = match local_var_apikey.prefix {
+            Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
+            None => local_var_key,
+        };
+        local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
+    };
+
+    let local_var_req = local_var_req_builder.build()?;
+    let method = local_var_req.method().clone();
+    let start = Instant::now();
+    let mut local_var_resp = local_var_client.execute(local_var_req)?;
+    if configuration.rest_debug {
+        let duration = start.elapsed();
+        println!(
+            "URL {} {} elapsed: {:?}",
+            method,
+            &local_var_resp.url(),
+            duration
+        );
+    }
+
+    let local_var_status = local_var_resp.status();
+    let local_var_content = local_var_resp.text()?;
+
+    if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        serde_json::from_str(&local_var_content).map_err(Error::from)
+    } else {
+        let local_var_entity: Option<IntegrationsAwsPushesRetrieveError> =
+            serde_json::from_str(&local_var_content).ok();
+        let local_var_error = ResponseContent {
+            status: local_var_status,
+            content: local_var_content,
+            entity: local_var_entity,
+        };
+        if configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
+        Err(Error::ResponseError(local_var_error))
+    }
+}
+
+/// Enqueue a push synchronization task.
+pub fn integrations_aws_pushes_sync_create(
+    configuration: &configuration::Configuration,
+    awsintegration_pk: &str,
+    id: &str,
+    aws_push: crate::models::AwsPush,
+) -> Result<(), Error<IntegrationsAwsPushesSyncCreateError>> {
+    let local_var_client = &configuration.client;
+
+    let local_var_uri_str = format!(
+        "{}/api/v1/integrations/aws/{awsintegration_pk}/pushes/{id}/sync/",
+        configuration.base_path,
+        awsintegration_pk = awsintegration_pk,
+        id = id
+    );
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
+
+    if let Some(ref local_var_user_agent) = configuration.user_agent {
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
+    }
+
+    if let Some(ref local_var_token) = configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
+    if let Some(ref local_var_apikey) = configuration.api_key {
+        let local_var_key = local_var_apikey.key.clone();
+        let local_var_value = match local_var_apikey.prefix {
+            Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
+            None => local_var_key,
+        };
+        local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
+    };
+    local_var_req_builder = local_var_req_builder.json(&aws_push);
+
+    let local_var_req = local_var_req_builder.build()?;
+    let method = local_var_req.method().clone();
+    let start = Instant::now();
+    let mut local_var_resp = local_var_client.execute(local_var_req)?;
+    if configuration.rest_debug {
+        let duration = start.elapsed();
+        println!(
+            "URL {} {} elapsed: {:?}",
+            method,
+            &local_var_resp.url(),
+            duration
+        );
+    }
+
+    let local_var_status = local_var_resp.status();
+    let local_var_content = local_var_resp.text()?;
+
+    if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        Ok(())
+    } else {
+        let local_var_entity: Option<IntegrationsAwsPushesSyncCreateError> =
+            serde_json::from_str(&local_var_content).ok();
+        let local_var_error = ResponseContent {
+            status: local_var_status,
+            content: local_var_content,
+            entity: local_var_entity,
+        };
+        if configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
+        Err(Error::ResponseError(local_var_error))
+    }
+}
+
+pub fn integrations_aws_pushes_tasks_list(
+    configuration: &configuration::Configuration,
+    awsintegration_pk: &str,
+    awspush_pk: &str,
+    modified_at: Option<String>,
+    modified_at__gte: Option<String>,
+    modified_at__lte: Option<String>,
+    ordering: Option<&str>,
+    page: Option<i32>,
+    page_size: Option<i32>,
+    state: Option<&str>,
+) -> Result<crate::models::PaginatedAwsPushTaskList, Error<IntegrationsAwsPushesTasksListError>> {
+    let local_var_client = &configuration.client;
+
+    let local_var_uri_str = format!(
+        "{}/api/v1/integrations/aws/{awsintegration_pk}/pushes/{awspush_pk}/tasks/",
+        configuration.base_path,
+        awsintegration_pk = awsintegration_pk,
+        awspush_pk = awspush_pk
+    );
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+
+    if let Some(ref local_var_str) = modified_at {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("modified_at", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = modified_at__gte {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("modified_at__gte", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = modified_at__lte {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("modified_at__lte", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = ordering {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("ordering", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = page {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("page", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = page_size {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("page_size", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = state {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("state", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_user_agent) = configuration.user_agent {
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
+    }
+
+    if let Some(ref local_var_token) = configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
+    if let Some(ref local_var_apikey) = configuration.api_key {
+        let local_var_key = local_var_apikey.key.clone();
+        let local_var_value = match local_var_apikey.prefix {
+            Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
+            None => local_var_key,
+        };
+        local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
+    };
+
+    let local_var_req = local_var_req_builder.build()?;
+    let method = local_var_req.method().clone();
+    let start = Instant::now();
+    let mut local_var_resp = local_var_client.execute(local_var_req)?;
+    if configuration.rest_debug {
+        let duration = start.elapsed();
+        println!(
+            "URL {} {} elapsed: {:?}",
+            method,
+            &local_var_resp.url(),
+            duration
+        );
+    }
+
+    let local_var_status = local_var_resp.status();
+    let local_var_content = local_var_resp.text()?;
+
+    if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        serde_json::from_str(&local_var_content).map_err(Error::from)
+    } else {
+        let local_var_entity: Option<IntegrationsAwsPushesTasksListError> =
+            serde_json::from_str(&local_var_content).ok();
+        let local_var_error = ResponseContent {
+            status: local_var_status,
+            content: local_var_content,
+            entity: local_var_entity,
+        };
+        if configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
+        Err(Error::ResponseError(local_var_error))
+    }
+}
+
+pub fn integrations_aws_pushes_tasks_retrieve(
+    configuration: &configuration::Configuration,
+    awsintegration_pk: &str,
+    awspush_pk: &str,
+    id: &str,
+) -> Result<crate::models::AwsPushTask, Error<IntegrationsAwsPushesTasksRetrieveError>> {
+    let local_var_client = &configuration.client;
+
+    let local_var_uri_str = format!(
+        "{}/api/v1/integrations/aws/{awsintegration_pk}/pushes/{awspush_pk}/tasks/{id}/",
+        configuration.base_path,
+        awsintegration_pk = awsintegration_pk,
+        awspush_pk = awspush_pk,
+        id = id
+    );
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+
+    if let Some(ref local_var_user_agent) = configuration.user_agent {
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
+    }
+
+    if let Some(ref local_var_token) = configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
+    if let Some(ref local_var_apikey) = configuration.api_key {
+        let local_var_key = local_var_apikey.key.clone();
+        let local_var_value = match local_var_apikey.prefix {
+            Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
+            None => local_var_key,
+        };
+        local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
+    };
+
+    let local_var_req = local_var_req_builder.build()?;
+    let method = local_var_req.method().clone();
+    let start = Instant::now();
+    let mut local_var_resp = local_var_client.execute(local_var_req)?;
+    if configuration.rest_debug {
+        let duration = start.elapsed();
+        println!(
+            "URL {} {} elapsed: {:?}",
+            method,
+            &local_var_resp.url(),
+            duration
+        );
+    }
+
+    let local_var_status = local_var_resp.status();
+    let local_var_content = local_var_resp.text()?;
+
+    if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        serde_json::from_str(&local_var_content).map_err(Error::from)
+    } else {
+        let local_var_entity: Option<IntegrationsAwsPushesTasksRetrieveError> =
+            serde_json::from_str(&local_var_content).ok();
+        let local_var_error = ResponseContent {
+            status: local_var_status,
+            content: local_var_content,
+            entity: local_var_entity,
+        };
+        if configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
+        Err(Error::ResponseError(local_var_error))
+    }
+}
+
+pub fn integrations_aws_pushes_tasks_steps_list(
+    configuration: &configuration::Configuration,
+    awsintegration_pk: &str,
+    awspush_pk: &str,
+    awspushtask_pk: &str,
+    fqn: Option<&str>,
+    modified_at: Option<String>,
+    modified_at__gte: Option<String>,
+    modified_at__lte: Option<String>,
+    operation: Option<&str>,
+    ordering: Option<&str>,
+    page: Option<i32>,
+    page_size: Option<i32>,
+    success: Option<bool>,
+    venue_id: Option<&str>,
+    venue_id__icontains: Option<&str>,
+    venue_name: Option<&str>,
+    venue_name__icontains: Option<&str>,
+) -> Result<
+    crate::models::PaginatedAwsPushTaskStepList,
+    Error<IntegrationsAwsPushesTasksStepsListError>,
+> {
+    let local_var_client = &configuration.client;
+
+    let local_var_uri_str = format!("{}/api/v1/integrations/aws/{awsintegration_pk}/pushes/{awspush_pk}/tasks/{awspushtask_pk}/steps/", configuration.base_path, awsintegration_pk=awsintegration_pk, awspush_pk=awspush_pk, awspushtask_pk=awspushtask_pk);
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+
+    if let Some(ref local_var_str) = fqn {
+        local_var_req_builder = local_var_req_builder.query(&[("fqn", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = modified_at {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("modified_at", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = modified_at__gte {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("modified_at__gte", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = modified_at__lte {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("modified_at__lte", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = operation {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("operation", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = ordering {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("ordering", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = page {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("page", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = page_size {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("page_size", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = success {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("success", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = venue_id {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("venue_id", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = venue_id__icontains {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("venue_id__icontains", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = venue_name {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("venue_name", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = venue_name__icontains {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("venue_name__icontains", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_user_agent) = configuration.user_agent {
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
+    }
+
+    if let Some(ref local_var_token) = configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
+    if let Some(ref local_var_apikey) = configuration.api_key {
+        let local_var_key = local_var_apikey.key.clone();
+        let local_var_value = match local_var_apikey.prefix {
+            Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
+            None => local_var_key,
+        };
+        local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
+    };
+
+    let local_var_req = local_var_req_builder.build()?;
+    let method = local_var_req.method().clone();
+    let start = Instant::now();
+    let mut local_var_resp = local_var_client.execute(local_var_req)?;
+    if configuration.rest_debug {
+        let duration = start.elapsed();
+        println!(
+            "URL {} {} elapsed: {:?}",
+            method,
+            &local_var_resp.url(),
+            duration
+        );
+    }
+
+    let local_var_status = local_var_resp.status();
+    let local_var_content = local_var_resp.text()?;
+
+    if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        serde_json::from_str(&local_var_content).map_err(Error::from)
+    } else {
+        let local_var_entity: Option<IntegrationsAwsPushesTasksStepsListError> =
+            serde_json::from_str(&local_var_content).ok();
+        let local_var_error = ResponseContent {
+            status: local_var_status,
+            content: local_var_content,
+            entity: local_var_entity,
+        };
+        if configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
+        Err(Error::ResponseError(local_var_error))
+    }
+}
+
+pub fn integrations_aws_pushes_tasks_steps_retrieve(
+    configuration: &configuration::Configuration,
+    awsintegration_pk: &str,
+    awspush_pk: &str,
+    awspushtask_pk: &str,
+    id: &str,
+) -> Result<crate::models::AwsPushTaskStep, Error<IntegrationsAwsPushesTasksStepsRetrieveError>> {
+    let local_var_client = &configuration.client;
+
+    let local_var_uri_str = format!("{}/api/v1/integrations/aws/{awsintegration_pk}/pushes/{awspush_pk}/tasks/{awspushtask_pk}/steps/{id}/", configuration.base_path, awsintegration_pk=awsintegration_pk, awspush_pk=awspush_pk, awspushtask_pk=awspushtask_pk, id=id);
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+
+    if let Some(ref local_var_user_agent) = configuration.user_agent {
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
+    }
+
+    if let Some(ref local_var_token) = configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
+    if let Some(ref local_var_apikey) = configuration.api_key {
+        let local_var_key = local_var_apikey.key.clone();
+        let local_var_value = match local_var_apikey.prefix {
+            Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
+            None => local_var_key,
+        };
+        local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
+    };
+
+    let local_var_req = local_var_req_builder.build()?;
+    let method = local_var_req.method().clone();
+    let start = Instant::now();
+    let mut local_var_resp = local_var_client.execute(local_var_req)?;
+    if configuration.rest_debug {
+        let duration = start.elapsed();
+        println!(
+            "URL {} {} elapsed: {:?}",
+            method,
+            &local_var_resp.url(),
+            duration
+        );
+    }
+
+    let local_var_status = local_var_resp.status();
+    let local_var_content = local_var_resp.text()?;
+
+    if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        serde_json::from_str(&local_var_content).map_err(Error::from)
+    } else {
+        let local_var_entity: Option<IntegrationsAwsPushesTasksStepsRetrieveError> =
+            serde_json::from_str(&local_var_content).ok();
+        let local_var_error = ResponseContent {
+            status: local_var_status,
+            content: local_var_content,
+            entity: local_var_entity,
+        };
+        if configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
+        Err(Error::ResponseError(local_var_error))
+    }
+}
+
+pub fn integrations_aws_pushes_update(
+    configuration: &configuration::Configuration,
+    awsintegration_pk: &str,
+    id: &str,
+    aws_push_update: crate::models::AwsPushUpdate,
+) -> Result<crate::models::AwsPushUpdate, Error<IntegrationsAwsPushesUpdateError>> {
+    let local_var_client = &configuration.client;
+
+    let local_var_uri_str = format!(
+        "{}/api/v1/integrations/aws/{awsintegration_pk}/pushes/{id}/",
+        configuration.base_path,
+        awsintegration_pk = awsintegration_pk,
+        id = id
+    );
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::PUT, local_var_uri_str.as_str());
+
+    if let Some(ref local_var_user_agent) = configuration.user_agent {
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
+    }
+
+    if let Some(ref local_var_token) = configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
+    if let Some(ref local_var_apikey) = configuration.api_key {
+        let local_var_key = local_var_apikey.key.clone();
+        let local_var_value = match local_var_apikey.prefix {
+            Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
+            None => local_var_key,
+        };
+        local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
+    };
+    local_var_req_builder = local_var_req_builder.json(&aws_push_update);
+
+    let local_var_req = local_var_req_builder.build()?;
+    let method = local_var_req.method().clone();
+    let start = Instant::now();
+    let mut local_var_resp = local_var_client.execute(local_var_req)?;
+    if configuration.rest_debug {
+        let duration = start.elapsed();
+        println!(
+            "URL {} {} elapsed: {:?}",
+            method,
+            &local_var_resp.url(),
+            duration
+        );
+    }
+
+    let local_var_status = local_var_resp.status();
+    let local_var_content = local_var_resp.text()?;
+
+    if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        serde_json::from_str(&local_var_content).map_err(Error::from)
+    } else {
+        let local_var_entity: Option<IntegrationsAwsPushesUpdateError> =
             serde_json::from_str(&local_var_content).ok();
         let local_var_error = ResponseContent {
             status: local_var_status,
@@ -536,6 +1520,7 @@ pub fn integrations_aws_update(
 pub fn integrations_explore_list(
     configuration: &configuration::Configuration,
     fqn: Option<&str>,
+    ordering: Option<&str>,
     page: Option<i32>,
     page_size: Option<i32>,
 ) -> Result<crate::models::PaginatedIntegrationExplorerList, Error<IntegrationsExploreListError>> {
@@ -547,6 +1532,10 @@ pub fn integrations_explore_list(
 
     if let Some(ref local_var_str) = fqn {
         local_var_req_builder = local_var_req_builder.query(&[("fqn", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = ordering {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("ordering", &local_var_str.to_string())]);
     }
     if let Some(ref local_var_str) = page {
         local_var_req_builder =
@@ -752,6 +1741,7 @@ pub fn integrations_github_destroy(
 pub fn integrations_github_list(
     configuration: &configuration::Configuration,
     gh_organization_slug: Option<&str>,
+    ordering: Option<&str>,
     page: Option<i32>,
     page_size: Option<i32>,
 ) -> Result<crate::models::PaginatedGitHubIntegrationList, Error<IntegrationsGithubListError>> {
@@ -764,6 +1754,10 @@ pub fn integrations_github_list(
     if let Some(ref local_var_str) = gh_organization_slug {
         local_var_req_builder =
             local_var_req_builder.query(&[("gh_organization_slug", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = ordering {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("ordering", &local_var_str.to_string())]);
     }
     if let Some(ref local_var_str) = page {
         local_var_req_builder =

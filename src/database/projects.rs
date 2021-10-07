@@ -7,6 +7,10 @@ use cloudtruth_restapi::apis::Error::ResponseError;
 use cloudtruth_restapi::models::{PatchedProject, ProjectCreate};
 use std::result::Result;
 
+const NO_DESC_CONTAINS: Option<&str> = None;
+const NO_NAME_CONTAINS: Option<&str> = None;
+const NO_ORDERING: Option<&str> = None;
+
 pub struct Projects {}
 
 fn response_error(status: &reqwest::StatusCode, content: &str) -> ProjectError {
@@ -28,7 +32,15 @@ impl Projects {
         rest_cfg: &OpenApiConfig,
         proj_name: &str,
     ) -> Result<Option<ProjectDetails>, ProjectError> {
-        let response = projects_list(rest_cfg, Some(proj_name), None, PAGE_SIZE);
+        let response = projects_list(
+            rest_cfg,
+            NO_DESC_CONTAINS,
+            Some(proj_name),
+            NO_NAME_CONTAINS,
+            NO_ORDERING,
+            None,
+            PAGE_SIZE,
+        );
 
         match response {
             Ok(data) => match data.results {
@@ -70,7 +82,15 @@ impl Projects {
         &self,
         rest_cfg: &OpenApiConfig,
     ) -> Result<Vec<ProjectDetails>, ProjectError> {
-        let response = projects_list(rest_cfg, None, None, PAGE_SIZE);
+        let response = projects_list(
+            rest_cfg,
+            NO_DESC_CONTAINS,
+            None,
+            NO_NAME_CONTAINS,
+            NO_ORDERING,
+            None,
+            PAGE_SIZE,
+        );
 
         match response {
             Ok(data) => match data.results {
@@ -144,6 +164,7 @@ impl Projects {
             description: description.map(|d| d.to_string()),
             created_at: None,
             modified_at: None,
+            pushes: None,
         };
         let response = projects_partial_update(rest_cfg, project_id, Some(proj));
         match response {

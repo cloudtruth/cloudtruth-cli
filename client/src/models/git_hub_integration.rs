@@ -36,6 +36,9 @@ pub struct GitHubIntegration {
     pub created_at: String,
     #[serde(rename = "modified_at")]
     pub modified_at: String,
+    /// The actions to allow.
+    #[serde(rename = "allow", skip_serializing_if = "Option::is_none")]
+    pub allow: Option<Box<crate::models::AllowEnum>>,
     #[serde(rename = "fqn")]
     pub fqn: String,
     #[serde(rename = "gh_installation_id")]
@@ -70,6 +73,7 @@ impl GitHubIntegration {
             _type,
             created_at,
             modified_at,
+            allow: None,
             fqn,
             gh_installation_id,
             gh_organization_slug,

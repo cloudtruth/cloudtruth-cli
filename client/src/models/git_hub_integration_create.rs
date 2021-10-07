@@ -13,6 +13,9 @@ pub struct GitHubIntegrationCreate {
     /// The optional description for the integration.
     #[serde(rename = "description", skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
+    /// The actions to allow.
+    #[serde(rename = "allow", skip_serializing_if = "Option::is_none")]
+    pub allow: Option<Box<crate::models::AllowEnum>>,
     #[serde(rename = "gh_installation_id")]
     pub gh_installation_id: i32,
 }
@@ -21,6 +24,7 @@ impl GitHubIntegrationCreate {
     pub fn new(gh_installation_id: i32) -> GitHubIntegrationCreate {
         GitHubIntegrationCreate {
             description: None,
+            allow: None,
             gh_installation_id,
         }
     }

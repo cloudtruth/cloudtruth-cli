@@ -75,6 +75,13 @@ pub enum ProjectsParametersPartialUpdateError {
     UnknownValue(serde_json::Value),
 }
 
+/// struct for typed errors of method `projects_parameters_pushes_list`
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum ProjectsParametersPushesListError {
+    UnknownValue(serde_json::Value),
+}
+
 /// struct for typed errors of method `projects_parameters_retrieve`
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
@@ -412,7 +419,10 @@ pub fn projects_destroy(
 
 pub fn projects_list(
     configuration: &configuration::Configuration,
+    description__icontains: Option<&str>,
     name: Option<&str>,
+    name__icontains: Option<&str>,
+    ordering: Option<&str>,
     page: Option<i32>,
     page_size: Option<i32>,
 ) -> Result<crate::models::PaginatedProjectList, Error<ProjectsListError>> {
@@ -422,9 +432,21 @@ pub fn projects_list(
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
 
+    if let Some(ref local_var_str) = description__icontains {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("description__icontains", &local_var_str.to_string())]);
+    }
     if let Some(ref local_var_str) = name {
         local_var_req_builder =
             local_var_req_builder.query(&[("name", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = name__icontains {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("name__icontains", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = ordering {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("ordering", &local_var_str.to_string())]);
     }
     if let Some(ref local_var_str) = page {
         local_var_req_builder =
@@ -498,6 +520,7 @@ pub fn projects_parameter_export_list(
     environment: Option<&str>,
     explicit_export: Option<bool>,
     mask_secrets: Option<bool>,
+    ordering: Option<&str>,
     output: Option<&str>,
     startswith: Option<&str>,
     tag: Option<&str>,
@@ -536,6 +559,10 @@ pub fn projects_parameter_export_list(
     if let Some(ref local_var_str) = mask_secrets {
         local_var_req_builder =
             local_var_req_builder.query(&[("mask_secrets", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = ordering {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("ordering", &local_var_str.to_string())]);
     }
     if let Some(ref local_var_str) = output {
         local_var_req_builder =
@@ -754,6 +781,7 @@ pub fn projects_parameters_list(
     evaluate: Option<bool>,
     mask_secrets: Option<bool>,
     name: Option<&str>,
+    ordering: Option<&str>,
     page: Option<i32>,
     page_size: Option<i32>,
     partial_success: Option<bool>,
@@ -790,6 +818,10 @@ pub fn projects_parameters_list(
     if let Some(ref local_var_str) = name {
         local_var_req_builder =
             local_var_req_builder.query(&[("name", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = ordering {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("ordering", &local_var_str.to_string())]);
     }
     if let Some(ref local_var_str) = page {
         local_var_req_builder =
@@ -924,6 +956,101 @@ pub fn projects_parameters_partial_update(
         serde_json::from_str(&local_var_content).map_err(Error::from)
     } else {
         let local_var_entity: Option<ProjectsParametersPartialUpdateError> =
+            serde_json::from_str(&local_var_content).ok();
+        let local_var_error = ResponseContent {
+            status: local_var_status,
+            content: local_var_content,
+            entity: local_var_entity,
+        };
+        if configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
+        Err(Error::ResponseError(local_var_error))
+    }
+}
+
+/// The complete history of push operations that this parameter was involved in.
+pub fn projects_parameters_pushes_list(
+    configuration: &configuration::Configuration,
+    parameter_pk: &str,
+    project_pk: &str,
+    as_of: Option<String>,
+    ordering: Option<&str>,
+    page: Option<i32>,
+    page_size: Option<i32>,
+    tag: Option<&str>,
+) -> Result<crate::models::PaginatedAwsPushTaskStepList, Error<ProjectsParametersPushesListError>> {
+    let local_var_client = &configuration.client;
+
+    let local_var_uri_str = format!(
+        "{}/api/v1/projects/{project_pk}/parameters/{parameter_pk}/pushes/",
+        configuration.base_path,
+        parameter_pk = parameter_pk,
+        project_pk = project_pk
+    );
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+
+    if let Some(ref local_var_str) = as_of {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("as_of", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = ordering {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("ordering", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = page {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("page", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = page_size {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("page_size", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = tag {
+        local_var_req_builder = local_var_req_builder.query(&[("tag", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_user_agent) = configuration.user_agent {
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
+    }
+
+    if let Some(ref local_var_token) = configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
+    if let Some(ref local_var_apikey) = configuration.api_key {
+        let local_var_key = local_var_apikey.key.clone();
+        let local_var_value = match local_var_apikey.prefix {
+            Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
+            None => local_var_key,
+        };
+        local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
+    };
+
+    let local_var_req = local_var_req_builder.build()?;
+    let method = local_var_req.method().clone();
+    let start = Instant::now();
+    let mut local_var_resp = local_var_client.execute(local_var_req)?;
+    if configuration.rest_debug {
+        let duration = start.elapsed();
+        println!(
+            "URL {} {} elapsed: {:?}",
+            method,
+            &local_var_resp.url(),
+            duration
+        );
+    }
+
+    let local_var_status = local_var_resp.status();
+    let local_var_content = local_var_resp.text()?;
+
+    if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        serde_json::from_str(&local_var_content).map_err(Error::from)
+    } else {
+        let local_var_entity: Option<ProjectsParametersPushesListError> =
             serde_json::from_str(&local_var_content).ok();
         let local_var_error = ResponseContent {
             status: local_var_status,
@@ -1197,6 +1324,7 @@ pub fn projects_parameters_rules_list(
     configuration: &configuration::Configuration,
     parameter_pk: &str,
     project_pk: &str,
+    ordering: Option<&str>,
     page: Option<i32>,
     page_size: Option<i32>,
     _type: Option<&str>,
@@ -1212,6 +1340,10 @@ pub fn projects_parameters_rules_list(
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
 
+    if let Some(ref local_var_str) = ordering {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("ordering", &local_var_str.to_string())]);
+    }
     if let Some(ref local_var_str) = page {
         local_var_req_builder =
             local_var_req_builder.query(&[("page", &local_var_str.to_string())]);
@@ -1734,6 +1866,7 @@ pub fn projects_parameters_values_create(
     parameter_pk: &str,
     project_pk: &str,
     value_create: crate::models::ValueCreate,
+    evaluate: Option<bool>,
     wrap: Option<bool>,
 ) -> Result<crate::models::Value, Error<ProjectsParametersValuesCreateError>> {
     let local_var_client = &configuration.client;
@@ -1747,6 +1880,10 @@ pub fn projects_parameters_values_create(
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
 
+    if let Some(ref local_var_str) = evaluate {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("evaluate", &local_var_str.to_string())]);
+    }
     if let Some(ref local_var_str) = wrap {
         local_var_req_builder =
             local_var_req_builder.query(&[("wrap", &local_var_str.to_string())]);
@@ -1812,6 +1949,7 @@ pub fn projects_parameters_values_destroy(
     id: &str,
     parameter_pk: &str,
     project_pk: &str,
+    evaluate: Option<bool>,
 ) -> Result<(), Error<ProjectsParametersValuesDestroyError>> {
     let local_var_client = &configuration.client;
 
@@ -1825,6 +1963,10 @@ pub fn projects_parameters_values_destroy(
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::DELETE, local_var_uri_str.as_str());
 
+    if let Some(ref local_var_str) = evaluate {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("evaluate", &local_var_str.to_string())]);
+    }
     if let Some(ref local_var_user_agent) = configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
@@ -1887,6 +2029,8 @@ pub fn projects_parameters_values_list(
     as_of: Option<String>,
     environment: Option<&str>,
     evaluate: Option<bool>,
+    exclude: Option<&str>,
+    include: Option<&str>,
     mask_secrets: Option<bool>,
     page: Option<i32>,
     page_size: Option<i32>,
@@ -1916,6 +2060,14 @@ pub fn projects_parameters_values_list(
     if let Some(ref local_var_str) = evaluate {
         local_var_req_builder =
             local_var_req_builder.query(&[("evaluate", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = exclude {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("exclude", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = include {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("include", &local_var_str.to_string())]);
     }
     if let Some(ref local_var_str) = mask_secrets {
         local_var_req_builder =
@@ -2000,6 +2152,7 @@ pub fn projects_parameters_values_partial_update(
     id: &str,
     parameter_pk: &str,
     project_pk: &str,
+    evaluate: Option<bool>,
     wrap: Option<bool>,
     patched_value: Option<crate::models::PatchedValue>,
 ) -> Result<crate::models::Value, Error<ProjectsParametersValuesPartialUpdateError>> {
@@ -2015,6 +2168,10 @@ pub fn projects_parameters_values_partial_update(
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::PATCH, local_var_uri_str.as_str());
 
+    if let Some(ref local_var_str) = evaluate {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("evaluate", &local_var_str.to_string())]);
+    }
     if let Some(ref local_var_str) = wrap {
         local_var_req_builder =
             local_var_req_builder.query(&[("wrap", &local_var_str.to_string())]);
@@ -2082,6 +2239,8 @@ pub fn projects_parameters_values_retrieve(
     project_pk: &str,
     as_of: Option<String>,
     evaluate: Option<bool>,
+    exclude: Option<&str>,
+    include: Option<&str>,
     mask_secrets: Option<bool>,
     partial_success: Option<bool>,
     tag: Option<&str>,
@@ -2106,6 +2265,14 @@ pub fn projects_parameters_values_retrieve(
     if let Some(ref local_var_str) = evaluate {
         local_var_req_builder =
             local_var_req_builder.query(&[("evaluate", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = exclude {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("exclude", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = include {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("include", &local_var_str.to_string())]);
     }
     if let Some(ref local_var_str) = mask_secrets {
         local_var_req_builder =
@@ -2182,6 +2349,7 @@ pub fn projects_parameters_values_update(
     id: &str,
     parameter_pk: &str,
     project_pk: &str,
+    evaluate: Option<bool>,
     wrap: Option<bool>,
     value: Option<crate::models::Value>,
 ) -> Result<crate::models::Value, Error<ProjectsParametersValuesUpdateError>> {
@@ -2197,6 +2365,10 @@ pub fn projects_parameters_values_update(
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::PUT, local_var_uri_str.as_str());
 
+    if let Some(ref local_var_str) = evaluate {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("evaluate", &local_var_str.to_string())]);
+    }
     if let Some(ref local_var_str) = wrap {
         local_var_req_builder =
             local_var_req_builder.query(&[("wrap", &local_var_str.to_string())]);
@@ -2620,6 +2792,7 @@ pub fn projects_templates_list(
     configuration: &configuration::Configuration,
     project_pk: &str,
     name: Option<&str>,
+    ordering: Option<&str>,
     page: Option<i32>,
     page_size: Option<i32>,
 ) -> Result<crate::models::PaginatedTemplateList, Error<ProjectsTemplatesListError>> {
@@ -2636,6 +2809,10 @@ pub fn projects_templates_list(
     if let Some(ref local_var_str) = name {
         local_var_req_builder =
             local_var_req_builder.query(&[("name", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = ordering {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("ordering", &local_var_str.to_string())]);
     }
     if let Some(ref local_var_str) = page {
         local_var_req_builder =

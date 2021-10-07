@@ -7,6 +7,12 @@ use cloudtruth_restapi::apis::Error::ResponseError;
 use cloudtruth_restapi::models::{EnvironmentCreate, PatchedEnvironment, PatchedTag, TagCreate};
 use std::collections::HashMap;
 
+const NO_DESC_CONTAINS: Option<&str> = None;
+const NO_NAME_CONTAINS: Option<&str> = None;
+const NO_ORDERING: Option<&str> = None;
+const NO_PARENT_NAME: Option<&str> = None;
+const NO_PARENT_CONTAINS: Option<&str> = None;
+
 pub struct Environments {}
 
 /// This is used to map from an Environment's URL to the Name.
@@ -46,7 +52,17 @@ impl Environments {
 
     /// This provides a means to get an entire list of environment URLs to names.
     pub fn get_url_name_map(&self, rest_cfg: &OpenApiConfig) -> EnvironmentUrlMap {
-        let response = environments_list(rest_cfg, None, None, PAGE_SIZE, None);
+        let response = environments_list(
+            rest_cfg,
+            NO_DESC_CONTAINS,
+            None,
+            NO_NAME_CONTAINS,
+            NO_ORDERING,
+            None,
+            PAGE_SIZE,
+            NO_PARENT_NAME,
+            NO_PARENT_CONTAINS,
+        );
         let mut result: EnvironmentUrlMap = EnvironmentUrlMap::new();
         if let Ok(list) = response {
             if let Some(environments) = list.results {
@@ -83,7 +99,17 @@ impl Environments {
         rest_cfg: &OpenApiConfig,
         env_name: &str,
     ) -> Result<Option<EnvironmentDetails>, EnvironmentError> {
-        let response = environments_list(rest_cfg, Some(env_name), None, PAGE_SIZE, None);
+        let response = environments_list(
+            rest_cfg,
+            NO_DESC_CONTAINS,
+            Some(env_name),
+            NO_NAME_CONTAINS,
+            NO_ORDERING,
+            None,
+            PAGE_SIZE,
+            NO_PARENT_NAME,
+            NO_PARENT_CONTAINS,
+        );
 
         match response {
             Ok(data) => match data.results {
@@ -126,7 +152,17 @@ impl Environments {
         &self,
         rest_cfg: &OpenApiConfig,
     ) -> Result<Vec<EnvironmentDetails>, EnvironmentError> {
-        let response = environments_list(rest_cfg, None, None, PAGE_SIZE, None);
+        let response = environments_list(
+            rest_cfg,
+            NO_DESC_CONTAINS,
+            None,
+            NO_NAME_CONTAINS,
+            NO_ORDERING,
+            None,
+            PAGE_SIZE,
+            NO_PARENT_NAME,
+            NO_PARENT_CONTAINS,
+        );
 
         match response {
             Ok(data) => match data.results {
@@ -404,6 +440,7 @@ impl Environments {
             description: description.map(String::from),
             timestamp,
             usage: None,
+            pushes: None,
         };
         let response =
             environments_tags_partial_update(rest_cfg, environment_id, tag_id, Some(tag_update));

@@ -21,6 +21,8 @@ pub struct PatchedProject {
     /// A description of the project.  You may find it helpful to document how this project is used to assist others when they need to maintain software that uses this content.
     #[serde(rename = "description", skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
+    #[serde(rename = "pushes", skip_serializing_if = "Option::is_none")]
+    pub pushes: Option<Vec<crate::models::AwsPush>>,
     #[serde(rename = "created_at", skip_serializing_if = "Option::is_none")]
     pub created_at: Option<String>,
     #[serde(rename = "modified_at", skip_serializing_if = "Option::is_none")]
@@ -34,6 +36,7 @@ impl PatchedProject {
             id: None,
             name: None,
             description: None,
+            pushes: None,
             created_at: None,
             modified_at: None,
         }

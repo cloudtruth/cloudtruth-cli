@@ -43,6 +43,7 @@ pub fn audit_list(
     latest: Option<String>,
     object_id: Option<&str>,
     object_type: Option<&str>,
+    ordering: Option<&str>,
     page: Option<i32>,
     page_size: Option<i32>,
     user_id: Option<&str>,
@@ -72,6 +73,10 @@ pub fn audit_list(
     if let Some(ref local_var_str) = object_type {
         local_var_req_builder =
             local_var_req_builder.query(&[("object_type", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = ordering {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("ordering", &local_var_str.to_string())]);
     }
     if let Some(ref local_var_str) = page {
         local_var_req_builder =
