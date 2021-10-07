@@ -2,7 +2,6 @@
 .travis.yml
 Cargo.toml
 README.md
-docs/AllowEnum.md
 docs/ApiApi.md
 docs/AuditApi.md
 docs/AuditTrail.md
@@ -116,7 +115,6 @@ src/apis/projects_api.rs
 src/apis/serviceaccounts_api.rs
 src/apis/users_api.rs
 src/lib.rs
-src/models/allow_enum.rs
 src/models/audit_trail.rs
 src/models/audit_trail_summary.rs
 src/models/aws_integration.rs

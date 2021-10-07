@@ -133,7 +133,6 @@ Class | Method | HTTP request | Description
 
 ## Documentation For Models
 
- - [AllowEnum](docs/AllowEnum.md)
  - [AuditTrail](docs/AuditTrail.md)
  - [AuditTrailSummary](docs/AuditTrailSummary.md)
  - [AwsIntegration](docs/AwsIntegration.md)

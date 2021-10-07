@@ -1,5 +1,3 @@
-pub mod allow_enum;
-pub use self::allow_enum::AllowEnum;
 pub mod audit_trail;
 pub use self::audit_trail::AuditTrail;
 pub mod audit_trail_summary;

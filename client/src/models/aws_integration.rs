@@ -36,11 +36,11 @@ pub struct AwsIntegration {
     pub created_at: String,
     #[serde(rename = "modified_at")]
     pub modified_at: String,
-    /// The actions to allow.
-    #[serde(rename = "allow", skip_serializing_if = "Option::is_none")]
-    pub allow: Option<Vec<crate::models::AllowEnum>>,
     #[serde(rename = "fqn")]
     pub fqn: String,
+    /// Allow pushes to write parameters to the integration.
+    #[serde(rename = "writable", skip_serializing_if = "Option::is_none")]
+    pub writable: Option<bool>,
     /// The AWS Account ID.
     #[serde(rename = "aws_account_id")]
     pub aws_account_id: String,
@@ -86,8 +86,8 @@ impl AwsIntegration {
             _type,
             created_at,
             modified_at,
-            allow: None,
             fqn,
+            writable: None,
             aws_account_id,
             aws_enabled_regions,
             aws_enabled_services,

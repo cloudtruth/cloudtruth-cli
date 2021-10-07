@@ -13,9 +13,9 @@ pub struct GitHubIntegrationCreate {
     /// The optional description for the integration.
     #[serde(rename = "description", skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
-    /// The actions to allow.
-    #[serde(rename = "allow", skip_serializing_if = "Option::is_none")]
-    pub allow: Option<Vec<crate::models::AllowEnum>>,
+    /// Allow pushes to write parameters to the integration.
+    #[serde(rename = "writable", skip_serializing_if = "Option::is_none")]
+    pub writable: Option<bool>,
     #[serde(rename = "gh_installation_id")]
     pub gh_installation_id: i32,
 }
@@ -24,7 +24,7 @@ impl GitHubIntegrationCreate {
     pub fn new(gh_installation_id: i32) -> GitHubIntegrationCreate {
         GitHubIntegrationCreate {
             description: None,
-            allow: None,
+            writable: None,
             gh_installation_id,
         }
     }

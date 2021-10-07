@@ -4433,11 +4433,6 @@ paths:
             - Did the Bearer token belong to the User being deleted?
 components:
   schemas:
-    AllowEnum:
-      enum:
-      - pull
-      - push
-      type: string
     AuditTrail:
       type: object
       properties:
@@ -4560,14 +4555,12 @@ components:
           type: string
           format: date-time
           readOnly: true
-        allow:
-          type: array
-          items:
-            $ref: '#/components/schemas/AllowEnum'
-          description: The actions to allow.
         fqn:
           type: string
           readOnly: true
+        writable:
+          type: boolean
+          description: Allow pushes to write parameters to the integration.
         aws_account_id:
           type: string
           description: The AWS Account ID.
@@ -4623,11 +4616,9 @@ components:
         description:
           type: string
           description: The optional description for the integration.
-        allow:
-          type: array
-          items:
-            $ref: '#/components/schemas/AllowEnum'
-          description: The actions to allow.
+        writable:
+          type: boolean
+          description: Allow pushes to write parameters to the integration.
         aws_account_id:
           type: string
           description: The AWS Account ID.
@@ -5076,14 +5067,12 @@ components:
           type: string
           format: date-time
           readOnly: true
-        allow:
-          type: array
-          items: 
-            $ref: '#/components/schemas/AllowEnum'
-          description: The actions to allow.
         fqn:
           type: string
           readOnly: true
+        writable:
+          type: boolean
+          description: Allow pushes to write parameters to the integration.
         gh_installation_id:
           type: integer
         gh_organization_slug:
@@ -5108,11 +5097,9 @@ components:
         description:
           type: string
           description: The optional description for the integration.
-        allow:
-          type: array
-          items:
-            $ref: '#/components/schemas/AllowEnum'
-          description: The actions to allow.
+        writable:
+          type: boolean
+          description: Allow pushes to write parameters to the integration.
         gh_installation_id:
           type: integer
       required:
@@ -6077,14 +6064,12 @@ components:
           type: string
           format: date-time
           readOnly: true
-        allow:
-          type: array
-          items:
-            $ref: '#/components/schemas/AllowEnum'
-          description: The actions to allow.
         fqn:
           type: string
           readOnly: true
+        writable:
+          type: boolean
+          description: Allow pushes to write parameters to the integration.
         aws_account_id:
           type: string
           description: The AWS Account ID.

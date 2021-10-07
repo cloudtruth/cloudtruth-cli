@@ -39,11 +39,11 @@ pub struct PatchedAwsIntegration {
     pub created_at: Option<String>,
     #[serde(rename = "modified_at", skip_serializing_if = "Option::is_none")]
     pub modified_at: Option<String>,
-    /// The actions to allow.
-    #[serde(rename = "allow", skip_serializing_if = "Option::is_none")]
-    pub allow: Option<Vec<crate::models::AllowEnum>>,
     #[serde(rename = "fqn", skip_serializing_if = "Option::is_none")]
     pub fqn: Option<String>,
+    /// Allow pushes to write parameters to the integration.
+    #[serde(rename = "writable", skip_serializing_if = "Option::is_none")]
+    pub writable: Option<bool>,
     /// The AWS Account ID.
     #[serde(rename = "aws_account_id", skip_serializing_if = "Option::is_none")]
     pub aws_account_id: Option<String>,
@@ -80,8 +80,8 @@ impl PatchedAwsIntegration {
             _type: None,
             created_at: None,
             modified_at: None,
-            allow: None,
             fqn: None,
+            writable: None,
             aws_account_id: None,
             aws_enabled_regions: None,
             aws_enabled_services: None,

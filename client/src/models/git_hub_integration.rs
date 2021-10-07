@@ -36,11 +36,11 @@ pub struct GitHubIntegration {
     pub created_at: String,
     #[serde(rename = "modified_at")]
     pub modified_at: String,
-    /// The actions to allow.
-    #[serde(rename = "allow", skip_serializing_if = "Option::is_none")]
-    pub allow: Option<Vec<crate::models::AllowEnum>>,
     #[serde(rename = "fqn")]
     pub fqn: String,
+    /// Allow pushes to write parameters to the integration.
+    #[serde(rename = "writable", skip_serializing_if = "Option::is_none")]
+    pub writable: Option<bool>,
     #[serde(rename = "gh_installation_id")]
     pub gh_installation_id: i32,
     #[serde(rename = "gh_organization_slug")]
@@ -73,8 +73,8 @@ impl GitHubIntegration {
             _type,
             created_at,
             modified_at,
-            allow: None,
             fqn,
+            writable: None,
             gh_installation_id,
             gh_organization_slug,
         }
