@@ -1678,12 +1678,7 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
 
         result = self.list_params(cmd_env, proj_name, env=env_name_a, show_values=True, show_evaluated=True, fmt="csv")
         self.assertResultSuccess(result)
-        # TODO: the value (2nd property) should be evaluated, not an unevaluated reference
-        self.assertIn(f"{param4},{value3a},{value4a}", result.out())
-        # self.assertIn(f"{param4},{value1a},{value4a}", result.out())
-
-        # remove the extra parameter to avoid references (TODO: can we remove this?)
-        self.delete_param(cmd_env, proj_name, param4)
+        self.assertIn(f"{param4},{value1a},{value4a}", result.out())
 
         ##################
         # invalid parameter value -- see that value does not get updated
@@ -1707,11 +1702,13 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
         self.assertIn(f"{param1},{value1a},{env_name_a},{csv_unevaluated}", result.out())
         self.assertIn(f"{param2},{value2a},{env_name_a},{csv_evaluated}", result.out())
         self.assertIn(f"{param3},{value3a},{env_name_a},{csv_unevaluated}", result.out())
+        self.assertIn(f"{param4},{value3a},{env_name_a},{csv_evaluated}", result.out())
 
         result = self.list_params(cmd_env, proj_name, env=env_name_b, fmt="csv")
         self.assertIn(f"{param1},{value1b},{env_name_b},{csv_unevaluated}", result.out())
         self.assertIn(f"{param2},{value2b},{env_name_b},{csv_unevaluated}", result.out())
         self.assertIn(f"{param3},{value2b},{env_name_b},{csv_evaluated}", result.out())
+        self.assertIn(f"{param4},{DEFAULT_PARAM_VALUE},,{csv_unevaluated}", result.out())
 
         detail_cmd = f"param get '{param3}' --details"
         get_cmd = base_cmd + f"--project '{proj_name}' --env '{env_name_a}' " + detail_cmd
@@ -1739,11 +1736,13 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
         self.assertIn(f"{param1},{value1a},{env_name_a},{csv_unevaluated}", result.out())
         self.assertIn(f"{param2},{value2a},{env_name_a},{csv_evaluated}", result.out())
         self.assertIn(f"{param3},{value3a},{env_name_a},{csv_unevaluated}", result.out())
+        self.assertIn(f"{param4},{value3a},{env_name_a},{csv_evaluated}", result.out())
 
         result = self.list_params(cmd_env, proj_name, env=env_name_b, fmt="csv")
         self.assertIn(f"{param1},{value1b},{env_name_b},{csv_unevaluated}", result.out())
         self.assertIn(f"{param2},{value2b},{env_name_b},{csv_unevaluated}", result.out())
         self.assertIn(f"{param3},{{{{ {param2} }}}},{env_name_b},{csv_unevaluated}", result.out())
+        self.assertIn(f"{param4},{DEFAULT_PARAM_VALUE},,{csv_unevaluated}", result.out())
 
         ##################
         # use one of the "pre-defined" values
@@ -1753,6 +1752,9 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
         self.assertResultSuccess(result)
         self.assertIn(f"{param2},{value2a},{value2a}", result.out())
         self.assertIn(f"{param3},{env_name_a},{value3c}", result.out())
+
+        # TODO: remove this -- should not be required to remove evaluated parameter
+        self.delete_param(cmd_env, proj_name, param4)
 
         # cleanup
         self.delete_project(cmd_env, proj_name)

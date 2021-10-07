@@ -13,6 +13,7 @@ CT_BROKEN_TEMP = "CLOUDTRUTH_TEST_BROKEN_TEMPLATE"
 CT_BROKEN_PARAM1 = "CLOUDTRUTH_TEST_BROKEN_PARAM1"
 CT_BROKEN_PARAM2 = "CLOUDTRUTH_TEST_BROKEN_PARAM2"
 CT_BROKEN_PARAM3 = "CLOUDTRUTH_TEST_BROKEN_PARAM3"
+CT_BROKEN_PARAM4 = "CLOUDTRUTH_TEST_BROKEN_PARAM4"
 CT_BROKEN_VALUE1 = "CLOUDTRUTH_TEST_BROKEN_VALUE1"
 CT_BROKEN_FQN2 = "CLOUDTRUTH_TEST_BROKEN_FQN2"
 CT_BROKEN_FQN3 = "CLOUDTRUTH_TEST_BROKEN_FQN3"
@@ -22,6 +23,7 @@ CT_BROKEN_RUN = [
     CT_BROKEN_PARAM1,
     CT_BROKEN_PARAM2,
     CT_BROKEN_PARAM3,
+    CT_BROKEN_PARAM4,
     CT_BROKEN_VALUE1,
     CT_BROKEN_FQN2,
     CT_BROKEN_FQN3,
@@ -257,6 +259,7 @@ PARAMETER_2 = PARAM2
         fqn2 = os.environ.get(CT_BROKEN_FQN2)
         param3 = os.environ.get(CT_BROKEN_PARAM3)
         fqn3 = os.environ.get(CT_BROKEN_FQN3)
+        param4 = os.environ.get(CT_BROKEN_PARAM4)
 
         # make sure everything exists in the "correct" state
         proj_cmd = base_cmd + f"--project {proj_name} "
@@ -308,7 +311,14 @@ PARAMETER_2 = PARAM2
         result = self.run_cli(cmd_env, proj_cmd + "param export docker")
         self.assertResultError(result, missing_fqn2)
 
-        # TODO: "add" param4 with reference to param3, see values passed bck
+        # see that adding param4 with a reference to param2 is not allowed
+        value4 = f"{{{{{param2}}}}}"
+        result = self.run_cli(cmd_env, proj_cmd + f"param set '{param4}' -v '{value4}' -e true")
+        self.assertResultError(result, missing_fqn2)  # TODO: improve evaluation error message
+
+        result = self.run_cli(cmd_env, proj_cmd + "param list -vsf csv")
+        self.assertResultWarning(result, missing_param2)
+        self.assertNotIn(param4, result.out())
 
         ##########################
         # template checks
@@ -336,7 +346,7 @@ PARAMETER_2 = PARAM2
         self.delete_file(filename)
 
     @unittest.skipIf(missing_any(CT_TEMP_RUN), "Need all CT_TEMP_RUN parameters")
-    def _test_integration_external_template(self):
+    def test_integration_external_template(self):
         # in this test, we create a parameter (param1) that has an external reference to a template
         # that references an internal parameter (param2)
         base_cmd = self.get_cli_base_cmd()
@@ -355,7 +365,7 @@ PARAMETER_2 = PARAM2
         self.set_param(cmd_env, proj_name, param2, evaluate=True, fqn=temp_fqn)
 
         # see the evaluated template shows up
-        result = self.list_params(cmd_env, proj_name, format="json")
+        result = self.list_params(cmd_env, proj_name, fmt="json")
         entries = eval(result.out()).get("parameter")
         entry1 = [e for e in entries if e.get(PROP_NAME) == param1][0]
         self.assertEqual(entry1.get(PROP_VALUE), value1)
@@ -372,7 +382,8 @@ PARAMETER_2 = PARAM2
         self.assertResultSuccess(result)
 
         result = self.run_cli(cmd_env, proj_cmd + f"param del -y '{param1}'")
-        self.assertResultWarning(result, "not found")  # TODO: should success, after delete above
+        self.assertResultSuccess(result)
+        self.assertIn("Did not find parameter", result.out())  # TODO: message goes away
 
         # attempt adding in other order -- adding external template with broken references
         result = self.run_cli(cmd_env, proj_cmd + f"param set {param2} -f '{temp_fqn}' -e true")
