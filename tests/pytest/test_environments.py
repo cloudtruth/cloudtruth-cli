@@ -208,6 +208,18 @@ class TestEnvironments(TestCase):
         result = self.run_cli(cmd_env, tag_cmd + f"set '{env_name}' '{tag1}' -d '{desc1b}'")
         self.assertResultSuccess(result)
 
+        # see changes were made
+        result = self.run_cli(cmd_env, list_cmd + "-v")
+        self.assertResultSuccess(result)
+        self.assertIn(desc1b, result.out())
+        self.assertIn(orig_time, result.out())  # should be unchanged
+
+        # rename the tag
+        new_tag = "new-name"
+        result = self.run_cli(cmd_env, tag_cmd + f"set '{env_name}' '{tag1}' --rename '{new_tag}'")
+        self.assertResultSuccess(result)
+        tag1 = new_tag
+
         # make sure we can see the entry, before it has been read
         usage_cmd = list_cmd + "-uf json"
         result = self.run_cli(cmd_env, usage_cmd)

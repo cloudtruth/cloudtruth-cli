@@ -276,6 +276,7 @@ FLAGS:
 
 OPTIONS:
     -d, --desc <description>    Tag's description
+    -r, --rename <rename>       New tag name
     -t, --time <timestamp>      Set the tag's timestamp value
 
 ARGS:
