@@ -11,11 +11,12 @@ use cloudtruth_restapi::models::{
 use std::collections::HashMap;
 use std::result::Result;
 
-pub struct Parameters {}
-
 const PARTIAL_SUCCESS: Option<bool> = Some(true);
 const VALUES_FALSE: Option<bool> = Some(false);
 const VALUES_TRUE: Option<bool> = Some(true);
+const NO_ORDERING: Option<&str> = None;
+
+pub struct Parameters {}
 
 pub struct ParameterValueEntry {
     pub value: String,
@@ -98,6 +99,7 @@ impl Parameters {
                     &details.val_id,
                     &details.id,
                     proj_id,
+                    None,
                 );
                 match del_resp {
                     Ok(_) => Ok(Some(details.val_id)),
@@ -137,6 +139,7 @@ impl Parameters {
             Some(env_id),
             options.export,
             mask_secrets,
+            NO_ORDERING,
             Some(out_fmt.as_str()),
             options.starts_with.as_deref(),
             options.tag.as_deref(),
@@ -171,6 +174,7 @@ impl Parameters {
             Some(false), // no need to evaluate references to get id
             Some(true),  // no need to fetch secrets
             Some(key_name),
+            NO_ORDERING,
             None,
             PAGE_SIZE,
             PARTIAL_SUCCESS,
@@ -220,6 +224,7 @@ impl Parameters {
             Some(true), // for now, always evaluate interpolated parameters
             Some(mask_secrets),
             Some(key_name),
+            NO_ORDERING,
             None,
             PAGE_SIZE,
             PARTIAL_SUCCESS,
@@ -305,6 +310,7 @@ impl Parameters {
             eval_arg,
             Some(mask_secrets),
             None,
+            NO_ORDERING,
             None,
             PAGE_SIZE,
             PARTIAL_SUCCESS,
@@ -367,6 +373,7 @@ impl Parameters {
             eval_arg,
             Some(mask_secrets),
             Some(param_name),
+            NO_ORDERING,
             None,
             PAGE_SIZE,
             PARTIAL_SUCCESS,
@@ -492,6 +499,7 @@ impl Parameters {
             param_id,
             proj_id,
             value_create,
+            None,
             WRAP_SECRETS,
         );
         match response {
@@ -545,6 +553,7 @@ impl Parameters {
             value_id,
             param_id,
             proj_id,
+            None,
             WRAP_SECRETS,
             Some(value_update),
         );

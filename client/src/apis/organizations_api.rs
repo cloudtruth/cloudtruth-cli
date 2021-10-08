@@ -192,6 +192,7 @@ pub fn organizations_destroy(
 pub fn organizations_list(
     configuration: &configuration::Configuration,
     name: Option<&str>,
+    ordering: Option<&str>,
     page: Option<i32>,
     page_size: Option<i32>,
 ) -> Result<crate::models::PaginatedOrganizationList, Error<OrganizationsListError>> {
@@ -204,6 +205,10 @@ pub fn organizations_list(
     if let Some(ref local_var_str) = name {
         local_var_req_builder =
             local_var_req_builder.query(&[("name", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = ordering {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("ordering", &local_var_str.to_string())]);
     }
     if let Some(ref local_var_str) = page {
         local_var_req_builder =

@@ -6,10 +6,14 @@ docs/ApiApi.md
 docs/AuditApi.md
 docs/AuditTrail.md
 docs/AuditTrailSummary.md
-docs/AwsEnabledRegionsEnum.md
-docs/AwsEnabledServicesEnum.md
 docs/AwsIntegration.md
 docs/AwsIntegrationCreate.md
+docs/AwsPush.md
+docs/AwsPushTask.md
+docs/AwsPushTaskStep.md
+docs/AwsPushUpdate.md
+docs/AwsRegionEnum.md
+docs/AwsServiceEnum.md
 docs/Environment.md
 docs/EnvironmentCreate.md
 docs/EnvironmentsApi.md
@@ -32,6 +36,9 @@ docs/OrganizationCreate.md
 docs/OrganizationsApi.md
 docs/PaginatedAuditTrailList.md
 docs/PaginatedAwsIntegrationList.md
+docs/PaginatedAwsPushList.md
+docs/PaginatedAwsPushTaskList.md
+docs/PaginatedAwsPushTaskStepList.md
 docs/PaginatedEnvironmentList.md
 docs/PaginatedGitHubIntegrationList.md
 docs/PaginatedIntegrationExplorerList.md
@@ -58,6 +65,7 @@ docs/ParameterTimelineEntryEnvironment.md
 docs/ParameterTimelineEntryParameter.md
 docs/ParameterTypeEnum.md
 docs/PatchedAwsIntegration.md
+docs/PatchedAwsPushUpdate.md
 docs/PatchedEnvironment.md
 docs/PatchedInvitation.md
 docs/PatchedMembership.md
@@ -77,6 +85,7 @@ docs/ServiceAccount.md
 docs/ServiceAccountCreateRequest.md
 docs/ServiceAccountCreateResponse.md
 docs/ServiceaccountsApi.md
+docs/StateEnum.md
 docs/Tag.md
 docs/TagCreate.md
 docs/TagReadUsage.md
@@ -108,10 +117,14 @@ src/apis/users_api.rs
 src/lib.rs
 src/models/audit_trail.rs
 src/models/audit_trail_summary.rs
-src/models/aws_enabled_regions_enum.rs
-src/models/aws_enabled_services_enum.rs
 src/models/aws_integration.rs
 src/models/aws_integration_create.rs
+src/models/aws_push.rs
+src/models/aws_push_task.rs
+src/models/aws_push_task_step.rs
+src/models/aws_push_update.rs
+src/models/aws_region_enum.rs
+src/models/aws_service_enum.rs
 src/models/environment.rs
 src/models/environment_create.rs
 src/models/git_hub_integration.rs
@@ -130,6 +143,9 @@ src/models/organization.rs
 src/models/organization_create.rs
 src/models/paginated_audit_trail_list.rs
 src/models/paginated_aws_integration_list.rs
+src/models/paginated_aws_push_list.rs
+src/models/paginated_aws_push_task_list.rs
+src/models/paginated_aws_push_task_step_list.rs
 src/models/paginated_environment_list.rs
 src/models/paginated_git_hub_integration_list.rs
 src/models/paginated_integration_explorer_list.rs
@@ -156,6 +172,7 @@ src/models/parameter_timeline_entry_environment.rs
 src/models/parameter_timeline_entry_parameter.rs
 src/models/parameter_type_enum.rs
 src/models/patched_aws_integration.rs
+src/models/patched_aws_push_update.rs
 src/models/patched_environment.rs
 src/models/patched_invitation.rs
 src/models/patched_membership.rs
@@ -173,6 +190,7 @@ src/models/role_enum.rs
 src/models/service_account.rs
 src/models/service_account_create_request.rs
 src/models/service_account_create_response.rs
+src/models/state_enum.rs
 src/models/tag.rs
 src/models/tag_create.rs
 src/models/tag_read_usage.rs

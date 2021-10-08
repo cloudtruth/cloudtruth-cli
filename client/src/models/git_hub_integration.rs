@@ -38,6 +38,9 @@ pub struct GitHubIntegration {
     pub modified_at: String,
     #[serde(rename = "fqn")]
     pub fqn: String,
+    /// Allow pushes to write parameters to the integration.
+    #[serde(rename = "writable", skip_serializing_if = "Option::is_none")]
+    pub writable: Option<bool>,
     #[serde(rename = "gh_installation_id")]
     pub gh_installation_id: i32,
     #[serde(rename = "gh_organization_slug")]
@@ -71,6 +74,7 @@ impl GitHubIntegration {
             created_at,
             modified_at,
             fqn,
+            writable: None,
             gh_installation_id,
             gh_organization_slug,
         }

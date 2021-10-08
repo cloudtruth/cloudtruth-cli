@@ -21,6 +21,8 @@ pub struct Project {
     /// A description of the project.  You may find it helpful to document how this project is used to assist others when they need to maintain software that uses this content.
     #[serde(rename = "description", skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
+    #[serde(rename = "pushes")]
+    pub pushes: Vec<crate::models::AwsPush>,
     #[serde(rename = "created_at")]
     pub created_at: String,
     #[serde(rename = "modified_at")]
@@ -32,6 +34,7 @@ impl Project {
         url: String,
         id: String,
         name: String,
+        pushes: Vec<crate::models::AwsPush>,
         created_at: String,
         modified_at: String,
     ) -> Project {
@@ -40,6 +43,7 @@ impl Project {
             id,
             name,
             description: None,
+            pushes,
             created_at,
             modified_at,
         }

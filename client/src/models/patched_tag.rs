@@ -26,6 +26,8 @@ pub struct PatchedTag {
     /// The point in time this tag represents.
     #[serde(rename = "timestamp", skip_serializing_if = "Option::is_none")]
     pub timestamp: Option<String>,
+    #[serde(rename = "pushes", skip_serializing_if = "Option::is_none")]
+    pub pushes: Option<Vec<crate::models::AwsPush>>,
     #[serde(rename = "usage", skip_serializing_if = "Option::is_none")]
     pub usage: Option<Box<crate::models::TagReadUsage>>,
 }
@@ -39,6 +41,7 @@ impl PatchedTag {
             name: None,
             description: None,
             timestamp: None,
+            pushes: None,
             usage: None,
         }
     }

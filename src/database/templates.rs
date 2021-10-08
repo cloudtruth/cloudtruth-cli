@@ -7,6 +7,8 @@ use cloudtruth_restapi::apis::Error::ResponseError;
 use cloudtruth_restapi::models::{PatchedTemplate, TemplateCreate, TemplatePreview};
 use std::result::Result;
 
+const NO_ORDERING: Option<&str> = None;
+
 pub struct Templates {}
 
 fn response_error(status: &reqwest::StatusCode, content: &str) -> TemplateError {
@@ -60,8 +62,14 @@ impl Templates {
         template_name: &str,
     ) -> Result<TemplateDetails, TemplateError> {
         // Currently, the only way to get the unevaluated body is to list the templates.
-        let response =
-            projects_templates_list(rest_cfg, proj_id, Some(template_name), None, PAGE_SIZE);
+        let response = projects_templates_list(
+            rest_cfg,
+            proj_id,
+            Some(template_name),
+            NO_ORDERING,
+            None,
+            PAGE_SIZE,
+        );
 
         match response {
             Ok(data) => match data.results {
@@ -97,8 +105,14 @@ impl Templates {
         proj_id: &str,
         template_name: &str,
     ) -> Result<TemplateDetails, TemplateError> {
-        let response =
-            projects_templates_list(rest_cfg, proj_id, Some(template_name), None, PAGE_SIZE);
+        let response = projects_templates_list(
+            rest_cfg,
+            proj_id,
+            Some(template_name),
+            NO_ORDERING,
+            None,
+            PAGE_SIZE,
+        );
         match response {
             Ok(data) => match data.results {
                 Some(templates) => {
@@ -129,7 +143,8 @@ impl Templates {
         rest_cfg: &OpenApiConfig,
         proj_id: &str,
     ) -> Result<Vec<TemplateDetails>, TemplateError> {
-        let response = projects_templates_list(rest_cfg, proj_id, None, None, PAGE_SIZE);
+        let response =
+            projects_templates_list(rest_cfg, proj_id, None, NO_ORDERING, None, PAGE_SIZE);
         match response {
             Ok(data) => {
                 let mut list: Vec<TemplateDetails> = Vec::new();

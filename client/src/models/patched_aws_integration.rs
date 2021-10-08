@@ -41,6 +41,9 @@ pub struct PatchedAwsIntegration {
     pub modified_at: Option<String>,
     #[serde(rename = "fqn", skip_serializing_if = "Option::is_none")]
     pub fqn: Option<String>,
+    /// Allow pushes to write parameters to the integration.
+    #[serde(rename = "writable", skip_serializing_if = "Option::is_none")]
+    pub writable: Option<bool>,
     /// The AWS Account ID.
     #[serde(rename = "aws_account_id", skip_serializing_if = "Option::is_none")]
     pub aws_account_id: Option<String>,
@@ -49,13 +52,13 @@ pub struct PatchedAwsIntegration {
         rename = "aws_enabled_regions",
         skip_serializing_if = "Option::is_none"
     )]
-    pub aws_enabled_regions: Option<Vec<crate::models::AwsEnabledRegionsEnum>>,
+    pub aws_enabled_regions: Option<Vec<crate::models::AwsRegionEnum>>,
     /// The AWS services to integrate with.
     #[serde(
         rename = "aws_enabled_services",
         skip_serializing_if = "Option::is_none"
     )]
-    pub aws_enabled_services: Option<Vec<crate::models::AwsEnabledServicesEnum>>,
+    pub aws_enabled_services: Option<Vec<crate::models::AwsServiceEnum>>,
     /// This is a shared secret between the AWS Administrator who set up your IAM trust relationship and your CloudTruth AWS Integration.  If your AWS Administrator provided you with a value use it, otherwise we will generate a random value for you to give to your AWS Administrator.
     #[serde(rename = "aws_external_id", skip_serializing_if = "Option::is_none")]
     pub aws_external_id: Option<String>,
@@ -78,6 +81,7 @@ impl PatchedAwsIntegration {
             created_at: None,
             modified_at: None,
             fqn: None,
+            writable: None,
             aws_account_id: None,
             aws_enabled_regions: None,
             aws_enabled_services: None,

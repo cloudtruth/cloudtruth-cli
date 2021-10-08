@@ -5,6 +5,8 @@ use crate::database::{
 use cloudtruth_restapi::apis::integrations_api::*;
 use cloudtruth_restapi::apis::Error::ResponseError;
 
+const NO_ORDERING: Option<&str> = None;
+
 fn response_error(status: &reqwest::StatusCode, content: &str) -> IntegrationError {
     IntegrationError::ResponseError(response_message(status, content))
 }
@@ -64,7 +66,7 @@ impl Integrations {
     ) -> Result<Vec<IntegrationDetails>, IntegrationError> {
         let mut result: Vec<IntegrationDetails> = Vec::new();
 
-        let response = integrations_github_list(rest_cfg, None, None, PAGE_SIZE);
+        let response = integrations_github_list(rest_cfg, None, NO_ORDERING, None, PAGE_SIZE);
         if let Ok(paged_results) = response {
             if let Some(list) = paged_results.results {
                 for gh in list {
@@ -83,7 +85,7 @@ impl Integrations {
             ));
         }
 
-        let response = integrations_aws_list(rest_cfg, None, None, None, PAGE_SIZE);
+        let response = integrations_aws_list(rest_cfg, None, None, NO_ORDERING, None, PAGE_SIZE);
         if let Ok(paged_results) = response {
             if let Some(list) = paged_results.results {
                 for aws in list {
@@ -111,7 +113,7 @@ impl Integrations {
         rest_cfg: &OpenApiConfig,
         fqn: Option<&str>,
     ) -> Result<Vec<IntegrationNode>, IntegrationError> {
-        let response = integrations_explore_list(rest_cfg, fqn, None, PAGE_SIZE);
+        let response = integrations_explore_list(rest_cfg, fqn, NO_ORDERING, None, PAGE_SIZE);
         if let Ok(response) = response {
             let mut results: Vec<IntegrationNode> = Vec::new();
             if let Some(list) = response.results {

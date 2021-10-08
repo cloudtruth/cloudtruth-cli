@@ -281,6 +281,7 @@ pub fn invitations_destroy(
 pub fn invitations_list(
     configuration: &configuration::Configuration,
     email: Option<&str>,
+    ordering: Option<&str>,
     page: Option<i32>,
     page_size: Option<i32>,
     role: Option<&str>,
@@ -295,6 +296,10 @@ pub fn invitations_list(
     if let Some(ref local_var_str) = email {
         local_var_req_builder =
             local_var_req_builder.query(&[("email", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = ordering {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("ordering", &local_var_str.to_string())]);
     }
     if let Some(ref local_var_str) = page {
         local_var_req_builder =

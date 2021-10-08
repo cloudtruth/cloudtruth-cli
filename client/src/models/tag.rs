@@ -26,6 +26,8 @@ pub struct Tag {
     /// The point in time this tag represents.
     #[serde(rename = "timestamp")]
     pub timestamp: String,
+    #[serde(rename = "pushes")]
+    pub pushes: Vec<crate::models::AwsPush>,
     #[serde(rename = "usage")]
     pub usage: Box<crate::models::TagReadUsage>,
 }
@@ -37,6 +39,7 @@ impl Tag {
         id: String,
         name: String,
         timestamp: String,
+        pushes: Vec<crate::models::AwsPush>,
         usage: crate::models::TagReadUsage,
     ) -> Tag {
         Tag {
@@ -45,6 +48,7 @@ impl Tag {
             name,
             description: None,
             timestamp,
+            pushes,
             usage: Box::new(usage),
         }
     }

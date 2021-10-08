@@ -10,7 +10,7 @@
 
 ///
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
-pub enum AwsEnabledRegionsEnum {
+pub enum AwsRegionEnum {
     #[serde(rename = "af-south-1")]
     AfSouth1,
     #[serde(rename = "ap-east-1")]
@@ -59,7 +59,7 @@ pub enum AwsEnabledRegionsEnum {
     UsWest2,
 }
 
-impl ToString for AwsEnabledRegionsEnum {
+impl ToString for AwsRegionEnum {
     fn to_string(&self) -> String {
         match self {
             Self::AfSouth1 => String::from("af-south-1"),

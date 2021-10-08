@@ -10,7 +10,7 @@
 
 ///
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
-pub enum AwsEnabledServicesEnum {
+pub enum AwsServiceEnum {
     #[serde(rename = "s3")]
     S3,
     #[serde(rename = "secretsmanager")]
@@ -19,7 +19,7 @@ pub enum AwsEnabledServicesEnum {
     Ssm,
 }
 
-impl ToString for AwsEnabledServicesEnum {
+impl ToString for AwsServiceEnum {
     fn to_string(&self) -> String {
         match self {
             Self::S3 => String::from("s3"),
