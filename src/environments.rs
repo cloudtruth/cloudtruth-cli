@@ -251,6 +251,7 @@ fn proc_env_tag_set(
     let tag_name = subcmd_args.value_of(TAG_NAME_ARG).unwrap();
     let env_name = subcmd_args.value_of(ENV_NAME_ARG).unwrap();
     let description = subcmd_args.value_of(DESCRIPTION_OPT);
+    let rename = subcmd_args.value_of(RENAME_OPT);
     let current = subcmd_args.is_present("current");
 
     // make sure the user provided something useful for a timestamp
@@ -271,7 +272,7 @@ fn proc_env_tag_set(
     let environment_id = environments.get_id(rest_cfg, env_name)?;
     if let Some(env_id) = environment_id {
         if let Some(tag_id) = environments.get_tag_id(rest_cfg, &env_id, tag_name)? {
-            if description.is_none() && timestamp.is_none() && !current {
+            if description.is_none() && timestamp.is_none() && rename.is_none() && !current {
                 warning_message(
                     "Nothing changed. Please provide a description, time, or current.".to_string(),
                 )?;
@@ -281,15 +282,16 @@ fn proc_env_tag_set(
                 } else {
                     timestamp
                 };
+                let name = rename.unwrap_or(tag_name);
                 let _ = environments.update_env_tag(
                     rest_cfg,
                     &env_id,
                     &tag_id,
-                    tag_name,
+                    name,
                     description,
                     time_value,
                 )?;
-                println!("Updated tag '{}' in environment '{}'.", tag_name, env_name);
+                println!("Updated tag '{}' in environment '{}'.", name, env_name);
             }
         } else {
             let _ =

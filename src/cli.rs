@@ -288,6 +288,7 @@ pub fn build_cli() -> App<'static, 'static> {
                                 .arg(env_name_arg())
                                 .arg(tag_name_arg())
                                 .arg(description_option().help("Tag's description"))
+                                .arg(rename_option().help("New tag name"))
                                 .arg(Arg::with_name("timestamp")
                                     .takes_value(true)
                                     .short("t")
