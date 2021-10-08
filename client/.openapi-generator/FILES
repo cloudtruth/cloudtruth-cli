@@ -74,7 +74,7 @@ docs/PatchedParameter.md
 docs/PatchedParameterRule.md
 docs/PatchedProject.md
 docs/PatchedServiceAccount.md
-docs/PatchedTag.md
+docs/PatchedTagUpdate.md
 docs/PatchedTemplate.md
 docs/PatchedValue.md
 docs/Project.md
@@ -89,6 +89,7 @@ docs/StateEnum.md
 docs/Tag.md
 docs/TagCreate.md
 docs/TagReadUsage.md
+docs/TagUpdate.md
 docs/Template.md
 docs/TemplateCreate.md
 docs/TemplateLookupError.md
@@ -181,7 +182,7 @@ src/models/patched_parameter.rs
 src/models/patched_parameter_rule.rs
 src/models/patched_project.rs
 src/models/patched_service_account.rs
-src/models/patched_tag.rs
+src/models/patched_tag_update.rs
 src/models/patched_template.rs
 src/models/patched_value.rs
 src/models/project.rs
@@ -194,6 +195,7 @@ src/models/state_enum.rs
 src/models/tag.rs
 src/models/tag_create.rs
 src/models/tag_read_usage.rs
+src/models/tag_update.rs
 src/models/template.rs
 src/models/template_create.rs
 src/models/template_lookup_error.rs

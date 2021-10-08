@@ -23,6 +23,9 @@ pub struct PatchedTemplate {
     /// A description of the template.  You may find it helpful to document how this template is used to assist others when they need to maintain software that uses this content.
     #[serde(rename = "description", skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
+    /// If true, the `body` field has undergone evaluation.
+    #[serde(rename = "evaluated", skip_serializing_if = "Option::is_none")]
+    pub evaluated: Option<bool>,
     /// The content of the template.  Use mustache-style templating delimiters of `{{` and `}}` to reference parameter values by name for substitution into the template result.
     #[serde(rename = "body", skip_serializing_if = "Option::is_none")]
     pub body: Option<String>,
@@ -64,6 +67,7 @@ impl PatchedTemplate {
             id: None,
             name: None,
             description: None,
+            evaluated: None,
             body: None,
             referenced_parameters: None,
             referenced_templates: None,
