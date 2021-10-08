@@ -4,7 +4,9 @@ use crate::database::{
 };
 use cloudtruth_restapi::apis::environments_api::*;
 use cloudtruth_restapi::apis::Error::ResponseError;
-use cloudtruth_restapi::models::{EnvironmentCreate, PatchedEnvironment, PatchedTag, TagCreate};
+use cloudtruth_restapi::models::{
+    EnvironmentCreate, PatchedEnvironment, PatchedTagUpdate, TagCreate,
+};
 use std::collections::HashMap;
 
 const NO_DESC_CONTAINS: Option<&str> = None;
@@ -432,20 +434,17 @@ impl Environments {
         tag_name: &str,
         description: Option<&str>,
         timestamp: Option<String>,
-    ) -> Result<EnvironmentTag, EnvironmentError> {
-        let tag_update = PatchedTag {
-            url: None,
+    ) -> Result<(), EnvironmentError> {
+        let tag_update = PatchedTagUpdate {
             id: None,
             name: Some(tag_name.to_string()),
             description: description.map(String::from),
             timestamp,
-            usage: None,
-            pushes: None,
         };
         let response =
             environments_tags_partial_update(rest_cfg, environment_id, tag_id, Some(tag_update));
         match response {
-            Ok(tag) => Ok(EnvironmentTag::from(&tag)),
+            Ok(_) => Ok(()),
             Err(ResponseError(ref content)) => {
                 Err(response_error(&content.status, &content.content))
             }

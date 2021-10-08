@@ -240,6 +240,7 @@ pub enum ProjectsTemplatesDestroyError {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum ProjectsTemplatesListError {
+    Status422(crate::models::TemplateLookupError),
     UnknownValue(serde_json::Value),
 }
 
@@ -2791,10 +2792,15 @@ pub fn projects_templates_destroy(
 pub fn projects_templates_list(
     configuration: &configuration::Configuration,
     project_pk: &str,
+    as_of: Option<String>,
+    environment: Option<&str>,
+    evaluate: Option<bool>,
+    mask_secrets: Option<bool>,
     name: Option<&str>,
     ordering: Option<&str>,
     page: Option<i32>,
     page_size: Option<i32>,
+    tag: Option<&str>,
 ) -> Result<crate::models::PaginatedTemplateList, Error<ProjectsTemplatesListError>> {
     let local_var_client = &configuration.client;
 
@@ -2806,6 +2812,22 @@ pub fn projects_templates_list(
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
 
+    if let Some(ref local_var_str) = as_of {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("as_of", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = environment {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("environment", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = evaluate {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("evaluate", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = mask_secrets {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("mask_secrets", &local_var_str.to_string())]);
+    }
     if let Some(ref local_var_str) = name {
         local_var_req_builder =
             local_var_req_builder.query(&[("name", &local_var_str.to_string())]);
@@ -2821,6 +2843,9 @@ pub fn projects_templates_list(
     if let Some(ref local_var_str) = page_size {
         local_var_req_builder =
             local_var_req_builder.query(&[("page_size", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = tag {
+        local_var_req_builder = local_var_req_builder.query(&[("tag", &local_var_str.to_string())]);
     }
     if let Some(ref local_var_user_agent) = configuration.user_agent {
         local_var_req_builder =
@@ -2952,8 +2977,11 @@ pub fn projects_templates_retrieve(
     configuration: &configuration::Configuration,
     id: &str,
     project_pk: &str,
+    as_of: Option<String>,
     environment: Option<&str>,
+    evaluate: Option<bool>,
     mask_secrets: Option<bool>,
+    tag: Option<&str>,
 ) -> Result<crate::models::Template, Error<ProjectsTemplatesRetrieveError>> {
     let local_var_client = &configuration.client;
 
@@ -2966,13 +2994,24 @@ pub fn projects_templates_retrieve(
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
 
+    if let Some(ref local_var_str) = as_of {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("as_of", &local_var_str.to_string())]);
+    }
     if let Some(ref local_var_str) = environment {
         local_var_req_builder =
             local_var_req_builder.query(&[("environment", &local_var_str.to_string())]);
     }
+    if let Some(ref local_var_str) = evaluate {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("evaluate", &local_var_str.to_string())]);
+    }
     if let Some(ref local_var_str) = mask_secrets {
         local_var_req_builder =
             local_var_req_builder.query(&[("mask_secrets", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = tag {
+        local_var_req_builder = local_var_req_builder.query(&[("tag", &local_var_str.to_string())]);
     }
     if let Some(ref local_var_user_agent) = configuration.user_agent {
         local_var_req_builder =

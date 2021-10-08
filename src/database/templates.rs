@@ -39,8 +39,11 @@ impl Templates {
             rest_cfg,
             &details.id,
             proj_id,
+            None,
             Some(env_id),
+            Some(true),
             Some(!show_secrets),
+            None,
         );
         match response {
             Ok(r) => Ok(r.body),
@@ -65,10 +68,15 @@ impl Templates {
         let response = projects_templates_list(
             rest_cfg,
             proj_id,
+            None,
+            None,
+            Some(false),
+            Some(false),
             Some(template_name),
             NO_ORDERING,
             None,
             PAGE_SIZE,
+            None,
         );
 
         match response {
@@ -108,10 +116,15 @@ impl Templates {
         let response = projects_templates_list(
             rest_cfg,
             proj_id,
+            None,
+            None,
+            Some(true),
+            Some(false),
             Some(template_name),
             NO_ORDERING,
             None,
             PAGE_SIZE,
+            None,
         );
         match response {
             Ok(data) => match data.results {
@@ -143,8 +156,19 @@ impl Templates {
         rest_cfg: &OpenApiConfig,
         proj_id: &str,
     ) -> Result<Vec<TemplateDetails>, TemplateError> {
-        let response =
-            projects_templates_list(rest_cfg, proj_id, None, NO_ORDERING, None, PAGE_SIZE);
+        let response = projects_templates_list(
+            rest_cfg,
+            proj_id,
+            None,
+            None,
+            Some(true),
+            Some(false),
+            None,
+            NO_ORDERING,
+            None,
+            PAGE_SIZE,
+            None,
+        );
         match response {
             Ok(data) => {
                 let mut list: Vec<TemplateDetails> = Vec::new();
@@ -219,6 +243,7 @@ impl Templates {
             id: None,
             name: Some(template_name.to_string()),
             description: description.map(String::from),
+            evaluated: None,
             body: body.map(String::from),
             has_secret: None,
             referenced_parameters: None,

@@ -564,7 +564,7 @@ pub fn environments_retrieve(
     }
 }
 
-/// Tags allow you to name stable points in time for your configuration.  Any query API that accepts an `as_of` option will also accept a `tag` option, however they are mutually exclusive.
+/// Tags allow you to name stable points in time for your configuration.  Any query API that accepts an `as_of` option will also accept a `tag` option however they are mutually exclusive.
 pub fn environments_tags_create(
     configuration: &configuration::Configuration,
     environment_pk: &str,
@@ -635,7 +635,7 @@ pub fn environments_tags_create(
     }
 }
 
-/// Tags allow you to name stable points in time for your configuration.  Any query API that accepts an `as_of` option will also accept a `tag` option, however they are mutually exclusive.
+/// Tags allow you to name stable points in time for your configuration.  Any query API that accepts an `as_of` option will also accept a `tag` option however they are mutually exclusive.
 pub fn environments_tags_destroy(
     configuration: &configuration::Configuration,
     environment_pk: &str,
@@ -706,7 +706,7 @@ pub fn environments_tags_destroy(
     }
 }
 
-/// Tags allow you to name stable points in time for your configuration.  Any query API that accepts an `as_of` option will also accept a `tag` option, however they are mutually exclusive.
+/// Tags allow you to name stable points in time for your configuration.  Any query API that accepts an `as_of` option will also accept a `tag` option however they are mutually exclusive.
 pub fn environments_tags_list(
     configuration: &configuration::Configuration,
     environment_pk: &str,
@@ -820,13 +820,13 @@ pub fn environments_tags_list(
     }
 }
 
-/// Tags allow you to name stable points in time for your configuration.  Any query API that accepts an `as_of` option will also accept a `tag` option, however they are mutually exclusive.
+/// Tags allow you to name stable points in time for your configuration.  Any query API that accepts an `as_of` option will also accept a `tag` option however they are mutually exclusive.
 pub fn environments_tags_partial_update(
     configuration: &configuration::Configuration,
     environment_pk: &str,
     id: &str,
-    patched_tag: Option<crate::models::PatchedTag>,
-) -> Result<crate::models::Tag, Error<EnvironmentsTagsPartialUpdateError>> {
+    patched_tag_update: Option<crate::models::PatchedTagUpdate>,
+) -> Result<crate::models::TagUpdate, Error<EnvironmentsTagsPartialUpdateError>> {
     let local_var_client = &configuration.client;
 
     let local_var_uri_str = format!(
@@ -854,7 +854,7 @@ pub fn environments_tags_partial_update(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
-    local_var_req_builder = local_var_req_builder.json(&patched_tag);
+    local_var_req_builder = local_var_req_builder.json(&patched_tag_update);
 
     let local_var_req = local_var_req_builder.build()?;
     let method = local_var_req.method().clone();
@@ -893,7 +893,7 @@ pub fn environments_tags_partial_update(
     }
 }
 
-/// Tags allow you to name stable points in time for your configuration.  Any query API that accepts an `as_of` option will also accept a `tag` option, however they are mutually exclusive.
+/// Tags allow you to name stable points in time for your configuration.  Any query API that accepts an `as_of` option will also accept a `tag` option however they are mutually exclusive.
 pub fn environments_tags_retrieve(
     configuration: &configuration::Configuration,
     environment_pk: &str,
@@ -964,13 +964,13 @@ pub fn environments_tags_retrieve(
     }
 }
 
-/// Tags allow you to name stable points in time for your configuration.  Any query API that accepts an `as_of` option will also accept a `tag` option, however they are mutually exclusive.
+/// Tags allow you to name stable points in time for your configuration.  Any query API that accepts an `as_of` option will also accept a `tag` option however they are mutually exclusive.
 pub fn environments_tags_update(
     configuration: &configuration::Configuration,
     environment_pk: &str,
     id: &str,
-    tag: crate::models::Tag,
-) -> Result<crate::models::Tag, Error<EnvironmentsTagsUpdateError>> {
+    tag_update: crate::models::TagUpdate,
+) -> Result<crate::models::TagUpdate, Error<EnvironmentsTagsUpdateError>> {
     let local_var_client = &configuration.client;
 
     let local_var_uri_str = format!(
@@ -998,7 +998,7 @@ pub fn environments_tags_update(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
-    local_var_req_builder = local_var_req_builder.json(&tag);
+    local_var_req_builder = local_var_req_builder.json(&tag_update);
 
     let local_var_req = local_var_req_builder.build()?;
     let method = local_var_req.method().clone();

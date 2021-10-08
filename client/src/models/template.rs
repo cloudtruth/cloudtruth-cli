@@ -23,6 +23,9 @@ pub struct Template {
     /// A description of the template.  You may find it helpful to document how this template is used to assist others when they need to maintain software that uses this content.
     #[serde(rename = "description", skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
+    /// If true, the `body` field has undergone evaluation.
+    #[serde(rename = "evaluated")]
+    pub evaluated: bool,
     /// The content of the template.  Use mustache-style templating delimiters of `{{` and `}}` to reference parameter values by name for substitution into the template result.
     #[serde(rename = "body", skip_serializing_if = "Option::is_none")]
     pub body: Option<String>,
@@ -53,6 +56,7 @@ impl Template {
         url: String,
         id: String,
         name: String,
+        evaluated: bool,
         referenced_parameters: Vec<String>,
         referenced_templates: Vec<String>,
         referencing_templates: Vec<String>,
@@ -66,6 +70,7 @@ impl Template {
             id,
             name,
             description: None,
+            evaluated,
             body: None,
             referenced_parameters,
             referenced_templates,
