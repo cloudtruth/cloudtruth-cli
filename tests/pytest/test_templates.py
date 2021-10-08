@@ -948,9 +948,6 @@ PARAMETER={{{{{param1}}}}}
         self.assertEqual(entry1.get(PROP_VALUE), f"new-param-name = {value2}")
         self.assertEqual(entry1.get(PROP_RAW), value1)
 
-        # TODO: remove next block of code to allow cleanup -- remove this after bug is fixed
-        self.delete_param(cmd_env, proj_name, param1)
-
         # cleanup
         self.delete_file(filename)
         self.delete_project(cmd_env, proj_name)

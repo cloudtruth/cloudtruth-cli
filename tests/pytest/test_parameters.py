@@ -1753,9 +1753,6 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
         self.assertIn(f"{param2},{value2a},{value2a}", result.out())
         self.assertIn(f"{param3},{env_name_a},{value3c}", result.out())
 
-        # TODO: remove this -- should not be required to remove evaluated parameter
-        self.delete_param(cmd_env, proj_name, param4)
-
         # cleanup
         self.delete_project(cmd_env, proj_name)
         self.delete_environment(cmd_env, env_name_a)
@@ -2031,13 +2028,38 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
         result = self.run_cli(cmd_env, set_cmd + "--no-min-len")
         self.assertResultSuccess(result)
 
-        # TODO: failed create/update with values in place
+        #################
+        # failed create rules with values in place
+        curr_len = len(value)
+        result = self.run_cli(cmd_env, set_cmd + f"--min-len {curr_len + 3}")
+        self.assertResultError(result, f"Rule create error: Rule may not be applied to {param1}")
+        self.assertIn("Value must be at least", result.err())
+
+        result = self.run_cli(cmd_env, set_cmd + f"--max-len {curr_len - 2}")
+        self.assertResultError(result, f"Rule create error: Rule may not be applied to {param1}")
+        self.assertIn("Value must be at most", result.err())
+
+        #################
+        result = self.run_cli(cmd_env, set_cmd + f"--min-len {curr_len - 1}")
+        self.assertResultSuccess(result)
+        result = self.run_cli(cmd_env, set_cmd + f"--min-len {curr_len + 3}")
+        self.assertResultError(result, f"Rule update error: Rule may not be applied to {param1}")
+        self.assertIn("Value must be at least", result.err())
+
+        result = self.run_cli(cmd_env, set_cmd + f"--max-len {curr_len + 1}")
+        self.assertResultSuccess(result)
+        result = self.run_cli(cmd_env, set_cmd + f"--max-len {curr_len - 2}")
+        self.assertResultError(result, f"Rule update error: Rule may not be applied to {param1}")
+        self.assertIn("Value must be at most", result.err())
+
+        # remove the rules
+        result = self.run_cli(cmd_env, set_cmd + "--no-min-len")
+        self.assertResultSuccess(result)
+        result = self.run_cli(cmd_env, set_cmd + "--no-max-len")
+        self.assertResultSuccess(result)
 
         #################
         # negative tests for bad rule types: --max, and --min
-
-        # TODO: this should not be necessary
-        self.unset_param(cmd_env, proj_name, param1, env=env_name)
 
         result = self.run_cli(cmd_env, set_cmd + "--max -10 --min -1")
         self.assertResultError(result, create_err_msg)
@@ -2050,7 +2072,7 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
 
         result = self.run_cli(cmd_env, list_cmd)
         self.assertResultSuccess(result)
-        self.assertIn(f"{param1},-,,string,0,internal,false", result.out())
+        self.assertIn(f"{param1},{value},{env_name},string,0,internal,false", result.out())
 
         result = self.run_cli(cmd_env, rules_cmd)
         self.assertResultSuccess(result)
@@ -2203,14 +2225,37 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
         self.assertResultSuccess(result)
         self.assertIn("No parameter rules found in project", result.out())
 
-        # TODO: failed create/update with values in place
+        #################
+        # failed create rules with values in place
+        result = self.run_cli(cmd_env, set_cmd + f"--min {value + 2}")
+        self.assertResultError(result, f"Rule create error: Rule may not be applied to {param1}")
+        self.assertIn("Value is less than the minimum value", result.err())
+
+        result = self.run_cli(cmd_env, set_cmd + f"--max {value - 2}")
+        self.assertResultError(result, f"Rule create error: Rule may not be applied to {param1}")
+        self.assertIn("Value is greater than the maximum value", result.err())
+
+        #################
+        result = self.run_cli(cmd_env, set_cmd + f"--min {value - 1}")
+        self.assertResultSuccess(result)
+        result = self.run_cli(cmd_env, set_cmd + f"--min {value + 3}")
+        self.assertResultError(result, f"Rule update error: Rule may not be applied to {param1}")
+        self.assertIn("Value is less than the minimum value", result.err())
+
+        result = self.run_cli(cmd_env, set_cmd + f"--max {value + 1}")
+        self.assertResultSuccess(result)
+        result = self.run_cli(cmd_env, set_cmd + f"--max {value - 2}")
+        self.assertResultError(result, f"Rule update error: Rule may not be applied to {param1}")
+        self.assertIn("Value is greater than the maximum value", result.err())
+
+        # delete the rules
+        result = self.run_cli(cmd_env, set_cmd + "--no-min")
+        self.assertResultSuccess(result)
+        result = self.run_cli(cmd_env, set_cmd + "--no-max")
+        self.assertResultSuccess(result)
 
         ################
         # negative tests for bad rule types: --max-len, --min-len, --regex
-
-        # TODO: this should not be necessary
-        self.unset_param(cmd_env, proj_name, param1, env=env_name)
-
         result = self.run_cli(cmd_env, set_cmd + "--max-len -10 --min-len -1 --regex 'abc.*'")
         self.assertResultError(result, create_err_msg)
         self.assertIn("max-len rules not valid for integer parameters", result.err())
@@ -2223,7 +2268,7 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
 
         result = self.run_cli(cmd_env, list_cmd)
         self.assertResultSuccess(result)
-        self.assertIn(f"{param1},-,,integer,0,internal,false", result.out())
+        self.assertIn(f"{param1},{value},{env_name},integer,0,internal,false", result.out())
 
         result = self.run_cli(cmd_env, rules_cmd)
         self.assertResultSuccess(result)
@@ -2273,9 +2318,6 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
 
         ################
         # negative tests for bad rule types: --max, --min, --max-len, --min-len, --regex
-
-        # TODO: this should not be necessary
-        self.unset_param(cmd_env, proj_name, param1, env=env_name)
 
         result = self.run_cli(cmd_env, set_cmd + "--max 100 --min 10 --max-len -10 --min-len -1 --regex 'abc.*'")
         self.assertResultError(result, create_err_msg)

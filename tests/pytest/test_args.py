@@ -184,7 +184,6 @@ class TestTopLevelArgs(TestCase):
         ##############
         # Both present
         self.create_project(cmd_env, proj_name)
-        self.create_environment(cmd_env, env_name)
         for cmd in checked_commands:
             result = self.run_cli(cmd_env, base_cmd + eco_system + cmd)
             self.assertResultSuccess(result)
