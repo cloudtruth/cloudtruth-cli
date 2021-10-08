@@ -556,9 +556,9 @@ this.is.a.template.value=PARAM1
         self.create_project(cmd_env, proj_name)
 
         # add a couple environments
-        env_a = self.make_name("env_a")
+        env_a = self.make_name("ttag-diff-env-a")
         self.create_environment(cmd_env, env_a)
-        env_b = self.make_name("env-b")
+        env_b = self.make_name("ttag-diff-env-b")
         self.create_environment(cmd_env, env_b)
 
         # add a couple parameters
@@ -881,6 +881,7 @@ PARAMETER={{{{{param1}}}}}
         # cleanup
         self.delete_environment(cmd_env, env_a)
         self.delete_environment(cmd_env, env_b)
+        self.delete_project(cmd_env, proj_name)
 
     def test_template_ref_by_param(self):
         base_cmd = self.get_cli_base_cmd()
