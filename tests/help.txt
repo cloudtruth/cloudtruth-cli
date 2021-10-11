@@ -207,8 +207,8 @@ FLAGS:
 
 OPTIONS:
     -d, --desc <description>    Environment's description
+    -r, --rename <new-name>     New environment name
     -p, --parent <parent>       Environment's parent name (only used for create)
-    -r, --rename <rename>       New environment name
 
 ARGS:
     <NAME>    Environment name
@@ -276,7 +276,7 @@ FLAGS:
 
 OPTIONS:
     -d, --desc <description>    Tag's description
-    -r, --rename <rename>       New tag name
+    -r, --rename <new-name>     New tag name
     -t, --time <timestamp>      Set the tag's timestamp value
 
 ARGS:
@@ -531,8 +531,8 @@ OPTIONS:
     -d, --desc <description>     Parameter description
     -e, --evaluate <evaluate>    Flags whether this value gets evaluated [possible values: true, false]
     -i, --input <input-file>     Read the static value from the local input file
+    -r, --rename <new-name>      New parameter name
     -t, --type <param-type>      The parameter type [possible values: bool, string, integer]
-    -r, --rename <rename>        New parameter name
         --secret <secret>        Flags whether this is a secret parameter [possible values: true, false]
     -v, --value <value>          Static parameter value
 
@@ -609,7 +609,7 @@ FLAGS:
 
 OPTIONS:
     -d, --desc <description>    Project's description
-    -r, --rename <rename>       New project name
+    -r, --rename <new-name>     New project name
 
 ARGS:
     <NAME>    Project name
@@ -786,7 +786,7 @@ FLAGS:
 OPTIONS:
     -b, --body <FILE>           File containing the template
     -d, --desc <description>    Template description
-    -r, --rename <rename>       New template name
+    -r, --rename <new-name>     New template name
 
 ARGS:
     <NAME>    Template name
