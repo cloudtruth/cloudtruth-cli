@@ -12,7 +12,7 @@ pub const FORMAT_OPT: &str = "format";
 pub const KEY_ARG: &str = "KEY";
 pub const NAME_ARG: &str = "NAME";
 pub const RAW_FLAG: &str = "raw";
-pub const RENAME_OPT: &str = "rename";
+pub const RENAME_OPT: &str = "new-name";
 pub const SHOW_TIMES_FLAG: &str = "show-time";
 pub const SECRETS_FLAG: &str = "secrets";
 pub const TAG_NAME_ARG: &str = "tag-name";
@@ -79,7 +79,7 @@ fn confirm_flag() -> Arg<'static, 'static> {
 fn rename_option() -> Arg<'static, 'static> {
     Arg::with_name(RENAME_OPT)
         .short("r")
-        .long(RENAME_OPT)
+        .long("rename")
         .takes_value(true)
 }
 
