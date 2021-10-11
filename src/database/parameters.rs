@@ -49,7 +49,15 @@ fn param_value_error(content: &str) -> ParameterError {
 
 /// Creates a `ParameterError::ResponseError` from the provided `status` and `content`
 fn response_error(status: &reqwest::StatusCode, content: &str) -> ParameterError {
-    ParameterError::ResponseError(response_message(status, content))
+    let prefix = "\n  ";
+    match status.as_u16() {
+        422 => ParameterError::EvaluationError(format!(
+            "{}{}",
+            prefix,
+            extract_details(content).replace("; ", prefix)
+        )),
+        _ => ParameterError::ResponseError(response_message(status, content)),
+    }
 }
 
 fn rule_error(action: String, content: &str) -> ParameterError {

@@ -34,6 +34,17 @@ pub fn extract_from_json(value: &serde_json::Value) -> String {
             // recursively get the data out of the string
             return extract_from_json(detail);
         }
+
+        // this handles produces output for a TemplateLookupError -- parameter_id and error_code go unused
+        let param_name = obj.get("parameter_name");
+        let detail = obj.get("error_detail");
+        if param_name.is_some() && detail.is_some() {
+            return format!(
+                "{}: {}",
+                param_name.unwrap().as_str().unwrap(),
+                detail.unwrap().as_str().unwrap()
+            );
+        }
     }
 
     value.to_string()
@@ -154,6 +165,11 @@ mod tests {
         // multiple strings in the list are concatenated
         let content = "[\"my first string\", \"second string\"]";
         let expected = "my first string; second string";
+        assert_eq!(expected.to_string(), extract_details(content));
+
+        // still trying to get the 422 passed through to all places... stopgap measure
+        let content = "{\"detail\":[{\"parameter_id\":\"34c5eefe-cf4a-47b3-9be4-43cbfc0c0f23\",\"parameter_name\":\"param2\",\"error_code\":\"missing_content\",\"error_detail\":\"The external content of `github://rickporter-tuono/hello-world/master/README.md` is not present.\"}]}";
+        let expected = "param2: The external content of `github://rickporter-tuono/hello-world/master/README.md` is not present.";
         assert_eq!(expected.to_string(), extract_details(content));
     }
 }

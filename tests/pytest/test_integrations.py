@@ -309,12 +309,12 @@ PARAMETER_2 = PARAM2
 
         # export will fail, and should provide details about what failed
         result = self.run_cli(cmd_env, proj_cmd + "param export docker")
-        self.assertResultError(result, missing_fqn2)
+        self.assertResultError(result, missing_param2)
 
         # see that adding param4 with a reference to param2 is not allowed
         value4 = f"{{{{{param2}}}}}"
         result = self.run_cli(cmd_env, proj_cmd + f"param set '{param4}' -v '{value4}' -e true")
-        self.assertResultError(result, missing_fqn2)  # TODO: improve evaluation error message
+        self.assertResultError(result, missing_param2)
 
         result = self.run_cli(cmd_env, proj_cmd + "param list -vsf csv")
         self.assertResultWarning(result, missing_param2)
