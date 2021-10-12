@@ -11,16 +11,30 @@
 ///
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
 pub enum ObjectTypeEnum {
-    #[serde(rename = "DataIntegration")]
-    DataIntegration,
+    #[serde(rename = "AwsIntegration")]
+    AwsIntegration,
     #[serde(rename = "Environment")]
     Environment,
+    #[serde(rename = "GitHubIntegration")]
+    GitHubIntegration,
+    #[serde(rename = "Invitation")]
+    Invitation,
+    #[serde(rename = "Membership")]
+    Membership,
+    #[serde(rename = "Organization")]
+    Organization,
     #[serde(rename = "Parameter")]
     Parameter,
     #[serde(rename = "ParameterRule")]
     ParameterRule,
     #[serde(rename = "Project")]
     Project,
+    #[serde(rename = "Push")]
+    Push,
+    #[serde(rename = "ServiceAccount")]
+    ServiceAccount,
+    #[serde(rename = "Tag")]
+    Tag,
     #[serde(rename = "Template")]
     Template,
     #[serde(rename = "Value")]
@@ -30,11 +44,18 @@ pub enum ObjectTypeEnum {
 impl ToString for ObjectTypeEnum {
     fn to_string(&self) -> String {
         match self {
-            Self::DataIntegration => String::from("DataIntegration"),
+            Self::AwsIntegration => String::from("AwsIntegration"),
             Self::Environment => String::from("Environment"),
+            Self::GitHubIntegration => String::from("GitHubIntegration"),
+            Self::Invitation => String::from("Invitation"),
+            Self::Membership => String::from("Membership"),
+            Self::Organization => String::from("Organization"),
             Self::Parameter => String::from("Parameter"),
             Self::ParameterRule => String::from("ParameterRule"),
             Self::Project => String::from("Project"),
+            Self::Push => String::from("Push"),
+            Self::ServiceAccount => String::from("ServiceAccount"),
+            Self::Tag => String::from("Tag"),
             Self::Template => String::from("Template"),
             Self::Value => String::from("Value"),
         }

@@ -253,6 +253,7 @@ impl Environments {
             name: Some(environment_name.to_string()),
             description: description.map(String::from),
             parent: None,
+            children: None,
             created_at: None,
             modified_at: None,
         };

@@ -15,6 +15,7 @@ const PARTIAL_SUCCESS: Option<bool> = Some(true);
 const VALUES_FALSE: Option<bool> = Some(false);
 const VALUES_TRUE: Option<bool> = Some(true);
 const NO_ORDERING: Option<&str> = None;
+const ONLY_SECRETS: Option<bool> = None;
 
 pub struct Parameters {}
 
@@ -186,6 +187,7 @@ impl Parameters {
             None,
             PAGE_SIZE,
             PARTIAL_SUCCESS,
+            ONLY_SECRETS,
             tag_arg,
             VALUES_FALSE,
             WRAP_SECRETS,
@@ -236,6 +238,7 @@ impl Parameters {
             None,
             PAGE_SIZE,
             PARTIAL_SUCCESS,
+            ONLY_SECRETS,
             tag.as_deref(),
             None,
             WRAP_SECRETS,
@@ -322,6 +325,7 @@ impl Parameters {
             None,
             PAGE_SIZE,
             PARTIAL_SUCCESS,
+            ONLY_SECRETS,
             tag.as_deref(),
             value_arg,
             WRAP_SECRETS,
@@ -385,6 +389,7 @@ impl Parameters {
             None,
             PAGE_SIZE,
             PARTIAL_SUCCESS,
+            ONLY_SECRETS,
             None, // cannot use a tag without an environment
             VALUES_TRUE,
             WRAP_SECRETS,
@@ -467,6 +472,7 @@ impl Parameters {
             referencing_values: None,
             created_at: None,
             modified_at: None,
+            project: None,
         };
         let response =
             projects_parameters_partial_update(rest_cfg, param_id, proj_id, Some(param_update));

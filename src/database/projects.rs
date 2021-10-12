@@ -121,6 +121,7 @@ impl Projects {
         let proj = ProjectCreate {
             name: proj_name.to_string(),
             description: description.map(String::from),
+            depends_on: None,
         };
         let response = projects_create(rest_cfg, proj);
         match response {
@@ -165,6 +166,8 @@ impl Projects {
             created_at: None,
             modified_at: None,
             pushes: None,
+            depends_on: None,
+            dependents: None,
         };
         let response = projects_partial_update(rest_cfg, project_id, Some(proj));
         match response {

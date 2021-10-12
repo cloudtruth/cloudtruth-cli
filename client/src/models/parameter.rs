@@ -31,6 +31,9 @@ pub struct Parameter {
     /// Rules applied to this parameter.
     #[serde(rename = "rules")]
     pub rules: Vec<crate::models::ParameterRule>,
+    /// The project that the parameter is within.
+    #[serde(rename = "project")]
+    pub project: String,
     /// Templates that reference this Parameter.
     #[serde(rename = "referencing_templates")]
     pub referencing_templates: Vec<String>,
@@ -53,6 +56,7 @@ impl Parameter {
         id: String,
         name: String,
         rules: Vec<crate::models::ParameterRule>,
+        project: String,
         referencing_templates: Vec<String>,
         referencing_values: Vec<String>,
         values: ::std::collections::HashMap<String, Option<crate::models::Value>>,
@@ -67,6 +71,7 @@ impl Parameter {
             secret: None,
             _type: None,
             rules,
+            project,
             referencing_templates,
             referencing_values,
             values,

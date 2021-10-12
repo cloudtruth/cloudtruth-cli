@@ -21,6 +21,12 @@ pub struct Project {
     /// A description of the project.  You may find it helpful to document how this project is used to assist others when they need to maintain software that uses this content.
     #[serde(rename = "description", skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
+    /// This is the opposite of `depends_on`, see that field for more details.
+    #[serde(rename = "dependents")]
+    pub dependents: Vec<String>,
+    /// Project dependencies allow projects to be used for shared configuration, for example a database used by many applications needs to advertise its port number.  Projects can depend on another project which will add the parameters from the parent project into the current project.  All of the parameter names between the two projects must be unique.  When retrieving values or rendering templates, all of the parameters from the parent project will also be available in the current project.
+    #[serde(rename = "depends_on", skip_serializing_if = "Option::is_none")]
+    pub depends_on: Option<String>,
     #[serde(rename = "pushes")]
     pub pushes: Vec<crate::models::AwsPush>,
     #[serde(rename = "created_at")]
@@ -34,6 +40,7 @@ impl Project {
         url: String,
         id: String,
         name: String,
+        dependents: Vec<String>,
         pushes: Vec<crate::models::AwsPush>,
         created_at: String,
         modified_at: String,
@@ -43,6 +50,8 @@ impl Project {
             id,
             name,
             description: None,
+            dependents,
+            depends_on: None,
             pushes,
             created_at,
             modified_at,

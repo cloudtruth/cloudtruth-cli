@@ -24,6 +24,9 @@ pub struct Environment {
     /// Environments can inherit from a single parent environment which provides values for parameters when specific environments do not have a value set.  Every organization has one default environment that cannot be removed.
     #[serde(rename = "parent", skip_serializing_if = "Option::is_none")]
     pub parent: Option<String>,
+    /// This is the opposite of `parent`, see that field for more details.
+    #[serde(rename = "children")]
+    pub children: Vec<String>,
     #[serde(rename = "created_at")]
     pub created_at: String,
     #[serde(rename = "modified_at")]
@@ -35,6 +38,7 @@ impl Environment {
         url: String,
         id: String,
         name: String,
+        children: Vec<String>,
         created_at: String,
         modified_at: String,
     ) -> Environment {
@@ -44,6 +48,7 @@ impl Environment {
             name,
             description: None,
             parent: None,
+            children,
             created_at,
             modified_at,
         }
