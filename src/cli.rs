@@ -177,6 +177,32 @@ pub fn build_cli() -> App<'static, 'static> {
                 .help("The CloudTruth project to work with")
                 .takes_value(true)
         )
+        .subcommand(SubCommand::with_name("audit-logs")
+            .about("Display audit logs")
+            .visible_aliases(&["audit", "aud", "a", "log", "logs"])
+            .subcommands(vec![
+                SubCommand::with_name(LIST_SUBCMD)
+                    .visible_aliases(LIST_ALIASES)
+                    .about("List audit log details")
+                    // TODO: object name? (API only appears to support ID), user name/email? before/after?
+                    .arg(Arg::with_name("action")
+                        .takes_value(true)
+                        .short("a")
+                        .long("action")
+                        .possible_values(&["create", "delete", "update"])
+                        .help("Only show specified action"))
+                    .arg(Arg::with_name("type")
+                        .takes_value(true)
+                        .short("t")
+                        .long("type")
+                        .possible_values(&["environment", "integration", "parameter", "project", "tag", "template", "value"])
+                        .help("Only show specified object type"))
+                    .arg(table_format_options().help("Format for audit log details")),
+                SubCommand::with_name("summary")
+                    .visible_aliases(&["sum"])
+                    .about("Display summary of audit logs"),
+            ])
+        )
         .subcommand(
             SubCommand::with_name("completions")
                 .about("Generate shell completions for this application")

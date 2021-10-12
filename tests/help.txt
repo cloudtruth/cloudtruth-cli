@@ -16,6 +16,7 @@ OPTIONS:
         --project <project>    The CloudTruth project to work with
 
 SUBCOMMANDS:
+    audit-logs       Display audit logs [aliases: audit, aud, a, log, logs]
     completions      Generate shell completions for this application
     configuration    Configuration options for this application [aliases: config, conf, con, c]
     environments     Work with CloudTruth environments [aliases: environment, envs, env, e]
@@ -27,6 +28,47 @@ SUBCOMMANDS:
     projects         Work with CloudTruth projects [aliases: project, proj]
     run              Run a shell with the parameters in place [aliases: run, r]
     templates        Work with CloudTruth templates [aliases: template, temp, t]
+============================================================
+cloudtruth-audit-logs 
+Display audit logs
+
+USAGE:
+    cloudtruth audit-logs [SUBCOMMAND]
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+SUBCOMMANDS:
+    help       Prints this message or the help of the given subcommand(s)
+    list       List audit log details [aliases: ls, l]
+    summary    Display summary of audit logs [aliases: sum]
+========================================
+cloudtruth-audit-logs-list 
+List audit log details
+
+USAGE:
+    cloudtruth audit-logs list [OPTIONS]
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+OPTIONS:
+    -a, --action <action>    Only show specified action [possible values: create, delete, update]
+    -f, --format <format>    Format for audit log details [default: table]  [possible values: table, csv, json, yaml]
+    -t, --type <type>        Only show specified object type [possible values: environment, integration, parameter,
+                             project, tag, template, value]
+========================================
+cloudtruth-audit-logs-summary 
+Display summary of audit logs
+
+USAGE:
+    cloudtruth audit-logs summary
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
 ============================================================
 cloudtruth-completions 
 Generate shell completions for this application
