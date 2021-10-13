@@ -81,11 +81,11 @@ fn generate_key(
     }
 }
 
-/// Wraps the plaintext using the ChaCha20 algorithm with the `jwt` to generate the key, and returns
+/// Wraps the plaintext using the ChaCha20 algorithm with the `token` to generate the key, and returns
 /// an encoded string.
-fn wrap_chacha20_poly1305(jwt: &[u8], plaintext: &[u8]) -> Result<String, CryptoError> {
+fn wrap_chacha20_poly1305(token: &[u8], plaintext: &[u8]) -> Result<String, CryptoError> {
     // derive the key from the JWT
-    let derived = generate_key(jwt, None, None)?;
+    let derived = generate_key(token, None, None)?;
     let key = chacha20poly1305::Key::from_slice(&derived);
 
     // generate a new Nonce
@@ -115,10 +115,10 @@ fn wrap_chacha20_poly1305(jwt: &[u8], plaintext: &[u8]) -> Result<String, Crypto
     }
 }
 
-/// Unwraps the ciphertext (inside the `SecretWrapper`) using the ChaCha20 algorithm with the `jwt`
+/// Unwraps the ciphertext (inside the `SecretWrapper`) using the ChaCha20 algorithm with the `token`
 /// to generate the key, and returns the plaintext on success.
-fn unwrap_chacha20_poly1305(jwt: &[u8], wrapper: &SecretWrapper) -> Result<Vec<u8>, CryptoError> {
-    let derived = generate_key(jwt, None, None)?;
+fn unwrap_chacha20_poly1305(token: &[u8], wrapper: &SecretWrapper) -> Result<Vec<u8>, CryptoError> {
+    let derived = generate_key(token, None, None)?;
     let key = chacha20poly1305::Key::from_slice(&derived);
     let cipher = ChaCha20Poly1305::new(key);
     let nonce_bytes = base64::decode(&wrapper.nonce)?;
@@ -133,11 +133,11 @@ fn unwrap_chacha20_poly1305(jwt: &[u8], wrapper: &SecretWrapper) -> Result<Vec<u
     }
 }
 
-/// Wraps the plaintext using the AES-GCM algorithm with the `jwt` to generate the key, and returns
+/// Wraps the plaintext using the AES-GCM algorithm with the `token` to generate the key, and returns
 /// an encoded string.
-fn wrap_aes_gcm(jwt: &[u8], plaintext: &[u8]) -> Result<String, CryptoError> {
+fn wrap_aes_gcm(token: &[u8], plaintext: &[u8]) -> Result<String, CryptoError> {
     // derive the key from the JWT
-    let derived = generate_key(jwt, None, None)?;
+    let derived = generate_key(token, None, None)?;
     let key = aes_gcm::Key::from_slice(&derived);
 
     // generate a new Nonce
@@ -167,10 +167,10 @@ fn wrap_aes_gcm(jwt: &[u8], plaintext: &[u8]) -> Result<String, CryptoError> {
     }
 }
 
-/// Unwraps the ciphertext (inside the `SecretWrapper`) using the AES-GCM algorithm with the `jwt`
+/// Unwraps the ciphertext (inside the `SecretWrapper`) using the AES-GCM algorithm with the `token`
 /// to generate the key, and returns the plaintext on success.
-fn unwrap_aes_gcm(jwt: &[u8], wrapper: &SecretWrapper) -> Result<Vec<u8>, CryptoError> {
-    let derived = generate_key(jwt, None, None)?;
+fn unwrap_aes_gcm(token: &[u8], wrapper: &SecretWrapper) -> Result<Vec<u8>, CryptoError> {
+    let derived = generate_key(token, None, None)?;
     let key = aes_gcm::Key::from_slice(&derived);
     let cipher = Aes256Gcm::new(key);
     let nonce_bytes = base64::decode(&wrapper.nonce)?;
@@ -187,25 +187,25 @@ fn unwrap_aes_gcm(jwt: &[u8], wrapper: &SecretWrapper) -> Result<Vec<u8>, Crypto
 
 /// Use the JWT to wrap the plaintext string in the specified algorithm
 #[allow(dead_code)]
-pub fn wrap(
+pub fn secret_wrap(
     algorithm: CryptoAlgorithm,
-    jwt: &[u8],
+    token: &[u8],
     plaintext: &[u8],
 ) -> Result<String, CryptoError> {
     match algorithm {
-        CryptoAlgorithm::AesGcm => wrap_aes_gcm(jwt, plaintext),
-        CryptoAlgorithm::ChaCha20 => wrap_chacha20_poly1305(jwt, plaintext),
+        CryptoAlgorithm::AesGcm => wrap_aes_gcm(token, plaintext),
+        CryptoAlgorithm::ChaCha20 => wrap_chacha20_poly1305(token, plaintext),
         _ => Err(CryptoError::UnsupportedAlgorithm(format!("{}", algorithm))),
     }
 }
 
 /// Uses the JWT to unwrap the encrypted string
 #[allow(dead_code)]
-pub fn unwrap(jwt: &[u8], encoded: &str) -> Result<Vec<u8>, CryptoError> {
+pub fn secret_unwrap(token: &[u8], encoded: &str) -> Result<Vec<u8>, CryptoError> {
     let wrapper = decode(encoded)?;
     match wrapper.algorithm {
-        CryptoAlgorithm::AesGcm => unwrap_aes_gcm(jwt, &wrapper),
-        CryptoAlgorithm::ChaCha20 => unwrap_chacha20_poly1305(jwt, &wrapper),
+        CryptoAlgorithm::AesGcm => unwrap_aes_gcm(token, &wrapper),
+        CryptoAlgorithm::ChaCha20 => unwrap_chacha20_poly1305(token, &wrapper),
         _ => Err(CryptoError::UnsupportedAlgorithm(format!(
             "{}",
             wrapper.algorithm
@@ -379,9 +379,10 @@ mod test {
 
     #[test]
     fn wrap_unsupported() {
-        let jwt = b"fake-jwt-key";
+        let token = b"fake-token-key";
         let plaintext = "this is sample plaintext";
-        let result = wrap(CryptoAlgorithm::Unknown, jwt, plaintext.as_bytes()).unwrap_err();
+        let result =
+            secret_wrap(CryptoAlgorithm::Unknown, token, plaintext.as_bytes()).unwrap_err();
         assert_eq!(
             result,
             CryptoError::UnsupportedAlgorithm(CryptoAlgorithm::Unknown.to_string())
@@ -390,13 +391,13 @@ mod test {
 
     #[test]
     fn unwrap_unsupported() {
-        let jwt = b"fake-jwt-key";
+        let token = b"fake-token-key";
         let nonce = "sample_nonce";
         let ciphertext = "cipher_text_goes_here";
         let tag = "tag_value_goes_here";
         let algo_str = CryptoAlgorithm::Unknown.to_string();
         let encoded_string = format!("smaash:{}:{}:{}:{}", algo_str, nonce, ciphertext, tag);
-        let result = unwrap(jwt, encoded_string.as_str()).unwrap_err();
+        let result = secret_unwrap(token, encoded_string.as_str()).unwrap_err();
         assert_eq!(result, CryptoError::UnsupportedAlgorithm(algo_str));
     }
 
@@ -404,14 +405,14 @@ mod test {
     fn chacha20_known_answer() {
         // this was generated by vaas server code, so make sure we can decrypt it
         let wrapped = "smaash:chacha20:082zVRh/NfzCSMyb:RFYIyf1J/yTRdKZKwrG35o8BMV6OqeXUjoHRqbDxEVzRZwaO:8kzWn7kXU6aPw1y5Q4hoHw==";
-        let unwrapped = unwrap(TEST_JWT.as_bytes(), wrapped).unwrap();
+        let unwrapped = secret_unwrap(TEST_JWT.as_bytes(), wrapped).unwrap();
         let decoded = base64::decode(&unwrapped).unwrap();
         assert_eq!(TEST_SECRET.as_bytes(), decoded);
     }
 
     #[test]
     fn chacha20_wrap_and_unwrap() {
-        let wrapped = wrap(
+        let wrapped = secret_wrap(
             CryptoAlgorithm::ChaCha20,
             TEST_JWT.as_bytes(),
             TEST_SECRET.as_bytes(),
@@ -419,7 +420,7 @@ mod test {
         .unwrap();
         let algo_name = CryptoAlgorithm::ChaCha20.to_string();
         assert!(wrapped.contains(&algo_name));
-        let unwrapped = unwrap(TEST_JWT.as_bytes(), wrapped.as_str()).unwrap();
+        let unwrapped = secret_unwrap(TEST_JWT.as_bytes(), wrapped.as_str()).unwrap();
         let result = std::str::from_utf8(&unwrapped).unwrap();
         assert_eq!(TEST_SECRET, result);
     }
@@ -428,14 +429,14 @@ mod test {
     fn aes_gcm_known_answer() {
         // this was generated by vaas server code, so make sure we can decrypt it
         let wrapped = "smaash:aes_gcm:+CFANT6cgczDMH1X:3H5W3RZ4XZUt5Jkm81Z50NmC4SvIxKLFRtEx2yvMiKd/OihU:4CrkcHCcaW8nOSy60RZsCw==";
-        let unwrapped = unwrap(TEST_JWT.as_bytes(), wrapped).unwrap();
+        let unwrapped = secret_unwrap(TEST_JWT.as_bytes(), wrapped).unwrap();
         let decoded = base64::decode(&unwrapped).unwrap();
         assert_eq!(TEST_SECRET.as_bytes(), decoded);
     }
 
     #[test]
     fn aes_gcm_wrap_and_unwrap() {
-        let wrapped = wrap(
+        let wrapped = secret_wrap(
             CryptoAlgorithm::AesGcm,
             TEST_JWT.as_bytes(),
             TEST_SECRET.as_bytes(),
@@ -443,7 +444,7 @@ mod test {
         .unwrap();
         let algo_name = CryptoAlgorithm::AesGcm.to_string();
         assert!(wrapped.contains(&algo_name));
-        let unwrapped = unwrap(TEST_JWT.as_bytes(), wrapped.as_str()).unwrap();
+        let unwrapped = secret_unwrap(TEST_JWT.as_bytes(), wrapped.as_str()).unwrap();
         let result = std::str::from_utf8(&unwrapped).unwrap();
         assert_eq!(TEST_SECRET, result);
     }
