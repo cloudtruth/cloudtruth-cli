@@ -1,3 +1,11 @@
+# 1.0.11 - 2021-10-13
+
+* Added support for evaluated parameters:
+  * Added `parameter set --evaluate` to enable parameters referencing templates or  parameters.
+  * Added `parameter list --evaluated` to see both evaluated and unevaluated parameter values.
+* Added `template difference` command to compare template versions and environments.
+* Added `--rename` option to `environment tag set`.
+
 # 1.0.10 - 2021-10-01
 
 * Added `--as-of` to `templates get` for raw or evaluated template at specified date/time (or tag).
