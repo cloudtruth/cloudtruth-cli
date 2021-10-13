@@ -3,7 +3,7 @@ use crate::cli::{
     GET_SUBCMD, HISTORY_SUBCMD, LIST_SUBCMD, NAME_ARG, RAW_FLAG, RENAME_OPT, SECRETS_FLAG,
     SET_SUBCMD, SHOW_TIMES_FLAG, TEMPLATE_FILE_OPT, VALUES_FLAG,
 };
-use crate::database::{Environments, HistoryAction, OpenApiConfig, TemplateHistory, Templates};
+use crate::database::{HistoryAction, OpenApiConfig, TemplateHistory, Templates};
 use crate::table::Table;
 use crate::{
     error_message, parse_datetime, parse_tag, user_confirm, warn_missing_subcommand,
@@ -27,9 +27,9 @@ fn proc_template_delete(
     let proj_name = resolved.project_display_name();
     let proj_id = resolved.project_id();
     let template_name = subcmd_args.value_of(NAME_ARG).unwrap();
-    let response = templates.get_details_by_name(rest_cfg, &proj_name, proj_id, template_name);
+    let response = templates.get_id(rest_cfg, &proj_name, proj_id, template_name);
 
-    if let Ok(details) = response {
+    if let Ok(template_id) = response {
         let mut confirmed = subcmd_args.is_present(CONFIRM_FLAG);
         if !confirmed {
             confirmed = user_confirm(
@@ -47,7 +47,7 @@ fn proc_template_delete(
                 template_name, proj_name
             ))?;
         } else {
-            templates.delete_template(rest_cfg, proj_id, &details.id)?;
+            templates.delete_template(rest_cfg, proj_id, &template_id)?;
             println!(
                 "Deleted template '{}' in project '{}'",
                 template_name, proj_name
@@ -71,8 +71,17 @@ fn proc_template_edit(
     let proj_name = resolved.project_display_name();
     let proj_id = resolved.project_id();
     let template_name = subcmd_args.value_of(NAME_ARG).unwrap();
-    let details =
-        templates.get_unevaluated_details(rest_cfg, &proj_name, proj_id, template_name)?;
+    let details = templates.get_details_by_name(
+        rest_cfg,
+        &proj_name,
+        proj_id,
+        template_name,
+        false,
+        true,
+        None,
+        None,
+        None,
+    )?;
     let new_body = edit::edit(details.body.as_bytes())?;
     if new_body != details.body {
         templates.update_template(
@@ -134,73 +143,6 @@ fn proc_template_list(
     Ok(())
 }
 
-/// This is what the Templates.get_body() should look like.
-///
-/// The current API does not support a raw/evaluated boolean, or specifying as_of/tag. This function
-/// implements those features, so `proc_template_get()` amd `proc_template_diff()` do not need to
-/// repeat similar logic.
-#[allow(clippy::too_many_arguments)]
-fn get_template_body(
-    rest_cfg: &OpenApiConfig,
-    templates: &Templates,
-    proj_name: &str,
-    proj_id: &str,
-    template_name: &str,
-    env_id: &str,
-    env_name: &str,
-    show_secrets: bool,
-    raw: bool,
-    as_of: Option<String>,
-    tag: Option<String>,
-) -> Result<Option<String>> {
-    // The template history queries do NOT provide tag options. So, resolve any tag to a time.
-    let mut when = as_of;
-    if let Some(tag_name) = tag {
-        let environments = Environments::new();
-        when = Some(environments.get_tag_time(rest_cfg, env_id, env_name, &tag_name)?);
-    }
-
-    let mut body: Option<String> = None;
-    if when.is_some() {
-        // If have a time, get the body from historical records.
-        let details = templates.get_details_by_name(rest_cfg, proj_name, proj_id, template_name)?;
-        let hist_list =
-            templates.get_history_for(rest_cfg, proj_id, &details.id, when.clone(), None)?;
-        if !hist_list.is_empty() {
-            let item = &hist_list[0];
-            if raw {
-                body = Some(item.body.clone())
-            } else {
-                // use the preview to evaluate at that point in time
-                let preview = templates.preview_template(
-                    rest_cfg,
-                    proj_id,
-                    env_id,
-                    &item.body,
-                    show_secrets,
-                    when,
-                    None,
-                )?;
-                body = Some(preview);
-            }
-        }
-    } else if raw {
-        let details =
-            templates.get_unevaluated_details(rest_cfg, proj_name, proj_id, template_name)?;
-        body = Some(details.body);
-    } else {
-        body = templates.get_body_by_name(
-            rest_cfg,
-            proj_name,
-            proj_id,
-            env_id,
-            template_name,
-            show_secrets,
-        )?;
-    }
-    Ok(body)
-}
-
 fn proc_template_get(
     subcmd_args: &ArgMatches,
     rest_cfg: &OpenApiConfig,
@@ -215,30 +157,19 @@ fn proc_template_get(
     let raw = subcmd_args.is_present(RAW_FLAG);
     let proj_id = resolved.project_id();
     let env_name = resolved.environment_display_name();
-    let env_id = resolved.environment_id();
 
-    let body = get_template_body(
+    let details = templates.get_details_by_name(
         rest_cfg,
-        templates,
         &proj_name,
         proj_id,
         template_name,
-        env_id,
-        &env_name,
+        !raw,
         show_secrets,
-        raw,
+        Some(env_name),
         as_of,
         tag,
     )?;
-    if let Some(body) = body {
-        println!("{}", body)
-    } else {
-        error_message(format!(
-            "No template '{}' found in project '{}'.",
-            template_name, proj_name
-        ))?;
-        process::exit(9);
-    }
+    println!("{}", details.body);
     Ok(())
 }
 
@@ -326,43 +257,30 @@ fn proc_template_diff(
         as_tag2.unwrap_or("current")
     );
 
-    // fetch all environments once, and then determine id's from the same map that is
-    // used to resolve the environment names.
-    let environments = Environments::new();
-    let env_url_map = environments.get_url_name_map(rest_cfg);
-    let env1_id = environments.id_from_map(&env1_name, &env_url_map)?;
-    let env2_id = environments.id_from_map(&env2_name, &env_url_map)?;
-
-    let body1 = get_template_body(
+    let details1 = templates.get_details_by_name(
         rest_cfg,
-        templates,
         &proj_name,
         proj_id,
         template_name,
-        &env1_id,
-        &env1_name,
+        !raw,
         show_secrets,
-        raw,
+        Some(env1_name),
         as_of1,
         tag1,
-    )?
-    .unwrap_or_default();
-    let body2 = get_template_body(
+    )?;
+    let details2 = templates.get_details_by_name(
         rest_cfg,
-        templates,
         &proj_name,
         proj_id,
         template_name,
-        &env2_id,
-        &env2_name,
+        !raw,
         show_secrets,
-        raw,
+        Some(env2_name),
         as_of2,
         tag2,
-    )?
-    .unwrap_or_default();
+    )?;
 
-    let diff = TextDiff::from_lines(&body1, &body2);
+    let diff = TextDiff::from_lines(&details1.body, &details2.body);
     diff.unified_diff()
         .header(&header1, &header2)
         .context_radius(context)
@@ -402,9 +320,9 @@ fn proc_template_set(
     let template_name = subcmd_args.value_of(NAME_ARG).unwrap();
     let rename = subcmd_args.value_of(RENAME_OPT);
     let description = subcmd_args.value_of(DESCRIPTION_OPT);
-    let response = templates.get_details_by_name(rest_cfg, &proj_name, proj_id, template_name);
+    let response = templates.get_id(rest_cfg, &proj_name, proj_id, template_name);
 
-    if let Ok(details) = response {
+    if let Ok(template_id) = response {
         if description.is_none() && rename.is_none() && filename.is_none() {
             warning_message(format!(
                 "Template '{}' not updated: no updated parameters provided",
@@ -419,7 +337,7 @@ fn proc_template_set(
             templates.update_template(
                 rest_cfg,
                 proj_id,
-                &details.id,
+                &template_id,
                 name,
                 description,
                 body.as_deref(),
@@ -501,11 +419,9 @@ fn proc_template_history(
     let history: Vec<TemplateHistory>;
 
     if let Some(temp_name) = template_name {
-        let template_id;
+        let template_id = templates.get_id(rest_cfg, &proj_name, proj_id, temp_name)?;
         modifier = format!("for '{}' ", temp_name);
         add_name = false;
-        let details = templates.get_details_by_name(rest_cfg, &proj_name, proj_id, temp_name)?;
-        template_id = details.id;
         history = templates.get_history_for(rest_cfg, proj_id, &template_id, as_of, tag)?;
     } else {
         modifier = "".to_string();
@@ -556,25 +472,19 @@ fn proc_template_validate(
     let proj_id = resolved.project_id();
     let env_id = resolved.environment_id();
     let template_name = subcmd_args.value_of(NAME_ARG).unwrap();
-    let show_secrets = true; // make sure we're completely evaluating
 
-    let response = templates.get_body_by_name(
+    templates.get_details_by_name(
         rest_cfg,
         &proj_name,
         proj_id,
-        env_id,
         template_name,
-        show_secrets,
+        true,
+        false,
+        Some(env_id.to_string()),
+        None,
+        None,
     )?;
-    if response.is_some() {
-        println!("Success");
-    } else {
-        error_message(format!(
-            "No template '{}' found in project '{}'.",
-            template_name, proj_name
-        ))?;
-        process::exit(9);
-    }
+    println!("Success");
     Ok(())
 }
 
