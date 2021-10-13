@@ -11,10 +11,30 @@ const NO_ORDERING: Option<&str> = None;
 
 pub struct Templates {}
 
-fn response_error(status: &reqwest::StatusCode, content: &str) -> TemplateError {
+fn response_error(
+    status: &reqwest::StatusCode,
+    content: &str,
+    env_name: Option<&str>,
+) -> TemplateError {
     match status.as_u16() {
         401 => auth_error(content),
         403 => auth_error(content),
+        404 => {
+            let msg = response_message(status, content);
+            if msg.contains("No Environment matches") && env_name.is_some() {
+                TemplateError::EnvironmentMissing(
+                    env_name.unwrap_or_default().to_string(),
+                    "".to_string(),
+                )
+            } else if msg.contains("No HistoricalEnvironment matches") {
+                TemplateError::EnvironmentMissing(
+                    env_name.unwrap_or_default().to_string(),
+                    " at specified time/tag".to_string(),
+                )
+            } else {
+                TemplateError::ResponseError(msg)
+            }
+        }
         _ => TemplateError::ResponseError(response_message(status, content)),
     }
 }
@@ -58,7 +78,7 @@ impl Templates {
         template_name: &str,
         evaluate: bool,
         show_secrets: bool,
-        env_name_or_id: Option<String>,
+        env_name: Option<String>,
         as_of: Option<String>,
         tag: Option<String>,
     ) -> Result<TemplateDetails, TemplateError> {
@@ -66,7 +86,7 @@ impl Templates {
             rest_cfg,
             proj_id,
             as_of,
-            env_name_or_id.as_deref(),
+            env_name.as_deref(),
             Some(evaluate),
             Some(!show_secrets),
             Some(template_name),
@@ -97,7 +117,11 @@ impl Templates {
                 Some(ProjectsTemplatesListError::Status422(tle)) => {
                     Err(TemplateError::EvaluateFailed(tle.clone()))
                 }
-                _ => Err(response_error(&content.status, &content.content)),
+                _ => Err(response_error(
+                    &content.status,
+                    &content.content,
+                    env_name.as_deref(),
+                )),
             },
             Err(e) => Err(TemplateError::UnhandledError(e.to_string())),
         }
@@ -110,7 +134,7 @@ impl Templates {
     ) -> Result<Vec<TemplateDetails>, TemplateError> {
         let evaluate = Some(false);
         let mask_secrets = Some(true);
-        let env_name_or_id = None;
+        let env_name = None;
         let as_of = None;
         let tag = None;
         let name = None; // get everything
@@ -118,7 +142,7 @@ impl Templates {
             rest_cfg,
             proj_id,
             as_of,
-            env_name_or_id,
+            env_name,
             evaluate,
             mask_secrets,
             name,
@@ -142,7 +166,7 @@ impl Templates {
                 Some(ProjectsTemplatesListError::Status422(tle)) => {
                     Err(TemplateError::EvaluateFailed(tle.clone()))
                 }
-                _ => Err(response_error(&content.status, &content.content)),
+                _ => Err(response_error(&content.status, &content.content, env_name)),
             },
             Err(e) => Err(TemplateError::UnhandledError(e.to_string())),
         }
@@ -168,7 +192,7 @@ impl Templates {
                 Some(ProjectsTemplatesCreateError::Status422(tle)) => {
                     Err(TemplateError::EvaluateFailed(tle.clone()))
                 }
-                _ => Err(response_error(&content.status, &content.content)),
+                _ => Err(response_error(&content.status, &content.content, None)),
             },
             Err(e) => Err(TemplateError::UnhandledError(e.to_string())),
         }
@@ -184,7 +208,7 @@ impl Templates {
         match response {
             Ok(_) => Ok(()),
             Err(ResponseError(ref content)) => {
-                Err(response_error(&content.status, &content.content))
+                Err(response_error(&content.status, &content.content, None))
             }
             Err(e) => Err(TemplateError::UnhandledError(e.to_string())),
         }
@@ -222,7 +246,7 @@ impl Templates {
                 Some(ProjectsTemplatesPartialUpdateError::Status422(tle)) => {
                     Err(TemplateError::EvaluateFailed(tle.clone()))
                 }
-                _ => Err(response_error(&content.status, &content.content)),
+                _ => Err(response_error(&content.status, &content.content, None)),
             },
             Err(e) => Err(TemplateError::UnhandledError(e.to_string())),
         }
@@ -233,7 +257,7 @@ impl Templates {
         &self,
         rest_cfg: &OpenApiConfig,
         project_id: &str,
-        env_id: &str,
+        env_name: &str,
         body: &str,
         show_secrets: bool,
         as_of: Option<String>,
@@ -247,7 +271,7 @@ impl Templates {
             project_id,
             preview,
             as_of,
-            Some(env_id),
+            Some(env_name),
             Some(!show_secrets),
             tag.as_deref(),
         );
@@ -257,7 +281,11 @@ impl Templates {
                 Some(ProjectsTemplatePreviewCreateError::Status422(tle)) => {
                     Err(TemplateError::EvaluateFailed(tle.clone()))
                 }
-                _ => Err(response_error(&content.status, &content.content)),
+                _ => Err(response_error(
+                    &content.status,
+                    &content.content,
+                    Some(env_name),
+                )),
             },
             Err(e) => Err(TemplateError::UnhandledError(e.to_string())),
         }
@@ -276,7 +304,7 @@ impl Templates {
         match response {
             Ok(data) => Ok(data.results.iter().map(TemplateHistory::from).collect()),
             Err(ResponseError(ref content)) => {
-                Err(response_error(&content.status, &content.content))
+                Err(response_error(&content.status, &content.content, None))
             }
             Err(e) => Err(TemplateError::UnhandledError(e.to_string())),
         }
@@ -301,7 +329,7 @@ impl Templates {
         match response {
             Ok(data) => Ok(data.results.iter().map(TemplateHistory::from).collect()),
             Err(ResponseError(ref content)) => {
-                Err(response_error(&content.status, &content.content))
+                Err(response_error(&content.status, &content.content, None))
             }
             Err(e) => Err(TemplateError::UnhandledError(e.to_string())),
         }

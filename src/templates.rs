@@ -296,14 +296,21 @@ fn proc_template_preview(
     resolved: &ResolvedIds,
 ) -> Result<()> {
     let proj_id = resolved.project_id();
-    let env_id = resolved.environment_id();
+    let env_name = resolved.environment_display_name();
     let show_secrets = subcmd_args.is_present(SECRETS_FLAG);
     let filename = subcmd_args.value_of(TEMPLATE_FILE_OPT).unwrap();
     let body = fs::read_to_string(filename).expect(FILE_READ_ERR);
     let as_of = parse_datetime(subcmd_args.value_of(AS_OF_ARG));
     let tag = parse_tag(subcmd_args.value_of(AS_OF_ARG));
-    let result =
-        templates.preview_template(rest_cfg, proj_id, env_id, &body, show_secrets, as_of, tag)?;
+    let result = templates.preview_template(
+        rest_cfg,
+        proj_id,
+        &env_name,
+        &body,
+        show_secrets,
+        as_of,
+        tag,
+    )?;
     println!("{}", result);
     Ok(())
 }
@@ -470,7 +477,7 @@ fn proc_template_validate(
 ) -> Result<()> {
     let proj_name = resolved.project_display_name();
     let proj_id = resolved.project_id();
-    let env_id = resolved.environment_id();
+    let env_name = resolved.environment_display_name();
     let template_name = subcmd_args.value_of(NAME_ARG).unwrap();
 
     templates.get_details_by_name(
@@ -480,7 +487,7 @@ fn proc_template_validate(
         template_name,
         true,
         false,
-        Some(env_id.to_string()),
+        Some(env_name),
         None,
         None,
     )?;
