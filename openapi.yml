@@ -2630,6 +2630,10 @@ paths:
           format: uuid
         required: true
       - in: query
+        name: secret
+        schema:
+          type: boolean
+      - in: query
         name: tag
         schema:
           type: string
@@ -4774,6 +4778,12 @@ components:
 
             We recommend that you use project, environment, and parameter at a minimum to disambiguate your pushed resource identifiers.
           maxLength: 1024
+        latest_task:
+          allOf:
+          - $ref: '#/components/schemas/AwsPushTask'
+          readOnly: true
+          nullable: true
+          description: The most recent task run for this push.
         created_at:
           type: string
           format: date-time
@@ -4785,6 +4795,7 @@ components:
       required:
       - created_at
       - id
+      - latest_task
       - modified_at
       - name
       - projects
@@ -5042,6 +5053,13 @@ components:
             provides values for parameters when specific environments do not have
             a value set.  Every organization has one default environment that cannot
             be removed.
+        children:
+          type: array
+          items:
+            type: string
+            format: uri
+          readOnly: true
+          description: This is the opposite of `parent`, see that field for more details.
         created_at:
           type: string
           format: date-time
@@ -5051,6 +5069,7 @@ components:
           format: date-time
           readOnly: true
       required:
+      - children
       - created_at
       - id
       - modified_at
@@ -5328,11 +5347,18 @@ components:
       type: string
     ObjectTypeEnum:
       enum:
-      - DataIntegration
+      - AwsIntegration
       - Environment
+      - GitHubIntegration
+      - Invitation
+      - Membership
+      - Organization
       - Parameter
       - ParameterRule
       - Project
+      - Push
+      - ServiceAccount
+      - Tag
       - Template
       - Value
       type: string
@@ -5818,6 +5844,11 @@ components:
             $ref: '#/components/schemas/ParameterRule'
           readOnly: true
           description: Rules applied to this parameter.
+        project:
+          type: string
+          format: uri
+          readOnly: true
+          description: The project that the parameter is within.
         referencing_templates:
           type: array
           items:
@@ -5868,6 +5899,7 @@ components:
       - id
       - modified_at
       - name
+      - project
       - referencing_templates
       - referencing_values
       - rules
@@ -6248,6 +6280,13 @@ components:
             provides values for parameters when specific environments do not have
             a value set.  Every organization has one default environment that cannot
             be removed.
+        children:
+          type: array
+          items:
+            type: string
+            format: uri
+          readOnly: true
+          description: This is the opposite of `parent`, see that field for more details.
         created_at:
           type: string
           format: date-time
@@ -6410,6 +6449,11 @@ components:
             $ref: '#/components/schemas/ParameterRule'
           readOnly: true
           description: Rules applied to this parameter.
+        project:
+          type: string
+          format: uri
+          readOnly: true
+          description: The project that the parameter is within.
         referencing_templates:
           type: array
           items:
@@ -6513,6 +6557,22 @@ components:
           description: A description of the project.  You may find it helpful to document
             how this project is used to assist others when they need to maintain software
             that uses this content.
+        dependents:
+          type: array
+          items:
+            type: string
+            format: uri
+          readOnly: true
+          description: This is the opposite of `depends_on`, see that field for more
+            details.
+        depends_on:
+          type: string
+          format: uri
+          nullable: true
+          description: |-
+            Project dependencies allow projects to be used for shared configuration, for example a database used by many applications needs to advertise its port number.
+
+            Projects can depend on another project which will add the parameters from the parent project into the current project.  All of the parameter names between the two projects must be unique.  When retrieving values or rendering templates, all of the parameters from the parent project will also be available in the current project.
         pushes:
           type: array
           items:
@@ -6807,6 +6867,22 @@ components:
           description: A description of the project.  You may find it helpful to document
             how this project is used to assist others when they need to maintain software
             that uses this content.
+        dependents:
+          type: array
+          items:
+            type: string
+            format: uri
+          readOnly: true
+          description: This is the opposite of `depends_on`, see that field for more
+            details.
+        depends_on:
+          type: string
+          format: uri
+          nullable: true
+          description: |-
+            Project dependencies allow projects to be used for shared configuration, for example a database used by many applications needs to advertise its port number.
+
+            Projects can depend on another project which will add the parameters from the parent project into the current project.  All of the parameter names between the two projects must be unique.  When retrieving values or rendering templates, all of the parameters from the parent project will also be available in the current project.
         pushes:
           type: array
           items:
@@ -6822,6 +6898,7 @@ components:
           readOnly: true
       required:
       - created_at
+      - dependents
       - id
       - modified_at
       - name
@@ -6839,6 +6916,14 @@ components:
           description: A description of the project.  You may find it helpful to document
             how this project is used to assist others when they need to maintain software
             that uses this content.
+        depends_on:
+          type: string
+          format: uri
+          nullable: true
+          description: |-
+            Project dependencies allow projects to be used for shared configuration, for example a database used by many applications needs to advertise its port number.
+
+            Projects can depend on another project which will add the parameters from the parent project into the current project.  All of the parameter names between the two projects must be unique.  When retrieving values or rendering templates, all of the parameters from the parent project will also be available in the current project.
       required:
       - name
     RoleEnum:

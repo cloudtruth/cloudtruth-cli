@@ -786,6 +786,7 @@ pub fn projects_parameters_list(
     page: Option<i32>,
     page_size: Option<i32>,
     partial_success: Option<bool>,
+    secret: Option<bool>,
     tag: Option<&str>,
     values: Option<bool>,
     wrap: Option<bool>,
@@ -835,6 +836,10 @@ pub fn projects_parameters_list(
     if let Some(ref local_var_str) = partial_success {
         local_var_req_builder =
             local_var_req_builder.query(&[("partial_success", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = secret {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("secret", &local_var_str.to_string())]);
     }
     if let Some(ref local_var_str) = tag {
         local_var_req_builder = local_var_req_builder.query(&[("tag", &local_var_str.to_string())]);

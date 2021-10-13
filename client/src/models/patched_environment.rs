@@ -24,6 +24,9 @@ pub struct PatchedEnvironment {
     /// Environments can inherit from a single parent environment which provides values for parameters when specific environments do not have a value set.  Every organization has one default environment that cannot be removed.
     #[serde(rename = "parent", skip_serializing_if = "Option::is_none")]
     pub parent: Option<String>,
+    /// This is the opposite of `parent`, see that field for more details.
+    #[serde(rename = "children", skip_serializing_if = "Option::is_none")]
+    pub children: Option<Vec<String>>,
     #[serde(rename = "created_at", skip_serializing_if = "Option::is_none")]
     pub created_at: Option<String>,
     #[serde(rename = "modified_at", skip_serializing_if = "Option::is_none")]
@@ -38,6 +41,7 @@ impl PatchedEnvironment {
             name: None,
             description: None,
             parent: None,
+            children: None,
             created_at: None,
             modified_at: None,
         }

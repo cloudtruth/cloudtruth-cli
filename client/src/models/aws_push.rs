@@ -38,6 +38,9 @@ pub struct AwsPush {
     /// Defines a path through the integration to the location where values will be pushed.  The following mustache-style substitutions can be used in the string:    - ``{{ environment }}`` to insert the environment name   - ``{{ parameter }}`` to insert the parameter name   - ``{{ project }}`` to insert the project name   - ``{{ push }}`` to insert the push name   - ``{{ tag }}`` to insert the tag name  We recommend that you use project, environment, and parameter at a minimum to disambiguate your pushed resource identifiers.
     #[serde(rename = "resource")]
     pub resource: String,
+    /// The most recent task run for this push.
+    #[serde(rename = "latest_task")]
+    pub latest_task: Option<Box<crate::models::AwsPushTask>>,
     #[serde(rename = "created_at")]
     pub created_at: String,
     #[serde(rename = "modified_at")]
@@ -55,6 +58,7 @@ impl AwsPush {
         region: crate::models::AwsRegionEnum,
         service: crate::models::AwsServiceEnum,
         resource: String,
+        latest_task: Option<crate::models::AwsPushTask>,
         created_at: String,
         modified_at: String,
     ) -> AwsPush {
@@ -68,6 +72,7 @@ impl AwsPush {
             region: Box::new(region),
             service: Box::new(service),
             resource,
+            latest_task: latest_task.map(Box::new),
             created_at,
             modified_at,
         }

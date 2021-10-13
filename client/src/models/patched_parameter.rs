@@ -31,6 +31,9 @@ pub struct PatchedParameter {
     /// Rules applied to this parameter.
     #[serde(rename = "rules", skip_serializing_if = "Option::is_none")]
     pub rules: Option<Vec<crate::models::ParameterRule>>,
+    /// The project that the parameter is within.
+    #[serde(rename = "project", skip_serializing_if = "Option::is_none")]
+    pub project: Option<String>,
     /// Templates that reference this Parameter.
     #[serde(
         rename = "referencing_templates",
@@ -60,6 +63,7 @@ impl PatchedParameter {
             secret: None,
             _type: None,
             rules: None,
+            project: None,
             referencing_templates: None,
             referencing_values: None,
             values: None,
