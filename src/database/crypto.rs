@@ -1,135 +1,46 @@
+use crate::database::{CryptoAlgorithm, CryptoError};
 use aes_gcm::Aes256Gcm;
-use base64::{self, DecodeError as Base64Error};
 use chacha20poly1305::aead::{AeadInPlace, NewAead};
 use chacha20poly1305::ChaCha20Poly1305;
 use hkdf::Hkdf;
 use rand_core::RngCore;
 use sha2::{Digest, Sha512};
-use std::fmt;
-use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 
-const PREFIX: &str = "smaash";
+pub const ENCRYPTION_PREFIX: &str = "smaash";
 
-const AES_GCM_STR: &str = "aes_gcm";
-const CHA_CHA_20_STR: &str = "chacha20";
-const UNKNOWN_STR: &str = "unknown";
-
-const ENCODED_PART_COUNT: usize = 5;
-const KEY_LEN: usize = 32;
-const NONCE_LEN: usize = 12;
-
-#[derive(PartialEq, Eq, Hash, Debug)]
-pub enum Algorithm {
-    AesGcm = 1,
-    ChaCha20 = 2,
-    Unknown = 99,
-}
-
-#[derive(PartialEq, Eq, Clone, Debug)]
-pub enum Error {
-    Base64(String),
-    Decrypt(String),
-    Encrypt(String),
-    InvalidAlgorithm(String),
-    InvalidEncoding(usize),
-    InvalidPrefix(String),
-    KeyDerivation(String),
-    UnsupportedAlgorithm(String),
-}
+pub const ENCODED_PART_COUNT: usize = 5;
+pub const KEY_LEN: usize = 32;
+pub const NONCE_LEN: usize = 12;
 
 #[derive(PartialEq, Eq, Debug)]
 struct SecretWrapper {
-    pub algorithm: Algorithm,
+    pub algorithm: CryptoAlgorithm,
     pub nonce: String,
     pub cipher_text: String,
     pub tag: String,
 }
 
-/// Converts enum into common encoded string
-impl Display for Algorithm {
-    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        match self {
-            Algorithm::AesGcm => write!(f, "{}", AES_GCM_STR),
-            Algorithm::ChaCha20 => write!(f, "{}", CHA_CHA_20_STR),
-            Algorithm::Unknown => write!(f, "{}", UNKNOWN_STR),
-        }
-    }
-}
-
-/// Converts string into enum
-impl FromStr for Algorithm {
-    type Err = ();
-
-    fn from_str(input: &str) -> Result<Algorithm, Self::Err> {
-        match input.to_lowercase().as_str() {
-            AES_GCM_STR => Ok(Algorithm::AesGcm),
-            CHA_CHA_20_STR => Ok(Algorithm::ChaCha20),
-            UNKNOWN_STR => Ok(Algorithm::Unknown),
-            _ => Err(()),
-        }
-    }
-}
-
-/// Displays the various error types.
-impl Display for Error {
-    fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
-        match self {
-            Error::Base64(details) => {
-                write!(f, "Base64 error: {}", details)
-            }
-            Error::Decrypt(details) => {
-                write!(f, "Decryption error: {}", details)
-            }
-            Error::Encrypt(details) => {
-                write!(f, "Encryption error: {}", details)
-            }
-            Error::InvalidAlgorithm(name) => {
-                write!(f, "Invalid encryption algorithm: {}", name)
-            }
-            Error::InvalidEncoding(size) => {
-                write!(
-                    f,
-                    "Expected {} encoded parts, and received {}",
-                    ENCODED_PART_COUNT, size
-                )
-            }
-            Error::InvalidPrefix(prefix) => {
-                write!(f, "Expected `{}` as a prefix, and got `{}`", PREFIX, prefix)
-            }
-            Error::KeyDerivation(details) => {
-                write!(f, "Key derivation error: {}", details)
-            }
-            Error::UnsupportedAlgorithm(details) => {
-                write!(f, "Unsupported algorithm: {}", details)
-            }
-        }
-    }
-}
-
-impl From<Base64Error> for Error {
-    fn from(err: Base64Error) -> Self {
-        Error::Base64(err.to_string())
-    }
-}
-
 /// Takes the encrypted data and related information, and encodes it (into String) for transmission.
-fn encode(algorithm: Algorithm, nonce: &str, ciphertext: &str, tag: &str) -> String {
-    format!("{}:{}:{}:{}:{}", PREFIX, algorithm, nonce, ciphertext, tag)
+fn encode(algorithm: CryptoAlgorithm, nonce: &str, ciphertext: &str, tag: &str) -> String {
+    format!(
+        "{}:{}:{}:{}:{}",
+        ENCRYPTION_PREFIX, algorithm, nonce, ciphertext, tag
+    )
 }
 
 /// Decodes the "encoded blob" into components.
-fn decode(encoded: &str) -> Result<SecretWrapper, Error> {
+fn decode(encoded: &str) -> Result<SecretWrapper, CryptoError> {
     let parts = encoded.split(':').collect::<Vec<&str>>();
     let prefix = parts.get(0).unwrap();
 
     if parts.len() != ENCODED_PART_COUNT {
-        Err(Error::InvalidEncoding(parts.len()))
-    } else if *prefix != PREFIX {
-        Err(Error::InvalidPrefix(prefix.to_string()))
+        Err(CryptoError::InvalidEncoding(parts.len()))
+    } else if *prefix != ENCRYPTION_PREFIX {
+        Err(CryptoError::InvalidPrefix(prefix.to_string()))
     } else {
         let algo_str = parts.get(1).unwrap();
-        if let Ok(algorithm) = Algorithm::from_str(algo_str) {
+        if let Ok(algorithm) = CryptoAlgorithm::from_str(algo_str) {
             let decomposed = SecretWrapper {
                 algorithm,
                 nonce: parts.get(2).unwrap().to_string(),
@@ -138,7 +49,7 @@ fn decode(encoded: &str) -> Result<SecretWrapper, Error> {
             };
             Ok(decomposed)
         } else {
-            Err(Error::InvalidAlgorithm(algo_str.to_string()))
+            Err(CryptoError::InvalidAlgorithm(algo_str.to_string()))
         }
     }
 }
@@ -150,7 +61,7 @@ fn generate_key(
     source: &[u8],
     salt: Option<&[u8]>,
     key_len: Option<usize>,
-) -> Result<Vec<u8>, Error> {
+) -> Result<Vec<u8>, CryptoError> {
     let digest_result;
     let binary_salt = match salt {
         Some(s) => s,
@@ -166,13 +77,13 @@ fn generate_key(
     let result = kdf.expand(&[], &mut key);
     match result {
         Ok(_) => Ok(key),
-        Err(e) => Err(Error::KeyDerivation(e.to_string())),
+        Err(e) => Err(CryptoError::KeyDerivation(e.to_string())),
     }
 }
 
 /// Wraps the plaintext using the ChaCha20 algorithm with the `jwt` to generate the key, and returns
 /// an encoded string.
-fn wrap_chacha20_poly1305(jwt: &[u8], plaintext: &[u8]) -> Result<String, Error> {
+fn wrap_chacha20_poly1305(jwt: &[u8], plaintext: &[u8]) -> Result<String, CryptoError> {
     // derive the key from the JWT
     let derived = generate_key(jwt, None, None)?;
     let key = chacha20poly1305::Key::from_slice(&derived);
@@ -193,20 +104,20 @@ fn wrap_chacha20_poly1305(jwt: &[u8], plaintext: &[u8]) -> Result<String, Error>
             let nonce_str = base64::encode(nonce);
             let tag_str = base64::encode(tag);
             let encoded = encode(
-                Algorithm::ChaCha20,
+                CryptoAlgorithm::ChaCha20,
                 nonce_str.as_str(),
                 cipher_str.as_str(),
                 tag_str.as_str(),
             );
             Ok(encoded)
         }
-        Err(err) => Err(Error::Encrypt(err.to_string())),
+        Err(err) => Err(CryptoError::Encrypt(err.to_string())),
     }
 }
 
 /// Unwraps the ciphertext (inside the `SecretWrapper`) using the ChaCha20 algorithm with the `jwt`
 /// to generate the key, and returns the plaintext on success.
-fn unwrap_chacha20_poly1305(jwt: &[u8], wrapper: &SecretWrapper) -> Result<Vec<u8>, Error> {
+fn unwrap_chacha20_poly1305(jwt: &[u8], wrapper: &SecretWrapper) -> Result<Vec<u8>, CryptoError> {
     let derived = generate_key(jwt, None, None)?;
     let key = chacha20poly1305::Key::from_slice(&derived);
     let cipher = ChaCha20Poly1305::new(key);
@@ -218,13 +129,13 @@ fn unwrap_chacha20_poly1305(jwt: &[u8], wrapper: &SecretWrapper) -> Result<Vec<u
     let result = cipher.decrypt_in_place_detached(nonce, &[], &mut in_out, tag);
     match result {
         Ok(_) => Ok(in_out),
-        Err(err) => Err(Error::Decrypt(err.to_string())),
+        Err(err) => Err(CryptoError::Decrypt(err.to_string())),
     }
 }
 
 /// Wraps the plaintext using the AES-GCM algorithm with the `jwt` to generate the key, and returns
 /// an encoded string.
-fn wrap_aes_gcm(jwt: &[u8], plaintext: &[u8]) -> Result<String, Error> {
+fn wrap_aes_gcm(jwt: &[u8], plaintext: &[u8]) -> Result<String, CryptoError> {
     // derive the key from the JWT
     let derived = generate_key(jwt, None, None)?;
     let key = aes_gcm::Key::from_slice(&derived);
@@ -245,20 +156,20 @@ fn wrap_aes_gcm(jwt: &[u8], plaintext: &[u8]) -> Result<String, Error> {
             let nonce_str = base64::encode(nonce);
             let tag_str = base64::encode(tag);
             let encoded = encode(
-                Algorithm::AesGcm,
+                CryptoAlgorithm::AesGcm,
                 nonce_str.as_str(),
                 cipher_str.as_str(),
                 tag_str.as_str(),
             );
             Ok(encoded)
         }
-        Err(err) => Err(Error::Encrypt(err.to_string())),
+        Err(err) => Err(CryptoError::Encrypt(err.to_string())),
     }
 }
 
 /// Unwraps the ciphertext (inside the `SecretWrapper`) using the AES-GCM algorithm with the `jwt`
 /// to generate the key, and returns the plaintext on success.
-fn unwrap_aes_gcm(jwt: &[u8], wrapper: &SecretWrapper) -> Result<Vec<u8>, Error> {
+fn unwrap_aes_gcm(jwt: &[u8], wrapper: &SecretWrapper) -> Result<Vec<u8>, CryptoError> {
     let derived = generate_key(jwt, None, None)?;
     let key = aes_gcm::Key::from_slice(&derived);
     let cipher = Aes256Gcm::new(key);
@@ -270,28 +181,32 @@ fn unwrap_aes_gcm(jwt: &[u8], wrapper: &SecretWrapper) -> Result<Vec<u8>, Error>
     let result = cipher.decrypt_in_place_detached(nonce, &[], &mut in_out, tag);
     match result {
         Ok(_) => Ok(in_out),
-        Err(err) => Err(Error::Decrypt(err.to_string())),
+        Err(err) => Err(CryptoError::Decrypt(err.to_string())),
     }
 }
 
 /// Use the JWT to wrap the plaintext string in the specified algorithm
 #[allow(dead_code)]
-pub fn wrap(algorithm: Algorithm, jwt: &[u8], plaintext: &[u8]) -> Result<String, Error> {
+pub fn wrap(
+    algorithm: CryptoAlgorithm,
+    jwt: &[u8],
+    plaintext: &[u8],
+) -> Result<String, CryptoError> {
     match algorithm {
-        Algorithm::AesGcm => wrap_aes_gcm(jwt, plaintext),
-        Algorithm::ChaCha20 => wrap_chacha20_poly1305(jwt, plaintext),
-        _ => Err(Error::UnsupportedAlgorithm(format!("{}", algorithm))),
+        CryptoAlgorithm::AesGcm => wrap_aes_gcm(jwt, plaintext),
+        CryptoAlgorithm::ChaCha20 => wrap_chacha20_poly1305(jwt, plaintext),
+        _ => Err(CryptoError::UnsupportedAlgorithm(format!("{}", algorithm))),
     }
 }
 
 /// Uses the JWT to unwrap the encrypted string
 #[allow(dead_code)]
-pub fn unwrap(jwt: &[u8], encoded: &str) -> Result<Vec<u8>, Error> {
+pub fn unwrap(jwt: &[u8], encoded: &str) -> Result<Vec<u8>, CryptoError> {
     let wrapper = decode(encoded)?;
     match wrapper.algorithm {
-        Algorithm::AesGcm => unwrap_aes_gcm(jwt, &wrapper),
-        Algorithm::ChaCha20 => unwrap_chacha20_poly1305(jwt, &wrapper),
-        _ => Err(Error::UnsupportedAlgorithm(format!(
+        CryptoAlgorithm::AesGcm => unwrap_aes_gcm(jwt, &wrapper),
+        CryptoAlgorithm::ChaCha20 => unwrap_chacha20_poly1305(jwt, &wrapper),
+        _ => Err(CryptoError::UnsupportedAlgorithm(format!(
             "{}",
             wrapper.algorithm
         ))),
@@ -301,7 +216,6 @@ pub fn unwrap(jwt: &[u8], encoded: &str) -> Result<Vec<u8>, Error> {
 #[cfg(test)]
 mod test {
     use super::*;
-    use std::collections::HashMap;
 
     const TEST_JWT: &str = concat!(
         "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJ0ZXN0ZXJfYnJvL3VzZXJpbmZvIiwi",
@@ -321,46 +235,19 @@ mod test {
     const TEST_SECRET: &str = "shhh - I'm hunting rabbits!";
 
     #[test]
-    fn algorithm_to_string() {
-        let mut map: HashMap<Algorithm, String> = HashMap::new();
-        map.insert(Algorithm::AesGcm, AES_GCM_STR.to_string());
-        map.insert(Algorithm::ChaCha20, CHA_CHA_20_STR.to_string());
-        map.insert(Algorithm::Unknown, UNKNOWN_STR.to_string());
-        for (iv, sv) in map {
-            assert_eq!(format!("{}", iv).to_string(), sv);
-        }
-    }
-
-    #[test]
-    fn algorithm_from_string() {
-        // Tests case insensitivity, as well as all possible versions
-        let mut map: HashMap<String, Result<Algorithm, _>> = HashMap::new();
-        map.insert(AES_GCM_STR.to_string(), Ok(Algorithm::AesGcm));
-        map.insert(CHA_CHA_20_STR.to_string(), Ok(Algorithm::ChaCha20));
-        map.insert(UNKNOWN_STR.to_string(), Ok(Algorithm::Unknown));
-        map.insert("AES_GCM".to_string(), Ok(Algorithm::AesGcm)); // capitals
-        map.insert("ChaCha20".to_string(), Ok(Algorithm::ChaCha20)); // capitals
-        map.insert("".to_string(), Err(())); // blank
-        map.insert("aes-gcm".to_string(), Err(())); // wrong separator
-        for (sv, iv) in map {
-            assert_eq!(Algorithm::from_str(sv.as_str()), iv);
-        }
-    }
-
-    #[test]
     fn encode_test_ok() {
         let nonce = "sample_nonce";
         let ciphertext = "cipher_text_goes_here";
         let tag = "tag_value_goes_here";
-        let algo_str = AES_GCM_STR;
+        let algo_str = CryptoAlgorithm::AesGcm.to_string();
         let encoded_string = format!("smaash:{}:{}:{}:{}", algo_str, nonce, ciphertext, tag);
-        let result = encode(Algorithm::AesGcm, &nonce, &ciphertext, tag);
+        let result = encode(CryptoAlgorithm::AesGcm, &nonce, &ciphertext, tag);
         assert_eq!(result, encoded_string);
 
         // repeat with different crypto algorithm
-        let algo_str = CHA_CHA_20_STR.to_string();
+        let algo_str = CryptoAlgorithm::ChaCha20.to_string();
         let encoded_string = format!("smaash:{}:{}:{}:{}", algo_str, nonce, ciphertext, tag);
-        let result = encode(Algorithm::ChaCha20, &nonce, &ciphertext, &tag);
+        let result = encode(CryptoAlgorithm::ChaCha20, &nonce, &ciphertext, &tag);
         assert_eq!(result, encoded_string);
     }
 
@@ -369,39 +256,39 @@ mod test {
         let nonce = "sample_nonce".to_string();
         let ciphertext = "cipher_text_goes_here".to_string();
         let tag = "tag_value_goes_here".to_string();
-        let algo_str = AES_GCM_STR.to_string();
+        let algo_str = CryptoAlgorithm::AesGcm.to_string();
         let encoded_string = format!("smaash:{}:{}:{}:{}", algo_str, nonce, ciphertext, tag);
         let result = decode(encoded_string.as_str()).unwrap();
         assert_eq!(
             result,
             SecretWrapper {
-                algorithm: Algorithm::AesGcm,
+                algorithm: CryptoAlgorithm::AesGcm,
                 nonce: nonce.clone(),
                 cipher_text: ciphertext.clone(),
                 tag: tag.clone(),
             }
         );
 
-        let algo_str = CHA_CHA_20_STR.to_string();
+        let algo_str = CryptoAlgorithm::ChaCha20.to_string();
         let encoded_string = format!("smaash:{}:{}:{}:{}", algo_str, nonce, ciphertext, tag);
         let result = decode(encoded_string.as_str()).unwrap();
         assert_eq!(
             result,
             SecretWrapper {
-                algorithm: Algorithm::ChaCha20,
+                algorithm: CryptoAlgorithm::ChaCha20,
                 nonce: nonce.clone(),
                 cipher_text: ciphertext.clone(),
                 tag: tag.clone(),
             }
         );
 
-        let algo_str = UNKNOWN_STR.to_string();
+        let algo_str = CryptoAlgorithm::Unknown.to_string();
         let encoded_string = format!("smaash:{}:{}:{}:{}", algo_str, nonce, ciphertext, tag);
         let result = decode(encoded_string.as_str()).unwrap();
         assert_eq!(
             result,
             SecretWrapper {
-                algorithm: Algorithm::Unknown,
+                algorithm: CryptoAlgorithm::Unknown,
                 nonce: nonce.clone(),
                 cipher_text: ciphertext.clone(),
                 tag: tag.clone(),
@@ -417,17 +304,17 @@ mod test {
         let algo_str = "aes_ctr".to_string();
         let encoded_string = format!("smaash:{}:{}:{}:{}", algo_str, nonce, ciphertext, tag);
         let result = decode(encoded_string.as_str()).unwrap_err();
-        assert_eq!(result, Error::InvalidAlgorithm(algo_str));
+        assert_eq!(result, CryptoError::InvalidAlgorithm(algo_str));
 
         let algo_str = "chacha21".to_string();
         let encoded_string = format!("smaash:{}:{}:{}:{}", algo_str, nonce, ciphertext, tag);
         let result = decode(encoded_string.as_str()).unwrap_err();
-        assert_eq!(result, Error::InvalidAlgorithm(algo_str));
+        assert_eq!(result, CryptoError::InvalidAlgorithm(algo_str));
 
         let algo_str = "".to_string();
         let encoded_string = format!("smaash:{}:{}:{}:{}", algo_str, nonce, ciphertext, tag);
         let result = decode(encoded_string.as_str()).unwrap_err();
-        assert_eq!(result, Error::InvalidAlgorithm(algo_str));
+        assert_eq!(result, CryptoError::InvalidAlgorithm(algo_str));
     }
 
     #[test]
@@ -438,12 +325,12 @@ mod test {
         let algo_str = "aes_gcm".to_string();
         let encoded_string = format!("smash:{}:{}:{}:{}", algo_str, nonce, ciphertext, tag);
         let result = decode(encoded_string.as_str()).unwrap_err();
-        assert_eq!(result, Error::InvalidPrefix("smash".to_string()));
+        assert_eq!(result, CryptoError::InvalidPrefix("smash".to_string()));
 
         // too few parts
         let encoded_string = format!("smaash:{}:{}:{}", algo_str, nonce, ciphertext);
         let result = decode(encoded_string.as_str()).unwrap_err();
-        assert_eq!(result, Error::InvalidEncoding(4));
+        assert_eq!(result, CryptoError::InvalidEncoding(4));
 
         // too many parts
         let encoded_string = format!(
@@ -451,7 +338,7 @@ mod test {
             algo_str, nonce, ciphertext, tag
         );
         let result = decode(encoded_string.as_str()).unwrap_err();
-        assert_eq!(result, Error::InvalidEncoding(6));
+        assert_eq!(result, CryptoError::InvalidEncoding(6));
     }
 
     #[test]
@@ -487,15 +374,18 @@ mod test {
         let icm = hex::decode("0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b").unwrap();
         let err_msg = "invalid number of blocks, too large output".to_string();
         let result = generate_key(&icm, None, Some(65535)).unwrap_err();
-        assert_eq!(result, Error::KeyDerivation(err_msg));
+        assert_eq!(result, CryptoError::KeyDerivation(err_msg));
     }
 
     #[test]
     fn wrap_unsupported() {
         let jwt = b"fake-jwt-key";
         let plaintext = "this is sample plaintext";
-        let result = wrap(Algorithm::Unknown, jwt, plaintext.as_bytes()).unwrap_err();
-        assert_eq!(result, Error::UnsupportedAlgorithm(UNKNOWN_STR.to_string()));
+        let result = wrap(CryptoAlgorithm::Unknown, jwt, plaintext.as_bytes()).unwrap_err();
+        assert_eq!(
+            result,
+            CryptoError::UnsupportedAlgorithm(CryptoAlgorithm::Unknown.to_string())
+        );
     }
 
     #[test]
@@ -504,10 +394,10 @@ mod test {
         let nonce = "sample_nonce";
         let ciphertext = "cipher_text_goes_here";
         let tag = "tag_value_goes_here";
-        let algo_str = UNKNOWN_STR.to_string();
+        let algo_str = CryptoAlgorithm::Unknown.to_string();
         let encoded_string = format!("smaash:{}:{}:{}:{}", algo_str, nonce, ciphertext, tag);
         let result = unwrap(jwt, encoded_string.as_str()).unwrap_err();
-        assert_eq!(result, Error::UnsupportedAlgorithm(algo_str));
+        assert_eq!(result, CryptoError::UnsupportedAlgorithm(algo_str));
     }
 
     #[test]
@@ -522,12 +412,13 @@ mod test {
     #[test]
     fn chacha20_wrap_and_unwrap() {
         let wrapped = wrap(
-            Algorithm::ChaCha20,
+            CryptoAlgorithm::ChaCha20,
             TEST_JWT.as_bytes(),
             TEST_SECRET.as_bytes(),
         )
         .unwrap();
-        assert!(wrapped.contains(CHA_CHA_20_STR));
+        let algo_name = CryptoAlgorithm::ChaCha20.to_string();
+        assert!(wrapped.contains(&algo_name));
         let unwrapped = unwrap(TEST_JWT.as_bytes(), wrapped.as_str()).unwrap();
         let result = std::str::from_utf8(&unwrapped).unwrap();
         assert_eq!(TEST_SECRET, result);
@@ -545,12 +436,13 @@ mod test {
     #[test]
     fn aes_gcm_wrap_and_unwrap() {
         let wrapped = wrap(
-            Algorithm::AesGcm,
+            CryptoAlgorithm::AesGcm,
             TEST_JWT.as_bytes(),
             TEST_SECRET.as_bytes(),
         )
         .unwrap();
-        assert!(wrapped.contains(AES_GCM_STR));
+        let algo_name = CryptoAlgorithm::AesGcm.to_string();
+        assert!(wrapped.contains(&algo_name));
         let unwrapped = unwrap(TEST_JWT.as_bytes(), wrapped.as_str()).unwrap();
         let result = std::str::from_utf8(&unwrapped).unwrap();
         assert_eq!(TEST_SECRET, result);

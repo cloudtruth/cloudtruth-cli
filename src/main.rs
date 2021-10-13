@@ -4,7 +4,6 @@ mod audit_logs;
 mod cli;
 mod config;
 mod configuration;
-mod crypto;
 mod database;
 mod environments;
 mod integrations;
@@ -457,11 +456,14 @@ fn main() -> Result<()> {
 
 #[cfg(test)]
 mod main_test {
-    use super::*;
-    use crate::config::{CT_API_KEY, CT_PROFILE, CT_SERVER_URL};
+    use std::process::Command;
+
     use assert_cmd::prelude::*;
     use predicates::prelude::predicate::str::*;
-    use std::process::Command;
+
+    use crate::config::{CT_API_KEY, CT_PROFILE, CT_SERVER_URL};
+
+    use super::*;
 
     fn cmd() -> Command {
         let mut cmd = Command::cargo_bin(cli::binary_name()).unwrap();
