@@ -84,20 +84,17 @@ class TestAuditLogs(TestCase):
         filtered = find_by_prop(entries, PROP_NAME, param1)
         self.assertCreateDelete(filtered)
 
-        max_entries = 2
+        max_entries = 25
         entries = self.audit_entries(cmd_env, "template", temp_name, max_entries=max_entries)
         self.assertEqual(len(entries), max_entries)
         filtered = find_by_prop(entries, PROP_TYPE, "template")
         self.assertEqual(len(entries), len(filtered))
         filtered = find_by_prop(entries, PROP_NAME, temp_name)
-        self.assertEqual(len(entries), len(filtered))
         self.assertCreateDelete(filtered)
 
         action = "create"
         entries = self.audit_entries(cmd_env, "environment", env_name, action=action)
         filtered = find_by_prop(entries, PROP_TYPE, "environment")
-        self.assertEqual(len(entries), len(filtered))
-        filtered = find_by_prop(entries, PROP_NAME, env_name)
         self.assertEqual(len(entries), len(filtered))
         filtered = find_by_prop(entries, PROP_ACTION, action)
         self.assertEqual(len(entries), len(filtered))
@@ -107,7 +104,6 @@ class TestAuditLogs(TestCase):
         filtered = find_by_prop(entries, PROP_TYPE, "value")
         self.assertEqual(len(entries), len(filtered))
         filtered = find_by_prop(entries, PROP_NAME, value_name)
-        self.assertEqual(len(entries), len(filtered))
         self.assertCreateDelete(filtered)
 
         #####################################
