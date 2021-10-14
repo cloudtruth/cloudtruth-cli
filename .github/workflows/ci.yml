@@ -113,12 +113,12 @@ jobs:
       - name: Integration Test - Part A
         env:
           OS: ${{ runner.os }}
-        if: runner.os == 'Ubuntu'
+        if: runner.os == 'Linux'
         run: |
           cd tests/pytest
           python3 live_test.py --job-id "${OS}-${GITHUB_RUN_NUMBER}" \
-            --filter test_arg --filter test_audit --filter test_configuration \
-            --filter test_environment --filter test_integration
+          --filter test_arg --filter test_audit --filter test_configuration \
+          --filter test_environment --filter test_integration
 
       - name: Integration Test - Part B
         env:
@@ -135,4 +135,4 @@ jobs:
         run: |
           cd tests\pytest
           py live_test.py --job-id "$ENV:OS-$ENV:GITHUB_RUN_NUMBER" \
-            --filter test_project --filter test_run --filter test_template --filter test_timing
+          --filter test_project --filter test_run --filter test_template --filter test_timing
