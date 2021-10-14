@@ -92,8 +92,8 @@ jobs:
       fail-fast: false
       matrix:
         os:
-          - ubuntu-latest
           - macos-latest
+          - ubuntu-latest
           - windows-latest
 
     steps:
@@ -120,7 +120,7 @@ jobs:
         if: runner.os == 'macOs'
         run: |
           cd tests/pytest
-          python3 live_test.py --job-id "${OS}-${GITHUB_RUN_NUMBER}" --filter "${PART_A_FILTER}"
+          python3 live_test.py --job-id "${OS}-${GITHUB_RUN_NUMBER}" --filter ${{ env.PART_A_FILTER }}
 
       - name: Integration Test - Part B
         env:
@@ -128,7 +128,7 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           cd tests/pytest
-          python3 live_test.py --job-id "${OS}-${GITHUB_RUN_NUMBER}" --filter "${PART_B_FILTER}"
+          python3 live_test.py --job-id "${OS}-${GITHUB_RUN_NUMBER}" --filter ${{ env.PART_B_FILTER }}
 
       - name: Integration Test - Part C
         env:
