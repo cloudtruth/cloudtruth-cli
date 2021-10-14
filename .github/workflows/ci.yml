@@ -120,7 +120,7 @@ jobs:
         if: runner.os == 'macOs'
         run: |
           cd tests/pytest
-          python3 live_test.py --job-id "${OS}-${GITHUB_RUN_NUMBER}" -filter "${PART_A_FILTER}"
+          python3 live_test.py --job-id "${OS}-${GITHUB_RUN_NUMBER}" --filter "${PART_A_FILTER}"
 
       - name: Integration Test - Part B
         env:
@@ -136,4 +136,4 @@ jobs:
         if: runner.os == 'Windows'
         run: |
           cd tests\pytest
-          py live_test.py --job-id "$ENV:OS-$ENV:GITHUB_RUN_NUMBER" --filter "$ENV:PART_C_FILTER"
+          py live_test.py --job-id "$ENV:OS-$ENV:GITHUB_RUN_NUMBER" --filter $ENV:PART_C_FILTER
