@@ -10,6 +10,7 @@ pub enum TemplateError {
     UnhandledError(String),
     ResponseError(String),
     NotFound(String, String),
+    EnvironmentMissing(String, String),
 }
 
 pub fn template_eval_errors(tle: &TemplateLookupError) -> String {
@@ -39,6 +40,9 @@ impl fmt::Display for TemplateError {
                 "No template '{}' found in project '{}'",
                 template, project
             ),
+            TemplateError::EnvironmentMissing(env_name, condition) => {
+                write!(f, "Did not find environment '{}'{}", env_name, condition)
+            }
         }
     }
 }

@@ -11,8 +11,32 @@ const NO_ORDERING: Option<&str> = None;
 
 pub struct Templates {}
 
-fn response_error(status: &reqwest::StatusCode, content: &str) -> TemplateError {
-    TemplateError::ResponseError(response_message(status, content))
+fn response_error(
+    status: &reqwest::StatusCode,
+    content: &str,
+    env_name: Option<&str>,
+) -> TemplateError {
+    match status.as_u16() {
+        401 => auth_error(content),
+        403 => auth_error(content),
+        404 => {
+            let msg = response_message(status, content);
+            if msg.contains("No Environment matches") && env_name.is_some() {
+                TemplateError::EnvironmentMissing(
+                    env_name.unwrap_or_default().to_string(),
+                    "".to_string(),
+                )
+            } else if msg.contains("No HistoricalEnvironment matches") {
+                TemplateError::EnvironmentMissing(
+                    env_name.unwrap_or_default().to_string(),
+                    " at specified time/tag".to_string(),
+                )
+            } else {
+                TemplateError::ResponseError(msg)
+            }
+        }
+        _ => TemplateError::ResponseError(response_message(status, content)),
+    }
 }
 
 fn auth_error(content: &str) -> TemplateError {
@@ -24,107 +48,52 @@ impl Templates {
         Self {}
     }
 
-    pub fn get_body_by_name(
-        &self,
-        rest_cfg: &OpenApiConfig,
-        proj_name: &str,
-        proj_id: &str,
-        env_id: &str,
-        template_name: &str,
-        show_secrets: bool,
-    ) -> Result<Option<String>, TemplateError> {
-        // TODO: convert template name to template id outside??
-        let details = self.get_details_by_name(rest_cfg, proj_name, proj_id, template_name)?;
-        let response = projects_templates_retrieve(
-            rest_cfg,
-            &details.id,
-            proj_id,
-            None,
-            Some(env_id),
-            Some(true),
-            Some(!show_secrets),
-            None,
-        );
-        match response {
-            Ok(r) => Ok(r.body),
-            Err(ResponseError(ref content)) => match &content.entity {
-                Some(ProjectsTemplatesRetrieveError::Status422(tle)) => {
-                    Err(TemplateError::EvaluateFailed(tle.clone()))
-                }
-                _ => Err(response_error(&content.status, &content.content)),
-            },
-            Err(e) => Err(TemplateError::UnhandledError(e.to_string())),
-        }
-    }
-
-    pub fn get_unevaluated_details(
+    pub fn get_id(
         &self,
         rest_cfg: &OpenApiConfig,
         proj_name: &str,
         proj_id: &str,
         template_name: &str,
-    ) -> Result<TemplateDetails, TemplateError> {
-        // Currently, the only way to get the unevaluated body is to list the templates.
-        let response = projects_templates_list(
+    ) -> Result<String, TemplateError> {
+        let details = self.get_details_by_name(
             rest_cfg,
+            proj_name,
             proj_id,
+            template_name,
+            false,
+            false,
             None,
             None,
-            Some(false),
-            Some(false),
-            Some(template_name),
-            NO_ORDERING,
             None,
-            PAGE_SIZE,
-            None,
-        );
-
-        match response {
-            Ok(data) => match data.results {
-                Some(list) => {
-                    if list.is_empty() {
-                        Err(TemplateError::NotFound(
-                            template_name.to_string(),
-                            proj_name.to_string(),
-                        ))
-                    } else {
-                        let template = &list[0];
-                        Ok(TemplateDetails::from(template))
-                    }
-                }
-                _ => Err(TemplateError::NotFound(
-                    template_name.to_string(),
-                    proj_name.to_string(),
-                )),
-            },
-            Err(ResponseError(ref content)) => match content.status.as_u16() {
-                401 => Err(auth_error(&content.content)),
-                403 => Err(auth_error(&content.content)),
-                _ => Err(response_error(&content.status, &content.content)),
-            },
-            Err(e) => Err(TemplateError::UnhandledError(e.to_string())),
-        }
+        )?;
+        Ok(details.id)
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn get_details_by_name(
         &self,
         rest_cfg: &OpenApiConfig,
         proj_name: &str,
         proj_id: &str,
         template_name: &str,
+        evaluate: bool,
+        show_secrets: bool,
+        env_name: Option<String>,
+        as_of: Option<String>,
+        tag: Option<String>,
     ) -> Result<TemplateDetails, TemplateError> {
         let response = projects_templates_list(
             rest_cfg,
             proj_id,
-            None,
-            None,
-            Some(true),
-            Some(false),
+            as_of,
+            env_name.as_deref(),
+            Some(evaluate),
+            Some(!show_secrets),
             Some(template_name),
             NO_ORDERING,
             None,
             PAGE_SIZE,
-            None,
+            tag.as_deref(),
         );
         match response {
             Ok(data) => match data.results {
@@ -139,14 +108,21 @@ impl Templates {
                         Ok(TemplateDetails::from(template))
                     }
                 }
-                None => Err(TemplateError::NotFound(
+                _ => Err(TemplateError::NotFound(
                     template_name.to_string(),
                     proj_name.to_string(),
                 )),
             },
-            Err(ResponseError(ref content)) => {
-                Err(response_error(&content.status, &content.content))
-            }
+            Err(ResponseError(ref content)) => match &content.entity {
+                Some(ProjectsTemplatesListError::Status422(tle)) => {
+                    Err(TemplateError::EvaluateFailed(tle.clone()))
+                }
+                _ => Err(response_error(
+                    &content.status,
+                    &content.content,
+                    env_name.as_deref(),
+                )),
+            },
             Err(e) => Err(TemplateError::UnhandledError(e.to_string())),
         }
     }
@@ -156,18 +132,24 @@ impl Templates {
         rest_cfg: &OpenApiConfig,
         proj_id: &str,
     ) -> Result<Vec<TemplateDetails>, TemplateError> {
+        let evaluate = Some(false);
+        let mask_secrets = Some(true);
+        let env_name = None;
+        let as_of = None;
+        let tag = None;
+        let name = None; // get everything
         let response = projects_templates_list(
             rest_cfg,
             proj_id,
-            None,
-            None,
-            Some(true),
-            Some(false),
-            None,
+            as_of,
+            env_name,
+            evaluate,
+            mask_secrets,
+            name,
             NO_ORDERING,
             None,
             PAGE_SIZE,
-            None,
+            tag,
         );
         match response {
             Ok(data) => {
@@ -180,9 +162,12 @@ impl Templates {
                 }
                 Ok(list)
             }
-            Err(ResponseError(ref content)) => {
-                Err(response_error(&content.status, &content.content))
-            }
+            Err(ResponseError(ref content)) => match &content.entity {
+                Some(ProjectsTemplatesListError::Status422(tle)) => {
+                    Err(TemplateError::EvaluateFailed(tle.clone()))
+                }
+                _ => Err(response_error(&content.status, &content.content, env_name)),
+            },
             Err(e) => Err(TemplateError::UnhandledError(e.to_string())),
         }
     }
@@ -207,7 +192,7 @@ impl Templates {
                 Some(ProjectsTemplatesCreateError::Status422(tle)) => {
                     Err(TemplateError::EvaluateFailed(tle.clone()))
                 }
-                _ => Err(response_error(&content.status, &content.content)),
+                _ => Err(response_error(&content.status, &content.content, None)),
             },
             Err(e) => Err(TemplateError::UnhandledError(e.to_string())),
         }
@@ -223,7 +208,7 @@ impl Templates {
         match response {
             Ok(_) => Ok(()),
             Err(ResponseError(ref content)) => {
-                Err(response_error(&content.status, &content.content))
+                Err(response_error(&content.status, &content.content, None))
             }
             Err(e) => Err(TemplateError::UnhandledError(e.to_string())),
         }
@@ -243,7 +228,6 @@ impl Templates {
             id: None,
             name: Some(template_name.to_string()),
             description: description.map(String::from),
-            evaluated: None,
             body: body.map(String::from),
             has_secret: None,
             referenced_parameters: None,
@@ -252,6 +236,7 @@ impl Templates {
             referencing_values: None,
             created_at: None,
             modified_at: None,
+            evaluated: None,
         };
         let response =
             projects_templates_partial_update(rest_cfg, template_id, project_id, Some(template));
@@ -261,7 +246,7 @@ impl Templates {
                 Some(ProjectsTemplatesPartialUpdateError::Status422(tle)) => {
                     Err(TemplateError::EvaluateFailed(tle.clone()))
                 }
-                _ => Err(response_error(&content.status, &content.content)),
+                _ => Err(response_error(&content.status, &content.content, None)),
             },
             Err(e) => Err(TemplateError::UnhandledError(e.to_string())),
         }
@@ -272,7 +257,7 @@ impl Templates {
         &self,
         rest_cfg: &OpenApiConfig,
         project_id: &str,
-        env_id: &str,
+        env_name: &str,
         body: &str,
         show_secrets: bool,
         as_of: Option<String>,
@@ -286,7 +271,7 @@ impl Templates {
             project_id,
             preview,
             as_of,
-            Some(env_id),
+            Some(env_name),
             Some(!show_secrets),
             tag.as_deref(),
         );
@@ -296,7 +281,11 @@ impl Templates {
                 Some(ProjectsTemplatePreviewCreateError::Status422(tle)) => {
                     Err(TemplateError::EvaluateFailed(tle.clone()))
                 }
-                _ => Err(response_error(&content.status, &content.content)),
+                _ => Err(response_error(
+                    &content.status,
+                    &content.content,
+                    Some(env_name),
+                )),
             },
             Err(e) => Err(TemplateError::UnhandledError(e.to_string())),
         }
@@ -315,7 +304,7 @@ impl Templates {
         match response {
             Ok(data) => Ok(data.results.iter().map(TemplateHistory::from).collect()),
             Err(ResponseError(ref content)) => {
-                Err(response_error(&content.status, &content.content))
+                Err(response_error(&content.status, &content.content, None))
             }
             Err(e) => Err(TemplateError::UnhandledError(e.to_string())),
         }
@@ -340,7 +329,7 @@ impl Templates {
         match response {
             Ok(data) => Ok(data.results.iter().map(TemplateHistory::from).collect()),
             Err(ResponseError(ref content)) => {
-                Err(response_error(&content.status, &content.content))
+                Err(response_error(&content.status, &content.content, None))
             }
             Err(e) => Err(TemplateError::UnhandledError(e.to_string())),
         }
