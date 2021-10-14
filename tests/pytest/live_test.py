@@ -138,6 +138,10 @@ def live_test(*args):
     if args.test_filter:
         loader.testNamePatterns = [f"*{_}*" for _ in args.test_filter]
     suite = loader.discover(test_directory, pattern=args.file_filter)
+    if suite.countTestCases() == 0:
+        # must be because of a filter or file filter
+        print(f"No tests matching:\n\tfilters: {', '.join(args.test_filter)},\n\tfile: {args.file_filter}")
+        return 3
 
     runner = debugTestRunner(
         enable_debug=args.pdb, verbosity=args.verbosity, failfast=args.failfast
