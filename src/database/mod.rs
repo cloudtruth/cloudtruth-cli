@@ -34,7 +34,7 @@ pub use audit_log_details::AuditLogDetails;
 pub use audit_log_errors::AuditLogError;
 pub use audit_log_summary::AuditLogSummary;
 pub use audit_logs::AuditLogs;
-pub use crypto::{secret_unwrap, secret_wrap, ENCODED_PART_COUNT, ENCRYPTION_PREFIX};
+pub use crypto::{secret_encode_wrap, secret_unwrap_decode, ENCODED_PART_COUNT, ENCRYPTION_PREFIX};
 pub use crypto_algorithm::CryptoAlgorithm;
 pub use crypto_error::CryptoError;
 pub use environment_details::EnvironmentDetails;
