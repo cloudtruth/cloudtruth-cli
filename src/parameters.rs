@@ -834,11 +834,12 @@ fn proc_param_set(
     // don't do anything if there's nothing to do
     if value_field_update {
         env_changed = format!(" for environment '{}'", resolved.environment_display_name());
+        let is_secret = updated.secret;
         // if any existing environment does not match the desired environment
         if !updated.env_url.contains(env_id) {
             set_action = "set";
             let value_add_result = parameters.create_parameter_value(
-                rest_cfg, proj_id, env_id, param_id, value, fqn, jmes_path, evaluated,
+                rest_cfg, proj_id, env_id, param_id, is_secret, value, fqn, jmes_path, evaluated,
             );
             if let Err(err) = value_add_result {
                 if param_added {
@@ -852,6 +853,7 @@ fn proc_param_set(
                 proj_id,
                 param_id,
                 &updated.val_id,
+                is_secret,
                 value,
                 fqn,
                 jmes_path,

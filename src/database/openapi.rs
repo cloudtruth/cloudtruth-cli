@@ -8,8 +8,7 @@ pub type OpenApiConfig = Configuration;
 /// This is our fixed page size. The current CLI is not setup to handle paging.
 pub const PAGE_SIZE: Option<i32> = None;
 
-/// This is a placeholder for secret wrapping.
-pub const WRAP_SECRETS: Option<bool> = None;
+pub const WRAP_SECRETS: bool = true;
 
 pub fn extract_from_json(value: &serde_json::Value) -> String {
     if value.is_string() {
@@ -85,6 +84,10 @@ fn user_agent_name() -> String {
             .to_string(),
         env::consts::OS,
     )
+}
+
+pub fn key_from_config(rest_cfg: &OpenApiConfig) -> String {
+    rest_cfg.api_key.clone().unwrap().key
 }
 
 impl From<&CloudTruthConfig> for OpenApiConfig {

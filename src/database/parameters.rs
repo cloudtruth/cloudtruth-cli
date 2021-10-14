@@ -1,6 +1,8 @@
+use crate::database::openapi::key_from_config;
 use crate::database::{
-    extract_details, extract_from_json, response_message, OpenApiConfig, ParamExportOptions,
-    ParamRuleType, ParamType, ParameterDetails, ParameterError, PAGE_SIZE, WRAP_SECRETS,
+    extract_details, extract_from_json, response_message, secret_encode_wrap, secret_unwrap_decode,
+    CryptoAlgorithm, OpenApiConfig, ParamExportOptions, ParamRuleType, ParamType, ParameterDetails,
+    ParameterError, PAGE_SIZE, WRAP_SECRETS,
 };
 use cloudtruth_restapi::apis::projects_api::*;
 use cloudtruth_restapi::apis::Error::ResponseError;
@@ -16,6 +18,8 @@ const VALUES_FALSE: Option<bool> = Some(false);
 const VALUES_TRUE: Option<bool> = Some(true);
 const NO_ORDERING: Option<&str> = None;
 const ONLY_SECRETS: Option<bool> = None;
+
+const WRAP_ALGORITHM: CryptoAlgorithm = CryptoAlgorithm::AesGcm;
 
 pub struct Parameters {}
 
@@ -63,6 +67,20 @@ fn response_error(status: &reqwest::StatusCode, content: &str) -> ParameterError
 
 fn rule_error(action: String, content: &str) -> ParameterError {
     ParameterError::RuleError(action, extract_details(content))
+}
+
+fn mask_secrets_arg(mask_secrets: bool) -> Option<bool> {
+    match mask_secrets {
+        true => Some(true),
+        false => None,
+    }
+}
+
+fn wrap_secrets_arg(mask_secrets: bool) -> Option<bool> {
+    match mask_secrets {
+        true => None,
+        false => Some(WRAP_SECRETS),
+    }
 }
 
 impl Parameters {
@@ -138,7 +156,7 @@ impl Parameters {
         options: ParamExportOptions,
     ) -> Result<Option<String>, ParameterError> {
         let out_fmt = format!("{:?}", options.format).to_lowercase();
-        let mask_secrets = Some(!options.secrets.unwrap_or(false));
+        let mask_secrets = !options.secrets.unwrap_or(false);
         let response = projects_parameter_export_list(
             rest_cfg,
             proj_id,
@@ -147,12 +165,12 @@ impl Parameters {
             options.ends_with.as_deref(),
             Some(env_id),
             options.export,
-            mask_secrets,
+            mask_secrets_arg(mask_secrets),
             NO_ORDERING,
             Some(out_fmt.as_str()),
             options.starts_with.as_deref(),
             options.tag.as_deref(),
-            WRAP_SECRETS,
+            None, // TODO: should wrap per wrap_secrets_arg(), but makes output text unusable
         );
         match response {
             Ok(export) => Ok(Some(export.body)),
@@ -175,13 +193,14 @@ impl Parameters {
         let as_of_arg = None;
         let env_arg = None;
         let tag_arg = None;
+        let mask_secrets = true; // no need to fetch secrets
         let response = projects_parameters_list(
             rest_cfg,
             proj_id,
             as_of_arg,
             env_arg,
             Some(false), // no need to evaluate references to get id
-            Some(true),  // no need to fetch secrets
+            mask_secrets_arg(mask_secrets),
             Some(key_name),
             NO_ORDERING,
             None,
@@ -190,7 +209,7 @@ impl Parameters {
             ONLY_SECRETS,
             tag_arg,
             VALUES_FALSE,
-            WRAP_SECRETS,
+            wrap_secrets_arg(mask_secrets),
         );
         if let Ok(data) = response {
             if let Some(parameters) = data.results {
@@ -232,7 +251,7 @@ impl Parameters {
             as_of,
             Some(env_id),
             Some(true), // for now, always evaluate interpolated parameters
-            Some(mask_secrets),
+            mask_secrets_arg(mask_secrets),
             Some(key_name),
             NO_ORDERING,
             None,
@@ -241,7 +260,7 @@ impl Parameters {
             ONLY_SECRETS,
             tag.as_deref(),
             None,
-            WRAP_SECRETS,
+            wrap_secrets_arg(mask_secrets),
         );
         match response {
             Ok(data) => match data.results {
@@ -251,7 +270,13 @@ impl Parameters {
                     } else {
                         // TODO: handle more than one??
                         let param = &parameters[0];
-                        Ok(Some(ParameterDetails::from(param)))
+                        let mut details = ParameterDetails::from(param);
+                        if WRAP_SECRETS && !mask_secrets && details.encrypted() {
+                            let key = key_from_config(rest_cfg);
+                            let plaintext = secret_unwrap_decode(key.as_bytes(), &details.value)?;
+                            details.value = plaintext;
+                        }
+                        Ok(Some(details))
                     }
                 }
                 _ => Ok(None),
@@ -319,7 +344,7 @@ impl Parameters {
             as_of,
             env_arg,
             eval_arg,
-            Some(mask_secrets),
+            mask_secrets_arg(mask_secrets),
             None,
             NO_ORDERING,
             None,
@@ -328,14 +353,20 @@ impl Parameters {
             ONLY_SECRETS,
             tag.as_deref(),
             value_arg,
-            WRAP_SECRETS,
+            wrap_secrets_arg(mask_secrets),
         );
         match response {
             Ok(data) => {
                 let mut list: Vec<ParameterDetails> = Vec::new();
                 if let Some(parameters) = data.results {
                     for param in parameters {
-                        list.push(ParameterDetails::from(&param));
+                        let mut details = ParameterDetails::from(&param);
+                        if WRAP_SECRETS && !mask_secrets && details.encrypted() {
+                            let key = key_from_config(rest_cfg);
+                            let plaintext = secret_unwrap_decode(key.as_bytes(), &details.value)?;
+                            details.value = plaintext;
+                        }
+                        list.push(details);
                     }
                     list.sort_by(|l, r| l.key.cmp(&r.key));
                 }
@@ -383,7 +414,7 @@ impl Parameters {
             as_of,
             None, // cannot give an environment, or it will only get for that environment
             eval_arg,
-            Some(mask_secrets),
+            mask_secrets_arg(mask_secrets),
             Some(param_name),
             NO_ORDERING,
             None,
@@ -392,17 +423,22 @@ impl Parameters {
             ONLY_SECRETS,
             None, // cannot use a tag without an environment
             VALUES_TRUE,
-            WRAP_SECRETS,
+            wrap_secrets_arg(mask_secrets),
         );
         match response {
             Ok(data) => {
                 let mut result = ParameterDetailMap::new();
+                let key = key_from_config(rest_cfg);
                 if let Some(values) = data.results {
                     for api_param in values {
                         let mut details = ParameterDetails::from(&api_param);
                         for (_, api_value) in api_param.values {
                             if let Some(value) = api_value {
                                 details.set_value(&value);
+                                if WRAP_SECRETS && !mask_secrets && details.encrypted() {
+                                    details.value =
+                                        secret_unwrap_decode(key.as_bytes(), &details.value)?;
+                                }
                                 result.insert(details.env_url.clone(), details.clone());
                             }
                         }
@@ -494,16 +530,29 @@ impl Parameters {
         proj_id: &str,
         env_id: &str,
         param_id: &str,
+        is_secret: bool,
         value: Option<&str>,
         fqn: Option<&str>,
         jmes_path: Option<&str>,
         evaluated: Option<bool>,
     ) -> Result<String, ParameterError> {
         let external = value.is_none() || fqn.is_some();
+        let data = match value {
+            Some(v) => {
+                if is_secret && WRAP_SECRETS {
+                    let key = key_from_config(rest_cfg);
+                    let encrypted = secret_encode_wrap(WRAP_ALGORITHM, key.as_bytes(), v).unwrap();
+                    Some(encrypted)
+                } else {
+                    Some(String::from(v))
+                }
+            }
+            None => None,
+        };
         let value_create = ValueCreate {
             environment: env_id.to_string(),
             external: Some(external),
-            internal_value: value.map(|v| v.to_string()),
+            internal_value: data,
             external_fqn: fqn.map(|v| v.to_string()),
             external_filter: jmes_path.map(|v| v.to_string()),
             interpolated: evaluated,
@@ -514,7 +563,7 @@ impl Parameters {
             proj_id,
             value_create,
             None,
-            WRAP_SECRETS,
+            Some(WRAP_SECRETS),
         );
         match response {
             Ok(api_value) => Ok(api_value.id),
@@ -535,12 +584,25 @@ impl Parameters {
         proj_id: &str,
         param_id: &str,
         value_id: &str,
+        is_secret: bool,
         value: Option<&str>,
         fqn: Option<&str>,
         jmes_path: Option<&str>,
         evaluated: Option<bool>,
     ) -> Result<String, ParameterError> {
         let external = fqn.is_some() || jmes_path.is_some();
+        let data = match value {
+            Some(v) => {
+                if is_secret && WRAP_SECRETS {
+                    let key = key_from_config(rest_cfg);
+                    let encrypted = secret_encode_wrap(WRAP_ALGORITHM, key.as_bytes(), v).unwrap();
+                    Some(encrypted)
+                } else {
+                    Some(String::from(v))
+                }
+            }
+            None => None,
+        };
         let value_update = PatchedValue {
             url: None,
             id: None,
@@ -551,7 +613,7 @@ impl Parameters {
             external: Some(external),
             external_fqn: fqn.map(String::from),
             external_filter: jmes_path.map(String::from),
-            internal_value: value.map(String::from),
+            internal_value: data,
             value: None,
             created_at: None,
             modified_at: None,
@@ -568,7 +630,7 @@ impl Parameters {
             param_id,
             proj_id,
             None,
-            WRAP_SECRETS,
+            Some(WRAP_SECRETS),
             Some(value_update),
         );
         match response {

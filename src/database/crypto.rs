@@ -54,6 +54,10 @@ fn decode(encoded: &str) -> Result<SecretWrapper, CryptoError> {
     }
 }
 
+pub fn valid_encoding(encoded: &str) -> bool {
+    decode(encoded).is_ok()
+}
+
 /// Derives the encryption key from the source.
 ///
 /// Takes the master key (as source) that is used to derive the output key.
@@ -199,7 +203,6 @@ fn secret_wrap(
 }
 
 /// Base64 encodes the provided plaintext string, and encrypts it
-#[allow(dead_code)]
 pub fn secret_encode_wrap(
     algorithm: CryptoAlgorithm,
     token: &[u8],
@@ -223,7 +226,6 @@ fn secret_unwrap(token: &[u8], encoded: &str) -> Result<Vec<u8>, CryptoError> {
 }
 
 /// Decrypts the provided ciphertext with the token, and base64 decodes plaintext
-#[allow(dead_code)]
 pub fn secret_unwrap_decode(token: &[u8], encoded: &str) -> Result<String, CryptoError> {
     let unwrapped = secret_unwrap(token, encoded)?;
     let decoded = base64::decode(&unwrapped)?;
@@ -285,6 +287,7 @@ mod test {
                 tag: tag.clone(),
             }
         );
+        assert_eq!(true, valid_encoding(&encoded_string));
 
         let algo_str = CryptoAlgorithm::ChaCha20.to_string();
         let encoded_string = format!("smaash:{}:{}:{}:{}", algo_str, nonce, ciphertext, tag);
@@ -298,6 +301,7 @@ mod test {
                 tag: tag.clone(),
             }
         );
+        assert_eq!(true, valid_encoding(&encoded_string));
 
         let algo_str = CryptoAlgorithm::Unknown.to_string();
         let encoded_string = format!("smaash:{}:{}:{}:{}", algo_str, nonce, ciphertext, tag);
@@ -311,6 +315,7 @@ mod test {
                 tag: tag.clone(),
             }
         );
+        assert_eq!(true, valid_encoding(&encoded_string));
     }
 
     #[test]
@@ -322,16 +327,19 @@ mod test {
         let encoded_string = format!("smaash:{}:{}:{}:{}", algo_str, nonce, ciphertext, tag);
         let result = decode(encoded_string.as_str()).unwrap_err();
         assert_eq!(result, CryptoError::InvalidAlgorithm(algo_str));
+        assert_eq!(false, valid_encoding(&encoded_string));
 
         let algo_str = "chacha21".to_string();
         let encoded_string = format!("smaash:{}:{}:{}:{}", algo_str, nonce, ciphertext, tag);
         let result = decode(encoded_string.as_str()).unwrap_err();
         assert_eq!(result, CryptoError::InvalidAlgorithm(algo_str));
+        assert_eq!(false, valid_encoding(&encoded_string));
 
         let algo_str = "".to_string();
         let encoded_string = format!("smaash:{}:{}:{}:{}", algo_str, nonce, ciphertext, tag);
         let result = decode(encoded_string.as_str()).unwrap_err();
         assert_eq!(result, CryptoError::InvalidAlgorithm(algo_str));
+        assert_eq!(false, valid_encoding(&encoded_string));
     }
 
     #[test]
@@ -343,11 +351,13 @@ mod test {
         let encoded_string = format!("smash:{}:{}:{}:{}", algo_str, nonce, ciphertext, tag);
         let result = decode(encoded_string.as_str()).unwrap_err();
         assert_eq!(result, CryptoError::InvalidPrefix("smash".to_string()));
+        assert_eq!(false, valid_encoding(&encoded_string));
 
         // too few parts
         let encoded_string = format!("smaash:{}:{}:{}", algo_str, nonce, ciphertext);
         let result = decode(encoded_string.as_str()).unwrap_err();
         assert_eq!(result, CryptoError::InvalidEncoding(4));
+        assert_eq!(false, valid_encoding(&encoded_string));
 
         // too many parts
         let encoded_string = format!(
@@ -356,6 +366,7 @@ mod test {
         );
         let result = decode(encoded_string.as_str()).unwrap_err();
         assert_eq!(result, CryptoError::InvalidEncoding(6));
+        assert_eq!(false, valid_encoding(&encoded_string));
     }
 
     #[test]
@@ -422,6 +433,8 @@ mod test {
         assert_eq!(result, CryptoError::UnsupportedAlgorithm(algo_str.clone()));
         let result = secret_unwrap_decode(token, encoded_string.as_str()).unwrap_err();
         assert_eq!(result, CryptoError::UnsupportedAlgorithm(algo_str));
+        // the encoding is valid, but we cannot decrypt with it
+        assert_eq!(true, valid_encoding(&encoded_string));
     }
 
     #[test]
