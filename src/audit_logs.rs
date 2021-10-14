@@ -11,13 +11,43 @@ fn proc_audit_list(
     rest_cfg: &OpenApiConfig,
     audit_logs: &AuditLogs,
 ) -> Result<()> {
-    let object_type = to_object_type(subcmd_args.value_of("type")).map(|x| x.to_server_string());
     let action = subcmd_args.value_of("action");
+    let cli_obj_type = to_object_type(subcmd_args.value_of("object-type"));
+    let object_type = cli_obj_type.map(|x| x.to_server_string());
+    let name = subcmd_args.value_of("contains");
+    let max_entries = subcmd_args
+        .value_of("max-entries")
+        .unwrap()
+        .parse::<usize>()
+        .unwrap();
     let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
-    let details = audit_logs.get_audit_log_details(rest_cfg, object_type.as_deref(), action)?;
+    let details = audit_logs.get_audit_log_details(
+        rest_cfg,
+        object_type.as_deref(),
+        action,
+        name,
+        max_entries,
+    )?;
 
     if details.is_empty() {
-        println!("No audit log entries found");
+        let mut constraints: Vec<String> = vec![];
+        if let Some(o) = cli_obj_type {
+            constraints.push(format!("type=={}", o.to_string()));
+        }
+        if let Some(n) = name {
+            constraints.push(format!("name-contains '{}'", n));
+        }
+        if let Some(a) = action {
+            constraints.push(format!("action=={}", a));
+        }
+        if constraints.is_empty() {
+            println!("No audit log entries found");
+        } else {
+            println!(
+                "No audit log entries found matching {}",
+                constraints.join(", ")
+            );
+        }
     } else {
         let hdr = vec!["Time", "Object Name", "Type", "Action", "User"];
         let mut table = Table::new("audit-logs");

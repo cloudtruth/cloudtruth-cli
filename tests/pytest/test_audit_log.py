@@ -21,12 +21,27 @@ class TestAuditLogs(TestCase):
         deleted = find_by_prop(entries, PROP_ACTION, "delete")
         self.assertNotEqual(0, len(deleted))
 
-    def audit_entries(self, cmd_env, type_str: Optional[str]) -> List[Dict]:
+    def audit_entries(
+            self,
+            cmd_env,
+            type_str: Optional[str] = None,
+            name: Optional[str] = None,
+            action: Optional[str] = None,
+            max_entries: Optional[int] = None,
+    ) -> List[Dict]:
         cmd = self.get_cli_base_cmd() + "audit-logs ls -f json "
         if type_str:
             cmd += f"-t '{type_str}' "
+        if name:
+            cmd += f"-n '{name}' "
+        if action:
+            cmd += f"-a '{action}' "
+        if max_entries:
+            cmd += f"-m {max_entries}"
         result = self.run_cli(cmd_env, cmd)
         self.assertResultSuccess(result)
+        if result.out().startswith("No audit log entries"):
+            return []
         return eval(result.out()).get("audit-logs")
 
     def test_audit_logs(self):
@@ -69,31 +84,43 @@ class TestAuditLogs(TestCase):
         filtered = find_by_prop(entries, PROP_NAME, param1)
         self.assertCreateDelete(filtered)
 
-        entries = self.audit_entries(cmd_env, "template")
+        max_entries = 2
+        entries = self.audit_entries(cmd_env, "template", temp_name, max_entries=max_entries)
+        self.assertEqual(len(entries), max_entries)
         filtered = find_by_prop(entries, PROP_TYPE, "template")
         self.assertEqual(len(entries), len(filtered))
         filtered = find_by_prop(entries, PROP_NAME, temp_name)
+        self.assertEqual(len(entries), len(filtered))
         self.assertCreateDelete(filtered)
 
-        entries = self.audit_entries(cmd_env, "environment")
+        action = "create"
+        entries = self.audit_entries(cmd_env, "environment", env_name, action=action)
         filtered = find_by_prop(entries, PROP_TYPE, "environment")
         self.assertEqual(len(entries), len(filtered))
         filtered = find_by_prop(entries, PROP_NAME, env_name)
-        self.assertCreateDelete(filtered)
-
-        entries = self.audit_entries(cmd_env, "parameter")
-        filtered = find_by_prop(entries, PROP_TYPE, "parameter")
         self.assertEqual(len(entries), len(filtered))
-        filtered = find_by_prop(entries, PROP_NAME, f"{param1}")
-        self.assertCreateDelete(filtered)
+        filtered = find_by_prop(entries, PROP_ACTION, action)
+        self.assertEqual(len(entries), len(filtered))
 
-        entries = self.audit_entries(cmd_env, "value")
+        value_name = f"{param1}:{env_name}"
+        entries = self.audit_entries(cmd_env, "value", value_name, max_entries=max_entries)
         filtered = find_by_prop(entries, PROP_TYPE, "value")
         self.assertEqual(len(entries), len(filtered))
-        filtered = find_by_prop(entries, PROP_NAME, f"{param1}:{env_name}")
+        filtered = find_by_prop(entries, PROP_NAME, value_name)
+        self.assertEqual(len(entries), len(filtered))
         self.assertCreateDelete(filtered)
 
-        # TODO: test tag, rule
+        #####################################
+        # just a basic thing to make sure our filters work
+        for obj_type in [
+            "aws", "github", "invitation", "membership", "organization", "rule", "push",
+            "service-account", "tag",
+        ]:
+            max_entries = 5
+            entries = self.audit_entries(cmd_env, obj_type, max_entries=max_entries)
+            filtered = find_by_prop(entries, PROP_TYPE, obj_type)
+            self.assertLessEqual(len(entries), max_entries)
+            self.assertEqual(len(entries), len(filtered))
 
         # final snapshot
         result = self.run_cli(cmd_env, audit_cmd + "sum")

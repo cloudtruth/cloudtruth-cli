@@ -55,10 +55,13 @@ FLAGS:
     -V, --version    Prints version information
 
 OPTIONS:
-    -a, --action <action>    Only show specified action [possible values: create, delete, update]
-    -f, --format <format>    Format for audit log details [default: table]  [possible values: table, csv, json, yaml]
-    -t, --type <type>        Only show specified object type [possible values: environment, integration, parameter,
-                             project, tag, template, value]
+    -a, --action <action>       Only show specified action [possible values: create, delete, update]
+    -n, --name <contains>       Only show audit entries whose name contains the substring
+    -f, --format <format>       Format for audit log details [default: table]  [possible values: table, csv, json, yaml]
+    -m, --max <max-entries>     Limit the maximum number of entries, 0 for no limit. [default: 50]
+    -t, --type <object-type>    Only show specified object type [possible values: aws, environment, github, invitation,
+                                membership, organization, parameter, rule, project, push, service-account, tag,
+                                template, value]
 ========================================
 cloudtruth-audit-logs-summary 
 Display summary of audit logs

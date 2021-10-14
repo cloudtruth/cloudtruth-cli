@@ -191,12 +191,26 @@ pub fn build_cli() -> App<'static, 'static> {
                         .long("action")
                         .possible_values(&["create", "delete", "update"])
                         .help("Only show specified action"))
-                    .arg(Arg::with_name("type")
+                    .arg(Arg::with_name("object-type")
                         .takes_value(true)
                         .short("t")
                         .long("type")
-                        .possible_values(&["environment", "integration", "parameter", "project", "tag", "template", "value"])
+                        .possible_values(&[
+                            "aws", "environment", "github", "invitation", "membership", "organization", "parameter",
+                            "rule", "project", "push", "service-account", "tag", "template", "value",
+                        ])
                         .help("Only show specified object type"))
+                    .arg(Arg::with_name("contains")
+                        .takes_value(true)
+                        .short("n")
+                        .long("name")
+                        .help("Only show audit entries whose name contains the substring"))
+                    .arg(Arg::with_name("max-entries")
+                        .takes_value(true)
+                        .short("m")
+                        .long("max")
+                        .default_value("50")
+                        .help("Limit the maximum number of entries, 0 for no limit."))
                     .arg(table_format_options().help("Format for audit log details")),
                 SubCommand::with_name("summary")
                     .visible_aliases(&["sum"])

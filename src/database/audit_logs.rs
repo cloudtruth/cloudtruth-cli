@@ -27,6 +27,8 @@ impl AuditLogs {
         rest_cfg: &OpenApiConfig,
         object_type: Option<&str>,
         action: Option<&str>,
+        name_contains: Option<&str>,
+        max_entries: usize,
     ) -> Result<Vec<AuditLogDetails>, AuditLogError> {
         let mut total_details: Vec<AuditLogDetails> = vec![];
         let mut page_count = 1;
@@ -49,11 +51,17 @@ impl AuditLogs {
                         if list.is_empty() {
                             break;
                         } else {
-                            let current: Vec<AuditLogDetails> =
+                            let mut current: Vec<AuditLogDetails> =
                                 list.iter().map(AuditLogDetails::from).collect();
+                            if let Some(contains) = name_contains {
+                                current.retain(|d| d.object_name.contains(contains));
+                            }
                             total_details.extend(current);
                             page_count += 1;
                             if data.next.is_none() {
+                                break;
+                            }
+                            if max_entries != 0 && total_details.len() >= max_entries {
                                 break;
                             }
                         }
@@ -69,6 +77,9 @@ impl AuditLogs {
                     return Err(AuditLogError::UnhandledError(e.to_string()));
                 }
             }
+        }
+        if max_entries != 0 && total_details.len() > max_entries {
+            total_details.truncate(max_entries);
         }
         Ok(total_details)
     }
