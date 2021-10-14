@@ -1,12 +1,13 @@
-name: CI
+name: Nightly
+
+# This runs the full suite of tests on all platforms. CI has been changed to run a subset of tests
+# on each platform to get full coverage, but not on each platform.
 
 on:
-  push:
-    branches:
-      - master
-  pull_request:
-    branches:
-      - master
+  workflow_dispatch:
+  schedule:
+    # Run full test on a nightly basis -- time is GMT, so do it a bit after midnight ET
+    - cron: '37 5 * * *'
 
 env:
   CI: true
@@ -34,10 +35,6 @@ env:
   CLOUDTRUTH_TEST_TEMPLATE_FQN: github://rickporter-tuono/cloudtruth_test/main/ci_test_template.txt
   CLOUDTRUTH_TEST_TEMPLATE_PARAM1: my-param-name
 
-  PART_A_FILTER: test_arg test_audit test_configuration test_environment test_integration
-  PART_B_FILTER: test_parameter
-  PART_C_FILTER: test_project test_run test_template test_timing
-
 jobs:
   lint:
     name: Lint
@@ -45,9 +42,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-
-      - name: ShellCheck
-        uses: ludeeus/action-shellcheck@master
 
       - name: Install Rust
         id: rust
@@ -69,14 +63,6 @@ jobs:
       - name: Show Rust version and platform details
         run: rustc --version --verbose
 
-      - run: cargo fmt --all -- --check
-
-      - uses: actions-rs/clippy-check@v1
-        with:
-          name: Clippy Check
-          token: ${{ secrets.GITHUB_TOKEN }}
-          args: --all-features -- -D warnings
-
   test:
     name: Test
     runs-on: ${{ matrix.os }}
@@ -92,8 +78,8 @@ jobs:
       fail-fast: false
       matrix:
         os:
-          - macos-latest
           - ubuntu-latest
+          - macos-latest
           - windows-latest
 
     steps:
@@ -114,26 +100,18 @@ jobs:
       - run: cargo build
       - run: cargo test
 
-      - name: Integration Test - Part A
+      - name: Integration Test - non-Windows
         env:
           OS: ${{ runner.os }}
-        if: runner.os == 'macOs'
+        if: runner.os != 'Windows'
         run: |
           cd tests/pytest
-          python3 live_test.py --job-id "${OS}-${GITHUB_RUN_NUMBER}" --filter ${{ env.PART_A_FILTER }}
+          python3 live_test.py --job-id "${OS}-${GITHUB_RUN_NUMBER}"
 
-      - name: Integration Test - Part B
-        env:
-          OS: ${{ runner.os }}
-        if: runner.os == 'Linux'
-        run: |
-          cd tests/pytest
-          python3 live_test.py --job-id "${OS}-${GITHUB_RUN_NUMBER}" --filter ${{ env.PART_B_FILTER }}
-
-      - name: Integration Test - Part C
+      - name: Integration Test - Windows
         env:
           OS: ${{ runner.os }}
         if: runner.os == 'Windows'
         run: |
           cd tests\pytest
-          py live_test.py --job-id "$ENV:OS-$ENV:GITHUB_RUN_NUMBER" --filter ${{ env.PART_C_FILTER }}
+          py live_test.py --job-id "$ENV:OS-$ENV:GITHUB_RUN_NUMBER"
