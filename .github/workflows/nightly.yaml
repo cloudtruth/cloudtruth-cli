@@ -1,12 +1,13 @@
-name: CI
+name: Nightly
+
+# This runs the full suite of tests on all platforms. CI has been changed to run a subset of tests
+# on each platform to get full coverage, but not on each platform.
 
 on:
-  push:
-    branches:
-      - master
-  pull_request:
-    branches:
-      - master
+  workflow_dispatch:
+  schedule:
+    # Run full test on a nightly basis -- time is GMT, so do it a bit after midnight ET
+    - cron: '37 5 * * *'
 
 env:
   CI: true
@@ -42,9 +43,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: ShellCheck
-        uses: ludeeus/action-shellcheck@master
-
       - name: Install Rust
         id: rust
         uses: actions-rs/toolchain@v1
@@ -64,14 +62,6 @@ jobs:
 
       - name: Show Rust version and platform details
         run: rustc --version --verbose
-
-      - run: cargo fmt --all -- --check
-
-      - uses: actions-rs/clippy-check@v1
-        with:
-          name: Clippy Check
-          token: ${{ secrets.GITHUB_TOKEN }}
-          args: --all-features -- -D warnings
 
   test:
     name: Test
@@ -110,29 +100,18 @@ jobs:
       - run: cargo build
       - run: cargo test
 
-      - name: Integration Test - Part A
+      - name: Integration Test - non-Windows
         env:
           OS: ${{ runner.os }}
-        if: runner.os == 'Ubuntu'
+        if: runner.os != 'Windows'
         run: |
           cd tests/pytest
-          python3 live_test.py --job-id "${OS}-${GITHUB_RUN_NUMBER}" \
-            --filter test_arg --filter test_audit --filter test_configuration \
-            --filter test_environment --filter test_integration
+          python3 live_test.py --job-id "${OS}-${GITHUB_RUN_NUMBER}"
 
-      - name: Integration Test - Part B
-        env:
-          OS: ${{ runner.os }}
-        if: runner.os == 'macOs'
-        run: |
-          cd tests/pytest
-          python3 live_test.py --job-id "${OS}-${GITHUB_RUN_NUMBER}" --filter test_parameter
-
-      - name: Integration Test - Part C
+      - name: Integration Test - Windows
         env:
           OS: ${{ runner.os }}
         if: runner.os == 'Windows'
         run: |
           cd tests\pytest
-          py live_test.py --job-id "$ENV:OS-$ENV:GITHUB_RUN_NUMBER" \
-            --filter test_project --filter test_run --filter test_template --filter test_timing
+          py live_test.py --job-id "$ENV:OS-$ENV:GITHUB_RUN_NUMBER"
