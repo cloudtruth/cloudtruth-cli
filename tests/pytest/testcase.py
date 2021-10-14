@@ -448,3 +448,31 @@ class TestCase(unittest.TestCase):
         result = self.run_cli(cmd_env, cmd)
         self.assertResultSuccess(result)
         return result
+
+    def set_template(
+            self,
+            cmd_env,
+            proj: str,
+            name: str,
+            body: Optional[str] = None,
+            description: Optional[str] = None
+    ) -> Result:
+        cmd = self._base_cmd + f"--project '{proj}' template set '{name}' "
+        filename = None
+        if body:
+            filename = "temp-set-template-body.txt"
+            self.write_file(filename, body)
+            cmd += f"-b '{filename}' "
+        if description:
+            cmd += f"-d '{description}' "
+        result = self.run_cli(cmd_env, cmd)
+        self.assertResultSuccess(result)
+
+        if filename:
+            self.delete_file(filename)
+        return result
+
+    def delete_template(self, cmd_env, proj: str, name: str):
+        cmd = self._base_cmd + f"--project '{proj}' template del -y '{name}' "
+        result = self.run_cli(cmd_env, cmd)
+        self.assertResultSuccess(result)

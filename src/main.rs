@@ -1,5 +1,6 @@
 extern crate rpassword;
 
+mod audit_logs;
 mod cli;
 mod config;
 mod configuration;
@@ -17,10 +18,13 @@ mod subprocess;
 mod table;
 mod templates;
 
+use crate::audit_logs::process_audit_log_command;
 use crate::config::env::ConfigEnv;
 use crate::config::{Config, CT_PROFILE, DEFAULT_ENV_NAME};
 use crate::configuration::process_config_command;
-use crate::database::{Environments, Integrations, OpenApiConfig, Parameters, Projects, Templates};
+use crate::database::{
+    AuditLogs, Environments, Integrations, OpenApiConfig, Parameters, Projects, Templates,
+};
 use crate::environments::process_environment_command;
 use crate::integrations::process_integrations_command;
 use crate::login::process_login_command;
@@ -422,6 +426,12 @@ fn main() -> Result<()> {
         let integrations = Integrations::new();
         process_integrations_command(matches, &rest_cfg, &integrations)?;
         process::exit(0)
+    }
+
+    if let Some(matches) = matches.subcommand_matches("audit-logs") {
+        let audit_logs = AuditLogs::new();
+        process_audit_log_command(matches, &rest_cfg, &audit_logs)?;
+        process::exit(0);
     }
 
     // Everything below here requires resolved environment/project values

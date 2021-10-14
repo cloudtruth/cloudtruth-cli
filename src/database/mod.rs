@@ -1,3 +1,7 @@
+mod audit_log_details;
+mod audit_log_errors;
+mod audit_log_summary;
+mod audit_logs;
 mod environment_details;
 mod environment_error;
 mod environment_tag;
@@ -7,6 +11,7 @@ mod integration_details;
 mod integration_error;
 mod integration_node;
 mod integrations;
+mod object_type;
 mod openapi;
 mod parameter_details;
 mod parameter_error;
@@ -22,6 +27,10 @@ mod template_error;
 mod template_history;
 mod templates;
 
+pub use audit_log_details::AuditLogDetails;
+pub use audit_log_errors::AuditLogError;
+pub use audit_log_summary::AuditLogSummary;
+pub use audit_logs::AuditLogs;
 pub use environment_details::EnvironmentDetails;
 pub use environment_error::EnvironmentError;
 pub use environment_tag::EnvironmentTag;
@@ -31,6 +40,7 @@ pub use integration_details::IntegrationDetails;
 pub use integration_error::IntegrationError;
 pub use integration_node::IntegrationNode;
 pub use integrations::Integrations;
+pub use object_type::{to_object_type, ObjectType};
 pub use openapi::{
     auth_details, extract_details, extract_from_json, response_message, OpenApiConfig, PAGE_SIZE,
     WRAP_SECRETS,
