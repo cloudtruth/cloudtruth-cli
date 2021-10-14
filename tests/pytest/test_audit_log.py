@@ -86,7 +86,7 @@ class TestAuditLogs(TestCase):
 
         max_entries = 25
         entries = self.audit_entries(cmd_env, "template", temp_name, max_entries=max_entries)
-        self.assertEqual(len(entries), max_entries)
+        self.assertLessEqual(len(entries), max_entries)
         filtered = find_by_prop(entries, PROP_TYPE, "template")
         self.assertEqual(len(entries), len(filtered))
         filtered = find_by_prop(entries, PROP_NAME, temp_name)
@@ -100,6 +100,7 @@ class TestAuditLogs(TestCase):
         self.assertEqual(len(entries), len(filtered))
 
         value_name = f"{param1}:{env_name}"
+        max_entries = 5
         entries = self.audit_entries(cmd_env, "value", value_name, max_entries=max_entries)
         filtered = find_by_prop(entries, PROP_TYPE, "value")
         self.assertEqual(len(entries), len(filtered))
@@ -117,6 +118,11 @@ class TestAuditLogs(TestCase):
             filtered = find_by_prop(entries, PROP_TYPE, obj_type)
             self.assertLessEqual(len(entries), max_entries)
             self.assertEqual(len(entries), len(filtered))
+
+        #####################################
+        # unfiltered
+        entries = self.audit_entries(cmd_env)
+        self.assertNotEqual(len(entries), 0)
 
         # final snapshot
         result = self.run_cli(cmd_env, audit_cmd + "sum")
