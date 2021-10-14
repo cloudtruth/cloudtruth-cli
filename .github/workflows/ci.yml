@@ -133,5 +133,4 @@ jobs:
         if: runner.os == 'Windows'
         run: |
           cd tests\pytest
-          py live_test.py --job-id "$ENV:OS-$ENV:GITHUB_RUN_NUMBER" \
-          --filter test_project test_run test_template test_timing
+          py live_test.py --job-id "$ENV:OS-$ENV:GITHUB_RUN_NUMBER" --filter test_project test_run test_template test_timing
