@@ -11,6 +11,7 @@ pub const ENV_NAME_ARG: &str = "env-name";
 pub const FORMAT_OPT: &str = "format";
 pub const KEY_ARG: &str = "KEY";
 pub const NAME_ARG: &str = "NAME";
+pub const PARENT_ARG: &str = "parent";
 pub const RAW_FLAG: &str = "raw";
 pub const RENAME_OPT: &str = "new-name";
 pub const SHOW_TIMES_FLAG: &str = "show-time";
@@ -27,6 +28,7 @@ pub const HISTORY_SUBCMD: &str = "history";
 pub const LIST_SUBCMD: &str = "list";
 pub const SET_SUBCMD: &str = "set";
 pub const TAG_SUBCMD: &str = "tag";
+pub const TREE_SUBCMD: &str = "tree";
 
 const TRUE_FALSE_VALUES: &[&str] = &["true", "false"];
 
@@ -36,6 +38,7 @@ const EDIT_ALIASES: &[&str] = &["ed", "e"];
 const HISTORY_ALIASES: &[&str] = &["hist", "h"];
 const LIST_ALIASES: &[&str] = &["ls", "l"];
 const SET_ALIASES: &[&str] = &["s"];
+const TREE_ALIASES: &[&str] = &["tr"];
 
 pub fn binary_name() -> String {
     option_env!("CARGO_PKG_NAME")
@@ -152,6 +155,13 @@ fn api_key_arg() -> Arg<'static, 'static> {
 
 fn raw_template_arg() -> Arg<'static, 'static> {
     Arg::with_name(RAW_FLAG).short("r").long("raw")
+}
+
+fn parent_arg() -> Arg<'static, 'static> {
+    Arg::with_name(PARENT_ARG)
+        .short("p")
+        .long("parent")
+        .takes_value(true)
 }
 
 pub fn build_cli() -> App<'static, 'static> {
@@ -299,10 +309,7 @@ pub fn build_cli() -> App<'static, 'static> {
                         .arg(name_arg().help("Environment name"))
                         .arg(description_option().help("Environment's description"))
                         .arg(rename_option().help("New environment name"))
-                        .arg(Arg::with_name("parent")
-                            .short("p")
-                            .long("parent")
-                            .takes_value(true)
+                        .arg(parent_arg()
                             .help("Environment's parent name (only used for create)")),
                     SubCommand::with_name(TAG_SUBCMD)
                         .visible_aliases(&["ta"])
@@ -341,8 +348,8 @@ pub fn build_cli() -> App<'static, 'static> {
                                 .about("Create/update an environment tag"),
                         ])
                         .about("View and manipulate environment tags"),
-                    SubCommand::with_name("tree")
-                        .visible_aliases(&["tr"])
+                    SubCommand::with_name(TREE_SUBCMD)
+                        .visible_aliases(TREE_ALIASES)
                         .about("Show a tree representation of the environments")
                         .arg(name_arg()
                             .help("Show this environment with children")
@@ -706,9 +713,13 @@ pub fn build_cli() -> App<'static, 'static> {
                     SubCommand::with_name(SET_SUBCMD)
                         .visible_aliases(SET_ALIASES)
                         .about("Create/update a CloudTruth project")
+                        .arg(parent_arg().help("Parent project name"))
                         .arg(name_arg().help("Project name"))
                         .arg(rename_option().help("New project name"))
                         .arg(description_option().help("Project's description")),
+                    SubCommand::with_name(TREE_SUBCMD)
+                        .visible_aliases(TREE_ALIASES)
+                        .about("Display CloudTruth project inheritance"),
                 ])
         )
 }

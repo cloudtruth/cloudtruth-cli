@@ -45,6 +45,11 @@ pub fn extract_from_json(value: &serde_json::Value) -> String {
                 detail.unwrap().as_str().unwrap()
             );
         }
+
+        // not sure the nature of this, but seems to be "common" with some 400's
+        if let Some(item) = obj.get("__all__") {
+            return extract_from_json(item);
+        }
     }
 
     value.to_string()
@@ -170,6 +175,11 @@ mod tests {
         // still trying to get the 422 passed through to all places... stopgap measure
         let content = "{\"detail\":[{\"parameter_id\":\"34c5eefe-cf4a-47b3-9be4-43cbfc0c0f23\",\"parameter_name\":\"param2\",\"error_code\":\"missing_content\",\"error_detail\":\"The external content of `github://rickporter-tuono/hello-world/master/README.md` is not present.\"}]}";
         let expected = "param2: The external content of `github://rickporter-tuono/hello-world/master/README.md` is not present.";
+        assert_eq!(expected.to_string(), extract_details(content));
+
+        let content = "{\"__all__\":[\"Parameter(s) would not be unique when including project dependencies: {'param1'}\"]}";
+        let expected =
+            "Parameter(s) would not be unique when including project dependencies: {'param1'}";
         assert_eq!(expected.to_string(), extract_details(content));
     }
 }

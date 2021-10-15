@@ -5,6 +5,7 @@ use crate::database::{
 use cloudtruth_restapi::apis::projects_api::*;
 use cloudtruth_restapi::apis::Error::ResponseError;
 use cloudtruth_restapi::models::{PatchedProject, ProjectCreate};
+use std::collections::HashMap;
 use std::result::Result;
 
 const NO_DESC_CONTAINS: Option<&str> = None;
@@ -12,6 +13,9 @@ const NO_NAME_CONTAINS: Option<&str> = None;
 const NO_ORDERING: Option<&str> = None;
 
 pub struct Projects {}
+
+/// This is used to map from an Project's URL to the Name.
+pub type ProjectUrlMap = HashMap<String, String>;
 
 fn response_error(status: &reqwest::StatusCode, content: &str) -> ProjectError {
     ProjectError::ResponseError(response_message(status, content))
@@ -26,11 +30,31 @@ impl Projects {
         Self {}
     }
 
+    /// Use the project URL to get the corresponding name.
+    fn get_name_from_url(&self, rest_cfg: &OpenApiConfig, url: &str) -> String {
+        let id = url
+            .split('/')
+            .filter(|&x| !x.is_empty())
+            .last()
+            .unwrap_or_default();
+        if id.is_empty() {
+            "".to_owned()
+        } else {
+            let response = projects_retrieve(rest_cfg, id);
+            if let Ok(project) = response {
+                project.name
+            } else {
+                "".to_owned()
+            }
+        }
+    }
+
     /// Get the details for `proj_name`
     pub fn get_details_by_name(
         &self,
         rest_cfg: &OpenApiConfig,
         proj_name: &str,
+        resolve_parent: bool,
     ) -> Result<Option<ProjectDetails>, ProjectError> {
         let response = projects_list(
             rest_cfg,
@@ -50,7 +74,12 @@ impl Projects {
                     } else {
                         // TODO: handle more than one??
                         let proj = &list[0];
-                        Ok(Some(ProjectDetails::from(proj)))
+                        let mut details = ProjectDetails::from(proj);
+                        if resolve_parent {
+                            details.parent_name =
+                                self.get_name_from_url(rest_cfg, &details.parent_url);
+                        }
+                        Ok(Some(details))
                     }
                 }
                 _ => Ok(None),
@@ -70,7 +99,7 @@ impl Projects {
         rest_cfg: &OpenApiConfig,
         proj_name: &str,
     ) -> Result<Option<String>, ProjectError> {
-        if let Some(details) = self.get_details_by_name(rest_cfg, proj_name)? {
+        if let Some(details) = self.get_details_by_name(rest_cfg, proj_name, false)? {
             Ok(Some(details.id))
         } else {
             Ok(None)
@@ -95,10 +124,24 @@ impl Projects {
         match response {
             Ok(data) => match data.results {
                 Some(list) => {
-                    let mut details: Vec<ProjectDetails> =
-                        list.iter().map(ProjectDetails::from).collect();
-                    details.sort_by(|l, r| l.name.cmp(&r.name));
-                    Ok(details)
+                    let mut projects: Vec<ProjectDetails> = vec![];
+
+                    // create the list of ProjectDetails and a map of url to name
+                    let mut url_map: ProjectUrlMap = ProjectUrlMap::new();
+                    for api_prj in list {
+                        let details = ProjectDetails::from(&api_prj);
+                        url_map.insert(details.url.clone(), details.name.clone());
+                        projects.push(details);
+                    }
+
+                    // populate the parent names
+                    for prj in &mut projects {
+                        if !prj.parent_url.is_empty() {
+                            prj.parent_name = url_map.get(&prj.parent_url).unwrap().clone();
+                        }
+                    }
+                    projects.sort_by(|l, r| l.name.cmp(&r.name));
+                    Ok(projects)
                 }
                 None => Ok(vec![]),
             },
@@ -117,11 +160,12 @@ impl Projects {
         rest_cfg: &OpenApiConfig,
         proj_name: &str,
         description: Option<&str>,
+        parent_url: Option<&str>,
     ) -> Result<Option<String>, ProjectError> {
         let proj = ProjectCreate {
             name: proj_name.to_string(),
             description: description.map(String::from),
-            depends_on: None,
+            depends_on: parent_url.map(String::from),
         };
         let response = projects_create(rest_cfg, proj);
         match response {
@@ -157,6 +201,7 @@ impl Projects {
         project_name: &str,
         project_id: &str,
         description: Option<&str>,
+        parent_url: Option<&str>,
     ) -> Result<Option<String>, ProjectError> {
         let proj = PatchedProject {
             url: None,
@@ -166,7 +211,7 @@ impl Projects {
             created_at: None,
             modified_at: None,
             pushes: None,
-            depends_on: None,
+            depends_on: parent_url.map(String::from),
             dependents: None,
         };
         let response = projects_partial_update(rest_cfg, project_id, Some(proj));

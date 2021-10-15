@@ -1,6 +1,7 @@
 use crate::cli::{
     CONFIRM_FLAG, DELETE_SUBCMD, DESCRIPTION_OPT, ENV_NAME_ARG, FORMAT_OPT, LIST_SUBCMD, NAME_ARG,
-    RENAME_OPT, SET_SUBCMD, SHOW_TIMES_FLAG, TAG_NAME_ARG, TAG_SUBCMD, VALUES_FLAG,
+    PARENT_ARG, RENAME_OPT, SET_SUBCMD, SHOW_TIMES_FLAG, TAG_NAME_ARG, TAG_SUBCMD, TREE_SUBCMD,
+    VALUES_FLAG,
 };
 use crate::config::DEFAULT_ENV_NAME;
 use crate::database::{EnvironmentDetails, Environments, OpenApiConfig};
@@ -84,7 +85,7 @@ fn proc_env_set(
     environments: &Environments,
 ) -> Result<()> {
     let env_name = subcmd_args.value_of(NAME_ARG).unwrap();
-    let parent_name = subcmd_args.value_of("parent");
+    let parent_name = subcmd_args.value_of(PARENT_ARG);
     let description = subcmd_args.value_of(DESCRIPTION_OPT);
     let rename = subcmd_args.value_of(RENAME_OPT);
     let details = environments.get_details_by_name(rest_cfg, env_name)?;
@@ -334,7 +335,7 @@ pub fn process_environment_command(
         proc_env_list(subcmd_args, rest_cfg, environments)?;
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(SET_SUBCMD) {
         proc_env_set(subcmd_args, rest_cfg, environments)?;
-    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("tree") {
+    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(TREE_SUBCMD) {
         proc_env_tree(subcmd_args, rest_cfg, environments)?;
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(TAG_SUBCMD) {
         proc_env_tag(subcmd_args, rest_cfg, environments)?;

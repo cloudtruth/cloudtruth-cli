@@ -103,14 +103,15 @@ class TestCase(unittest.TestCase):
 
     def setUp(self) -> None:
         # start each test with empty sets for projects and environments
-        self._projects = set()
+        self._projects = list()
         self._environments = list()
         self._filenames = set()
         super().setUp()
 
     def tearDown(self) -> None:
-        # tear down any possibly lingering projects -- they should have been deleted
-        for proj in self._projects:
+        # tear down any possibly lingering projects -- they should have been deleted in reverse
+        # order in case there are any children.
+        for proj in reversed(self._projects):
             cmd = self._base_cmd + f"proj del \"{proj}\" --confirm"
             subprocess.run(cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
@@ -216,11 +217,11 @@ class TestCase(unittest.TestCase):
             # if we're using any of our 'projects' aliases
             elif set(args) & set(["projects", "project", "proj"]):
                 proj_name = _next_part(args, "set")
-                if proj_name:
-                    self._projects.add(proj_name)
+                if proj_name and proj_name not in self._projects:
+                    self._projects.append(proj_name)
                 proj_name = _next_part(args, "--rename") or _next_part(args, "-r")
-                if proj_name:
-                    self._projects.add(proj_name)
+                if proj_name and proj_name not in self._projects:
+                    self._projects.append(proj_name)
 
         start = datetime.now()
         process = subprocess.run(
@@ -267,14 +268,16 @@ class TestCase(unittest.TestCase):
                 return prop.get("Value", None)
         return None
 
-    def create_project(self, cmd_env, proj_name: str) -> Result:
+    def create_project(self, cmd_env, proj_name: str, parent: Optional[str] = None) -> Result:
         # NOTE: use CSV to allow for "super-set" names to exist
         ls_cmd = self._base_cmd + "proj ls -vf csv"
         result = self.run_cli(cmd_env, ls_cmd)
         self.assertResultSuccess(result)
         self.assertNotIn(f"{proj_name},", result.out(), f"Project {proj_name} already exists")
 
-        proj_cmd = self._base_cmd + f"proj set '{proj_name}' -d '{AUTO_DESCRIPTION}'"
+        proj_cmd = self._base_cmd + f"proj set '{proj_name}' -d '{AUTO_DESCRIPTION}' "
+        if parent:
+            proj_cmd += f"--parent '{parent}'"
         result = self.run_cli(cmd_env, proj_cmd)
         self.assertResultSuccess(result)
         return result

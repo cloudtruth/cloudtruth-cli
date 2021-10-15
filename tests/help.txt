@@ -612,6 +612,7 @@ SUBCOMMANDS:
     help      Prints this message or the help of the given subcommand(s)
     list      List CloudTruth projects [aliases: ls, l]
     set       Create/update a CloudTruth project [aliases: s]
+    tree      Display CloudTruth project inheritance [aliases: tr]
 ========================================
 cloudtruth-projects-delete 
 Delete specified CloudTruth project
@@ -655,9 +656,20 @@ FLAGS:
 OPTIONS:
     -d, --desc <description>    Project's description
     -r, --rename <new-name>     New project name
+    -p, --parent <parent>       Parent project name
 
 ARGS:
     <NAME>    Project name
+========================================
+cloudtruth-projects-tree 
+Display CloudTruth project inheritance
+
+USAGE:
+    cloudtruth projects tree
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
 ============================================================
 cloudtruth-run 
 Run a shell with the parameters in place
