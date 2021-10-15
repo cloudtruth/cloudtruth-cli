@@ -31,7 +31,7 @@ impl Projects {
     }
 
     /// Use the project URL to get the corresponding name.
-    fn get_name_from_url(&self, rest_cfg: &OpenApiConfig, url: &str) -> String {
+    pub fn get_name_from_url(&self, rest_cfg: &OpenApiConfig, url: &str) -> String {
         let id = url
             .split('/')
             .filter(|&x| !x.is_empty())

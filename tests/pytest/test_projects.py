@@ -183,7 +183,7 @@ class TestProjects(TestCase):
         # verify it cannot be set from the child
         value2 = "different value"
         result = self.run_cli(cmd_env, base_cmd + f"--project '{proj_name6}' param set '{param1}' -v '{value2}'")
-        self.assertResultError(result, "No Parameter matches the given query")  # TODO: improve error
+        self.assertResultError(result, f"Parameter '{param1}' must be set from project '{proj_name5}'")
 
         # value is unchanged
         self.verify_param(cmd_env, proj_name5, param1, value1)

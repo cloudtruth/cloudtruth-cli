@@ -92,7 +92,7 @@ fn proc_proj_set(
             parent_url = Some(parent_detail.url);
         } else {
             error_message(format!("No parent project '{}' found", parent_name))?;
-            process::exit(18);
+            process::exit(19);
         }
     }
 
