@@ -1,4 +1,4 @@
-use crate::database::{ParamRuleType, ParamType, ParameterDetailRule};
+use crate::database::{valid_encoding, ParamRuleType, ParamType, ParameterDetailRule};
 use cloudtruth_restapi::models::{Parameter, Value};
 use once_cell::sync::OnceCell;
 
@@ -93,6 +93,14 @@ impl ParameterDetails {
             }
         }
         result
+    }
+
+    /// Check to see if this is a secret that can be decrypted.
+    ///
+    /// This is not perfect, but probably not too many customers using `ENCRYPTION_PREFIX`
+    /// at the start of their secrets.
+    pub fn encrypted(&self) -> bool {
+        self.secret && valid_encoding(&self.value)
     }
 }
 

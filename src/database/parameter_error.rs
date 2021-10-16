@@ -1,3 +1,4 @@
+use crate::database::CryptoError;
 use std::error;
 use std::fmt;
 use std::fmt::Formatter;
@@ -10,6 +11,7 @@ pub enum ParameterError {
     UnhandledError(String),
     ResponseError(String),
     EvaluationError(String),
+    CryptoError(CryptoError),
 }
 
 impl fmt::Display for ParameterError {
@@ -33,7 +35,16 @@ impl fmt::Display for ParameterError {
             ParameterError::EvaluationError(msg) => {
                 write!(f, "Evaluation error: {}", msg)
             }
+            ParameterError::CryptoError(e) => {
+                write!(f, "{}", e.to_string())
+            }
         }
+    }
+}
+
+impl From<CryptoError> for ParameterError {
+    fn from(e: CryptoError) -> Self {
+        ParameterError::CryptoError(e)
     }
 }
 
