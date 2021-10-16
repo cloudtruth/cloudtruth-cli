@@ -6,7 +6,7 @@ use crate::cli::{
 use crate::config::DEFAULT_ENV_NAME;
 use crate::database::{
     EnvironmentDetails, Environments, OpenApiConfig, ParamExportFormat, ParamExportOptions,
-    ParamRuleType, ParamType, ParameterDetails, ParameterError, Parameters,
+    ParamRuleType, ParamType, ParameterDetails, ParameterError, Parameters, Projects,
 };
 use crate::table::Table;
 use crate::{
@@ -433,6 +433,7 @@ fn proc_param_get(
                   Rule Count: {}
                   Source: {}
                   Secret: {}
+                  Project URL: {}
                   Description: {}
                   FQN: {}
                   JMES-path: {}
@@ -450,6 +451,7 @@ fn proc_param_get(
                 param.rules.len(),
                 resolved.environment_display_name(),
                 param.secret,
+                param.project_url,
                 param.description,
                 param.fqn,
                 param.jmes_path,
@@ -666,6 +668,7 @@ fn proc_param_set(
 ) -> Result<()> {
     let key_name = subcmd_args.value_of(KEY_ARG).unwrap();
     let proj_id = resolved.project_id();
+    let proj_name = resolved.project_display_name();
     let env_id = resolved.environment_id();
     let prompt_user = subcmd_args.is_present("prompt");
     let filename = subcmd_args.value_of("input-file");
@@ -736,6 +739,15 @@ fn proc_param_set(
     if let Some(original) =
         parameters.get_details_by_name(rest_cfg, proj_id, env_id, key_name, true, None, None)?
     {
+        if !original.project_url.contains(proj_id) {
+            let projects = Projects::new();
+            let source_proj = projects.get_name_from_url(rest_cfg, &original.project_url);
+            error_message(format!(
+                "Parameter '{}' must be set from project '{}' -- it is not part of project '{}'",
+                key_name, source_proj, proj_name
+            ))?;
+            process::exit(20);
+        }
         // only update if there is something to update
         if param_field_update {
             updated = parameters.update_parameter(
