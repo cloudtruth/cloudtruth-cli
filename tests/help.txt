@@ -538,6 +538,7 @@ FLAGS:
         --evaluated     Display the evaluated values
         --external      Display the external values and FQN/JMES path.
     -h, --help          Prints help information
+        --parents       Display the parameters defined in a parent project
         --rules         Display the parameter rules.
     -s, --secrets       Display the secret parameter values
         --show-times    Show create and modified times.

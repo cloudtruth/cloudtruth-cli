@@ -493,6 +493,7 @@ fn proc_param_list(
     let show_rules = subcmd_args.is_present("rules");
     let show_external = subcmd_args.is_present("external");
     let show_evaluated = subcmd_args.is_present("evaluated");
+    let show_parents = subcmd_args.is_present("parents");
     let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
     let include_values = (show_values && !show_rules) || show_external || show_evaluated; // don't get values if not needed
     let mut details = parameters.get_parameter_details(
@@ -518,12 +519,27 @@ fn proc_param_list(
         description = "parameter rules";
         details.retain(|x| !x.rules.is_empty());
     }
+    if show_parents {
+        description = "parameters from a parent project";
+        details.retain(|x| !x.project_url.contains(proj_id));
+        if !details.is_empty() {
+            let projects = Projects::new();
+            let url_map = projects.get_url_name_map(rest_cfg);
+            for item in &mut details {
+                item.project_name = url_map.get(&item.project_url).unwrap().clone();
+            }
+        }
+    }
 
     if (show_rules && show_external)
         || (show_rules && show_evaluated)
         || (show_evaluated && show_external)
+        || (show_parents && show_rules)
+        || (show_parents && show_external)
+        || (show_parents && show_evaluated)
     {
-        let msg = "Options for --rules, --external, and --evaluated are mutually exclusive";
+        let msg =
+            "Options for --rules, --external, --evaluated, and --parents are mutually exclusive";
         warning_message(msg.to_string())?;
     } else if details.is_empty() {
         println!("No {} found in project {}", description, proj_name,);
@@ -571,6 +587,9 @@ fn proc_param_list(
         } else if show_evaluated {
             hdr = vec!["Name", "Value", "Raw"];
             properties = vec!["name", "value", "raw"];
+        } else if show_parents {
+            hdr = vec!["Name", "Value", "Project"];
+            properties = vec!["name", "value", "project-name"];
         } else {
             hdr = vec![
                 "Name",

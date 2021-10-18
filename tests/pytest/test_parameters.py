@@ -2443,3 +2443,97 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
         # cleanup
         self.delete_project(cmd_env, proj_name)
         self.delete_environment(cmd_env, env_name)
+
+    def test_parameter_project_parents(self):
+        cmd_env = self.get_cmd_env()
+
+        # add a set of projects
+        parent_name = self.make_name("test-param-proj-parent")
+        child1_name = self.make_name("test-param-proj-child1")
+        child2_name = self.make_name("test-param-proj-child2")
+
+        self.create_project(cmd_env, parent_name)
+        self.create_project(cmd_env, child1_name, parent=parent_name)
+        self.create_project(cmd_env, child2_name, parent=parent_name)
+
+        param1 = "param1"
+        param2 = "secret2"
+
+        # add some parameters to the one of the child projects
+        value1 = "some_value"
+        value2 = "ssshhhh"
+        self.set_param(cmd_env, child1_name, param1, value1)
+        self.set_param(cmd_env, child1_name, param2, value2, secret=True)
+
+        #########################
+        # normal 'param ls' testing -- parent and child2 have no values, but child1 does
+        result = self.list_params(cmd_env, parent_name)
+        self.assertIn(self._empty_message(parent_name), result.out())
+
+        result = self.list_params(cmd_env, child1_name)
+        self.assertIn(param1, result.out())
+        self.assertIn(param2, result.out())
+
+        result = self.list_params(cmd_env, child2_name)
+        self.assertIn(self._empty_message(child2_name), result.out())
+
+        #########################
+        # no --projects parameters
+        empty_msg = "No parameters from a parent project found in project "
+        result = self.list_params(cmd_env, parent_name, show_projects=True)
+        self.assertIn(empty_msg, result.out())
+        result = self.list_params(cmd_env, child1_name, show_projects=True)
+        self.assertIn(empty_msg, result.out())
+        result = self.list_params(cmd_env, child2_name, show_projects=True)
+        self.assertIn(empty_msg, result.out())
+
+        #########################
+        # setup parent with a couple variables
+        param3 = "param3"
+        param4 = "secret4"
+
+        # add some parameters to the one of the child projects
+        value3 = "some_value"
+        value4 = "be vewy vewy quiet"
+        self.set_param(cmd_env, parent_name, param3, value3)
+        self.set_param(cmd_env, parent_name, param4, value4, secret=True)
+
+        #########################
+        # see parameters propagate correctly
+        expected = f"""\
+Name,Value,Project
+{param3},{value3},{parent_name}
+{param4},{REDACTED},{parent_name}
+"""
+        result = self.list_params(cmd_env, parent_name, show_projects=True, fmt="csv")
+        self.assertIn(empty_msg, result.out())
+        result = self.list_params(cmd_env, child1_name, show_projects=True, fmt="csv")
+        self.assertEqual(expected, result.out())
+        result = self.list_params(cmd_env, child2_name, show_projects=True, fmt="csv")
+        self.assertEqual(expected, result.out())
+
+        # again, with secrets
+        expected = f"""\
+Name,Value,Project
+{param3},{value3},{parent_name}
+{param4},{value4},{parent_name}
+"""
+        result = self.list_params(cmd_env, parent_name, show_projects=True, fmt="csv", secrets=True)
+        self.assertIn(empty_msg, result.out())
+        result = self.list_params(cmd_env, child1_name, show_projects=True, fmt="csv", secrets=True)
+        self.assertEqual(expected, result.out())
+        result = self.list_params(cmd_env, child2_name, show_projects=True, fmt="csv", secrets=True)
+        self.assertEqual(expected, result.out())
+
+        #########################
+        # another level on project inheritance
+        grandchild_name = "test-param-proj-grand"
+        self.create_project(cmd_env, grandchild_name, parent=child1_name)
+        result = self.list_params(cmd_env, child1_name, show_projects=True, fmt="csv", secrets=True)
+        self.assertEqual(expected, result.out())
+
+        # cleanup
+        self.delete_project(cmd_env, grandchild_name)
+        self.delete_project(cmd_env, child1_name)
+        self.delete_project(cmd_env, child2_name)
+        self.delete_project(cmd_env, parent_name)
