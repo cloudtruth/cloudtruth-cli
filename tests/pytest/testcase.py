@@ -426,6 +426,7 @@ class TestCase(unittest.TestCase):
             show_rules: bool = False,
             show_external: bool = False,
             show_evaluated: bool = False,
+            show_projects: bool = False,
     ) -> Result:
         cmd = self._base_cmd + f"--project '{proj}' "
         if env:
@@ -447,6 +448,8 @@ class TestCase(unittest.TestCase):
             cmd += "--external "
         if show_evaluated:
             cmd += "--evaluated "
+        if show_projects:
+            cmd += "--parents "
 
         result = self.run_cli(cmd_env, cmd)
         self.assertResultSuccess(result)

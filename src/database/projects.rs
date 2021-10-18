@@ -30,6 +30,28 @@ impl Projects {
         Self {}
     }
 
+    /// This provides a means to get an entire list of project URLs to names.
+    pub fn get_url_name_map(&self, rest_cfg: &OpenApiConfig) -> ProjectUrlMap {
+        let response = projects_list(
+            rest_cfg,
+            NO_DESC_CONTAINS,
+            None,
+            NO_NAME_CONTAINS,
+            NO_ORDERING,
+            None,
+            PAGE_SIZE,
+        );
+        let mut result: ProjectUrlMap = ProjectUrlMap::new();
+        if let Ok(list) = response {
+            if let Some(projects) = list.results {
+                for prj in projects {
+                    result.insert(prj.url, prj.name);
+                }
+            }
+        }
+        result
+    }
+
     /// Use the project URL to get the corresponding name.
     pub fn get_name_from_url(&self, rest_cfg: &OpenApiConfig, url: &str) -> String {
         let id = url

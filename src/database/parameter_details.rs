@@ -15,6 +15,7 @@ pub struct ParameterDetails {
     pub param_type: ParamType,
     pub rules: Vec<ParameterDetailRule>,
     pub project_url: String,
+    pub project_name: String,
 
     // these come from the value for the specified environment
     pub val_id: String,
@@ -60,6 +61,7 @@ impl ParameterDetails {
                 scope
             }
             "project-url" => self.project_url.clone(),
+            "project-name" => self.project_name.clone(),
             _ => format!("Unhandled property name '{}'", property_name),
         }
     }
@@ -116,6 +118,7 @@ impl Default for ParameterDetails {
             param_type: ParamType::String, // this is the default
             rules: vec![],
             project_url: "".to_string(),
+            project_name: "".to_string(),
             val_id: "".to_string(),
             value: DEFAULT_VALUE.to_string(),
             env_url: "".to_string(),
@@ -172,6 +175,7 @@ impl From<&Parameter> for ParameterDetails {
             description: api_param.description.clone().unwrap_or_default(),
             param_type: ParamType::from(api_param._type.unwrap()),
             project_url: api_param.project.clone(),
+            project_name: "".to_string(), // needs to be resolved later
             rules: api_param
                 .rules
                 .iter()
