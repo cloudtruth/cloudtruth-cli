@@ -1,0 +1,43 @@
+# This runs a small set of basic tests against the staging deployment, using the latest CLI code
+# which has to get built.
+---
+name: Staging
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+
+    env:
+      CLOUDTRUTH_TEST_FILTER: basic
+      # these are to run against staging
+      CLOUDTRUTH_SERVER_URL: https://api.staging.cloudtruth.io
+      CLOUDTRUTH_API_KEY: ${{ secrets.CI_ACCT_STAGING_CONTRIBUTOR }}
+      RUST_BACKTRACE: 1
+      RUST_VERSION: 1.54.0
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install Rust
+        id: rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
+          profile: minimal
+          override: true
+          components: rustfmt, clippy
+
+      - name: Show Rust version and platform details
+        run: rustc --version --verbose
+
+      - run: cargo build
+
+      - name: Basic Test
+        env:
+          OS: ${{ runner.os }}
+        run: |
+          cd tests/pytest
+          python3 live_test.py --job-id "stage-${GITHUB_RUN_NUMBER}" --filter ${{ env.CLOUDTRUTH_TEST_FILTER }}

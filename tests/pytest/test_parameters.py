@@ -1772,7 +1772,7 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
         self.delete_environment(cmd_env, env_name_a)
         self.delete_environment(cmd_env, env_name_b)
 
-    def test_parameter_types_basic(self):
+    def test_parameter_types(self):
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
 

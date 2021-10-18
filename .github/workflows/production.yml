@@ -1,0 +1,34 @@
+# This runs a small set of basic tests against the production deployment, using the latest released
+# CLI image.
+---
+name: Production
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Test Latest
+    runs-on: ubuntu-latest
+
+    env:
+      CLOUDTRUTH_TEST_FILTER: basic
+      CLOUDTRUTH_API_KEY: ${{ secrets.CI_ACCT_READWRITE_CT_API_KEY }}
+      RUST_BACKTRACE: 1
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Release version from the tag
+        if: env.CT_VERSION == ''
+        run: |
+          echo CT_VERSION=${GITHUB_REF#refs/tags/} >> $GITHUB_ENV
+
+      - name: Install
+        run: |
+          sudo ./install.sh --version "${CT_VERSION}"
+          cloudtruth --version
+
+      - name: Test
+        run: |
+          cd tests/pytest
+          python3 live_test.py --job-id "prod-${GITHUB_RUN_NUMBER}" --filter ${{ env.CLOUDTRUTH_TEST_FILTER }}
