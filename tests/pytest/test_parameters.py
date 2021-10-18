@@ -180,6 +180,20 @@ my_param,cRaZy value,default,string,0,internal,false,this is just a test descrip
         self.assertResultWarning(result, mutually_exclusive)
         result = self.run_cli(cmd_env, sub_cmd + "list --external --evaluated")
         self.assertResultWarning(result, mutually_exclusive)
+        result = self.run_cli(cmd_env, sub_cmd + "list --parents --external")
+        self.assertResultWarning(result, mutually_exclusive)
+        result = self.run_cli(cmd_env, sub_cmd + "list --parents --evaluated")
+        self.assertResultWarning(result, mutually_exclusive)
+        result = self.run_cli(cmd_env, sub_cmd + "list --parents --rules")
+        self.assertResultWarning(result, mutually_exclusive)
+        result = self.run_cli(cmd_env, sub_cmd + "list --children --parents")
+        self.assertResultWarning(result, mutually_exclusive)
+        result = self.run_cli(cmd_env, sub_cmd + "list --children --rules")
+        self.assertResultWarning(result, mutually_exclusive)
+        result = self.run_cli(cmd_env, sub_cmd + "list --children --external")
+        self.assertResultWarning(result, mutually_exclusive)
+        result = self.run_cli(cmd_env, sub_cmd + "list --children --evaluated")
+        self.assertResultWarning(result, mutually_exclusive)
 
         # delete the project
         self.delete_project(cmd_env, proj_name)
@@ -2444,7 +2458,7 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
         self.delete_project(cmd_env, proj_name)
         self.delete_environment(cmd_env, env_name)
 
-    def test_parameter_project_parents(self):
+    def test_parameter_project_inheritance(self):
         cmd_env = self.get_cmd_env()
 
         # add a set of projects
@@ -2456,6 +2470,18 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
         self.create_project(cmd_env, child1_name, parent=parent_name)
         self.create_project(cmd_env, child2_name, parent=parent_name)
 
+        #########################
+        # no --children parameters
+        no_children_msg = "No parameters from a child project found in project "
+        result = self.list_params(cmd_env, parent_name, show_children=True)
+        self.assertIn(no_children_msg, result.out())
+        result = self.list_params(cmd_env, child1_name, show_children=True)
+        self.assertIn(no_children_msg, result.out())
+        result = self.list_params(cmd_env, child2_name, show_children=True)
+        self.assertIn(no_children_msg, result.out())
+
+        #########################
+        # setup a couple parameters on one of the children
         param1 = "param1"
         param2 = "secret2"
 
@@ -2478,14 +2504,28 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
         self.assertIn(self._empty_message(child2_name), result.out())
 
         #########################
-        # no --projects parameters
-        empty_msg = "No parameters from a parent project found in project "
-        result = self.list_params(cmd_env, parent_name, show_projects=True)
-        self.assertIn(empty_msg, result.out())
-        result = self.list_params(cmd_env, child1_name, show_projects=True)
-        self.assertIn(empty_msg, result.out())
-        result = self.list_params(cmd_env, child2_name, show_projects=True)
-        self.assertIn(empty_msg, result.out())
+        # no --parents parameters
+        no_parent_msg = "No parameters from a parent project found in project "
+        result = self.list_params(cmd_env, parent_name, show_parents=True)
+        self.assertIn(no_parent_msg, result.out())
+        result = self.list_params(cmd_env, child1_name, show_parents=True)
+        self.assertIn(no_parent_msg, result.out())
+        result = self.list_params(cmd_env, child2_name, show_parents=True)
+        self.assertIn(no_parent_msg, result.out())
+
+        #########################
+        # see some children appear
+        expected = f"""\
+Name,Value,Project
+{param1},{value1},{child1_name}
+{param2},{REDACTED},{child1_name}
+"""
+        result = self.list_params(cmd_env, parent_name, show_children=True, fmt="csv")
+        self.assertEqual(expected, result.out())
+        result = self.list_params(cmd_env, child1_name, show_children=True, fmt="csv")
+        self.assertIn(no_children_msg, result.out())
+        result = self.list_params(cmd_env, child2_name, show_children=True, fmt="csv")
+        self.assertIn(no_children_msg, result.out())
 
         #########################
         # setup parent with a couple variables
@@ -2505,11 +2545,11 @@ Name,Value,Project
 {param3},{value3},{parent_name}
 {param4},{REDACTED},{parent_name}
 """
-        result = self.list_params(cmd_env, parent_name, show_projects=True, fmt="csv")
-        self.assertIn(empty_msg, result.out())
-        result = self.list_params(cmd_env, child1_name, show_projects=True, fmt="csv")
+        result = self.list_params(cmd_env, parent_name, show_parents=True, fmt="csv")
+        self.assertIn(no_parent_msg, result.out())
+        result = self.list_params(cmd_env, child1_name, show_parents=True, fmt="csv")
         self.assertEqual(expected, result.out())
-        result = self.list_params(cmd_env, child2_name, show_projects=True, fmt="csv")
+        result = self.list_params(cmd_env, child2_name, show_parents=True, fmt="csv")
         self.assertEqual(expected, result.out())
 
         # again, with secrets
@@ -2518,18 +2558,63 @@ Name,Value,Project
 {param3},{value3},{parent_name}
 {param4},{value4},{parent_name}
 """
-        result = self.list_params(cmd_env, parent_name, show_projects=True, fmt="csv", secrets=True)
-        self.assertIn(empty_msg, result.out())
-        result = self.list_params(cmd_env, child1_name, show_projects=True, fmt="csv", secrets=True)
+        result = self.list_params(cmd_env, parent_name, show_parents=True, fmt="csv", secrets=True)
+        self.assertIn(no_parent_msg, result.out())
+        result = self.list_params(cmd_env, child1_name, show_parents=True, fmt="csv", secrets=True)
         self.assertEqual(expected, result.out())
-        result = self.list_params(cmd_env, child2_name, show_projects=True, fmt="csv", secrets=True)
+        result = self.list_params(cmd_env, child2_name, show_parents=True, fmt="csv", secrets=True)
         self.assertEqual(expected, result.out())
 
         #########################
         # another level on project inheritance
         grandchild_name = "test-param-proj-grand"
         self.create_project(cmd_env, grandchild_name, parent=child1_name)
-        result = self.list_params(cmd_env, child1_name, show_projects=True, fmt="csv", secrets=True)
+        result = self.list_params(cmd_env, child1_name, show_parents=True, fmt="csv", secrets=True)
+        self.assertEqual(expected, result.out())
+
+        # a couple more parameters in the grandchild
+        param5 = "param5"
+        param6 = "secret6"
+        value5 = "grand"
+        value6 = "im hunting wabbits"
+        self.set_param(cmd_env, grandchild_name, param5, value=value5)
+        self.set_param(cmd_env, grandchild_name, param6, value=value6, secret=True)
+
+        expected = f"""\
+Name,Value,Project
+{param1},{value1},{child1_name}
+{param2},{REDACTED},{child1_name}
+{param5},{value5},{grandchild_name}
+{param6},{REDACTED},{grandchild_name}
+"""
+        result = self.list_params(cmd_env, parent_name, show_children=True, fmt="csv")
+        self.assertEqual(expected, result.out())
+
+        expected = f"""\
+Name,Value,Project
+{param5},{value5},{grandchild_name}
+{param6},{REDACTED},{grandchild_name}
+"""
+        result = self.list_params(cmd_env, child1_name, show_children=True, fmt="csv")
+        self.assertEqual(expected, result.out())
+
+        #########################
+        # add parameters with same names, but in different children of the parent
+        value5a = "slam"
+        value6a = "kill the wabbit"
+        self.set_param(cmd_env, child2_name, param5, value=value5a)
+        self.set_param(cmd_env, child2_name, param6, value=value6a)  # NOTE: not a secret!
+
+        expected = f"""\
+Name,Value,Project
+{param1},{value1},{child1_name}
+{param2},{REDACTED},{child1_name}
+{param5},{value5},{grandchild_name}
+{param6},{REDACTED},{grandchild_name}
+{param5},{value5a},{child2_name}
+{param6},{value6a},{child2_name}
+"""
+        result = self.list_params(cmd_env, parent_name, show_children=True, fmt="csv")
         self.assertEqual(expected, result.out())
 
         # cleanup

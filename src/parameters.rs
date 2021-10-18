@@ -494,6 +494,7 @@ fn proc_param_list(
     let show_external = subcmd_args.is_present("external");
     let show_evaluated = subcmd_args.is_present("evaluated");
     let show_parents = subcmd_args.is_present("parents");
+    let show_children = subcmd_args.is_present("children");
     let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
     let include_values = (show_values && !show_rules) || show_external || show_evaluated; // don't get values if not needed
     let mut details = parameters.get_parameter_details(
@@ -502,8 +503,8 @@ fn proc_param_list(
         env_id,
         !show_secrets,
         include_values,
-        as_of,
-        tag,
+        as_of.clone(),
+        tag.clone(),
     )?;
     let mut description = "parameters";
     if show_external {
@@ -530,16 +531,44 @@ fn proc_param_list(
             }
         }
     }
+    if show_children {
+        description = "parameters from a child project";
 
-    if (show_rules && show_external)
-        || (show_rules && show_evaluated)
-        || (show_evaluated && show_external)
-        || (show_parents && show_rules)
-        || (show_parents && show_external)
-        || (show_parents && show_evaluated)
-    {
-        let msg =
-            "Options for --rules, --external, --evaluated, and --parents are mutually exclusive";
+        details.clear(); // starting over with just the children
+        let projects = Projects::new();
+        let proj_details = projects.get_project_descendants(rest_cfg, &proj_name)?;
+        // loop through all the projects to find parameters defined in each
+        for prj in proj_details {
+            let mut child_details = parameters.get_parameter_details(
+                rest_cfg,
+                &prj.id,
+                env_id,
+                !show_secrets,
+                include_values,
+                as_of.clone(),
+                tag.clone(),
+            )?;
+            child_details.retain(|d| d.project_url.contains(&prj.id));
+            for d in &mut child_details {
+                d.project_name = prj.name.clone();
+            }
+            details.append(&mut child_details);
+        }
+    }
+
+    let view_flags = vec![
+        show_rules,
+        show_external,
+        show_evaluated,
+        show_parents,
+        show_children,
+    ];
+    // cannot specify more than 1 of the view flags
+    if view_flags.iter().filter(|&x| *x).count() > 1 {
+        let msg = concat!(
+            "Options for --rules, --external, --evaluated, --parents, and ",
+            "--children are mutually exclusive",
+        );
         warning_message(msg.to_string())?;
     } else if details.is_empty() {
         println!("No {} found in project {}", description, proj_name,);
@@ -587,7 +616,7 @@ fn proc_param_list(
         } else if show_evaluated {
             hdr = vec!["Name", "Value", "Raw"];
             properties = vec!["name", "value", "raw"];
-        } else if show_parents {
+        } else if show_parents || show_children {
             hdr = vec!["Name", "Value", "Project"];
             properties = vec!["name", "value", "project-name"];
         } else {
