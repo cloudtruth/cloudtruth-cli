@@ -176,6 +176,41 @@ impl Projects {
         }
     }
 
+    fn get_all_descendants_from_list(
+        &self,
+        parent_url: &str,
+        all_projects: &[ProjectDetails],
+    ) -> Vec<ProjectDetails> {
+        let mut descendants = vec![];
+        for prj in all_projects {
+            if prj.parent_url == parent_url {
+                descendants.push(prj.clone());
+                // recursively get the children
+                let mut grandchildren = self.get_all_descendants_from_list(&prj.url, all_projects);
+                descendants.append(&mut grandchildren);
+            }
+        }
+
+        descendants
+    }
+
+    pub fn get_project_descendants(
+        &self,
+        rest_cfg: &OpenApiConfig,
+        parent_name: &str,
+    ) -> Result<Vec<ProjectDetails>, ProjectError> {
+        let all_details = self.get_project_details(rest_cfg)?;
+
+        // start by finding the specified parent by name
+        let parent = all_details
+            .iter()
+            .find(|&d| d.name == parent_name)
+            .expect("No project found with that name")
+            .clone();
+        let descendants = self.get_all_descendants_from_list(&parent.url, &*all_details);
+        Ok(descendants)
+    }
+
     /// Create a project with the specified name/description
     pub fn create_project(
         &self,
