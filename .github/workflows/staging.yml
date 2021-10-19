@@ -7,7 +7,7 @@ on:
 
 jobs:
   test:
-    name: Test
+    name: Basic Integration Test (Staging)
     runs-on: ubuntu-latest
 
     env:
@@ -28,16 +28,13 @@ jobs:
           toolchain: ${{ env.RUST_VERSION }}
           profile: minimal
           override: true
-          components: rustfmt, clippy
 
       - name: Show Rust version and platform details
         run: rustc --version --verbose
 
       - run: cargo build
 
-      - name: Basic Test
-        env:
-          OS: ${{ runner.os }}
+      - name: Integration Test
         run: |
           cd tests/pytest
           python3 live_test.py --job-id "stage-${GITHUB_RUN_NUMBER}" --filter ${{ env.CLOUDTRUTH_TEST_FILTER }}

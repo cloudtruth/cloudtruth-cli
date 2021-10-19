@@ -18,7 +18,7 @@ class TestConfiguration(TestCase):
 
         super().tearDown()
 
-    def test_configuration_profile_basic(self):
+    def test_configuration_profile(self):
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
         conf_cmd = base_cmd + "conf "
