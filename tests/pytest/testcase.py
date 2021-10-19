@@ -269,17 +269,12 @@ class TestCase(unittest.TestCase):
         return None
 
     def create_project(self, cmd_env, proj_name: str, parent: Optional[str] = None) -> Result:
-        # NOTE: use CSV to allow for "super-set" names to exist
-        ls_cmd = self._base_cmd + "proj ls -vf csv"
-        result = self.run_cli(cmd_env, ls_cmd)
-        self.assertResultSuccess(result)
-        self.assertNotIn(f"{proj_name},", result.out(), f"Project {proj_name} already exists")
-
         proj_cmd = self._base_cmd + f"proj set '{proj_name}' -d '{AUTO_DESCRIPTION}' "
         if parent:
             proj_cmd += f"--parent '{parent}'"
         result = self.run_cli(cmd_env, proj_cmd)
         self.assertResultSuccess(result)
+        self.assertIn(f"Created project '{proj_name}'", result.out())
         return result
 
     def delete_project(self, cmd_env, proj_name: str) -> Result:
@@ -288,18 +283,13 @@ class TestCase(unittest.TestCase):
         return result
 
     def create_environment(self, cmd_env, env_name: str, parent: Optional[str] = None) -> Result:
-        # NOTE: use CSV to allow for "super-set" names to exist
-        ls_cmd = self._base_cmd + "env ls -vf csv"
-        result = self.run_cli(cmd_env, ls_cmd)
-        self.assertResultSuccess(result)
-        self.assertNotIn(f"{env_name},", result.out(), f"Environment {env_name} already exists")
-
         cmd = self._base_cmd + f"env set '{env_name}' "
         if parent:
             cmd += f"-p '{parent}' "
         cmd += f"-d '{AUTO_DESCRIPTION}'"
         result = self.run_cli(cmd_env, cmd)
         self.assertResultSuccess(result)
+        self.assertIn(f"Created environment '{env_name}'", result.out())
         return result
 
     def delete_environment(self, cmd_env, env_name: str) -> Result:
