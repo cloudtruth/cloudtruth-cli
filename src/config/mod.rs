@@ -119,6 +119,7 @@ const SRC_DEFAULT: &str = "default";
 const SRC_ARG: &str = "argument";
 const SRC_ENV: &str = "shell";
 const SRC_PROFILE: &str = "profile";
+const SRC_BINARY: &str = "binary";
 
 const PARAM_PROFILE: &str = "Profile";
 const PARAM_API_KEY: &str = "API key";
@@ -127,6 +128,7 @@ const PARAM_ENVIRONMENT: &str = "Environment";
 const PARAM_SERVER_URL: &str = "Server URL";
 const PARAM_REQUEST_TIMEOUT: &str = "Request timeout";
 const PARAM_REST_DEBUG: &str = "REST debug";
+const PARAM_CLI_VERSION: &str = "CLI version";
 
 #[derive(Clone, Debug)]
 pub struct ConfigValue {
@@ -455,6 +457,18 @@ impl Config {
         });
 
         //////////////////
+        // Version
+        results.push(ConfigValue {
+            name: PARAM_CLI_VERSION.to_string(),
+            value: option_env!("CARGO_PKG_VERSION")
+                .unwrap_or("Unknown")
+                .to_string(),
+            source: SRC_BINARY.to_string(),
+            secret: false,
+            extension: true,
+        });
+
+        //////////////////
         // Server URL
         let mut value = DEFAULT_SERVER_URL.to_string();
         let mut source = SRC_DEFAULT.to_string();
@@ -579,6 +593,16 @@ mod tests {
         assert_eq!(param.extension, false);
 
         env::remove_var(CT_API_KEY);
+    }
+
+    #[test]
+    fn get_version() {
+        let config_values = Config::get_sources(None, None, None, None).unwrap();
+        let param = get_param(PARAM_CLI_VERSION, &config_values).unwrap();
+        assert_eq!(param.value, option_env!("CARGO_PKG_VERSION").unwrap());
+        assert_eq!(param.source, SRC_BINARY);
+        assert_eq!(param.secret, false);
+        assert_eq!(param.extension, true);
     }
 
     #[test]
