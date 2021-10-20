@@ -8,10 +8,12 @@ class TestEnvironments(TestCase):
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
         env_name = self.make_name("test-env-name")
+        rename_name = self.make_name("test-env-rename")
         sub_cmd = base_cmd + "environments "
-        result = self.run_cli(cmd_env, sub_cmd + "ls -v")
+        result = self.run_cli(cmd_env, sub_cmd + "ls -v -f json")
         self.assertResultSuccess(result)
-        self.assertNotIn(env_name, result.out())
+        self.assertNotIn(f"\"{env_name}\"", result.out())
+        self.assertNotIn(f"\"{rename_name}\"", result.out())
 
         # create with a description
         orig_desc = "Description on create"
@@ -35,7 +37,7 @@ class TestEnvironments(TestCase):
 
         # rename the environment
         orig_name = env_name
-        env_name = self.make_name("test-env-rename")
+        env_name = rename_name
         result = self.run_cli(cmd_env, sub_cmd + f"set {orig_name} --rename \"{env_name}\"")
         self.assertResultSuccess(result)
         self.assertIn(f"Updated environment '{env_name}'", result.out())
@@ -63,9 +65,9 @@ class TestEnvironments(TestCase):
         # delete
         result = self.run_cli(cmd_env, sub_cmd + f"delete {env_name} --confirm")
         self.assertResultSuccess(result)
-        result = self.run_cli(cmd_env, sub_cmd + "ls -v")
+        result = self.run_cli(cmd_env, sub_cmd + "ls -v -f csv")
         self.assertResultSuccess(result)
-        self.assertNotIn(env_name, result.out())
+        self.assertNotIn(f"{env_name},", result.out())
 
         # do it again, see we have success and a warning
         result = self.run_cli(cmd_env, sub_cmd + f"delete {env_name} --confirm")
