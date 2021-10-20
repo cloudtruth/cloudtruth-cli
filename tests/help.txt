@@ -28,6 +28,7 @@ SUBCOMMANDS:
     projects         Work with CloudTruth projects [aliases: project, proj]
     run              Run a shell with the parameters in place [aliases: run, r]
     templates        Work with CloudTruth templates [aliases: template, temp, t]
+    users            Work with CloudTruth users [aliases: user, us]
 ============================================================
 cloudtruth-audit-logs 
 Display audit logs
@@ -862,4 +863,81 @@ FLAGS:
 
 ARGS:
     <NAME>    Template name
+============================================================
+cloudtruth-users 
+Work with CloudTruth users
+
+USAGE:
+    cloudtruth users [SUBCOMMAND]
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+SUBCOMMANDS:
+    delete    Delete specified CloudTruth account [aliases: del, d]
+    get       Get detailed CloudTruth user information
+    help      Prints this message or the help of the given subcommand(s)
+    list      List CloudTruth users [aliases: ls, l]
+    set       Create/update a CloudTruth service account [aliases: s]
+========================================
+cloudtruth-users-delete 
+Delete specified CloudTruth account
+
+USAGE:
+    cloudtruth users delete [FLAGS] <NAME>
+
+FLAGS:
+    -y, --yes        Avoid confirmation prompt(s)
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+ARGS:
+    <NAME>    Account name
+========================================
+cloudtruth-users-get 
+Get detailed CloudTruth user information
+
+USAGE:
+    cloudtruth users get <NAME>
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+ARGS:
+    <NAME>    Account name
+========================================
+cloudtruth-users-list 
+List CloudTruth users
+
+USAGE:
+    cloudtruth users list [FLAGS] [OPTIONS]
+
+FLAGS:
+    -h, --help          Prints help information
+        --show-times    Show create and modified times.
+    -v, --values        Display account information/values
+    -V, --version       Prints version information
+
+OPTIONS:
+    -f, --format <format>    Format for account values data [default: table]  [possible values: table, csv, json, yaml]
+========================================
+cloudtruth-users-set 
+Create/update a CloudTruth service account
+
+USAGE:
+    cloudtruth users set [OPTIONS] <NAME>
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+OPTIONS:
+    -d, --desc <description>    Account's description
+        --role <role>           Account role [default: viewer (on create)] [possible values: owner, admin, contrib,
+                                viewer]
+
+ARGS:
+    <NAME>    Account name
 
