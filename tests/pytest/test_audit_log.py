@@ -3,14 +3,11 @@ from typing import List
 from typing import Optional
 
 from testcase import TestCase
+from testcase import find_by_prop
 
 PROP_TYPE = "Type"
 PROP_ACTION = "Action"
 PROP_NAME = "Object Name"
-
-
-def find_by_prop(entries: List[Dict], prop_name: str, prop_value: str) -> List[Dict]:
-    return [e for e in entries if e.get(prop_name, None) == prop_value]
 
 
 class TestAuditLogs(TestCase):

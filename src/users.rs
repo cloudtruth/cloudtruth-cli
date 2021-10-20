@@ -52,8 +52,8 @@ fn proc_users_list(
             .collect::<Vec<String>>();
         println!("{}", list.join("\n"))
     } else {
-        let mut hdr = vec!["Name", "Type", "Email", "Description"];
-        let mut properties = vec!["name", "type", "email", "description"];
+        let mut hdr = vec!["Name", "Type", "Role", "Email", "Description"];
+        let mut properties = vec!["name", "type", "role", "email", "description"];
         if show_times {
             hdr.push("Created At");
             hdr.push("Modified At");

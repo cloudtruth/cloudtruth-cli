@@ -8,6 +8,7 @@ pub struct UserDetails {
     pub name: String,
     pub account_type: String,
     pub email: String,
+    pub role: String,
 
     pub created_at: String,
     pub modified_at: String,
@@ -23,7 +24,11 @@ impl UserDetails {
         match property_name {
             "name" => self.name.clone(),
             "type" => self.account_type.clone(),
-            "email" => self.email.clone(),
+            "email" => match self.account_type.as_str() {
+                "service" => "".to_string(),
+                _ => self.email.clone(),
+            },
+            "role" => self.role.clone(),
             "created-at" => self.created_at.clone(),
             "modified-at" => self.modified_at.clone(),
 
@@ -53,6 +58,7 @@ impl From<&User> for UserDetails {
             user_url: api.url.clone(),
             name: extract_name(api),
             email: api.email.clone().unwrap_or_default(),
+            role: "".to_string(), // needs to be populated later
             account_type: api._type.clone().unwrap_or_default(),
             created_at: api.created_at.clone(),
             modified_at: api.modified_at.clone(),
@@ -74,6 +80,7 @@ impl From<&ServiceAccount> for UserDetails {
             user_url: user.url.clone(),
             name: extract_name(user),
             email: user.email.clone().unwrap_or_default(),
+            role: "".to_string(), // needs to be populated later
             account_type: user._type.clone().unwrap_or_default(),
             created_at: api.created_at.clone(),
             modified_at: api.modified_at.clone(),
@@ -94,6 +101,7 @@ impl From<&ServiceAccountCreateResponse> for UserDetails {
             name: extract_name(user),
             account_type: user._type.clone().unwrap_or_default(),
             email: user.email.clone().unwrap_or_default(),
+            role: "".to_string(), // needs to be populated later
             created_at: api.created_at.clone(),
             modified_at: api.modified_at.clone(),
             last_used: api.last_used_at.clone().unwrap_or_default(),

@@ -14,6 +14,7 @@ mod integration_details;
 mod integration_error;
 mod integration_node;
 mod integrations;
+mod member_details;
 mod object_type;
 mod openapi;
 mod parameter_details;
@@ -51,6 +52,7 @@ pub use integration_details::IntegrationDetails;
 pub use integration_error::IntegrationError;
 pub use integration_node::IntegrationNode;
 pub use integrations::Integrations;
+pub use member_details::MemberDetails;
 pub use object_type::{to_object_type, ObjectType};
 pub use openapi::{
     auth_details, extract_details, extract_from_json, response_message, OpenApiConfig, PAGE_SIZE,

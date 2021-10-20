@@ -1,15 +1,31 @@
+from typing import Dict
+
 from testcase import TestCase
+from testcase import find_by_prop
+
+DEFAULT_ROLE = "viewer"
+SERVICE_TYPE = "service"
+PROP_NAME = "Name"
+PROP_ROLE = "Role"
+PROP_DESC = "Description"
+PROP_TYPE = "Type"
 
 
 class TestUsers(TestCase):
+    def _get_entry(self, cmd_env, user_name: str) -> Dict:
+        result = self.run_cli(cmd_env, self._base_cmd + "users ls -v -f json")
+        self.assertResultSuccess(result)
+        entries = eval(result.out()).get("user")
+        return find_by_prop(entries, PROP_NAME, user_name)[0]
+
     def test_user_basic(self):
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
         user_name = self.make_name("test-user-name")
         sub_cmd = base_cmd + "users "
-        result = self.run_cli(cmd_env, sub_cmd + "ls -v")
+        result = self.run_cli(cmd_env, sub_cmd + "ls -v -f csv")
         self.assertResultSuccess(result)
-        self.assertNotIn(user_name, result.out())
+        self.assertNotIn(f"{user_name},", result.out())
 
         # create with a description
         orig_desc = "Description on create"
@@ -17,19 +33,19 @@ class TestUsers(TestCase):
         self.assertResultSuccess(result)
         api_key = result.stdout[1]
 
-        result = self.run_cli(cmd_env, sub_cmd + "ls -v -f csv")
+        result = self.run_cli(cmd_env, sub_cmd + "list --values --format csv")
         self.assertResultSuccess(result)
-        self.assertIn(f"{user_name},service,", result.out())
-        self.assertIn(f"@cloudtruth.com,{orig_desc}", result.out())
+        self.assertIn(f"{user_name},{SERVICE_TYPE},{DEFAULT_ROLE},,{orig_desc}", result.out())
 
         # update the description
         new_desc = "Updated description"
         result = self.run_cli(cmd_env, sub_cmd + f"set {user_name} --desc \"{new_desc}\"")
         self.assertResultSuccess(result)
-        result = self.run_cli(cmd_env, sub_cmd + "ls --values -f csv")
-        self.assertResultSuccess(result)
-        self.assertIn(f"{user_name},service,", result.out())
-        self.assertIn(f"@cloudtruth.com,{new_desc}", result.out())
+
+        entry = self._get_entry(cmd_env, user_name)
+        self.assertEqual(entry.get(PROP_TYPE), SERVICE_TYPE)
+        self.assertEqual(entry.get(PROP_ROLE), DEFAULT_ROLE)
+        self.assertEqual(entry.get(PROP_DESC), new_desc)
 
         # idempotent - do it again
         result = self.run_cli(cmd_env, sub_cmd + f"set {user_name} --desc \"{new_desc}\"")
@@ -45,10 +61,17 @@ class TestUsers(TestCase):
         result = self.run_cli(cmd_env, cmd)
         self.assertResultError(result, permission_err)
 
-        # update the role (though not visible)
-        result = self.run_cli(cmd_env, sub_cmd + f"set {user_name} --role contrib")
+        # update the role
+        new_role = "contrib"
+        result = self.run_cli(cmd_env, sub_cmd + f"set {user_name} --role {new_role}")
         self.assertResultSuccess(result)
         self.assertIn(f"Updated user '{user_name}'", result.out())
+
+        # see the updated role
+        entry = self._get_entry(cmd_env, user_name)
+        self.assertEqual(entry.get(PROP_TYPE), SERVICE_TYPE)
+        self.assertEqual(entry.get(PROP_ROLE), new_role)
+        self.assertEqual(entry.get(PROP_DESC), new_desc)
 
         # nothing to update
         result = self.run_cli(cmd_env, sub_cmd + f"set {user_name}")
@@ -67,12 +90,12 @@ class TestUsers(TestCase):
         result = self.run_cli(cmd_env, cmd)
         self.assertResultError(result, permission_err)
 
-        # test the list without the values
+        # test the list without the values -- check whole line matches
         result = self.run_cli(cmd_env, sub_cmd + "list")
         self.assertResultSuccess(result)
-        self.assertIn(user_name, result.out())
-        self.assertNotIn(user2_name, result.out())
-        self.assertNotIn(new_desc, result.out())
+        self.assertIn(user_name, result.stdout)
+        self.assertNotIn(user2_name, result.stdout)
+        self.assertNotIn(new_desc, result.stdout)
 
         # shows create/modified times
         result = self.run_cli(cmd_env, sub_cmd + "list --show-times -f csv")
@@ -84,9 +107,9 @@ class TestUsers(TestCase):
         # delete
         result = self.run_cli(cmd_env, sub_cmd + f"delete {user_name} --confirm")
         self.assertResultSuccess(result)
-        result = self.run_cli(cmd_env, sub_cmd + "ls -v")
+        result = self.run_cli(cmd_env, sub_cmd + "ls -v -f csv")
         self.assertResultSuccess(result)
-        self.assertNotIn(user_name, result.out())
+        self.assertNotIn(f"{user_name},", result.out())
 
         # do it again, see we have success and a warning
         result = self.run_cli(cmd_env, sub_cmd + f"delete {user_name} --confirm")

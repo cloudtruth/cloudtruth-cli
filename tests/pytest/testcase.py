@@ -72,6 +72,10 @@ def get_cli_base_cmd() -> str:
     return "cloudtruth "
 
 
+def find_by_prop(entries: List[Dict], prop_name: str, prop_value: str) -> List[Dict]:
+    return [e for e in entries if e.get(prop_name, None) == prop_value]
+
+
 @dataclasses.dataclass
 class Result:
     return_value: int = 0,
@@ -97,6 +101,7 @@ class TestCase(unittest.TestCase):
         self.job_id = os.environ.get(CT_TEST_JOB_ID, "")
         self._projects = None
         self._environments = None
+        self._users = None
         self._filenames = None
         super().__init__(*args, **kwargs)
         self.maxDiff = None
@@ -105,6 +110,7 @@ class TestCase(unittest.TestCase):
         # start each test with empty sets for projects and environments
         self._projects = list()
         self._environments = list()
+        self._users = list()
         self._filenames = set()
         super().setUp()
 
@@ -119,6 +125,11 @@ class TestCase(unittest.TestCase):
         # order in case there are any children.
         for env in reversed(self._environments):
             cmd = self._base_cmd + f"env del \"{env}\" --confirm"
+            subprocess.run(cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+        # delete any possibly lingering users
+        for usr in self._users:
+            cmd = self._base_cmd + f"user del --confirm \"{usr}\""
             subprocess.run(cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
         # remove any added files
@@ -222,6 +233,10 @@ class TestCase(unittest.TestCase):
                 proj_name = _next_part(args, "--rename") or _next_part(args, "-r")
                 if proj_name and proj_name not in self._projects:
                     self._projects.append(proj_name)
+            elif set(args) & set(["users", "user", "us"]):
+                user_name = _next_part(args, "set")
+                if user_name and user_name not in self._users:
+                    self._users.append(user_name)
 
         start = datetime.now()
         process = subprocess.run(

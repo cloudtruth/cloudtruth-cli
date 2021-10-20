@@ -1,5 +1,5 @@
 use crate::database::{
-    auth_details, response_message, OpenApiConfig, UserDetails, UserError, PAGE_SIZE,
+    auth_details, response_message, MemberDetails, OpenApiConfig, UserDetails, UserError, PAGE_SIZE,
 };
 use cloudtruth_restapi::apis::memberships_api::{
     memberships_create, memberships_list, memberships_partial_update,
@@ -14,8 +14,11 @@ use cloudtruth_restapi::models::{
     MembershipCreate, PatchedMembership, PatchedServiceAccount, RoleEnum,
     ServiceAccountCreateRequest,
 };
+use std::collections::HashMap;
 
 const NO_ORDERING: Option<&str> = None;
+
+type MembershipUrlMap = HashMap<String, MemberDetails>;
 
 pub struct Users {}
 
@@ -101,6 +104,15 @@ impl Users {
                                              // filter out the user accounts that are direct correlations to the service accounts
         user_accounts.retain(|x| x.account_type != "service");
         total.append(&mut user_accounts);
+
+        // resolve membership roles
+        let membership = self.get_membership_map(rest_cfg)?;
+        for user in &mut total {
+            if let Some(member) = membership.get(&user.user_url) {
+                user.role = member.role.clone();
+            }
+        }
+
         total.sort_by(|l, r| l.name.to_lowercase().cmp(&r.name.to_lowercase()));
         Ok(total)
     }
@@ -272,6 +284,27 @@ impl Users {
                     }
                 },
                 None => Err(UserError::MembershipNotFound()),
+            },
+            Err(ResponseError(ref content)) => {
+                Err(response_error(&content.status, &content.content))
+            }
+            Err(e) => Err(UserError::UnhandledError(e.to_string())),
+        }
+    }
+
+    fn get_membership_map(&self, rest_cfg: &OpenApiConfig) -> Result<MembershipUrlMap, UserError> {
+        let response = memberships_list(rest_cfg, NO_ORDERING, None, PAGE_SIZE, None, None);
+        match response {
+            Ok(data) => match data.results {
+                Some(list) => {
+                    let mut map = MembershipUrlMap::new();
+                    for item in list {
+                        let details = MemberDetails::from(&item);
+                        map.insert(item.user, details);
+                    }
+                    Ok(map)
+                }
+                None => Ok(MembershipUrlMap::new()),
             },
             Err(ResponseError(ref content)) => {
                 Err(response_error(&content.status, &content.content))
