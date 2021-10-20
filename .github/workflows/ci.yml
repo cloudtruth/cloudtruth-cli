@@ -36,7 +36,7 @@ env:
 
   PART_A_FILTER: test_arg test_audit test_configuration test_environment test_integration
   PART_B_FILTER: test_parameter
-  PART_C_FILTER: test_project test_run test_template test_timing
+  PART_C_FILTER: test_project test_run test_template test_timing test_user
 
 jobs:
   lint:
