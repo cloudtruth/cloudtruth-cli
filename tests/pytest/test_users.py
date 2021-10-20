@@ -27,6 +27,9 @@ class TestUsers(TestCase):
         self.assertResultSuccess(result)
         self.assertNotIn(f"{user_name},", result.out())
 
+        result = self.run_cli(cmd_env, sub_cmd + f"get {user_name}")
+        self.assertResultError(result, f"The user '{user_name}' could not be found")
+
         # create with a description
         orig_desc = "Description on create"
         result = self.run_cli(cmd_env, sub_cmd + f"set {user_name} --desc \"{orig_desc}\"")
@@ -72,6 +75,16 @@ class TestUsers(TestCase):
         self.assertEqual(entry.get(PROP_TYPE), SERVICE_TYPE)
         self.assertEqual(entry.get(PROP_ROLE), new_role)
         self.assertEqual(entry.get(PROP_DESC), new_desc)
+
+        result = self.run_cli(cmd_env, sub_cmd + f"get {user_name}")
+        self.assertResultSuccess(result)
+        self.assertIn(f"Name: {user_name}", result.out())
+        self.assertIn(f"Role: {new_role}", result.out())
+        self.assertIn(f"Description: {new_desc}", result.out())
+        self.assertIn(f"Type: {SERVICE_TYPE}", result.out())
+        self.assertIn("Created At: ", result.out())
+        self.assertIn("Modified At: ", result.out())
+        self.assertIn("Last Used At: ", result.out())
 
         # nothing to update
         result = self.run_cli(cmd_env, sub_cmd + f"set {user_name}")

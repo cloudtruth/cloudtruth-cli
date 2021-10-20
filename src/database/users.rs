@@ -136,6 +136,14 @@ impl Users {
                 result = Some(user_accounts[0].clone());
             }
         }
+
+        // resolve the user role (if applicable)
+        if let Some(details) = &mut result {
+            if let Some(membership) = self.get_membership_by_url(rest_cfg, &details.user_url)? {
+                details.role = membership.role;
+            }
+        }
+
         Ok(result)
     }
 
@@ -268,6 +276,18 @@ impl Users {
         rest_cfg: &OpenApiConfig,
         user_url: &str,
     ) -> Result<String, UserError> {
+        let response = self.get_membership_by_url(rest_cfg, user_url)?;
+        match response {
+            Some(details) => Ok(details.id),
+            _ => Err(UserError::MembershipNotFound()),
+        }
+    }
+
+    fn get_membership_by_url(
+        &self,
+        rest_cfg: &OpenApiConfig,
+        user_url: &str,
+    ) -> Result<Option<MemberDetails>, UserError> {
         // should be able do the filtering using the user_url, but the server does not like it!
         let response = memberships_list(rest_cfg, NO_ORDERING, None, PAGE_SIZE, None, None);
         match response {
@@ -277,9 +297,9 @@ impl Users {
                     false => {
                         list.retain(|m| m.user == user_url);
                         if !list.is_empty() {
-                            Ok(list[0].id.clone())
+                            Ok(Some(MemberDetails::from(&list[0])))
                         } else {
-                            Err(UserError::MembershipNotFound())
+                            Ok(None)
                         }
                     }
                 },

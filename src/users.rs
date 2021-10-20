@@ -1,12 +1,14 @@
 use crate::cli::{
-    CONFIRM_FLAG, DELETE_SUBCMD, DESCRIPTION_OPT, FORMAT_OPT, LIST_SUBCMD, NAME_ARG, SET_SUBCMD,
-    SHOW_TIMES_FLAG, VALUES_FLAG,
+    CONFIRM_FLAG, DELETE_SUBCMD, DESCRIPTION_OPT, FORMAT_OPT, GET_SUBCMD, LIST_SUBCMD, NAME_ARG,
+    SET_SUBCMD, SHOW_TIMES_FLAG, VALUES_FLAG,
 };
 use crate::database::{OpenApiConfig, Users};
 use crate::table::Table;
-use crate::{user_confirm, warn_missing_subcommand, warning_message, DEL_CONFIRM};
+use crate::{error_message, user_confirm, warn_missing_subcommand, warning_message, DEL_CONFIRM};
 use clap::ArgMatches;
 use color_eyre::eyre::Result;
+use indoc::printdoc;
+use std::process;
 
 fn proc_users_delete(
     subcmd_args: &ArgMatches,
@@ -30,6 +32,42 @@ fn proc_users_delete(
         }
     } else {
         warning_message(format!("User '{}' does not exist!", user_name))?;
+    }
+    Ok(())
+}
+
+fn proc_users_get(subcmd_args: &ArgMatches, rest_cfg: &OpenApiConfig, users: &Users) -> Result<()> {
+    let user_name = subcmd_args.value_of(NAME_ARG).unwrap();
+    let response = users.get_details_by_name(rest_cfg, user_name)?;
+
+    if let Some(details) = response {
+        printdoc!(
+            r#"
+                Name: {}
+                Type: {}
+                Role: {}
+                Email: {}
+                Description: {}
+                Last Used At: {}
+                ID: {}
+                User URL: {}
+                Created At: {}
+                Modified At: {}
+            "#,
+            details.name,
+            details.account_type,
+            details.role,
+            details.email,
+            details.description,
+            details.last_used,
+            details.id,
+            details.user_url,
+            details.created_at,
+            details.modified_at,
+        );
+    } else {
+        error_message(format!("The user '{}' could not be found", user_name))?;
+        process::exit(23);
     }
     Ok(())
 }
@@ -109,6 +147,8 @@ pub fn process_users_command(
 ) -> Result<()> {
     if let Some(subcmd_args) = subcmd_args.subcommand_matches(DELETE_SUBCMD) {
         proc_users_delete(subcmd_args, rest_cfg, users)?;
+    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(GET_SUBCMD) {
+        proc_users_get(subcmd_args, rest_cfg, users)?;
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(LIST_SUBCMD) {
         proc_users_list(subcmd_args, rest_cfg, users)?;
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(SET_SUBCMD) {

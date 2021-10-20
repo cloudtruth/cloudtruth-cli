@@ -737,6 +737,9 @@ pub fn build_cli() -> App<'static, 'static> {
                     .about("Delete specified CloudTruth account")
                     .arg(name_arg().help("Account name"))
                     .arg(confirm_flag()),
+                SubCommand::with_name(GET_SUBCMD)
+                    .about("Get detailed CloudTruth user information")
+                    .arg(name_arg().help("Account name")),
                 SubCommand::with_name(LIST_SUBCMD)
                     .visible_aliases(LIST_ALIASES)
                     .about("List CloudTruth users")

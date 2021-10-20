@@ -876,6 +876,7 @@ FLAGS:
 
 SUBCOMMANDS:
     delete    Delete specified CloudTruth account [aliases: del, d]
+    get       Get detailed CloudTruth user information
     help      Prints this message or the help of the given subcommand(s)
     list      List CloudTruth users [aliases: ls, l]
     set       Create/update a CloudTruth service account [aliases: s]
@@ -888,6 +889,19 @@ USAGE:
 
 FLAGS:
     -y, --yes        Avoid confirmation prompt(s)
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+ARGS:
+    <NAME>    Account name
+========================================
+cloudtruth-users-get 
+Get detailed CloudTruth user information
+
+USAGE:
+    cloudtruth users get <NAME>
+
+FLAGS:
     -h, --help       Prints help information
     -V, --version    Prints version information
 
