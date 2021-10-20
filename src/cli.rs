@@ -728,4 +728,31 @@ pub fn build_cli() -> App<'static, 'static> {
                         .about("Display CloudTruth project inheritance"),
                 ])
         )
+        .subcommand(SubCommand::with_name("users")
+            .visible_aliases(&["user", "us"])
+            .about("Work with CloudTruth users")
+            .subcommands(vec![
+                SubCommand::with_name(DELETE_SUBCMD)
+                    .visible_aliases(DELETE_ALIASES)
+                    .about("Delete specified CloudTruth account")
+                    .arg(name_arg().help("Account name"))
+                    .arg(confirm_flag()),
+                SubCommand::with_name(LIST_SUBCMD)
+                    .visible_aliases(LIST_ALIASES)
+                    .about("List CloudTruth users")
+                    .arg(show_times_arg())
+                    .arg(values_flag().help("Display account information/values"))
+                    .arg(table_format_options().help("Format for account values data")),
+                SubCommand::with_name(SET_SUBCMD)
+                    .visible_aliases(SET_ALIASES)
+                    .about("Create/update a CloudTruth service account")
+                    .arg(name_arg().help("Account name"))
+                    .arg(description_option().help("Account's description"))
+                    .arg(Arg::with_name("role")
+                        .takes_value(true)
+                        .long("role")
+                        .possible_values(&["owner", "admin", "contrib", "viewer"])
+                        .help("Account role")),
+            ])
+        )
 }

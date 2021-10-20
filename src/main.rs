@@ -16,13 +16,14 @@ mod run;
 mod subprocess;
 mod table;
 mod templates;
+mod users;
 
 use crate::audit_logs::process_audit_log_command;
 use crate::config::env::ConfigEnv;
 use crate::config::{Config, CT_PROFILE, DEFAULT_ENV_NAME};
 use crate::configuration::process_config_command;
 use crate::database::{
-    AuditLogs, Environments, Integrations, OpenApiConfig, Parameters, Projects, Templates,
+    AuditLogs, Environments, Integrations, OpenApiConfig, Parameters, Projects, Templates, Users,
 };
 use crate::environments::process_environment_command;
 use crate::integrations::process_integrations_command;
@@ -33,6 +34,7 @@ use crate::projects::process_project_command;
 use crate::run::process_run_command;
 use crate::subprocess::SubProcess;
 use crate::templates::process_templates_command;
+use crate::users::process_users_command;
 use chrono::{DateTime, Datelike, NaiveDate, NaiveDateTime, NaiveTime, Utc};
 use clap::ArgMatches;
 use color_eyre::eyre::Result;
@@ -408,6 +410,12 @@ fn main() -> Result<()> {
 
     // Check the basic config (api-key, server-url) -- don't worry about valid env/proj, yet
     check_config()?;
+
+    if let Some(matches) = matches.subcommand_matches("users") {
+        let users = Users::new();
+        process_users_command(matches, &rest_cfg, &users)?;
+        process::exit(0)
+    }
 
     if let Some(matches) = matches.subcommand_matches("environments") {
         let environments = Environments::new();

@@ -29,6 +29,9 @@ mod template_details;
 mod template_error;
 mod template_history;
 mod templates;
+mod user_details;
+mod user_error;
+mod users;
 
 pub use audit_log_details::AuditLogDetails;
 pub use audit_log_errors::AuditLogError;
@@ -66,3 +69,6 @@ pub use template_details::TemplateDetails;
 pub use template_error::TemplateError;
 pub use template_history::TemplateHistory;
 pub use templates::Templates;
+pub use user_details::UserDetails;
+pub use user_error::UserError;
+pub use users::Users;
