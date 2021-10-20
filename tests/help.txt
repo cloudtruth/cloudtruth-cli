@@ -935,7 +935,8 @@ FLAGS:
 
 OPTIONS:
     -d, --desc <description>    Account's description
-        --role <role>           Account role [possible values: owner, admin, contrib, viewer]
+        --role <role>           Account role [default: viewer (on create)] [possible values: owner, admin, contrib,
+                                viewer]
 
 ARGS:
     <NAME>    Account name

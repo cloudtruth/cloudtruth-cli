@@ -755,7 +755,7 @@ pub fn build_cli() -> App<'static, 'static> {
                         .takes_value(true)
                         .long("role")
                         .possible_values(&["owner", "admin", "contrib", "viewer"])
-                        .help("Account role")),
+                        .help("Account role [default: viewer (on create)]")),
             ])
         )
 }
