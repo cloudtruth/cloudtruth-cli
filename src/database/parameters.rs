@@ -116,8 +116,18 @@ impl Parameters {
         key_name: &str,
     ) -> Result<Option<String>, ParameterError> {
         // The only delete mechanism is by parameter ID, so start by querying the parameter info.
-        let response =
-            self.get_details_by_name(rest_cfg, proj_id, env_id, key_name, true, None, None);
+        let evaluate = false; // no need to evaluate things
+        let mask_secrets = true; // no need to fetch secrets
+        let response = self.get_details_by_name(
+            rest_cfg,
+            proj_id,
+            env_id,
+            key_name,
+            evaluate,
+            mask_secrets,
+            None,
+            None,
+        );
 
         if let Ok(Some(details)) = response {
             if details.env_url.contains(env_id) {
@@ -182,51 +192,6 @@ impl Parameters {
         }
     }
 
-    /// Gets the `Parameter` identifier.
-    pub fn get_id(
-        &self,
-        rest_cfg: &OpenApiConfig,
-        proj_id: &str,
-        key_name: &str,
-    ) -> Option<String> {
-        // no need to get values/secrets -- just need an ID (and not tag/time values)
-        let as_of_arg = None;
-        let env_arg = None;
-        let tag_arg = None;
-        let mask_secrets = true; // no need to fetch secrets
-        let response = projects_parameters_list(
-            rest_cfg,
-            proj_id,
-            as_of_arg,
-            env_arg,
-            Some(false), // no need to evaluate references to get id
-            mask_secrets_arg(mask_secrets),
-            Some(key_name),
-            NO_ORDERING,
-            None,
-            PAGE_SIZE,
-            PARTIAL_SUCCESS,
-            ONLY_SECRETS,
-            tag_arg,
-            VALUES_FALSE,
-            wrap_secrets_arg(mask_secrets),
-        );
-        if let Ok(data) = response {
-            if let Some(parameters) = data.results {
-                if parameters.is_empty() {
-                    None
-                } else {
-                    // TODO: handle more than one?
-                    Some(parameters[0].id.clone())
-                }
-            } else {
-                None
-            }
-        } else {
-            None
-        }
-    }
-
     /// Fetches the `ParameterDetails` for the specified project/environment/key_name.
     ///
     /// It will return `None` if the parameter does not exist. Other errors will be returned
@@ -241,6 +206,7 @@ impl Parameters {
         proj_id: &str,
         env_id: &str,
         key_name: &str,
+        evaluate: bool,
         mask_secrets: bool,
         as_of: Option<String>,
         tag: Option<String>,
@@ -250,7 +216,7 @@ impl Parameters {
             proj_id,
             as_of,
             Some(env_id),
-            Some(true), // for now, always evaluate interpolated parameters
+            Some(evaluate),
             mask_secrets_arg(mask_secrets),
             Some(key_name),
             NO_ORDERING,

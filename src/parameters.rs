@@ -33,7 +33,32 @@ fn proc_param_delete(
     let confirmed = subcmd_args.is_present(CONFIRM_FLAG);
     let proj_name = resolved.project_display_name();
     let proj_id = resolved.project_id();
-    let param_id = parameters.get_id(rest_cfg, proj_id, key_name);
+    let env_id = resolved.environment_id();
+    let mut param_id = None;
+    let mask_secrets = true; // no need to fetch secrets
+    let evaluate = false;
+    let response = parameters.get_details_by_name(
+        rest_cfg,
+        proj_id,
+        env_id,
+        key_name,
+        evaluate,
+        mask_secrets,
+        None,
+        None,
+    )?;
+    if let Some(details) = response {
+        if !details.project_url.contains(proj_id) {
+            let projects = Projects::new();
+            let source_proj = projects.get_name_from_url(rest_cfg, &details.project_url);
+            error_message(format!(
+                "Parameter '{}' must be deleted from project '{}' -- it is not part of project '{}'",
+                key_name, source_proj, proj_name
+            ))?;
+            process::exit(24);
+        }
+        param_id = Some(details.id);
+    }
     if param_id.is_none() {
         println!(
             "Did not find parameter '{}' to delete from project '{}'.",
@@ -411,8 +436,18 @@ fn proc_param_get(
     let tag = parse_tag(subcmd_args.value_of(AS_OF_ARG));
     let proj_id = resolved.project_id();
     let env_id = resolved.environment_id();
-    let parameter =
-        parameters.get_details_by_name(rest_cfg, proj_id, env_id, key, false, as_of, tag)?;
+    let evaluate = true; // evaluate the inline content (if applicable)
+    let mask_secrets = false; // get the secrets
+    let parameter = parameters.get_details_by_name(
+        rest_cfg,
+        proj_id,
+        env_id,
+        key,
+        evaluate,
+        mask_secrets,
+        as_of,
+        tag,
+    )?;
 
     if let Some(param) = parameter {
         // Treat parameters without values set as if the value were simply empty, since
@@ -742,6 +777,8 @@ fn proc_param_set(
     let delete_regex = subcmd_args.is_present("NO-REGEX");
     let secret: Option<bool> = true_false_option(subcmd_args.value_of("secret"));
     let evaluated: Option<bool> = true_false_option(subcmd_args.value_of("evaluate"));
+    let evaluate = false; // no need to evaluate
+    let mask_secrets = true; // do not fetch secrets
     let param_type = match subcmd_args.value_of("param-type") {
         None => None,
         Some("string") => Some(ParamType::String),
@@ -784,9 +821,16 @@ fn proc_param_set(
 
     // get the original values, so that is not lost
     let mut updated: ParameterDetails;
-    if let Some(original) =
-        parameters.get_details_by_name(rest_cfg, proj_id, env_id, key_name, true, None, None)?
-    {
+    if let Some(original) = parameters.get_details_by_name(
+        rest_cfg,
+        proj_id,
+        env_id,
+        key_name,
+        evaluate,
+        mask_secrets,
+        None,
+        None,
+    )? {
         if !original.project_url.contains(proj_id) {
             let projects = Projects::new();
             let source_proj = projects.get_name_from_url(rest_cfg, &original.project_url);

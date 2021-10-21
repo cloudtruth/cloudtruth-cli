@@ -353,7 +353,7 @@ PARAMETER_2 = PARAM2
         cmd_env = self.get_cmd_env()
 
         # add a new project
-        proj_name = self.make_name("test-int-explore-errors")
+        proj_name = self.make_name("test-int-ext-temp")
         self.create_project(cmd_env, proj_name)
         proj_cmd = base_cmd + f"--project '{proj_name}' "
 
