@@ -1,15 +1,10 @@
-use crate::cli;
+use crate::config::file_errors::ConfigFileError;
 use crate::config::profiles::{Profile, ProfileDetails};
 use color_eyre::eyre::Result;
-use core::fmt;
 use indoc::indoc;
 use serde::{Deserialize, Serialize};
-use serde_yaml::Error;
 use std::borrow::BorrowMut;
 use std::collections::HashMap;
-use std::error;
-use std::fmt::Formatter;
-use std::sync::Arc;
 
 #[derive(Deserialize, Serialize, Debug, Default)]
 #[serde(default)]
@@ -18,48 +13,6 @@ pub struct ConfigFile {
 }
 
 type ConfigFileResult<T> = std::result::Result<T, ConfigFileError>;
-
-#[derive(Clone, Debug)]
-pub enum ConfigFileError {
-    MalformedConfigFile(Arc<serde_yaml::Error>),
-    ProfileNameNotFound(String),
-    SourceProfileCyclicError(String, Vec<String>),
-    SourceProfileNameNotFound(String, String),
-}
-
-impl error::Error for ConfigFileError {}
-
-impl fmt::Display for ConfigFileError {
-    fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
-        match self {
-            ConfigFileError::MalformedConfigFile(_source_error) => write!(f, "Your configuration file is not syntactically valid YAML. Please run '{} config edit' to fix.", cli::binary_name()),
-            ConfigFileError::ProfileNameNotFound(profile_name) => write!(
-                f,
-                "Profile '{}' does not exist in your configuration file",
-                profile_name
-            ),
-            ConfigFileError::SourceProfileCyclicError(profile_name, cycle) => write!(
-                f,
-                "Your configuration file has a cycle source_profile cycle for profile '{}': {}",
-                profile_name,
-                cycle.join(" -> ")
-            ),
-            ConfigFileError::SourceProfileNameNotFound(profile_name, source_profile_name) => {
-                write!(
-                    f,
-                    "Profile '{}' references non-existant source profile '{}'",
-                    profile_name, source_profile_name
-                )
-            }
-        }
-    }
-}
-
-impl From<serde_yaml::Error> for ConfigFileError {
-    fn from(error: Error) -> Self {
-        ConfigFileError::MalformedConfigFile(Arc::new(error))
-    }
-}
 
 impl ConfigFile {
     pub(crate) fn config_file_template() -> &'static str {
@@ -103,6 +56,17 @@ impl ConfigFile {
                 profile_name.to_string(),
             ))
         }
+    }
+
+    /// Checks that the provided content is valid YAML
+    pub(crate) fn validate_content(content: &str) -> ConfigFileResult<()> {
+        let config_file: ConfigFile = serde_yaml::from_str(content)?;
+
+        // attempt to load all the profiles, since that's when we detect circular dependencies
+        for profile in config_file.profiles.keys() {
+            let _ = Self::load_profile(content, profile)?;
+        }
+        Ok(())
     }
 
     /// Gets the text associated with the specified profile (including comments)
@@ -333,7 +297,9 @@ mod tests {
         );
 
         let profile = ConfigFile::load_profile(config, "read-only").unwrap();
-        assert_eq!(Some("read_only_key".to_string()), profile.api_key)
+        assert_eq!(Some("read_only_key".to_string()), profile.api_key);
+        let result = ConfigFile::validate_content(&config);
+        assert_eq!(result.is_ok(), true);
     }
 
     #[test]
@@ -350,7 +316,9 @@ mod tests {
         assert_eq!(
             Some("http://localhost:7001/graphql".to_string()),
             profile.server_url
-        )
+        );
+        let result = ConfigFile::validate_content(&config);
+        assert_eq!(result.is_ok(), true);
     }
 
     #[test]
@@ -364,7 +332,9 @@ mod tests {
         );
 
         let profile = ConfigFile::load_profile(config, "default").unwrap();
-        assert_eq!(Some(50), profile.request_timeout)
+        assert_eq!(Some(50), profile.request_timeout);
+        let result = ConfigFile::validate_content(&config);
+        assert_eq!(result.is_ok(), true);
     }
 
     #[test]
@@ -379,7 +349,11 @@ mod tests {
 
         let error = ConfigFile::load_profile(config, "default").unwrap_err();
         let err_msg = format!("{}", error);
-        assert!(err_msg.contains("Your configuration file is not syntactically valid YAML."));
+        assert!(err_msg.contains("profiles.default.request_timeout: invalid type"));
+
+        let error = ConfigFile::validate_content(&config).unwrap_err();
+        let err_msg = format!("{}", error);
+        assert!(err_msg.contains("profiles.default.request_timeout: invalid type"));
     }
 
     #[test]
@@ -448,7 +422,12 @@ mod tests {
         );
 
         let error = ConfigFile::load_profile(config, "read-only").unwrap_err();
+        assert_matches!(error, ConfigFileError::SourceProfileNameNotFound(profile_name, source_profile_name) => {
+            assert_eq!("read-only", profile_name);
+            assert_eq!("non-existent", source_profile_name);
+        });
 
+        let error = ConfigFile::validate_content(config).unwrap_err();
         assert_matches!(error, ConfigFileError::SourceProfileNameNotFound(profile_name, source_profile_name) => {
             assert_eq!("read-only", profile_name);
             assert_eq!("non-existent", source_profile_name);
@@ -478,6 +457,9 @@ mod tests {
             Some("http://localhost:7001/graphql".to_string()),
             profile.server_url
         );
+
+        let result = ConfigFile::validate_content(config);
+        assert_eq!(result.is_ok(), true);
     }
 
     #[test]
@@ -502,6 +484,15 @@ mod tests {
             assert_eq!("c", profile_name);
             assert_eq!(vec!["c", "a", "b", "c"], cycle);
         });
+
+        // NOTE: due to order loading, we cannot guarantee vector order or profile name
+        let error = ConfigFile::validate_content(config).unwrap_err();
+        let err_msg = format!("{}", error.to_string());
+        assert_eq!(
+            true,
+            err_msg
+                .contains("Your configuration file has a cycle source_profile cycle for profile")
+        );
     }
 
     #[test]

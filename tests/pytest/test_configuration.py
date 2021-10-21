@@ -36,6 +36,10 @@ class TestConfiguration(TestCase):
         self.assertResultSuccess(result)
         self.assertNotIn(prof_name, result.out())
 
+        # verify a good message for a missing profile
+        result = self.run_cli(cmd_env, base_cmd + f"--profile '{prof_name}' env ls -v")
+        self.assertResultError(result, f"Failed to load configuration from profile '{prof_name}'")
+
         # create it
         result = self.run_cli(cmd_env, set_cmd + f"'{prof_name}' -k '{api_key1}'")
         self.assertResultSuccess(result)

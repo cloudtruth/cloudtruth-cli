@@ -390,12 +390,23 @@ fn main() -> Result<()> {
 
     // wait until after processing the config command to load the config -- if we fail to load the
     // config, we would not be able to edit!
-    Config::init_global(Config::load_config(
-        api_key,
-        profile_name,
-        env_name,
-        proj_name,
-    )?);
+    let cfg_result = Config::load_config(api_key, profile_name, env_name, proj_name);
+    if let Err(error) = cfg_result {
+        let profile_info = if profile_name.is_some() {
+            format!(" from profile '{}'", profile_name.unwrap())
+        } else {
+            "".to_string()
+        };
+        error_message(format!("Failed to load configuration{}.", profile_info,))?;
+        help_message(format!(
+            "The configuration ({}) can be edited with '{} config edit'.\nError details:\n{}",
+            Config::filename(),
+            cli::binary_name(),
+            error.to_string()
+        ))?;
+        process::exit(26);
+    }
+    Config::init_global(cfg_result.unwrap());
     let rest_cfg = OpenApiConfig::from(Config::global());
 
     if let Some(matches) = matches.subcommand_matches("login") {

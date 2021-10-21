@@ -12,8 +12,45 @@ use color_eyre::eyre::Result;
 use std::process;
 
 fn proc_config_edit() -> Result<()> {
-    Config::edit()?;
-    println!("Edited {}", Config::filename());
+    let filename = Config::filename();
+    let orig_content = Config::read_or_create_config()?;
+    let mut content = orig_content.clone();
+
+    loop {
+        content = edit::edit(content.as_bytes())?;
+
+        let action = if orig_content == content {
+            "No changes made to"
+        } else {
+            "Edited"
+        };
+        let validation = Config::validate_content(&content);
+        if validation.is_ok() {
+            Config::update_config(&content)?;
+            println!("{} {}", action, filename);
+            break;
+        }
+
+        warning_message(format!(
+            "The provided content is not valid due to:\n{}",
+            validation.unwrap_err().to_string()
+        ))?;
+
+        let continue_editing = "Do you want to continue editing".to_string();
+        if user_confirm(continue_editing, Some(true)) {
+            continue;
+        }
+
+        let save_invalid = "Do you want to save the invalid edits".to_string();
+        if user_confirm(save_invalid, Some(false)) {
+            Config::update_config(&content)?;
+            println!("Saving invalid edits to {}", filename);
+            break;
+        }
+
+        println!("Discarding the invalid edits to {}", filename);
+        break;
+    }
     Ok(())
 }
 
