@@ -84,6 +84,7 @@ class TestEnvironments(TestCase):
 
         # get an original snapshot (do not expose secrets)
         before = self.run_cli(cmd_env, param_cmd)
+        self.assertResultSuccess(before)
 
         # attempt to delete the default project and see failure
         result = self.run_cli(cmd_env, base_cmd + f"environment delete '{DEFAULT_ENV_NAME}' --confirm")
@@ -91,6 +92,7 @@ class TestEnvironments(TestCase):
 
         # make sure we get the same parameter list
         after = self.run_cli(cmd_env, param_cmd)
+        self.assertResultSuccess(after)
         self.assertEqual(before.return_value, after.return_value)
         self.assertEqual(before.out(), after.out())
         self.assertEqual(before.err(), after.err())

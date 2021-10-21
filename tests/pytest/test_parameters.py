@@ -1251,11 +1251,13 @@ parameter:
 
             # rename it
             temp_name = "foo"
-            self.run_cli(cmd_env, sub_cmd + f"set -r '{temp_name}' '{param_name}'")
+            result = self.run_cli(cmd_env, sub_cmd + f"set -r '{temp_name}' '{param_name}'")
+            self.assertResultSuccess(result)
             self.verify_param(cmd_env, proj_name, temp_name, param_value)
 
             # back to the original name
-            self.run_cli(cmd_env, sub_cmd + f"set -r '{param_name}' '{temp_name}'")
+            result = self.run_cli(cmd_env, sub_cmd + f"set -r '{param_name}' '{temp_name}'")
+            self.assertResultSuccess(result)
             self.verify_param(cmd_env, proj_name, param_name, param_value)
 
             self.delete_param(cmd_env, proj_name, param_name)
