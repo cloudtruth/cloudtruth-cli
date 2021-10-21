@@ -1,5 +1,6 @@
 pub(crate) mod env;
 mod file;
+mod file_errors;
 mod profiles;
 
 use crate::cli::binary_name;
@@ -184,6 +185,25 @@ impl Config {
         Ok(contents)
     }
 
+    pub fn read_or_create_config() -> Result<String> {
+        let config_file = Self::config_file().unwrap();
+        if !config_file.exists() {
+            Self::create_config()?;
+        }
+        Self::read_config(&config_file)
+    }
+
+    pub fn update_config(content: &str) -> Result<()> {
+        let config_file = Self::config_file().unwrap();
+        fs::write(config_file, content)?;
+        Ok(())
+    }
+
+    pub fn validate_content(content: &str) -> Result<()> {
+        ConfigFile::validate_content(content)?;
+        Ok(())
+    }
+
     pub fn load_config(
         api_key: Option<&str>,
         profile_name: Option<&str>,
@@ -287,18 +307,6 @@ impl Config {
             }
         }
         Ok(profiles)
-    }
-
-    pub fn edit() -> Result<()> {
-        if let Some(config_file) = Self::config_file() {
-            if !config_file.exists() {
-                Self::create_config()?;
-            }
-
-            edit::edit_file(config_file)?;
-        }
-
-        Ok(())
     }
 
     pub fn validate(&self) -> Option<ValidationIssues> {
