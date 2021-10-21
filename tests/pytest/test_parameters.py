@@ -2601,10 +2601,21 @@ Name,Value,Project
 
         #########################
         # attempt to delete parameters from the parent
-        err_msg = f"Parameter '{param1}' must be deleted from project '{child1_name}'"
+        del_msg = f"Parameter '{param1}' must be deleted from project '{child1_name}'"
         del_cmd = base_cmd + f"--project '{grandchild_name}' param del -y '{param1}'"
         result = self.run_cli(cmd_env, del_cmd)
-        self.assertResultError(result, err_msg)
+        self.assertResultError(result, del_msg)
+
+        #########################
+        # attempt to update parameters and values
+        update_msg = f"Parameter '{param1}' must be set from project '{child1_name}'"
+        set_cmd = base_cmd + f"--project '{grandchild_name}' param set '{param1}' -d 'new desc'"
+        result = self.run_cli(cmd_env, set_cmd)
+        self.assertResultError(result, update_msg)
+
+        set_cmd = base_cmd + f"--project '{grandchild_name}' param set '{param1}' -v 'next value'"
+        result = self.run_cli(cmd_env, set_cmd)
+        self.assertResultError(result, update_msg)
 
         #########################
         # add parameters with same names, but in different children of the parent
