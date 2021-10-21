@@ -25,4 +25,6 @@ jobs:
           which python3
           python3 --version
           cd tests/pytest
+          ls -lh .
           python3 live_test.py --job-id "prod-${GITHUB_RUN_NUMBER}" --filter ${{ env.CLOUDTRUTH_TEST_FILTER }}
+          echo "Finished the test"
