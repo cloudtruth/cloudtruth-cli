@@ -113,7 +113,9 @@ def debugTestRunner(enable_debug: bool, verbosity: int, failfast: bool):
 
 
 def live_test(*args):
+    print("Before arg parsing")
     args = parse_args(*args)
+    print("Parsed args")
     env = os.environ
     if args.url:
         env[CT_URL] = args.url
@@ -125,7 +127,9 @@ def live_test(*args):
         print(f"JOB_ID: {args.job_id}")
         env[CT_TEST_JOB_ID] = args.job_id
 
+    print("Looking for executable")
     cli = get_cli_base_cmd()
+    print(f"Found executable: {cli}")
     subprocess.run(cli + "config current -x", shell=True)
 
     # propagate the debug flags
@@ -156,4 +160,5 @@ def live_test(*args):
 
 
 if __name__ == "__main__":
+    print("Got to main")
     sys.exit(live_test(sys.argv[1:]))
