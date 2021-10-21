@@ -2460,6 +2460,7 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
 
     def test_parameter_project_inheritance(self):
         cmd_env = self.get_cmd_env()
+        base_cmd = self.get_cli_base_cmd()
 
         # add a set of projects
         parent_name = self.make_name("test-param-proj-parent")
@@ -2567,7 +2568,7 @@ Name,Value,Project
 
         #########################
         # another level on project inheritance
-        grandchild_name = "test-param-proj-grand"
+        grandchild_name = self.make_name("test-param-proj-grand")
         self.create_project(cmd_env, grandchild_name, parent=child1_name)
         result = self.list_params(cmd_env, child1_name, show_parents=True, fmt="csv", secrets=True)
         self.assertEqual(expected, result.out())
@@ -2597,6 +2598,13 @@ Name,Value,Project
 """
         result = self.list_params(cmd_env, child1_name, show_children=True, fmt="csv")
         self.assertEqual(expected, result.out())
+
+        #########################
+        # attempt to delete parameters from the parent
+        err_msg = f"Parameter '{param1}' must be deleted from project '{child1_name}'"
+        del_cmd = base_cmd + f"--project '{grandchild_name}' param del -y '{param1}'"
+        result = self.run_cli(cmd_env, del_cmd)
+        self.assertResultError(result, err_msg)
 
         #########################
         # add parameters with same names, but in different children of the parent

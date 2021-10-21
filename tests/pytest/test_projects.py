@@ -1,4 +1,5 @@
 from testcase import TestCase
+from testcase import find_by_prop
 
 
 class TestProjects(TestCase):
@@ -188,6 +189,21 @@ class TestProjects(TestCase):
         # value is unchanged
         self.verify_param(cmd_env, proj_name5, param1, value1)
         self.verify_param(cmd_env, proj_name6, param1, value1)
+
+        # remove the parent relationship
+        result = self.run_cli(cmd_env, base_cmd + f"proj set '{proj_name6}' --parent ''")
+        self.assertResultSuccess(result)
+
+        # verify parent is remove
+        result = self.run_cli(cmd_env, base_cmd + "proj ls -v -f json")
+        self.assertResultSuccess(result)
+        projects = eval(result.out()).get("project")
+        entry = find_by_prop(projects, "Name", proj_name6)[0]
+        self.assertEqual(entry.get("Parent"), "")
+
+        # see it no longer has access to parent values
+        result = self.list_params(cmd_env, proj_name6, show_values=False)
+        self.assertNotIn(param1, result.out())
 
         # cleanup -- need to unwind in order
         self.delete_project(cmd_env, proj_name6)

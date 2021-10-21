@@ -719,7 +719,7 @@ pub fn build_cli() -> App<'static, 'static> {
                     SubCommand::with_name(SET_SUBCMD)
                         .visible_aliases(SET_ALIASES)
                         .about("Create/update a CloudTruth project")
-                        .arg(parent_arg().help("Parent project name"))
+                        .arg(parent_arg().help("Parent project name, use empty string to remove parent"))
                         .arg(name_arg().help("Project name"))
                         .arg(rename_option().help("New project name"))
                         .arg(description_option().help("Project's description")),

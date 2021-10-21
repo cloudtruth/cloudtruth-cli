@@ -88,7 +88,11 @@ fn proc_proj_set(
     let details = projects.get_details_by_name(rest_cfg, proj_name, false)?;
 
     if let Some(parent_name) = parent_name {
-        if let Some(parent_detail) = projects.get_details_by_name(rest_cfg, parent_name, false)? {
+        if parent_name.is_empty() {
+            parent_url = Some("".to_string());
+        } else if let Some(parent_detail) =
+            projects.get_details_by_name(rest_cfg, parent_name, false)?
+        {
             parent_url = Some(parent_detail.url);
         } else {
             error_message(format!("No parent project '{}' found", parent_name))?;
