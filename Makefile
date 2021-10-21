@@ -7,6 +7,7 @@ rustup_exists := $(shell which rustup)
 rust_intended := 1.54.0
 rust_installed := $(shell rustc -V | cut -d' ' -f2)
 rust_bad_version := $(shell grep "RUST_VERSION:" .github/workflows/*.yml | grep -v "$(rust_intended)")
+unchecked_results := $(shell grep -nA 1 "self\.run_cli" tests/pytest/*.py | grep -v run_cli | grep -v "\-\-" | grep -v assertResult)
 
 .DEFAULT = all
 .PHONY = all
@@ -67,6 +68,11 @@ lint:
 	cargo clippy --all-features -- -D warnings
 	shellcheck install.sh
 	flake8
+ifneq ("$(unchecked_results)","")
+	$(error "Unchecked CLI results: $(unchecked_results)")
+else
+	@echo "CLI test results are checked"
+endif
 
 precommit: version_check cargo precommit_test lint
 

@@ -386,8 +386,8 @@ PARAMETER_2 = PARAM2
         self.assertIn("Did not find parameter", result.out())  # TODO: message goes away
 
         # attempt adding in other order -- adding external template with broken references
-        result = self.run_cli(cmd_env, proj_cmd + f"param set {param2} -f '{temp_fqn}' -e true")
         eval_err = "Evaluation error: Template references parameter(s) that do not exist"
+        result = self.run_cli(cmd_env, proj_cmd + f"param set {param2} -f '{temp_fqn}' -e true")
         self.assertResultError(result, eval_err)
         self.assertIn(param1, result.err())
 
