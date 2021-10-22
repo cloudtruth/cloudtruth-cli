@@ -56,7 +56,7 @@ FLAGS:
     -V, --version    Prints version information
 
 OPTIONS:
-    -a, --action <action>       Only show specified action [possible values: create, delete, update]
+    -a, --action <action>       Only show specified action [possible values: create, delete, update, nothing]
     -n, --name <contains>       Only show audit entries whose name contains the substring
     -f, --format <format>       Format for audit log details [default: table]  [possible values: table, csv, json, yaml]
     -m, --max <max-entries>     Limit the maximum number of entries, 0 for no limit. [default: 50]
