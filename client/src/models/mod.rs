@@ -44,6 +44,8 @@ pub mod node_type_enum;
 pub use self::node_type_enum::NodeTypeEnum;
 pub mod object_type_enum;
 pub use self::object_type_enum::ObjectTypeEnum;
+pub mod operation_enum;
+pub use self::operation_enum::OperationEnum;
 pub mod organization;
 pub use self::organization::Organization;
 pub mod organization_create;

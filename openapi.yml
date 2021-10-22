@@ -340,7 +340,7 @@ paths:
   /api/v1/environments/{environment_pk}/pushes/:
     get:
       operationId: environments_pushes_list
-      description: The complete history of push operations that this parameter was
+      description: The complete history of push operations that this environment was
         involved in.
       summary: List push operations.
       parameters:
@@ -1033,11 +1033,12 @@ paths:
         name: operation
         schema:
           type: string
+          nullable: true
           enum:
           - create
           - delete
           - update
-        description: The operation performed by this step.
+        description: The operation performed, if any.
       - name: ordering
         required: false
         in: query
@@ -1115,7 +1116,7 @@ paths:
         schema:
           type: string
           format: uuid
-          description: The unique identifier for the push action task step.
+          description: Unique identifier for a task step.
         required: true
       tags:
       - integrations
@@ -4492,6 +4493,23 @@ paths:
             Forbidden
 
             - Did the Bearer token belong to the User being deleted?
+  /api/v1/users/current/:
+    get:
+      operationId: users_current_retrieve
+      description: Get user information about the current user.
+      summary: Current user information
+      tags:
+      - users
+      security:
+      - JWTAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: User information
 components:
   schemas:
     AuditTrail:
@@ -4829,14 +4847,14 @@ components:
         error_code:
           type: string
           nullable: true
-          description: An error code, if not successful.  This usually indicates an
-            error occurred very early during processing, before attempting to push.
+          description: If an error occurs early during processing, before attempting
+            to process values, this code may be helpful in determining the problem.
           maxLength: 256
         error_detail:
           type: string
           nullable: true
-          description: Details on the error from the integration.  This usually indicates
-            an error occurred very early during processing, before attempting to push.
+          description: If an error occurs early during processing, before attempting
+            to process values, this detail may be helpful in determining the problem.
         created_at:
           type: string
           format: date-time
@@ -4862,19 +4880,20 @@ components:
           type: string
           format: uuid
           readOnly: true
-          description: The unique identifier for the push action task step.
+          description: Unique identifier for a task step.
         operation:
-          type: string
-          readOnly: true
-          description: The operation performed by this step.
+          allOf:
+          - $ref: '#/components/schemas/OperationEnum'
+          nullable: true
+          description: The operation performed, if any.
         success:
           type: boolean
-          readOnly: true
-          description: Indicates if the step was successful.
+          description: Indicates if the operation was successful.
         fqn:
           type: string
-          readOnly: true
-          description: The fully-qualified name (FQN) this step processed.
+          nullable: true
+          description: The fully-qualified name (FQN) this of the value that was changed.
+          maxLength: 1024
         environment:
           type: string
           format: uri
@@ -4889,19 +4908,22 @@ components:
           description: The parameter this step pushed.
         venue_id:
           type: string
-          readOnly: true
+          nullable: true
           description: The integration-native id for the resource.
+          maxLength: 1024
         venue_name:
           type: string
-          readOnly: true
+          nullable: true
           description: The name of the item or resource as known by the integration.
+          maxLength: 256
         error_code:
           type: string
-          readOnly: true
+          nullable: true
           description: An error code, if not successful.
+          maxLength: 256
         error_detail:
           type: string
-          readOnly: true
+          nullable: true
           description: Details on the error from the integration.
         created_at:
           type: string
@@ -4914,17 +4936,11 @@ components:
       required:
       - created_at
       - environment
-      - error_code
-      - error_detail
-      - fqn
       - id
       - modified_at
-      - operation
       - parameter
       - success
       - url
-      - venue_id
-      - venue_name
     AwsPushUpdate:
       type: object
       description: Update a push.  The `region` and `service` cannot be changed on
@@ -5191,6 +5207,7 @@ components:
       - create
       - update
       - delete
+      - nothing
       type: string
     IntegrationExplorer:
       type: object
@@ -5361,6 +5378,12 @@ components:
       - Tag
       - Template
       - Value
+      type: string
+    OperationEnum:
+      enum:
+      - create
+      - update
+      - delete
       type: string
     Organization:
       type: object

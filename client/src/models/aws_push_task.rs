@@ -23,10 +23,10 @@ pub struct AwsPushTask {
     /// The current state of this task.
     #[serde(rename = "state", skip_serializing_if = "Option::is_none")]
     pub state: Option<Box<crate::models::StateEnum>>,
-    /// An error code, if not successful.  This usually indicates an error occurred very early during processing, before attempting to push.
+    /// If an error occurs early during processing, before attempting to process values, this code may be helpful in determining the problem.
     #[serde(rename = "error_code", skip_serializing_if = "Option::is_none")]
     pub error_code: Option<String>,
-    /// Details on the error from the integration.  This usually indicates an error occurred very early during processing, before attempting to push.
+    /// If an error occurs early during processing, before attempting to process values, this detail may be helpful in determining the problem.
     #[serde(rename = "error_detail", skip_serializing_if = "Option::is_none")]
     pub error_detail: Option<String>,
     #[serde(rename = "created_at")]

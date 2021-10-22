@@ -14,18 +14,18 @@
 pub struct AwsPushTaskStep {
     #[serde(rename = "url")]
     pub url: String,
-    /// The unique identifier for the push action task step.
+    /// Unique identifier for a task step.
     #[serde(rename = "id")]
     pub id: String,
-    /// The operation performed by this step.
-    #[serde(rename = "operation")]
-    pub operation: String,
-    /// Indicates if the step was successful.
+    /// The operation performed, if any.
+    #[serde(rename = "operation", skip_serializing_if = "Option::is_none")]
+    pub operation: Option<Box<crate::models::OperationEnum>>,
+    /// Indicates if the operation was successful.
     #[serde(rename = "success")]
     pub success: bool,
-    /// The fully-qualified name (FQN) this step processed.
-    #[serde(rename = "fqn")]
-    pub fqn: String,
+    /// The fully-qualified name (FQN) this of the value that was changed.
+    #[serde(rename = "fqn", skip_serializing_if = "Option::is_none")]
+    pub fqn: Option<String>,
     /// The environment of the value this step pushed.
     #[serde(rename = "environment")]
     pub environment: Option<String>,
@@ -33,17 +33,17 @@ pub struct AwsPushTaskStep {
     #[serde(rename = "parameter")]
     pub parameter: Option<String>,
     /// The integration-native id for the resource.
-    #[serde(rename = "venue_id")]
-    pub venue_id: String,
+    #[serde(rename = "venue_id", skip_serializing_if = "Option::is_none")]
+    pub venue_id: Option<String>,
     /// The name of the item or resource as known by the integration.
-    #[serde(rename = "venue_name")]
-    pub venue_name: String,
+    #[serde(rename = "venue_name", skip_serializing_if = "Option::is_none")]
+    pub venue_name: Option<String>,
     /// An error code, if not successful.
-    #[serde(rename = "error_code")]
-    pub error_code: String,
+    #[serde(rename = "error_code", skip_serializing_if = "Option::is_none")]
+    pub error_code: Option<String>,
     /// Details on the error from the integration.
-    #[serde(rename = "error_detail")]
-    pub error_detail: String,
+    #[serde(rename = "error_detail", skip_serializing_if = "Option::is_none")]
+    pub error_detail: Option<String>,
     #[serde(rename = "created_at")]
     pub created_at: String,
     #[serde(rename = "modified_at")]
@@ -55,30 +55,24 @@ impl AwsPushTaskStep {
     pub fn new(
         url: String,
         id: String,
-        operation: String,
         success: bool,
-        fqn: String,
         environment: Option<String>,
         parameter: Option<String>,
-        venue_id: String,
-        venue_name: String,
-        error_code: String,
-        error_detail: String,
         created_at: String,
         modified_at: String,
     ) -> AwsPushTaskStep {
         AwsPushTaskStep {
             url,
             id,
-            operation,
+            operation: None,
             success,
-            fqn,
+            fqn: None,
             environment,
             parameter,
-            venue_id,
-            venue_name,
-            error_code,
-            error_detail,
+            venue_id: None,
+            venue_name: None,
+            error_code: None,
+            error_detail: None,
             created_at,
             modified_at,
         }

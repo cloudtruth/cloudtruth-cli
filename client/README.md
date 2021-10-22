@@ -126,6 +126,7 @@ Class | Method | HTTP request | Description
 *ServiceaccountsApi* | [**serviceaccounts_partial_update**](docs/ServiceaccountsApi.md#serviceaccounts_partial_update) | **PATCH** /api/v1/serviceaccounts/{id}/ | 
 *ServiceaccountsApi* | [**serviceaccounts_retrieve**](docs/ServiceaccountsApi.md#serviceaccounts_retrieve) | **GET** /api/v1/serviceaccounts/{id}/ | 
 *ServiceaccountsApi* | [**serviceaccounts_update**](docs/ServiceaccountsApi.md#serviceaccounts_update) | **PUT** /api/v1/serviceaccounts/{id}/ | 
+*UsersApi* | [**users_current_retrieve**](docs/UsersApi.md#users_current_retrieve) | **GET** /api/v1/users/current/ | Current user information
 *UsersApi* | [**users_destroy**](docs/UsersApi.md#users_destroy) | **DELETE** /api/v1/users/{id}/ | Delete the specified user.
 *UsersApi* | [**users_list**](docs/UsersApi.md#users_list) | **GET** /api/v1/users/ | 
 *UsersApi* | [**users_retrieve**](docs/UsersApi.md#users_retrieve) | **GET** /api/v1/users/{id}/ | 
@@ -156,6 +157,7 @@ Class | Method | HTTP request | Description
  - [MembershipCreate](docs/MembershipCreate.md)
  - [NodeTypeEnum](docs/NodeTypeEnum.md)
  - [ObjectTypeEnum](docs/ObjectTypeEnum.md)
+ - [OperationEnum](docs/OperationEnum.md)
  - [Organization](docs/Organization.md)
  - [OrganizationCreate](docs/OrganizationCreate.md)
  - [PaginatedAuditTrailList](docs/PaginatedAuditTrailList.md)
