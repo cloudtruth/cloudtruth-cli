@@ -130,6 +130,8 @@ const PARAM_SERVER_URL: &str = "Server URL";
 const PARAM_REQUEST_TIMEOUT: &str = "Request timeout";
 const PARAM_REST_DEBUG: &str = "REST debug";
 const PARAM_CLI_VERSION: &str = "CLI version";
+const PARAM_USER: &str = "User";
+const PARAM_ROLE: &str = "Role";
 
 #[derive(Clone, Debug)]
 pub struct ConfigValue {
@@ -407,6 +409,26 @@ impl Config {
             value,
             source,
             secret: true,
+            extension: false,
+        });
+
+        //////////////////
+        // User -- not filled in
+        results.push(ConfigValue {
+            name: PARAM_USER.to_string(),
+            value: "".to_string(),
+            source: "".to_string(),
+            secret: false,
+            extension: false,
+        });
+
+        //////////////////
+        // Role -- not filled in
+        results.push(ConfigValue {
+            name: PARAM_ROLE.to_string(),
+            value: "".to_string(),
+            source: "".to_string(),
+            secret: false,
             extension: false,
         });
 

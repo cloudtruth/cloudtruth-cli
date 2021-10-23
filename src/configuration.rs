@@ -2,7 +2,8 @@ use crate::cli::{
     API_KEY_OPT, CONFIRM_FLAG, DELETE_SUBCMD, DESCRIPTION_OPT, EDIT_SUBCMD, FORMAT_OPT,
     LIST_SUBCMD, NAME_ARG, SECRETS_FLAG, SET_SUBCMD, VALUES_FLAG,
 };
-use crate::config::Config;
+use crate::config::{Config, ConfigValue};
+use crate::database::{OpenApiConfig, Users};
 use crate::table::Table;
 use crate::{
     error_message, user_confirm, warn_missing_subcommand, warning_message, DEL_CONFIRM, REDACTED,
@@ -90,6 +91,28 @@ fn proc_config_prof_list(subcmd_args: &ArgMatches) -> Result<()> {
     Ok(())
 }
 
+fn find_property_value(list: &[ConfigValue], property_name: &str) -> Option<String> {
+    for item in list {
+        if item.name == property_name {
+            if !item.value.is_empty() {
+                return Some(item.value.clone());
+            }
+            break;
+        }
+    }
+    None
+}
+
+fn update_property_value(list: &mut [ConfigValue], property_name: &str, value: &str, source: &str) {
+    for item in list {
+        if item.name == property_name {
+            item.value = value.to_string();
+            item.source = source.to_string();
+            break;
+        }
+    }
+}
+
 fn proc_config_current(
     subcmd_args: &ArgMatches,
     profile_name: Option<&str>,
@@ -100,7 +123,24 @@ fn proc_config_current(
     let show_secrets = subcmd_args.is_present(SECRETS_FLAG);
     let show_extended = subcmd_args.is_present("extended");
     let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
-    let values = Config::get_sources(profile_name, api_key, proj_name, env_name)?;
+    let mut values = Config::get_sources(profile_name, api_key, proj_name, env_name)?;
+
+    if let Some(api_key) = find_property_value(&values, "API key") {
+        // pull API key and profile name from the list, since the values passed in here are just the CLI arguments,
+        // and need to be informed by the environment variables.
+        let prof_name = find_property_value(&values, "Profile");
+        let config =
+            Config::load_config(Some(&api_key), prof_name.as_deref(), env_name, proj_name).unwrap();
+        let rest_cfg = OpenApiConfig::from(&config);
+        let users = Users::new();
+
+        // NOTE: these only get updated if we can fetch info from the server
+        if let Ok(current_user) = users.get_current_user(&rest_cfg) {
+            let source = "API key";
+            update_property_value(&mut values, "User", &current_user.name, source);
+            update_property_value(&mut values, "Role", &current_user.role, source);
+        }
+    }
 
     let mut table = Table::new("profile");
     table.set_header(&["Parameter", "Value", "Source"]);

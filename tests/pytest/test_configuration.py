@@ -2,6 +2,7 @@ import subprocess
 
 from testcase import TestCase
 from testcase import CT_PROFILE, REDACTED
+from testcase import find_by_prop
 
 
 class TestConfiguration(TestCase):
@@ -178,8 +179,34 @@ class TestConfiguration(TestCase):
                     self.assertEqual(param_value, env_name)
                 else:
                     self.assertNotEqual(param_value, env_name)
+            elif param_name == "User":
+                self.assertEqual(param_value, "")
+                self.assertEqual(param_source, "")
+            elif param_name == "Role":
+                self.assertEqual(param_value, "")
+                self.assertEqual(param_source, "")
             else:
                 self.assertFalse(True, f"Unchecked parameter '{param_name}'")
+
+        ##############################
+        # test with command line arguments
+        bogus_api_key = "not-a-real-api-key"
+        cmd = base_cmd + f"--api-key '{bogus_api_key}' --profile '{prof_name}' conf curr -sf json"
+        result = self.run_cli(cmd_env, cmd)
+        self.assertResultSuccess(result)
+        profile = eval(result.out()).get("profile")
+        entry = find_by_prop(profile, "Parameter", "API key")[0]
+        self.assertEqual(entry.get("Value"), bogus_api_key)
+        self.assertEqual(entry.get("Source"), "argument")
+        entry = find_by_prop(profile, "Parameter", "Profile")[0]
+        self.assertEqual(entry.get("Value"), prof_name)
+        self.assertEqual(entry.get("Source"), "argument")
+        entry = find_by_prop(profile, "Parameter", "User")[0]
+        self.assertEqual(entry.get("Value"), "")
+        self.assertEqual(entry.get("Source"), "")
+        entry = find_by_prop(profile, "Parameter", "Role")[0]
+        self.assertEqual(entry.get("Value"), "")
+        self.assertEqual(entry.get("Source"), "")
 
         # delete the profile
         result = self.run_cli(cmd_env, conf_cmd + f"p d -y '{prof_name}'")
@@ -193,3 +220,18 @@ class TestConfiguration(TestCase):
         self.assertNotIn(env_name, result.out())
         self.assertNotIn(proj_name, result.out())
         self.assertNotIn(this_profile, result.out())
+
+        ##############################
+        # back to the original user values  -- do not show secrets
+        cmd_env = self.get_cmd_env()
+        result = self.run_cli(cmd_env, base_cmd + "conf curr -f json")
+        self.assertResultSuccess(result)
+        profile = eval(result.out()).get("profile")
+        entry = find_by_prop(profile, "Parameter", "API key")[0]
+        self.assertEqual(entry.get("Value"), REDACTED)
+        entry = find_by_prop(profile, "Parameter", "User")[0]
+        self.assertNotEqual(entry.get("Value"), "")
+        self.assertEqual(entry.get("Source"), "API key")
+        entry = find_by_prop(profile, "Parameter", "Role")[0]
+        self.assertIn(entry.get("Value"), ["owner", "admin", "contrib"])
+        self.assertEqual(entry.get("Source"), "API key")
