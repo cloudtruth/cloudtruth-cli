@@ -14,6 +14,13 @@ use std::time::Instant;
 use super::{configuration, Error};
 use crate::apis::ResponseContent;
 
+/// struct for typed errors of method `users_current_retrieve`
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum UsersCurrentRetrieveError {
+    UnknownValue(serde_json::Value),
+}
+
 /// struct for typed errors of method `users_destroy`
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
@@ -35,6 +42,70 @@ pub enum UsersListError {
 #[serde(untagged)]
 pub enum UsersRetrieveError {
     UnknownValue(serde_json::Value),
+}
+
+/// Get user information about the current user.
+pub fn users_current_retrieve(
+    configuration: &configuration::Configuration,
+) -> Result<crate::models::User, Error<UsersCurrentRetrieveError>> {
+    let local_var_client = &configuration.client;
+
+    let local_var_uri_str = format!("{}/api/v1/users/current/", configuration.base_path);
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+
+    if let Some(ref local_var_user_agent) = configuration.user_agent {
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
+    }
+
+    if let Some(ref local_var_token) = configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
+    if let Some(ref local_var_apikey) = configuration.api_key {
+        let local_var_key = local_var_apikey.key.clone();
+        let local_var_value = match local_var_apikey.prefix {
+            Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
+            None => local_var_key,
+        };
+        local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
+    };
+
+    let local_var_req = local_var_req_builder.build()?;
+    let method = local_var_req.method().clone();
+    let start = Instant::now();
+    let mut local_var_resp = local_var_client.execute(local_var_req)?;
+    if configuration.rest_debug {
+        let duration = start.elapsed();
+        println!(
+            "URL {} {} elapsed: {:?}",
+            method,
+            &local_var_resp.url(),
+            duration
+        );
+    }
+
+    let local_var_status = local_var_resp.status();
+    let local_var_content = local_var_resp.text()?;
+
+    if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        serde_json::from_str(&local_var_content).map_err(Error::from)
+    } else {
+        let local_var_entity: Option<UsersCurrentRetrieveError> =
+            serde_json::from_str(&local_var_content).ok();
+        let local_var_error = ResponseContent {
+            status: local_var_status,
+            content: local_var_content,
+            entity: local_var_entity,
+        };
+        if configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
+        Err(Error::ResponseError(local_var_error))
+    }
 }
 
 /// ### Description ###  Delete the specified user.  This removes all access the User may have to any Organization.  ### Pre-Conditions ###  - The user cannot be the only owner of any Organization. - The bearer token must belong to the user being deleted. - All of the memberships related to the User will be deleted, so all the membership deletion pre-conditions must also be met.

@@ -412,7 +412,7 @@ pub fn environments_partial_update(
     }
 }
 
-/// The complete history of push operations that this parameter was involved in.
+/// The complete history of push operations that this environment was involved in.
 pub fn environments_pushes_list(
     configuration: &configuration::Configuration,
     environment_pk: &str,

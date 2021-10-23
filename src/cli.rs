@@ -199,7 +199,7 @@ pub fn build_cli() -> App<'static, 'static> {
                         .takes_value(true)
                         .short("a")
                         .long("action")
-                        .possible_values(&["create", "delete", "update"])
+                        .possible_values(&["create", "delete", "update", "nothing"])
                         .help("Only show specified action"))
                     .arg(Arg::with_name("object-type")
                         .takes_value(true)

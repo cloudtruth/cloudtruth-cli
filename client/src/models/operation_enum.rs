@@ -10,24 +10,21 @@
 
 ///
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
-pub enum HistoryTypeEnum {
+pub enum OperationEnum {
     #[serde(rename = "create")]
     Create,
     #[serde(rename = "update")]
     Update,
     #[serde(rename = "delete")]
     Delete,
-    #[serde(rename = "nothing")]
-    Nothing,
 }
 
-impl ToString for HistoryTypeEnum {
+impl ToString for OperationEnum {
     fn to_string(&self) -> String {
         match self {
             Self::Create => String::from("create"),
             Self::Update => String::from("update"),
             Self::Delete => String::from("delete"),
-            Self::Nothing => String::from("nothing"),
         }
     }
 }

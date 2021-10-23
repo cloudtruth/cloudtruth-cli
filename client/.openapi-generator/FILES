@@ -31,6 +31,7 @@ docs/MembershipCreate.md
 docs/MembershipsApi.md
 docs/NodeTypeEnum.md
 docs/ObjectTypeEnum.md
+docs/OperationEnum.md
 docs/Organization.md
 docs/OrganizationCreate.md
 docs/OrganizationsApi.md
@@ -140,6 +141,7 @@ src/models/membership_create.rs
 src/models/mod.rs
 src/models/node_type_enum.rs
 src/models/object_type_enum.rs
+src/models/operation_enum.rs
 src/models/organization.rs
 src/models/organization_create.rs
 src/models/paginated_audit_trail_list.rs
