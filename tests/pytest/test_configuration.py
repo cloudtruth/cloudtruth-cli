@@ -1,6 +1,6 @@
 import subprocess
 
-from testcase import TestCase
+from testcase import TestCase, CT_API_KEY, CT_PROJ, CT_ENV
 from testcase import CT_PROFILE, REDACTED
 from testcase import find_by_prop
 
@@ -143,8 +143,11 @@ class TestConfiguration(TestCase):
         self.assertResultSuccess(result)
         self.assertEqual(orig_env, result.out())
 
-        # now, set the environment to use the profile
+        # now, set the environment to use the profile, and remove other environmental stuff
         cmd_env[CT_PROFILE] = prof_name
+        cmd_env.pop(CT_API_KEY, None)
+        cmd_env.pop(CT_PROJ, None)
+        cmd_env.pop(CT_ENV, None)
 
         # see that things have changed
         result = self.run_cli(cmd_env, curr_cmd)
@@ -157,36 +160,33 @@ class TestConfiguration(TestCase):
         self.assertResultSuccess(result)
         profile = eval(result.out()).get("profile")
         this_profile = f"profile ({prof_name})"
-        for param in profile:
-            param_name = param.get("Parameter")
-            param_value = param.get("Value")
-            param_source = param.get("Source")
-            if param_name == "Profile":
-                self.assertEqual(param_source, "shell")
-                self.assertEqual(param_value, prof_name)
-            elif param_name == "API key":
-                if param_source == this_profile:
-                    self.assertEqual(param_value, api_key)
-                else:
-                    self.assertNotEqual(param_value, api_key)
-            elif param_name == "Project":
-                if param_source == this_profile:
-                    self.assertEqual(param_value, proj_name)
-                else:
-                    self.assertNotEqual(param_value, proj_name)
-            elif param_name == "Environment":
-                if param_source == this_profile:
-                    self.assertEqual(param_value, env_name)
-                else:
-                    self.assertNotEqual(param_value, env_name)
-            elif param_name == "User":
-                self.assertEqual(param_value, "")
-                self.assertEqual(param_source, "")
-            elif param_name == "Role":
-                self.assertEqual(param_value, "")
-                self.assertEqual(param_source, "")
-            else:
-                self.assertFalse(True, f"Unchecked parameter '{param_name}'")
+        param_names = [e.get("Parameter") for e in profile]
+        expected = ["Profile", "API key", "User", "Role", "Project", "Environment"]
+        self.assertEqual(param_names, expected)
+
+        entry = find_by_prop(profile, "Parameter", "Profile")[0]
+        self.assertEqual(entry.get("Value"), prof_name)
+        self.assertEqual(entry.get("Source"), "shell")
+
+        entry = find_by_prop(profile, "Parameter", "API key")[0]
+        self.assertEqual(entry.get("Value"), api_key)
+        self.assertEqual(entry.get("Source"), this_profile)
+
+        entry = find_by_prop(profile, "Parameter", "Project")[0]
+        self.assertEqual(entry.get("Value"), proj_name)
+        self.assertEqual(entry.get("Source"), this_profile)
+
+        entry = find_by_prop(profile, "Parameter", "Environment")[0]
+        self.assertEqual(entry.get("Value"), env_name)
+        self.assertEqual(entry.get("Source"), this_profile)
+
+        entry = find_by_prop(profile, "Parameter", "User")[0]
+        self.assertEqual(entry.get("Value"), "")
+        self.assertEqual(entry.get("Source"), "")
+
+        entry = find_by_prop(profile, "Parameter", "Role")[0]
+        self.assertEqual(entry.get("Value"), "")
+        self.assertEqual(entry.get("Source"), "")
 
         ##############################
         # test with command line arguments
@@ -195,19 +195,24 @@ class TestConfiguration(TestCase):
         result = self.run_cli(cmd_env, cmd)
         self.assertResultSuccess(result)
         profile = eval(result.out()).get("profile")
+
         entry = find_by_prop(profile, "Parameter", "API key")[0]
         self.assertEqual(entry.get("Value"), bogus_api_key)
         self.assertEqual(entry.get("Source"), "argument")
+
         entry = find_by_prop(profile, "Parameter", "Profile")[0]
         self.assertEqual(entry.get("Value"), prof_name)
         self.assertEqual(entry.get("Source"), "argument")
+
         entry = find_by_prop(profile, "Parameter", "User")[0]
         self.assertEqual(entry.get("Value"), "")
         self.assertEqual(entry.get("Source"), "")
+
         entry = find_by_prop(profile, "Parameter", "Role")[0]
         self.assertEqual(entry.get("Value"), "")
         self.assertEqual(entry.get("Source"), "")
 
+        ##############################
         # delete the profile
         result = self.run_cli(cmd_env, conf_cmd + f"p d -y '{prof_name}'")
         self.assertResultSuccess(result)
