@@ -8,7 +8,7 @@ use cloudtruth_restapi::apis::serviceaccounts_api::{
     serviceaccounts_create, serviceaccounts_destroy, serviceaccounts_list,
     serviceaccounts_partial_update,
 };
-use cloudtruth_restapi::apis::users_api::users_list;
+use cloudtruth_restapi::apis::users_api::{users_current_retrieve, users_list};
 use cloudtruth_restapi::apis::Error::ResponseError;
 use cloudtruth_restapi::models::{
     MembershipCreate, PatchedMembership, PatchedServiceAccount, RoleEnum,
@@ -86,6 +86,17 @@ impl Users {
                 }
                 Ok(list)
             }
+            Err(ResponseError(ref content)) => {
+                Err(response_error(&content.status, &content.content))
+            }
+            Err(e) => Err(UserError::UnhandledError(e.to_string())),
+        }
+    }
+
+    fn get_current_user_account(&self, rest_cfg: &OpenApiConfig) -> Result<UserDetails, UserError> {
+        let response = users_current_retrieve(rest_cfg);
+        match response {
+            Ok(api) => Ok(UserDetails::from(&api)),
             Err(ResponseError(ref content)) => {
                 Err(response_error(&content.status, &content.content))
             }
@@ -380,5 +391,14 @@ impl Users {
             }
             Err(e) => Err(UserError::UnhandledError(e.to_string())),
         }
+    }
+
+    pub fn get_current_user(&self, rest_cfg: &OpenApiConfig) -> Result<UserDetails, UserError> {
+        let mut details = self.get_current_user_account(rest_cfg)?;
+        let membership = self.get_membership_by_url(rest_cfg, &details.user_url)?;
+        if let Some(membership) = membership {
+            details.role = membership.role;
+        }
+        Ok(details)
     }
 }

@@ -732,6 +732,9 @@ pub fn build_cli() -> App<'static, 'static> {
             .visible_aliases(&["user", "us"])
             .about("Work with CloudTruth users")
             .subcommands(vec![
+                SubCommand::with_name("current")
+                    .visible_aliases(&["cur", "c"])
+                    .about("Display information about current user"),
                 SubCommand::with_name(DELETE_SUBCMD)
                     .visible_aliases(DELETE_ALIASES)
                     .about("Delete specified CloudTruth account")

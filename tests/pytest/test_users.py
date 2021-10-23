@@ -110,12 +110,25 @@ class TestUsers(TestCase):
         self.assertNotIn(user2_name, result.stdout)
         self.assertNotIn(new_desc, result.stdout)
 
+        # get the new users as the current user
+        result = self.run_cli(cmd_env, base_cmd + f"--api-key {api_key} users current")
+        self.assertResultSuccess(result)
+        self.assertIn(f"Name: {user_name}", result.out())
+        self.assertIn(f"Role: {new_role}", result.out())
+
         # shows create/modified times
         result = self.run_cli(cmd_env, sub_cmd + "list --show-times -f csv")
         self.assertResultSuccess(result)
         self.assertIn("Created At,Modified At,Last Used At", result.out())
         self.assertIn(user_name, result.out())
         self.assertIn(new_desc, result.out())
+
+        # get the current user
+        result = self.run_cli(cmd_env, sub_cmd + "current")
+        self.assertResultSuccess(result)
+        self.assertIn("Name: ", result.out())
+        self.assertIn("Role: ", result.out())
+        self.assertIn("Type: service", result.out())
 
         # delete
         result = self.run_cli(cmd_env, sub_cmd + f"delete {user_name} --confirm")
