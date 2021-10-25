@@ -404,7 +404,10 @@ impl Users {
     }
 
     /// Gets a map of user ID to name for all account types.
-    pub fn get_user_name_map(&self, rest_cfg: &OpenApiConfig) -> Result<UserNameMap, UserError> {
+    pub fn get_user_id_to_name_map(
+        &self,
+        rest_cfg: &OpenApiConfig,
+    ) -> Result<UserNameMap, UserError> {
         let response = users_list(rest_cfg, NO_ORDERING, None, PAGE_SIZE, None);
         match response {
             Ok(data) => {
@@ -412,6 +415,29 @@ impl Users {
                 if let Some(accounts) = data.results {
                     for acct in accounts {
                         user_map.insert(acct.id, acct.name.unwrap_or_default());
+                    }
+                }
+                Ok(user_map)
+            }
+            Err(ResponseError(ref content)) => {
+                Err(response_error(&content.status, &content.content))
+            }
+            Err(e) => Err(UserError::UnhandledError(e.to_string())),
+        }
+    }
+
+    /// Gets a map of user URL to name for all account types.
+    pub fn get_user_url_to_name_map(
+        &self,
+        rest_cfg: &OpenApiConfig,
+    ) -> Result<UserNameMap, UserError> {
+        let response = users_list(rest_cfg, NO_ORDERING, None, PAGE_SIZE, None);
+        match response {
+            Ok(data) => {
+                let mut user_map = UserNameMap::new();
+                if let Some(accounts) = data.results {
+                    for acct in accounts {
+                        user_map.insert(acct.url, acct.name.unwrap_or_default());
                     }
                 }
                 Ok(user_map)
