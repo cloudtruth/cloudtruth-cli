@@ -157,7 +157,7 @@ class TestUsers(TestCase):
         def_role = 'viewer'
         curr_user = self.current_username(cmd_env)
 
-        invitee = "ci.invites"
+        invitee = "ci-testing"
         job_id = self.make_name("")
         if job_id:
             job_id = f"+{job_id}"
