@@ -12,7 +12,7 @@ PROP_TYPE = "Type"
 
 
 class TestUsers(TestCase):
-    def _get_entry(self, cmd_env, user_name: str) -> Dict:
+    def _get_user_entry(self, cmd_env, user_name: str) -> Dict:
         result = self.run_cli(cmd_env, self._base_cmd + "users ls -v -f json")
         self.assertResultSuccess(result)
         entries = eval(result.out()).get("user")
@@ -45,7 +45,7 @@ class TestUsers(TestCase):
         result = self.run_cli(cmd_env, sub_cmd + f"set {user_name} --desc \"{new_desc}\"")
         self.assertResultSuccess(result)
 
-        entry = self._get_entry(cmd_env, user_name)
+        entry = self._get_user_entry(cmd_env, user_name)
         self.assertEqual(entry.get(PROP_TYPE), SERVICE_TYPE)
         self.assertEqual(entry.get(PROP_ROLE), DEFAULT_ROLE)
         self.assertEqual(entry.get(PROP_DESC), new_desc)
@@ -71,7 +71,7 @@ class TestUsers(TestCase):
         self.assertIn(f"Updated user '{user_name}'", result.out())
 
         # see the updated role
-        entry = self._get_entry(cmd_env, user_name)
+        entry = self._get_user_entry(cmd_env, user_name)
         self.assertEqual(entry.get(PROP_TYPE), SERVICE_TYPE)
         self.assertEqual(entry.get(PROP_ROLE), new_role)
         self.assertEqual(entry.get(PROP_DESC), new_desc)
@@ -140,3 +140,70 @@ class TestUsers(TestCase):
         # do it again, see we have success and a warning
         result = self.run_cli(cmd_env, sub_cmd + f"delete {user_name} --confirm")
         self.assertResultWarning(result, f"User '{user_name}' does not exist")
+
+    def _get_invite_entry(self, cmd_env, email: str) -> Dict:
+        result = self.run_cli(cmd_env, self._base_cmd + "users invite ls -v -f json")
+        self.assertResultSuccess(result)
+        entries = eval(result.out()).get("invitation")
+        matches = find_by_prop(entries, "Email", email)
+        if len(matches) >= 1:
+            return matches[0]
+        return None
+
+    def test_user_invitations(self):
+        cmd_env = self.get_cmd_env()
+        base_cmd = self.get_cli_base_cmd()
+        invite_cmd = base_cmd + "user invite "
+        def_role = 'viewer'
+        curr_user = self.current_username(cmd_env)
+
+        invitee = "ci.invites"
+        job_id = self.make_name("")
+        if job_id:
+            job_id = f"+{job_id}"
+        email = invitee + job_id + "@cloudtruth.com"
+
+        # check to make sure the entry does not exist
+        entry = self._get_invite_entry(cmd_env, email)
+        self.assertIsNone(entry)
+
+        # create an invitation (default role)
+        result = self.run_cli(cmd_env, invite_cmd + f"set '{email}'")
+        self.assertResultSuccess(result)
+        self.assertIn(f"Sent '{email}' invitation as '{def_role}'", result.out())
+
+        # see it shows up
+        entry = self._get_invite_entry(cmd_env, email)
+        self.assertEqual(entry.get("Role"), def_role)
+        self.assertEqual(entry.get("Inviter"), curr_user)
+        self.assertEqual(entry.get("State"), "sent")  # TODO: race condition?
+
+        # see warning when nothing changes
+        result = self.run_cli(cmd_env, invite_cmd + f"set '{email}'")
+        self.assertResultWarning(result, f"Invitation for '{email}' not updated")
+
+        # update the role
+        new_role = "contrib"
+        result = self.run_cli(cmd_env, invite_cmd + f"set '{email}' --role '{new_role}'")
+        self.assertResultSuccess(result)
+        self.assertIn(f"Updated invitation for '{email}'", result.out())
+
+        # see the new role
+        entry = self._get_invite_entry(cmd_env, email)
+        self.assertEqual(entry.get("Role"), new_role)
+        self.assertEqual(entry.get("Inviter"), curr_user)
+        self.assertEqual(entry.get("State"), "sent")  # TODO: race condition?
+
+        # resend the invitation
+        result = self.run_cli(cmd_env, invite_cmd + f"resend '{email}'")
+        self.assertResultSuccess(result)
+        self.assertIn(f"Resent invitation for '{email}'", result.out())
+
+        # delete the invitation
+        result = self.run_cli(cmd_env, invite_cmd + f"del -y '{email}'")
+        self.assertResultSuccess(result)
+        self.assertIn(f"Deleted invitation for '{email}'", result.out())
+
+        # idempotent
+        result = self.run_cli(cmd_env, invite_cmd + f"del -y '{email}'")
+        self.assertResultWarning(result, f"Invitation for '{email}' does not exist")

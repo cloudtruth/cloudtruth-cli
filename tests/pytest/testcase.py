@@ -102,6 +102,7 @@ class TestCase(unittest.TestCase):
         self._projects = None
         self._environments = None
         self._users = None
+        self._invites = None
         self._filenames = None
         super().__init__(*args, **kwargs)
         self.maxDiff = None
@@ -111,6 +112,7 @@ class TestCase(unittest.TestCase):
         self._projects = list()
         self._environments = list()
         self._users = list()
+        self._invites = list()
         self._filenames = set()
         super().setUp()
 
@@ -130,6 +132,11 @@ class TestCase(unittest.TestCase):
         # delete any possibly lingering users
         for usr in self._users:
             cmd = self._base_cmd + f"user del --confirm \"{usr}\""
+            subprocess.run(cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+        # delete any possibly lingering users
+        for email in self._invites:
+            cmd = self._base_cmd + f"user invitations del --confirm \"{email}\""
             subprocess.run(cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
         # remove any added files
@@ -237,6 +244,10 @@ class TestCase(unittest.TestCase):
                 user_name = _next_part(args, "set")
                 if user_name and user_name not in self._users:
                     self._users.append(user_name)
+            elif set(args) & set(["invitations", "invites", "invite", "inv", "in"]):
+                email = _next_part(args, "set")
+                if email and email not in self._invites:
+                    self._invites.append(email)
 
         start = datetime.now()
         process = subprocess.run(
