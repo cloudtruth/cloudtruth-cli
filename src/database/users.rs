@@ -18,6 +18,7 @@ use std::collections::HashMap;
 
 const NO_ORDERING: Option<&str> = None;
 
+pub type UserNameMap = HashMap<String, String>;
 type MembershipUrlMap = HashMap<String, MemberDetails>;
 
 pub struct Users {}
@@ -400,5 +401,25 @@ impl Users {
             details.role = membership.role;
         }
         Ok(details)
+    }
+
+    /// Gets a map of user ID to name for all account types.
+    pub fn get_user_name_map(&self, rest_cfg: &OpenApiConfig) -> Result<UserNameMap, UserError> {
+        let response = users_list(rest_cfg, NO_ORDERING, None, PAGE_SIZE, None);
+        match response {
+            Ok(data) => {
+                let mut user_map = UserNameMap::new();
+                if let Some(accounts) = data.results {
+                    for acct in accounts {
+                        user_map.insert(acct.id, acct.name.unwrap_or_default());
+                    }
+                }
+                Ok(user_map)
+            }
+            Err(ResponseError(ref content)) => {
+                Err(response_error(&content.status, &content.content))
+            }
+            Err(e) => Err(UserError::UnhandledError(e.to_string())),
+        }
     }
 }

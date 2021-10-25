@@ -1,6 +1,6 @@
 use crate::database::{
     auth_details, response_message, OpenApiConfig, TemplateDetails, TemplateError, TemplateHistory,
-    PAGE_SIZE,
+    Users, PAGE_SIZE,
 };
 use cloudtruth_restapi::apis::projects_api::*;
 use cloudtruth_restapi::apis::Error::ResponseError;
@@ -291,6 +291,18 @@ impl Templates {
         }
     }
 
+    fn resolve_user_ids(&self, rest_cfg: &OpenApiConfig, histories: &mut [TemplateHistory]) {
+        if !histories.is_empty() {
+            let users = Users::new();
+            let user_map = users.get_user_name_map(rest_cfg);
+            if let Ok(user_map) = user_map {
+                for entry in histories {
+                    entry.user_name = user_map.get(&entry.user_id).unwrap().clone();
+                }
+            }
+        }
+    }
+
     /// Gets the template history for all templates in the project.
     pub fn get_histories(
         &self,
@@ -302,7 +314,12 @@ impl Templates {
         let response =
             projects_templates_timelines_retrieve(rest_cfg, project_id, as_of, tag.as_deref());
         match response {
-            Ok(data) => Ok(data.results.iter().map(TemplateHistory::from).collect()),
+            Ok(data) => {
+                let mut histories: Vec<TemplateHistory> =
+                    data.results.iter().map(TemplateHistory::from).collect();
+                self.resolve_user_ids(rest_cfg, &mut histories);
+                Ok(histories)
+            }
             Err(ResponseError(ref content)) => {
                 Err(response_error(&content.status, &content.content, None))
             }
@@ -327,7 +344,12 @@ impl Templates {
             tag.as_deref(),
         );
         match response {
-            Ok(data) => Ok(data.results.iter().map(TemplateHistory::from).collect()),
+            Ok(data) => {
+                let mut histories: Vec<TemplateHistory> =
+                    data.results.iter().map(TemplateHistory::from).collect();
+                self.resolve_user_ids(rest_cfg, &mut histories);
+                Ok(histories)
+            }
             Err(ResponseError(ref content)) => {
                 Err(response_error(&content.status, &content.content, None))
             }

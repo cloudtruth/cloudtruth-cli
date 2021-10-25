@@ -490,3 +490,10 @@ class TestCase(unittest.TestCase):
         cmd = self._base_cmd + f"--project '{proj}' template del -y '{name}' "
         result = self.run_cli(cmd_env, cmd)
         self.assertResultSuccess(result)
+
+    def current_username(self, cmd_env):
+        result = self.run_cli(cmd_env, self._base_cmd + "config current -f json")
+        self.assertResultSuccess(result)
+        properties = eval(result.out()).get("profile")
+        entry = find_by_prop(properties, "Parameter", "User")[0]
+        return entry.get("Value")
