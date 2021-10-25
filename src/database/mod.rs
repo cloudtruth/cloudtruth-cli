@@ -73,4 +73,4 @@ pub use template_history::TemplateHistory;
 pub use templates::Templates;
 pub use user_details::UserDetails;
 pub use user_error::UserError;
-pub use users::Users;
+pub use users::{UserNameMap, Users};

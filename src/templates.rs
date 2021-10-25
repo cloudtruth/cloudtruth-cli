@@ -442,9 +442,9 @@ fn proc_template_history(
             modifier, proj_name
         );
     } else {
-        let name_index = 2;
+        let name_index = 3;
         let mut table = Table::new("template-history");
-        let mut hdr: Vec<&str> = vec!["Date", "Action", "Changes"];
+        let mut hdr: Vec<&str> = vec!["Date", "User", "Action", "Changes"];
         if add_name {
             hdr.insert(name_index, "Name");
         }
@@ -456,6 +456,7 @@ fn proc_template_history(
             let changes = get_changes(entry, prev, TEMPLATE_HISTORY_PROPERTIES);
             let mut row = vec![
                 entry.date.clone(),
+                entry.user_name.clone(),
                 entry.change_type.to_string(),
                 changes.join("\n"),
             ];
