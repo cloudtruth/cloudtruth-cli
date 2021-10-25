@@ -9,11 +9,13 @@ pub const CONFIRM_FLAG: &str = "confirm";
 pub const DESCRIPTION_OPT: &str = "description";
 pub const ENV_NAME_ARG: &str = "env-name";
 pub const FORMAT_OPT: &str = "format";
+pub const INVITE_NAME_ARG: &str = "e-mail";
 pub const KEY_ARG: &str = "KEY";
 pub const NAME_ARG: &str = "NAME";
 pub const PARENT_ARG: &str = "parent";
 pub const RAW_FLAG: &str = "raw";
 pub const RENAME_OPT: &str = "new-name";
+pub const ROLE_ARG: &str = "role";
 pub const SHOW_TIMES_FLAG: &str = "show-time";
 pub const SECRETS_FLAG: &str = "secrets";
 pub const TAG_NAME_ARG: &str = "tag-name";
@@ -162,6 +164,21 @@ fn parent_arg() -> Arg<'static, 'static> {
         .short("p")
         .long("parent")
         .takes_value(true)
+}
+
+fn role_arg() -> Arg<'static, 'static> {
+    Arg::with_name("role")
+        .takes_value(true)
+        .long("role")
+        .possible_values(&["owner", "admin", "contrib", "viewer"])
+}
+
+fn invitation_name_arg() -> Arg<'static, 'static> {
+    Arg::with_name(INVITE_NAME_ARG)
+        .takes_value(true)
+        .index(1)
+        .required(true)
+        .help("Email address for invitation")
 }
 
 pub fn build_cli() -> App<'static, 'static> {
@@ -754,11 +771,32 @@ pub fn build_cli() -> App<'static, 'static> {
                     .about("Create/update a CloudTruth service account")
                     .arg(name_arg().help("Account name"))
                     .arg(description_option().help("Account's description"))
-                    .arg(Arg::with_name("role")
-                        .takes_value(true)
-                        .long("role")
-                        .possible_values(&["owner", "admin", "contrib", "viewer"])
+                    .arg(role_arg()
                         .help("Account role [default: viewer (on create)]")),
+                SubCommand::with_name("invitations")
+                    .visible_aliases(&["invitation", "invite", "inv", "in", "i"])
+                    .about("Manage user invitations")
+                    .subcommands(vec![
+                        SubCommand::with_name(DELETE_SUBCMD)
+                            .visible_aliases(DELETE_ALIASES)
+                            .about("Delete a user invitation")
+                            .arg(invitation_name_arg())
+                            .arg(confirm_flag()),
+                        SubCommand::with_name(LIST_SUBCMD)
+                            .visible_aliases(LIST_ALIASES)
+                            .about("List pending user invitations")
+                            .arg(values_flag().help("Display invitation values"))
+                            .arg(table_format_options().help("Format for invitation values")),
+                        SubCommand::with_name("resend")
+                            .visible_aliases(&["re", "r"])
+                            .about("Resend the user invitation to the specified user")
+                            .arg(invitation_name_arg()),
+                        SubCommand::with_name(SET_SUBCMD)
+                            .visible_aliases(SET_ALIASES)
+                            .about("Create/update a CloudTruth user invitation")
+                            .arg(invitation_name_arg())
+                            .arg(role_arg().help("Role for invited user [default: viewer (on create)]")),
+                    ])
             ])
         )
 }

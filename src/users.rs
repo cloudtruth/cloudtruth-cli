@@ -1,8 +1,8 @@
 use crate::cli::{
-    CONFIRM_FLAG, DELETE_SUBCMD, DESCRIPTION_OPT, FORMAT_OPT, GET_SUBCMD, LIST_SUBCMD, NAME_ARG,
-    SET_SUBCMD, SHOW_TIMES_FLAG, VALUES_FLAG,
+    CONFIRM_FLAG, DELETE_SUBCMD, DESCRIPTION_OPT, FORMAT_OPT, GET_SUBCMD, INVITE_NAME_ARG,
+    LIST_SUBCMD, NAME_ARG, ROLE_ARG, SET_SUBCMD, SHOW_TIMES_FLAG, VALUES_FLAG,
 };
-use crate::database::{OpenApiConfig, UserDetails, Users};
+use crate::database::{Invitations, OpenApiConfig, UserDetails, Users};
 use crate::table::Table;
 use crate::{error_message, user_confirm, warn_missing_subcommand, warning_message, DEL_CONFIRM};
 use clap::ArgMatches;
@@ -129,7 +129,7 @@ fn proc_users_list(
 fn proc_users_set(subcmd_args: &ArgMatches, rest_cfg: &OpenApiConfig, users: &Users) -> Result<()> {
     let user_name = subcmd_args.value_of(NAME_ARG).unwrap();
     let description = subcmd_args.value_of(DESCRIPTION_OPT);
-    let role = subcmd_args.value_of("role");
+    let role = subcmd_args.value_of(ROLE_ARG);
     let response = users.get_id(rest_cfg, user_name)?;
 
     if let Some(user_id) = response {
@@ -153,6 +153,126 @@ fn proc_users_set(subcmd_args: &ArgMatches, rest_cfg: &OpenApiConfig, users: &Us
     Ok(())
 }
 
+fn proc_invite_delete(
+    subcmd_args: &ArgMatches,
+    rest_cfg: &OpenApiConfig,
+    invitations: Invitations,
+) -> Result<()> {
+    let email = subcmd_args.value_of(INVITE_NAME_ARG).unwrap();
+    let response = invitations.get_id(rest_cfg, email)?;
+
+    if let Some(invite_id) = response {
+        let mut confirmed = subcmd_args.is_present(CONFIRM_FLAG);
+        if !confirmed {
+            confirmed = user_confirm(format!("Delete invitation for '{}'", email), DEL_CONFIRM);
+        }
+
+        if !confirmed {
+            warning_message(format!("Invitation for '{}' not deleted!", email))?;
+        } else {
+            invitations.delete_invitation(rest_cfg, &invite_id)?;
+            println!("Deleted invitation for '{}'", email);
+        }
+    } else {
+        warning_message(format!("Invitation for '{}' does not exist!", email))?;
+    }
+    Ok(())
+}
+
+fn proc_invite_list(
+    subcmd_args: &ArgMatches,
+    rest_cfg: &OpenApiConfig,
+    invitations: Invitations,
+) -> Result<()> {
+    let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
+    let show_values = subcmd_args.is_present(VALUES_FLAG);
+    let details = invitations.get_invitation_details(rest_cfg)?;
+    if details.is_empty() {
+        println!("No invitations found!");
+    } else if !show_values {
+        let list = details
+            .iter()
+            .map(|n| n.email.clone())
+            .collect::<Vec<String>>();
+        println!("{}", list.join("\n"))
+    } else {
+        let hdr = vec!["Email", "Role", "Inviter", "State"];
+        let properties = vec!["email", "role", "inviter-name", "state"];
+        let mut table = Table::new("invitation");
+        table.set_header(&hdr);
+        for entry in details {
+            let row = entry.get_properties(&properties);
+            table.add_row(row);
+        }
+        table.render(fmt)?;
+    }
+    Ok(())
+}
+
+fn proc_invite_resend(
+    subcmd_args: &ArgMatches,
+    rest_cfg: &OpenApiConfig,
+    invitations: Invitations,
+) -> Result<()> {
+    let email = subcmd_args.value_of(INVITE_NAME_ARG).unwrap();
+    let invite_id = invitations.get_id(rest_cfg, email)?;
+
+    if let Some(invite_id) = invite_id {
+        invitations.resend_invitation(rest_cfg, &invite_id)?;
+        println!("Resent invitation for '{}'", email);
+    } else {
+        error_message(format!("Pending invitation for '{}' not found!", email))?;
+        process::exit(29);
+    }
+    Ok(())
+}
+
+fn proc_invite_set(
+    subcmd_args: &ArgMatches,
+    rest_cfg: &OpenApiConfig,
+    invitations: Invitations,
+) -> Result<()> {
+    let email = subcmd_args.value_of(INVITE_NAME_ARG).unwrap();
+    let role = subcmd_args.value_of(ROLE_ARG);
+    let response = invitations.get_id(rest_cfg, email)?;
+
+    if let Some(invite_id) = response {
+        if role.is_none() {
+            warning_message(format!(
+                "Invitation for '{}' not updated: no updated parameters provided",
+                email
+            ))?;
+        } else {
+            invitations.update_invitation(rest_cfg, &invite_id, role)?;
+            println!("Updated invitation for '{}'", email);
+        }
+    } else {
+        let details = invitations.create_invitation(rest_cfg, email, role.unwrap_or("viewer"))?;
+        println!("Sent '{}' invitation as '{}'", details.email, details.role);
+    }
+    Ok(())
+}
+
+fn proc_users_invite_command(
+    subcmd_args: &ArgMatches,
+    rest_cfg: &OpenApiConfig,
+    _users: &Users,
+) -> Result<()> {
+    let invitations = Invitations::new();
+    if let Some(subcmd_args) = subcmd_args.subcommand_matches(DELETE_SUBCMD) {
+        proc_invite_delete(subcmd_args, rest_cfg, invitations)?;
+    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(LIST_SUBCMD) {
+        proc_invite_list(subcmd_args, rest_cfg, invitations)?;
+    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("resend") {
+        proc_invite_resend(subcmd_args, rest_cfg, invitations)?;
+    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(SET_SUBCMD) {
+        proc_invite_set(subcmd_args, rest_cfg, invitations)?;
+    } else {
+        warn_missing_subcommand("users invitations")?;
+    }
+    Ok(())
+}
+
 /// Process the 'users' sub-command
 pub fn process_users_command(
     subcmd_args: &ArgMatches,
@@ -169,6 +289,8 @@ pub fn process_users_command(
         proc_users_set(subcmd_args, rest_cfg, users)?;
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("current") {
         proc_users_current(subcmd_args, rest_cfg, users)?;
+    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("invitations") {
+        proc_users_invite_command(subcmd_args, rest_cfg, users)?;
     } else {
         warn_missing_subcommand("users")?;
     }
