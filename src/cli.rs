@@ -795,7 +795,7 @@ pub fn build_cli() -> App<'static, 'static> {
                             .arg(confirm_flag()),
                         SubCommand::with_name(LIST_SUBCMD)
                             .visible_aliases(LIST_ALIASES)
-                            .about("List pending user invitations")
+                            .about("List user invitations")
                             .arg(values_flag().help("Display invitation values"))
                             .arg(table_format_options().help("Format for invitation values")),
                         SubCommand::with_name("resend")

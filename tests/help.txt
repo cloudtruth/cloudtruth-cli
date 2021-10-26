@@ -933,7 +933,7 @@ FLAGS:
 SUBCOMMANDS:
     delete    Delete a user invitation [aliases: del, d]
     help      Prints this message or the help of the given subcommand(s)
-    list      List pending user invitations [aliases: ls, l]
+    list      List user invitations [aliases: ls, l]
     resend    Resend the user invitation to the specified user [aliases: re, r]
     set       Create/update a CloudTruth user invitation [aliases: s]
 ====================
@@ -952,7 +952,7 @@ ARGS:
     <e-mail>    Email address for invitation
 ====================
 cloudtruth-users-invitations-list 
-List pending user invitations
+List user invitations
 
 USAGE:
     cloudtruth users invitations list [FLAGS] [OPTIONS]
