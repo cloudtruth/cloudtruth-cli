@@ -63,26 +63,18 @@ fn proc_integ_list(
             .collect::<Vec<String>>();
         println!("{}", list.join("\n"))
     } else {
-        let mut table = Table::new("integration");
         let mut hdr = vec!["Name", "FQN", "Status", "Updated", "Description"];
+        let mut properties = vec!["name", "fqn", "status", "status-time", "description"];
         if show_times {
             hdr.push("Created At");
             hdr.push("Modified At");
+            properties.push("created-at");
+            properties.push("modified-at");
         }
+        let mut table = Table::new("integration");
         table.set_header(&hdr);
         for entry in details {
-            let mut row = vec![
-                entry.name,
-                entry.fqn,
-                entry.status,
-                entry.status_time,
-                entry.description,
-            ];
-            if show_times {
-                row.push(entry.created_at);
-                row.push(entry.modified_at);
-            }
-            table.add_row(row);
+            table.add_row(entry.get_properties(&properties));
         }
         table.render(fmt)?;
     }
