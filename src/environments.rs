@@ -206,7 +206,7 @@ fn proc_env_tag_list(
     let env_name = subcmd_args.value_of(ENV_NAME_ARG).unwrap();
     let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
     let show_usage = subcmd_args.is_present("usage");
-    let show_values = show_values(subcmd_args);
+    let show_values = show_values(subcmd_args) || show_usage;
     let environment_id = environments.get_id(rest_cfg, env_name)?;
 
     if let Some(env_id) = environment_id {
