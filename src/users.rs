@@ -1,6 +1,6 @@
 use crate::cli::{
-    CONFIRM_FLAG, DELETE_SUBCMD, DESCRIPTION_OPT, FORMAT_OPT, GET_SUBCMD, INVITE_NAME_ARG,
-    LIST_SUBCMD, NAME_ARG, ROLE_ARG, SET_SUBCMD, SHOW_TIMES_FLAG, VALUES_FLAG,
+    show_values, CONFIRM_FLAG, DELETE_SUBCMD, DESCRIPTION_OPT, FORMAT_OPT, GET_SUBCMD,
+    INVITE_NAME_ARG, LIST_SUBCMD, NAME_ARG, ROLE_ARG, SET_SUBCMD, SHOW_TIMES_FLAG,
 };
 use crate::database::{Invitations, OpenApiConfig, UserDetails, Users};
 use crate::table::Table;
@@ -93,7 +93,7 @@ fn proc_users_list(
 ) -> Result<()> {
     let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
     let show_times = subcmd_args.is_present(SHOW_TIMES_FLAG);
-    let show_values = subcmd_args.is_present(VALUES_FLAG) || show_times;
+    let show_values = show_values(subcmd_args);
     let details = users.get_user_details(rest_cfg)?;
     if details.is_empty() {
         println!("No users found!");
@@ -185,7 +185,7 @@ fn proc_invite_list(
     invitations: Invitations,
 ) -> Result<()> {
     let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
-    let show_values = subcmd_args.is_present(VALUES_FLAG);
+    let show_values = show_values(subcmd_args);
     let details = invitations.get_invitation_details(rest_cfg)?;
     if details.is_empty() {
         println!("No invitations found!");

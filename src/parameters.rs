@@ -1,7 +1,7 @@
 use crate::cli::{
-    binary_name, true_false_option, AS_OF_ARG, CONFIRM_FLAG, DELETE_SUBCMD, DESCRIPTION_OPT,
-    DIFF_SUBCMD, FORMAT_OPT, GET_SUBCMD, KEY_ARG, LIST_SUBCMD, RENAME_OPT, SECRETS_FLAG,
-    SET_SUBCMD, SHOW_TIMES_FLAG, VALUES_FLAG,
+    binary_name, show_values, true_false_option, AS_OF_ARG, CONFIRM_FLAG, DELETE_SUBCMD,
+    DESCRIPTION_OPT, DIFF_SUBCMD, FORMAT_OPT, GET_SUBCMD, KEY_ARG, LIST_SUBCMD, RENAME_OPT,
+    SECRETS_FLAG, SET_SUBCMD, SHOW_TIMES_FLAG,
 };
 use crate::config::DEFAULT_ENV_NAME;
 use crate::database::{
@@ -524,7 +524,7 @@ fn proc_param_list(
     let tag = parse_tag(subcmd_args.value_of(AS_OF_ARG));
     let show_secrets = subcmd_args.is_present(SECRETS_FLAG);
     let show_times = subcmd_args.is_present(SHOW_TIMES_FLAG);
-    let show_values = subcmd_args.is_present(VALUES_FLAG) || show_secrets || show_times;
+    let show_values = show_values(subcmd_args);
     let show_rules = subcmd_args.is_present("rules");
     let show_external = subcmd_args.is_present("external");
     let show_evaluated = subcmd_args.is_present("evaluated");

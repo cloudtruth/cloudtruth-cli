@@ -1,4 +1,4 @@
-use crate::cli::{FORMAT_OPT, LIST_SUBCMD, SHOW_TIMES_FLAG, VALUES_FLAG};
+use crate::cli::{show_values, FORMAT_OPT, LIST_SUBCMD, SHOW_TIMES_FLAG};
 use crate::database::{Integrations, OpenApiConfig};
 use crate::table::Table;
 use crate::{error_message, warn_missing_subcommand};
@@ -11,7 +11,7 @@ fn proc_integ_explore(
     integrations: &Integrations,
 ) -> Result<()> {
     let fqn = subcmd_args.value_of("FQN");
-    let show_values = subcmd_args.is_present(VALUES_FLAG);
+    let show_values = show_values(subcmd_args);
     let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
     let nodes = integrations.get_integration_nodes(rest_cfg, fqn)?;
     let indent = "  ";
@@ -51,7 +51,7 @@ fn proc_integ_list(
 ) -> Result<()> {
     let details = integrations.get_integration_details(rest_cfg)?;
     let show_times = subcmd_args.is_present(SHOW_TIMES_FLAG);
-    let show_values = subcmd_args.is_present(VALUES_FLAG) || show_times;
+    let show_values = show_values(subcmd_args);
     let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
 
     if details.is_empty() {

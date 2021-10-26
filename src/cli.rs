@@ -1,6 +1,6 @@
 use clap::{
     app_from_crate, crate_authors, crate_description, crate_name, crate_version, App, AppSettings,
-    Arg, Shell, SubCommand,
+    Arg, ArgMatches, Shell, SubCommand,
 };
 
 pub const API_KEY_OPT: &str = "api_key";
@@ -54,6 +54,17 @@ pub fn true_false_option(input: Option<&str>) -> Option<bool> {
         Some("false") => Some(false),
         _ => None,
     }
+}
+
+/// Checks for standard flags that would cause us to show the values (in some form).
+///
+/// The `occurances_of(FORMAT_OPT)` is another means of checking whether a format value is
+/// provided as an argument, even though there is a default value.
+pub fn show_values(args: &ArgMatches) -> bool {
+    args.is_present(VALUES_FLAG)
+        || args.is_present(SHOW_TIMES_FLAG)
+        || args.is_present(SECRETS_FLAG)
+        || args.occurrences_of(FORMAT_OPT) > 0
 }
 
 fn table_format_options() -> Arg<'static, 'static> {

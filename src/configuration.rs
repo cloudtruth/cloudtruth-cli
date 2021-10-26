@@ -1,6 +1,6 @@
 use crate::cli::{
-    API_KEY_OPT, CONFIRM_FLAG, DELETE_SUBCMD, DESCRIPTION_OPT, EDIT_SUBCMD, FORMAT_OPT,
-    LIST_SUBCMD, NAME_ARG, SECRETS_FLAG, SET_SUBCMD, VALUES_FLAG,
+    show_values, API_KEY_OPT, CONFIRM_FLAG, DELETE_SUBCMD, DESCRIPTION_OPT, EDIT_SUBCMD,
+    FORMAT_OPT, LIST_SUBCMD, NAME_ARG, SECRETS_FLAG, SET_SUBCMD,
 };
 use crate::config::{Config, ConfigValue};
 use crate::database::{OpenApiConfig, Users};
@@ -57,7 +57,7 @@ fn proc_config_edit() -> Result<()> {
 
 fn proc_config_prof_list(subcmd_args: &ArgMatches) -> Result<()> {
     let show_secrets = subcmd_args.is_present(SECRETS_FLAG);
-    let show_values = subcmd_args.is_present(VALUES_FLAG) || show_secrets;
+    let show_values = show_values(subcmd_args);
     let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
     let details = Config::get_profile_details()?;
 
