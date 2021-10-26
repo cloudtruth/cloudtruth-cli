@@ -275,14 +275,14 @@ PARAMETER_2 = PARAM2
 
         ##########################
         # parameter checks
-        result = self.run_cli(cmd_env, proj_cmd + "param list -f csv")
+        result = self.run_cli(cmd_env, proj_cmd + "param list")
         self.assertResultSuccess(result)
         self.assertIn(param1, result.out())
         self.assertIn(param2, result.out())
         self.assertIn(param3, result.out())
 
         # parameter list should yield warnings, but still show everything
-        result = self.run_cli(cmd_env, proj_cmd + "param list -vsf csv")
+        result = self.run_cli(cmd_env, proj_cmd + "param list -sf csv")
         self.assertResultWarning(result, missing_param2)
         self.assertIn(f"{param1},{value1},", result.out())
         self.assertIn(f"{param2},,", result.out())  # empty value reported
@@ -291,7 +291,7 @@ PARAMETER_2 = PARAM2
         self.assertNotIn(fqn3, result.err())
 
         # list external parameters with no values
-        result = self.run_cli(cmd_env, proj_cmd + "param list --external -f csv")
+        result = self.run_cli(cmd_env, proj_cmd + "param list --external")
         self.assertResultSuccess(result)
         self.assertIn(param2, result.out())
         self.assertIn(param3, result.out())

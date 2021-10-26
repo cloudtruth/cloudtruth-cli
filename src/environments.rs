@@ -1,7 +1,7 @@
 use crate::cli::{
-    CONFIRM_FLAG, DELETE_SUBCMD, DESCRIPTION_OPT, ENV_NAME_ARG, FORMAT_OPT, LIST_SUBCMD, NAME_ARG,
-    PARENT_ARG, RENAME_OPT, SET_SUBCMD, SHOW_TIMES_FLAG, TAG_NAME_ARG, TAG_SUBCMD, TREE_SUBCMD,
-    VALUES_FLAG,
+    show_values, CONFIRM_FLAG, DELETE_SUBCMD, DESCRIPTION_OPT, ENV_NAME_ARG, FORMAT_OPT,
+    LIST_SUBCMD, NAME_ARG, PARENT_ARG, RENAME_OPT, SET_SUBCMD, SHOW_TIMES_FLAG, TAG_NAME_ARG,
+    TAG_SUBCMD, TREE_SUBCMD,
 };
 use crate::config::DEFAULT_ENV_NAME;
 use crate::database::{EnvironmentDetails, Environments, OpenApiConfig};
@@ -48,7 +48,7 @@ fn proc_env_list(
 ) -> Result<()> {
     let details = environments.get_environment_details(rest_cfg)?;
     let show_times = subcmd_args.is_present(SHOW_TIMES_FLAG);
-    let show_values = subcmd_args.is_present(VALUES_FLAG) || show_times;
+    let show_values = show_values(subcmd_args);
     let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
 
     // NOTE: should always have at least the default environment
@@ -206,7 +206,7 @@ fn proc_env_tag_list(
     let env_name = subcmd_args.value_of(ENV_NAME_ARG).unwrap();
     let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
     let show_usage = subcmd_args.is_present("usage");
-    let show_values = subcmd_args.is_present(VALUES_FLAG) || show_usage;
+    let show_values = show_values(subcmd_args);
     let environment_id = environments.get_id(rest_cfg, env_name)?;
 
     if let Some(env_id) = environment_id {

@@ -1,7 +1,7 @@
 use crate::cli::{
-    AS_OF_ARG, CONFIRM_FLAG, DELETE_SUBCMD, DESCRIPTION_OPT, DIFF_SUBCMD, EDIT_SUBCMD, FORMAT_OPT,
-    GET_SUBCMD, HISTORY_SUBCMD, LIST_SUBCMD, NAME_ARG, RAW_FLAG, RENAME_OPT, SECRETS_FLAG,
-    SET_SUBCMD, SHOW_TIMES_FLAG, TEMPLATE_FILE_OPT, VALUES_FLAG,
+    show_values, AS_OF_ARG, CONFIRM_FLAG, DELETE_SUBCMD, DESCRIPTION_OPT, DIFF_SUBCMD, EDIT_SUBCMD,
+    FORMAT_OPT, GET_SUBCMD, HISTORY_SUBCMD, LIST_SUBCMD, NAME_ARG, RAW_FLAG, RENAME_OPT,
+    SECRETS_FLAG, SET_SUBCMD, SHOW_TIMES_FLAG, TEMPLATE_FILE_OPT,
 };
 use crate::database::{HistoryAction, OpenApiConfig, TemplateHistory, Templates};
 use crate::table::Table;
@@ -112,7 +112,7 @@ fn proc_template_list(
     let proj_id = resolved.project_id();
     let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
     let show_times = subcmd_args.is_present(SHOW_TIMES_FLAG);
-    let show_values = subcmd_args.is_present(VALUES_FLAG) || show_times;
+    let show_values = show_values(subcmd_args);
     let details = templates.get_template_details(rest_cfg, proj_id)?;
     if details.is_empty() {
         println!("No templates in project '{}'.", proj_name);
