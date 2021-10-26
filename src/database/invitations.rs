@@ -193,8 +193,12 @@ impl Invitations {
             let users = Users::new();
             let user_map = users.get_user_url_to_name_map(rest_cfg);
             if let Ok(user_map) = user_map {
+                let default_invitername = "".to_string();
                 for entry in invites {
-                    entry.inviter_name = user_map.get(&entry.inviter_url).unwrap().clone();
+                    entry.inviter_name = user_map
+                        .get(&entry.inviter_url)
+                        .unwrap_or(&default_invitername)
+                        .clone();
                 }
             }
         }

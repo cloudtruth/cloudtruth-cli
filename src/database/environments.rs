@@ -178,9 +178,13 @@ impl Environments {
                     }
 
                     // now, fill in the names
+                    let default_envname = "".to_string();
                     for details in &mut env_info {
                         if !details.parent_url.is_empty() {
-                            details.parent_name = url_map.get(&details.parent_url).unwrap().clone();
+                            details.parent_name = url_map
+                                .get(&details.parent_url)
+                                .unwrap_or(&default_envname)
+                                .clone();
                         }
                     }
                     env_info.sort_by(|l, r| l.name.cmp(&r.name));
