@@ -296,8 +296,12 @@ impl Templates {
             let users = Users::new();
             let user_map = users.get_user_id_to_name_map(rest_cfg);
             if let Ok(user_map) = user_map {
+                let default_username = "".to_string();
                 for entry in histories {
-                    entry.user_name = user_map.get(&entry.user_id).unwrap().clone();
+                    entry.user_name = user_map
+                        .get(&entry.user_id)
+                        .unwrap_or(&default_username)
+                        .clone();
                 }
             }
         }

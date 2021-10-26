@@ -559,10 +559,14 @@ fn proc_param_list(
         description = "parameters from a parent project";
         details.retain(|x| !x.project_url.contains(proj_id));
         if !details.is_empty() {
+            let default_projname = "".to_string();
             let projects = Projects::new();
             let url_map = projects.get_url_name_map(rest_cfg);
             for item in &mut details {
-                item.project_name = url_map.get(&item.project_url).unwrap().clone();
+                item.project_name = url_map
+                    .get(&item.project_url)
+                    .unwrap_or(&default_projname)
+                    .clone();
             }
         }
     }
