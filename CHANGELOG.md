@@ -1,3 +1,18 @@
+# 1.0.12 - 2021-10-26
+
+* Added parent project support:
+  * Added `projects set --parent` argument to set/update a project parent.
+  * Added `parent` name to the `project list --values` display.
+  * Added `projects tree` to show dependencies between projects.
+  * Added `parameters list --parents` to display parameters defined in a parent project.
+  * Added `parameters list --children` to display parameters defined in a descendant project.
+* Added username and role information to `config current`.
+* Added validation checks/options after `config edit`.
+* Added username to `template history` output.
+* Added `users` commands to manage user accounts and invitations.
+* Added `audit-logs` commands to view audit log information.
+* Improved performance for several `templates` commands (e.g. `get`, `diff`, `validate`).
+
 # 1.0.11 - 2021-10-13
 
 * Added support for evaluated parameters:
