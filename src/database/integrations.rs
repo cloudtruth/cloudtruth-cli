@@ -8,7 +8,11 @@ use cloudtruth_restapi::apis::Error::ResponseError;
 const NO_ORDERING: Option<&str> = None;
 
 fn response_error(status: &reqwest::StatusCode, content: &str) -> IntegrationError {
-    IntegrationError::ResponseError(response_message(status, content))
+    match status.as_u16() {
+        401 => auth_error(content),
+        403 => auth_error(content),
+        _ => IntegrationError::ResponseError(response_message(status, content)),
+    }
 }
 
 fn auth_error(content: &str) -> IntegrationError {
@@ -59,52 +63,61 @@ impl Integrations {
         Self {}
     }
 
+    fn get_aws_integration_details(
+        &self,
+        rest_cfg: &OpenApiConfig,
+    ) -> Result<Vec<IntegrationDetails>, IntegrationError> {
+        let response = integrations_aws_list(rest_cfg, None, None, NO_ORDERING, None, PAGE_SIZE);
+        match response {
+            Ok(data) => {
+                let mut result: Vec<IntegrationDetails> = Vec::new();
+                if let Some(list) = data.results {
+                    for gh in list {
+                        result.push(IntegrationDetails::from(&gh));
+                    }
+                }
+                Ok(result)
+            }
+            Err(ResponseError(ref content)) => {
+                Err(response_error(&content.status, &content.content))
+            }
+            Err(e) => Err(IntegrationError::UnhandledError(e.to_string())),
+        }
+    }
+
+    fn get_github_integration_details(
+        &self,
+        rest_cfg: &OpenApiConfig,
+    ) -> Result<Vec<IntegrationDetails>, IntegrationError> {
+        let response = integrations_github_list(rest_cfg, None, NO_ORDERING, None, PAGE_SIZE);
+        match response {
+            Ok(data) => {
+                let mut result: Vec<IntegrationDetails> = Vec::new();
+                if let Some(list) = data.results {
+                    for gh in list {
+                        result.push(IntegrationDetails::from(&gh));
+                    }
+                }
+                Ok(result)
+            }
+            Err(ResponseError(ref content)) => {
+                Err(response_error(&content.status, &content.content))
+            }
+            Err(e) => Err(IntegrationError::UnhandledError(e.to_string())),
+        }
+    }
+
     /// Gets a list of `IntegrationDetails` for all integration types.
     pub fn get_integration_details(
         &self,
         rest_cfg: &OpenApiConfig,
     ) -> Result<Vec<IntegrationDetails>, IntegrationError> {
-        let mut result: Vec<IntegrationDetails> = Vec::new();
-
-        let response = integrations_github_list(rest_cfg, None, NO_ORDERING, None, PAGE_SIZE);
-        if let Ok(paged_results) = response {
-            if let Some(list) = paged_results.results {
-                for gh in list {
-                    result.push(IntegrationDetails::from(&gh));
-                }
-            }
-        } else if let Err(ResponseError(ref content)) = response {
-            return match content.status.as_u16() {
-                401 => Err(auth_error(&content.content)),
-                403 => Err(auth_error(&content.content)),
-                _ => Err(response_error(&content.status, &content.content)),
-            };
-        } else {
-            return Err(IntegrationError::UnhandledError(
-                response.unwrap_err().to_string(),
-            ));
-        }
-
-        let response = integrations_aws_list(rest_cfg, None, None, NO_ORDERING, None, PAGE_SIZE);
-        if let Ok(paged_results) = response {
-            if let Some(list) = paged_results.results {
-                for aws in list {
-                    result.push(IntegrationDetails::from(&aws));
-                }
-            }
-        } else if let Err(ResponseError(ref content)) = response {
-            return match content.status.as_u16() {
-                401 => Err(auth_error(&content.content)),
-                403 => Err(auth_error(&content.content)),
-                _ => Err(response_error(&content.status, &content.content)),
-            };
-        } else {
-            return Err(IntegrationError::UnhandledError(
-                response.unwrap_err().to_string(),
-            ));
-        }
-
-        Ok(result)
+        let mut github_details = self.get_github_integration_details(rest_cfg)?;
+        let mut aws_details = self.get_aws_integration_details(rest_cfg)?;
+        let mut total = vec![];
+        total.append(&mut github_details);
+        total.append(&mut aws_details);
+        Ok(total)
     }
 
     /// Get the integration node by FQN
