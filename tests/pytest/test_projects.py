@@ -101,8 +101,9 @@ class TestProjects(TestCase):
 
         # attempt to delete something that is used elsewhere
         result = self.run_cli(cmd_env, base_cmd + f"project delete '{proj_name2}' --confirm")
-        self.assertResultError(result, "Internal Server Error")  # TODO: better message is below
-        # self.assertResultError(result, "Cannot remove project because it has children")
+        self.assertResultError(result, "Cannot remove project because the following project(s) depend on it")
+        self.assertIn(proj_name3, result.err())
+        self.assertIn(proj_name4, result.err())
 
         # attempt to create without an existing parent
         proj_name5 = self.make_name("proj-par-5")

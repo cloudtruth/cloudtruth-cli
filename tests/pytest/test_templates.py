@@ -915,7 +915,8 @@ PARAMETER={{{{{param1}}}}}
 
         # see that we cannot delete the template that is referenced by a parameter
         result = self.run_cli(cmd_env, sub_cmd + f"del -y {temp_name}")
-        self.assertResultError(result, "Internal Server Error")  # TODO: this should not be an 500
+        self.assertResultError(result, "Cannot remove template because it is referenced by")
+        self.assertIn(param1, result.err())
 
         # see that we catch the circular error
         body2 = f"new-param-name = {{{{ {param1} }}}}"
