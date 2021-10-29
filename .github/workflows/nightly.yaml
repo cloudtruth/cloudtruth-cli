@@ -99,6 +99,7 @@ jobs:
 
       - run: cargo build
       - run: cargo test
+      - run: make prerequisites
 
       - name: Integration Test - non-Windows
         env:
