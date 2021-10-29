@@ -537,11 +537,10 @@ this.is.a.template.value=PARAM1
 
         # further focus on older updates using tag
         result = self.run_cli(cmd_env, temp_cmd + f"history '{temp2}' --as-of '{tag_name}'")
-        self.assertResultError(result, "Cannot specify `as_of` and `tag` together.")  # TODO: fix on server-side
-        # self.assertResultSuccess(result)
-        # self.assertIn(temp2, result.out())
-        # self.assertIn(body2a, result.out())
-        # self.assertNotIn(body2b, result.out())  # filtered out by time
+        self.assertResultSuccess(result)
+        self.assertIn(temp2, result.out())
+        self.assertIn(body2a, result.out())
+        self.assertNotIn(body2b, result.out())  # filtered out by time
 
         # delete both
         result = self.run_cli(cmd_env, temp_cmd + f"del -y '{temp2}'")

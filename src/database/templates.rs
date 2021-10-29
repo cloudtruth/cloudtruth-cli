@@ -312,6 +312,7 @@ impl Templates {
         &self,
         rest_cfg: &OpenApiConfig,
         project_id: &str,
+        _env_name_or_id: &str,
         as_of: Option<String>,
         tag: Option<String>,
     ) -> Result<Vec<TemplateHistory>, TemplateError> {
@@ -337,6 +338,7 @@ impl Templates {
         rest_cfg: &OpenApiConfig,
         project_id: &str,
         template_id: &str,
+        _env_name_name_or_id: &str,
         as_of: Option<String>,
         tag: Option<String>,
     ) -> Result<Vec<TemplateHistory>, TemplateError> {

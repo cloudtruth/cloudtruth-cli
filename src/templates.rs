@@ -417,6 +417,7 @@ fn proc_template_history(
 ) -> Result<()> {
     let proj_name = resolved.project_display_name();
     let proj_id = resolved.project_id();
+    let env_id = resolved.environment_id();
     let as_of = parse_datetime(subcmd_args.value_of(AS_OF_ARG));
     let tag = parse_tag(subcmd_args.value_of(AS_OF_ARG));
     let template_name = subcmd_args.value_of(NAME_ARG);
@@ -429,11 +430,11 @@ fn proc_template_history(
         let template_id = templates.get_id(rest_cfg, &proj_name, proj_id, temp_name)?;
         modifier = format!("for '{}' ", temp_name);
         add_name = false;
-        history = templates.get_history_for(rest_cfg, proj_id, &template_id, as_of, tag)?;
+        history = templates.get_history_for(rest_cfg, proj_id, &template_id, env_id, as_of, tag)?;
     } else {
         modifier = "".to_string();
         add_name = true;
-        history = templates.get_histories(rest_cfg, proj_id, as_of, tag)?;
+        history = templates.get_histories(rest_cfg, proj_id, env_id, as_of, tag)?;
     };
 
     if history.is_empty() {
