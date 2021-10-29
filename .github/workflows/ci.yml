@@ -111,7 +111,7 @@ jobs:
 
       - run: cargo build
       - run: cargo test
-      - run: make prerequisites
+      - run: make test_prerequisites
 
       - name: Integration Test - Part A
         env:
