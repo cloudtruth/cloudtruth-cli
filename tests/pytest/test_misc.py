@@ -1,21 +1,22 @@
 from testcase import TestCase
+from ruamel.yaml import YAML
 import json
-import yaml
 
 
 class TestMiscellaneous(TestCase):
     def test_misc_schema(self):
         cmd_env = self.get_cmd_env()
         base_cmd = self.get_cli_base_cmd()
+        yaml = YAML()
 
         result = self.run_cli(cmd_env, base_cmd + "schema")
         self.assertResultSuccess(result)
-        default_schema = yaml.safe_load(result.out())
+        default_schema = yaml.load(result.out())
 
         # specify the output type -- yaml
         result = self.run_cli(cmd_env, base_cmd + "schema --format yaml")
         self.assertResultSuccess(result)
-        yaml_schema = yaml.safe_load(result.out())
+        yaml_schema = yaml.load(result.out())
 
         # specify the output type -- json
         result = self.run_cli(cmd_env, base_cmd + "schema -f json")

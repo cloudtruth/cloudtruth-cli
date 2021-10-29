@@ -89,11 +89,11 @@ else
 	@echo "Already running rustc version: $(rust_intended)"
 endif
 ifeq ($(os_name),Darwin)
-	brew install shellcheck libyaml;
+	brew install shellcheck;
 else ifeq ($(os_name),Linux)
-	sudo apt-get install shellcheck python-yaml pkg-config;
+	sudo apt-get install shellcheck pkg-config;
 else
-	pip3 install PyYAML
+	@echo "Did not install shellcheck"
 endif
 	make -C tests $@
 

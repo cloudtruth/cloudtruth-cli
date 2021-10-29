@@ -2,7 +2,7 @@
 import sys
 import argparse
 
-import yaml
+from ruamel.yaml import YAML
 
 from pathlib import Path
 from jinja2 import Template
@@ -52,7 +52,8 @@ def parse_args(*args) -> argparse.Namespace:
 
 def update_workflow(config_file: str, template_dir: str, workflow_name: str) -> None:
     with Path(f"{config_file}").open() as fp:
-        config = yaml.safe_load(fp.read())
+        yaml = YAML()
+        config = yaml.load(fp.read())
 
     with Path(f"{template_dir}/{workflow_name}/workflow-job.tmpl").open() as fp:
         job = fp.read()
@@ -105,7 +106,8 @@ def update_workflow(config_file: str, template_dir: str, workflow_name: str) -> 
 
 def update_dockerfiles(config_file: str, template_dir: str, workflow_name: str, docker_dir: str) -> None:
     with Path(f"{config_file}").open() as fp:
-        config = yaml.safe_load(fp.read())
+        yaml = YAML()
+        config = yaml.load(fp.read())
 
     with Path(f"{template_dir}/{workflow_name}/Dockerfile.tmpl").open() as fp:
         dockerfile = fp.read()
