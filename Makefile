@@ -90,8 +90,10 @@ else
 endif
 ifeq ($(os_name),Darwin)
 	brew install shellcheck libyaml;
-else
+else ifeq ($(os_name),Linux)
 	sudo apt-get install shellcheck python-yaml pkg-config;
+else
+	pip3 install PyYAML
 endif
 	make -C tests $@
 
