@@ -1,10 +1,16 @@
+import platform
+import unittest
+
 from testcase import TestCase
-from ruamel.yaml import YAML
-import json
 
 
 class TestMiscellaneous(TestCase):
+    @unittest.skipIf(platform.system() == "Windows", "YAML package not found on Windows")
     def test_misc_schema(self):
+        # import late, so we can skip on Windows
+        from ruamel.yaml import YAML
+        import json
+
         cmd_env = self.get_cmd_env()
         base_cmd = self.get_cli_base_cmd()
         yaml = YAML()
