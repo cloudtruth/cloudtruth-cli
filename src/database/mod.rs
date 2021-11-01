@@ -80,6 +80,7 @@ pub use project_details::ProjectDetails;
 pub use project_error::ProjectError;
 pub use projects::Projects;
 pub use push_details::PushDetails;
+pub use task_detail::TaskDetail;
 pub use template_details::TemplateDetails;
 pub use template_error::TemplateError;
 pub use template_history::TemplateHistory;
