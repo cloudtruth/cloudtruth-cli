@@ -27,6 +27,7 @@ SUBCOMMANDS:
     parameters       Work with CloudTruth parameters [aliases: parameter, params, param, p]
     projects         Work with CloudTruth projects [aliases: project, proj]
     run              Run a shell with the parameters in place [aliases: run, r]
+    schema           Get the schema from the server
     templates        Work with CloudTruth templates [aliases: template, temp, t]
     users            Work with CloudTruth users [aliases: user, us]
 ============================================================
@@ -695,6 +696,19 @@ OPTIONS:
 
 ARGS:
     <arguments>...    Treat the rest of the arguments as the command
+============================================================
+cloudtruth-schema 
+Get the schema from the server
+
+USAGE:
+    cloudtruth schema [OPTIONS]
+
+FLAGS:
+    -h, --help       Prints help information
+    -v, --version    Show just the server schema version
+
+OPTIONS:
+    -f, --format <format>    Schema format [default: yaml]  [possible values: yaml, json]
 ============================================================
 cloudtruth-templates 
 Work with CloudTruth templates

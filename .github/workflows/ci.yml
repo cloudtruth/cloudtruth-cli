@@ -34,7 +34,7 @@ env:
   CLOUDTRUTH_TEST_TEMPLATE_FQN: github://rickporter-tuono/cloudtruth_test/main/ci_test_template.txt
   CLOUDTRUTH_TEST_TEMPLATE_PARAM1: my-param-name
 
-  PART_A_FILTER: test_arg test_audit test_configuration test_environment test_integration
+  PART_A_FILTER: test_arg test_audit test_configuration test_environment test_integration test_misc
   PART_B_FILTER: test_parameter
   PART_C_FILTER: test_project test_run test_template test_timing test_user
 
@@ -111,6 +111,7 @@ jobs:
 
       - run: cargo build
       - run: cargo test
+      - run: make test_prerequisites
 
       - name: Integration Test - Part A
         env:

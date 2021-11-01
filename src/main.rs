@@ -13,6 +13,7 @@ mod logout;
 mod parameters;
 mod projects;
 mod run;
+mod schema;
 mod subprocess;
 mod table;
 mod templates;
@@ -23,7 +24,8 @@ use crate::config::env::ConfigEnv;
 use crate::config::{Config, CT_PROFILE, DEFAULT_ENV_NAME};
 use crate::configuration::process_config_command;
 use crate::database::{
-    AuditLogs, Environments, Integrations, OpenApiConfig, Parameters, Projects, Templates, Users,
+    Api, AuditLogs, Environments, Integrations, OpenApiConfig, Parameters, Projects, Templates,
+    Users,
 };
 use crate::environments::process_environment_command;
 use crate::integrations::process_integrations_command;
@@ -32,6 +34,7 @@ use crate::logout::process_logout_command;
 use crate::parameters::process_parameters_command;
 use crate::projects::process_project_command;
 use crate::run::process_run_command;
+use crate::schema::process_schema_command;
 use crate::subprocess::SubProcess;
 use crate::templates::process_templates_command;
 use crate::users::process_users_command;
@@ -417,6 +420,12 @@ fn main() -> Result<()> {
     if let Some(matches) = matches.subcommand_matches("logout") {
         process_logout_command(matches, Config::global())?;
         process::exit(0);
+    }
+
+    if let Some(matches) = matches.subcommand_matches("schema") {
+        let api = Api::new();
+        process_schema_command(matches, &rest_cfg, &api)?;
+        process::exit(0)
     }
 
     // Check the basic config (api-key, server-url) -- don't worry about valid env/proj, yet

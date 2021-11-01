@@ -89,11 +89,16 @@ else
 	@echo "Already running rustc version: $(rust_intended)"
 endif
 ifeq ($(os_name),Darwin)
-	brew install shellcheck libyaml;
+	brew install shellcheck;
+else ifeq ($(os_name),Linux)
+	sudo apt-get install shellcheck pkg-config;
 else
-	sudo apt-get install shellcheck python-yaml pkg-config;
+	@echo "Did not install shellcheck"
 endif
 	make -C tests $@
+
+test_prerequisites:
+	make -C tests prerequisites
 
 precommit_test:
 	cargo test
@@ -133,5 +138,6 @@ targets:
 	@echo "regen          - regenerate non-build artifacts"
 	@echo "shell          - drop into the cloudtruth/cli docker container for development"
 	@echo "test           - runs precommit tests, as well as integration tests"
+	@echo "test_prerequisites - installs packages needed for testing"
 	@echo "version_check  - checks rustc versions"
 	@echo ""

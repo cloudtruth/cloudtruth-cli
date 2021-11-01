@@ -1,2 +1,2 @@
 jinja2 (~= 2.11.3)
-pyyaml (~= 5.4.1)
+ruamel.yaml (~= 0.17.16)

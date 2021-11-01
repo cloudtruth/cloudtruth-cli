@@ -1,3 +1,5 @@
+mod api;
+mod api_error;
 mod audit_log_details;
 mod audit_log_errors;
 mod audit_log_summary;
@@ -37,6 +39,8 @@ mod user_details;
 mod user_error;
 mod users;
 
+pub use api::Api;
+pub use api_error::ApiError;
 pub use audit_log_details::AuditLogDetails;
 pub use audit_log_errors::AuditLogError;
 pub use audit_log_summary::AuditLogSummary;
