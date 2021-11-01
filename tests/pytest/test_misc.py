@@ -39,6 +39,17 @@ class TestMiscellaneous(TestCase):
         version = result.out().strip()
         self.assertEqual(version, default_schema["info"]["version"])
 
+        # check local
+        result = self.run_cli(cmd_env, base_cmd + "schema --local")
+        self.assertResultSuccess(result)
+        local_schema = yaml.load(result.out())
+
+        # check the local version
+        result = self.run_cli(cmd_env, base_cmd + "schema --local --version")
+        self.assertResultSuccess(result)
+        version = result.out().strip()
+        self.assertEqual(version, local_schema["info"]["version"])
+
     def test_misc_completions(self):
         cmd_env = self.get_cmd_env()
         base_cmd = self.get_cli_base_cmd()
