@@ -1,11 +1,15 @@
 import os
 import unittest
+import subprocess
+
 from typing import List
 
 from testcase import TestCase
+from testcase import PROP_DESC
 from testcase import PROP_NAME
 from testcase import PROP_TYPE
 from testcase import PROP_VALUE
+from testcase import find_by_prop
 from urllib.parse import urlparse
 
 CT_BROKEN_PROJ = "CLOUDTRUTH_TEST_BROKEN_PROJECT"
@@ -50,12 +54,33 @@ CT_TEMP_RUN = [
     CT_TEMP_PARAM1,
 ]
 
+CT_PUSH_INTEG_NAME = "CLOUDTRUTH_TEST_PUSH_INTEGRATION_NAME"
+CT_PUSH_BAD_INT_NAME = "CLOUDTRUTH_TEST_PUSH_BAD_INTEGRATION_NAME"
+CT_PUSH_RUN = [
+    CT_PUSH_INTEG_NAME,
+    CT_PUSH_BAD_INT_NAME,
+]
+
 
 def missing_any(env_var_names: List[str]) -> bool:
     return not all([os.environ.get(x) for x in env_var_names])
 
 
 class TestIntegrations(TestCase):
+    def __init__(self, *args, **kwargs):
+        self._pushes = None
+        super().__init__(*args, **kwargs)
+
+    def setUp(self) -> None:
+        self._pushes = list()
+        super().setUp()
+
+    def tearDown(self) -> None:
+        # delete any possibly lingering pushes
+        for entry in self._pushes:
+            cmd = self._base_cmd + f"int push del \"{entry[0]}\" \"{entry[1]}\" -y"
+            subprocess.run(cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        super().tearDown()
 
     def test_integration_explore_errors(self):
         base_cmd = self.get_cli_base_cmd()
@@ -393,3 +418,116 @@ PARAMETER_2 = PARAM2
 
         # cleanup
         self.delete_project(cmd_env, proj_name)
+
+    @unittest.skipIf(missing_any(CT_PUSH_RUN), "Need all CT_PUSH_RUN parameters")
+    def test_integration_push_basic(self):
+        base_cmd = self.get_cli_base_cmd()
+        cmd_env = self.get_cmd_env()
+
+        integ_name = os.environ.get(CT_PUSH_INTEG_NAME)
+        bad_int_name = os.environ.get(CT_PUSH_BAD_INT_NAME)
+
+        ########################
+        # create the push
+        push_name1 = self.make_name("my-test-push")
+        desc1 = "original comment"
+        resource1 = "/{{ environment }}/{{ project }}/{{ parameter }}"
+        self._pushes.append((integ_name, push_name1))
+        set_cmd = base_cmd + f"int push set {integ_name} {push_name1} -d '{desc1}' --resource '{resource1}'"
+        result = self.run_cli(cmd_env, set_cmd)
+        self.assertResultSuccess(result)
+        self.assertIn("Created", result.out())
+
+        ########################
+        # check it was created
+        list_cmd = base_cmd + f"integration push list '{integ_name}' "
+        result = self.run_cli(cmd_env, list_cmd + "-f json")
+        self.assertResultSuccess(result)
+        pushes = eval(result.out()).get("integration-push")
+        entry = find_by_prop(pushes, PROP_NAME, push_name1)[0]
+        self.assertEqual(entry.get(PROP_DESC), desc1)
+        self.assertEqual(entry.get("Resource"), resource1)
+
+        # update/rename push
+        push_name2 = self.make_name("updated-test-push")
+        resource2 = "/{{ project }}/{{ parameter }}/{{ environment }}"
+        self._pushes.append((integ_name, push_name2))
+        set_cmd = base_cmd + f"int push set '{integ_name}' '{push_name1}' --resource '{resource2}' -r '{push_name2}'"
+        result = self.run_cli(cmd_env, set_cmd)
+        self.assertResultSuccess(result)
+        self.assertIn("Updated", result.out())
+
+        # check we have one entry with updated values
+        result = self.run_cli(cmd_env, list_cmd + "-f json")
+        self.assertResultSuccess(result)
+        pushes = eval(result.out()).get("integration-push")
+        # original name does not exist
+        self.assertEqual(0, len(find_by_prop(pushes, PROP_NAME, push_name1)))
+        # check the updated entry
+        entry = find_by_prop(pushes, PROP_NAME, push_name2)[0]
+        self.assertEqual(entry.get(PROP_DESC), desc1)
+        self.assertEqual(entry.get("Resource"), resource2)
+
+        # another update
+        desc2 = "Updated description"
+        self._pushes.append((integ_name, push_name2))
+        result = self.run_cli(cmd_env, base_cmd + f"int push set '{integ_name}' '{push_name2}' -d '{desc2}'")
+        self.assertResultSuccess(result)
+        self.assertIn("Updated", result.out())
+
+        # check updates
+        result = self.run_cli(cmd_env, list_cmd + "-f csv")
+        self.assertResultSuccess(result)
+        self.assertIn(f"{push_name2},{desc2},{resource2},", result.out())
+
+        ########################
+        # task list
+        result = self.run_cli(cmd_env, base_cmd + f"int push tasks '{integ_name}' '{push_name2}' -f json")
+        self.assertResultSuccess(result)
+        tasks = eval(result.out()).get("integration-push-task")
+        self.assertGreaterEqual(len(tasks), 1)
+        self.assertEqual(1, len(find_by_prop(tasks, "Reason", "push created")))
+        entry = tasks[0]
+        self.assertIsNotNone(entry.get("Reason"))
+        self.assertIsNotNone(entry.get("State"))
+        self.assertIsNotNone(entry.get("Status Info"))
+
+        ########################
+        # delete the push
+        del_cmd = base_cmd + f"int push del '{integ_name}' '{push_name2}' -y"
+        result = self.run_cli(cmd_env, del_cmd)
+        self.assertResultSuccess(result)
+        self.assertIn("Deleted", result.out())
+
+        # idempotent
+        result = self.run_cli(cmd_env, del_cmd)
+        self.assertResultWarning(result, f"No push integration found for '{push_name2}'")
+
+        # make sure it is gone
+        result = self.run_cli(cmd_env, list_cmd + "-f csv")
+        self.assertResultSuccess(result)
+        self.assertNotIn(f"{push_name1},", result.out())
+        self.assertNotIn(f"{push_name2},", result.out())
+
+        ########################
+        # error out for invalid push name
+        result = self.run_cli(cmd_env, base_cmd + f"int push task '{integ_name}' '{push_name2}'")
+        self.assertResultError(result, f"No push integration found for '{push_name2}'")
+
+        # resource string required for create
+        result = self.run_cli(cmd_env, base_cmd + f"int push set '{integ_name}' '{push_name2}' -d '{desc2}'")
+        self.assertResultError(result, "Must specify a resource value on create")
+
+        ########################
+        # error out for bad integration name
+        result = self.run_cli(cmd_env, base_cmd + f"int p l '{bad_int_name}'")
+        self.assertResultError(result, f"No integration found for '{bad_int_name}'")
+
+        result = self.run_cli(cmd_env, base_cmd + f"int p set '{bad_int_name}' '{push_name1}'")
+        self.assertResultError(result, f"No integration found for '{bad_int_name}'")
+
+        result = self.run_cli(cmd_env, base_cmd + f"int p task '{bad_int_name}' '{push_name1}' -v")
+        self.assertResultError(result, f"No integration found for '{bad_int_name}'")
+
+        result = self.run_cli(cmd_env, base_cmd + f"int p del '{bad_int_name}' '{push_name1}' -y")
+        self.assertResultError(result, f"No integration found for '{bad_int_name}'")

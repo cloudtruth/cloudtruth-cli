@@ -38,11 +38,12 @@ DEFAULT_PARAM_VALUE = "-"
 
 # properties
 PROP_CREATED = "Created At"
+PROP_DESC = "Description"
 PROP_MODIFIED = "Modified At"
 PROP_NAME = "Name"
+PROP_RAW = "Raw"
 PROP_TYPE = "Type"
 PROP_VALUE = "Value"
-PROP_RAW = "Raw"
 
 
 def get_cli_base_cmd() -> str:
@@ -134,7 +135,7 @@ class TestCase(unittest.TestCase):
             cmd = self._base_cmd + f"user del --confirm \"{usr}\""
             subprocess.run(cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
-        # delete any possibly lingering users
+        # delete any possibly lingering invitations
         for email in self._invites:
             cmd = self._base_cmd + f"user invitations del --confirm \"{email}\""
             subprocess.run(cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)

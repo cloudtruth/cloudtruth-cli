@@ -9,10 +9,12 @@ pub const CONFIRM_FLAG: &str = "confirm";
 pub const DESCRIPTION_OPT: &str = "description";
 pub const ENV_NAME_ARG: &str = "env-name";
 pub const FORMAT_OPT: &str = "format";
+pub const INTEGRATION_NAME_ARG: &str = "integration-name";
 pub const INVITE_NAME_ARG: &str = "e-mail";
 pub const KEY_ARG: &str = "KEY";
 pub const NAME_ARG: &str = "NAME";
 pub const PARENT_ARG: &str = "parent";
+pub const PUSH_NAME_ARG: &str = "push-name";
 pub const RAW_FLAG: &str = "raw";
 pub const RENAME_OPT: &str = "new-name";
 pub const ROLE_ARG: &str = "role";
@@ -28,8 +30,10 @@ pub const EDIT_SUBCMD: &str = "edit";
 pub const GET_SUBCMD: &str = "get";
 pub const HISTORY_SUBCMD: &str = "history";
 pub const LIST_SUBCMD: &str = "list";
+pub const PUSH_SUBCMD: &str = "pushes";
 pub const SET_SUBCMD: &str = "set";
 pub const TAG_SUBCMD: &str = "tag";
+pub const TASKS_SUBCMD: &str = "tasks";
 pub const TREE_SUBCMD: &str = "tree";
 
 const TRUE_FALSE_VALUES: &[&str] = &["true", "false"];
@@ -39,7 +43,9 @@ const DIFF_ALIASES: &[&str] = &["difference", "differ", "diff", "di"];
 const EDIT_ALIASES: &[&str] = &["ed", "e"];
 const HISTORY_ALIASES: &[&str] = &["hist", "h"];
 const LIST_ALIASES: &[&str] = &["ls", "l"];
+const PUSH_ALIASES: &[&str] = &["push", "pu", "p"];
 const SET_ALIASES: &[&str] = &["s"];
+const TASKS_ALIASES: &[&str] = &["task", "ta", "t"];
 const TREE_ALIASES: &[&str] = &["tr"];
 
 pub fn binary_name() -> String {
@@ -190,6 +196,22 @@ fn invitation_name_arg() -> Arg<'static, 'static> {
         .index(1)
         .required(true)
         .help("Email address for invitation")
+}
+
+fn integration_name_arg() -> Arg<'static, 'static> {
+    Arg::with_name(INTEGRATION_NAME_ARG)
+        .takes_value(true)
+        .index(1)
+        .required(true)
+        .help("Integration name")
+}
+
+fn push_name_arg() -> Arg<'static, 'static> {
+    Arg::with_name(PUSH_NAME_ARG)
+        .takes_value(true)
+        .index(2)
+        .required(true)
+        .help("Push name")
 }
 
 pub fn build_cli() -> App<'static, 'static> {
@@ -424,6 +446,57 @@ pub fn build_cli() -> App<'static, 'static> {
                         .arg(show_times_arg())
                         .arg(values_flag().help("Display integration information/values"))
                         .arg(table_format_options().help("Format for integration values data")),
+                    SubCommand::with_name(PUSH_SUBCMD)
+                        .visible_aliases(PUSH_ALIASES)
+                        .about("Manage CloudTruth pushes")
+                        .subcommands(vec![
+                            SubCommand::with_name(DELETE_SUBCMD)
+                                .visible_aliases(DELETE_ALIASES)
+                                .about("Delete a CloudTruth push")
+                                .arg(confirm_flag())
+                                .arg(integration_name_arg())
+                                .arg(push_name_arg()),
+                            SubCommand::with_name(LIST_SUBCMD)
+                                .visible_aliases(LIST_ALIASES)
+                                .about("List CloudTruth pushes")
+                                .arg(integration_name_arg())
+                                .arg(values_flag())
+                                .arg(show_times_arg())
+                                .arg(table_format_options()),
+                            SubCommand::with_name(SET_SUBCMD)
+                                .visible_aliases(SET_ALIASES)
+                                .about("Create/modify CloudTruth")
+                                .arg(integration_name_arg())
+                                .arg(push_name_arg())
+                                .arg(rename_option())
+                                .arg(description_option().help("Description for the push"))
+                                .arg(Arg::with_name("resource")
+                                    .long("resource")
+                                    .takes_value(true)
+                                    .help("Resource string"))
+                                .arg(Arg::with_name("region")
+                                    .long("region")
+                                    .takes_value(true)
+                                    .default_value("us-east-1")
+                                    .help("Region where push tasks run (create only)"))
+                                .arg(Arg::with_name("service")
+                                    .long("service")
+                                    .takes_value(true)
+                                    .default_value("s3")
+                                    .help("Service for the push to use (create only)")),
+                            SubCommand::with_name(TASKS_SUBCMD)
+                                .visible_aliases(TASKS_ALIASES)
+                                .about("List tasks for the specified CloudTruth push")
+                                .arg(integration_name_arg())
+                                .arg(push_name_arg())
+                                .arg(values_flag())
+                                .arg(show_times_arg())
+                                .arg(table_format_options()),
+                        ]),
+                    SubCommand::with_name("refresh")
+                        .visible_aliases(&["ref", "re", "r"])
+                        .about("Refresh the integration connection status")
+                        .arg(integration_name_arg()),
                 ])
         )
         .subcommand(
