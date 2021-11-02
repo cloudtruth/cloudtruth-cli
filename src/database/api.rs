@@ -4,7 +4,6 @@ use cloudtruth_restapi::apis::Error::ResponseError;
 use serde_json::Value;
 use std::collections::HashMap;
 
-//const OPENAPI_YAML_FILE: &'static str = concat!(env!("CARGO_MANIFEST_DIR"), "/", "openapi.yml");
 const REQUIRED_FORMAT: &str = "json";
 
 fn response_error(status: &reqwest::StatusCode, content: &str) -> ApiError {
