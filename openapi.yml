@@ -974,6 +974,7 @@ paths:
           - failure
           - queued
           - running
+          - skipped
           - success
         description: The current state of this task.
       tags:
@@ -1033,10 +1034,10 @@ paths:
         name: operation
         schema:
           type: string
-          nullable: true
           enum:
           - create
           - delete
+          - read
           - update
         description: The operation performed, if any.
       - name: ordering
@@ -1180,7 +1181,7 @@ paths:
         schema:
           type: string
           format: uuid
-          description: The unique identifier for the push action.
+          description: Unique identifier for the action.
         required: true
       tags:
       - integrations
@@ -1208,7 +1209,7 @@ paths:
         schema:
           type: string
           format: uuid
-          description: The unique identifier for the push action.
+          description: Unique identifier for the action.
         required: true
       tags:
       - integrations
@@ -1248,7 +1249,7 @@ paths:
         schema:
           type: string
           format: uuid
-          description: The unique identifier for the push action.
+          description: Unique identifier for the action.
         required: true
       tags:
       - integrations
@@ -1287,7 +1288,7 @@ paths:
         schema:
           type: string
           format: uuid
-          description: The unique identifier for the push action.
+          description: Unique identifier for the action.
         required: true
       tags:
       - integrations
@@ -1313,7 +1314,7 @@ paths:
         schema:
           type: string
           format: uuid
-          description: The unique identifier for the push action.
+          description: Unique identifier for the action.
         required: true
       tags:
       - integrations
@@ -1351,7 +1352,8 @@ paths:
         name: refresh_status
         schema:
           type: boolean
-        description: Refresh the integration status before returning the details.
+        description: Trigger a refresh of the integration status before returning
+          the details.
       tags:
       - integrations
       security:
@@ -1615,7 +1617,8 @@ paths:
         name: refresh_status
         schema:
           type: boolean
-        description: Refresh the integration status before returning the details.
+        description: Trigger a refresh of the integration status before returning
+          the details.
       tags:
       - integrations
       security:
@@ -2464,7 +2467,9 @@ paths:
       - ApiKeyAuth: []
       responses:
         '204':
-          description: No response body
+          description: Project destroyed.
+        '409':
+          description: The project has dependents and cannot be removed.
   /api/v1/projects/{project_pk}/parameter-export/:
     get:
       operationId: projects_parameter_export_list
@@ -4133,7 +4138,10 @@ paths:
       - ApiKeyAuth: []
       responses:
         '204':
-          description: No response body
+          description: Template destroyed.
+        '409':
+          description: The template is referenced by another template or value and
+            cannot be removed.
   /api/v1/projects/{project_pk}/templates/{id}/timeline/:
     get:
       operationId: projects_templates_timeline_retrieve
@@ -4150,6 +4158,12 @@ paths:
           format: date-time
         description: Specify a point in time to retrieve configuration from. Cannot
           be specified with `tag`.
+      - in: query
+        name: environment
+        schema:
+          type: string
+        description: Name or id of the environment to use to evaluate this template.
+          If not specified then the original content is returned in the body.
       - in: path
         name: id
         schema:
@@ -4197,6 +4211,12 @@ paths:
           format: date-time
         description: Specify a point in time to retrieve configuration from. Cannot
           be specified with `tag`.
+      - in: query
+        name: environment
+        schema:
+          type: string
+        description: Name or id of the environment to use to evaluate this template.
+          If not specified then the original content is returned in the body.
       - in: path
         name: project_pk
         schema:
@@ -4605,9 +4625,10 @@ components:
           readOnly: true
         description:
           type: string
-          description: The optional description for the integration.
+          description: An optional description for the integration.
         status:
-          type: string
+          allOf:
+          - $ref: '#/components/schemas/StatusEnum'
           readOnly: true
           description: The status of the integration connection with the third-party
             provider as of the `status_last_checked_at` field.  The status is updated
@@ -4622,10 +4643,6 @@ components:
           format: date-time
           readOnly: true
           description: The last time the status was evaluated.
-        type:
-          type: string
-          readOnly: true
-          description: The type of integration.
         created_at:
           type: string
           format: date-time
@@ -4637,9 +4654,13 @@ components:
         fqn:
           type: string
           readOnly: true
+        type:
+          type: string
+          readOnly: true
+          description: The type of integration.
         writable:
           type: boolean
-          description: Allow pushes to write parameters to the integration.
+          description: Allow actions to write to the integration.
         aws_account_id:
           type: string
           description: The AWS Account ID.
@@ -4694,10 +4715,10 @@ components:
       properties:
         description:
           type: string
-          description: The optional description for the integration.
+          description: An optional description for the integration.
         writable:
           type: boolean
-          description: Allow pushes to write parameters to the integration.
+          description: Allow actions to write to the integration.
         aws_account_id:
           type: string
           description: The AWS Account ID.
@@ -4749,14 +4770,14 @@ components:
           type: string
           format: uuid
           readOnly: true
-          description: The unique identifier for the push action.
+          description: Unique identifier for the action.
         name:
           type: string
-          description: The push action name.
+          description: The action name.
           maxLength: 256
         description:
           type: string
-          description: The optional description for the push action.
+          description: The optional description for the action.
         projects:
           type: array
           items:
@@ -4795,6 +4816,8 @@ components:
               - ``{{ tag }}`` to insert the tag name
 
             We recommend that you use project, environment, and parameter at a minimum to disambiguate your pushed resource identifiers.
+
+            If you include multiple projects in the push, the `project` substitution is required.  If you include multiple tags from different environments in the push, the `environment` substitution is required.  If you include multiple tags from the same environment in the push, the `tag` substitution is required.  In all cases, the `parameter` substitution is always required.
           maxLength: 1024
         latest_task:
           allOf:
@@ -4884,7 +4907,6 @@ components:
         operation:
           allOf:
           - $ref: '#/components/schemas/OperationEnum'
-          nullable: true
           description: The operation performed, if any.
         success:
           type: boolean
@@ -4938,6 +4960,7 @@ components:
       - environment
       - id
       - modified_at
+      - operation
       - parameter
       - success
       - url
@@ -4954,14 +4977,14 @@ components:
           type: string
           format: uuid
           readOnly: true
-          description: The unique identifier for the push action.
+          description: Unique identifier for the action.
         name:
           type: string
-          description: The push action name.
+          description: The action name.
           maxLength: 256
         description:
           type: string
-          description: The optional description for the push action.
+          description: The optional description for the action.
         projects:
           type: array
           items:
@@ -4990,6 +5013,8 @@ components:
               - ``{{ tag }}`` to insert the tag name
 
             We recommend that you use project, environment, and parameter at a minimum to disambiguate your pushed resource identifiers.
+
+            If you include multiple projects in the push, the `project` substitution is required.  If you include multiple tags from different environments in the push, the `environment` substitution is required.  If you include multiple tags from the same environment in the push, the `tag` substitution is required.  In all cases, the `parameter` substitution is always required.
           maxLength: 1024
         created_at:
           type: string
@@ -5130,9 +5155,10 @@ components:
           readOnly: true
         description:
           type: string
-          description: The optional description for the integration.
+          description: An optional description for the integration.
         status:
-          type: string
+          allOf:
+          - $ref: '#/components/schemas/StatusEnum'
           readOnly: true
           description: The status of the integration connection with the third-party
             provider as of the `status_last_checked_at` field.  The status is updated
@@ -5147,10 +5173,6 @@ components:
           format: date-time
           readOnly: true
           description: The last time the status was evaluated.
-        type:
-          type: string
-          readOnly: true
-          description: The type of integration.
         created_at:
           type: string
           format: date-time
@@ -5162,9 +5184,13 @@ components:
         fqn:
           type: string
           readOnly: true
+        type:
+          type: string
+          readOnly: true
+          description: The type of integration.
         writable:
           type: boolean
-          description: Allow pushes to write parameters to the integration.
+          description: Allow actions to write to the integration.
         gh_installation_id:
           type: integer
         gh_organization_slug:
@@ -5188,10 +5214,10 @@ components:
       properties:
         description:
           type: string
-          description: The optional description for the integration.
+          description: An optional description for the integration.
         writable:
           type: boolean
-          description: Allow pushes to write parameters to the integration.
+          description: Allow actions to write to the integration.
         gh_installation_id:
           type: integer
       required:
@@ -5265,6 +5291,10 @@ components:
           format: uri
           readOnly: true
           description: The user that created the invitation.
+        inviter_name:
+          type: string
+          readOnly: true
+          description: The name of the user that created the invitation.
         state:
           type: string
           readOnly: true
@@ -5282,6 +5312,7 @@ components:
       - email
       - id
       - inviter
+      - inviter_name
       - membership
       - role
       - state
@@ -5382,6 +5413,7 @@ components:
     OperationEnum:
       enum:
       - create
+      - read
       - update
       - delete
       type: string
@@ -5872,6 +5904,10 @@ components:
           format: uri
           readOnly: true
           description: The project that the parameter is within.
+        project_name:
+          type: string
+          readOnly: true
+          description: The project name that the parameter is within
         referencing_templates:
           type: array
           items:
@@ -5923,6 +5959,7 @@ components:
       - modified_at
       - name
       - project
+      - project_name
       - referencing_templates
       - referencing_values
       - rules
@@ -6147,9 +6184,10 @@ components:
           readOnly: true
         description:
           type: string
-          description: The optional description for the integration.
+          description: An optional description for the integration.
         status:
-          type: string
+          allOf:
+          - $ref: '#/components/schemas/StatusEnum'
           readOnly: true
           description: The status of the integration connection with the third-party
             provider as of the `status_last_checked_at` field.  The status is updated
@@ -6164,10 +6202,6 @@ components:
           format: date-time
           readOnly: true
           description: The last time the status was evaluated.
-        type:
-          type: string
-          readOnly: true
-          description: The type of integration.
         created_at:
           type: string
           format: date-time
@@ -6179,9 +6213,13 @@ components:
         fqn:
           type: string
           readOnly: true
+        type:
+          type: string
+          readOnly: true
+          description: The type of integration.
         writable:
           type: boolean
-          description: Allow pushes to write parameters to the integration.
+          description: Allow actions to write to the integration.
         aws_account_id:
           type: string
           description: The AWS Account ID.
@@ -6229,14 +6267,14 @@ components:
           type: string
           format: uuid
           readOnly: true
-          description: The unique identifier for the push action.
+          description: Unique identifier for the action.
         name:
           type: string
-          description: The push action name.
+          description: The action name.
           maxLength: 256
         description:
           type: string
-          description: The optional description for the push action.
+          description: The optional description for the action.
         projects:
           type: array
           items:
@@ -6265,6 +6303,8 @@ components:
               - ``{{ tag }}`` to insert the tag name
 
             We recommend that you use project, environment, and parameter at a minimum to disambiguate your pushed resource identifiers.
+
+            If you include multiple projects in the push, the `project` substitution is required.  If you include multiple tags from different environments in the push, the `environment` substitution is required.  If you include multiple tags from the same environment in the push, the `tag` substitution is required.  In all cases, the `parameter` substitution is always required.
           maxLength: 1024
         created_at:
           type: string
@@ -6345,6 +6385,10 @@ components:
           format: uri
           readOnly: true
           description: The user that created the invitation.
+        inviter_name:
+          type: string
+          readOnly: true
+          description: The name of the user that created the invitation.
         state:
           type: string
           readOnly: true
@@ -6477,6 +6521,10 @@ components:
           format: uri
           readOnly: true
           description: The project that the parameter is within.
+        project_name:
+          type: string
+          readOnly: true
+          description: The project name that the parameter is within
         referencing_templates:
           type: array
           items:
@@ -7054,8 +7102,18 @@ components:
       enum:
       - queued
       - running
+      - skipped
       - success
       - failure
+      type: string
+    StatusEnum:
+      enum:
+      - unknown
+      - pending
+      - checking
+      - connected
+      - errored
+      - missing
       type: string
     Tag:
       type: object

@@ -18,8 +18,8 @@ pub struct AwsPushTaskStep {
     #[serde(rename = "id")]
     pub id: String,
     /// The operation performed, if any.
-    #[serde(rename = "operation", skip_serializing_if = "Option::is_none")]
-    pub operation: Option<Box<crate::models::OperationEnum>>,
+    #[serde(rename = "operation")]
+    pub operation: Box<crate::models::OperationEnum>,
     /// Indicates if the operation was successful.
     #[serde(rename = "success")]
     pub success: bool,
@@ -55,6 +55,7 @@ impl AwsPushTaskStep {
     pub fn new(
         url: String,
         id: String,
+        operation: crate::models::OperationEnum,
         success: bool,
         environment: Option<String>,
         parameter: Option<String>,
@@ -64,7 +65,7 @@ impl AwsPushTaskStep {
         AwsPushTaskStep {
             url,
             id,
-            operation: None,
+            operation: Box::new(operation),
             success,
             fqn: None,
             environment,

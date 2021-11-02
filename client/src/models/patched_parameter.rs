@@ -34,6 +34,9 @@ pub struct PatchedParameter {
     /// The project that the parameter is within.
     #[serde(rename = "project", skip_serializing_if = "Option::is_none")]
     pub project: Option<String>,
+    /// The project name that the parameter is within
+    #[serde(rename = "project_name", skip_serializing_if = "Option::is_none")]
+    pub project_name: Option<String>,
     /// Templates that reference this Parameter.
     #[serde(
         rename = "referencing_templates",
@@ -64,6 +67,7 @@ impl PatchedParameter {
             _type: None,
             rules: None,
             project: None,
+            project_name: None,
             referencing_templates: None,
             referencing_values: None,
             values: None,

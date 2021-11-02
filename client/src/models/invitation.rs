@@ -24,6 +24,9 @@ pub struct Invitation {
     /// The user that created the invitation.
     #[serde(rename = "inviter")]
     pub inviter: String,
+    /// The name of the user that created the invitation.
+    #[serde(rename = "inviter_name")]
+    pub inviter_name: String,
     /// The current state of the invitation.
     #[serde(rename = "state")]
     pub state: String,
@@ -42,6 +45,7 @@ impl Invitation {
         email: String,
         role: crate::models::RoleEnum,
         inviter: String,
+        inviter_name: String,
         state: String,
         state_detail: String,
         membership: Option<String>,
@@ -52,6 +56,7 @@ impl Invitation {
             email,
             role: Box::new(role),
             inviter,
+            inviter_name,
             state,
             state_detail,
             membership,

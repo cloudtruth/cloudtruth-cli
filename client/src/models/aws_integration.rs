@@ -17,28 +17,28 @@ pub struct AwsIntegration {
     pub id: String,
     #[serde(rename = "name")]
     pub name: String,
-    /// The optional description for the integration.
+    /// An optional description for the integration.
     #[serde(rename = "description", skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
     /// The status of the integration connection with the third-party provider as of the `status_last_checked_at` field.  The status is updated automatically by the server when the integration is modified.
     #[serde(rename = "status")]
-    pub status: String,
+    pub status: Box<crate::models::StatusEnum>,
     /// If an error occurs, more details will be available in this field.
     #[serde(rename = "status_detail")]
     pub status_detail: String,
     /// The last time the status was evaluated.
     #[serde(rename = "status_last_checked_at")]
     pub status_last_checked_at: String,
-    /// The type of integration.
-    #[serde(rename = "type")]
-    pub _type: String,
     #[serde(rename = "created_at")]
     pub created_at: String,
     #[serde(rename = "modified_at")]
     pub modified_at: String,
     #[serde(rename = "fqn")]
     pub fqn: String,
-    /// Allow pushes to write parameters to the integration.
+    /// The type of integration.
+    #[serde(rename = "type")]
+    pub _type: String,
+    /// Allow actions to write to the integration.
     #[serde(rename = "writable", skip_serializing_if = "Option::is_none")]
     pub writable: Option<bool>,
     /// The AWS Account ID.
@@ -63,13 +63,13 @@ impl AwsIntegration {
         url: String,
         id: String,
         name: String,
-        status: String,
+        status: crate::models::StatusEnum,
         status_detail: String,
         status_last_checked_at: String,
-        _type: String,
         created_at: String,
         modified_at: String,
         fqn: String,
+        _type: String,
         aws_account_id: String,
         aws_enabled_regions: Vec<crate::models::AwsRegionEnum>,
         aws_enabled_services: Vec<crate::models::AwsServiceEnum>,
@@ -80,13 +80,13 @@ impl AwsIntegration {
             id,
             name,
             description: None,
-            status,
+            status: Box::new(status),
             status_detail,
             status_last_checked_at,
-            _type,
             created_at,
             modified_at,
             fqn,
+            _type,
             writable: None,
             aws_account_id,
             aws_enabled_regions,

@@ -25,6 +25,7 @@ pub enum ProjectsCreateError {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum ProjectsDestroyError {
+    Status409(),
     UnknownValue(serde_json::Value),
 }
 
@@ -233,6 +234,7 @@ pub enum ProjectsTemplatesCreateError {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum ProjectsTemplatesDestroyError {
+    Status409(),
     UnknownValue(serde_json::Value),
 }
 
@@ -3078,6 +3080,7 @@ pub fn projects_templates_timeline_retrieve(
     id: &str,
     project_pk: &str,
     as_of: Option<String>,
+    environment: Option<&str>,
     tag: Option<&str>,
 ) -> Result<crate::models::TemplateTimeline, Error<ProjectsTemplatesTimelineRetrieveError>> {
     let local_var_client = &configuration.client;
@@ -3094,6 +3097,10 @@ pub fn projects_templates_timeline_retrieve(
     if let Some(ref local_var_str) = as_of {
         local_var_req_builder =
             local_var_req_builder.query(&[("as_of", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = environment {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("environment", &local_var_str.to_string())]);
     }
     if let Some(ref local_var_str) = tag {
         local_var_req_builder = local_var_req_builder.query(&[("tag", &local_var_str.to_string())]);
@@ -3157,6 +3164,7 @@ pub fn projects_templates_timelines_retrieve(
     configuration: &configuration::Configuration,
     project_pk: &str,
     as_of: Option<String>,
+    environment: Option<&str>,
     tag: Option<&str>,
 ) -> Result<crate::models::TemplateTimeline, Error<ProjectsTemplatesTimelinesRetrieveError>> {
     let local_var_client = &configuration.client;
@@ -3172,6 +3180,10 @@ pub fn projects_templates_timelines_retrieve(
     if let Some(ref local_var_str) = as_of {
         local_var_req_builder =
             local_var_req_builder.query(&[("as_of", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = environment {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("environment", &local_var_str.to_string())]);
     }
     if let Some(ref local_var_str) = tag {
         local_var_req_builder = local_var_req_builder.query(&[("tag", &local_var_str.to_string())]);

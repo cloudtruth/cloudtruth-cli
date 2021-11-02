@@ -144,6 +144,7 @@ impl Invitations {
             email: None,
             role: role_enum.map(Box::new),
             inviter: None,
+            inviter_name: None,
             state: None,
             state_detail: None,
             membership: None,
