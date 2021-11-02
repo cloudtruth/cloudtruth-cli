@@ -35,8 +35,11 @@ impl Api {
         }
     }
 
-    pub fn get_schema(&self, rest_cfg: &OpenApiConfig, format: &str) -> Result<String, ApiError> {
-        let map = self.get_schema_map(rest_cfg)?;
+    fn output_format(
+        &self,
+        map: &HashMap<String, Value>,
+        format: &str,
+    ) -> Result<String, ApiError> {
         match format {
             "yaml" => {
                 let result = serde_yaml::to_string(&map).unwrap();
@@ -50,11 +53,36 @@ impl Api {
         }
     }
 
-    pub fn get_schema_version(&self, rest_cfg: &OpenApiConfig) -> Result<String, ApiError> {
+    pub fn get_schema(&self, rest_cfg: &OpenApiConfig, format: &str) -> Result<String, ApiError> {
         let map = self.get_schema_map(rest_cfg)?;
+        self.output_format(&map, format)
+    }
+
+    fn version_from_map(&self, map: &HashMap<String, Value>) -> Result<String, ApiError> {
         let info = map.get("info").unwrap();
         let version = info.get("version").unwrap();
         let result = version.as_str().unwrap();
         Ok(result.to_string())
+    }
+
+    pub fn get_schema_version(&self, rest_cfg: &OpenApiConfig) -> Result<String, ApiError> {
+        let map = self.get_schema_map(rest_cfg)?;
+        self.version_from_map(&map)
+    }
+
+    fn get_local_schema_map(&self) -> Result<HashMap<String, Value>, ApiError> {
+        let file_text = include_str!("../../openapi.yml");
+        let result: HashMap<String, Value> = serde_yaml::from_str(file_text)?;
+        Ok(result)
+    }
+
+    pub fn get_local_schema(&self, format: &str) -> Result<String, ApiError> {
+        let map = self.get_local_schema_map()?;
+        self.output_format(&map, format)
+    }
+
+    pub fn get_local_schema_version(&self) -> Result<String, ApiError> {
+        let map = self.get_local_schema_map()?;
+        self.version_from_map(&map)
     }
 }
