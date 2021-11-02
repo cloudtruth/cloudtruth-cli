@@ -312,12 +312,17 @@ impl Templates {
         &self,
         rest_cfg: &OpenApiConfig,
         project_id: &str,
-        _env_name_or_id: &str,
+        env_id: &str,
         as_of: Option<String>,
         tag: Option<String>,
     ) -> Result<Vec<TemplateHistory>, TemplateError> {
-        let response =
-            projects_templates_timelines_retrieve(rest_cfg, project_id, as_of, tag.as_deref());
+        let response = projects_templates_timelines_retrieve(
+            rest_cfg,
+            project_id,
+            as_of,
+            Some(env_id),
+            tag.as_deref(),
+        );
         match response {
             Ok(data) => {
                 let mut histories: Vec<TemplateHistory> =
@@ -338,7 +343,7 @@ impl Templates {
         rest_cfg: &OpenApiConfig,
         project_id: &str,
         template_id: &str,
-        _env_name_name_or_id: &str,
+        env_id: &str,
         as_of: Option<String>,
         tag: Option<String>,
     ) -> Result<Vec<TemplateHistory>, TemplateError> {
@@ -347,6 +352,7 @@ impl Templates {
             template_id,
             project_id,
             as_of,
+            Some(env_id),
             tag.as_deref(),
         );
         match response {
