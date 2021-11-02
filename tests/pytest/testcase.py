@@ -502,9 +502,24 @@ class TestCase(unittest.TestCase):
         result = self.run_cli(cmd_env, cmd)
         self.assertResultSuccess(result)
 
-    def current_username(self, cmd_env):
+    def current_username(self, cmd_env) -> str:
         result = self.run_cli(cmd_env, self._base_cmd + "config current -f json")
         self.assertResultSuccess(result)
         properties = eval(result.out()).get("profile")
         entry = find_by_prop(properties, "Parameter", "User")[0]
         return entry.get("Value")
+
+    # creates a new user and returns the API key
+    def add_user(self, cmd_env, user_name: str, role: str = "contrib") -> str:
+        result = self.run_cli(cmd_env, self._base_cmd + f"user set '{user_name}' --role '{role}'")
+        self.assertResultSuccess(result)
+        self.assertIn("Created service account", result.out())
+        if len(result.stdout) > 1:
+            # the api token is the second line
+            api_token = result.stdout[1]
+            return api_token
+        return None
+
+    def delete_user(self, cmd_env, user_name):
+        result = self.run_cli(cmd_env, self._base_cmd + f"user delete '{user_name}' -y")
+        self.assertResultSuccess(result)

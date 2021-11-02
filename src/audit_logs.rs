@@ -1,5 +1,5 @@
 use crate::cli::{FORMAT_OPT, LIST_SUBCMD};
-use crate::database::{to_object_type, AuditLogs, OpenApiConfig};
+use crate::database::{to_object_type, AuditLogs, OpenApiConfig, Users};
 use crate::table::Table;
 use crate::{error_message, parse_datetime, warn_missing_subcommand};
 use clap::ArgMatches;
@@ -23,6 +23,7 @@ fn proc_audit_list(
     let after = parse_datetime(subcmd_args.value_of("after"));
     let object_type = cli_obj_type.map(|x| x.to_server_string());
     let name = subcmd_args.value_of("contains");
+    let username = subcmd_args.value_of("username");
     let max_entries = subcmd_args
         .value_of("max-entries")
         .unwrap()
@@ -42,6 +43,16 @@ fn proc_audit_list(
         process::exit(34);
     }
 
+    let mut user_id = None;
+    if let Some(uname) = username {
+        let users = Users::new();
+        user_id = users.get_id(rest_cfg, uname)?;
+        if user_id.is_none() {
+            error_message(format!("User '{}' not found.", uname))?;
+            process::exit(35);
+        }
+    }
+
     let details = audit_logs.get_audit_log_details(
         rest_cfg,
         object_type.as_deref(),
@@ -50,6 +61,7 @@ fn proc_audit_list(
         max_entries,
         before,
         after,
+        user_id.as_deref(),
     )?;
 
     if details.is_empty() {
