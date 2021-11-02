@@ -3,7 +3,7 @@ from typing import Dict
 from typing import List
 from typing import Optional
 
-from testcase import TestCase
+from testcase import TestCase, CT_API_KEY
 from testcase import find_by_prop
 
 PROP_TYPE = "Type"
@@ -28,6 +28,7 @@ class TestAuditLogs(TestCase):
             max_entries: Optional[int] = None,
             before: Optional[str] = None,
             after: Optional[str] = None,
+            username: Optional[str] = None,
     ) -> List[Dict]:
         cmd = self.get_cli_base_cmd() + "audit-logs ls -f json "
         if type_str:
@@ -37,11 +38,14 @@ class TestAuditLogs(TestCase):
         if action:
             cmd += f"-a '{action}' "
         if max_entries:
-            cmd += f"-m {max_entries}"
+            cmd += f"-m {max_entries} "
         if before:
-            cmd += f"--before '{before}'"
+            cmd += f"--before '{before}' "
         if after:
-            cmd += f"--after '{after}'"
+            cmd += f"--after '{after}' "
+        if username:
+            cmd += f"--user '{username}' "
+
         result = self.run_cli(cmd_env, cmd)
         self.assertResultSuccess(result)
         if result.out().startswith("No audit log entries"):
@@ -52,6 +56,11 @@ class TestAuditLogs(TestCase):
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
         audit_cmd = base_cmd + "audit "
+
+        # create a user, so we can check attribution
+        user_name = self.make_name("log-user")
+        api_key = self.add_user(cmd_env, user_name, role="admin")
+        cmd_env[CT_API_KEY] = api_key
 
         # take a summary snapshot
         result = self.run_cli(cmd_env, audit_cmd + "summary")
@@ -77,6 +86,9 @@ class TestAuditLogs(TestCase):
         self.delete_param(cmd_env, proj_name, param1)
         self.delete_project(cmd_env, proj_name)
         self.delete_environment(cmd_env, env_name)
+
+        # get a fresh copy that does not have the deleted user API key
+        cmd_env = self.get_cmd_env()
 
         #############################
         # check that we have audit trail entries for each type
@@ -177,6 +189,18 @@ class TestAuditLogs(TestCase):
         self.assertIn(before_err, result.err())
 
         #####################################
+        # test user filter
+        entries = self.audit_entries(cmd_env, username=user_name)
+        self.assertGreaterEqual(len(entries), 8)  # we created/delete 4 objects as this user above
+        other_users = [_ for _ in entries if _.get("User") != user_name]
+        self.assertEqual(0, len(other_users))
+
+        # error for an unknown user
+        alternate_user = "ricardo.multiban"
+        result = self.run_cli(cmd_env, base_cmd + f"audit-logs ls --user '{alternate_user}'")
+        self.assertResultError(result, f"User '{alternate_user}' not found")
+
+        #####################################
         # unfiltered
         entries = self.audit_entries(cmd_env)
         self.assertNotEqual(len(entries), 0)
@@ -188,3 +212,6 @@ class TestAuditLogs(TestCase):
 
         # compare summaries -- cannot guarantee count has gone up, since pruning is async
         self.assertNotEqual(orig_summary, final_summary)
+
+        # cleanup
+        self.delete_user(cmd_env, user_name)

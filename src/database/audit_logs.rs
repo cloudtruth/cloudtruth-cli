@@ -32,6 +32,7 @@ impl AuditLogs {
         max_entries: usize,
         before: Option<String>,
         after: Option<String>,
+        user_id: Option<&str>,
     ) -> Result<Vec<AuditLogDetails>, AuditLogError> {
         let mut total_details: Vec<AuditLogDetails> = vec![];
         let mut page_count = 1;
@@ -46,7 +47,7 @@ impl AuditLogs {
                 NO_ORDERING,
                 Some(page_count),
                 PAGE_SIZE,
-                None,
+                user_id,
             );
             match response {
                 Ok(data) => match data.results {

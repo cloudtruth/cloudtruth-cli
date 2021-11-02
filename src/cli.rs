@@ -257,6 +257,11 @@ pub fn build_cli() -> App<'static, 'static> {
                         .long("after")
                         .takes_value(true)
                         .help("Show audit log entries after specified date/time"))
+                    .arg(Arg::with_name("username")
+                        .short("u")
+                        .long("user")
+                        .takes_value(true)
+                        .help("Show audit log entries only from specified user"))
                     .arg(table_format_options().help("Format for audit log details")),
                 SubCommand::with_name("summary")
                     .visible_aliases(&["sum"])

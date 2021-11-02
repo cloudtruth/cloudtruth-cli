@@ -66,6 +66,7 @@ OPTIONS:
     -t, --type <object-type>    Only show specified object type [possible values: aws, environment, github, invitation,
                                 membership, organization, parameter, rule, project, push, service-account, tag,
                                 template, value]
+    -u, --user <username>       Show audit log entries only from specified user
 ========================================
 cloudtruth-audit-logs-summary 
 Display summary of audit logs
