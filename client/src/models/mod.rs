@@ -150,6 +150,8 @@ pub mod service_account_create_response;
 pub use self::service_account_create_response::ServiceAccountCreateResponse;
 pub mod state_enum;
 pub use self::state_enum::StateEnum;
+pub mod status_enum;
+pub use self::status_enum::StatusEnum;
 pub mod tag;
 pub use self::tag::Tag;
 pub mod tag_create;

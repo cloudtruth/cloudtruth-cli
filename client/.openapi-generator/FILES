@@ -87,6 +87,7 @@ docs/ServiceAccountCreateRequest.md
 docs/ServiceAccountCreateResponse.md
 docs/ServiceaccountsApi.md
 docs/StateEnum.md
+docs/StatusEnum.md
 docs/Tag.md
 docs/TagCreate.md
 docs/TagReadUsage.md
@@ -194,6 +195,7 @@ src/models/service_account.rs
 src/models/service_account_create_request.rs
 src/models/service_account_create_response.rs
 src/models/state_enum.rs
+src/models/status_enum.rs
 src/models/tag.rs
 src/models/tag_create.rs
 src/models/tag_read_usage.rs

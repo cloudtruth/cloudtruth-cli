@@ -24,6 +24,9 @@ pub struct PatchedInvitation {
     /// The user that created the invitation.
     #[serde(rename = "inviter", skip_serializing_if = "Option::is_none")]
     pub inviter: Option<String>,
+    /// The name of the user that created the invitation.
+    #[serde(rename = "inviter_name", skip_serializing_if = "Option::is_none")]
+    pub inviter_name: Option<String>,
     /// The current state of the invitation.
     #[serde(rename = "state", skip_serializing_if = "Option::is_none")]
     pub state: Option<String>,
@@ -43,6 +46,7 @@ impl PatchedInvitation {
             email: None,
             role: None,
             inviter: None,
+            inviter_name: None,
             state: None,
             state_detail: None,
             membership: None,

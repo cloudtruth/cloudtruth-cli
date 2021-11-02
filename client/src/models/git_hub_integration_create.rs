@@ -10,10 +10,10 @@
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct GitHubIntegrationCreate {
-    /// The optional description for the integration.
+    /// An optional description for the integration.
     #[serde(rename = "description", skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
-    /// Allow pushes to write parameters to the integration.
+    /// Allow actions to write to the integration.
     #[serde(rename = "writable", skip_serializing_if = "Option::is_none")]
     pub writable: Option<bool>,
     #[serde(rename = "gh_installation_id")]

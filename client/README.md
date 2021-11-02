@@ -210,6 +210,7 @@ Class | Method | HTTP request | Description
  - [ServiceAccountCreateRequest](docs/ServiceAccountCreateRequest.md)
  - [ServiceAccountCreateResponse](docs/ServiceAccountCreateResponse.md)
  - [StateEnum](docs/StateEnum.md)
+ - [StatusEnum](docs/StatusEnum.md)
  - [Tag](docs/Tag.md)
  - [TagCreate](docs/TagCreate.md)
  - [TagReadUsage](docs/TagReadUsage.md)

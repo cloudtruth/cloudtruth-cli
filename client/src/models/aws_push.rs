@@ -14,13 +14,13 @@
 pub struct AwsPush {
     #[serde(rename = "url")]
     pub url: String,
-    /// The unique identifier for the push action.
+    /// Unique identifier for the action.
     #[serde(rename = "id")]
     pub id: String,
-    /// The push action name.
+    /// The action name.
     #[serde(rename = "name")]
     pub name: String,
-    /// The optional description for the push action.
+    /// The optional description for the action.
     #[serde(rename = "description", skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
     /// Projects that are included in the push.
@@ -35,7 +35,7 @@ pub struct AwsPush {
     /// The AWS service this push targets.  This service must be enabled in the integration.
     #[serde(rename = "service")]
     pub service: Box<crate::models::AwsServiceEnum>,
-    /// Defines a path through the integration to the location where values will be pushed.  The following mustache-style substitutions can be used in the string:    - ``{{ environment }}`` to insert the environment name   - ``{{ parameter }}`` to insert the parameter name   - ``{{ project }}`` to insert the project name   - ``{{ push }}`` to insert the push name   - ``{{ tag }}`` to insert the tag name  We recommend that you use project, environment, and parameter at a minimum to disambiguate your pushed resource identifiers.
+    /// Defines a path through the integration to the location where values will be pushed.  The following mustache-style substitutions can be used in the string:    - ``{{ environment }}`` to insert the environment name   - ``{{ parameter }}`` to insert the parameter name   - ``{{ project }}`` to insert the project name   - ``{{ push }}`` to insert the push name   - ``{{ tag }}`` to insert the tag name  We recommend that you use project, environment, and parameter at a minimum to disambiguate your pushed resource identifiers.  If you include multiple projects in the push, the `project` substitution is required.  If you include multiple tags from different environments in the push, the `environment` substitution is required.  If you include multiple tags from the same environment in the push, the `tag` substitution is required.  In all cases, the `parameter` substitution is always required.
     #[serde(rename = "resource")]
     pub resource: String,
     /// The most recent task run for this push.

@@ -13,6 +13,8 @@
 pub enum OperationEnum {
     #[serde(rename = "create")]
     Create,
+    #[serde(rename = "read")]
+    Read,
     #[serde(rename = "update")]
     Update,
     #[serde(rename = "delete")]
@@ -23,6 +25,7 @@ impl ToString for OperationEnum {
     fn to_string(&self) -> String {
         match self {
             Self::Create => String::from("create"),
+            Self::Read => String::from("read"),
             Self::Update => String::from("update"),
             Self::Delete => String::from("delete"),
         }

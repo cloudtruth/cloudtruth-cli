@@ -17,12 +17,12 @@ pub struct PatchedAwsIntegration {
     pub id: Option<String>,
     #[serde(rename = "name", skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
-    /// The optional description for the integration.
+    /// An optional description for the integration.
     #[serde(rename = "description", skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
     /// The status of the integration connection with the third-party provider as of the `status_last_checked_at` field.  The status is updated automatically by the server when the integration is modified.
     #[serde(rename = "status", skip_serializing_if = "Option::is_none")]
-    pub status: Option<String>,
+    pub status: Option<Box<crate::models::StatusEnum>>,
     /// If an error occurs, more details will be available in this field.
     #[serde(rename = "status_detail", skip_serializing_if = "Option::is_none")]
     pub status_detail: Option<String>,
@@ -32,16 +32,16 @@ pub struct PatchedAwsIntegration {
         skip_serializing_if = "Option::is_none"
     )]
     pub status_last_checked_at: Option<String>,
-    /// The type of integration.
-    #[serde(rename = "type", skip_serializing_if = "Option::is_none")]
-    pub _type: Option<String>,
     #[serde(rename = "created_at", skip_serializing_if = "Option::is_none")]
     pub created_at: Option<String>,
     #[serde(rename = "modified_at", skip_serializing_if = "Option::is_none")]
     pub modified_at: Option<String>,
     #[serde(rename = "fqn", skip_serializing_if = "Option::is_none")]
     pub fqn: Option<String>,
-    /// Allow pushes to write parameters to the integration.
+    /// The type of integration.
+    #[serde(rename = "type", skip_serializing_if = "Option::is_none")]
+    pub _type: Option<String>,
+    /// Allow actions to write to the integration.
     #[serde(rename = "writable", skip_serializing_if = "Option::is_none")]
     pub writable: Option<bool>,
     /// The AWS Account ID.
@@ -77,10 +77,10 @@ impl PatchedAwsIntegration {
             status: None,
             status_detail: None,
             status_last_checked_at: None,
-            _type: None,
             created_at: None,
             modified_at: None,
             fqn: None,
+            _type: None,
             writable: None,
             aws_account_id: None,
             aws_enabled_regions: None,

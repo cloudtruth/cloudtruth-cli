@@ -15,6 +15,8 @@ pub enum StateEnum {
     Queued,
     #[serde(rename = "running")]
     Running,
+    #[serde(rename = "skipped")]
+    Skipped,
     #[serde(rename = "success")]
     Success,
     #[serde(rename = "failure")]
@@ -26,6 +28,7 @@ impl ToString for StateEnum {
         match self {
             Self::Queued => String::from("queued"),
             Self::Running => String::from("running"),
+            Self::Skipped => String::from("skipped"),
             Self::Success => String::from("success"),
             Self::Failure => String::from("failure"),
         }
