@@ -22,6 +22,7 @@ impl AuditLogs {
         Self {}
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn get_audit_log_details(
         &self,
         rest_cfg: &OpenApiConfig,
@@ -29,6 +30,8 @@ impl AuditLogs {
         action: Option<&str>,
         name_contains: Option<&str>,
         max_entries: usize,
+        before: Option<String>,
+        after: Option<String>,
     ) -> Result<Vec<AuditLogDetails>, AuditLogError> {
         let mut total_details: Vec<AuditLogDetails> = vec![];
         let mut page_count = 1;
@@ -36,8 +39,8 @@ impl AuditLogs {
             let response = audit_list(
                 rest_cfg,
                 action,
-                None,
-                None,
+                after.clone(),
+                before.clone(),
                 None,
                 object_type,
                 NO_ORDERING,

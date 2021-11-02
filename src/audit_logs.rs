@@ -1,10 +1,16 @@
 use crate::cli::{FORMAT_OPT, LIST_SUBCMD};
 use crate::database::{to_object_type, AuditLogs, OpenApiConfig};
 use crate::table::Table;
-use crate::warn_missing_subcommand;
+use crate::{error_message, parse_datetime, warn_missing_subcommand};
 use clap::ArgMatches;
 use color_eyre::eyre::Result;
 use indoc::printdoc;
+use std::process;
+
+/// Print a consistent `error_message()`
+fn invalid_time_format(arg: &str) -> Result<()> {
+    error_message(format!("Invalid '{}' value", arg))
+}
 
 fn proc_audit_list(
     subcmd_args: &ArgMatches,
@@ -13,6 +19,8 @@ fn proc_audit_list(
 ) -> Result<()> {
     let action = subcmd_args.value_of("action");
     let cli_obj_type = to_object_type(subcmd_args.value_of("object-type"));
+    let before = parse_datetime(subcmd_args.value_of("before"));
+    let after = parse_datetime(subcmd_args.value_of("after"));
     let object_type = cli_obj_type.map(|x| x.to_server_string());
     let name = subcmd_args.value_of("contains");
     let max_entries = subcmd_args
@@ -21,12 +29,27 @@ fn proc_audit_list(
         .parse::<usize>()
         .unwrap();
     let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
+    let bad_before = subcmd_args.occurrences_of("before") > 0 && before.is_none();
+    let bad_after = subcmd_args.occurrences_of("after") > 0 && after.is_none();
+
+    if bad_before || bad_after {
+        if bad_before {
+            invalid_time_format("--before")?;
+        }
+        if bad_after {
+            invalid_time_format("--after")?;
+        }
+        process::exit(34);
+    }
+
     let details = audit_logs.get_audit_log_details(
         rest_cfg,
         object_type.as_deref(),
         action,
         name,
         max_entries,
+        before,
+        after,
     )?;
 
     if details.is_empty() {
@@ -76,7 +99,7 @@ fn proc_audit_summary(
     printdoc!(
         r#"
           Record count: {}
-          Earliers record: {}
+          Earliest record: {}
           Policy:
             Maximum records: {}
             Maximum days: {}

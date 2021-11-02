@@ -1,3 +1,4 @@
+import datetime
 from typing import Dict
 from typing import List
 from typing import Optional
@@ -25,6 +26,8 @@ class TestAuditLogs(TestCase):
             name: Optional[str] = None,
             action: Optional[str] = None,
             max_entries: Optional[int] = None,
+            before: Optional[str] = None,
+            after: Optional[str] = None,
     ) -> List[Dict]:
         cmd = self.get_cli_base_cmd() + "audit-logs ls -f json "
         if type_str:
@@ -35,6 +38,10 @@ class TestAuditLogs(TestCase):
             cmd += f"-a '{action}' "
         if max_entries:
             cmd += f"-m {max_entries}"
+        if before:
+            cmd += f"--before '{before}'"
+        if after:
+            cmd += f"--after '{after}'"
         result = self.run_cli(cmd_env, cmd)
         self.assertResultSuccess(result)
         if result.out().startswith("No audit log entries"):
@@ -115,6 +122,59 @@ class TestAuditLogs(TestCase):
             filtered = find_by_prop(entries, PROP_TYPE, obj_type)
             self.assertLessEqual(len(entries), max_entries)
             self.assertEqual(len(entries), len(filtered))
+
+        #####################################
+        # time filtered
+        # nothing found for old date
+        entries = self.audit_entries(cmd_env, max_entries=0, before="2021-10-31")
+        self.assertEqual(0, len(entries))
+
+        # nothing found for a date in the future
+        entries = self.audit_entries(cmd_env, max_entries=0, after="2051-10-31")
+        self.assertEqual(0, len(entries))
+
+        def get_value(orig_text: str, label: str) -> str:
+            return [_ for _ in orig_text.split("\n") if label in _][0].replace(label, "").strip()
+
+        # get the timestamp from the earliest timestamp in the summary
+        label = "Earliest record:"
+        value = get_value(orig_summary, label).replace("Z", "")
+        oldest = datetime.datetime.fromisoformat(value)
+
+        label = "Record count:"
+        value = get_value(orig_summary, label)
+        total_records = int(value)
+
+        # round the filter up to the next minute
+        rounded = oldest + datetime.timedelta(minutes=1)
+        before = f"{rounded.year}-{rounded.month}-{rounded.day}T{rounded.hour}:{rounded.minute}:00Z"
+
+        entries = self.audit_entries(cmd_env, before=before, max_entries=0)
+        self.assertLessEqual(len(entries), total_records)
+        newer = [e for e in entries if e.get("Time") > before]
+        self.assertEqual(len(newer), 0)
+
+        # get a latest time... other entries could be added in the interim, so don't lock down the #
+        entries = self.audit_entries(cmd_env, max_entries=3)
+        after = entries[-1].get("Time")
+        entries = self.audit_entries(cmd_env, after=after, max_entries=0)
+        self.assertLessEqual(len(entries), total_records)
+        older = [e for e in entries if e.get("Time") < after]
+        self.assertEqual(len(older), 0)
+
+        #####################################
+        # test bad time formats
+        after_err = "Invalid '--after' value"
+        before_err = "Invalid '--before' value"
+        result = self.run_cli(cmd_env, base_cmd + "log ls --before foo")
+        self.assertResultError(result, before_err)
+
+        result = self.run_cli(cmd_env, base_cmd + "log ls --after bar")
+        self.assertResultError(result, after_err)
+
+        result = self.run_cli(cmd_env, base_cmd + "log ls --after bar --before foo")
+        self.assertResultError(result, after_err)
+        self.assertIn(before_err, result.err())
 
         #####################################
         # unfiltered
