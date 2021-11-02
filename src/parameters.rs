@@ -49,11 +49,9 @@ fn proc_param_delete(
     )?;
     if let Some(details) = response {
         if !details.project_url.contains(proj_id) {
-            let projects = Projects::new();
-            let source_proj = projects.get_name_from_url(rest_cfg, &details.project_url);
             error_message(format!(
                 "Parameter '{}' must be deleted from project '{}' -- it is not part of project '{}'",
-                key_name, source_proj, proj_name
+                key_name, details.project_name, proj_name
             ))?;
             process::exit(24);
         }
@@ -558,17 +556,6 @@ fn proc_param_list(
     if show_parents {
         description = "parameters from a parent project";
         details.retain(|x| !x.project_url.contains(proj_id));
-        if !details.is_empty() {
-            let default_projname = "".to_string();
-            let projects = Projects::new();
-            let url_map = projects.get_url_name_map(rest_cfg);
-            for item in &mut details {
-                item.project_name = url_map
-                    .get(&item.project_url)
-                    .unwrap_or(&default_projname)
-                    .clone();
-            }
-        }
     }
     if show_children {
         description = "parameters from a child project";
@@ -588,9 +575,6 @@ fn proc_param_list(
                 tag.clone(),
             )?;
             child_details.retain(|d| d.project_url.contains(&prj.id));
-            for d in &mut child_details {
-                d.project_name = prj.name.clone();
-            }
             details.append(&mut child_details);
         }
     }
