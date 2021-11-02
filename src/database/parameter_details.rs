@@ -175,7 +175,7 @@ impl From<&Parameter> for ParameterDetails {
             description: api_param.description.clone().unwrap_or_default(),
             param_type: ParamType::from(api_param._type.unwrap()),
             project_url: api_param.project.clone(),
-            project_name: "".to_string(), // needs to be resolved later
+            project_name: api_param.project_name.clone(),
             rules: api_param
                 .rules
                 .iter()
