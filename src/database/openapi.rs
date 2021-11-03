@@ -77,6 +77,14 @@ pub fn response_message(status: &reqwest::StatusCode, content: &str) -> String {
     )
 }
 
+/// Gets the last part of the URL as the identifier
+pub fn last_from_url(url: &str) -> &str {
+    url.split('/')
+        .filter(|&x| !x.is_empty())
+        .last()
+        .unwrap_or_default()
+}
+
 fn user_agent_name() -> String {
     format!(
         "{}/{}/{}",

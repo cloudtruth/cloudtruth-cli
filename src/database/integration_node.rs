@@ -1,3 +1,4 @@
+use crate::database::last_from_url;
 use cloudtruth_restapi::models::IntegrationExplorer;
 
 #[derive(Debug)]
@@ -16,7 +17,7 @@ fn get_name(name: &Option<String>, fqn: &str) -> String {
     if let Some(name) = name {
         name.clone()
     } else {
-        fqn.split('/').last().unwrap().to_string()
+        last_from_url(fqn).to_string()
     }
 }
 

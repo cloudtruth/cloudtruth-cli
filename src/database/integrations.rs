@@ -1,6 +1,6 @@
 use crate::database::{
-    auth_details, extract_details, response_message, IntegrationDetails, IntegrationError,
-    IntegrationNode, OpenApiConfig, PAGE_SIZE,
+    auth_details, extract_details, last_from_url, response_message, IntegrationDetails,
+    IntegrationError, IntegrationNode, OpenApiConfig, PAGE_SIZE,
 };
 use cloudtruth_restapi::apis::integrations_api::*;
 use cloudtruth_restapi::apis::Error::ResponseError;
@@ -138,11 +138,7 @@ impl Integrations {
             Ok(results)
         } else if let Err(ResponseError(ref content)) = response {
             let fqn = fqn.unwrap_or_default();
-            let name = fqn
-                .split('/')
-                .filter(|&x| !x.is_empty())
-                .last()
-                .unwrap_or_default();
+            let name = last_from_url(fqn);
             let details = extract_details(&content.content);
             if content.status == 415 {
                 Ok(vec![binary_node(fqn, name, &details)])
