@@ -1,12 +1,17 @@
 use crate::cli::{
-    show_values, CONFIRM_FLAG, DELETE_SUBCMD, DESCRIPTION_OPT, FORMAT_OPT, INTEGRATION_NAME_ARG,
-    LIST_SUBCMD, PUSH_NAME_ARG, PUSH_SUBCMD, RENAME_OPT, SET_SUBCMD, SHOW_TIMES_FLAG, TASKS_SUBCMD,
+    show_values, CONFIRM_FLAG, DELETE_SUBCMD, DESCRIPTION_OPT, FORMAT_OPT, GET_SUBCMD,
+    INTEGRATION_NAME_ARG, LIST_SUBCMD, PUSH_NAME_ARG, PUSH_SUBCMD, RENAME_OPT, SET_SUBCMD,
+    SHOW_TIMES_FLAG, TASKS_SUBCMD,
 };
-use crate::database::{Integrations, OpenApiConfig};
+use crate::database::{
+    last_from_url, Environments, Integrations, OpenApiConfig, Projects, PushDetails,
+};
 use crate::table::Table;
 use crate::{error_message, user_confirm, warn_missing_subcommand, warning_message, DEL_CONFIRM};
 use clap::ArgMatches;
 use color_eyre::eyre::Result;
+use indoc::printdoc;
+use std::collections::{HashMap, HashSet};
 use std::process;
 
 fn integration_not_found_message(integ_name: &str) -> String {
@@ -18,6 +23,77 @@ fn integration_push_not_found_message(integ_name: &str, push_name: &str) -> Stri
         "No push integration found for '{}' in integration '{}'",
         push_name, integ_name
     )
+}
+
+fn env_url_from_tag_url(tag_url: &str) -> &str {
+    // NOTE: must keep trailing slash on original to equal what comes from EnvironmentDetails.url
+    let parts: Vec<&str> = tag_url.split("tags/").collect();
+    parts[0]
+}
+
+fn env_id_from_tag_url(tag_url: &str) -> &str {
+    last_from_url(env_url_from_tag_url(tag_url))
+}
+
+fn resolve_tag_names(rest_cfg: &OpenApiConfig, pushes: &mut [PushDetails]) {
+    // if there are no pushes with tag URLs, we're done
+    if !pushes.iter().any(|x| !x.tag_urls.is_empty()) {
+        return;
+    }
+
+    let environments = Environments::new();
+    let env_map = environments.get_url_name_map(rest_cfg);
+
+    // get a list of environments for which we need tags
+    let mut env_list: HashSet<String> = HashSet::new();
+    for push in pushes.iter() {
+        for tag_url in &push.tag_urls {
+            let env_id = env_id_from_tag_url(tag_url).to_string();
+            env_list.insert(env_id);
+        }
+    }
+
+    // create a map of tag_url => "env_name:tag_name"
+    let mut tag_map: HashMap<String, String> = HashMap::new();
+    for env_id in env_list {
+        let env_tags = environments
+            .get_env_tags(rest_cfg, &env_id)
+            .unwrap_or_default();
+        for tag in env_tags {
+            let env_url = env_url_from_tag_url(&tag.url);
+            let env_name = env_map.get(env_url).unwrap_or(&env_id).clone();
+            let tag_name = format!("{}:{}", env_name, tag.name);
+            tag_map.insert(tag.url.clone(), tag_name);
+        }
+    }
+
+    // now that we have all the info, put it back into the pushes
+    for push in pushes {
+        for tag_url in &push.tag_urls {
+            let tag_name = tag_map.get(tag_url).unwrap_or(tag_url).clone();
+            push.tag_names.push(tag_name);
+        }
+    }
+}
+
+fn resolve_project_names(rest_cfg: &OpenApiConfig, pushes: &mut [PushDetails]) {
+    // if there are no pushes with tag URLs, we're done
+    if !pushes.iter().any(|x| !x.project_urls.is_empty()) {
+        return;
+    }
+
+    let projects = Projects::new();
+    let proj_map = projects.get_url_name_map(rest_cfg);
+    let default_proj_name = "Unknown".to_string();
+
+    for entry in pushes.iter_mut() {
+        for proj_url in entry.project_urls.iter() {
+            let proj_name = proj_map
+                .get(proj_url.as_str())
+                .unwrap_or(&default_proj_name);
+            entry.project_names.push(proj_name.clone());
+        }
+    }
 }
 
 fn proc_integ_explore(
@@ -151,6 +227,95 @@ fn proc_integ_push_delete(
     Ok(())
 }
 
+fn print_push_details(push: &PushDetails, integ_name: &str) {
+    let error_info = if push.last_task.state != "success" {
+        format!(
+            "{}: {}",
+            push.last_task.error_code, push.last_task.error_detail
+        )
+    } else {
+        "".to_string()
+    };
+
+    printdoc!(
+        r#"
+        Name: {}
+        Provider: {}
+        Integration: {}
+        Service: {}
+        Region: {}
+        Resource: {}
+        Description: {}
+        Projects: {}
+        Tags: {}
+        ID: {}
+        URL: {}
+        Project URLs: {}
+        Tag URLs: {}
+        Created At: {}
+        Modified At: {}
+        Last task:
+          Reason: {}
+          State: {}
+          ID: {}
+          URL: {}
+          Error Info: {}
+          Created At: {}
+          Modified At: {}
+        "#,
+        push.name,
+        push.provider,
+        integ_name,
+        push.service,
+        push.region,
+        push.resource,
+        push.description,
+        push.project_names.join(", "),
+        push.tag_names.join(", "),
+        push.id,
+        push.url,
+        push.project_urls.join(", "),
+        push.tag_urls.join(", "),
+        push.created_at,
+        push.modified_at,
+        push.last_task.reason,
+        push.last_task.state,
+        push.last_task.id,
+        push.last_task.url,
+        error_info,
+        push.last_task.created_at,
+        push.last_task.modified_at,
+    );
+}
+
+fn proc_integ_push_get(
+    subcmd_args: &ArgMatches,
+    rest_cfg: &OpenApiConfig,
+    integrations: &Integrations,
+) -> Result<()> {
+    let integ_name = subcmd_args.value_of(INTEGRATION_NAME_ARG).unwrap();
+    let push_name = subcmd_args.value_of(PUSH_NAME_ARG).unwrap();
+
+    let response_id = integrations.get_id(rest_cfg, integ_name)?;
+    if let Some(integ_id) = response_id {
+        let response_details = integrations.get_push_by_name(rest_cfg, &integ_id, push_name)?;
+        if let Some(details) = response_details {
+            // put this into a list, so we can resolve with larger functions
+            let mut pushes = vec![details];
+            resolve_project_names(rest_cfg, &mut pushes);
+            resolve_tag_names(rest_cfg, &mut pushes);
+            print_push_details(&pushes[0], integ_name);
+        } else {
+            error_message(integration_push_not_found_message(integ_name, push_name))?;
+            process::exit(31);
+        }
+    } else {
+        error_message(integration_not_found_message(integ_name))?;
+        process::exit(30);
+    }
+    Ok(())
+}
+
 fn proc_integ_push_list(
     subcmd_args: &ArgMatches,
     rest_cfg: &OpenApiConfig,
@@ -163,7 +328,7 @@ fn proc_integ_push_list(
 
     let response_id = integrations.get_id(rest_cfg, integ_name)?;
     if let Some(integ_id) = response_id {
-        let pushes = integrations.get_push_list(rest_cfg, &integ_id)?;
+        let mut pushes = integrations.get_push_list(rest_cfg, &integ_id)?;
         if pushes.is_empty() {
             println!("No pushes found for integration '{}'", integ_name);
         } else if !show_values {
@@ -173,8 +338,26 @@ fn proc_integ_push_list(
                 .collect::<Vec<String>>();
             println!("{}", list.join("\n"))
         } else {
-            let mut hdr = vec!["Name", "Description", "Resource", "Last Task"];
-            let mut properties = vec!["name", "description", "resource", "task-info"];
+            let mut hdr = vec![
+                "Name",
+                "Projects",
+                "Tags",
+                "Service",
+                "Status",
+                "Last Push Time",
+            ];
+            let mut properties = vec![
+                "name",
+                "project-names",
+                "tag-names",
+                "service",
+                "task-state",
+                "task-time",
+            ];
+
+            resolve_project_names(rest_cfg, &mut pushes);
+            resolve_tag_names(rest_cfg, &mut pushes);
+
             if show_times {
                 hdr.push("Created At");
                 hdr.push("Modified At");
@@ -240,16 +423,11 @@ fn proc_integ_push_set(
                 updated_name, integ_name
             );
         } else {
-            // create code
-            if resource.is_none() {
-                error_message("Must specify a resource value on create".to_string())?;
-                process::exit(32);
-            }
             integrations.create_push(
                 rest_cfg,
                 &integ_id,
                 push_name,
-                resource.unwrap(),
+                resource.unwrap_or("/{{ environment} }/{{ project }}/{{ parameter }}/"),
                 region,
                 service,
                 description,
@@ -330,6 +508,8 @@ fn proc_integ_push_command(
 ) -> Result<()> {
     if let Some(subcmd_args) = subcmd_args.subcommand_matches(DELETE_SUBCMD) {
         proc_integ_push_delete(subcmd_args, rest_cfg, integrations)?;
+    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(GET_SUBCMD) {
+        proc_integ_push_get(subcmd_args, rest_cfg, integrations)?;
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(LIST_SUBCMD) {
         proc_integ_push_list(subcmd_args, rest_cfg, integrations)?;
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(SET_SUBCMD) {

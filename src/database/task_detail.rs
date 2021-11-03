@@ -60,6 +60,7 @@ impl TaskDetail {
                     format!("{}: {}", self.error_code, self.error_detail)
                 }
             }
+            "summary" => self.summary(),
             "created-at" => self.created_at.clone(),
             "modified-at" => self.modified_at.clone(),
             _ => format!("Unhandled property name '{}'", property_name),

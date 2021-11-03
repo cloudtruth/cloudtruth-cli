@@ -15,7 +15,7 @@ pub struct PushDetails {
     pub project_names: Vec<String>,
     pub tag_urls: Vec<String>,
     pub tag_names: Vec<String>,
-    pub last_task_info: String,
+    pub last_task: TaskDetail,
 
     // these may be Amazon specific
     pub region: String,
@@ -38,7 +38,9 @@ impl PushDetails {
             "project-names" => self.project_names.join(", "),
             "tag-urls" => self.tag_urls.join(", "),
             "tag-names" => self.tag_names.join(", "),
-            "task-info" => self.last_task_info.clone(),
+            "task-info" => self.last_task.get_property("summary"),
+            "task-time" => self.last_task.get_property("modified-at"),
+            "task-state" => self.last_task.get_property("state"),
             "region" => self.region.clone(),
             "service" => self.service.clone(),
             "created-at" => self.created_at.clone(),
@@ -71,7 +73,7 @@ impl From<&AwsPush> for PushDetails {
             project_names: vec![], // filled in later
             tag_urls: api.tags.clone(),
             tag_names: vec![], // filled in later
-            last_task_info: task_detail.summary(),
+            last_task: task_detail,
             region: api.region.to_string(),
             service: api.service.to_string(),
             created_at: api.created_at.clone(),

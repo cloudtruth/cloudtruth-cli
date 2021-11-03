@@ -5,7 +5,6 @@ import subprocess
 from typing import List
 
 from testcase import TestCase
-from testcase import PROP_DESC
 from testcase import PROP_NAME
 from testcase import PROP_TYPE
 from testcase import PROP_VALUE
@@ -445,8 +444,14 @@ PARAMETER_2 = PARAM2
         self.assertResultSuccess(result)
         pushes = eval(result.out()).get("integration-push")
         entry = find_by_prop(pushes, PROP_NAME, push_name1)[0]
-        self.assertEqual(entry.get(PROP_DESC), desc1)
-        self.assertEqual(entry.get("Resource"), resource1)
+        self.assertIsNotNone(entry)
+
+        # check the right values were set
+        result = self.run_cli(cmd_env, base_cmd + f"int push get {integ_name} {push_name1}")
+        self.assertResultSuccess(result)
+        self.assertIn(f"Name: {push_name1}", result.out())
+        self.assertIn(f"Resource: {resource1}", result.out())
+        self.assertIn(f"Description: {desc1}", result.out())
 
         # update/rename push
         push_name2 = self.make_name("updated-test-push")
@@ -465,8 +470,14 @@ PARAMETER_2 = PARAM2
         self.assertEqual(0, len(find_by_prop(pushes, PROP_NAME, push_name1)))
         # check the updated entry
         entry = find_by_prop(pushes, PROP_NAME, push_name2)[0]
-        self.assertEqual(entry.get(PROP_DESC), desc1)
-        self.assertEqual(entry.get("Resource"), resource2)
+        self.assertIsNotNone(entry)
+
+        # check the right values were updated
+        result = self.run_cli(cmd_env, base_cmd + f"int push get {integ_name} {push_name2}")
+        self.assertResultSuccess(result)
+        self.assertIn(f"Name: {push_name2}", result.out())
+        self.assertIn(f"Resource: {resource2}", result.out())
+        self.assertIn(f"Description: {desc1}", result.out())
 
         # another update
         desc2 = "Updated description"
@@ -475,10 +486,12 @@ PARAMETER_2 = PARAM2
         self.assertResultSuccess(result)
         self.assertIn("Updated", result.out())
 
-        # check updates
-        result = self.run_cli(cmd_env, list_cmd + "-f csv")
+        # check the right values were updated
+        result = self.run_cli(cmd_env, base_cmd + f"int push get {integ_name} {push_name2}")
         self.assertResultSuccess(result)
-        self.assertIn(f"{push_name2},{desc2},{resource2},", result.out())
+        self.assertIn(f"Name: {push_name2}", result.out())
+        self.assertIn(f"Resource: {resource2}", result.out())
+        self.assertIn(f"Description: {desc2}", result.out())
 
         ########################
         # task list
@@ -514,13 +527,15 @@ PARAMETER_2 = PARAM2
         result = self.run_cli(cmd_env, base_cmd + f"int push task '{integ_name}' '{push_name2}'")
         self.assertResultError(result, f"No push integration found for '{push_name2}'")
 
-        # resource string required for create
-        result = self.run_cli(cmd_env, base_cmd + f"int push set '{integ_name}' '{push_name2}' -d '{desc2}'")
-        self.assertResultError(result, "Must specify a resource value on create")
+        result = self.run_cli(cmd_env, base_cmd + f"int push get '{integ_name}' '{push_name2}'")
+        self.assertResultError(result, f"No push integration found for '{push_name2}'")
 
         ########################
         # error out for bad integration name
         result = self.run_cli(cmd_env, base_cmd + f"int p l '{bad_int_name}'")
+        self.assertResultError(result, f"No integration found for '{bad_int_name}'")
+
+        result = self.run_cli(cmd_env, base_cmd + f"int p get '{bad_int_name}' '{push_name1}'")
         self.assertResultError(result, f"No integration found for '{bad_int_name}'")
 
         result = self.run_cli(cmd_env, base_cmd + f"int p set '{bad_int_name}' '{push_name1}'")

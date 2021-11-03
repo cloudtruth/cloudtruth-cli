@@ -408,6 +408,7 @@ FLAGS:
 
 SUBCOMMANDS:
     delete    Delete a CloudTruth push [aliases: del, d]
+    get       Gets all the information for the specified CloudTruth push
     help      Prints this message or the help of the given subcommand(s)
     list      List CloudTruth pushes [aliases: ls, l]
     set       Create/modify CloudTruth [aliases: s]
@@ -421,6 +422,20 @@ USAGE:
 
 FLAGS:
     -y, --yes        Avoid confirmation prompt(s)
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+ARGS:
+    <integration-name>    Integration name
+    <push-name>           Push name
+====================
+cloudtruth-integrations-pushes-get 
+Gets all the information for the specified CloudTruth push
+
+USAGE:
+    cloudtruth integrations pushes get <integration-name> <push-name>
+
+FLAGS:
     -h, --help       Prints help information
     -V, --version    Prints version information
 
@@ -460,8 +475,10 @@ OPTIONS:
     -d, --desc <description>     Description for the push
     -r, --rename <new-name>      
         --region <region>        Region where push tasks run (create only) [default: us-east-1]
-        --resource <resource>    Resource string
-        --service <service>      Service for the push to use (create only) [default: s3]
+        --resource <resource>    Resource string (required for create, [default: '/{{ environment} }/{{ project }}/{{
+                                 parameter }}'])
+        --service <service>      Service for the push to use (create only) [default: ssm]  [possible values: ssm,
+                                 secretsmanager]
 
 ARGS:
     <integration-name>    Integration name

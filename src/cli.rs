@@ -456,6 +456,10 @@ pub fn build_cli() -> App<'static, 'static> {
                                 .arg(confirm_flag())
                                 .arg(integration_name_arg())
                                 .arg(push_name_arg()),
+                            SubCommand::with_name(GET_SUBCMD)
+                                .about("Gets all the information for the specified CloudTruth push")
+                                .arg(integration_name_arg())
+                                .arg(push_name_arg()),
                             SubCommand::with_name(LIST_SUBCMD)
                                 .visible_aliases(LIST_ALIASES)
                                 .about("List CloudTruth pushes")
@@ -473,7 +477,10 @@ pub fn build_cli() -> App<'static, 'static> {
                                 .arg(Arg::with_name("resource")
                                     .long("resource")
                                     .takes_value(true)
-                                    .help("Resource string"))
+                                    .help(concat!(
+                                        "Resource string (required for create, [default: ",
+                                        "'/{{ environment} }/{{ project }}/{{ parameter }}'])"
+                                    )))
                                 .arg(Arg::with_name("region")
                                     .long("region")
                                     .takes_value(true)
@@ -482,7 +489,8 @@ pub fn build_cli() -> App<'static, 'static> {
                                 .arg(Arg::with_name("service")
                                     .long("service")
                                     .takes_value(true)
-                                    .default_value("s3")
+                                    .default_value("ssm")
+                                    .possible_values(&["ssm", "secretsmanager"])
                                     .help("Service for the push to use (create only)")),
                             SubCommand::with_name(TASKS_SUBCMD)
                                 .visible_aliases(TASKS_ALIASES)
