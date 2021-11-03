@@ -1,6 +1,6 @@
 use crate::database::{
-    auth_details, extract_details, response_message, EnvironmentDetails, EnvironmentError,
-    EnvironmentTag, OpenApiConfig, PAGE_SIZE,
+    auth_details, extract_details, last_from_url, response_message, EnvironmentDetails,
+    EnvironmentError, EnvironmentTag, OpenApiConfig, PAGE_SIZE,
 };
 use cloudtruth_restapi::apis::environments_api::*;
 use cloudtruth_restapi::apis::Error::ResponseError;
@@ -35,11 +35,7 @@ impl Environments {
 
     /// Use the environment URL to get the corresponding name.
     pub fn get_name_from_url(&self, rest_cfg: &OpenApiConfig, url: &str) -> String {
-        let id = url
-            .split('/')
-            .filter(|&x| !x.is_empty())
-            .last()
-            .unwrap_or_default();
+        let id = last_from_url(url);
         if id.is_empty() {
             "".to_owned()
         } else {
