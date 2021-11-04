@@ -481,6 +481,16 @@ pub fn build_cli() -> App<'static, 'static> {
                                         "Resource string (required for create, [default: ",
                                         "'/{{ environment} }/{{ project }}/{{ parameter }}'])"
                                     )))
+                                .arg(Arg::with_name("project-add")
+                                    .takes_value(true)
+                                    .multiple(true)
+                                    .long("project")
+                                    .help("Project name(s) to be added"))
+                                .arg(Arg::with_name("project-sub")
+                                    .takes_value(true)
+                                    .multiple(true)
+                                    .long("no-project")
+                                    .help("Project name(s) to be subtracted"))
                                 .arg(Arg::with_name("region")
                                     .long("region")
                                     .takes_value(true)

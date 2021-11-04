@@ -472,13 +472,15 @@ FLAGS:
     -V, --version    Prints version information
 
 OPTIONS:
-    -d, --desc <description>     Description for the push
-    -r, --rename <new-name>      
-        --region <region>        Region where push tasks run (create only) [default: us-east-1]
-        --resource <resource>    Resource string (required for create, [default: '/{{ environment} }/{{ project }}/{{
-                                 parameter }}'])
-        --service <service>      Service for the push to use (create only) [default: ssm]  [possible values: ssm,
-                                 secretsmanager]
+    -d, --desc <description>             Description for the push
+    -r, --rename <new-name>              
+        --project <project-add>...       Project name(s) to be added
+        --no-project <project-sub>...    Project name(s) to be subtracted
+        --region <region>                Region where push tasks run (create only) [default: us-east-1]
+        --resource <resource>            Resource string (required for create, [default: '/{{ environment} }/{{ project
+                                         }}/{{ parameter }}'])
+        --service <service>              Service for the push to use (create only) [default: ssm]  [possible values:
+                                         ssm, secretsmanager]
 
 ARGS:
     <integration-name>    Integration name

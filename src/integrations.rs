@@ -4,7 +4,8 @@ use crate::cli::{
     SHOW_TIMES_FLAG, TASKS_SUBCMD,
 };
 use crate::database::{
-    last_from_url, Environments, Integrations, OpenApiConfig, Projects, PushDetails,
+    last_from_url, Environments, IntegrationError, Integrations, OpenApiConfig, ProjectDetails,
+    Projects, PushDetails,
 };
 use crate::table::Table;
 use crate::{error_message, user_confirm, warn_missing_subcommand, warning_message, DEL_CONFIRM};
@@ -15,12 +16,12 @@ use std::collections::{HashMap, HashSet};
 use std::process;
 
 fn integration_not_found_message(integ_name: &str) -> String {
-    format!("No integration found for '{}'", integ_name)
+    format!("Integration '{}' not found", integ_name)
 }
 
 fn integration_push_not_found_message(integ_name: &str, push_name: &str) -> String {
     format!(
-        "No push integration found for '{}' in integration '{}'",
+        "Integration push '{}' not found in integration '{}'",
         push_name, integ_name
     )
 }
@@ -94,6 +95,27 @@ fn resolve_project_names(rest_cfg: &OpenApiConfig, pushes: &mut [PushDetails]) {
             entry.project_names.push(proj_name.clone());
         }
     }
+}
+
+fn project_names_to_urls(
+    proj_names: &[&str],
+    proj_details: &[ProjectDetails],
+) -> Result<Vec<String>, IntegrationError> {
+    let mut proj_urls: Vec<String> = vec![];
+    for name in proj_names {
+        let mut found = false;
+        for details in proj_details {
+            if details.name.as_str() == *name {
+                found = true;
+                proj_urls.push(details.url.clone());
+                break;
+            }
+        }
+        if !found {
+            return Err(IntegrationError::ProjectNotFound(name.to_string()));
+        }
+    }
+    Ok(proj_urls)
 }
 
 fn proc_integ_explore(
@@ -391,6 +413,23 @@ fn proc_integ_push_set(
     let resource = subcmd_args.value_of("resource");
     let region = subcmd_args.value_of("region").unwrap();
     let service = subcmd_args.value_of("service").unwrap();
+    let proj_to_add: Vec<&str> = subcmd_args
+        .values_of("project-add")
+        .unwrap_or_default()
+        .collect();
+    let proj_to_sub: Vec<&str> = subcmd_args
+        .values_of("project-sub")
+        .unwrap_or_default()
+        .collect();
+    let mut proj_add_ids = vec![];
+    let mut proj_sub_ids = vec![];
+
+    if !proj_to_add.is_empty() || !proj_to_sub.is_empty() {
+        let projects = Projects::new();
+        let proj_details = projects.get_project_details(rest_cfg)?;
+        proj_add_ids = project_names_to_urls(&proj_to_add, &proj_details)?;
+        proj_sub_ids = project_names_to_urls(&proj_to_sub, &proj_details)?;
+    }
 
     let response_integ = integrations.get_id(rest_cfg, integ_name)?;
     if let Some(integ_id) = response_integ {
@@ -410,6 +449,9 @@ fn proc_integ_push_set(
                 ))?;
             }
             let updated_resource = resource.unwrap_or(&details.resource);
+            let mut project_ids = details.project_urls.clone();
+            project_ids.append(&mut proj_add_ids);
+            project_ids.retain(|i| !proj_sub_ids.contains(i));
             integrations.update_push(
                 rest_cfg,
                 &integ_id,
@@ -417,6 +459,7 @@ fn proc_integ_push_set(
                 updated_name,
                 updated_resource,
                 description,
+                project_ids,
             )?;
             println!(
                 "Updated push '{}' in integration '{}'",
@@ -431,6 +474,7 @@ fn proc_integ_push_set(
                 region,
                 service,
                 description,
+                proj_add_ids.iter().map(String::from).collect(),
             )?;
             println!(
                 "Created push '{}' in integration '{}'",

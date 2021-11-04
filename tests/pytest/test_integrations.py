@@ -425,6 +425,14 @@ PARAMETER_2 = PARAM2
 
         integ_name = os.environ.get(CT_PUSH_INTEG_NAME)
         bad_int_name = os.environ.get(CT_PUSH_BAD_INT_NAME)
+        set_cmd = base_cmd + f"integration push set '{integ_name}' "
+
+        ########################
+        # create a couple projects
+        proj_name1 = self.make_name("test-push-proj1")
+        self.create_project(cmd_env, proj_name1)
+        proj_name2 = self.make_name("test-push-proj2")
+        self.create_project(cmd_env, proj_name2)
 
         ########################
         # create the push
@@ -432,8 +440,8 @@ PARAMETER_2 = PARAM2
         desc1 = "original comment"
         resource1 = "/{{ environment }}/{{ project }}/{{ parameter }}"
         self._pushes.append((integ_name, push_name1))
-        set_cmd = base_cmd + f"int push set {integ_name} {push_name1} -d '{desc1}' --resource '{resource1}'"
-        result = self.run_cli(cmd_env, set_cmd)
+        cmd = set_cmd + f"{push_name1} -d '{desc1}' --resource '{resource1}' --project '{proj_name1}'"
+        result = self.run_cli(cmd_env, cmd)
         self.assertResultSuccess(result)
         self.assertIn("Created", result.out())
 
@@ -444,7 +452,7 @@ PARAMETER_2 = PARAM2
         self.assertResultSuccess(result)
         pushes = eval(result.out()).get("integration-push")
         entry = find_by_prop(pushes, PROP_NAME, push_name1)[0]
-        self.assertIsNotNone(entry)
+        self.assertEqual(entry.get("Projects"), proj_name1)
 
         # check the right values were set
         result = self.run_cli(cmd_env, base_cmd + f"int push get {integ_name} {push_name1}")
@@ -452,13 +460,14 @@ PARAMETER_2 = PARAM2
         self.assertIn(f"Name: {push_name1}", result.out())
         self.assertIn(f"Resource: {resource1}", result.out())
         self.assertIn(f"Description: {desc1}", result.out())
+        self.assertIn(f"Projects: {proj_name1}", result.out())
 
-        # update/rename push
+        # rename push, change resource, and add another project
         push_name2 = self.make_name("updated-test-push")
         resource2 = "/{{ project }}/{{ parameter }}/{{ environment }}"
         self._pushes.append((integ_name, push_name2))
-        set_cmd = base_cmd + f"int push set '{integ_name}' '{push_name1}' --resource '{resource2}' -r '{push_name2}'"
-        result = self.run_cli(cmd_env, set_cmd)
+        cmd = set_cmd + f"'{push_name1}' --resource '{resource2}' -r '{push_name2}' --project '{proj_name2}'"
+        result = self.run_cli(cmd_env, cmd)
         self.assertResultSuccess(result)
         self.assertIn("Updated", result.out())
 
@@ -470,7 +479,7 @@ PARAMETER_2 = PARAM2
         self.assertEqual(0, len(find_by_prop(pushes, PROP_NAME, push_name1)))
         # check the updated entry
         entry = find_by_prop(pushes, PROP_NAME, push_name2)[0]
-        self.assertIsNotNone(entry)
+        self.assertEqual(entry.get("Projects"), f"{proj_name1}, {proj_name2}")
 
         # check the right values were updated
         result = self.run_cli(cmd_env, base_cmd + f"int push get {integ_name} {push_name2}")
@@ -478,11 +487,13 @@ PARAMETER_2 = PARAM2
         self.assertIn(f"Name: {push_name2}", result.out())
         self.assertIn(f"Resource: {resource2}", result.out())
         self.assertIn(f"Description: {desc1}", result.out())
+        self.assertIn(f"Projects: {proj_name1}, {proj_name2}", result.out())
 
-        # another update
+        # change the description, and remove a project
         desc2 = "Updated description"
         self._pushes.append((integ_name, push_name2))
-        result = self.run_cli(cmd_env, base_cmd + f"int push set '{integ_name}' '{push_name2}' -d '{desc2}'")
+        cmd = set_cmd + f"'{push_name2}' -d '{desc2}' --no-project '{proj_name1}'"
+        result = self.run_cli(cmd_env, cmd)
         self.assertResultSuccess(result)
         self.assertIn("Updated", result.out())
 
@@ -492,6 +503,7 @@ PARAMETER_2 = PARAM2
         self.assertIn(f"Name: {push_name2}", result.out())
         self.assertIn(f"Resource: {resource2}", result.out())
         self.assertIn(f"Description: {desc2}", result.out())
+        self.assertIn(f"Projects: {proj_name2}", result.out())
 
         ########################
         # task list
@@ -513,8 +525,9 @@ PARAMETER_2 = PARAM2
         self.assertIn("Deleted", result.out())
 
         # idempotent
+        no_push_msg = f"Integration push '{push_name2}' not found in integration '{integ_name}'"
         result = self.run_cli(cmd_env, del_cmd)
-        self.assertResultWarning(result, f"No push integration found for '{push_name2}'")
+        self.assertResultWarning(result, no_push_msg)
 
         # make sure it is gone
         result = self.run_cli(cmd_env, list_cmd + "-f csv")
@@ -523,26 +536,38 @@ PARAMETER_2 = PARAM2
         self.assertNotIn(f"{push_name2},", result.out())
 
         ########################
+        # no project found
+        bogus_project = "this-proj-dne"
+        bad_proj_cmd = base_cmd + f"int push set '{integ_name}' '{push_name2}' --project {bogus_project}"
+        result = self.run_cli(cmd_env, bad_proj_cmd)
+        self.assertResultError(result, f"Project '{bogus_project}' not found")
+
+        ########################
         # error out for invalid push name
         result = self.run_cli(cmd_env, base_cmd + f"int push task '{integ_name}' '{push_name2}'")
-        self.assertResultError(result, f"No push integration found for '{push_name2}'")
+        self.assertResultError(result, no_push_msg)
 
         result = self.run_cli(cmd_env, base_cmd + f"int push get '{integ_name}' '{push_name2}'")
-        self.assertResultError(result, f"No push integration found for '{push_name2}'")
+        self.assertResultError(result, no_push_msg)
 
         ########################
         # error out for bad integration name
+        no_integration_msg = f"Integration '{bad_int_name}' not found"
         result = self.run_cli(cmd_env, base_cmd + f"int p l '{bad_int_name}'")
-        self.assertResultError(result, f"No integration found for '{bad_int_name}'")
+        self.assertResultError(result, no_integration_msg)
 
         result = self.run_cli(cmd_env, base_cmd + f"int p get '{bad_int_name}' '{push_name1}'")
-        self.assertResultError(result, f"No integration found for '{bad_int_name}'")
+        self.assertResultError(result, no_integration_msg)
 
         result = self.run_cli(cmd_env, base_cmd + f"int p set '{bad_int_name}' '{push_name1}'")
-        self.assertResultError(result, f"No integration found for '{bad_int_name}'")
+        self.assertResultError(result, no_integration_msg)
 
         result = self.run_cli(cmd_env, base_cmd + f"int p task '{bad_int_name}' '{push_name1}' -v")
-        self.assertResultError(result, f"No integration found for '{bad_int_name}'")
+        self.assertResultError(result, no_integration_msg)
 
         result = self.run_cli(cmd_env, base_cmd + f"int p del '{bad_int_name}' '{push_name1}' -y")
-        self.assertResultError(result, f"No integration found for '{bad_int_name}'")
+        self.assertResultError(result, no_integration_msg)
+
+        # cleanup
+        self.delete_project(cmd_env, proj_name1)
+        self.delete_project(cmd_env, proj_name2)

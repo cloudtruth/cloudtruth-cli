@@ -471,6 +471,7 @@ impl Integrations {
         region: &str,
         service: &str,
         description: Option<&str>,
+        projects: Vec<String>,
     ) -> Result<PushDetails, IntegrationError> {
         let reg_enum = aws_region_from_str(region).unwrap_or(AwsRegionEnum::UsEast1);
         let ser_enum = aws_service_from_str(service).unwrap_or(AwsServiceEnum::Ssm);
@@ -479,7 +480,7 @@ impl Integrations {
             id: "".to_string(),
             name: push_name.to_string(),
             description: description.map(String::from),
-            projects: vec![],
+            projects,
             tags: vec![],
             region: Box::new(reg_enum),
             service: Box::new(ser_enum),
@@ -508,6 +509,7 @@ impl Integrations {
         region: &str,
         service: &str,
         description: Option<&str>,
+        projects: Vec<String>,
     ) -> Result<PushDetails, IntegrationError> {
         self.create_aws_push(
             rest_cfg,
@@ -517,6 +519,7 @@ impl Integrations {
             region,
             service,
             description,
+            projects,
         )
     }
 
@@ -529,13 +532,14 @@ impl Integrations {
         push_name: &str,
         resource: &str,
         description: Option<&str>,
+        projects: Vec<String>,
     ) -> Result<(), IntegrationError> {
         let push_update = AwsPushUpdate {
             url: "".to_string(),
             id: "".to_string(),
             name: push_name.to_string(),
             description: description.map(String::from),
-            projects: vec![],
+            projects,
             tags: vec![],
             resource: resource.to_string(),
             created_at: "".to_string(),
@@ -561,6 +565,7 @@ impl Integrations {
         push_name: &str,
         resource: &str, // NOTE: unfortunately, this needs to be specified each time
         description: Option<&str>,
+        projects: Vec<String>,
     ) -> Result<(), IntegrationError> {
         self.update_aws_push(
             rest_cfg,
@@ -569,6 +574,7 @@ impl Integrations {
             push_name,
             resource,
             description,
+            projects,
         )
     }
 }
