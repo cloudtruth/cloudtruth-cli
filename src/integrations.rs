@@ -394,60 +394,75 @@ fn proc_integ_push_list(
     rest_cfg: &OpenApiConfig,
     integrations: &Integrations,
 ) -> Result<()> {
-    let integ_name = subcmd_args.value_of(INTEGRATION_NAME_ARG).unwrap();
+    let integ_name = subcmd_args.value_of(INTEGRATION_NAME_ARG);
     let show_times = subcmd_args.is_present(SHOW_TIMES_FLAG);
     let show_values = show_values(subcmd_args);
     let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
+    let qualifier: String;
+    let show_integration: bool;
+    let mut pushes: Vec<PushDetails>;
 
-    let response_id = integrations.get_id(rest_cfg, integ_name)?;
-    if let Some(integ_id) = response_id {
-        let mut pushes = integrations.get_push_list(rest_cfg, &integ_id)?;
-        if pushes.is_empty() {
-            println!("No pushes found for integration '{}'", integ_name);
-        } else if !show_values {
-            let list = pushes
-                .iter()
-                .map(|d| d.name.clone())
-                .collect::<Vec<String>>();
-            println!("{}", list.join("\n"))
+    if let Some(integ_name) = integ_name {
+        qualifier = format!(" for integration '{}'", integ_name);
+        show_integration = false;
+        if let Some(integ_id) = integrations.get_id(rest_cfg, integ_name)? {
+            pushes = integrations.get_push_list(rest_cfg, &integ_id)?;
         } else {
-            let mut hdr = vec![
-                "Name",
-                "Projects",
-                "Tags",
-                "Service",
-                "Status",
-                "Last Push Time",
-            ];
-            let mut properties = vec![
-                "name",
-                "project-names",
-                "tag-names",
-                "service",
-                "task-state",
-                "task-time",
-            ];
-
-            resolve_project_names(rest_cfg, &mut pushes);
-            resolve_tag_names(rest_cfg, &mut pushes);
-
-            if show_times {
-                hdr.push("Created At");
-                hdr.push("Modified At");
-                properties.push("created-at");
-                properties.push("modified-at");
-            }
-
-            let mut table = Table::new("integration-push");
-            table.set_header(&hdr);
-            for entry in pushes {
-                table.add_row(entry.get_properties(&properties));
-            }
-            table.render(fmt)?;
+            error_message(integration_not_found_message(integ_name))?;
+            process::exit(30);
         }
     } else {
-        error_message(integration_not_found_message(integ_name))?;
-        process::exit(30);
+        qualifier = "".to_string();
+        show_integration = true;
+        pushes = integrations.get_all_pushes(rest_cfg)?;
+    }
+
+    if pushes.is_empty() {
+        println!("No pushes found{}", qualifier);
+    } else if !show_values {
+        let list = pushes
+            .iter()
+            .map(|d| d.name.clone())
+            .collect::<Vec<String>>();
+        println!("{}", list.join("\n"))
+    } else {
+        let mut hdr = vec![
+            "Name",
+            "Projects",
+            "Tags",
+            "Service",
+            "Status",
+            "Last Push Time",
+        ];
+        let mut properties = vec![
+            "name",
+            "project-names",
+            "tag-names",
+            "service",
+            "task-state",
+            "task-time",
+        ];
+
+        resolve_project_names(rest_cfg, &mut pushes);
+        resolve_tag_names(rest_cfg, &mut pushes);
+
+        if show_integration {
+            hdr.insert(1, "Integration");
+            properties.insert(1, "integration");
+        }
+        if show_times {
+            hdr.push("Created At");
+            hdr.push("Modified At");
+            properties.push("created-at");
+            properties.push("modified-at");
+        }
+
+        let mut table = Table::new("integration-push");
+        table.set_header(&hdr);
+        for entry in pushes {
+            table.add_row(entry.get_properties(&properties));
+        }
+        table.render(fmt)?;
     }
     Ok(())
 }

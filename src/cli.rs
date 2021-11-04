@@ -472,7 +472,7 @@ pub fn build_cli() -> App<'static, 'static> {
                             SubCommand::with_name(LIST_SUBCMD)
                                 .visible_aliases(LIST_ALIASES)
                                 .about("List CloudTruth pushes")
-                                .arg(integration_name_arg())
+                                .arg(integration_name_arg().required(false))
                                 .arg(values_flag())
                                 .arg(show_times_arg())
                                 .arg(table_format_options()),

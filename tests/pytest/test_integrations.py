@@ -517,6 +517,13 @@ PARAMETER_2 = PARAM2
         self.assertIn(f"Projects: {proj_name1}, {proj_name2}", result.out())
         self.assertIn(f"Tags: {tag2}, {tag1}", result.out())
 
+        # list without specifying the integration...
+        result = self.run_cli(cmd_env, base_cmd + "int push ls --format json")
+        self.assertResultSuccess(result)
+        pushes = eval(result.out()).get("integration-push")
+        entry = find_by_prop(pushes, PROP_NAME, push_name2)[0]
+        self.assertEqual(entry.get("Integration"), integ_name)
+
         # change the description, remove a project, and play with tags
         desc2 = "Updated description"
         self._pushes.append((integ_name, push_name2))

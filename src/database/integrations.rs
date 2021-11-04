@@ -327,6 +327,29 @@ impl Integrations {
         Ok(total)
     }
 
+    fn get_all_aws_pushes(
+        &self,
+        rest_cfg: &OpenApiConfig,
+    ) -> Result<Vec<PushDetails>, IntegrationError> {
+        let int_details = self.get_aws_integration_details(rest_cfg)?;
+        let mut total: Vec<PushDetails> = vec![];
+        for entry in int_details {
+            let mut pushes = self.get_aws_push_list(rest_cfg, &entry.id)?;
+            for p in &mut pushes {
+                p.integration = entry.name.clone();
+            }
+            total.append(&mut pushes);
+        }
+        Ok(total)
+    }
+
+    pub fn get_all_pushes(
+        &self,
+        rest_cfg: &OpenApiConfig,
+    ) -> Result<Vec<PushDetails>, IntegrationError> {
+        self.get_all_aws_pushes(rest_cfg)
+    }
+
     fn get_aws_push_by_name(
         &self,
         rest_cfg: &OpenApiConfig,

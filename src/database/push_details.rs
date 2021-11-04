@@ -7,6 +7,7 @@ pub struct PushDetails {
     pub url: String,
 
     pub name: String,
+    pub integration: String,
     pub description: String,
     pub provider: String,
     pub resource: String,
@@ -31,6 +32,7 @@ impl PushDetails {
             "id" => self.id.clone(),
             "url" => self.url.clone(),
             "name" => self.name.clone(),
+            "integration" => self.integration.clone(),
             "description" => self.description.clone(),
             "provider" => self.provider.clone(),
             "resource" => self.resource.clone(),
@@ -66,6 +68,7 @@ impl From<&AwsPush> for PushDetails {
             id: api.id.clone(),
             url: api.url.clone(),
             name: api.name.clone(),
+            integration: "".to_string(), // filled in later
             description: api.description.clone().unwrap_or_default(),
             provider: "aws".to_string(),
             resource: api.resource.clone(),

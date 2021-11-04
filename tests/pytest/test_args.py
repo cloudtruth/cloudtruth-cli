@@ -119,6 +119,9 @@ class TestTopLevelArgs(TestCase):
             "environments": ["environment", "envs", "env", "e"],
             "environments tag": ["environment tag", "env ta"],
             "integrations": ["integration", "integrate", "int"],
+            "integrations pushes": [
+                "integration push", "integrate pu", "int pushes", "integrations pu", "int p",
+            ],
             "parameters": ["parameter", "params", "param", "p"],
             "projects": ["project", "proj"],
             "run": ["r"],

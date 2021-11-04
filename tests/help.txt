@@ -447,7 +447,7 @@ cloudtruth-integrations-pushes-list
 List CloudTruth pushes
 
 USAGE:
-    cloudtruth integrations pushes list [FLAGS] [OPTIONS] <integration-name>
+    cloudtruth integrations pushes list [FLAGS] [OPTIONS] [integration-name]
 
 FLAGS:
     -h, --help          Prints help information
