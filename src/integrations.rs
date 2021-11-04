@@ -470,7 +470,7 @@ fn proc_integ_push_set(
                 rest_cfg,
                 &integ_id,
                 push_name,
-                resource.unwrap_or("/{{ environment} }/{{ project }}/{{ parameter }}/"),
+                resource.unwrap_or("/{{ environment }}/{{ project }}/{{ parameter }}"),
                 region,
                 service,
                 description,
