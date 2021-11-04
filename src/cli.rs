@@ -214,6 +214,15 @@ fn push_name_arg() -> Arg<'static, 'static> {
         .help("Push name")
 }
 
+fn environment_tag_validator(arg_value: String) -> Result<(), String> {
+    let colons = arg_value.matches(':').count();
+    match colons {
+        1 => Ok(()),
+        0 => Err("Use a ':' to separate the environment and tag names".to_string()),
+        _ => Err("Can only have one ':' to separate the environment and tag names".to_string()),
+    }
+}
+
 pub fn build_cli() -> App<'static, 'static> {
     app_from_crate!()
         .setting(AppSettings::SubcommandRequiredElseHelp)
@@ -469,10 +478,10 @@ pub fn build_cli() -> App<'static, 'static> {
                                 .arg(table_format_options()),
                             SubCommand::with_name(SET_SUBCMD)
                                 .visible_aliases(SET_ALIASES)
-                                .about("Create/modify CloudTruth")
+                                .about("Create/modify CloudTruth integration push")
                                 .arg(integration_name_arg())
                                 .arg(push_name_arg())
-                                .arg(rename_option())
+                                .arg(rename_option().help("New push name"))
                                 .arg(description_option().help("Description for the push"))
                                 .arg(Arg::with_name("resource")
                                     .long("resource")
@@ -482,15 +491,31 @@ pub fn build_cli() -> App<'static, 'static> {
                                         "'/{{ environment} }/{{ project }}/{{ parameter }}'])"
                                     )))
                                 .arg(Arg::with_name("project-add")
+                                    .value_name("project")
                                     .takes_value(true)
                                     .multiple(true)
                                     .long("project")
                                     .help("Project name(s) to be added"))
                                 .arg(Arg::with_name("project-sub")
+                                    .value_name("project")
                                     .takes_value(true)
                                     .multiple(true)
                                     .long("no-project")
-                                    .help("Project name(s) to be subtracted"))
+                                    .help("Project name(s) to be removed"))
+                                .arg(Arg::with_name("tag-add")
+                                    .value_name("environment:tag")
+                                    .validator(environment_tag_validator)
+                                    .takes_value(true)
+                                    .multiple(true)
+                                    .long("tag")
+                                    .help("Tag name(s) to be added"))
+                                .arg(Arg::with_name("tag-sub")
+                                    .value_name("environment:tag")
+                                    .validator(environment_tag_validator)
+                                    .takes_value(true)
+                                    .multiple(true)
+                                    .long("no-tag")
+                                    .help("Tag name(s) to be subtracted"))
                                 .arg(Arg::with_name("region")
                                     .long("region")
                                     .takes_value(true)

@@ -411,7 +411,7 @@ SUBCOMMANDS:
     get       Gets all the information for the specified CloudTruth push
     help      Prints this message or the help of the given subcommand(s)
     list      List CloudTruth pushes [aliases: ls, l]
-    set       Create/modify CloudTruth [aliases: s]
+    set       Create/modify CloudTruth integration push [aliases: s]
     tasks     List tasks for the specified CloudTruth push [aliases: task, ta, t]
 ====================
 cloudtruth-integrations-pushes-delete 
@@ -462,7 +462,7 @@ ARGS:
     <integration-name>    Integration name
 ====================
 cloudtruth-integrations-pushes-set 
-Create/modify CloudTruth
+Create/modify CloudTruth integration push
 
 USAGE:
     cloudtruth integrations pushes set [OPTIONS] <integration-name> <push-name>
@@ -473,14 +473,16 @@ FLAGS:
 
 OPTIONS:
     -d, --desc <description>             Description for the push
-    -r, --rename <new-name>              
-        --project <project-add>...       Project name(s) to be added
-        --no-project <project-sub>...    Project name(s) to be subtracted
+    -r, --rename <new-name>              New push name
+        --project <project>...           Project name(s) to be added
+        --no-project <project>...        Project name(s) to be removed
         --region <region>                Region where push tasks run (create only) [default: us-east-1]
         --resource <resource>            Resource string (required for create, [default: '/{{ environment} }/{{ project
                                          }}/{{ parameter }}'])
         --service <service>              Service for the push to use (create only) [default: ssm]  [possible values:
                                          ssm, secretsmanager]
+        --tag <environment:tag>...       Tag name(s) to be added
+        --no-tag <environment:tag>...    Tag name(s) to be subtracted
 
 ARGS:
     <integration-name>    Integration name

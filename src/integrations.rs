@@ -4,8 +4,7 @@ use crate::cli::{
     SHOW_TIMES_FLAG, TASKS_SUBCMD,
 };
 use crate::database::{
-    last_from_url, Environments, IntegrationError, Integrations, OpenApiConfig, ProjectDetails,
-    Projects, PushDetails,
+    last_from_url, Environments, Integrations, OpenApiConfig, ProjectDetails, Projects, PushDetails,
 };
 use crate::table::Table;
 use crate::{error_message, user_confirm, warn_missing_subcommand, warning_message, DEL_CONFIRM};
@@ -97,10 +96,7 @@ fn resolve_project_names(rest_cfg: &OpenApiConfig, pushes: &mut [PushDetails]) {
     }
 }
 
-fn project_names_to_urls(
-    proj_names: &[&str],
-    proj_details: &[ProjectDetails],
-) -> Result<Vec<String>, IntegrationError> {
+fn project_names_to_urls(proj_names: &[&str], proj_details: &[ProjectDetails]) -> Vec<String> {
     let mut proj_urls: Vec<String> = vec![];
     for name in proj_names {
         let mut found = false;
@@ -112,10 +108,65 @@ fn project_names_to_urls(
             }
         }
         if !found {
-            return Err(IntegrationError::ProjectNotFound(name.to_string()));
+            let _ = error_message(format!("Project '{}' not found", name));
+            process::exit(36);
         }
     }
-    Ok(proj_urls)
+    proj_urls
+}
+
+fn get_tag_name_to_url_map(
+    rest_cfg: &OpenApiConfig,
+    tag_names: &[&str],
+) -> HashMap<String, String> {
+    let mut result: HashMap<String, String> = HashMap::new();
+
+    // create a de-duplicated set of environments for which we need to grab the tags
+    let mut env_names: HashSet<String> = HashSet::new();
+    for full_tag in tag_names {
+        let parts: Vec<&str> = full_tag.split(':').collect();
+        env_names.insert(parts[0].to_string());
+    }
+
+    // loop through all the environments, and build up our tag map
+    let environments = Environments::new();
+    let env_details = environments
+        .get_environment_details(rest_cfg)
+        .unwrap_or_default();
+    for env_name in env_names {
+        let found = env_details
+            .iter()
+            .find(|d| d.name == env_name)
+            .map(|d| d.id.clone());
+        if let Some(env_id) = found {
+            let tag_details = environments
+                .get_env_tags(rest_cfg, &env_id)
+                .unwrap_or_default();
+            for t in tag_details {
+                let full_name = format!("{}:{}", env_name, &t.name);
+                result.insert(full_name, t.url.clone());
+            }
+        } else {
+            let _ = error_message(format!("Environment '{}' not found", env_name));
+            process::exit(37);
+        }
+    }
+
+    result
+}
+
+fn tag_names_to_urls(tag_names: &[&str], tag_map: &HashMap<String, String>) -> Vec<String> {
+    let mut result: Vec<String> = Vec::new();
+    for full_tag in tag_names {
+        let map_value: Option<&String> = tag_map.get(&full_tag.to_string());
+        if let Some(url) = map_value {
+            result.push(url.clone());
+        } else {
+            let _ = error_message(format!("Did not find tag for {}", full_tag));
+            process::exit(38);
+        }
+    }
+    result
 }
 
 fn proc_integ_explore(
@@ -423,12 +474,31 @@ fn proc_integ_push_set(
         .collect();
     let mut proj_add_ids = vec![];
     let mut proj_sub_ids = vec![];
+    let tag_to_add: Vec<&str> = subcmd_args
+        .values_of("tag-add")
+        .unwrap_or_default()
+        .collect();
+    let tag_to_sub: Vec<&str> = subcmd_args
+        .values_of("tag-sub")
+        .unwrap_or_default()
+        .collect();
+    let mut tag_add_ids = vec![];
+    let mut tag_sub_ids = vec![];
 
     if !proj_to_add.is_empty() || !proj_to_sub.is_empty() {
         let projects = Projects::new();
         let proj_details = projects.get_project_details(rest_cfg)?;
-        proj_add_ids = project_names_to_urls(&proj_to_add, &proj_details)?;
-        proj_sub_ids = project_names_to_urls(&proj_to_sub, &proj_details)?;
+        proj_add_ids = project_names_to_urls(&proj_to_add, &proj_details);
+        proj_sub_ids = project_names_to_urls(&proj_to_sub, &proj_details);
+    }
+
+    if !tag_to_add.is_empty() || !tag_to_sub.is_empty() {
+        // get all the environment details
+        let mut all_tags: Vec<&str> = tag_to_add.clone();
+        all_tags.append(tag_to_sub.clone().as_mut());
+        let tag_map = get_tag_name_to_url_map(rest_cfg, &all_tags);
+        tag_add_ids = tag_names_to_urls(&tag_to_add, &tag_map);
+        tag_sub_ids = tag_names_to_urls(&tag_to_sub, &tag_map);
     }
 
     let response_integ = integrations.get_id(rest_cfg, integ_name)?;
@@ -452,6 +522,9 @@ fn proc_integ_push_set(
             let mut project_ids = details.project_urls.clone();
             project_ids.append(&mut proj_add_ids);
             project_ids.retain(|i| !proj_sub_ids.contains(i));
+            let mut tag_ids = details.tag_urls.clone();
+            tag_ids.append(&mut tag_add_ids);
+            tag_ids.retain(|i| !tag_sub_ids.contains(i));
             integrations.update_push(
                 rest_cfg,
                 &integ_id,
@@ -460,6 +533,7 @@ fn proc_integ_push_set(
                 updated_resource,
                 description,
                 project_ids,
+                tag_ids,
             )?;
             println!(
                 "Updated push '{}' in integration '{}'",
@@ -475,6 +549,7 @@ fn proc_integ_push_set(
                 service,
                 description,
                 proj_add_ids.iter().map(String::from).collect(),
+                tag_add_ids.iter().map(String::from).collect(),
             )?;
             println!(
                 "Created push '{}' in integration '{}'",

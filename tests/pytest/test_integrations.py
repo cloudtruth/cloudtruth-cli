@@ -435,12 +435,29 @@ PARAMETER_2 = PARAM2
         self.create_project(cmd_env, proj_name2)
 
         ########################
+        # create a couple environments with tags
+        env_name1 = self.make_name("push-env-left")
+        self.create_environment(cmd_env, env_name1)
+        env1_tag1 = "sna"
+        self.create_env_tag(cmd_env, env_name1, env1_tag1)
+        env1_tag2 = "foo"
+        self.create_env_tag(cmd_env, env_name1, env1_tag2)
+
+        env_name2 = self.make_name("push-env-right")
+        self.create_environment(cmd_env, env_name2)
+        env2_tag1 = "foo"
+        self.create_env_tag(cmd_env, env_name2, env2_tag1)
+        env2_tag2 = "bar"
+        self.create_env_tag(cmd_env, env_name2, env2_tag2)
+
+        ########################
         # create the push
         push_name1 = self.make_name("my-test-push")
         desc1 = "original comment"
         resource1 = "/{{ environment }}/{{ project }}/{{ parameter }}"
         self._pushes.append((integ_name, push_name1))
-        cmd = set_cmd + f"{push_name1} -d '{desc1}' --resource '{resource1}' --project '{proj_name1}'"
+        tag1 = f"{env_name1}:{env1_tag1}"
+        cmd = set_cmd + f"{push_name1} -d '{desc1}' --resource '{resource1}' --project '{proj_name1}' --tag '{tag1}'"
         result = self.run_cli(cmd_env, cmd)
         self.assertResultSuccess(result)
         self.assertIn("Created", result.out())
@@ -453,6 +470,7 @@ PARAMETER_2 = PARAM2
         pushes = eval(result.out()).get("integration-push")
         entry = find_by_prop(pushes, PROP_NAME, push_name1)[0]
         self.assertEqual(entry.get("Projects"), proj_name1)
+        self.assertEqual(entry.get("Tags"), f"{tag1}")
 
         # check the right values were set
         result = self.run_cli(cmd_env, base_cmd + f"int push get {integ_name} {push_name1}")
@@ -461,12 +479,17 @@ PARAMETER_2 = PARAM2
         self.assertIn(f"Resource: {resource1}", result.out())
         self.assertIn(f"Description: {desc1}", result.out())
         self.assertIn(f"Projects: {proj_name1}", result.out())
+        self.assertIn(f"Tags: {tag1}", result.out())
 
-        # rename push, change resource, and add another project
+        # rename push, change resource, add another project, and another tag
         push_name2 = self.make_name("updated-test-push")
         resource2 = "/{{ project }}/{{ parameter }}/{{ environment }}"
         self._pushes.append((integ_name, push_name2))
-        cmd = set_cmd + f"'{push_name1}' --resource '{resource2}' -r '{push_name2}' --project '{proj_name2}'"
+        tag2 = f"{env_name2}:{env2_tag1}"
+        cmd = (
+            set_cmd + f"'{push_name1}' --resource '{resource2}' -r '{push_name2}' "
+            f"--project '{proj_name2}' --tag '{tag2}'"
+        )
         result = self.run_cli(cmd_env, cmd)
         self.assertResultSuccess(result)
         self.assertIn("Updated", result.out())
@@ -480,6 +503,10 @@ PARAMETER_2 = PARAM2
         # check the updated entry
         entry = find_by_prop(pushes, PROP_NAME, push_name2)[0]
         self.assertEqual(entry.get("Projects"), f"{proj_name1}, {proj_name2}")
+        entry_tags = entry.get("Tags")
+        self.assertIn(tag1, entry_tags)
+        self.assertIn(tag2, entry_tags)
+        self.assertEqual(len(entry_tags.split(' ')), 2)
 
         # check the right values were updated
         result = self.run_cli(cmd_env, base_cmd + f"int push get {integ_name} {push_name2}")
@@ -488,11 +515,27 @@ PARAMETER_2 = PARAM2
         self.assertIn(f"Resource: {resource2}", result.out())
         self.assertIn(f"Description: {desc1}", result.out())
         self.assertIn(f"Projects: {proj_name1}, {proj_name2}", result.out())
+        self.assertIn(f"Tags: {tag2}, {tag1}", result.out())
 
-        # change the description, and remove a project
+        # change the description, remove a project, and play with tags
         desc2 = "Updated description"
         self._pushes.append((integ_name, push_name2))
-        cmd = set_cmd + f"'{push_name2}' -d '{desc2}' --no-project '{proj_name1}'"
+        tag3 = f"{env_name1}:{env1_tag2}"
+        # tag4 = f"{env_name2}:{env2_tag2}"  # TODO: fix resource checking vs tags
+        cmd = (
+            set_cmd + f"'{push_name2}' -d '{desc2}' --no-project '{proj_name1}' --no-tag '{tag1}' "
+            f"--tag '{tag3}' "
+            # f"--tag '{tag4}'"
+        )
+        '''
+        confused_msg = "Multiple tags from the same environment in the same push action require using `{{ tag }}`"
+        result = self.run_cli(cmd_env, cmd)
+        self.assertResultError(result, confused_msg)
+
+        # so, change the resource string, too
+        resource3 = f"{resource2}/{{{{ tag }}}}"
+        cmd += f"--resource {resource3}"
+        '''
         result = self.run_cli(cmd_env, cmd)
         self.assertResultSuccess(result)
         self.assertIn("Updated", result.out())
@@ -504,6 +547,19 @@ PARAMETER_2 = PARAM2
         self.assertIn(f"Resource: {resource2}", result.out())
         self.assertIn(f"Description: {desc2}", result.out())
         self.assertIn(f"Projects: {proj_name2}", result.out())
+
+        # check the tags in more detail
+        result = self.run_cli(cmd_env, list_cmd + "-f json")
+        self.assertResultSuccess(result)
+        pushes = eval(result.out()).get("integration-push")
+        entry = find_by_prop(pushes, PROP_NAME, push_name2)[0]
+        entry_tags = entry.get("Tags")
+        self.assertNotIn(tag1, entry_tags)
+        self.assertIn(tag2, entry_tags)
+        self.assertIn(tag3, entry_tags)
+        # self.assertIn(tag4, entry_tags)
+        # self.assertEqual(len(entry_tags.split(' ')), 3)
+        self.assertEqual(len(entry_tags.split(' ')), 2)
 
         ########################
         # task list
@@ -543,6 +599,15 @@ PARAMETER_2 = PARAM2
         self.assertResultError(result, f"Project '{bogus_project}' not found")
 
         ########################
+        # invalid tag formats
+        pre_tag_cmd = base_cmd + f"int push set '{integ_name}' '{push_name2}' "
+        result = self.run_cli(cmd_env, pre_tag_cmd + "--tag foo")
+        self.assertResultError(result, "Use a ':' to separate the environment and tag names")
+
+        result = self.run_cli(cmd_env, pre_tag_cmd + "--tag sna:foo:bar")
+        self.assertResultError(result, "Can only have one ':' to separate the environment and tag names")
+
+        ########################
         # error out for invalid push name
         result = self.run_cli(cmd_env, base_cmd + f"int push task '{integ_name}' '{push_name2}'")
         self.assertResultError(result, no_push_msg)
@@ -571,3 +636,5 @@ PARAMETER_2 = PARAM2
         # cleanup
         self.delete_project(cmd_env, proj_name1)
         self.delete_project(cmd_env, proj_name2)
+        self.delete_environment(cmd_env, env_name1)
+        self.delete_environment(cmd_env, env_name2)

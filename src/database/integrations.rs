@@ -472,6 +472,7 @@ impl Integrations {
         service: &str,
         description: Option<&str>,
         projects: Vec<String>,
+        tags: Vec<String>,
     ) -> Result<PushDetails, IntegrationError> {
         let reg_enum = aws_region_from_str(region).unwrap_or(AwsRegionEnum::UsEast1);
         let ser_enum = aws_service_from_str(service).unwrap_or(AwsServiceEnum::Ssm);
@@ -481,7 +482,7 @@ impl Integrations {
             name: push_name.to_string(),
             description: description.map(String::from),
             projects,
-            tags: vec![],
+            tags,
             region: Box::new(reg_enum),
             service: Box::new(ser_enum),
             resource: resource.to_string(),
@@ -510,6 +511,7 @@ impl Integrations {
         service: &str,
         description: Option<&str>,
         projects: Vec<String>,
+        tags: Vec<String>,
     ) -> Result<PushDetails, IntegrationError> {
         self.create_aws_push(
             rest_cfg,
@@ -520,6 +522,7 @@ impl Integrations {
             service,
             description,
             projects,
+            tags,
         )
     }
 
@@ -533,6 +536,7 @@ impl Integrations {
         resource: &str,
         description: Option<&str>,
         projects: Vec<String>,
+        tags: Vec<String>,
     ) -> Result<(), IntegrationError> {
         let push_update = AwsPushUpdate {
             url: "".to_string(),
@@ -540,7 +544,7 @@ impl Integrations {
             name: push_name.to_string(),
             description: description.map(String::from),
             projects,
-            tags: vec![],
+            tags,
             resource: resource.to_string(),
             created_at: "".to_string(),
             modified_at: "".to_string(),
@@ -566,6 +570,7 @@ impl Integrations {
         resource: &str, // NOTE: unfortunately, this needs to be specified each time
         description: Option<&str>,
         projects: Vec<String>,
+        tags: Vec<String>,
     ) -> Result<(), IntegrationError> {
         self.update_aws_push(
             rest_cfg,
@@ -575,6 +580,7 @@ impl Integrations {
             resource,
             description,
             projects,
+            tags,
         )
     }
 }
