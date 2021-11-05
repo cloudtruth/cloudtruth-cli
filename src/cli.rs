@@ -48,6 +48,32 @@ const SET_ALIASES: &[&str] = &["s"];
 const TASKS_ALIASES: &[&str] = &["task", "ta", "t"];
 const TREE_ALIASES: &[&str] = &["tr"];
 
+const REGION_VALUES: &[&str] = &[
+    "af-south-1",
+    "ap-east-1",
+    "ap-northeast-1",
+    "ap-northeast-2",
+    "ap-northeast-3",
+    "ap-south-1",
+    "ap-southeast-1",
+    "ap-southeast-2",
+    "ca-central-1",
+    "cn-north-1",
+    "cn-northwest-1",
+    "eu-central-1",
+    "eu-north-1",
+    "eu-south-1",
+    "eu-west-1",
+    "eu-west-2",
+    "eu-west-3",
+    "me-south-1",
+    "sa-east-1",
+    "us-east-1",
+    "us-east-2",
+    "us-west-1",
+    "us-west-2",
+];
+
 pub fn binary_name() -> String {
     option_env!("CARGO_PKG_NAME")
         .unwrap_or("cloudtruth")
@@ -520,6 +546,8 @@ pub fn build_cli() -> App<'static, 'static> {
                                     .long("region")
                                     .takes_value(true)
                                     .default_value("us-east-1")
+                                    .possible_values(REGION_VALUES)
+                                    .hide_possible_values(true) // list is too long, but want check
                                     .help("Region where push tasks run (create only)"))
                                 .arg(Arg::with_name("service")
                                     .long("service")

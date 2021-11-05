@@ -454,6 +454,9 @@ PARAMETER_2 = PARAM2
 
         ########################
         # create the push
+        default_resource = "/{{ environment }}/{{ project }}/{{ parameter }}"
+        default_service = "ssm"
+        default_region = "us-east-1"
         push_name1 = self.make_name("my-test-push")
         desc1 = "original comment"
         resource1 = "/{{ environment }}/{{ project }}/{{ parameter }}"
@@ -482,6 +485,8 @@ PARAMETER_2 = PARAM2
         self.assertIn(f"Description: {desc1}", result.out())
         self.assertIn(f"Projects: {proj_name1}", result.out())
         self.assertIn(f"Tags: {tag1}", result.out())
+        self.assertIn(f"Region: {default_region}", result.out())
+        self.assertIn(f"Service: {default_service}", result.out())
 
         # rename push, change resource, add another project, and another tag
         push_name2 = self.make_name("updated-test-push")
@@ -615,6 +620,38 @@ PARAMETER_2 = PARAM2
         self.assertResultSuccess(result)
         self.assertNotIn(f"{push_name1},", result.out())
         self.assertNotIn(f"{push_name2},", result.out())
+
+        ########################
+        # create another push -- different values:
+        #       check default resource,
+        #       secretsmanager service (non-default),
+        #       different region (non-default)
+        service = "secretsmanager"
+        region = "us-west-2"
+        cmd = (
+            base_cmd + f"int push set '{integ_name}' '{push_name1}' --service '{service}' "
+            f"--region {region}"
+        )
+        result = self.run_cli(cmd_env, cmd)
+        self.assertResultSuccess(result)
+        self.assertIn("Created push", result.out())
+
+        # do a get to verify the values
+        result = self.run_cli(cmd_env, base_cmd + f"int push get '{integ_name}' '{push_name1}'")
+        self.assertResultSuccess(result)
+        self.assertIn(f"Region: {region}", result.out())
+        self.assertIn(f"Service: {service}", result.out())
+        self.assertIn(f"Resource: {default_resource}", result.out())
+
+        # delete this push
+        result = self.run_cli(cmd_env, base_cmd + f"int push del '{integ_name}' '{push_name1}' -y")
+        self.assertResultSuccess(result)
+
+        ########################
+        # invalid region
+        bad_reg_cmd = base_cmd + f"int push set '{integ_name}' '{push_name2}' --region not-a-region"
+        result = self.run_cli(cmd_env, bad_reg_cmd)
+        self.assertResultError(result, "isn't a valid value for '--region <region>'")
 
         ########################
         # no project found

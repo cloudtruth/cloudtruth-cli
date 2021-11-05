@@ -88,7 +88,7 @@ fn aws_region_from_str(input: &str) -> Option<AwsRegionEnum> {
 fn aws_service_from_str(input: &str) -> Option<AwsServiceEnum> {
     match input.to_lowercase().as_str() {
         "s3" => Some(AwsServiceEnum::S3),
-        "secretmanager" => Some(AwsServiceEnum::Secretsmanager),
+        "secretsmanager" => Some(AwsServiceEnum::Secretsmanager),
         "ssm" => Some(AwsServiceEnum::Ssm),
         _ => None,
     }
