@@ -1,6 +1,7 @@
 use crate::database::{
-    auth_details, extract_details, last_from_url, response_message, IntegrationDetails,
-    IntegrationError, IntegrationNode, OpenApiConfig, PushDetails, TaskDetail, PAGE_SIZE,
+    auth_details, extract_details, last_from_url, parent_id_from_url, response_message,
+    IntegrationDetails, IntegrationError, IntegrationNode, OpenApiConfig, PushDetails, TaskDetail,
+    PAGE_SIZE,
 };
 use cloudtruth_restapi::apis::integrations_api::*;
 use cloudtruth_restapi::apis::Error::ResponseError;
@@ -605,5 +606,55 @@ impl Integrations {
             projects,
             tags,
         )
+    }
+
+    fn sync_aws_push(
+        &self,
+        rest_cfg: &OpenApiConfig,
+        push_details: &PushDetails,
+    ) -> Result<(), IntegrationError> {
+        let description = if push_details.description.is_empty() {
+            None
+        } else {
+            Some(push_details.description.clone())
+        };
+        let reg_enum = aws_region_from_str(&push_details.region).unwrap();
+        let srv_enum = aws_service_from_str(&push_details.service).unwrap();
+        let integration_id = parent_id_from_url(&push_details.url, "pushes/");
+        let sync_body = AwsPush {
+            url: push_details.url.clone(),
+            id: push_details.id.clone(),
+            name: push_details.name.clone(),
+            description,
+            projects: push_details.project_urls.clone(),
+            tags: push_details.tag_urls.clone(),
+            region: Box::new(reg_enum),
+            service: Box::new(srv_enum),
+            resource: push_details.resource.clone(),
+            latest_task: None,
+            created_at: "".to_string(),
+            modified_at: "".to_string(),
+        };
+        let response = integrations_aws_pushes_sync_create(
+            rest_cfg,
+            integration_id,
+            &push_details.id,
+            sync_body,
+        );
+        match response {
+            Ok(_) => Ok(()),
+            Err(ResponseError(ref content)) => {
+                Err(response_error(&content.status, &content.content))
+            }
+            Err(e) => Err(IntegrationError::UnhandledError(e.to_string())),
+        }
+    }
+
+    pub fn sync_push(
+        &self,
+        rest_cfg: &OpenApiConfig,
+        push_details: &PushDetails,
+    ) -> Result<(), IntegrationError> {
+        self.sync_aws_push(rest_cfg, push_details)
     }
 }

@@ -527,6 +527,10 @@ pub fn build_cli() -> App<'static, 'static> {
                                     .default_value("ssm")
                                     .possible_values(&["ssm", "secretsmanager"])
                                     .help("Service for the push to use (create only)")),
+                            SubCommand::with_name("sync")
+                                .about("Manually initiate action on existing push")
+                                .arg(integration_name_arg())
+                                .arg(push_name_arg()),
                             SubCommand::with_name(TASKS_SUBCMD)
                                 .visible_aliases(TASKS_ALIASES)
                                 .about("List tasks for the specified CloudTruth push")

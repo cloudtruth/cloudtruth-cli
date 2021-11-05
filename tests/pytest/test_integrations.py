@@ -5,7 +5,9 @@ import subprocess
 from typing import List
 
 from testcase import TestCase
+from testcase import PROP_CREATED
 from testcase import PROP_NAME
+from testcase import PROP_MODIFIED
 from testcase import PROP_TYPE
 from testcase import PROP_VALUE
 from testcase import find_by_prop
@@ -523,6 +525,22 @@ PARAMETER_2 = PARAM2
         pushes = eval(result.out()).get("integration-push")
         entry = find_by_prop(pushes, PROP_NAME, push_name2)[0]
         self.assertEqual(entry.get("Integration"), integ_name)
+        self.assertIsNone(entry.get(PROP_CREATED))
+        self.assertIsNone(entry.get(PROP_MODIFIED))
+        last_time = entry.get("Last Push Time")
+
+        result = self.run_cli(cmd_env, base_cmd + f"int push sync '{integ_name}' '{push_name2}'")
+        self.assertResultSuccess(result)
+        self.assertIn(f"Synchronized push '{push_name2}'", result.out())
+
+        result = self.run_cli(cmd_env, base_cmd + f"int push ls '{integ_name}' --format json --show-times")
+        self.assertResultSuccess(result)
+        pushes = eval(result.out()).get("integration-push")
+        entry = find_by_prop(pushes, PROP_NAME, push_name2)[0]
+        self.assertIsNone(entry.get("Integration"))
+        self.assertIsNotNone(entry.get(PROP_CREATED))
+        self.assertIsNotNone(entry.get(PROP_MODIFIED))
+        self.assertNotEqual(entry.get("Last Push Time"), last_time)
 
         # change the description, remove a project, and play with tags
         desc2 = "Updated description"
@@ -622,6 +640,9 @@ PARAMETER_2 = PARAM2
         result = self.run_cli(cmd_env, base_cmd + f"int push get '{integ_name}' '{push_name2}'")
         self.assertResultError(result, no_push_msg)
 
+        result = self.run_cli(cmd_env, base_cmd + f"int push sync '{integ_name}' '{push_name2}'")
+        self.assertResultError(result, no_push_msg)
+
         ########################
         # error out for bad integration name
         no_integration_msg = f"Integration '{bad_int_name}' not found"
@@ -632,6 +653,9 @@ PARAMETER_2 = PARAM2
         self.assertResultError(result, no_integration_msg)
 
         result = self.run_cli(cmd_env, base_cmd + f"int p set '{bad_int_name}' '{push_name1}'")
+        self.assertResultError(result, no_integration_msg)
+
+        result = self.run_cli(cmd_env, base_cmd + f"int p sync '{bad_int_name}' '{push_name1}'")
         self.assertResultError(result, no_integration_msg)
 
         result = self.run_cli(cmd_env, base_cmd + f"int p task '{bad_int_name}' '{push_name1}' -v")

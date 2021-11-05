@@ -412,6 +412,7 @@ SUBCOMMANDS:
     help      Prints this message or the help of the given subcommand(s)
     list      List CloudTruth pushes [aliases: ls, l]
     set       Create/modify CloudTruth integration push [aliases: s]
+    sync      Manually initiate action on existing push
     tasks     List tasks for the specified CloudTruth push [aliases: task, ta, t]
 ====================
 cloudtruth-integrations-pushes-delete 
@@ -483,6 +484,20 @@ OPTIONS:
                                          ssm, secretsmanager]
         --tag <environment:tag>...       Tag name(s) to be added
         --no-tag <environment:tag>...    Tag name(s) to be subtracted
+
+ARGS:
+    <integration-name>    Integration name
+    <push-name>           Push name
+====================
+cloudtruth-integrations-pushes-sync 
+Manually initiate action on existing push
+
+USAGE:
+    cloudtruth integrations pushes sync <integration-name> <push-name>
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
 
 ARGS:
     <integration-name>    Integration name

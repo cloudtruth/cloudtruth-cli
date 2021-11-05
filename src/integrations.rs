@@ -252,8 +252,8 @@ fn proc_integ_refresh(
 ) -> Result<()> {
     let integ_name = subcmd_args.value_of(INTEGRATION_NAME_ARG).unwrap();
 
-    let response_id = integrations.get_id(rest_cfg, integ_name)?;
-    if let Some(integ_id) = response_id {
+    let integ_resp = integrations.get_id(rest_cfg, integ_name)?;
+    if let Some(integ_id) = integ_resp {
         integrations.refresh_connection(rest_cfg, &integ_id)?;
     } else {
         error_message(integration_not_found_message(integ_name))?;
@@ -270,10 +270,10 @@ fn proc_integ_push_delete(
     let integ_name = subcmd_args.value_of(INTEGRATION_NAME_ARG).unwrap();
     let push_name = subcmd_args.value_of(PUSH_NAME_ARG).unwrap();
 
-    let response_id = integrations.get_id(rest_cfg, integ_name)?;
-    if let Some(integ_id) = response_id {
-        let response_id = integrations.get_push_id(rest_cfg, &integ_id, push_name)?;
-        if let Some(push_id) = response_id {
+    let integ_resp = integrations.get_id(rest_cfg, integ_name)?;
+    if let Some(integ_id) = integ_resp {
+        let push_resp = integrations.get_push_id(rest_cfg, &integ_id, push_name)?;
+        if let Some(push_id) = push_resp {
             // NOTE: the server is responsible for checking if children exist
             let mut confirmed = subcmd_args.is_present(CONFIRM_FLAG);
             if !confirmed {
@@ -369,10 +369,10 @@ fn proc_integ_push_get(
     let integ_name = subcmd_args.value_of(INTEGRATION_NAME_ARG).unwrap();
     let push_name = subcmd_args.value_of(PUSH_NAME_ARG).unwrap();
 
-    let response_id = integrations.get_id(rest_cfg, integ_name)?;
-    if let Some(integ_id) = response_id {
-        let response_details = integrations.get_push_by_name(rest_cfg, &integ_id, push_name)?;
-        if let Some(details) = response_details {
+    let integ_resp = integrations.get_id(rest_cfg, integ_name)?;
+    if let Some(integ_id) = integ_resp {
+        let push_resp = integrations.get_push_by_name(rest_cfg, &integ_id, push_name)?;
+        if let Some(details) = push_resp {
             // put this into a list, so we can resolve with larger functions
             let mut pushes = vec![details];
             resolve_project_names(rest_cfg, &mut pushes);
@@ -508,9 +508,9 @@ fn proc_integ_push_set(
     }
 
     if !tag_to_add.is_empty() || !tag_to_sub.is_empty() {
-        // get all the environment details
         let mut all_tags: Vec<&str> = tag_to_add.clone();
         all_tags.append(tag_to_sub.clone().as_mut());
+
         let tag_map = get_tag_name_to_url_map(rest_cfg, &all_tags);
         tag_add_ids = tag_names_to_urls(&tag_to_add, &tag_map);
         tag_sub_ids = tag_names_to_urls(&tag_to_sub, &tag_map);
@@ -578,6 +578,36 @@ fn proc_integ_push_set(
     Ok(())
 }
 
+fn proc_integ_push_sync(
+    subcmd_args: &ArgMatches,
+    rest_cfg: &OpenApiConfig,
+    integrations: &Integrations,
+) -> Result<()> {
+    let integ_name = subcmd_args.value_of(INTEGRATION_NAME_ARG).unwrap();
+    let push_name = subcmd_args.value_of(PUSH_NAME_ARG).unwrap();
+
+    let integ_resp = integrations.get_id(rest_cfg, integ_name)?;
+    if integ_resp.is_none() {
+        error_message(integration_not_found_message(integ_name))?;
+        process::exit(30);
+    }
+
+    let integ_id = integ_resp.unwrap();
+    let push_resp = integrations.get_push_by_name(rest_cfg, &integ_id, push_name)?;
+    if push_resp.is_none() {
+        error_message(integration_push_not_found_message(integ_name, push_name))?;
+        process::exit(31);
+    }
+
+    let details = push_resp.unwrap();
+    integrations.sync_push(rest_cfg, &details)?;
+    println!(
+        "Synchronized push '{}' for integration '{}'",
+        push_name, integ_name
+    );
+    Ok(())
+}
+
 fn proc_integ_push_tasks(
     subcmd_args: &ArgMatches,
     rest_cfg: &OpenApiConfig,
@@ -589,20 +619,20 @@ fn proc_integ_push_tasks(
     let show_values = show_values(subcmd_args);
     let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
 
-    let response_id = integrations.get_id(rest_cfg, integ_name)?;
-    if response_id.is_none() {
+    let integ_resp = integrations.get_id(rest_cfg, integ_name)?;
+    if integ_resp.is_none() {
         error_message(integration_not_found_message(integ_name))?;
         process::exit(30);
     }
 
-    let integ_id = response_id.unwrap();
-    let response_id = integrations.get_push_id(rest_cfg, &integ_id, push_name)?;
-    if response_id.is_none() {
+    let integ_id = integ_resp.unwrap();
+    let push_resp = integrations.get_push_id(rest_cfg, &integ_id, push_name)?;
+    if push_resp.is_none() {
         error_message(integration_push_not_found_message(integ_name, push_name))?;
         process::exit(31);
     }
 
-    let push_id = response_id.unwrap();
+    let push_id = push_resp.unwrap();
     let tasks = integrations.get_push_tasks(rest_cfg, &integ_id, &push_id)?;
     if tasks.is_empty() {
         println!(
@@ -648,6 +678,8 @@ fn proc_integ_push_command(
         proc_integ_push_list(subcmd_args, rest_cfg, integrations)?;
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(SET_SUBCMD) {
         proc_integ_push_set(subcmd_args, rest_cfg, integrations)?;
+    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("sync") {
+        proc_integ_push_sync(subcmd_args, rest_cfg, integrations)?;
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(TASKS_SUBCMD) {
         proc_integ_push_tasks(subcmd_args, rest_cfg, integrations)?;
     } else {
