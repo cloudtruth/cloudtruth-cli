@@ -31,6 +31,8 @@ mod parameters;
 mod project_details;
 mod project_error;
 mod projects;
+mod push_details;
+mod task_detail;
 mod template_details;
 mod template_error;
 mod template_history;
@@ -65,8 +67,8 @@ pub use invitations::Invitations;
 pub use member_details::MemberDetails;
 pub use object_type::{to_object_type, ObjectType};
 pub use openapi::{
-    auth_details, extract_details, extract_from_json, last_from_url, response_message,
-    OpenApiConfig, PAGE_SIZE, WRAP_SECRETS,
+    auth_details, extract_details, extract_from_json, last_from_url, parent_id_from_url,
+    response_message, OpenApiConfig, PAGE_SIZE, WRAP_SECRETS,
 };
 pub use parameter_details::ParameterDetails;
 pub use parameter_error::ParameterError;
@@ -77,6 +79,8 @@ pub use parameters::{ParameterDetailMap, Parameters};
 pub use project_details::ProjectDetails;
 pub use project_error::ProjectError;
 pub use projects::Projects;
+pub use push_details::PushDetails;
+pub use task_detail::TaskDetail;
 pub use template_details::TemplateDetails;
 pub use template_error::TemplateError;
 pub use template_history::TemplateHistory;

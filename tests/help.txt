@@ -358,8 +358,11 @@ FLAGS:
 
 SUBCOMMANDS:
     explore    Explore integrations by Fully Qualified Name (FQN). [aliases: exp, ex, e]
+    get        Gets all the information for the specified integration
     help       Prints this message or the help of the given subcommand(s)
     list       List CloudTruth integrations [aliases: ls, l]
+    pushes     Manage CloudTruth pushes [aliases: push, pu, p]
+    refresh    Refresh the integration connection status [aliases: ref, re, r]
 ========================================
 cloudtruth-integrations-explore 
 Explore integrations by Fully Qualified Name (FQN).
@@ -378,6 +381,19 @@ OPTIONS:
 ARGS:
     <FQN>    Integration FQN
 ========================================
+cloudtruth-integrations-get 
+Gets all the information for the specified integration
+
+USAGE:
+    cloudtruth integrations get <integration-name>
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+ARGS:
+    <integration-name>    Integration name
+========================================
 cloudtruth-integrations-list 
 List CloudTruth integrations
 
@@ -393,6 +409,145 @@ FLAGS:
 OPTIONS:
     -f, --format <format>    Format for integration values data [default: table]  [possible values: table, csv, json,
                              yaml]
+========================================
+cloudtruth-integrations-pushes 
+Manage CloudTruth pushes
+
+USAGE:
+    cloudtruth integrations pushes [SUBCOMMAND]
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+SUBCOMMANDS:
+    delete    Delete a CloudTruth push [aliases: del, d]
+    get       Gets all the information for the specified CloudTruth push
+    help      Prints this message or the help of the given subcommand(s)
+    list      List CloudTruth pushes [aliases: ls, l]
+    set       Create/modify CloudTruth integration push [aliases: s]
+    sync      Manually initiate action on existing push
+    tasks     List tasks for the specified CloudTruth push [aliases: task, ta, t]
+====================
+cloudtruth-integrations-pushes-delete 
+Delete a CloudTruth push
+
+USAGE:
+    cloudtruth integrations pushes delete [FLAGS] <integration-name> <push-name>
+
+FLAGS:
+    -y, --yes        Avoid confirmation prompt(s)
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+ARGS:
+    <integration-name>    Integration name
+    <push-name>           Push name
+====================
+cloudtruth-integrations-pushes-get 
+Gets all the information for the specified CloudTruth push
+
+USAGE:
+    cloudtruth integrations pushes get <integration-name> <push-name>
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+ARGS:
+    <integration-name>    Integration name
+    <push-name>           Push name
+====================
+cloudtruth-integrations-pushes-list 
+List CloudTruth pushes
+
+USAGE:
+    cloudtruth integrations pushes list [FLAGS] [OPTIONS] [integration-name]
+
+FLAGS:
+    -h, --help          Prints help information
+        --show-times    Show create and modified times.
+    -v, --values        
+    -V, --version       Prints version information
+
+OPTIONS:
+    -f, --format <format>     [default: table]  [possible values: table, csv, json, yaml]
+
+ARGS:
+    <integration-name>    Integration name
+====================
+cloudtruth-integrations-pushes-set 
+Create/modify CloudTruth integration push
+
+USAGE:
+    cloudtruth integrations pushes set [OPTIONS] <integration-name> <push-name>
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+OPTIONS:
+    -d, --desc <description>             Description for the push
+    -r, --rename <new-name>              New push name
+        --project <project>...           Project name(s) to be added
+        --no-project <project>...        Project name(s) to be removed
+        --region <region>                Region where push tasks run (create only) [default: us-east-1]
+        --resource <resource>            Resource string (required for create, [default: '/{{ environment} }/{{ project
+                                         }}/{{ parameter }}'])
+        --service <service>              Service for the push to use (create only) [default: ssm]  [possible values:
+                                         ssm, secretsmanager]
+        --tag <environment:tag>...       Tag name(s) to be added
+        --no-tag <environment:tag>...    Tag name(s) to be subtracted
+
+ARGS:
+    <integration-name>    Integration name
+    <push-name>           Push name
+====================
+cloudtruth-integrations-pushes-sync 
+Manually initiate action on existing push
+
+USAGE:
+    cloudtruth integrations pushes sync <integration-name> <push-name>
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+ARGS:
+    <integration-name>    Integration name
+    <push-name>           Push name
+====================
+cloudtruth-integrations-pushes-tasks 
+List tasks for the specified CloudTruth push
+
+USAGE:
+    cloudtruth integrations pushes tasks [FLAGS] [OPTIONS] <integration-name> <push-name>
+
+FLAGS:
+    -h, --help          Prints help information
+        --show-times    Show create and modified times.
+    -v, --values        
+    -V, --version       Prints version information
+
+OPTIONS:
+    -f, --format <format>     [default: table]  [possible values: table, csv, json, yaml]
+
+ARGS:
+    <integration-name>    Integration name
+    <push-name>           Push name
+========================================
+cloudtruth-integrations-refresh 
+Refresh the integration connection status
+
+USAGE:
+    cloudtruth integrations refresh <integration-name>
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+ARGS:
+    <integration-name>    Integration name
 ============================================================
 cloudtruth-login 
 Sets up a CloudTruth configuration profile api_key

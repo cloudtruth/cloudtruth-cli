@@ -38,11 +38,12 @@ DEFAULT_PARAM_VALUE = "-"
 
 # properties
 PROP_CREATED = "Created At"
+PROP_DESC = "Description"
 PROP_MODIFIED = "Modified At"
 PROP_NAME = "Name"
+PROP_RAW = "Raw"
 PROP_TYPE = "Type"
 PROP_VALUE = "Value"
-PROP_RAW = "Raw"
 
 
 def get_cli_base_cmd() -> str:
@@ -89,6 +90,12 @@ class Result:
     def err(self) -> str:
         return "\n".join(self.stderr)
 
+    def out_contains(self, needle: str) -> Optional[str]:
+        for line in self.stdout:
+            if needle in line:
+                return line
+        return None
+
 
 class TestCase(unittest.TestCase):
     """
@@ -134,7 +141,7 @@ class TestCase(unittest.TestCase):
             cmd = self._base_cmd + f"user del --confirm \"{usr}\""
             subprocess.run(cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
-        # delete any possibly lingering users
+        # delete any possibly lingering invitations
         for email in self._invites:
             cmd = self._base_cmd + f"user invitations del --confirm \"{email}\""
             subprocess.run(cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
@@ -322,6 +329,29 @@ class TestCase(unittest.TestCase):
         result = self.run_cli(cmd_env, self._base_cmd + f"env del '{env_name}' --confirm")
         self.assertResultSuccess(result)
         return result
+
+    def create_env_tag(
+            self,
+            cmd_env,
+            env_name: str,
+            tag_name: str,
+            desc: Optional[str] = None,
+            time: Optional[str] = None
+    ) -> None:
+        cmd = self._base_cmd + f"env tag set '{env_name}' '{tag_name}' "
+        if desc:
+            cmd += f"--desc '{desc}'"
+        if time:
+            cmd += f"--time '{time}' "
+        result = self.run_cli(cmd_env, cmd)
+        self.assertResultSuccess(result)
+        self.assertIn("Created", result.out())
+
+    def delete_env_tag(self, cmd_env, env_name: str, tag_name: str) -> None:
+        cmd = self._base_cmd + f"env tag del '{env_name}' '{tag_name}' -y "
+        result = self.run_cli(cmd_env, cmd)
+        self.assertResultSuccess(result)
+        self.assertIn("Deleted", result.out())
 
     def set_param(
             self,

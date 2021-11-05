@@ -85,6 +85,11 @@ pub fn last_from_url(url: &str) -> &str {
         .unwrap_or_default()
 }
 
+pub fn parent_id_from_url<'a>(url: &'a str, child: &'a str) -> &'a str {
+    let parts: Vec<&str> = url.split(child).collect();
+    last_from_url(parts[0])
+}
+
 fn user_agent_name() -> String {
     format!(
         "{}/{}/{}",
