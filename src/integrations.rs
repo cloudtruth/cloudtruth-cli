@@ -208,6 +208,47 @@ fn proc_integ_explore(
     Ok(())
 }
 
+fn proc_integ_get(
+    subcmd_args: &ArgMatches,
+    rest_cfg: &OpenApiConfig,
+    integrations: &Integrations,
+) -> Result<()> {
+    let integ_name = subcmd_args.value_of(INTEGRATION_NAME_ARG).unwrap();
+
+    let integ_resp = integrations.get_details_by_name(rest_cfg, integ_name)?;
+    if let Some(details) = integ_resp {
+        printdoc!(
+            r#"
+            Name: {}
+            Provider: {}
+            FQN: {}
+            Description: {}
+            ID: {}
+            Created At: {}
+            Modified At: {}
+            Status:
+              Value: {}
+              Details: {}
+              Updated At: {}
+            "#,
+            details.name,
+            details.provider,
+            details.fqn,
+            details.description,
+            details.id,
+            details.created_at,
+            details.modified_at,
+            details.status,
+            details.status_detail,
+            details.status_time,
+        );
+    } else {
+        error_message(integration_not_found_message(integ_name))?;
+        process::exit(32);
+    }
+    Ok(())
+}
+
 fn proc_integ_list(
     subcmd_args: &ArgMatches,
     rest_cfg: &OpenApiConfig,
@@ -255,6 +296,7 @@ fn proc_integ_refresh(
     let integ_resp = integrations.get_id(rest_cfg, integ_name)?;
     if let Some(integ_id) = integ_resp {
         integrations.refresh_connection(rest_cfg, &integ_id)?;
+        println!("Refreshed integration '{}'", integ_name);
     } else {
         error_message(integration_not_found_message(integ_name))?;
         process::exit(32);
@@ -278,7 +320,7 @@ fn proc_integ_push_delete(
             let mut confirmed = subcmd_args.is_present(CONFIRM_FLAG);
             if !confirmed {
                 let msg = format!(
-                    "Delete push '{}' from integetration '{}'",
+                    "Delete push '{}' from integration '{}'",
                     push_name, integ_name
                 );
                 confirmed = user_confirm(msg, DEL_CONFIRM);
@@ -696,6 +738,8 @@ pub fn process_integrations_command(
 ) -> Result<()> {
     if let Some(subcmd_args) = subcmd_args.subcommand_matches("explore") {
         proc_integ_explore(subcmd_args, rest_cfg, integrations)?;
+    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(GET_SUBCMD) {
+        proc_integ_get(subcmd_args, rest_cfg, integrations)?;
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(LIST_SUBCMD) {
         proc_integ_list(subcmd_args, rest_cfg, integrations)?;
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(PUSH_SUBCMD) {

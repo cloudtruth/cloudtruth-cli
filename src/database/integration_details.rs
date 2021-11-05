@@ -1,6 +1,6 @@
 use cloudtruth_restapi::models::{AwsIntegration, GitHubIntegration};
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct IntegrationDetails {
     pub id: String,
     pub name: String,

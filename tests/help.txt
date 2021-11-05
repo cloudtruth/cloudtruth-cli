@@ -358,6 +358,7 @@ FLAGS:
 
 SUBCOMMANDS:
     explore    Explore integrations by Fully Qualified Name (FQN). [aliases: exp, ex, e]
+    get        Gets all the information for the specified integration
     help       Prints this message or the help of the given subcommand(s)
     list       List CloudTruth integrations [aliases: ls, l]
     pushes     Manage CloudTruth pushes [aliases: push, pu, p]
@@ -379,6 +380,19 @@ OPTIONS:
 
 ARGS:
     <FQN>    Integration FQN
+========================================
+cloudtruth-integrations-get 
+Gets all the information for the specified integration
+
+USAGE:
+    cloudtruth integrations get <integration-name>
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+ARGS:
+    <integration-name>    Integration name
 ========================================
 cloudtruth-integrations-list 
 List CloudTruth integrations

@@ -242,6 +242,50 @@ impl Integrations {
         }
     }
 
+    fn get_aws_details_by_name(
+        &self,
+        rest_cfg: &OpenApiConfig,
+        integration_name: &str,
+    ) -> Result<Option<IntegrationDetails>, IntegrationError> {
+        // unfortunately, there's no good way to filter by name on the server... so get the whole
+        // list and filter here
+        let mut total = self.get_aws_integration_details(rest_cfg)?;
+        total.retain(|d| d.name == integration_name);
+        match total.len() {
+            0 => Ok(None),
+            _ => Ok(Some(total[0].clone())),
+        }
+    }
+
+    fn get_gitub_details_by_name(
+        &self,
+        rest_cfg: &OpenApiConfig,
+        integration_name: &str,
+    ) -> Result<Option<IntegrationDetails>, IntegrationError> {
+        // unfortunately, there's no good way to filter by name on the server... so get the whole
+        // list and filter here
+        let mut total = self.get_github_integration_details(rest_cfg)?;
+        total.retain(|d| d.name == integration_name);
+        match total.len() {
+            0 => Ok(None),
+            _ => Ok(Some(total[0].clone())),
+        }
+    }
+
+    pub fn get_details_by_name(
+        &self,
+        rest_cfg: &OpenApiConfig,
+        integration_name: &str,
+    ) -> Result<Option<IntegrationDetails>, IntegrationError> {
+        match self.get_gitub_details_by_name(rest_cfg, integration_name)? {
+            Some(github_details) => Ok(Some(github_details)),
+            _ => match self.get_aws_details_by_name(rest_cfg, integration_name)? {
+                Some(aws_details) => Ok(Some(aws_details)),
+                _ => Ok(None),
+            },
+        }
+    }
+
     fn refresh_aws_connection(
         &self,
         rest_cfg: &OpenApiConfig,

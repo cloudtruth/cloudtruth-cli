@@ -90,6 +90,12 @@ class Result:
     def err(self) -> str:
         return "\n".join(self.stderr)
 
+    def out_contains(self, needle: str) -> Optional[str]:
+        for line in self.stdout:
+            if needle in line:
+                return line
+        return None
+
 
 class TestCase(unittest.TestCase):
     """

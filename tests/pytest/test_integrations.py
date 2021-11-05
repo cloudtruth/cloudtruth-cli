@@ -429,6 +429,24 @@ PARAMETER_2 = PARAM2
         bad_int_name = os.environ.get(CT_PUSH_BAD_INT_NAME)
         set_cmd = base_cmd + f"integration push set '{integ_name}' "
 
+        ##########################
+        # test integration get/refresh
+        result = self.run_cli(cmd_env, base_cmd + f"integ get '{integ_name}'")
+        self.assertResultSuccess(result)
+        last_update = result.out_contains("Updated At:")
+        last_status = result.out_contains("Value:")
+
+        result = self.run_cli(cmd_env, base_cmd + f"int refresh '{integ_name}'")
+        self.assertResultSuccess(result)
+        self.assertIn(f"Refreshed integration '{integ_name}'", result.out())
+
+        result = self.run_cli(cmd_env, base_cmd + f"integ get '{integ_name}'")
+        self.assertResultSuccess(result)
+        next_update = result.out_contains("Updated At:")
+        next_status = result.out_contains("Value:")
+
+        self.assertNotEqual((last_status, last_update), (next_status, next_update))
+
         ########################
         # create a couple projects
         proj_name1 = self.make_name("test-push-proj1")
@@ -684,6 +702,12 @@ PARAMETER_2 = PARAM2
         # error out for bad integration name
         no_integration_msg = f"Integration '{bad_int_name}' not found"
         result = self.run_cli(cmd_env, base_cmd + f"int p l '{bad_int_name}'")
+        self.assertResultError(result, no_integration_msg)
+
+        result = self.run_cli(cmd_env, base_cmd + f"int get '{bad_int_name}'")
+        self.assertResultError(result, no_integration_msg)
+
+        result = self.run_cli(cmd_env, base_cmd + f"int refresh '{bad_int_name}'")
         self.assertResultError(result, no_integration_msg)
 
         result = self.run_cli(cmd_env, base_cmd + f"int p get '{bad_int_name}' '{push_name1}'")

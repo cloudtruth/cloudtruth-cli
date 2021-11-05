@@ -475,6 +475,9 @@ pub fn build_cli() -> App<'static, 'static> {
                             .help("Integration FQN"))
                         .arg(table_format_options().help("Format integration values data."))
                         .arg(values_flag().help("Display integration values")),
+                    SubCommand::with_name(GET_SUBCMD)
+                        .about("Gets all the information for the specified integration")
+                        .arg(integration_name_arg()),
                     SubCommand::with_name(LIST_SUBCMD)
                         .visible_aliases(LIST_ALIASES)
                         .about("List CloudTruth integrations")
