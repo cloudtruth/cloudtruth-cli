@@ -562,6 +562,7 @@ this.is.a.template.value=PARAM1
         # cleanup
         self.delete_file(filename)
         self.delete_project(cmd_env, proj_name)
+        self.delete_environment(cmd_env, env_name)
 
     def test_template_diff(self):
         base_cmd = self.get_cli_base_cmd()
