@@ -1,3 +1,14 @@
+# 1.0.13 - 2021-11-05
+
+* Added several `integrations` commands:
+  * Added `refresh` to trigger update of an integration connection status.
+  * Added `get` to get detailed information about an integration.
+  * Added `pushes <set|delete|list|get|sync|tasks>` commands to manage push actions.
+* Added `schema` command to get the latest schema from the server, or local CLI version.
+* Added `--user`, `--before`, and `--after` filters to `audit-logs list`.
+* Fixed issue with `templates history --as-of` using tags.
+* Show values for items when a `--format <table|csv|json|yaml>` is specified.
+
 # 1.0.12 - 2021-10-26
 
 * Added parent project support:
