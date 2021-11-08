@@ -1,0 +1,72 @@
+# This is a "scratch" test  for developers to play with.
+#
+# It only runs on Ubuntu, unlike the nightly that runs on several platforms.
+---
+name: Dev
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+
+    env:
+      # TODO: modify this filter to focus testing
+      CLOUDTRUTH_TEST_FILTER: template
+
+      # these show the commands and the output from the commands
+      CLOUDTRUTH_TEST_EXTRA_ARGS: --log-command --log-output
+
+      # these are to run against staging
+      CLOUDTRUTH_SERVER_URL: https://api.staging.cloudtruth.io
+      CLOUDTRUTH_API_KEY: ${{ secrets.CI_ACCT_STAGING_CONTRIBUTOR }}
+      RUST_BACKTRACE: 1
+      RUST_VERSION: 1.54.0
+
+      # These are based on pre-configured integrations in the CLI CI account.
+      CLOUDTRUTH_TEST_BROKEN_PROJECT: proj-int-broken
+      CLOUDTRUTH_TEST_BROKEN_TEMPLATE: temp-int-broken
+      CLOUDTRUTH_TEST_BROKEN_PARAM1: param1
+      CLOUDTRUTH_TEST_BROKEN_PARAM2: param2
+      CLOUDTRUTH_TEST_BROKEN_PARAM3: param3
+      CLOUDTRUTH_TEST_BROKEN_PARAM4: param4
+      CLOUDTRUTH_TEST_BROKEN_VALUE1: value1
+      CLOUDTRUTH_TEST_BROKEN_FQN2: github://rickporter-tuono/hello-world/master/README.md
+      CLOUDTRUTH_TEST_BROKEN_FQN3: github://rickporter-tuono/cloudtruth_test/main/README.md
+
+      CLOUDTRUTH_TEST_EXPLORE_FQN: github://rickporter-tuono/cloudtruth_test/main/short.yaml
+      CLOUDTRUTH_TEST_EXPLORE_JMES: speicla.POrk_Egg_Foo_Young
+
+      CLOUDTRUTH_TEST_PARAMETERS_FQN: github://rickporter-tuono/cloudtruth_test/my-branch/short.yaml
+      CLOUDTRUTH_TEST_PARAMETERS_JMES: speicla.POrk_Egg_Foo_Young
+
+      CLOUDTRUTH_TEST_TEMPLATE_FQN: github://rickporter-tuono/cloudtruth_test/main/ci_test_template.txt
+      CLOUDTRUTH_TEST_TEMPLATE_PARAM1: my-param-name
+
+      CLOUDTRUTH_TEST_PUSH_INTEGRATION_NAME: ct-stage-write@943604981792
+      CLOUDTRUTH_TEST_PUSH_BAD_INTEGRATION_NAME: my-missing-integration
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install Rust
+        id: rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
+          profile: minimal
+          override: true
+          components: rustfmt, clippy
+
+      - name: Show Rust version and platform details
+        run: rustc --version --verbose
+
+      - run: cargo build
+
+      - name: Basic Test
+        env:
+          OS: ${{ runner.os }}
+        run: |
+          cd tests/pytest
+          python3 live_test.py --job-id "dev-${GITHUB_RUN_NUMBER}" ${{ env.CLOUDTRUTH_TEST_EXTRA_ARGS }} --filter ${{ env.CLOUDTRUTH_TEST_FILTER }}
