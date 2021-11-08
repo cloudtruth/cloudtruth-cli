@@ -49,7 +49,7 @@ pub fn process_run_command(
         arguments = subcmd_args.values_of_lossy("arguments").unwrap();
         command = arguments.remove(0);
         if command.contains(' ') {
-            warn_user("command contains spaces, and may fail.".to_string())?;
+            warn_user("command contains spaces, and may fail.".to_string());
             let mut reformed = format!("{} {}", command, arguments.join(" "));
             reformed = reformed.replace("$", "\\$");
             println!(
@@ -58,12 +58,12 @@ pub fn process_run_command(
             );
         }
     } else {
-        warn_missing_subcommand("run")?;
+        warn_missing_subcommand("run");
         process::exit(0);
     }
 
     // NOTE: do this before running the sub-process, since it could be a long-running task
-    warn_unresolved_params(&errors)?;
+    warn_unresolved_params(&errors);
 
     // Setup the environment for the sub-process.
     let inherit = Inheritance::from_str(subcmd_args.value_of("inheritance").unwrap()).unwrap();

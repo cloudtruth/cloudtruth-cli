@@ -12,7 +12,7 @@ pub fn process_logout_command(subcmd_args: &ArgMatches, config: &Config) -> Resu
     let profile_name = &config.profile_name;
 
     if config.api_key.is_empty() {
-        warning_message(format!("No API key is set for profile '{}'", profile_name))?;
+        warning_message(format!("No API key is set for profile '{}'", profile_name));
         return Ok(());
     }
 
@@ -33,7 +33,7 @@ pub fn process_logout_command(subcmd_args: &ArgMatches, config: &Config) -> Resu
             profile_name
         );
         if !user_confirm(msg, Some(false)) {
-            warning_message(format!("Leaving API key in profile '{}'", profile_name))?;
+            warning_message(format!("Leaving API key in profile '{}'", profile_name));
             return Ok(());
         }
     }
@@ -61,7 +61,7 @@ pub fn process_logout_command(subcmd_args: &ArgMatches, config: &Config) -> Resu
             warning_message(format!(
                 "Opening {} page ({}) in browser",
                 API_KEY_PAGE, api_key_url
-            ))?;
+            ));
         }
         if open_page {
             let open_result = webbrowser::open(&api_key_url);
@@ -80,7 +80,7 @@ pub fn process_logout_command(subcmd_args: &ArgMatches, config: &Config) -> Resu
             }
         }
     } else {
-        warning_message(format!("Unable to determine {} page URL", API_KEY_PAGE))?;
+        warning_message(format!("Unable to determine {} page URL", API_KEY_PAGE));
     }
 
     // NOTE: setting api_key to an empty string forces it to be removed.

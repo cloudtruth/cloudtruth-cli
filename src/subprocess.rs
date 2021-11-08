@@ -117,7 +117,7 @@ impl SubProcess {
         for arg_val in overrides {
             let temp: Vec<&str> = arg_val.splitn(2, '=').collect();
             if temp.len() != 2 {
-                warn_user(format!("Ignoring {} due to no '='", arg_val))?;
+                warn_user(format!("Ignoring {} due to no '='", arg_val));
                 continue;
             }
             over_vars.insert(temp[0].to_string(), temp[1].to_string());

@@ -103,37 +103,36 @@ impl ResolvedIds {
 }
 
 /// Print a message to stderr in the specified color.
-fn stderr_message(message: String, color: Color) -> Result<()> {
+fn stderr_message(message: String, color: Color) {
     let mut stderr = StandardStream::stderr(ColorChoice::Auto);
     let mut color_spec = ColorSpec::new();
     color_spec.set_fg(Some(color));
 
-    stderr.set_color(&color_spec)?;
-    writeln!(&mut stderr, "{}", message)?;
-    stderr.reset()?;
-    Ok(())
+    stderr.set_color(&color_spec).unwrap_or_default();
+    writeln!(&mut stderr, "{}", message).unwrap_or_default();
+    stderr.reset().unwrap_or_default();
 }
 
 /// Print the provided message to stderr in 'Yellow'.
-fn warning_message(message: String) -> Result<()> {
-    stderr_message(message, Color::Yellow)
+fn warning_message(message: String) {
+    stderr_message(message, Color::Yellow);
 }
 
 /// Print the provided message to stderr in 'Red'.
-fn error_message(message: String) -> Result<()> {
-    stderr_message(message, Color::Red)
+fn error_message(message: String) {
+    stderr_message(message, Color::Red);
 }
 
 /// Print the provided message to stderr in 'Cyan'.
-fn help_message(message: String) -> Result<()> {
-    stderr_message(message, Color::Cyan)
+fn help_message(message: String) {
+    stderr_message(message, Color::Cyan);
 }
 
-fn error_no_environment_message(env_name: &str) -> Result<()> {
+fn error_no_environment_message(env_name: &str) {
     error_message(format!(
         "The '{}' environment could not be found in your account.",
         env_name,
-    ))
+    ));
 }
 
 /// Insures the configuration is valid.
@@ -146,15 +145,15 @@ fn check_config() -> Result<()> {
         let warnings = issues.warnings;
         if !warnings.is_empty() {
             for message in warnings {
-                warning_message(message)?;
+                warning_message(message);
             }
         }
 
         let errors = issues.errors;
         if !errors.is_empty() {
             for err in errors {
-                error_message(err.message)?;
-                help_message(err.help_message)?;
+                error_message(err.message);
+                help_message(err.help_message);
             }
             process::exit(1)
         }
@@ -163,23 +162,22 @@ fn check_config() -> Result<()> {
 }
 
 /// Add "WARN:" prefix to the message, and print it to stderr
-fn warn_user(message: String) -> Result<()> {
-    warning_message(format!("WARN: {}", message))
+fn warn_user(message: String) {
+    warning_message(format!("WARN: {}", message));
 }
 
 /// Simple method for standardizing the message when no sub-command is executed.
-fn warn_missing_subcommand(command: &str) -> Result<()> {
-    warn_user(format!("No '{}' sub-command executed.", command))
+fn warn_missing_subcommand(command: &str) {
+    warn_user(format!("No '{}' sub-command executed.", command));
 }
 
 /// Method for standardizing message about list of warnings.
-fn warn_unresolved_params(errors: &[String]) -> Result<()> {
-    match errors.is_empty() {
-        false => warning_message(format!(
+fn warn_unresolved_params(errors: &[String]) {
+    if !errors.is_empty() {
+        warning_message(format!(
             "Errors resolving parameters:\n{}\n",
             errors.join("\n")
-        )),
-        true => Ok(()),
+        ));
     }
 }
 
@@ -239,7 +237,7 @@ fn resolve_ids(config: &Config, rest_cfg: &OpenApiConfig) -> Result<ResolvedIds>
     let environments = Environments::new();
     let env_id = environments.get_id(rest_cfg, env)?;
     if env_id.is_none() {
-        error_no_environment_message(env)?;
+        error_no_environment_message(env);
         err = true;
     }
 
@@ -251,11 +249,11 @@ fn resolve_ids(config: &Config, rest_cfg: &OpenApiConfig) -> Result<ResolvedIds>
             error_message(format!(
                 "The '{}' project could not be found in your account.",
                 proj_str,
-            ))?;
+            ));
             err = true;
         }
     } else {
-        error_message("No project name was provided!".to_owned())?;
+        error_message("No project name was provided!".to_owned());
         err = true;
     }
 
@@ -400,13 +398,13 @@ fn main() -> Result<()> {
         } else {
             "".to_string()
         };
-        error_message(format!("Failed to load configuration{}.", profile_info,))?;
+        error_message(format!("Failed to load configuration{}.", profile_info,));
         help_message(format!(
             "The configuration ({}) can be edited with '{} config edit'.\nError details:\n{}",
             Config::filename(),
             cli::binary_name(),
             error.to_string()
-        ))?;
+        ));
         process::exit(26);
     }
     Config::init_global(cfg_result.unwrap());

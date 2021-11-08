@@ -52,7 +52,7 @@ fn proc_param_delete(
             error_message(format!(
                 "Parameter '{}' must be deleted from project '{}' -- it is not part of project '{}'",
                 key_name, details.project_name, proj_name
-            ))?;
+            ));
             process::exit(24);
         }
         param_id = Some(details.id);
@@ -129,14 +129,14 @@ fn proc_param_diff(
         warning_message(format!(
             "Can specify a maximum of {} environment values.",
             max_len
-        ))?;
+        ));
         return Ok(());
     }
     if as_list.len() > max_len {
         warning_message(format!(
             "Can specify a maximum of {} as-of values.",
             max_len
-        ))?;
+        ));
         return Ok(());
     }
 
@@ -173,7 +173,7 @@ fn proc_param_diff(
     let tag2 = parse_tag(as_tag2);
 
     if env1_name == env2_name && as_tag1 == as_tag2 {
-        warning_message("Invalid comparing an environment to itself".to_string())?;
+        warning_message("Invalid comparing an environment to itself".to_string());
         return Ok(());
     }
 
@@ -255,7 +255,7 @@ fn proc_param_diff(
     } else {
         println!("No parameters or differences in compared properties found.");
     }
-    warn_unresolved_params(&errors)?;
+    warn_unresolved_params(&errors);
     Ok(())
 }
 
@@ -330,7 +330,7 @@ fn proc_param_env(
     )?;
 
     if param_values.is_empty() {
-        error_message(format!("Parameter '{}' was not found", param_name))?;
+        error_message(format!("Parameter '{}' was not found", param_name));
         process::exit(10);
     }
 
@@ -376,7 +376,7 @@ fn proc_param_env(
     } else {
         table.render(fmt)?;
     }
-    warn_unresolved_params(&errors)?;
+    warn_unresolved_params(&errors);
 
     Ok(())
 }
@@ -498,7 +498,7 @@ fn proc_param_get(
             );
         }
         if !param.error.is_empty() {
-            warning_message(param.error)?;
+            warning_message(param.error);
         }
     } else {
         println!(
@@ -592,7 +592,7 @@ fn proc_param_list(
             "Options for --rules, --external, --evaluated, --parents, and ",
             "--children are mutually exclusive",
         );
-        warning_message(msg.to_string())?;
+        warning_message(msg.to_string());
     } else if details.is_empty() {
         println!("No {} found in project {}", description, proj_name,);
     } else if !show_values {
@@ -682,7 +682,7 @@ fn proc_param_list(
         }
         table.render(fmt)?;
 
-        warn_unresolved_params(&errors)?;
+        warn_unresolved_params(&errors);
     }
     Ok(())
 }
@@ -773,7 +773,7 @@ fn proc_param_set(
         Some("integer") => Some(ParamType::Integer),
         Some("bool") => Some(ParamType::Bool),
         Some(x) => {
-            warning_message(format!("Unhandled type '{}'", x))?;
+            warning_message(format!("Unhandled type '{}'", x));
             None
         }
     };
@@ -788,7 +788,7 @@ fn proc_param_set(
                 "and fqn/jmes-path"
             )
             .to_string(),
-        )?;
+        );
         process::exit(7);
     }
 
@@ -825,7 +825,7 @@ fn proc_param_set(
             error_message(format!(
                 "Parameter '{}' must be set from project '{}' -- it is not part of project '{}'",
                 key_name, source_proj, proj_name
-            ))?;
+            ));
             process::exit(20);
         }
         // only update if there is something to update
@@ -888,7 +888,7 @@ fn proc_param_set(
             let _ = parameters.delete_parameter_by_id(rest_cfg, proj_id, param_id);
         }
         for e in rule_errors {
-            error_message(e.to_string())?;
+            error_message(e.to_string());
         }
         process::exit(11);
     }
@@ -918,7 +918,7 @@ fn proc_param_set(
             let _ = parameters.delete_parameter_by_id(rest_cfg, proj_id, param_id);
         }
         for e in rule_errors {
-            error_message(e.to_string())?;
+            error_message(e.to_string());
         }
         process::exit(12);
     }
@@ -1022,7 +1022,7 @@ pub fn process_parameters_command(
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("environment") {
         proc_param_env(subcmd_args, rest_cfg, parameters, resolved)?;
     } else {
-        warn_missing_subcommand("parameters")?;
+        warn_missing_subcommand("parameters");
     }
     Ok(())
 }

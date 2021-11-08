@@ -35,7 +35,7 @@ fn proc_config_edit() -> Result<()> {
         warning_message(format!(
             "The provided content is not valid due to:\n{}",
             validation.unwrap_err().to_string()
-        ))?;
+        ));
 
         let continue_editing = "Do you want to continue editing".to_string();
         if user_confirm(continue_editing, Some(true)) {
@@ -170,13 +170,13 @@ fn proc_config_prof_delete(subcmd_args: &ArgMatches) -> Result<()> {
         }
 
         if !confirmed {
-            warning_message(format!("Profile '{}' not deleted!", prof_name))?;
+            warning_message(format!("Profile '{}' not deleted!", prof_name));
         } else {
             Config::delete_profile(prof_name)?;
             println!("Deleted profile '{}'", prof_name);
         }
     } else {
-        warning_message(format!("Profile '{}' does not exist!", prof_name))?;
+        warning_message(format!("Profile '{}' does not exist!", prof_name));
     }
     Ok(())
 }
@@ -195,7 +195,7 @@ fn proc_config_prof_set(subcmd_args: &ArgMatches) -> Result<()> {
             error_message(format!(
                 "Source profile '{}' does not exist",
                 source_profile
-            ))?;
+            ));
             process::exit(18);
         }
     }
@@ -206,7 +206,7 @@ fn proc_config_prof_set(subcmd_args: &ArgMatches) -> Result<()> {
         && environment.is_none()
         && source.is_none()
     {
-        warning_message(format!("Nothing to change for profile '{}'", prof_name))?;
+        warning_message(format!("Nothing to change for profile '{}'", prof_name));
     } else {
         let pre_exists = Config::get_profile_details_by_name(prof_name)?.is_some();
         Config::update_profile(
@@ -243,7 +243,7 @@ pub fn proc_config_profile_command(subcmd_args: &ArgMatches) -> Result<()> {
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(SET_SUBCMD) {
         proc_config_prof_set(subcmd_args)?;
     } else {
-        warn_missing_subcommand("configuration profiles")?;
+        warn_missing_subcommand("configuration profiles");
     }
     Ok(())
 }
@@ -263,7 +263,7 @@ pub fn process_config_command(
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("profiles") {
         proc_config_profile_command(subcmd_args)?;
     } else {
-        warn_missing_subcommand("configuration")?;
+        warn_missing_subcommand("configuration");
     }
     Ok(())
 }
