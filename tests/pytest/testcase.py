@@ -61,11 +61,11 @@ def get_cli_base_cmd() -> str:
     for _ in range(3):
         possible = curr.parent / exec_path
         if possible.exists():
-            return str(possible)
+            return str(possible) + " "
         curr = curr.parent
 
     # we failed to find this, so just use the "default".
-    return exec_name
+    return exec_name + " "
 
 
 def find_by_prop(entries: List[Dict], prop_name: str, prop_value: str) -> List[Dict]:
