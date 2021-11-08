@@ -127,6 +127,8 @@ def live_test(*args):
         print(f"JOB_ID: {args.job_id}")
         env[CT_TEST_JOB_ID] = args.job_id
 
+    return 123
+
     print("Looking for executable")
     cli = get_cli_base_cmd()
     print(f"Found executable: {cli}")

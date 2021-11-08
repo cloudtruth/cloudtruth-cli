@@ -89,8 +89,6 @@ ifneq ($(rust_intended),$(rust_installed))
 else
 	@echo "Already running rustc version: $(rust_intended)"
 endif
-
-test_prerequisites:
 ifeq ($(os_name),Darwin)
 	brew install shellcheck;
 else ifeq ($(os_name),Linux)
@@ -98,7 +96,6 @@ else ifeq ($(os_name),Linux)
 else
 	@echo "Did not install shellcheck"
 endif
-	make -C tests prerequisites
 
 test_prerequisites:
 	make -C tests prerequisites
