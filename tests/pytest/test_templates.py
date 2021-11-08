@@ -632,14 +632,13 @@ PARAMETER=PARAM1
  {fake_flake8}
  # this is a longer comment to
  # demonstrated that text
-@@ -14,4 +14,4 @@
+@@ -14,5 +14,5 @@
  # too
  # many
  # lines
 -PARAMETER={value1a}
-\\ No newline at end of file
 +PARAMETER=
-\\ No newline at end of file
+ {fake_flake8}
 """)
 
         # set some stuff in the current default environment
@@ -662,14 +661,13 @@ PARAMETER=PARAM1
  {fake_flake8}
  # this is a longer comment to
  # demonstrated that text
-@@ -14,4 +14,4 @@
+@@ -14,5 +14,5 @@
  # too
  # many
  # lines
 -PARAMETER={value1a}
-\\ No newline at end of file
 +PARAMETER={value1d}
-\\ No newline at end of file
+ {fake_flake8}
 """)
 
         # now, set some different values
@@ -685,7 +683,7 @@ PARAMETER=PARAM1
         self.assertEqual(result.out(), f"""\
 --- {temp_name} ({env_a} at current)
 +++ {temp_name} ({env_b} at current)
-@@ -1,17 +1,17 @@
+@@ -1,18 +1,18 @@
  # This us a comment common to all environments/times
 -SECRET={value2a}
 +SECRET={value2b}
@@ -704,7 +702,7 @@ PARAMETER=PARAM1
  # many
  # lines
  PARAMETER={same}
-\\ No newline at end of file
+ {fake_flake8}
 """)
 
         # raw: no differences between environments
@@ -742,7 +740,7 @@ PARAMETER={{{{{param1}}}}}
         self.assertEqual(result.out(), f"""\
 --- {temp_name} ({def_env} at {modified_at})
 +++ {temp_name} ({def_env} at current)
-@@ -1,17 +1,3 @@
+@@ -1,18 +1,4 @@
  # This us a comment common to all environments/times
  SECRET={{{{{param2}}}}}
 -
@@ -760,7 +758,7 @@ PARAMETER={{{{{param1}}}}}
 -# many
 -# lines
  PARAMETER={{{{{param1}}}}}
-\\ No newline at end of file
+ {fake_flake8}
 """)
 
         result = self.run_cli(cmd_env, diff_cmd + f"--as-of {modified_at} --env {env_a} -s")
@@ -768,7 +766,7 @@ PARAMETER={{{{{param1}}}}}
         self.assertEqual(result.out(), f"""\
 --- {temp_name} ({env_a} at {modified_at})
 +++ {temp_name} ({def_env} at current)
-@@ -1,17 +1,3 @@
+@@ -1,18 +1,4 @@
  # This us a comment common to all environments/times
 -SECRET={value2a}
 -
@@ -786,10 +784,9 @@ PARAMETER={{{{{param1}}}}}
 -# many
 -# lines
 -PARAMETER={value1a}
-\\ No newline at end of file
 +SECRET={value2d}
 +PARAMETER={value1d}
-\\ No newline at end of file
+ {fake_flake8}
 """)
 
         #####################
@@ -804,13 +801,12 @@ PARAMETER={{{{{param1}}}}}
         self.assertEqual(result.out(), f"""\
 --- {temp_name} ({env_b} at {tag_name})
 +++ {temp_name} ({def_env} at current)
-@@ -1,3 +1,3 @@
+@@ -1,4 +1,4 @@
  # This us a comment common to all environments/times
  SECRET={REDACTED}
 -PARAMETER={same}
-\\ No newline at end of file
 +PARAMETER={value1d}
-\\ No newline at end of file
+ {fake_flake8}
 """)
 
         # see no differences between tag now in env_b
@@ -831,7 +827,7 @@ PARAMETER={{{{{param1}}}}}
 -SECRET={value2b}
 +SECRET={value2a}
  PARAMETER={same}
-\\ No newline at end of file
+ {fake_flake8}
 """)
 
         #####################

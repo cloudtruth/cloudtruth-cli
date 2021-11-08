@@ -169,7 +169,11 @@ fn proc_template_get(
         as_of,
         tag,
     )?;
-    println!("{}", details.body);
+    if details.body.ends_with('\n') {
+        print!("{}", details.body);
+    } else {
+        println!("{}", details.body);
+    }
     Ok(())
 }
 
