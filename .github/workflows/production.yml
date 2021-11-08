@@ -18,10 +18,15 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: CLI Installation & Integration Test
+      - name: CLI installation
         run: |
           sudo ./install.sh
           cloudtruth --version
-          make test_prerequisites
+
+      - name: Prerequisites
+        run: make test_prerequisites
+
+      - name: Integration Test
+        run: |
           cd tests/pytest
           python3 live_test.py --job-id "prod-${GITHUB_RUN_NUMBER}" --filter ${{ env.CLOUDTRUTH_TEST_FILTER }}
