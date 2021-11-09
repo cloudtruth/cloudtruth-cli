@@ -45,6 +45,17 @@ Class | Method | HTTP request | Description
 *IntegrationsApi* | [**integrations_aws_destroy**](docs/IntegrationsApi.md#integrations_aws_destroy) | **DELETE** /api/v1/integrations/aws/{id}/ | Delete an AWS integration.
 *IntegrationsApi* | [**integrations_aws_list**](docs/IntegrationsApi.md#integrations_aws_list) | **GET** /api/v1/integrations/aws/ | 
 *IntegrationsApi* | [**integrations_aws_partial_update**](docs/IntegrationsApi.md#integrations_aws_partial_update) | **PATCH** /api/v1/integrations/aws/{id}/ | 
+*IntegrationsApi* | [**integrations_aws_pulls_create**](docs/IntegrationsApi.md#integrations_aws_pulls_create) | **POST** /api/v1/integrations/aws/{awsintegration_pk}/pulls/ | 
+*IntegrationsApi* | [**integrations_aws_pulls_destroy**](docs/IntegrationsApi.md#integrations_aws_pulls_destroy) | **DELETE** /api/v1/integrations/aws/{awsintegration_pk}/pulls/{id}/ | 
+*IntegrationsApi* | [**integrations_aws_pulls_list**](docs/IntegrationsApi.md#integrations_aws_pulls_list) | **GET** /api/v1/integrations/aws/{awsintegration_pk}/pulls/ | 
+*IntegrationsApi* | [**integrations_aws_pulls_partial_update**](docs/IntegrationsApi.md#integrations_aws_pulls_partial_update) | **PATCH** /api/v1/integrations/aws/{awsintegration_pk}/pulls/{id}/ | 
+*IntegrationsApi* | [**integrations_aws_pulls_retrieve**](docs/IntegrationsApi.md#integrations_aws_pulls_retrieve) | **GET** /api/v1/integrations/aws/{awsintegration_pk}/pulls/{id}/ | 
+*IntegrationsApi* | [**integrations_aws_pulls_sync_create**](docs/IntegrationsApi.md#integrations_aws_pulls_sync_create) | **POST** /api/v1/integrations/aws/{awsintegration_pk}/pulls/{id}/sync/ | 
+*IntegrationsApi* | [**integrations_aws_pulls_tasks_list**](docs/IntegrationsApi.md#integrations_aws_pulls_tasks_list) | **GET** /api/v1/integrations/aws/{awsintegration_pk}/pulls/{awspull_pk}/tasks/ | 
+*IntegrationsApi* | [**integrations_aws_pulls_tasks_retrieve**](docs/IntegrationsApi.md#integrations_aws_pulls_tasks_retrieve) | **GET** /api/v1/integrations/aws/{awsintegration_pk}/pulls/{awspull_pk}/tasks/{id}/ | 
+*IntegrationsApi* | [**integrations_aws_pulls_tasks_steps_list**](docs/IntegrationsApi.md#integrations_aws_pulls_tasks_steps_list) | **GET** /api/v1/integrations/aws/{awsintegration_pk}/pulls/{awspull_pk}/tasks/{awspulltask_pk}/steps/ | 
+*IntegrationsApi* | [**integrations_aws_pulls_tasks_steps_retrieve**](docs/IntegrationsApi.md#integrations_aws_pulls_tasks_steps_retrieve) | **GET** /api/v1/integrations/aws/{awsintegration_pk}/pulls/{awspull_pk}/tasks/{awspulltask_pk}/steps/{id}/ | 
+*IntegrationsApi* | [**integrations_aws_pulls_update**](docs/IntegrationsApi.md#integrations_aws_pulls_update) | **PUT** /api/v1/integrations/aws/{awsintegration_pk}/pulls/{id}/ | 
 *IntegrationsApi* | [**integrations_aws_pushes_create**](docs/IntegrationsApi.md#integrations_aws_pushes_create) | **POST** /api/v1/integrations/aws/{awsintegration_pk}/pushes/ | 
 *IntegrationsApi* | [**integrations_aws_pushes_destroy**](docs/IntegrationsApi.md#integrations_aws_pushes_destroy) | **DELETE** /api/v1/integrations/aws/{awsintegration_pk}/pushes/{id}/ | 
 *IntegrationsApi* | [**integrations_aws_pushes_list**](docs/IntegrationsApi.md#integrations_aws_pushes_list) | **GET** /api/v1/integrations/aws/{awsintegration_pk}/pushes/ | 
@@ -138,6 +149,8 @@ Class | Method | HTTP request | Description
  - [AuditTrailSummary](docs/AuditTrailSummary.md)
  - [AwsIntegration](docs/AwsIntegration.md)
  - [AwsIntegrationCreate](docs/AwsIntegrationCreate.md)
+ - [AwsPull](docs/AwsPull.md)
+ - [AwsPullTask](docs/AwsPullTask.md)
  - [AwsPush](docs/AwsPush.md)
  - [AwsPushTask](docs/AwsPushTask.md)
  - [AwsPushTaskStep](docs/AwsPushTaskStep.md)
@@ -162,6 +175,7 @@ Class | Method | HTTP request | Description
  - [OrganizationCreate](docs/OrganizationCreate.md)
  - [PaginatedAuditTrailList](docs/PaginatedAuditTrailList.md)
  - [PaginatedAwsIntegrationList](docs/PaginatedAwsIntegrationList.md)
+ - [PaginatedAwsPullList](docs/PaginatedAwsPullList.md)
  - [PaginatedAwsPushList](docs/PaginatedAwsPushList.md)
  - [PaginatedAwsPushTaskList](docs/PaginatedAwsPushTaskList.md)
  - [PaginatedAwsPushTaskStepList](docs/PaginatedAwsPushTaskStepList.md)
@@ -191,6 +205,7 @@ Class | Method | HTTP request | Description
  - [ParameterTimelineEntryParameter](docs/ParameterTimelineEntryParameter.md)
  - [ParameterTypeEnum](docs/ParameterTypeEnum.md)
  - [PatchedAwsIntegration](docs/PatchedAwsIntegration.md)
+ - [PatchedAwsPull](docs/PatchedAwsPull.md)
  - [PatchedAwsPushUpdate](docs/PatchedAwsPushUpdate.md)
  - [PatchedEnvironment](docs/PatchedEnvironment.md)
  - [PatchedInvitation](docs/PatchedInvitation.md)

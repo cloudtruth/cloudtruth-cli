@@ -171,16 +171,18 @@ def add_debug_errors(srcdir: str) -> None:
 
 
 def fix_latest_task(srcdir: str) -> None:
-    filename = f"{srcdir}/models/aws_push.rs"
+    filelist = glob.glob(f"{srcdir}/models/aws_pu*.rs")
     box_usage = "latest_task: Box::new(latest_task)"
     opt_usage = "latest_task: latest_task.map(Box::new)"
-    orig = file_read_content(filename)
-    if box_usage not in orig or opt_usage in orig:
-        return
 
-    temp = orig.replace(box_usage, opt_usage)
-    print(f"Updating {filename} with lastest_task fix")
-    file_write_content(filename, temp)
+    for filename in filelist:
+        orig = file_read_content(filename)
+        if box_usage not in orig or opt_usage in orig:
+            continue
+
+        temp = orig.replace(box_usage, opt_usage)
+        print(f"Updating {filename} with lastest_task fix")
+        file_write_content(filename, temp)
 
 
 def fix_last_used_at(srcdir: str) -> None:
@@ -221,6 +223,28 @@ def fix_invitation_membership(srcdir: str) -> None:
         file_write_content(filename, temp)
 
 
+def fix_template_body(srcdir: str) -> None:
+    filelist = glob.glob(f"{srcdir}/models/template*.rs")
+    orig_type = "body: String"
+    update_type = orig_type.replace("String", "Option<String>")
+    serde_props = "rename = \"body\""
+    serde_opt_props = serde_props + ", skip_serializing_if = \"Option::is_none\""
+
+    for filename in filelist:
+        if "preview" in filename:
+            continue
+
+        orig = file_read_content(filename)
+        if orig_type not in orig or update_type in orig:
+            continue
+
+        temp = orig.replace(orig_type, update_type)
+        temp = temp.replace(serde_props, serde_opt_props)
+
+        print(f"Updating {filename} template body type")
+        file_write_content(filename, temp)
+
+
 if __name__ == "__main__":
     client_dir = os.getcwd() + "/client"
     srcdir = client_dir + "/src"
@@ -234,3 +258,4 @@ if __name__ == "__main__":
     fix_latest_task(srcdir)
     fix_last_used_at(srcdir)
     fix_invitation_membership(srcdir)
+    fix_template_body(srcdir)

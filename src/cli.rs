@@ -73,6 +73,23 @@ const REGION_VALUES: &[&str] = &[
     "us-west-1",
     "us-west-2",
 ];
+const OBJECT_TYPE_VALUES: &[&str] = &[
+    "aws",
+    "environment",
+    "github",
+    "invitation",
+    "membership",
+    "organization",
+    "parameter",
+    "rule",
+    "project",
+    "pull",
+    "push",
+    "service-account",
+    "tag",
+    "template",
+    "value",
+];
 
 pub fn binary_name() -> String {
     option_env!("CARGO_PKG_NAME")
@@ -290,10 +307,8 @@ pub fn build_cli() -> App<'static, 'static> {
                         .takes_value(true)
                         .short("t")
                         .long("type")
-                        .possible_values(&[
-                            "aws", "environment", "github", "invitation", "membership", "organization", "parameter",
-                            "rule", "project", "push", "service-account", "tag", "template", "value",
-                        ])
+                        .hide_possible_values(true)
+                        .possible_values(OBJECT_TYPE_VALUES)
                         .help("Only show specified object type"))
                     .arg(Arg::with_name("contains")
                         .takes_value(true)
