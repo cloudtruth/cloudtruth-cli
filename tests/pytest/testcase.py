@@ -54,23 +54,18 @@ def get_cli_base_cmd() -> str:
     """
     # walk back up looking for top of projects, and goto `target/debug/cloudtruth`
     curr = Path(__file__).absolute()
-    subdir = Path("target") / "debug"
-    match = False
-    while not match and curr:
-        possible = curr.parent / subdir
-        match = possible.exists()
+    exec_name = "cloudtruth.exe" if os.name == "nt" else "cloudtruth"
+    exec_path = Path("target") / "debug" / exec_name
+
+    # leverage current structure... walk back up a maximum of 2 levels
+    for _ in range(3):
+        possible = curr.parent / exec_path
+        if possible.exists():
+            return str(possible) + " "
         curr = curr.parent
 
-    if not match:
-        return "cloudtruth "
-
-    for fname in ("cloudtruth", "cloudtruth.exe"):
-        file = possible / fname
-        if file.exists():
-            return str(file) + " "
-
-    # this is a little odd... no executable found in "local" directories
-    return "cloudtruth "
+    # we failed to find this, so just use the "default".
+    return exec_name + " "
 
 
 def find_by_prop(entries: List[Dict], prop_name: str, prop_value: str) -> List[Dict]:

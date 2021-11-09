@@ -24,6 +24,7 @@ unchecked_results := $(shell grep -nA 1 "self\.run_cli" tests/pytest/*.py | grep
 .PHONY += shell
 .PHONY += targets
 .PHONY += test
+.PHONY += test_prerequisites
 .PHONY += version_check
 
 all: precommit
@@ -76,7 +77,7 @@ endif
 
 precommit: version_check cargo precommit_test lint
 
-prerequisites:
+prerequisites: test_prerequisites
 ifeq ($(rustup_exists),'')
 	curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 endif
@@ -95,7 +96,6 @@ else ifeq ($(os_name),Linux)
 else
 	@echo "Did not install shellcheck"
 endif
-	make -C tests $@
 
 test_prerequisites:
 	make -C tests prerequisites
