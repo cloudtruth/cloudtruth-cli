@@ -825,7 +825,7 @@ PARAMETER={{{{{param1}}}}}
         self.assertEqual(result.out(), f"""\
 --- {temp_name} ({env_b} at {tag_name})
 +++ {temp_name} ({env_a} at {future})
-@@ -1,3 +1,3 @@
+@@ -1,4 +1,4 @@
  # This us a comment common to all environments/times
 -SECRET={value2b}
 +SECRET={value2a}
