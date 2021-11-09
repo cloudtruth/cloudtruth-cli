@@ -30,13 +30,13 @@ fn proc_env_delete(
         }
 
         if !confirmed {
-            warning_message(format!("Environment '{}' not deleted!", env_name))?;
+            warning_message(format!("Environment '{}' not deleted!", env_name));
         } else {
             environments.delete_environment(rest_cfg, details.id)?;
             println!("Deleted environment '{}'", env_name);
         }
     } else {
-        warning_message(format!("Environment '{}' does not exist!", env_name))?;
+        warning_message(format!("Environment '{}' does not exist!", env_name));
     }
     Ok(())
 }
@@ -95,13 +95,13 @@ fn proc_env_set(
             error_message(format!(
                 "Environment '{}' parent cannot be updated.",
                 env_name
-            ))?;
+            ));
             process::exit(6);
         } else if description.is_none() && rename.is_none() {
             warning_message(format!(
                 "Environment '{}' not updated: no updated parameters provided",
                 env_name
-            ))?;
+            ));
         } else {
             let name = rename.unwrap_or(env_name);
             environments.update_environment(rest_cfg, &details.id, name, description)?;
@@ -118,7 +118,7 @@ fn proc_env_set(
             )?;
             println!("Created environment '{}'", env_name);
         } else {
-            error_message(format!("No parent environment '{}' found", parent_name))?;
+            error_message(format!("No parent environment '{}' found", parent_name));
             process::exit(5);
         }
     }
@@ -152,7 +152,7 @@ fn proc_env_tree(
         println!("{}", start);
         print_children(1, start, &details);
     } else {
-        warning_message(format!("No environment '{}' found", start))?;
+        warning_message(format!("No environment '{}' found", start));
     }
     Ok(())
 }
@@ -181,7 +181,7 @@ fn proc_env_tag_delete(
                 warning_message(format!(
                     "Tag '{}' in environment '{}' not deleted!",
                     tag_name, env_name
-                ))?;
+                ));
             } else {
                 environments.delete_env_tag(rest_cfg, &env_id, &tag_id)?;
                 println!("Deleted tag '{}' from environment '{}'", tag_name, env_name);
@@ -190,10 +190,10 @@ fn proc_env_tag_delete(
             warning_message(format!(
                 "Environment '{}' does not have a tag '{}'!",
                 env_name, tag_name
-            ))?;
+            ));
         }
     } else {
-        warning_message(format!("Environment '{}' does not exist!", env_name))?;
+        warning_message(format!("Environment '{}' does not exist!", env_name));
     }
     Ok(())
 }
@@ -238,7 +238,7 @@ fn proc_env_tag_list(
             table.render(fmt)?;
         }
     } else {
-        error_no_environment_message(env_name)?;
+        error_no_environment_message(env_name);
         process::exit(14);
     }
     Ok(())
@@ -258,14 +258,14 @@ fn proc_env_tag_set(
     // make sure the user provided something useful for a timestamp
     let time_opt = subcmd_args.value_of("timestamp");
     if time_opt.is_some() && parse_datetime(time_opt).is_none() {
-        error_message("Invalid time value -- use an accepted timestamp format".to_string())?;
+        error_message("Invalid time value -- use an accepted timestamp format".to_string());
         process::exit(16);
     }
 
     // cannot over-specify
     if time_opt.is_some() && current {
         let msg = "Conflicting arguments: cannot specify both --current and --time.";
-        error_message(msg.to_string())?;
+        error_message(msg.to_string());
         process::exit(17);
     }
 
@@ -276,7 +276,7 @@ fn proc_env_tag_set(
             if description.is_none() && timestamp.is_none() && rename.is_none() && !current {
                 warning_message(
                     "Nothing changed. Please provide a description, time, or current.".to_string(),
-                )?;
+                );
             } else {
                 let time_value = if current {
                     Some(current_time())
@@ -300,7 +300,7 @@ fn proc_env_tag_set(
             println!("Created tag '{}' in environment '{}'.", tag_name, env_name);
         }
     } else {
-        error_no_environment_message(env_name)?;
+        error_no_environment_message(env_name);
         process::exit(15);
     }
     Ok(())
@@ -318,7 +318,7 @@ fn proc_env_tag(
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(SET_SUBCMD) {
         proc_env_tag_set(subcmd_args, rest_cfg, environments)?;
     } else {
-        warn_missing_subcommand("environments tag")?;
+        warn_missing_subcommand("environments tag");
     }
     Ok(())
 }
@@ -340,7 +340,7 @@ pub fn process_environment_command(
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(TAG_SUBCMD) {
         proc_env_tag(subcmd_args, rest_cfg, environments)?;
     } else {
-        warn_missing_subcommand("environments")?;
+        warn_missing_subcommand("environments");
     }
     Ok(())
 }

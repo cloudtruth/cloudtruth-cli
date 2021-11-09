@@ -52,13 +52,13 @@ fn proc_users_delete(
         }
 
         if !confirmed {
-            warning_message(format!("User '{}' not deleted!", user_name))?;
+            warning_message(format!("User '{}' not deleted!", user_name));
         } else {
             users.delete_user(rest_cfg, &user_id)?;
             println!("Deleted user '{}'", user_name);
         }
     } else {
-        warning_message(format!("User '{}' does not exist!", user_name))?;
+        warning_message(format!("User '{}' does not exist!", user_name));
     }
     Ok(())
 }
@@ -70,7 +70,7 @@ fn proc_users_get(subcmd_args: &ArgMatches, rest_cfg: &OpenApiConfig, users: &Us
     if let Some(details) = response {
         print_user(&details);
     } else {
-        error_message(format!("The user '{}' could not be found", user_name))?;
+        error_message(format!("The user '{}' could not be found", user_name));
         process::exit(23);
     }
     Ok(())
@@ -137,7 +137,7 @@ fn proc_users_set(subcmd_args: &ArgMatches, rest_cfg: &OpenApiConfig, users: &Us
             warning_message(format!(
                 "User '{}' not updated: no updated parameters provided",
                 user_name
-            ))?;
+            ));
         } else {
             users.update_user(rest_cfg, &user_id, role, description)?;
             println!("Updated user '{}'", user_name);
@@ -168,13 +168,13 @@ fn proc_invite_delete(
         }
 
         if !confirmed {
-            warning_message(format!("Invitation for '{}' not deleted!", email))?;
+            warning_message(format!("Invitation for '{}' not deleted!", email));
         } else {
             invitations.delete_invitation(rest_cfg, &invite_id)?;
             println!("Deleted invitation for '{}'", email);
         }
     } else {
-        warning_message(format!("Invitation for '{}' does not exist!", email))?;
+        warning_message(format!("Invitation for '{}' does not exist!", email));
     }
     Ok(())
 }
@@ -221,7 +221,7 @@ fn proc_invite_resend(
         invitations.resend_invitation(rest_cfg, &invite_id)?;
         println!("Resent invitation for '{}'", email);
     } else {
-        error_message(format!("Pending invitation for '{}' not found!", email))?;
+        error_message(format!("Pending invitation for '{}' not found!", email));
         process::exit(29);
     }
     Ok(())
@@ -241,7 +241,7 @@ fn proc_invite_set(
             warning_message(format!(
                 "Invitation for '{}' not updated: no updated parameters provided",
                 email
-            ))?;
+            ));
         } else {
             invitations.update_invitation(rest_cfg, &invite_id, role)?;
             println!("Updated invitation for '{}'", email);
@@ -268,7 +268,7 @@ fn proc_users_invite_command(
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(SET_SUBCMD) {
         proc_invite_set(subcmd_args, rest_cfg, invitations)?;
     } else {
-        warn_missing_subcommand("users invitations")?;
+        warn_missing_subcommand("users invitations");
     }
     Ok(())
 }
@@ -292,7 +292,7 @@ pub fn process_users_command(
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("invitations") {
         proc_users_invite_command(subcmd_args, rest_cfg, users)?;
     } else {
-        warn_missing_subcommand("users")?;
+        warn_missing_subcommand("users");
     }
     Ok(())
 }

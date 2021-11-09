@@ -45,7 +45,7 @@ fn proc_template_delete(
             warning_message(format!(
                 "Template '{}' in project '{}' not deleted!",
                 template_name, proj_name
-            ))?;
+            ));
         } else {
             templates.delete_template(rest_cfg, proj_id, &template_id)?;
             println!(
@@ -57,7 +57,7 @@ fn proc_template_delete(
         warning_message(format!(
             "Template '{}' does not exist for project '{}'!",
             template_name, proj_name
-        ))?;
+        ));
     }
     Ok(())
 }
@@ -200,14 +200,14 @@ fn proc_template_diff(
         warning_message(format!(
             "Can specify a maximum of {} environment values.",
             max_len
-        ))?;
+        ));
         return Ok(());
     }
     if as_list.len() > max_len {
         warning_message(format!(
             "Can specify a maximum of {} as-of values.",
             max_len
-        ))?;
+        ));
         return Ok(());
     }
 
@@ -244,7 +244,7 @@ fn proc_template_diff(
     let tag2 = parse_tag(as_tag2);
 
     if env1_name == env2_name && as_tag1 == as_tag2 {
-        warning_message("Invalid comparing an environment to itself".to_string())?;
+        warning_message("Invalid comparing an environment to itself".to_string());
         return Ok(());
     }
 
@@ -338,7 +338,7 @@ fn proc_template_set(
             warning_message(format!(
                 "Template '{}' not updated: no updated parameters provided",
                 template_name
-            ))?;
+            ));
         } else {
             let name = rename.unwrap_or(template_name);
             let mut body = None;
@@ -363,7 +363,7 @@ fn proc_template_set(
             template_name, proj_name
         );
     } else {
-        error_message("Must provide a body for a new template".to_owned())?;
+        error_message("Must provide a body for a new template".to_owned());
         process::exit(8);
     }
     Ok(())
@@ -527,7 +527,7 @@ pub fn process_templates_command(
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("validate") {
         proc_template_validate(subcmd_args, rest_cfg, templates, resolved)?;
     } else {
-        warn_missing_subcommand("templates")?;
+        warn_missing_subcommand("templates");
     }
     Ok(())
 }

@@ -6,8 +6,8 @@ use color_eyre::eyre::Result;
 use indoc::printdoc;
 use std::io::{stdin, stdout, Write};
 
-fn warn_login_done(reason: &str) -> Result<()> {
-    warning_message(format!("Login not performed: {}", reason))
+fn warn_login_done(reason: &str) {
+    warning_message(format!("Login not performed: {}", reason));
 }
 
 pub fn process_login_command(subcmd_args: &ArgMatches, config: &Config) -> Result<()> {
@@ -39,12 +39,12 @@ pub fn process_login_command(subcmd_args: &ArgMatches, config: &Config) -> Resul
                 profile_name
             );
             if !user_confirm(msg, Some(false)) {
-                warn_login_done("using existing API key")?;
+                warn_login_done("using existing API key");
                 return Ok(());
             }
         } else {
             let msg = format!("Updating API key in profile '{}'.", profile_name);
-            warning_message(msg)?;
+            warning_message(msg);
         }
     }
 
@@ -70,7 +70,7 @@ pub fn process_login_command(subcmd_args: &ArgMatches, config: &Config) -> Resul
             warning_message(format!(
                 "Opening {} page ({}) in browser.",
                 API_KEY_PAGE, api_key_url
-            ))?;
+            ));
         }
 
         if open_page {
@@ -100,7 +100,7 @@ pub fn process_login_command(subcmd_args: &ArgMatches, config: &Config) -> Resul
             API_KEY_PAGE,
         );
     } else {
-        warning_message(format!("Unable to determine {} page URL", API_KEY_PAGE))?;
+        warning_message(format!("Unable to determine {} page URL", API_KEY_PAGE));
     }
 
     // TODO: sanity checks?
@@ -111,7 +111,7 @@ pub fn process_login_command(subcmd_args: &ArgMatches, config: &Config) -> Resul
     let _ = stdin().read_line(&mut input);
     input = input.trim().to_string();
     if input.is_empty() {
-        warn_login_done("no API key provided")?;
+        warn_login_done("no API key provided");
         return Ok(());
     }
 

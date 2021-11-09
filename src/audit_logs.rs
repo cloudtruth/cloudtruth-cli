@@ -8,8 +8,8 @@ use indoc::printdoc;
 use std::process;
 
 /// Print a consistent `error_message()`
-fn invalid_time_format(arg: &str) -> Result<()> {
-    error_message(format!("Invalid '{}' value", arg))
+fn invalid_time_format(arg: &str) {
+    error_message(format!("Invalid '{}' value", arg));
 }
 
 fn proc_audit_list(
@@ -35,10 +35,10 @@ fn proc_audit_list(
 
     if bad_before || bad_after {
         if bad_before {
-            invalid_time_format("--before")?;
+            invalid_time_format("--before");
         }
         if bad_after {
-            invalid_time_format("--after")?;
+            invalid_time_format("--after");
         }
         process::exit(34);
     }
@@ -48,7 +48,7 @@ fn proc_audit_list(
         let users = Users::new();
         user_id = users.get_id(rest_cfg, uname)?;
         if user_id.is_none() {
-            error_message(format!("User '{}' not found.", uname))?;
+            error_message(format!("User '{}' not found.", uname));
             process::exit(35);
         }
     }
@@ -134,7 +134,7 @@ pub fn process_audit_log_command(
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("summary") {
         proc_audit_summary(subcmd_args, rest_cfg, audit_logs)?;
     } else {
-        warn_missing_subcommand("audit-logs")?;
+        warn_missing_subcommand("audit-logs");
     }
     Ok(())
 }

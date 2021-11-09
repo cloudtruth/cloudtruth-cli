@@ -25,13 +25,13 @@ fn proc_proj_delete(
         }
 
         if !confirmed {
-            warning_message(format!("Project '{}' not deleted!", proj_name))?;
+            warning_message(format!("Project '{}' not deleted!", proj_name));
         } else {
             projects.delete_project(rest_cfg, &proj_id)?;
             println!("Deleted project '{}'", proj_name);
         }
     } else {
-        warning_message(format!("Project '{}' does not exist!", proj_name))?;
+        warning_message(format!("Project '{}' does not exist!", proj_name));
     }
     Ok(())
 }
@@ -95,7 +95,7 @@ fn proc_proj_set(
         {
             parent_url = Some(parent_detail.url);
         } else {
-            error_message(format!("No parent project '{}' found", parent_name))?;
+            error_message(format!("No parent project '{}' found", parent_name));
             process::exit(19);
         }
     }
@@ -105,7 +105,7 @@ fn proc_proj_set(
             warning_message(format!(
                 "Project '{}' not updated: no updated parameters provided",
                 proj_name
-            ))?;
+            ));
         } else {
             let name = rename.unwrap_or(proj_name);
             projects.update_project(
@@ -174,7 +174,7 @@ pub fn process_project_command(
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(TREE_SUBCMD) {
         proc_proj_tree(subcmd_args, rest_cfg, projects)?;
     } else {
-        warn_missing_subcommand("projects")?;
+        warn_missing_subcommand("projects");
     }
     Ok(())
 }

@@ -108,7 +108,7 @@ fn project_names_to_urls(proj_names: &[&str], proj_details: &[ProjectDetails]) -
             }
         }
         if !found {
-            let _ = error_message(format!("Project '{}' not found", name));
+            error_message(format!("Project '{}' not found", name));
             process::exit(36);
         }
     }
@@ -147,7 +147,7 @@ fn get_tag_name_to_url_map(
                 result.insert(full_name, t.url.clone());
             }
         } else {
-            let _ = error_message(format!("Environment '{}' not found", env_name));
+            error_message(format!("Environment '{}' not found", env_name));
             process::exit(37);
         }
     }
@@ -162,7 +162,7 @@ fn tag_names_to_urls(tag_names: &[&str], tag_map: &HashMap<String, String>) -> V
         if let Some(url) = map_value {
             result.push(url.clone());
         } else {
-            let _ = error_message(format!("Did not find tag for {}", full_tag));
+            error_message(format!("Did not find tag for {}", full_tag));
             process::exit(38);
         }
     }
@@ -181,9 +181,9 @@ fn proc_integ_explore(
     let indent = "  ";
     if nodes.is_empty() {
         if let Some(fqn) = fqn {
-            error_message(format!("Nothing found for FQN '{}'!", fqn))?;
+            error_message(format!("Nothing found for FQN '{}'!", fqn));
         } else {
-            error_message("No integrations found.".to_string())?;
+            error_message("No integrations found.".to_string());
         }
     } else if !show_values {
         for node in nodes {
@@ -243,7 +243,7 @@ fn proc_integ_get(
             details.status_time,
         );
     } else {
-        error_message(integration_not_found_message(integ_name))?;
+        error_message(integration_not_found_message(integ_name));
         process::exit(32);
     }
     Ok(())
@@ -298,7 +298,7 @@ fn proc_integ_refresh(
         integrations.refresh_connection(rest_cfg, &integ_id)?;
         println!("Refreshed integration '{}'", integ_name);
     } else {
-        error_message(integration_not_found_message(integ_name))?;
+        error_message(integration_not_found_message(integ_name));
         process::exit(32);
     }
     Ok(())
@@ -327,16 +327,16 @@ fn proc_integ_push_delete(
             }
 
             if !confirmed {
-                warning_message(format!("Push '{}' not deleted from !", push_name))?;
+                warning_message(format!("Push '{}' not deleted from !", push_name));
             } else {
                 integrations.delete_push(rest_cfg, &integ_id, &push_id)?;
                 println!("Deleted push '{}' from '{}'", push_name, integ_name);
             }
         } else {
-            warning_message(integration_push_not_found_message(integ_name, push_name))?;
+            warning_message(integration_push_not_found_message(integ_name, push_name));
         }
     } else {
-        error_message(integration_not_found_message(integ_name))?;
+        error_message(integration_not_found_message(integ_name));
         process::exit(30);
     }
     Ok(())
@@ -421,11 +421,11 @@ fn proc_integ_push_get(
             resolve_tag_names(rest_cfg, &mut pushes);
             print_push_details(&pushes[0], integ_name);
         } else {
-            error_message(integration_push_not_found_message(integ_name, push_name))?;
+            error_message(integration_push_not_found_message(integ_name, push_name));
             process::exit(31);
         }
     } else {
-        error_message(integration_not_found_message(integ_name))?;
+        error_message(integration_not_found_message(integ_name));
         process::exit(30);
     }
     Ok(())
@@ -450,7 +450,7 @@ fn proc_integ_push_list(
         if let Some(integ_id) = integrations.get_id(rest_cfg, integ_name)? {
             pushes = integrations.get_push_list(rest_cfg, &integ_id)?;
         } else {
-            error_message(integration_not_found_message(integ_name))?;
+            error_message(integration_not_found_message(integ_name));
             process::exit(30);
         }
     } else {
@@ -567,13 +567,13 @@ fn proc_integ_push_set(
                 warning_message(format!(
                     "The --region is ignored for updates to '{}",
                     push_name
-                ))?;
+                ));
             }
             if subcmd_args.occurrences_of("service") > 0 {
                 warning_message(format!(
                     "The --service is ignored for updates to '{}",
                     push_name
-                ))?;
+                ));
             }
             let updated_resource = resource.unwrap_or(&details.resource);
             let mut project_ids = details.project_urls.clone();
@@ -614,7 +614,7 @@ fn proc_integ_push_set(
             );
         }
     } else {
-        error_message(integration_not_found_message(integ_name))?;
+        error_message(integration_not_found_message(integ_name));
         process::exit(30);
     }
     Ok(())
@@ -630,14 +630,14 @@ fn proc_integ_push_sync(
 
     let integ_resp = integrations.get_id(rest_cfg, integ_name)?;
     if integ_resp.is_none() {
-        error_message(integration_not_found_message(integ_name))?;
+        error_message(integration_not_found_message(integ_name));
         process::exit(30);
     }
 
     let integ_id = integ_resp.unwrap();
     let push_resp = integrations.get_push_by_name(rest_cfg, &integ_id, push_name)?;
     if push_resp.is_none() {
-        error_message(integration_push_not_found_message(integ_name, push_name))?;
+        error_message(integration_push_not_found_message(integ_name, push_name));
         process::exit(31);
     }
 
@@ -663,14 +663,14 @@ fn proc_integ_push_tasks(
 
     let integ_resp = integrations.get_id(rest_cfg, integ_name)?;
     if integ_resp.is_none() {
-        error_message(integration_not_found_message(integ_name))?;
+        error_message(integration_not_found_message(integ_name));
         process::exit(30);
     }
 
     let integ_id = integ_resp.unwrap();
     let push_resp = integrations.get_push_id(rest_cfg, &integ_id, push_name)?;
     if push_resp.is_none() {
-        error_message(integration_push_not_found_message(integ_name, push_name))?;
+        error_message(integration_push_not_found_message(integ_name, push_name));
         process::exit(31);
     }
 
@@ -725,7 +725,7 @@ fn proc_integ_push_command(
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(TASKS_SUBCMD) {
         proc_integ_push_tasks(subcmd_args, rest_cfg, integrations)?;
     } else {
-        warn_missing_subcommand("integrations pushes")?;
+        warn_missing_subcommand("integrations pushes");
     }
     Ok(())
 }
@@ -747,7 +747,7 @@ pub fn process_integrations_command(
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("refresh") {
         proc_integ_refresh(subcmd_args, rest_cfg, integrations)?;
     } else {
-        warn_missing_subcommand("integrations")?;
+        warn_missing_subcommand("integrations");
     }
     Ok(())
 }
