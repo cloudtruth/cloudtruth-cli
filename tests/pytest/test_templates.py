@@ -1,3 +1,5 @@
+import unittest
+
 from testcase import TestCase
 from testcase import CT_ENV
 from testcase import PROP_MODIFIED
@@ -444,6 +446,7 @@ this.is.a.template.value=PARAM1
         self.delete_environment(cmd_env, env_name)
         self.delete_project(cmd_env, proj_name)
 
+    @unittest.skip("Waiting on server fix")
     def test_template_history(self):
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
@@ -822,7 +825,7 @@ PARAMETER={{{{{param1}}}}}
         self.assertEqual(result.out(), f"""\
 --- {temp_name} ({env_b} at {tag_name})
 +++ {temp_name} ({env_a} at {future})
-@@ -1,3 +1,3 @@
+@@ -1,4 +1,4 @@
  # This us a comment common to all environments/times
 -SECRET={value2b}
 +SECRET={value2a}
