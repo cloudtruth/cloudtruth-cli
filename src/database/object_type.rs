@@ -11,6 +11,7 @@ pub enum ObjectType {
     Parameter,
     ParameterRule,
     Project,
+    Pull,
     Push,
     ServiceAccount,
     Tag,
@@ -27,6 +28,7 @@ const STR_ORG: &str = "organization";
 const STR_PARAM: &str = "parameter";
 const STR_RULE: &str = "rule";
 const STR_PROJ: &str = "project";
+const STR_PULL: &str = "pull";
 const STR_PUSH: &str = "push";
 const STR_SERV_ACCT: &str = "service-account";
 const STR_TAG: &str = "tag";
@@ -45,6 +47,7 @@ impl ToString for ObjectType {
             Self::Parameter => STR_PARAM,
             Self::ParameterRule => STR_RULE,
             Self::Project => STR_PROJ,
+            Self::Pull => STR_PULL,
             Self::Push => STR_PUSH,
             Self::ServiceAccount => STR_SERV_ACCT,
             Self::Tag => STR_TAG,
@@ -67,6 +70,7 @@ impl From<ObjectTypeEnum> for ObjectType {
             ObjectTypeEnum::Parameter => ObjectType::Parameter,
             ObjectTypeEnum::ParameterRule => ObjectType::ParameterRule,
             ObjectTypeEnum::Project => ObjectType::Project,
+            ObjectTypeEnum::Pull => ObjectType::Pull,
             ObjectTypeEnum::Push => ObjectType::Push,
             ObjectTypeEnum::ServiceAccount => ObjectType::ServiceAccount,
             ObjectTypeEnum::Tag => ObjectType::Tag,
@@ -88,6 +92,7 @@ impl ObjectType {
             Self::Parameter => ObjectTypeEnum::Parameter,
             Self::ParameterRule => ObjectTypeEnum::ParameterRule,
             Self::Project => ObjectTypeEnum::Project,
+            Self::Pull => ObjectTypeEnum::Pull,
             Self::Push => ObjectTypeEnum::Push,
             Self::ServiceAccount => ObjectTypeEnum::ServiceAccount,
             Self::Tag => ObjectTypeEnum::Tag,
@@ -110,6 +115,7 @@ pub fn to_object_type(option: Option<&str>) -> Option<ObjectType> {
             STR_PARAM => Some(ObjectType::Parameter),
             STR_RULE => Some(ObjectType::ParameterRule),
             STR_PROJ => Some(ObjectType::Project),
+            STR_PULL => Some(ObjectType::Pull),
             STR_PUSH => Some(ObjectType::Push),
             STR_SERV_ACCT => Some(ObjectType::ServiceAccount),
             STR_TAG => Some(ObjectType::Tag),

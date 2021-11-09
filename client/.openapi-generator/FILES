@@ -8,6 +8,8 @@ docs/AuditTrail.md
 docs/AuditTrailSummary.md
 docs/AwsIntegration.md
 docs/AwsIntegrationCreate.md
+docs/AwsPull.md
+docs/AwsPullTask.md
 docs/AwsPush.md
 docs/AwsPushTask.md
 docs/AwsPushTaskStep.md
@@ -37,6 +39,7 @@ docs/OrganizationCreate.md
 docs/OrganizationsApi.md
 docs/PaginatedAuditTrailList.md
 docs/PaginatedAwsIntegrationList.md
+docs/PaginatedAwsPullList.md
 docs/PaginatedAwsPushList.md
 docs/PaginatedAwsPushTaskList.md
 docs/PaginatedAwsPushTaskStepList.md
@@ -66,6 +69,7 @@ docs/ParameterTimelineEntryEnvironment.md
 docs/ParameterTimelineEntryParameter.md
 docs/ParameterTypeEnum.md
 docs/PatchedAwsIntegration.md
+docs/PatchedAwsPull.md
 docs/PatchedAwsPushUpdate.md
 docs/PatchedEnvironment.md
 docs/PatchedInvitation.md
@@ -122,6 +126,8 @@ src/models/audit_trail.rs
 src/models/audit_trail_summary.rs
 src/models/aws_integration.rs
 src/models/aws_integration_create.rs
+src/models/aws_pull.rs
+src/models/aws_pull_task.rs
 src/models/aws_push.rs
 src/models/aws_push_task.rs
 src/models/aws_push_task_step.rs
@@ -147,6 +153,7 @@ src/models/organization.rs
 src/models/organization_create.rs
 src/models/paginated_audit_trail_list.rs
 src/models/paginated_aws_integration_list.rs
+src/models/paginated_aws_pull_list.rs
 src/models/paginated_aws_push_list.rs
 src/models/paginated_aws_push_task_list.rs
 src/models/paginated_aws_push_task_step_list.rs
@@ -176,6 +183,7 @@ src/models/parameter_timeline_entry_environment.rs
 src/models/parameter_timeline_entry_parameter.rs
 src/models/parameter_type_enum.rs
 src/models/patched_aws_integration.rs
+src/models/patched_aws_pull.rs
 src/models/patched_aws_push_update.rs
 src/models/patched_environment.rs
 src/models/patched_invitation.rs

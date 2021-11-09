@@ -607,15 +607,11 @@ impl Integrations {
         tags: Vec<String>,
     ) -> Result<(), IntegrationError> {
         let push_update = AwsPushUpdate {
-            url: "".to_string(),
-            id: "".to_string(),
             name: push_name.to_string(),
             description: description.map(String::from),
             projects,
             tags,
             resource: resource.to_string(),
-            created_at: "".to_string(),
-            modified_at: "".to_string(),
         };
         let response =
             integrations_aws_pushes_update(rest_cfg, integration_id, push_id, push_update);

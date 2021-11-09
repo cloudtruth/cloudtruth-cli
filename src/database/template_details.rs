@@ -16,7 +16,7 @@ impl From<&Template> for TemplateDetails {
             id: api_temp.id.clone(),
             name: api_temp.name.clone(),
             description: api_temp.description.clone().unwrap_or_default(),
-            body: api_temp.body.clone().unwrap_or_default(),
+            body: api_temp.body.clone(),
             created_at: api_temp.created_at.clone(),
             modified_at: api_temp.modified_at.clone(),
         }

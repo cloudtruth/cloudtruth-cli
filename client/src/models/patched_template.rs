@@ -12,6 +12,7 @@
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct PatchedTemplate {
+    /// The templates this value references, if interpolated.
     #[serde(rename = "url", skip_serializing_if = "Option::is_none")]
     pub url: Option<String>,
     /// A unique identifier for the template.
@@ -20,7 +21,7 @@ pub struct PatchedTemplate {
     /// The template name.
     #[serde(rename = "name", skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
-    /// A description of the template.  You may find it helpful to document how this template is used to assist others when they need to maintain software that uses this content.
+    /// ('A description of the template.  You may find it helpful to document how this template is used to assist others when they need to maintain software that uses this content.',)
     #[serde(rename = "description", skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
     /// If true, the `body` field has undergone evaluation.

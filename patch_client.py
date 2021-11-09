@@ -171,16 +171,18 @@ def add_debug_errors(srcdir: str) -> None:
 
 
 def fix_latest_task(srcdir: str) -> None:
-    filename = f"{srcdir}/models/aws_push.rs"
+    filelist = glob.glob(f"{srcdir}/models/aws_pu*.rs")
     box_usage = "latest_task: Box::new(latest_task)"
     opt_usage = "latest_task: latest_task.map(Box::new)"
-    orig = file_read_content(filename)
-    if box_usage not in orig or opt_usage in orig:
-        return
 
-    temp = orig.replace(box_usage, opt_usage)
-    print(f"Updating {filename} with lastest_task fix")
-    file_write_content(filename, temp)
+    for filename in filelist:
+        orig = file_read_content(filename)
+        if box_usage not in orig or opt_usage in orig:
+            continue
+
+        temp = orig.replace(box_usage, opt_usage)
+        print(f"Updating {filename} with lastest_task fix")
+        file_write_content(filename, temp)
 
 
 def fix_last_used_at(srcdir: str) -> None:

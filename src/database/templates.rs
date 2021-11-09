@@ -183,7 +183,7 @@ impl Templates {
         let template_create = TemplateCreate {
             name: template_name.to_string(),
             description: description.map(String::from),
-            body: Some(body.to_string()),
+            body: body.to_string(),
         };
         let response = projects_templates_create(rest_cfg, proj_id, template_create);
         match response {
