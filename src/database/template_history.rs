@@ -22,7 +22,7 @@ impl From<&TemplateTimelineEntry> for TemplateHistory {
             id: api.history_template.id.clone(),
             name: api.history_template.name.clone(),
             description: api.history_template.description.clone().unwrap_or_default(),
-            body: api.history_template.body.clone(),
+            body: api.history_template.body.clone().unwrap_or_default(),
 
             date: api.history_date.clone(),
             change_type: HistoryAction::from(*api.history_type.deref()),

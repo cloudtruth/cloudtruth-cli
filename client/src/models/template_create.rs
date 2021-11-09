@@ -19,13 +19,13 @@ pub struct TemplateCreate {
     #[serde(rename = "description", skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
     /// The content of the template.  Use mustache-style templating delimiters of `{{` and `}}` to reference parameter values by name for substitution into the template result.
-    #[serde(rename = "body")]
-    pub body: String,
+    #[serde(rename = "body", skip_serializing_if = "Option::is_none")]
+    pub body: Option<String>,
 }
 
 impl TemplateCreate {
     /// A parameter template in a given project, optionally instantiated against an environment.
-    pub fn new(name: String, body: String) -> TemplateCreate {
+    pub fn new(name: String, body: Option<String>) -> TemplateCreate {
         TemplateCreate {
             name,
             description: None,

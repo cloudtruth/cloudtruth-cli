@@ -223,6 +223,28 @@ def fix_invitation_membership(srcdir: str) -> None:
         file_write_content(filename, temp)
 
 
+def fix_template_body(srcdir: str) -> None:
+    filelist = glob.glob(f"{srcdir}/models/template*.rs")
+    orig_type = "body: String"
+    update_type = orig_type.replace("String", "Option<String>")
+    serde_props = "rename = \"body\""
+    serde_opt_props = serde_props + ", skip_serializing_if = \"Option::is_none\""
+
+    for filename in filelist:
+        if "preview" in filename:
+            continue
+
+        orig = file_read_content(filename)
+        if orig_type not in orig or update_type in orig:
+            continue
+
+        temp = orig.replace(orig_type, update_type)
+        temp = temp.replace(serde_props, serde_opt_props)
+
+        print(f"Updating {filename} template body type")
+        file_write_content(filename, temp)
+
+
 if __name__ == "__main__":
     client_dir = os.getcwd() + "/client"
     srcdir = client_dir + "/src"
@@ -236,3 +258,4 @@ if __name__ == "__main__":
     fix_latest_task(srcdir)
     fix_last_used_at(srcdir)
     fix_invitation_membership(srcdir)
+    fix_template_body(srcdir)

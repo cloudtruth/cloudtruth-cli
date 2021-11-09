@@ -22,13 +22,13 @@ pub struct TemplateTimelineEntryTemplate {
     #[serde(rename = "description", skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
     /// The content of the template.  Use mustache-style templating delimiters of `{{` and `}}` to reference parameter values by name for substitution into the template result.
-    #[serde(rename = "body")]
-    pub body: String,
+    #[serde(rename = "body", skip_serializing_if = "Option::is_none")]
+    pub body: Option<String>,
 }
 
 impl TemplateTimelineEntryTemplate {
     /// Helper methods for all views or serializers that expose template concepts.
-    pub fn new(id: String, name: String, body: String) -> TemplateTimelineEntryTemplate {
+    pub fn new(id: String, name: String, body: Option<String>) -> TemplateTimelineEntryTemplate {
         TemplateTimelineEntryTemplate {
             id,
             name,

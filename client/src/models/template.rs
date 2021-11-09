@@ -28,8 +28,8 @@ pub struct Template {
     #[serde(rename = "evaluated")]
     pub evaluated: bool,
     /// The content of the template.  Use mustache-style templating delimiters of `{{` and `}}` to reference parameter values by name for substitution into the template result.
-    #[serde(rename = "body")]
-    pub body: String,
+    #[serde(rename = "body", skip_serializing_if = "Option::is_none")]
+    pub body: Option<String>,
     /// Parameters that this template references.
     #[serde(rename = "referenced_parameters")]
     pub referenced_parameters: Vec<String>,
@@ -58,7 +58,7 @@ impl Template {
         id: String,
         name: String,
         evaluated: bool,
-        body: String,
+        body: Option<String>,
         referenced_parameters: Vec<String>,
         referenced_templates: Vec<String>,
         referencing_templates: Vec<String>,
