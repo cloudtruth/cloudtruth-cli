@@ -332,12 +332,13 @@ impl Integrations {
         &self,
         rest_cfg: &OpenApiConfig,
         integration_id: &str,
+        name: Option<&str>,
     ) -> Result<Vec<PushDetails>, IntegrationError> {
         let response = integrations_aws_pushes_list(
             rest_cfg,
             integration_id,
             None,
-            None,
+            name,
             None,
             NO_ORDERING,
             None,
@@ -367,7 +368,7 @@ impl Integrations {
     ) -> Result<Vec<PushDetails>, IntegrationError> {
         // NOTE: no current
         let mut total: Vec<PushDetails> = vec![];
-        let mut aws_pushes = self.get_aws_push_list(rest_cfg, integration_id)?;
+        let mut aws_pushes = self.get_aws_push_list(rest_cfg, integration_id, None)?;
         total.append(&mut aws_pushes);
         Ok(total)
     }
@@ -375,13 +376,14 @@ impl Integrations {
     fn get_all_aws_pushes(
         &self,
         rest_cfg: &OpenApiConfig,
+        name: Option<&str>,
     ) -> Result<Vec<PushDetails>, IntegrationError> {
         let int_details = self.get_aws_integration_details(rest_cfg)?;
         let mut total: Vec<PushDetails> = vec![];
         for entry in int_details {
-            let mut pushes = self.get_aws_push_list(rest_cfg, &entry.id)?;
+            let mut pushes = self.get_aws_push_list(rest_cfg, &entry.id, name)?;
             for p in &mut pushes {
-                p.integration = entry.name.clone();
+                p.integration_name = entry.name.clone();
             }
             total.append(&mut pushes);
         }
@@ -392,7 +394,15 @@ impl Integrations {
         &self,
         rest_cfg: &OpenApiConfig,
     ) -> Result<Vec<PushDetails>, IntegrationError> {
-        self.get_all_aws_pushes(rest_cfg)
+        self.get_all_aws_pushes(rest_cfg, None)
+    }
+
+    pub fn get_all_pushes_by_name(
+        &self,
+        rest_cfg: &OpenApiConfig,
+        push_name: &str,
+    ) -> Result<Vec<PushDetails>, IntegrationError> {
+        self.get_all_aws_pushes(rest_cfg, Some(push_name))
     }
 
     fn get_aws_push_by_name(
@@ -423,28 +433,6 @@ impl Integrations {
                 Err(response_error(&content.status, &content.content))
             }
             Err(e) => Err(IntegrationError::UnhandledError(e.to_string())),
-        }
-    }
-
-    fn get_aws_push_id(
-        &self,
-        rest_cfg: &OpenApiConfig,
-        integration_id: &str,
-        push_name: &str,
-    ) -> Result<Option<String>, IntegrationError> {
-        let details = self.get_aws_push_by_name(rest_cfg, integration_id, push_name)?;
-        Ok(details.map(|d| d.id))
-    }
-
-    pub fn get_push_id(
-        &self,
-        rest_cfg: &OpenApiConfig,
-        integration_id: &str,
-        push_name: &str,
-    ) -> Result<Option<String>, IntegrationError> {
-        match self.get_aws_push_id(rest_cfg, integration_id, push_name)? {
-            Some(aws_push_id) => Ok(Some(aws_push_id)),
-            None => Ok(None),
         }
     }
 
