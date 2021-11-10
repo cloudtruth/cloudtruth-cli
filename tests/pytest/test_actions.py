@@ -22,7 +22,7 @@ def missing_any(env_var_names: List[str]) -> bool:
     return not all([os.environ.get(x) for x in env_var_names])
 
 
-class TestIntegrations(TestCase):
+class TestActions(TestCase):
     def __init__(self, *args, **kwargs):
         self._pushes = None
         super().__init__(*args, **kwargs)
@@ -34,7 +34,7 @@ class TestIntegrations(TestCase):
     def tearDown(self) -> None:
         # delete any possibly lingering pushes
         for entry in self._pushes:
-            cmd = self._base_cmd + f"int push del \"{entry[0]}\" \"{entry[1]}\" -y"
+            cmd = self._base_cmd + f"act push del \"{entry[0]}\" \"{entry[1]}\" -y"
             subprocess.run(cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         super().tearDown()
 
@@ -229,7 +229,7 @@ class TestIntegrations(TestCase):
         self.assertIn("Deleted", result.out())
 
         # idempotent
-        no_push_msg = f"Integration push '{push_name2}' not found in integration '{integ_name}'"
+        no_push_msg = f"Push action '{push_name2}' not found in integration '{integ_name}'"
         result = self.run_cli(cmd_env, del_cmd)
         self.assertResultWarning(result, no_push_msg)
 

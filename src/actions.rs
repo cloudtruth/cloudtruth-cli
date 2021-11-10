@@ -17,7 +17,7 @@ use std::process;
 
 fn integration_push_not_found_message(integ_name: &str, push_name: &str) -> String {
     format!(
-        "Integration push '{}' not found in integration '{}'",
+        "Push action '{}' not found in integration '{}'",
         push_name, integ_name
     )
 }
