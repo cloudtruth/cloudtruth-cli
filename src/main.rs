@@ -1,5 +1,6 @@
 extern crate rpassword;
 
+mod actions;
 mod audit_logs;
 mod cli;
 mod config;
@@ -19,6 +20,7 @@ mod table;
 mod templates;
 mod users;
 
+use crate::actions::process_actions_command;
 use crate::audit_logs::process_audit_log_command;
 use crate::config::env::ConfigEnv;
 use crate::config::{Config, CT_PROFILE, DEFAULT_ENV_NAME};
@@ -450,6 +452,12 @@ fn main() -> Result<()> {
     if let Some(matches) = matches.subcommand_matches("integrations") {
         let integrations = Integrations::new();
         process_integrations_command(matches, &rest_cfg, &integrations)?;
+        process::exit(0)
+    }
+
+    if let Some(matches) = matches.subcommand_matches("actions") {
+        let integrations = Integrations::new();
+        process_actions_command(matches, &rest_cfg, &integrations)?;
         process::exit(0)
     }
 

@@ -35,6 +35,9 @@ env:
   CLOUDTRUTH_TEST_TEMPLATE_FQN: github://rickporter-tuono/cloudtruth_test/main/ci_test_template.txt
   CLOUDTRUTH_TEST_TEMPLATE_PARAM1: my-param-name
 
+  CLOUDTRUTH_TEST_BASIC_INTEGRATION_NAME: ct-stage-write@943604981792
+  CLOUDTRUTH_TEST_BASIC_BAD_INTEGRATION_NAME: my-missing-integration
+
   CLOUDTRUTH_TEST_PUSH_INTEGRATION_NAME: ct-stage-write@943604981792
   CLOUDTRUTH_TEST_PUSH_BAD_INTEGRATION_NAME: my-missing-integration
 
