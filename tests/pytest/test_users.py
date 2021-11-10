@@ -207,3 +207,25 @@ class TestUsers(TestCase):
         # idempotent
         result = self.run_cli(cmd_env, invite_cmd + f"del -y '{email}'")
         self.assertResultWarning(result, f"Invitation for '{email}' does not exist")
+
+        ################
+        # user cannot invite above their paygrade
+        temp_user = self.make_name("test-invite-user")
+        api_key = self.add_user(cmd_env, temp_user, role="admin")
+
+        # NOTE: must be admin or owner to create a user
+        cmd = base_cmd + f"-k {api_key} user invite set {email} --role owner"
+        result = self.run_cli(cmd_env, cmd)
+        self.assertResultError(result, "You do not have permission to perform this action")
+
+        # do one where it succeeds
+        cmd = base_cmd + f"-k {api_key} user invite set {email} --role viewer"
+        result = self.run_cli(cmd_env, cmd)
+        self.assertResultSuccess(result)
+
+        # remove the temporary user
+        self.delete_user(cmd_env, temp_user)
+
+        # invites from this user get removed, too!
+        entry = self._get_invite_entry(cmd_env, email)
+        self.assertIsNone(entry)
