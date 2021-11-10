@@ -249,10 +249,19 @@ fn integration_name_arg() -> Arg<'static, 'static> {
         .help("Integration name")
 }
 
+fn integration_name_opt() -> Arg<'static, 'static> {
+    Arg::with_name(INTEGRATION_NAME_ARG)
+        .short("i")
+        .long("integration")
+        .takes_value(true)
+        .value_name("name")
+        .help("Integration name")
+}
+
 fn push_name_arg() -> Arg<'static, 'static> {
     Arg::with_name(PUSH_NAME_ARG)
         .takes_value(true)
-        .index(2)
+        .index(1)
         .required(true)
         .help("Push name")
 }
@@ -860,23 +869,24 @@ pub fn build_cli() -> App<'static, 'static> {
                             .visible_aliases(DELETE_ALIASES)
                             .about("Delete a CloudTruth push")
                             .arg(confirm_flag())
-                            .arg(integration_name_arg())
+                            .arg(integration_name_opt())
                             .arg(push_name_arg()),
                         SubCommand::with_name(GET_SUBCMD)
                             .about("Gets all the information for the specified CloudTruth push")
-                            .arg(integration_name_arg())
+                            .arg(integration_name_opt())
                             .arg(push_name_arg()),
                         SubCommand::with_name(LIST_SUBCMD)
                             .visible_aliases(LIST_ALIASES)
                             .about("List CloudTruth pushes")
-                            .arg(integration_name_arg().required(false))
+                            .arg(integration_name_opt())
                             .arg(values_flag())
                             .arg(show_times_arg())
-                            .arg(table_format_options()),
+                            .arg(table_format_options().help("Push info output format")),
                         SubCommand::with_name(SET_SUBCMD)
                             .visible_aliases(SET_ALIASES)
                             .about("Create/modify CloudTruth integration push")
-                            .arg(integration_name_arg())
+                            .arg(integration_name_opt()
+                                .help("Integration name (required for create)"))
                             .arg(push_name_arg())
                             .arg(rename_option().help("New push name"))
                             .arg(description_option().help("Description for the push"))
@@ -928,12 +938,12 @@ pub fn build_cli() -> App<'static, 'static> {
                                 .help("Service for the push to use (create only)")),
                         SubCommand::with_name("sync")
                             .about("Manually initiate action on existing push")
-                            .arg(integration_name_arg())
+                            .arg(integration_name_opt())
                             .arg(push_name_arg()),
                         SubCommand::with_name(TASKS_SUBCMD)
                             .visible_aliases(TASKS_ALIASES)
                             .about("List tasks for the specified CloudTruth push")
-                            .arg(integration_name_arg())
+                            .arg(integration_name_opt())
                             .arg(push_name_arg())
                             .arg(values_flag())
                             .arg(show_times_arg())

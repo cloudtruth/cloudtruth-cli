@@ -4,22 +4,30 @@ use crate::cli::{
     SHOW_TIMES_FLAG, TASKS_SUBCMD,
 };
 use crate::database::{
-    last_from_url, Environments, Integrations, OpenApiConfig, ProjectDetails, Projects, PushDetails,
+    last_from_url, Environments, IntegrationError, Integrations, OpenApiConfig, ProjectDetails,
+    Projects, PushDetails,
 };
 use crate::integrations::integration_not_found_message;
 use crate::table::Table;
-use crate::{error_message, user_confirm, warn_missing_subcommand, warning_message, DEL_CONFIRM};
+use crate::{
+    error_message, help_message, user_confirm, warn_missing_subcommand, warning_message,
+    DEL_CONFIRM,
+};
 use clap::ArgMatches;
 use color_eyre::eyre::Result;
 use indoc::printdoc;
 use std::collections::{HashMap, HashSet};
 use std::process;
 
-fn integration_push_not_found_message(integ_name: &str, push_name: &str) -> String {
-    format!(
-        "Push action '{}' not found in integration '{}'",
-        push_name, integ_name
-    )
+fn push_not_found_message(push_name: &str, integ_name: Option<&str>) -> String {
+    if let Some(integ_name) = integ_name {
+        format!(
+            "Push action '{}' not found in integration '{}'",
+            push_name, integ_name
+        )
+    } else {
+        format!("Push action '{}' not found", push_name)
+    }
 }
 
 fn env_url_from_tag_url(tag_url: &str) -> &str {
@@ -166,45 +174,88 @@ fn tag_names_to_urls(tag_names: &[&str], tag_map: &HashMap<String, String>) -> V
     result
 }
 
+fn resolve_push_details(
+    rest_cfg: &OpenApiConfig,
+    integrations: &Integrations,
+    integ_name: Option<&str>,
+    push_name: &str,
+) -> Result<Option<PushDetails>, IntegrationError> {
+    if let Some(integ_name) = integ_name {
+        let integ_resp = integrations.get_id(rest_cfg, integ_name)?;
+        if let Some(integ_id) = integ_resp {
+            let push_resp = integrations.get_push_by_name(rest_cfg, &integ_id, push_name)?;
+            if let Some(details) = push_resp {
+                let mut result = details;
+                result.integration_name = integ_name.to_string();
+                Ok(Some(result))
+            } else {
+                Ok(None)
+            }
+        } else {
+            error_message(integration_not_found_message(integ_name));
+            process::exit(40);
+        }
+    } else {
+        let named_details = integrations.get_all_pushes_by_name(rest_cfg, push_name)?;
+
+        match named_details.len() {
+            0 => Ok(None),
+            1 => Ok(Some(named_details[0].clone())),
+            _ => {
+                let integration_names: Vec<String> = named_details
+                    .iter()
+                    .map(|d| d.integration_name.clone())
+                    .collect();
+                error_message(format!(
+                    "Found '{}' in integrations: {}",
+                    push_name,
+                    integration_names.join(", ")
+                ));
+                help_message(
+                    "Use the --integration option to specify a specific integration.".to_string(),
+                );
+                process::exit(41);
+            }
+        }
+    }
+}
+
 fn proc_action_push_delete(
     subcmd_args: &ArgMatches,
     rest_cfg: &OpenApiConfig,
     integrations: &Integrations,
 ) -> Result<()> {
-    let integ_name = subcmd_args.value_of(INTEGRATION_NAME_ARG).unwrap();
+    let integ_name = subcmd_args.value_of(INTEGRATION_NAME_ARG);
     let push_name = subcmd_args.value_of(PUSH_NAME_ARG).unwrap();
+    let resolved = resolve_push_details(rest_cfg, integrations, integ_name, push_name)?;
 
-    let integ_resp = integrations.get_id(rest_cfg, integ_name)?;
-    if let Some(integ_id) = integ_resp {
-        let push_resp = integrations.get_push_id(rest_cfg, &integ_id, push_name)?;
-        if let Some(push_id) = push_resp {
-            // NOTE: the server is responsible for checking if children exist
-            let mut confirmed = subcmd_args.is_present(CONFIRM_FLAG);
-            if !confirmed {
-                let msg = format!(
-                    "Delete push '{}' from integration '{}'",
-                    push_name, integ_name
-                );
-                confirmed = user_confirm(msg, DEL_CONFIRM);
-            }
+    if let Some(details) = resolved {
+        // NOTE: the server is responsible for checking if children exist
+        let integ_name = details.integration_name.clone();
+        let integ_id = details.get_integration_id();
+        let push_id = details.id.clone();
+        let mut confirmed = subcmd_args.is_present(CONFIRM_FLAG);
+        if !confirmed {
+            let msg = format!(
+                "Delete push '{}' from integration '{}'",
+                push_name, integ_name
+            );
+            confirmed = user_confirm(msg, DEL_CONFIRM);
+        }
 
-            if !confirmed {
-                warning_message(format!("Push '{}' not deleted from !", push_name));
-            } else {
-                integrations.delete_push(rest_cfg, &integ_id, &push_id)?;
-                println!("Deleted push '{}' from '{}'", push_name, integ_name);
-            }
+        if !confirmed {
+            warning_message(format!("Push '{}' not deleted from !", push_name));
         } else {
-            warning_message(integration_push_not_found_message(integ_name, push_name));
+            integrations.delete_push(rest_cfg, &integ_id, &push_id)?;
+            println!("Deleted push '{}' from '{}'", details.name, integ_name);
         }
     } else {
-        error_message(integration_not_found_message(integ_name));
-        process::exit(30);
+        warning_message(push_not_found_message(push_name, integ_name));
     }
     Ok(())
 }
 
-fn print_push_details(push: &PushDetails, integ_name: &str) {
+fn print_push_details(push: &PushDetails) {
     let error_info = if push.last_task.state != "success" {
         format!(
             "{}: {}",
@@ -242,7 +293,7 @@ fn print_push_details(push: &PushDetails, integ_name: &str) {
         "#,
         push.name,
         push.provider,
-        integ_name,
+        push.integration_name,
         push.service,
         push.region,
         push.resource,
@@ -270,25 +321,19 @@ fn proc_action_push_get(
     rest_cfg: &OpenApiConfig,
     integrations: &Integrations,
 ) -> Result<()> {
-    let integ_name = subcmd_args.value_of(INTEGRATION_NAME_ARG).unwrap();
+    let integ_name = subcmd_args.value_of(INTEGRATION_NAME_ARG);
     let push_name = subcmd_args.value_of(PUSH_NAME_ARG).unwrap();
+    let resolved = resolve_push_details(rest_cfg, integrations, integ_name, push_name)?;
 
-    let integ_resp = integrations.get_id(rest_cfg, integ_name)?;
-    if let Some(integ_id) = integ_resp {
-        let push_resp = integrations.get_push_by_name(rest_cfg, &integ_id, push_name)?;
-        if let Some(details) = push_resp {
-            // put this into a list, so we can resolve with larger functions
-            let mut pushes = vec![details];
-            resolve_project_names(rest_cfg, &mut pushes);
-            resolve_tag_names(rest_cfg, &mut pushes);
-            print_push_details(&pushes[0], integ_name);
-        } else {
-            error_message(integration_push_not_found_message(integ_name, push_name));
-            process::exit(31);
-        }
+    if let Some(details) = resolved {
+        // put this into a list, so we can resolve with larger functions
+        let mut pushes = vec![details];
+        resolve_project_names(rest_cfg, &mut pushes);
+        resolve_tag_names(rest_cfg, &mut pushes);
+        print_push_details(&pushes[0]);
     } else {
-        error_message(integration_not_found_message(integ_name));
-        process::exit(30);
+        error_message(push_not_found_message(push_name, integ_name));
+        process::exit(31);
     }
     Ok(())
 }
@@ -376,7 +421,7 @@ fn proc_action_push_set(
     rest_cfg: &OpenApiConfig,
     integrations: &Integrations,
 ) -> Result<()> {
-    let integ_name = subcmd_args.value_of(INTEGRATION_NAME_ARG).unwrap();
+    let integ_name = subcmd_args.value_of(INTEGRATION_NAME_ARG);
     let push_name = subcmd_args.value_of(PUSH_NAME_ARG).unwrap();
     let updated_name = subcmd_args.value_of(RENAME_OPT).unwrap_or(push_name);
     let description = subcmd_args.value_of(DESCRIPTION_OPT);
@@ -420,45 +465,46 @@ fn proc_action_push_set(
         tag_sub_ids = tag_names_to_urls(&tag_to_sub, &tag_map);
     }
 
-    let response_integ = integrations.get_id(rest_cfg, integ_name)?;
-    if let Some(integ_id) = response_integ {
-        let response_details = integrations.get_push_by_name(rest_cfg, &integ_id, push_name)?;
-        if let Some(details) = response_details {
-            // update code
-            if subcmd_args.occurrences_of("region") > 0 {
-                warning_message(format!(
-                    "The --region is ignored for updates to '{}",
-                    push_name
-                ));
-            }
-            if subcmd_args.occurrences_of("service") > 0 {
-                warning_message(format!(
-                    "The --service is ignored for updates to '{}",
-                    push_name
-                ));
-            }
-            let updated_resource = resource.unwrap_or(&details.resource);
-            let mut project_ids = details.project_urls.clone();
-            project_ids.append(&mut proj_add_ids);
-            project_ids.retain(|i| !proj_sub_ids.contains(i));
-            let mut tag_ids = details.tag_urls.clone();
-            tag_ids.append(&mut tag_add_ids);
-            tag_ids.retain(|i| !tag_sub_ids.contains(i));
-            integrations.update_push(
-                rest_cfg,
-                &integ_id,
-                &details.id,
-                updated_name,
-                updated_resource,
-                description,
-                project_ids,
-                tag_ids,
-            )?;
-            println!(
-                "Updated push '{}' in integration '{}'",
-                updated_name, integ_name
-            );
-        } else {
+    let resolved = resolve_push_details(rest_cfg, integrations, integ_name, push_name)?;
+    if let Some(details) = resolved {
+        // update code
+        if subcmd_args.occurrences_of("region") > 0 {
+            warning_message(format!(
+                "The --region is ignored for updates to '{}",
+                push_name
+            ));
+        }
+        if subcmd_args.occurrences_of("service") > 0 {
+            warning_message(format!(
+                "The --service is ignored for updates to '{}",
+                push_name
+            ));
+        }
+
+        let updated_resource = resource.unwrap_or(&details.resource);
+        let mut project_ids = details.project_urls.clone();
+        project_ids.append(&mut proj_add_ids);
+        project_ids.retain(|i| !proj_sub_ids.contains(i));
+        let mut tag_ids = details.tag_urls.clone();
+        tag_ids.append(&mut tag_add_ids);
+        tag_ids.retain(|i| !tag_sub_ids.contains(i));
+        integrations.update_push(
+            rest_cfg,
+            &details.get_integration_id(),
+            &details.id,
+            updated_name,
+            updated_resource,
+            description,
+            project_ids,
+            tag_ids,
+        )?;
+        println!(
+            "Updated push '{}' in integration '{}'",
+            updated_name, details.integration_name
+        );
+    } else if let Some(integ_name) = integ_name {
+        let response_integ = integrations.get_id(rest_cfg, integ_name)?;
+        if let Some(integ_id) = response_integ {
             integrations.create_push(
                 rest_cfg,
                 &integ_id,
@@ -474,10 +520,13 @@ fn proc_action_push_set(
                 "Created push '{}' in integration '{}'",
                 push_name, integ_name
             );
+        } else {
+            error_message(integration_not_found_message(integ_name));
+            process::exit(30);
         }
     } else {
-        error_message(integration_not_found_message(integ_name));
-        process::exit(30);
+        error_message("Must specify an integration on create!".to_string());
+        process::exit(42);
     }
     Ok(())
 }
@@ -487,28 +536,20 @@ fn proc_action_push_sync(
     rest_cfg: &OpenApiConfig,
     integrations: &Integrations,
 ) -> Result<()> {
-    let integ_name = subcmd_args.value_of(INTEGRATION_NAME_ARG).unwrap();
+    let integ_name = subcmd_args.value_of(INTEGRATION_NAME_ARG);
     let push_name = subcmd_args.value_of(PUSH_NAME_ARG).unwrap();
+    let resolved = resolve_push_details(rest_cfg, integrations, integ_name, push_name)?;
 
-    let integ_resp = integrations.get_id(rest_cfg, integ_name)?;
-    if integ_resp.is_none() {
-        error_message(integration_not_found_message(integ_name));
-        process::exit(30);
-    }
-
-    let integ_id = integ_resp.unwrap();
-    let push_resp = integrations.get_push_by_name(rest_cfg, &integ_id, push_name)?;
-    if push_resp.is_none() {
-        error_message(integration_push_not_found_message(integ_name, push_name));
+    if let Some(details) = resolved {
+        integrations.sync_push(rest_cfg, &details)?;
+        println!(
+            "Synchronized push '{}' for integration '{}'",
+            push_name, details.integration_name
+        );
+    } else {
+        error_message(push_not_found_message(push_name, integ_name));
         process::exit(31);
     }
-
-    let details = push_resp.unwrap();
-    integrations.sync_push(rest_cfg, &details)?;
-    println!(
-        "Synchronized push '{}' for integration '{}'",
-        push_name, integ_name
-    );
     Ok(())
 }
 
@@ -517,54 +558,49 @@ fn proc_action_push_tasks(
     rest_cfg: &OpenApiConfig,
     integrations: &Integrations,
 ) -> Result<()> {
-    let integ_name = subcmd_args.value_of(INTEGRATION_NAME_ARG).unwrap();
+    let integ_name = subcmd_args.value_of(INTEGRATION_NAME_ARG);
     let push_name = subcmd_args.value_of(PUSH_NAME_ARG).unwrap();
     let show_times = subcmd_args.is_present(SHOW_TIMES_FLAG);
     let show_values = show_values(subcmd_args);
     let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
+    let resolved = resolve_push_details(rest_cfg, integrations, integ_name, push_name)?;
 
-    let integ_resp = integrations.get_id(rest_cfg, integ_name)?;
-    if integ_resp.is_none() {
-        error_message(integration_not_found_message(integ_name));
-        process::exit(30);
-    }
+    if let Some(details) = resolved {
+        let push_id = details.id.clone();
+        let integ_id = details.get_integration_id();
+        let integ_name = details.integration_name;
+        let tasks = integrations.get_push_tasks(rest_cfg, &integ_id, &push_id)?;
+        if tasks.is_empty() {
+            println!(
+                "No push tasks found for push '{}' for integration '{}'",
+                push_name, integ_name
+            );
+        } else if !show_values {
+            let list = tasks
+                .iter()
+                .map(|d| d.reason.clone())
+                .collect::<Vec<String>>();
+            println!("{}", list.join("\n"))
+        } else {
+            let mut hdr = vec!["Reason", "State", "Status Info"];
+            let mut properties = vec!["reason", "state", "errors"];
+            if show_times {
+                hdr.push("Created At");
+                hdr.push("Modified At");
+                properties.push("created-at");
+                properties.push("modified-at");
+            }
 
-    let integ_id = integ_resp.unwrap();
-    let push_resp = integrations.get_push_id(rest_cfg, &integ_id, push_name)?;
-    if push_resp.is_none() {
-        error_message(integration_push_not_found_message(integ_name, push_name));
-        process::exit(31);
-    }
-
-    let push_id = push_resp.unwrap();
-    let tasks = integrations.get_push_tasks(rest_cfg, &integ_id, &push_id)?;
-    if tasks.is_empty() {
-        println!(
-            "No push tasks found for push '{}' for integration '{}'",
-            push_name, integ_name
-        );
-    } else if !show_values {
-        let list = tasks
-            .iter()
-            .map(|d| d.reason.clone())
-            .collect::<Vec<String>>();
-        println!("{}", list.join("\n"))
+            let mut table = Table::new("action-push-task");
+            table.set_header(&hdr);
+            for entry in tasks {
+                table.add_row(entry.get_properties(&properties));
+            }
+            table.render(fmt)?;
+        }
     } else {
-        let mut hdr = vec!["Reason", "State", "Status Info"];
-        let mut properties = vec!["reason", "state", "errors"];
-        if show_times {
-            hdr.push("Created At");
-            hdr.push("Modified At");
-            properties.push("created-at");
-            properties.push("modified-at");
-        }
-
-        let mut table = Table::new("action-push-task");
-        table.set_header(&hdr);
-        for entry in tasks {
-            table.add_row(entry.get_properties(&properties));
-        }
-        table.render(fmt)?;
+        error_message(push_not_found_message(push_name, integ_name));
+        process::exit(31);
     }
     Ok(())
 }

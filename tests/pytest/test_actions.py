@@ -45,7 +45,7 @@ class TestActions(TestCase):
 
         integ_name = os.environ.get(CT_PUSH_INTEG_NAME)
         bad_int_name = os.environ.get(CT_PUSH_BAD_INT_NAME)
-        set_cmd = base_cmd + f"actions push set '{integ_name}' "
+        set_cmd = base_cmd + "actions push set "
 
         ########################
         # create a couple projects
@@ -80,23 +80,27 @@ class TestActions(TestCase):
         resource1 = "/{{ environment }}/{{ project }}/{{ parameter }}"
         self._pushes.append((integ_name, push_name1))
         tag1 = f"{env_name1}:{env1_tag1}"
-        cmd = set_cmd + f"{push_name1} -d '{desc1}' --resource '{resource1}' --project '{proj_name1}' --tag '{tag1}'"
+        cmd = (
+            set_cmd + f"{push_name1} --integration '{integ_name}' -d '{desc1}' "
+            f"--resource '{resource1}' --project '{proj_name1}' --tag '{tag1}'"
+        )
         result = self.run_cli(cmd_env, cmd)
         self.assertResultSuccess(result)
         self.assertIn("Created", result.out())
 
         ########################
         # check it was created
-        list_cmd = base_cmd + f"action push list '{integ_name}' "
+        list_cmd = base_cmd + f"action push list -i '{integ_name}' "
         result = self.run_cli(cmd_env, list_cmd + "-f json")
         self.assertResultSuccess(result)
         pushes = eval(result.out()).get("action-push")
         entry = find_by_prop(pushes, PROP_NAME, push_name1)[0]
         self.assertEqual(entry.get("Projects"), proj_name1)
         self.assertEqual(entry.get("Tags"), f"{tag1}")
+        self.assertIsNone(entry.get("Integration"))
 
         # check the right values were set
-        result = self.run_cli(cmd_env, base_cmd + f"act push get {integ_name} {push_name1}")
+        result = self.run_cli(cmd_env, base_cmd + f"act push get -i {integ_name} {push_name1}")
         self.assertResultSuccess(result)
         self.assertIn(f"Name: {push_name1}", result.out())
         self.assertIn(f"Resource: {resource1}", result.out())
@@ -105,6 +109,7 @@ class TestActions(TestCase):
         self.assertIn(f"Tags: {tag1}", result.out())
         self.assertIn(f"Region: {default_region}", result.out())
         self.assertIn(f"Service: {default_service}", result.out())
+        self.assertIn(f"Integration: {integ_name}", result.out())
 
         # rename push, change resource, add another project, and another tag
         push_name2 = self.make_name("updated-test-push")
@@ -133,14 +138,15 @@ class TestActions(TestCase):
         self.assertIn(tag2, entry_tags)
         self.assertEqual(len(entry_tags.split(' ')), 2)
 
-        # check the right values were updated
-        result = self.run_cli(cmd_env, base_cmd + f"ac push get {integ_name} {push_name2}")
+        # check the right values were updated (no integration name specified)
+        result = self.run_cli(cmd_env, base_cmd + f"ac push get {push_name2}")
         self.assertResultSuccess(result)
         self.assertIn(f"Name: {push_name2}", result.out())
         self.assertIn(f"Resource: {resource2}", result.out())
         self.assertIn(f"Description: {desc1}", result.out())
         self.assertIn(f"Projects: {proj_name1}, {proj_name2}", result.out())
         self.assertIn(f"Tags: {tag2}, {tag1}", result.out())
+        self.assertIn(f"Integration: {integ_name}", result.out())
 
         # list without specifying the integration...
         result = self.run_cli(cmd_env, base_cmd + "act push ls --format json")
@@ -152,11 +158,11 @@ class TestActions(TestCase):
         self.assertIsNone(entry.get(PROP_MODIFIED))
         last_time = entry.get("Last Push Time")
 
-        result = self.run_cli(cmd_env, base_cmd + f"act push sync '{integ_name}' '{push_name2}'")
+        result = self.run_cli(cmd_env, base_cmd + f"act push sync '{push_name2}'")
         self.assertResultSuccess(result)
         self.assertIn(f"Synchronized push '{push_name2}'", result.out())
 
-        result = self.run_cli(cmd_env, base_cmd + f"act push ls '{integ_name}' --format json --show-times")
+        result = self.run_cli(cmd_env, base_cmd + f"act push ls -i '{integ_name}' --format json --show-times")
         self.assertResultSuccess(result)
         pushes = eval(result.out()).get("action-push")
         entry = find_by_prop(pushes, PROP_NAME, push_name2)[0]
@@ -189,7 +195,7 @@ class TestActions(TestCase):
         self.assertIn("Updated", result.out())
 
         # check the right values were updated
-        result = self.run_cli(cmd_env, base_cmd + f"act push get {integ_name} {push_name2}")
+        result = self.run_cli(cmd_env, base_cmd + f"act push get -i {integ_name} {push_name2}")
         self.assertResultSuccess(result)
         self.assertIn(f"Name: {push_name2}", result.out())
         self.assertIn(f"Resource: {resource2}", result.out())
@@ -211,7 +217,7 @@ class TestActions(TestCase):
 
         ########################
         # task list
-        result = self.run_cli(cmd_env, base_cmd + f"act push tasks '{integ_name}' '{push_name2}' -f json")
+        result = self.run_cli(cmd_env, base_cmd + f"act push tasks '{push_name2}' -f json")
         self.assertResultSuccess(result)
         tasks = eval(result.out()).get("action-push-task")
         self.assertGreaterEqual(len(tasks), 1)
@@ -223,14 +229,14 @@ class TestActions(TestCase):
 
         ########################
         # delete the push
-        del_cmd = base_cmd + f"act push del '{integ_name}' '{push_name2}' -y"
+        del_cmd = base_cmd + f"act push del '{push_name2}' -y"
         result = self.run_cli(cmd_env, del_cmd)
         self.assertResultSuccess(result)
         self.assertIn("Deleted", result.out())
 
         # idempotent
         no_push_msg = f"Push action '{push_name2}' not found in integration '{integ_name}'"
-        result = self.run_cli(cmd_env, del_cmd)
+        result = self.run_cli(cmd_env, del_cmd + f" -i {integ_name}")
         self.assertResultWarning(result, no_push_msg)
 
         # make sure it is gone
@@ -247,7 +253,7 @@ class TestActions(TestCase):
         service = "secretsmanager"
         region = "us-west-2"
         cmd = (
-            base_cmd + f"act push set '{integ_name}' '{push_name1}' --service '{service}' "
+            base_cmd + f"act push set -i '{integ_name}' '{push_name1}' --service '{service}' "
             f"--region {region}"
         )
         result = self.run_cli(cmd_env, cmd)
@@ -255,32 +261,32 @@ class TestActions(TestCase):
         self.assertIn("Created push", result.out())
 
         # do a get to verify the values
-        result = self.run_cli(cmd_env, base_cmd + f"act push get '{integ_name}' '{push_name1}'")
+        result = self.run_cli(cmd_env, base_cmd + f"act push get -i '{integ_name}' '{push_name1}'")
         self.assertResultSuccess(result)
         self.assertIn(f"Region: {region}", result.out())
         self.assertIn(f"Service: {service}", result.out())
         self.assertIn(f"Resource: {default_resource}", result.out())
 
         # delete this push
-        result = self.run_cli(cmd_env, base_cmd + f"act push del '{integ_name}' '{push_name1}' -y")
+        result = self.run_cli(cmd_env, base_cmd + f"act push del -i '{integ_name}' '{push_name1}' -y")
         self.assertResultSuccess(result)
 
         ########################
         # invalid region
-        bad_reg_cmd = base_cmd + f"act push set '{integ_name}' '{push_name2}' --region not-a-region"
+        bad_reg_cmd = base_cmd + f"act push set -i '{integ_name}' '{push_name2}' --region not-a-region"
         result = self.run_cli(cmd_env, bad_reg_cmd)
         self.assertResultError(result, "isn't a valid value for '--region <region>'")
 
         ########################
         # no project found
         bogus_project = "this-proj-dne"
-        bad_proj_cmd = base_cmd + f"act push set '{integ_name}' '{push_name2}' --project {bogus_project}"
+        bad_proj_cmd = base_cmd + f"act push set -i '{integ_name}' '{push_name2}' --project {bogus_project}"
         result = self.run_cli(cmd_env, bad_proj_cmd)
         self.assertResultError(result, f"Project '{bogus_project}' not found")
 
         ########################
         # invalid tag formats
-        pre_tag_cmd = base_cmd + f"act push set '{integ_name}' '{push_name2}' "
+        pre_tag_cmd = base_cmd + f"act push set -i '{integ_name}' '{push_name2}' "
         result = self.run_cli(cmd_env, pre_tag_cmd + "--tag foo")
         self.assertResultError(result, "Use a ':' to separate the environment and tag names")
 
@@ -288,35 +294,52 @@ class TestActions(TestCase):
         self.assertResultError(result, "Can only have one ':' to separate the environment and tag names")
 
         ########################
+        # cannot create without an --integration
+        result = self.run_cli(cmd_env, set_cmd + f"{push_name2}")
+        self.assertResultError(result, "Must specify an integration on create")
+
+        ########################
         # error out for invalid push name
-        result = self.run_cli(cmd_env, base_cmd + f"act push task '{integ_name}' '{push_name2}'")
+        result = self.run_cli(cmd_env, base_cmd + f"act push task -i '{integ_name}' '{push_name2}'")
         self.assertResultError(result, no_push_msg)
 
-        result = self.run_cli(cmd_env, base_cmd + f"act push get '{integ_name}' '{push_name2}'")
+        result = self.run_cli(cmd_env, base_cmd + f"act push get -i '{integ_name}' '{push_name2}'")
         self.assertResultError(result, no_push_msg)
 
-        result = self.run_cli(cmd_env, base_cmd + f"act push sync '{integ_name}' '{push_name2}'")
+        result = self.run_cli(cmd_env, base_cmd + f"act push sync -i '{integ_name}' '{push_name2}'")
         self.assertResultError(result, no_push_msg)
+
+        ########################
+        # error out for invalid push name (without an integration name)
+        no_push_msg2 = f"Push action '{push_name2}' not found"
+        result = self.run_cli(cmd_env, base_cmd + f"act push task '{push_name2}'")
+        self.assertResultError(result, no_push_msg2)
+
+        result = self.run_cli(cmd_env, base_cmd + f"act push get '{push_name2}'")
+        self.assertResultError(result, no_push_msg2)
+
+        result = self.run_cli(cmd_env, base_cmd + f"act push sync '{push_name2}'")
+        self.assertResultError(result, no_push_msg2)
 
         ########################
         # error out for bad integration name
         no_integration_msg = f"Integration '{bad_int_name}' not found"
-        result = self.run_cli(cmd_env, base_cmd + f"act p l '{bad_int_name}'")
+        result = self.run_cli(cmd_env, base_cmd + f"act p l -i '{bad_int_name}'")
         self.assertResultError(result, no_integration_msg)
 
-        result = self.run_cli(cmd_env, base_cmd + f"act p get '{bad_int_name}' '{push_name1}'")
+        result = self.run_cli(cmd_env, base_cmd + f"act p get -i '{bad_int_name}' '{push_name1}'")
         self.assertResultError(result, no_integration_msg)
 
-        result = self.run_cli(cmd_env, base_cmd + f"act p set '{bad_int_name}' '{push_name1}'")
+        result = self.run_cli(cmd_env, base_cmd + f"act p set -i '{bad_int_name}' '{push_name1}'")
         self.assertResultError(result, no_integration_msg)
 
-        result = self.run_cli(cmd_env, base_cmd + f"act p sync '{bad_int_name}' '{push_name1}'")
+        result = self.run_cli(cmd_env, base_cmd + f"act p sync -i '{bad_int_name}' '{push_name1}'")
         self.assertResultError(result, no_integration_msg)
 
-        result = self.run_cli(cmd_env, base_cmd + f"act p task '{bad_int_name}' '{push_name1}' -v")
+        result = self.run_cli(cmd_env, base_cmd + f"act p task -i '{bad_int_name}' '{push_name1}' -v")
         self.assertResultError(result, no_integration_msg)
 
-        result = self.run_cli(cmd_env, base_cmd + f"act p del '{bad_int_name}' '{push_name1}' -y")
+        result = self.run_cli(cmd_env, base_cmd + f"act p del -i '{bad_int_name}' '{push_name1}' -y")
         self.assertResultError(result, no_integration_msg)
 
         # cleanup

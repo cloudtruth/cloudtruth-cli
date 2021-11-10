@@ -1,3 +1,4 @@
+use crate::database::parent_id_from_url;
 use crate::database::task_detail::TaskDetail;
 use cloudtruth_restapi::models::AwsPush;
 
@@ -7,7 +8,7 @@ pub struct PushDetails {
     pub url: String,
 
     pub name: String,
-    pub integration: String,
+    pub integration_name: String,
     pub description: String,
     pub provider: String,
     pub resource: String,
@@ -32,7 +33,7 @@ impl PushDetails {
             "id" => self.id.clone(),
             "url" => self.url.clone(),
             "name" => self.name.clone(),
-            "integration" => self.integration.clone(),
+            "integration" => self.integration_name.clone(),
             "description" => self.description.clone(),
             "provider" => self.provider.clone(),
             "resource" => self.resource.clone(),
@@ -54,6 +55,10 @@ impl PushDetails {
     pub fn get_properties(&self, fields: &[&str]) -> Vec<String> {
         fields.iter().map(|p| self.get_property(p)).collect()
     }
+
+    pub fn get_integration_id(&self) -> String {
+        parent_id_from_url(&self.url, "pushes/").to_string()
+    }
 }
 
 impl From<&AwsPush> for PushDetails {
@@ -68,7 +73,7 @@ impl From<&AwsPush> for PushDetails {
             id: api.id.clone(),
             url: api.url.clone(),
             name: api.name.clone(),
-            integration: "".to_string(), // filled in later
+            integration_name: "".to_string(), // filled in later
             description: api.description.clone().unwrap_or_default(),
             provider: "aws".to_string(),
             resource: api.resource.clone(),

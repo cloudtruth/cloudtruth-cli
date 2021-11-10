@@ -69,36 +69,40 @@ cloudtruth-actions-pushes-delete
 Delete a CloudTruth push
 
 USAGE:
-    cloudtruth actions pushes delete [FLAGS] <integration-name> <push-name>
+    cloudtruth actions pushes delete [FLAGS] [OPTIONS] <push-name>
 
 FLAGS:
     -y, --yes        Avoid confirmation prompt(s)
     -h, --help       Prints help information
     -V, --version    Prints version information
 
+OPTIONS:
+    -i, --integration <name>    Integration name
+
 ARGS:
-    <integration-name>    Integration name
-    <push-name>           Push name
+    <push-name>    Push name
 ====================
 cloudtruth-actions-pushes-get 
 Gets all the information for the specified CloudTruth push
 
 USAGE:
-    cloudtruth actions pushes get <integration-name> <push-name>
+    cloudtruth actions pushes get [OPTIONS] <push-name>
 
 FLAGS:
     -h, --help       Prints help information
     -V, --version    Prints version information
 
+OPTIONS:
+    -i, --integration <name>    Integration name
+
 ARGS:
-    <integration-name>    Integration name
-    <push-name>           Push name
+    <push-name>    Push name
 ====================
 cloudtruth-actions-pushes-list 
 List CloudTruth pushes
 
 USAGE:
-    cloudtruth actions pushes list [FLAGS] [OPTIONS] [integration-name]
+    cloudtruth actions pushes list [FLAGS] [OPTIONS]
 
 FLAGS:
     -h, --help          Prints help information
@@ -107,16 +111,14 @@ FLAGS:
     -V, --version       Prints version information
 
 OPTIONS:
-    -f, --format <format>     [default: table]  [possible values: table, csv, json, yaml]
-
-ARGS:
-    <integration-name>    Integration name
+    -f, --format <format>       Push info output format [default: table]  [possible values: table, csv, json, yaml]
+    -i, --integration <name>    Integration name
 ====================
 cloudtruth-actions-pushes-set 
 Create/modify CloudTruth integration push
 
 USAGE:
-    cloudtruth actions pushes set [OPTIONS] <integration-name> <push-name>
+    cloudtruth actions pushes set [OPTIONS] <push-name>
 
 FLAGS:
     -h, --help       Prints help information
@@ -124,6 +126,7 @@ FLAGS:
 
 OPTIONS:
     -d, --desc <description>             Description for the push
+    -i, --integration <name>             Integration name (required for create)
     -r, --rename <new-name>              New push name
         --project <project>...           Project name(s) to be added
         --no-project <project>...        Project name(s) to be removed
@@ -136,28 +139,29 @@ OPTIONS:
         --no-tag <environment:tag>...    Tag name(s) to be subtracted
 
 ARGS:
-    <integration-name>    Integration name
-    <push-name>           Push name
+    <push-name>    Push name
 ====================
 cloudtruth-actions-pushes-sync 
 Manually initiate action on existing push
 
 USAGE:
-    cloudtruth actions pushes sync <integration-name> <push-name>
+    cloudtruth actions pushes sync [OPTIONS] <push-name>
 
 FLAGS:
     -h, --help       Prints help information
     -V, --version    Prints version information
 
+OPTIONS:
+    -i, --integration <name>    Integration name
+
 ARGS:
-    <integration-name>    Integration name
-    <push-name>           Push name
+    <push-name>    Push name
 ====================
 cloudtruth-actions-pushes-tasks 
 List tasks for the specified CloudTruth push
 
 USAGE:
-    cloudtruth actions pushes tasks [FLAGS] [OPTIONS] <integration-name> <push-name>
+    cloudtruth actions pushes tasks [FLAGS] [OPTIONS] <push-name>
 
 FLAGS:
     -h, --help          Prints help information
@@ -166,11 +170,11 @@ FLAGS:
     -V, --version       Prints version information
 
 OPTIONS:
-    -f, --format <format>     [default: table]  [possible values: table, csv, json, yaml]
+    -f, --format <format>        [default: table]  [possible values: table, csv, json, yaml]
+    -i, --integration <name>    Integration name
 
 ARGS:
-    <integration-name>    Integration name
-    <push-name>           Push name
+    <push-name>    Push name
 ============================================================
 cloudtruth-audit-logs 
 Display audit logs
