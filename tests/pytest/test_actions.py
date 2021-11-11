@@ -17,6 +17,13 @@ CT_PUSH_RUN = [
     CT_PUSH_BAD_INT_NAME,
 ]
 
+CT_IMPORT_INTEG_NAME = "CLOUDTRUTH_TEST_IMPORT_INTEGRATION_NAME"
+CT_IMPORT_BAD_INT_NAME = "CLOUDTRUTH_TEST_IMPORT_BAD_INTEGRATION_NAME"
+CT_IMPORT_RUN = [
+    CT_IMPORT_INTEG_NAME,
+    CT_IMPORT_BAD_INT_NAME,
+]
+
 
 def missing_any(env_var_names: List[str]) -> bool:
     return not all([os.environ.get(x) for x in env_var_names])
@@ -25,16 +32,23 @@ def missing_any(env_var_names: List[str]) -> bool:
 class TestActions(TestCase):
     def __init__(self, *args, **kwargs):
         self._pushes = None
+        self._pulls = None
         super().__init__(*args, **kwargs)
 
     def setUp(self) -> None:
         self._pushes = list()
+        self._pulls = list()
         super().setUp()
 
     def tearDown(self) -> None:
         # delete any possibly lingering pushes
         for entry in self._pushes:
             cmd = self._base_cmd + f"act push del \"{entry[0]}\" \"{entry[1]}\" -y"
+            subprocess.run(cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+        # delete any possibly lingering pulls
+        for entry in self._pulls:
+            cmd = self._base_cmd + f"act import del \"{entry[0]}\" \"{entry[1]}\" -y"
             subprocess.run(cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         super().tearDown()
 
@@ -347,3 +361,210 @@ class TestActions(TestCase):
         self.delete_project(cmd_env, proj_name2)
         self.delete_environment(cmd_env, env_name1)
         self.delete_environment(cmd_env, env_name2)
+
+    @unittest.skipIf(missing_any(CT_IMPORT_RUN), "Need all CT_IMPORT_RUN parameters")
+    def test_action_import_basic(self):
+        base_cmd = self.get_cli_base_cmd()
+        cmd_env = self.get_cmd_env()
+
+        integ_name = os.environ.get(CT_IMPORT_INTEG_NAME)
+        bad_int_name = os.environ.get(CT_IMPORT_BAD_INT_NAME)
+        set_cmd = base_cmd + "actions import set "
+
+        ########################
+        # create the import -- use a bogus resource string the would not exist
+        default_service = "ssm"
+        default_region = "us-east-1"
+        import_name1 = self.make_name("my-test-import")
+        desc1 = "original comment"
+        resource1 = "/bogus_resource_path/{{ project }}/{{ environment }}/{{ parameter }}"
+        self._pulls.append((integ_name, import_name1))
+        cmd = (
+            set_cmd + f"{import_name1} --integration '{integ_name}' -d '{desc1}' "
+            f"--resource '{resource1}'"
+        )
+        result = self.run_cli(cmd_env, cmd)
+        self.assertResultSuccess(result)
+        self.assertIn("Created", result.out())
+
+        ########################
+        # check it was created
+        list_cmd = base_cmd + f"action imports list -i '{integ_name}' "
+        result = self.run_cli(cmd_env, list_cmd + "-f json")
+        self.assertResultSuccess(result)
+        imports = eval(result.out()).get("action-import")
+        entry = find_by_prop(imports, PROP_NAME, import_name1)[0]
+        self.assertEqual(entry.get("Service"), default_service)
+        self.assertEqual(entry.get("Dry Run"), "false")
+        self.assertIsNone(entry.get("Integration"))
+
+        # check the right values were set
+        result = self.run_cli(cmd_env, base_cmd + f"act imp get -i {integ_name} {import_name1}")
+        self.assertResultSuccess(result)
+        self.assertIn(f"Name: {import_name1}", result.out())
+        self.assertIn(f"Resource: {resource1}", result.out())
+        self.assertIn(f"Description: {desc1}", result.out())
+        self.assertIn(f"Region: {default_region}", result.out())
+        self.assertIn(f"Service: {default_service}", result.out())
+        self.assertIn(f"Integration: {integ_name}", result.out())
+        self.assertIn("Dry Run: false", result.out())
+
+        # rename import, change resource, add another project, and another tag
+        import_name2 = self.make_name("updated-test-imp")
+        resource2 = "/another_path_should_not_exist/{{ project }}/{{ parameter }}/{{ environment }}"
+        self._pulls.append((integ_name, import_name2))
+        cmd = set_cmd + f"'{import_name1}' --resource '{resource2}' -r '{import_name2}'"
+        result = self.run_cli(cmd_env, cmd)
+        self.assertResultSuccess(result)
+        self.assertIn("Updated", result.out())
+
+        # check we have one entry with updated values
+        result = self.run_cli(cmd_env, list_cmd + "-f json")
+        self.assertResultSuccess(result)
+        imports = eval(result.out()).get("action-import")
+        # original name does not exist
+        self.assertEqual(0, len(find_by_prop(imports, PROP_NAME, import_name1)))
+        # check the updated entry
+        self.assertEqual(1, len(find_by_prop(imports, PROP_NAME, import_name2)))
+
+        # check the right values were updated (no integration name specified)
+        result = self.run_cli(cmd_env, base_cmd + f"ac im get {import_name2}")
+        self.assertResultSuccess(result)
+        self.assertIn(f"Name: {import_name2}", result.out())
+        self.assertIn(f"Resource: {resource2}", result.out())
+        self.assertIn(f"Description: {desc1}", result.out())
+        self.assertIn(f"Integration: {integ_name}", result.out())
+
+        # list without specifying the integration...
+        result = self.run_cli(cmd_env, base_cmd + "act import ls --format json")
+        self.assertResultSuccess(result)
+        imports = eval(result.out()).get("action-import")
+        entry = find_by_prop(imports, PROP_NAME, import_name2)[0]
+        self.assertEqual(entry.get("Integration"), integ_name)
+        self.assertIsNone(entry.get(PROP_CREATED))
+        self.assertIsNone(entry.get(PROP_MODIFIED))
+
+        result = self.run_cli(cmd_env, base_cmd + f"act import ls -i '{integ_name}' --format json --show-times")
+        self.assertResultSuccess(result)
+        imports = eval(result.out()).get("action-import")
+        entry = find_by_prop(imports, PROP_NAME, import_name2)[0]
+        self.assertIsNone(entry.get("Integration"))
+        self.assertIsNotNone(entry.get(PROP_CREATED))
+        self.assertIsNotNone(entry.get(PROP_MODIFIED))
+
+        # change the description, and set dry-run
+        desc2 = "Updated description"
+        result = self.run_cli(cmd_env, set_cmd + f"'{import_name2}' -d '{desc2}' --dry-run")
+        self.assertResultSuccess(result)
+        self.assertIn("Updated", result.out())
+
+        # check the right values were updated
+        result = self.run_cli(cmd_env, base_cmd + f"act imports get -i {integ_name} {import_name2}")
+        self.assertResultSuccess(result)
+        self.assertIn(f"Name: {import_name2}", result.out())
+        self.assertIn(f"Resource: {resource2}", result.out())
+        self.assertIn(f"Description: {desc2}", result.out())
+        self.assertIn("Dry Run: true", result.out())
+
+        ########################
+        # task list
+        result = self.run_cli(cmd_env, base_cmd + f"act import tasks '{import_name2}' -f json")
+        self.assertResultSuccess(result)
+        tasks = eval(result.out()).get("action-import-task")
+        self.assertGreaterEqual(len(tasks), 1)
+        self.assertEqual(1, len(find_by_prop(tasks, "Reason", "pull created")))
+        entry = tasks[0]
+        self.assertIsNotNone(entry.get("Reason"))
+        self.assertIsNotNone(entry.get("State"))
+        self.assertIsNotNone(entry.get("Status Info"))
+
+        ########################
+        # delete the import
+        del_cmd = base_cmd + f"act import del '{import_name2}' -y"
+        result = self.run_cli(cmd_env, del_cmd)
+        self.assertResultSuccess(result)
+        self.assertIn("Deleted", result.out())
+
+        # idempotent
+        no_import_msg = f"Import action '{import_name2}' not found in integration '{integ_name}'"
+        result = self.run_cli(cmd_env, del_cmd + f" -i {integ_name}")
+        self.assertResultWarning(result, no_import_msg)
+
+        # make sure it is gone
+        result = self.run_cli(cmd_env, list_cmd + "-f csv")
+        self.assertResultSuccess(result)
+        self.assertNotIn(f"{import_name1},", result.out())
+        self.assertNotIn(f"{import_name2},", result.out())
+
+        ########################
+        # create another import -- different values:
+        #       check default resource,
+        #       secretsmanager service (non-default),
+        #       different region (non-default)
+        #       dry-run (non-default)
+        service = "secretsmanager"
+        region = "us-west-2"
+        cmd = (
+            base_cmd + f"act import set -i '{integ_name}' '{import_name1}' --service '{service}' "
+            f"--region {region} --dry-run"
+        )
+        result = self.run_cli(cmd_env, cmd)
+        self.assertResultSuccess(result)
+        self.assertIn("Created import", result.out())
+
+        # do a get to verify the values --
+        result = self.run_cli(cmd_env, base_cmd + f"act imp get -i '{integ_name}' '{import_name1}'")
+        self.assertResultSuccess(result)
+        self.assertIn(f"Region: {region}", result.out())
+        self.assertIn(f"Service: {service}", result.out())
+        self.assertIn("Dry Run: true", result.out())
+
+        # delete this import
+        result = self.run_cli(cmd_env, base_cmd + f"act import del -i '{integ_name}' '{import_name1}' -y")
+        self.assertResultSuccess(result)
+
+        ########################
+        # invalid region
+        bad_reg_cmd = base_cmd + f"act imp set -i '{integ_name}' '{import_name2}' --region not-a-region"
+        result = self.run_cli(cmd_env, bad_reg_cmd)
+        self.assertResultError(result, "isn't a valid value for '--region <region>'")
+
+        ########################
+        # cannot create without an --integration
+        result = self.run_cli(cmd_env, set_cmd + f"{import_name2}")
+        self.assertResultError(result, "Must specify an integration on create")
+
+        ########################
+        # error out for invalid improt name
+        result = self.run_cli(cmd_env, base_cmd + f"act import task -i '{integ_name}' '{import_name2}'")
+        self.assertResultError(result, no_import_msg)
+
+        result = self.run_cli(cmd_env, base_cmd + f"act import get -i '{integ_name}' '{import_name2}'")
+        self.assertResultError(result, no_import_msg)
+
+        ########################
+        # error out for invalid import name (without an integration name)
+        no_import_msg2 = f"Import action '{import_name2}' not found"
+        result = self.run_cli(cmd_env, base_cmd + f"act im task '{import_name2}'")
+        self.assertResultError(result, no_import_msg2)
+
+        result = self.run_cli(cmd_env, base_cmd + f"act im get '{import_name2}'")
+        self.assertResultError(result, no_import_msg2)
+
+        ########################
+        # error out for bad integration name
+        no_integration_msg = f"Integration '{bad_int_name}' not found"
+        result = self.run_cli(cmd_env, base_cmd + f"act i l -i '{bad_int_name}'")
+        self.assertResultError(result, no_integration_msg)
+
+        result = self.run_cli(cmd_env, base_cmd + f"act i get -i '{bad_int_name}' '{import_name1}'")
+        self.assertResultError(result, no_integration_msg)
+
+        result = self.run_cli(cmd_env, base_cmd + f"act i set -i '{bad_int_name}' '{import_name1}'")
+        self.assertResultError(result, no_integration_msg)
+
+        result = self.run_cli(cmd_env, base_cmd + f"act i task -i '{bad_int_name}' '{import_name1}' -v")
+        self.assertResultError(result, no_integration_msg)
+
+        result = self.run_cli(cmd_env, base_cmd + f"act i del -i '{bad_int_name}' '{import_name1}' -y")
+        self.assertResultError(result, no_integration_msg)
