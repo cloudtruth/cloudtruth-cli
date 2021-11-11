@@ -22,7 +22,7 @@ impl From<&Invitation> for InvitationDetails {
             email: api.email.clone(),
             role: api.role.to_string().to_lowercase(),
             inviter_url: api.inviter.clone(),
-            inviter_name: "".to_string(), // need to fill in later
+            inviter_name: api.inviter_name.clone(),
             state: api.state.to_lowercase(),
             state_detail: api.state_detail.clone(),
             membership: api.membership.clone().unwrap_or_default(),

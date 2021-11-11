@@ -1,6 +1,5 @@
 use crate::database::{
-    auth_details, response_message, InvitationDetails, InvitationError, OpenApiConfig, Users,
-    PAGE_SIZE,
+    auth_details, response_message, InvitationDetails, InvitationError, OpenApiConfig, PAGE_SIZE,
 };
 use cloudtruth_restapi::apis::invitations_api::{
     invitations_create, invitations_destroy, invitations_list, invitations_partial_update,
@@ -66,9 +65,7 @@ impl Invitations {
         &self,
         rest_cfg: &OpenApiConfig,
     ) -> Result<Vec<InvitationDetails>, InvitationError> {
-        let mut details = self.get_unresolved_invitations(rest_cfg)?;
-        self.resolve_user_urls(rest_cfg, &mut details);
-        Ok(details)
+        self.get_unresolved_invitations(rest_cfg)
     }
 
     pub fn get_details_by_email(
@@ -186,22 +183,6 @@ impl Invitations {
                 Err(response_error(&content.status, &content.content))
             }
             Err(e) => Err(InvitationError::UnhandledError(e.to_string())),
-        }
-    }
-
-    fn resolve_user_urls(&self, rest_cfg: &OpenApiConfig, invites: &mut [InvitationDetails]) {
-        if !invites.is_empty() {
-            let users = Users::new();
-            let user_map = users.get_user_url_to_name_map(rest_cfg);
-            if let Ok(user_map) = user_map {
-                let default_invitername = "".to_string();
-                for entry in invites {
-                    entry.inviter_name = user_map
-                        .get(&entry.inviter_url)
-                        .unwrap_or(&default_invitername)
-                        .clone();
-                }
-            }
         }
     }
 }
