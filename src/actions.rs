@@ -1,7 +1,7 @@
 use crate::cli::{
     show_values, CONFIRM_FLAG, DELETE_SUBCMD, DESCRIPTION_OPT, FORMAT_OPT, GET_SUBCMD,
     IMPORT_SUBCMD, INTEGRATION_NAME_ARG, LIST_SUBCMD, PULL_NAME_ARG, PUSH_NAME_ARG, PUSH_SUBCMD,
-    RENAME_OPT, SET_SUBCMD, SHOW_TIMES_FLAG, TASKS_SUBCMD,
+    RENAME_OPT, SET_SUBCMD, SHOW_TIMES_FLAG, SYNC_SUBCMD, TASKS_SUBCMD,
 };
 use crate::database::{
     last_from_url, parent_id_from_url, ActionDetails, Environments, IntegrationError, Integrations,
@@ -627,7 +627,7 @@ fn proc_action_push_command(
         proc_action_push_list(subcmd_args, rest_cfg, integrations)?;
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(SET_SUBCMD) {
         proc_action_push_set(subcmd_args, rest_cfg, integrations)?;
-    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("sync") {
+    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(SYNC_SUBCMD) {
         proc_action_push_sync(subcmd_args, rest_cfg, integrations)?;
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(TASKS_SUBCMD) {
         proc_action_push_tasks(subcmd_args, rest_cfg, integrations)?;
@@ -940,6 +940,28 @@ fn proc_action_pull_set(
     Ok(())
 }
 
+fn proc_action_pull_sync(
+    subcmd_args: &ArgMatches,
+    rest_cfg: &OpenApiConfig,
+    integrations: &Integrations,
+) -> Result<()> {
+    let integ_name = subcmd_args.value_of(INTEGRATION_NAME_ARG);
+    let pull_name = subcmd_args.value_of(PULL_NAME_ARG).unwrap();
+    let resolved = resolve_pull_details(rest_cfg, integrations, integ_name, pull_name)?;
+
+    if let Some(details) = resolved {
+        integrations.sync_pull(rest_cfg, &details)?;
+        println!(
+            "Synchronized import '{}' for integration '{}'",
+            pull_name, details.integration_name
+        );
+    } else {
+        error_message(pull_not_found_message(pull_name, integ_name));
+        process::exit(31);
+    }
+    Ok(())
+}
+
 fn proc_action_pull_tasks(
     subcmd_args: &ArgMatches,
     rest_cfg: &OpenApiConfig,
@@ -1006,6 +1028,8 @@ fn proc_action_import_command(
         proc_action_pull_list(subcmd_args, rest_cfg, integrations)?;
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(SET_SUBCMD) {
         proc_action_pull_set(subcmd_args, rest_cfg, integrations)?;
+    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(SYNC_SUBCMD) {
+        proc_action_pull_sync(subcmd_args, rest_cfg, integrations)?;
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(TASKS_SUBCMD) {
         proc_action_pull_tasks(subcmd_args, rest_cfg, integrations)?;
     } else {

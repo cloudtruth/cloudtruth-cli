@@ -443,6 +443,11 @@ class TestActions(TestCase):
         self.assertEqual(entry.get("Integration"), integ_name)
         self.assertIsNone(entry.get(PROP_CREATED))
         self.assertIsNone(entry.get(PROP_MODIFIED))
+        last_time = entry.get("Last Import Time")
+
+        result = self.run_cli(cmd_env, base_cmd + f"act import sync '{import_name2}'")
+        self.assertResultSuccess(result)
+        self.assertIn(f"Synchronized import '{import_name2}'", result.out())
 
         result = self.run_cli(cmd_env, base_cmd + f"act import ls -i '{integ_name}' --format json --show-times")
         self.assertResultSuccess(result)
@@ -451,6 +456,7 @@ class TestActions(TestCase):
         self.assertIsNone(entry.get("Integration"))
         self.assertIsNotNone(entry.get(PROP_CREATED))
         self.assertIsNotNone(entry.get(PROP_MODIFIED))
+        self.assertNotEqual(entry.get("Last Import Time"), last_time)
 
         # change the description, and set dry-run
         desc2 = "Updated description"
@@ -535,11 +541,14 @@ class TestActions(TestCase):
         self.assertResultError(result, "Must specify an integration on create")
 
         ########################
-        # error out for invalid improt name
+        # error out for invalid import name
         result = self.run_cli(cmd_env, base_cmd + f"act import task -i '{integ_name}' '{import_name2}'")
         self.assertResultError(result, no_import_msg)
 
         result = self.run_cli(cmd_env, base_cmd + f"act import get -i '{integ_name}' '{import_name2}'")
+        self.assertResultError(result, no_import_msg)
+
+        result = self.run_cli(cmd_env, base_cmd + f"act import syn -i '{integ_name}' '{import_name2}'")
         self.assertResultError(result, no_import_msg)
 
         ########################
@@ -549,6 +558,9 @@ class TestActions(TestCase):
         self.assertResultError(result, no_import_msg2)
 
         result = self.run_cli(cmd_env, base_cmd + f"act im get '{import_name2}'")
+        self.assertResultError(result, no_import_msg2)
+
+        result = self.run_cli(cmd_env, base_cmd + f"act im sy '{import_name2}'")
         self.assertResultError(result, no_import_msg2)
 
         ########################
@@ -561,6 +573,9 @@ class TestActions(TestCase):
         self.assertResultError(result, no_integration_msg)
 
         result = self.run_cli(cmd_env, base_cmd + f"act i set -i '{bad_int_name}' '{import_name1}'")
+        self.assertResultError(result, no_integration_msg)
+
+        result = self.run_cli(cmd_env, base_cmd + f"act i sync -i '{bad_int_name}' '{import_name1}'")
         self.assertResultError(result, no_integration_msg)
 
         result = self.run_cli(cmd_env, base_cmd + f"act i task -i '{bad_int_name}' '{import_name1}' -v")

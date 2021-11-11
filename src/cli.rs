@@ -34,6 +34,7 @@ pub const IMPORT_SUBCMD: &str = "imports";
 pub const LIST_SUBCMD: &str = "list";
 pub const PUSH_SUBCMD: &str = "pushes";
 pub const SET_SUBCMD: &str = "set";
+pub const SYNC_SUBCMD: &str = "sync";
 pub const TAG_SUBCMD: &str = "tag";
 pub const TASKS_SUBCMD: &str = "tasks";
 pub const TREE_SUBCMD: &str = "tree";
@@ -48,6 +49,7 @@ const IMPORT_ALIASES: &[&str] = &["import", "imp", "im", "i"];
 const LIST_ALIASES: &[&str] = &["ls", "l"];
 const PUSH_ALIASES: &[&str] = &["push", "pu", "p"];
 const SET_ALIASES: &[&str] = &["s"];
+const SYNC_ALIASES: &[&str] = &["syn", "sy"];
 const TASKS_ALIASES: &[&str] = &["task", "ta", "t"];
 const TREE_ALIASES: &[&str] = &["tr"];
 
@@ -947,7 +949,8 @@ pub fn build_cli() -> App<'static, 'static> {
                                 .default_value("ssm")
                                 .possible_values(&["ssm", "secretsmanager"])
                                 .help("Service for the push to use (create only)")),
-                        SubCommand::with_name("sync")
+                        SubCommand::with_name(SYNC_SUBCMD)
+                            .visible_aliases(SYNC_ALIASES)
                             .about("Manually initiate action on existing push")
                             .arg(integration_name_opt())
                             .arg(push_name_arg()),
@@ -1010,6 +1013,11 @@ pub fn build_cli() -> App<'static, 'static> {
                                 .default_value("ssm")
                                 .possible_values(&["ssm", "secretsmanager"])
                                 .help("Service for the import to use (create only)")),
+                        SubCommand::with_name(SYNC_SUBCMD)
+                            .visible_aliases(SYNC_ALIASES)
+                            .about("Manually initiate action on existing import")
+                            .arg(pull_name_arg())
+                            .arg(integration_name_opt()),
                         SubCommand::with_name(TASKS_SUBCMD)
                             .visible_aliases(TASKS_ALIASES)
                             .about("List tasks for the specified CloudTruth import")

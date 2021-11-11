@@ -63,6 +63,7 @@ SUBCOMMANDS:
     help      Prints this message or the help of the given subcommand(s)
     list      List CloudTruth imports [aliases: ls, l]
     set       Create/modify CloudTruth integration import [aliases: s]
+    sync      Manually initiate action on existing import [aliases: syn, sy]
     tasks     List tasks for the specified CloudTruth import [aliases: task, ta, t]
 ====================
 cloudtruth-actions-imports-delete 
@@ -138,6 +139,22 @@ OPTIONS:
 ARGS:
     <import-name>    Import name
 ====================
+cloudtruth-actions-imports-sync 
+Manually initiate action on existing import
+
+USAGE:
+    cloudtruth actions imports sync [OPTIONS] <import-name>
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+OPTIONS:
+    -i, --integration <name>    Integration name
+
+ARGS:
+    <import-name>    Import name
+====================
 cloudtruth-actions-imports-tasks 
 List tasks for the specified CloudTruth import
 
@@ -173,7 +190,7 @@ SUBCOMMANDS:
     help      Prints this message or the help of the given subcommand(s)
     list      List CloudTruth pushes [aliases: ls, l]
     set       Create/modify CloudTruth integration push [aliases: s]
-    sync      Manually initiate action on existing push
+    sync      Manually initiate action on existing push [aliases: syn, sy]
     tasks     List tasks for the specified CloudTruth push [aliases: task, ta, t]
 ====================
 cloudtruth-actions-pushes-delete 

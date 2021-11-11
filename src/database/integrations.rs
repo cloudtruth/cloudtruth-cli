@@ -991,4 +991,53 @@ impl Integrations {
             dry_run,
         )
     }
+
+    fn sync_aws_pull(
+        &self,
+        rest_cfg: &OpenApiConfig,
+        pull_details: &ActionDetails,
+    ) -> Result<(), IntegrationError> {
+        let description = if pull_details.description.is_empty() {
+            None
+        } else {
+            Some(pull_details.description.clone())
+        };
+        let reg_enum = aws_region_from_str(&pull_details.region).unwrap();
+        let srv_enum = aws_service_from_str(&pull_details.service).unwrap();
+        let integration_id = parent_id_from_url(&pull_details.url, "pulls/");
+        let sync_body = AwsPull {
+            url: pull_details.url.clone(),
+            id: pull_details.id.clone(),
+            name: pull_details.name.clone(),
+            description,
+            region: Box::new(reg_enum),
+            service: Box::new(srv_enum),
+            resource: pull_details.resource.clone(),
+            latest_task: None,
+            created_at: "".to_string(),
+            modified_at: "".to_string(),
+            dry_run: None,
+        };
+        let response = integrations_aws_pulls_sync_create(
+            rest_cfg,
+            integration_id,
+            &pull_details.id,
+            sync_body,
+        );
+        match response {
+            Ok(_) => Ok(()),
+            Err(ResponseError(ref content)) => {
+                Err(response_error(&content.status, &content.content))
+            }
+            Err(e) => Err(IntegrationError::UnhandledError(e.to_string())),
+        }
+    }
+
+    pub fn sync_pull(
+        &self,
+        rest_cfg: &OpenApiConfig,
+        pull_details: &ActionDetails,
+    ) -> Result<(), IntegrationError> {
+        self.sync_aws_pull(rest_cfg, pull_details)
+    }
 }
