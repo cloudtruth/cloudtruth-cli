@@ -40,6 +40,9 @@ env:
   CLOUDTRUTH_TEST_PUSH_INTEGRATION_NAME: ct-stage-write@943604981792
   CLOUDTRUTH_TEST_PUSH_BAD_INTEGRATION_NAME: my-missing-integration
 
+  CLOUDTRUTH_TEST_IMPORT_INTEGRATION_NAME: ct-stage-write@943604981792
+  CLOUDTRUTH_TEST_IMPORT_BAD_INTEGRATION_NAME: my-missing-integration
+
   PART_A_FILTER: test_action test_arg test_audit test_configuration test_environment test_integration test_misc
   PART_B_FILTER: test_parameter
   PART_C_FILTER: test_project test_run test_template test_timing test_user

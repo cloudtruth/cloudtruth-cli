@@ -50,6 +50,9 @@ jobs:
       CLOUDTRUTH_TEST_PUSH_INTEGRATION_NAME: ct-stage-write@943604981792
       CLOUDTRUTH_TEST_PUSH_BAD_INTEGRATION_NAME: my-missing-integration
 
+      CLOUDTRUTH_TEST_IMPORT_INTEGRATION_NAME: ct-stage-write@943604981792
+      CLOUDTRUTH_TEST_IMPORT_BAD_INTEGRATION_NAME: my-missing-integration
+
     steps:
       - uses: actions/checkout@v2
 
