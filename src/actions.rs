@@ -1,11 +1,11 @@
 use crate::cli::{
     show_values, CONFIRM_FLAG, DELETE_SUBCMD, DESCRIPTION_OPT, FORMAT_OPT, GET_SUBCMD,
-    INTEGRATION_NAME_ARG, LIST_SUBCMD, PUSH_NAME_ARG, PUSH_SUBCMD, RENAME_OPT, SET_SUBCMD,
-    SHOW_TIMES_FLAG, TASKS_SUBCMD,
+    IMPORT_SUBCMD, INTEGRATION_NAME_ARG, LIST_SUBCMD, PULL_NAME_ARG, PUSH_NAME_ARG, PUSH_SUBCMD,
+    RENAME_OPT, SET_SUBCMD, SHOW_TIMES_FLAG, TASKS_SUBCMD,
 };
 use crate::database::{
-    last_from_url, Environments, IntegrationError, Integrations, OpenApiConfig, ProjectDetails,
-    Projects, PushDetails,
+    last_from_url, parent_id_from_url, ActionDetails, Environments, IntegrationError, Integrations,
+    OpenApiConfig, ProjectDetails, Projects,
 };
 use crate::integrations::integration_not_found_message;
 use crate::table::Table;
@@ -19,6 +19,9 @@ use indoc::printdoc;
 use std::collections::{HashMap, HashSet};
 use std::process;
 
+///===============================================================
+/// Push action
+///===============================================================
 fn push_not_found_message(push_name: &str, integ_name: Option<&str>) -> String {
     if let Some(integ_name) = integ_name {
         format!(
@@ -30,17 +33,7 @@ fn push_not_found_message(push_name: &str, integ_name: Option<&str>) -> String {
     }
 }
 
-fn env_url_from_tag_url(tag_url: &str) -> &str {
-    // NOTE: must keep trailing slash on original to equal what comes from EnvironmentDetails.url
-    let parts: Vec<&str> = tag_url.split("tags/").collect();
-    parts[0]
-}
-
-fn env_id_from_tag_url(tag_url: &str) -> &str {
-    last_from_url(env_url_from_tag_url(tag_url))
-}
-
-fn resolve_tag_names(rest_cfg: &OpenApiConfig, pushes: &mut [PushDetails]) {
+fn resolve_tag_names(rest_cfg: &OpenApiConfig, pushes: &mut [ActionDetails]) {
     // if there are no pushes with tag URLs, we're done
     if !pushes.iter().any(|x| !x.tag_urls.is_empty()) {
         return;
@@ -81,7 +74,21 @@ fn resolve_tag_names(rest_cfg: &OpenApiConfig, pushes: &mut [PushDetails]) {
     }
 }
 
-fn resolve_project_names(rest_cfg: &OpenApiConfig, pushes: &mut [PushDetails]) {
+fn env_url_from_tag_url(tag_url: &str) -> &str {
+    // NOTE: must keep trailing slash on original to equal what comes from EnvironmentDetails.url
+    let parts: Vec<&str> = tag_url.split("tags/").collect();
+    parts[0]
+}
+
+fn env_id_from_tag_url(tag_url: &str) -> &str {
+    last_from_url(env_url_from_tag_url(tag_url))
+}
+
+fn get_push_integration_id(url: &str) -> String {
+    parent_id_from_url(url, "pushes/").to_string()
+}
+
+fn resolve_project_names(rest_cfg: &OpenApiConfig, pushes: &mut [ActionDetails]) {
     // if there are no pushes with tag URLs, we're done
     if !pushes.iter().any(|x| !x.project_urls.is_empty()) {
         return;
@@ -179,7 +186,7 @@ fn resolve_push_details(
     integrations: &Integrations,
     integ_name: Option<&str>,
     push_name: &str,
-) -> Result<Option<PushDetails>, IntegrationError> {
+) -> Result<Option<ActionDetails>, IntegrationError> {
     if let Some(integ_name) = integ_name {
         let integ_resp = integrations.get_id(rest_cfg, integ_name)?;
         if let Some(integ_id) = integ_resp {
@@ -232,7 +239,7 @@ fn proc_action_push_delete(
     if let Some(details) = resolved {
         // NOTE: the server is responsible for checking if children exist
         let integ_name = details.integration_name.clone();
-        let integ_id = details.get_integration_id();
+        let integ_id = get_push_integration_id(&details.url);
         let push_id = details.id.clone();
         let mut confirmed = subcmd_args.is_present(CONFIRM_FLAG);
         if !confirmed {
@@ -255,7 +262,7 @@ fn proc_action_push_delete(
     Ok(())
 }
 
-fn print_push_details(push: &PushDetails) {
+fn print_push_details(push: &ActionDetails) {
     let error_info = if push.last_task.state != "success" {
         format!(
             "{}: {}",
@@ -349,7 +356,7 @@ fn proc_action_push_list(
     let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
     let qualifier: String;
     let show_integration: bool;
-    let mut pushes: Vec<PushDetails>;
+    let mut pushes: Vec<ActionDetails>;
 
     if let Some(integ_name) = integ_name {
         qualifier = format!(" for integration '{}'", integ_name);
@@ -481,6 +488,7 @@ fn proc_action_push_set(
             ));
         }
 
+        let integ_id = get_push_integration_id(&details.url);
         let updated_resource = resource.unwrap_or(&details.resource);
         let mut project_ids = details.project_urls.clone();
         project_ids.append(&mut proj_add_ids);
@@ -490,7 +498,7 @@ fn proc_action_push_set(
         tag_ids.retain(|i| !tag_sub_ids.contains(i));
         integrations.update_push(
             rest_cfg,
-            &details.get_integration_id(),
+            &integ_id,
             &details.id,
             updated_name,
             updated_resource,
@@ -565,42 +573,43 @@ fn proc_action_push_tasks(
     let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
     let resolved = resolve_push_details(rest_cfg, integrations, integ_name, push_name)?;
 
-    if let Some(details) = resolved {
-        let push_id = details.id.clone();
-        let integ_id = details.get_integration_id();
-        let integ_name = details.integration_name;
-        let tasks = integrations.get_push_tasks(rest_cfg, &integ_id, &push_id)?;
-        if tasks.is_empty() {
-            println!(
-                "No push tasks found for push '{}' for integration '{}'",
-                push_name, integ_name
-            );
-        } else if !show_values {
-            let list = tasks
-                .iter()
-                .map(|d| d.reason.clone())
-                .collect::<Vec<String>>();
-            println!("{}", list.join("\n"))
-        } else {
-            let mut hdr = vec!["Reason", "State", "Status Info"];
-            let mut properties = vec!["reason", "state", "errors"];
-            if show_times {
-                hdr.push("Created At");
-                hdr.push("Modified At");
-                properties.push("created-at");
-                properties.push("modified-at");
-            }
-
-            let mut table = Table::new("action-push-task");
-            table.set_header(&hdr);
-            for entry in tasks {
-                table.add_row(entry.get_properties(&properties));
-            }
-            table.render(fmt)?;
-        }
-    } else {
+    if resolved.is_none() {
         error_message(push_not_found_message(push_name, integ_name));
         process::exit(31);
+    }
+
+    let details = resolved.unwrap();
+    let push_id = details.id.clone();
+    let integ_id = get_push_integration_id(&details.url);
+    let integ_name = details.integration_name;
+    let tasks = integrations.get_push_tasks(rest_cfg, &integ_id, &push_id)?;
+    if tasks.is_empty() {
+        println!(
+            "No push tasks found for push '{}' for integration '{}'",
+            push_name, integ_name
+        );
+    } else if !show_values {
+        let list = tasks
+            .iter()
+            .map(|d| d.reason.clone())
+            .collect::<Vec<String>>();
+        println!("{}", list.join("\n"))
+    } else {
+        let mut hdr = vec!["Reason", "State", "Status Info"];
+        let mut properties = vec!["reason", "state", "errors"];
+        if show_times {
+            hdr.push("Created At");
+            hdr.push("Modified At");
+            properties.push("created-at");
+            properties.push("modified-at");
+        }
+
+        let mut table = Table::new("action-push-task");
+        table.set_header(&hdr);
+        for entry in tasks {
+            table.add_row(entry.get_properties(&properties));
+        }
+        table.render(fmt)?;
     }
     Ok(())
 }
@@ -628,7 +637,384 @@ fn proc_action_push_command(
     Ok(())
 }
 
-/// Process the 'integrations' sub-command
+///===============================================================
+/// Pull action
+///===============================================================
+fn pull_not_found_message(pull_name: &str, integ_name: Option<&str>) -> String {
+    if let Some(integ_name) = integ_name {
+        format!(
+            "Import action '{}' not found in integration '{}'",
+            pull_name, integ_name
+        )
+    } else {
+        format!("Import action '{}' not found", pull_name)
+    }
+}
+
+fn get_pull_integration_id(url: &str) -> String {
+    parent_id_from_url(url, "pulls/").to_string()
+}
+
+fn resolve_pull_details(
+    rest_cfg: &OpenApiConfig,
+    integrations: &Integrations,
+    integ_name: Option<&str>,
+    pull_name: &str,
+) -> Result<Option<ActionDetails>, IntegrationError> {
+    if let Some(integ_name) = integ_name {
+        let integ_resp = integrations.get_id(rest_cfg, integ_name)?;
+        if let Some(integ_id) = integ_resp {
+            let pull_resp = integrations.get_pull_by_name(rest_cfg, &integ_id, pull_name)?;
+            if let Some(details) = pull_resp {
+                let mut result = details;
+                result.integration_name = integ_name.to_string();
+                Ok(Some(result))
+            } else {
+                Ok(None)
+            }
+        } else {
+            error_message(integration_not_found_message(integ_name));
+            process::exit(42);
+        }
+    } else {
+        let named_details = integrations.get_all_pulls_by_name(rest_cfg, pull_name)?;
+        match named_details.len() {
+            0 => Ok(None),
+            1 => Ok(Some(named_details[0].clone())),
+            _ => {
+                let integration_names: Vec<String> = named_details
+                    .iter()
+                    .map(|d| d.integration_name.clone())
+                    .collect();
+                error_message(format!(
+                    "Found '{}' in integrations: {}",
+                    pull_name,
+                    integration_names.join(", ")
+                ));
+                help_message(
+                    "Use the --integration option to specify a specific integration.".to_string(),
+                );
+                process::exit(43);
+            }
+        }
+    }
+}
+
+fn proc_action_pull_delete(
+    subcmd_args: &ArgMatches,
+    rest_cfg: &OpenApiConfig,
+    integrations: &Integrations,
+) -> Result<()> {
+    let pull_name = subcmd_args.value_of(PULL_NAME_ARG).unwrap();
+    let integ_name = subcmd_args.value_of(INTEGRATION_NAME_ARG);
+    let resolved = resolve_pull_details(rest_cfg, integrations, integ_name, pull_name)?;
+
+    if let Some(details) = resolved {
+        let pull_id = details.id.clone();
+        let integ_name = details.integration_name.clone();
+        let integ_id = get_pull_integration_id(&details.url);
+        let mut confirmed = subcmd_args.is_present(CONFIRM_FLAG);
+        if !confirmed {
+            let msg = format!(
+                "Delete import '{}' from integration '{}'",
+                pull_name, integ_name
+            );
+            confirmed = user_confirm(msg, DEL_CONFIRM);
+        }
+
+        if !confirmed {
+            warning_message(format!("Import '{}' not deleted from !", pull_name));
+        } else {
+            integrations.delete_pull(rest_cfg, &integ_id, &pull_id)?;
+            println!("Deleted import '{}' from '{}'", pull_name, integ_name);
+        }
+    } else {
+        warning_message(pull_not_found_message(pull_name, integ_name));
+    }
+    Ok(())
+}
+
+fn print_pull_details(pull: &ActionDetails) {
+    let error_info = if pull.last_task.state != "success" {
+        format!(
+            "{}: {}",
+            pull.last_task.error_code, pull.last_task.error_detail
+        )
+    } else {
+        "".to_string()
+    };
+
+    printdoc!(
+        r#"
+        Name: {}
+        Provider: {}
+        Integration: {}
+        Service: {}
+        Region: {}
+        Resource: {}
+        Description: {}
+        Dry Run: {}
+        ID: {}
+        URL: {}
+        Created At: {}
+        Modified At: {}
+        Last task:
+          Reason: {}
+          State: {}
+          ID: {}
+          URL: {}
+          Error Info: {}
+          Created At: {}
+          Modified At: {}
+        "#,
+        pull.name,
+        pull.provider,
+        pull.integration_name,
+        pull.service,
+        pull.region,
+        pull.resource,
+        pull.description,
+        pull.dry_run,
+        pull.id,
+        pull.url,
+        pull.created_at,
+        pull.modified_at,
+        pull.last_task.reason,
+        pull.last_task.state,
+        pull.last_task.id,
+        pull.last_task.url,
+        error_info,
+        pull.last_task.created_at,
+        pull.last_task.modified_at,
+    );
+}
+
+fn proc_action_pull_get(
+    subcmd_args: &ArgMatches,
+    rest_cfg: &OpenApiConfig,
+    integrations: &Integrations,
+) -> Result<()> {
+    let pull_name = subcmd_args.value_of(PULL_NAME_ARG).unwrap();
+    let integ_name = subcmd_args.value_of(INTEGRATION_NAME_ARG);
+    let resolved = resolve_pull_details(rest_cfg, integrations, integ_name, pull_name)?;
+
+    if let Some(details) = resolved {
+        print_pull_details(&details);
+    } else {
+        error_message(pull_not_found_message(pull_name, integ_name));
+        process::exit(31);
+    }
+    Ok(())
+}
+
+fn proc_action_pull_list(
+    subcmd_args: &ArgMatches,
+    rest_cfg: &OpenApiConfig,
+    integrations: &Integrations,
+) -> Result<()> {
+    let integ_name = subcmd_args.value_of(INTEGRATION_NAME_ARG);
+    let show_times = subcmd_args.is_present(SHOW_TIMES_FLAG);
+    let show_values = show_values(subcmd_args);
+    let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
+    let qualifier: String;
+    let show_integration: bool;
+    let pulls: Vec<ActionDetails>;
+
+    if let Some(integ_name) = integ_name {
+        qualifier = format!(" for integration '{}'", integ_name);
+        show_integration = false;
+        if let Some(integ_id) = integrations.get_id(rest_cfg, integ_name)? {
+            pulls = integrations.get_pull_list(rest_cfg, &integ_id)?;
+        } else {
+            error_message(integration_not_found_message(integ_name));
+            process::exit(30);
+        }
+    } else {
+        qualifier = "".to_string();
+        show_integration = true;
+        pulls = integrations.get_all_pulls(rest_cfg)?;
+    }
+
+    if pulls.is_empty() {
+        println!("No imports found{}", qualifier);
+    } else if !show_values {
+        let list = pulls
+            .iter()
+            .map(|d| d.name.clone())
+            .collect::<Vec<String>>();
+        println!("{}", list.join("\n"))
+    } else {
+        let mut hdr = vec!["Name", "Service", "Dry Run", "Status", "Last Import Time"];
+        let mut properties = vec!["name", "service", "dry-run", "task-state", "task-time"];
+
+        if show_integration {
+            hdr.insert(1, "Integration");
+            properties.insert(1, "integration");
+        }
+        if show_times {
+            hdr.push("Created At");
+            hdr.push("Modified At");
+            properties.push("created-at");
+            properties.push("modified-at");
+        }
+
+        let mut table = Table::new("action-import");
+        table.set_header(&hdr);
+        for entry in pulls {
+            table.add_row(entry.get_properties(&properties));
+        }
+        table.render(fmt)?;
+    }
+    Ok(())
+}
+
+fn proc_action_pull_set(
+    subcmd_args: &ArgMatches,
+    rest_cfg: &OpenApiConfig,
+    integrations: &Integrations,
+) -> Result<()> {
+    let pull_name = subcmd_args.value_of(PULL_NAME_ARG).unwrap();
+    let integ_name = subcmd_args.value_of(INTEGRATION_NAME_ARG);
+    let updated_name = subcmd_args.value_of(RENAME_OPT).unwrap_or(pull_name);
+    let description = subcmd_args.value_of(DESCRIPTION_OPT);
+    let resource = subcmd_args.value_of("resource");
+    let region = subcmd_args.value_of("region").unwrap();
+    let service = subcmd_args.value_of("service").unwrap();
+    let dry_run = subcmd_args.is_present("dry-run");
+    let resolved = resolve_pull_details(rest_cfg, integrations, integ_name, pull_name)?;
+
+    if let Some(details) = resolved {
+        // update code
+        if subcmd_args.occurrences_of("region") > 0 {
+            warning_message(format!(
+                "The --region is ignored for updates to '{}",
+                pull_name
+            ));
+        }
+        if subcmd_args.occurrences_of("service") > 0 {
+            warning_message(format!(
+                "The --service is ignored for updates to '{}",
+                pull_name
+            ));
+        }
+        let integ_id = get_pull_integration_id(&details.url);
+        let updated_resource = resource.unwrap_or(&details.resource);
+        integrations.update_pull(
+            rest_cfg,
+            &integ_id,
+            &details.id,
+            updated_name,
+            updated_resource,
+            description,
+            Some(dry_run),
+        )?;
+        println!(
+            "Updated import '{}' in integration '{}'",
+            updated_name, details.integration_name
+        );
+    } else if let Some(integ_name) = integ_name {
+        let response_integ = integrations.get_id(rest_cfg, integ_name)?;
+        if let Some(integ_id) = response_integ {
+            integrations.create_pull(
+                rest_cfg,
+                &integ_id,
+                pull_name,
+                resource.unwrap_or("/{{ environment }}/{{ project }}/{{ parameter }}"),
+                region,
+                service,
+                description,
+                Some(dry_run),
+            )?;
+            println!(
+                "Created import '{}' in integration '{}'",
+                pull_name, integ_name
+            );
+        } else {
+            error_message(integration_not_found_message(integ_name));
+            process::exit(30);
+        }
+    } else {
+        error_message("Must specify an integration on create!".to_string());
+        process::exit(42);
+    }
+    Ok(())
+}
+
+fn proc_action_pull_tasks(
+    subcmd_args: &ArgMatches,
+    rest_cfg: &OpenApiConfig,
+    integrations: &Integrations,
+) -> Result<()> {
+    let pull_name = subcmd_args.value_of(PULL_NAME_ARG).unwrap();
+    let integ_name = subcmd_args.value_of(INTEGRATION_NAME_ARG);
+    let show_times = subcmd_args.is_present(SHOW_TIMES_FLAG);
+    let show_values = show_values(subcmd_args);
+    let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
+    let resolved = resolve_pull_details(rest_cfg, integrations, integ_name, pull_name)?;
+
+    if resolved.is_none() {
+        error_message(pull_not_found_message(pull_name, integ_name));
+        process::exit(31);
+    }
+
+    let details = resolved.unwrap();
+    let pull_id = details.id.clone();
+    let integ_name = details.integration_name.clone();
+    let integ_id = get_pull_integration_id(&details.url);
+    let tasks = integrations.get_pull_tasks(rest_cfg, &integ_id, &pull_id)?;
+    if tasks.is_empty() {
+        println!(
+            "No import tasks found for import '{}' for integration '{}'",
+            pull_name, integ_name
+        );
+    } else if !show_values {
+        let list = tasks
+            .iter()
+            .map(|d| d.reason.clone())
+            .collect::<Vec<String>>();
+        println!("{}", list.join("\n"))
+    } else {
+        let mut hdr = vec!["Reason", "State", "Status Info"];
+        let mut properties = vec!["reason", "state", "errors"];
+        if show_times {
+            hdr.push("Created At");
+            hdr.push("Modified At");
+            properties.push("created-at");
+            properties.push("modified-at");
+        }
+
+        let mut table = Table::new("action-import-task");
+        table.set_header(&hdr);
+        for entry in tasks {
+            table.add_row(entry.get_properties(&properties));
+        }
+        table.render(fmt)?;
+    }
+    Ok(())
+}
+
+fn proc_action_import_command(
+    subcmd_args: &ArgMatches,
+    rest_cfg: &OpenApiConfig,
+    integrations: &Integrations,
+) -> Result<()> {
+    if let Some(subcmd_args) = subcmd_args.subcommand_matches(DELETE_SUBCMD) {
+        proc_action_pull_delete(subcmd_args, rest_cfg, integrations)?;
+    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(GET_SUBCMD) {
+        proc_action_pull_get(subcmd_args, rest_cfg, integrations)?;
+    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(LIST_SUBCMD) {
+        proc_action_pull_list(subcmd_args, rest_cfg, integrations)?;
+    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(SET_SUBCMD) {
+        proc_action_pull_set(subcmd_args, rest_cfg, integrations)?;
+    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(TASKS_SUBCMD) {
+        proc_action_pull_tasks(subcmd_args, rest_cfg, integrations)?;
+    } else {
+        warn_missing_subcommand("actions imports");
+    }
+    Ok(())
+}
+
+/// Process the 'actions' sub-command
 pub fn process_actions_command(
     subcmd_args: &ArgMatches,
     rest_cfg: &OpenApiConfig,
@@ -636,6 +1022,8 @@ pub fn process_actions_command(
 ) -> Result<()> {
     if let Some(subcmd_args) = subcmd_args.subcommand_matches(PUSH_SUBCMD) {
         proc_action_push_command(subcmd_args, rest_cfg, integrations)?;
+    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(IMPORT_SUBCMD) {
+        proc_action_import_command(subcmd_args, rest_cfg, integrations)?;
     } else {
         warn_missing_subcommand("actions");
     }
