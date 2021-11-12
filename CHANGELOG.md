@@ -1,3 +1,10 @@
+# 1.1.0 - 2021-11-12
+
+* BREAKING CHANGE:
+  * Moved `integrations pushes` commands to `actions pushes`.
+    * Made integration-name optional (using `--integration|-i <name>`) for most `pushes` commands.
+* Internal changes to improve testing.
+
 # 1.0.13 - 2021-11-05
 
 * Added several `integrations` commands:
