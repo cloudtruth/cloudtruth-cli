@@ -434,7 +434,7 @@ PARAMETER_2 = PARAM2
 
         # race condition with other tests, but the time does NOT get updated if it is already
         # in a "checking" state
-        if "checking" not in last_update:
+        if "checking" not in last_status:
             self.assertNotEqual((last_status, last_update), (next_status, next_update))
 
         ##########################
