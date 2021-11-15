@@ -12,7 +12,7 @@ use reqwest;
 use std::time::Instant;
 
 use super::{configuration, Error};
-use crate::apis::ResponseContent;
+use crate::apis::{handle_serde_error, ResponseContent};
 
 /// struct for typed errors of method `audit_list`
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -125,7 +125,8 @@ pub fn audit_list(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
         let local_var_entity: Option<AuditListError> =
             serde_json::from_str(&local_var_content).ok();
@@ -190,7 +191,8 @@ pub fn audit_retrieve(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
         let local_var_entity: Option<AuditRetrieveError> =
             serde_json::from_str(&local_var_content).ok();
@@ -254,7 +256,8 @@ pub fn audit_summary_retrieve(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
         let local_var_entity: Option<AuditSummaryRetrieveError> =
             serde_json::from_str(&local_var_content).ok();

@@ -12,7 +12,7 @@ use reqwest;
 use std::time::Instant;
 
 use super::{configuration, Error};
-use crate::apis::ResponseContent;
+use crate::apis::{handle_serde_error, ResponseContent};
 
 /// struct for typed errors of method `environments_create`
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -152,7 +152,8 @@ pub fn environments_create(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
         let local_var_entity: Option<EnvironmentsCreateError> =
             serde_json::from_str(&local_var_content).ok();
@@ -323,7 +324,8 @@ pub fn environments_list(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
         let local_var_entity: Option<EnvironmentsListError> =
             serde_json::from_str(&local_var_content).ok();
@@ -393,7 +395,8 @@ pub fn environments_partial_update(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
         let local_var_entity: Option<EnvironmentsPartialUpdateError> =
             serde_json::from_str(&local_var_content).ok();
@@ -477,7 +480,8 @@ pub fn environments_pushes_list(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
         let local_var_entity: Option<EnvironmentsPushesListError> =
             serde_json::from_str(&local_var_content).ok();
@@ -545,7 +549,8 @@ pub fn environments_retrieve(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
         let local_var_entity: Option<EnvironmentsRetrieveError> =
             serde_json::from_str(&local_var_content).ok();
@@ -616,7 +621,8 @@ pub fn environments_tags_create(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
         let local_var_entity: Option<EnvironmentsTagsCreateError> =
             serde_json::from_str(&local_var_content).ok();
@@ -801,7 +807,8 @@ pub fn environments_tags_list(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
         let local_var_entity: Option<EnvironmentsTagsListError> =
             serde_json::from_str(&local_var_content).ok();
@@ -874,7 +881,8 @@ pub fn environments_tags_partial_update(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
         let local_var_entity: Option<EnvironmentsTagsPartialUpdateError> =
             serde_json::from_str(&local_var_content).ok();
@@ -945,7 +953,8 @@ pub fn environments_tags_retrieve(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
         let local_var_entity: Option<EnvironmentsTagsRetrieveError> =
             serde_json::from_str(&local_var_content).ok();
@@ -1018,7 +1027,8 @@ pub fn environments_tags_update(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
         let local_var_entity: Option<EnvironmentsTagsUpdateError> =
             serde_json::from_str(&local_var_content).ok();
@@ -1088,7 +1098,8 @@ pub fn environments_update(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
         let local_var_entity: Option<EnvironmentsUpdateError> =
             serde_json::from_str(&local_var_content).ok();

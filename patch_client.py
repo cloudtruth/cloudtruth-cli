@@ -33,6 +33,32 @@ REST_DEBUG_ERRORS = """\
         }
         Err(Error::ResponseError(local_var_error))
 """
+SERDES_ERROR_FUNC = """\
+
+pub fn handle_serde_error<T>(err: serde_json::Error, method: &Method, url: &Url, content: &str) -> Error<T> {
+    if err.is_data() {
+        println!("{} {} error content:\\n{}\\n", method, url, content);
+        if err.line() == 1 {
+            let column = err.column();
+            let fixed_start = if column < 100 { 0 } else { column - 100 };
+            let start = content[..column].rfind('{').unwrap_or(fixed_start);
+            // TODO: ignore values containing '}'??
+            let end = content[column..].find('}').unwrap_or(column) + column + 1;
+            let shortened = &content[start..end];
+
+            let mut fieldname = "Unknown";
+            if let Some(end) = content[..column].rfind("\\":") {
+                if let Some(start) = content[..end].rfind('\\"') {
+                    fieldname = &content[start+1..end];
+                }
+            }
+
+            println!("Context (circa {}):\\n  {}\\n\\nLikely field: {}\\n", column, shortened, fieldname);
+        }
+    }
+    Error::Serde(err)
+}
+"""
 
 
 def file_read_content(filename: str) -> str:
@@ -245,6 +271,39 @@ def fix_template_body(srcdir: str) -> None:
         file_write_content(filename, temp)
 
 
+def add_serde_error_handling_to_mod(srcdir: str) -> None:
+    filename = f"{srcdir}/apis/mod.rs"
+    added_use = "use reqwest::{Method, Url};\n"
+    orig = file_read_content(filename)
+
+    if added_use in orig:
+        return
+
+    print(f"Updating {filename} with serde error handling")
+    file_write_content(filename, added_use + orig + SERDES_ERROR_FUNC)
+
+
+def serdes_error_handling_calls(srcdir: str) -> None:
+    filelist = glob.glob(f"{srcdir}/apis/*.rs")
+    orig_use = "use crate::apis::ResponseContent;"
+    updated_use = orig_use.replace("ResponseContent;", "{handle_serde_error, ResponseContent};")
+    orig_serde_err = "serde_json::from_str(&local_var_content).map_err(Error::from)"
+    updated_serde_err = orig_serde_err.replace(
+        "Error::from",
+        "|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content)"
+    )
+
+    for filename in filelist:
+        orig = file_read_content(filename)
+
+        if updated_use in orig or orig_use not in orig:
+            continue
+
+        updated = orig.replace(orig_use, updated_use).replace(orig_serde_err, updated_serde_err)
+        print(f"Updating {filename} with improved serde error handling")
+        file_write_content(filename, updated)
+
+
 if __name__ == "__main__":
     client_dir = os.getcwd() + "/client"
     srcdir = client_dir + "/src"
@@ -259,3 +318,5 @@ if __name__ == "__main__":
     fix_last_used_at(srcdir)
     fix_invitation_membership(srcdir)
     fix_template_body(srcdir)
+    add_serde_error_handling_to_mod(srcdir)
+    serdes_error_handling_calls(srcdir)
