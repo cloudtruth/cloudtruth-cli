@@ -5193,13 +5193,11 @@ components:
           description: The AWS services to integrate with.
         aws_external_id:
           type: string
+          readOnly: true
           description: This is a shared secret between the AWS Administrator who set
             up your IAM trust relationship and your CloudTruth AWS Integration.  If
             your AWS Administrator provided you with a value use it, otherwise we
             will generate a random value for you to give to your AWS Administrator.
-          minLength: 2
-          pattern: ^[\w+=,.@:/\-]*$
-          maxLength: 1224
         aws_role_name:
           type: string
           description: The role that CloudTruth will assume when interacting with
@@ -5213,6 +5211,7 @@ components:
       - aws_account_id
       - aws_enabled_regions
       - aws_enabled_services
+      - aws_external_id
       - aws_role_name
       - created_at
       - fqn
@@ -5858,6 +5857,8 @@ components:
           description: Allow actions to write to the integration.
         gh_installation_id:
           type: integer
+          maximum: 2147483647
+          minimum: 0
         gh_organization_slug:
           type: string
           readOnly: true
@@ -5885,6 +5886,8 @@ components:
           description: Allow actions to write to the integration.
         gh_installation_id:
           type: integer
+          maximum: 2147483647
+          minimum: 0
       required:
       - gh_installation_id
     HistoryModelEnum:
@@ -6922,13 +6925,11 @@ components:
           description: The AWS services to integrate with.
         aws_external_id:
           type: string
+          readOnly: true
           description: This is a shared secret between the AWS Administrator who set
             up your IAM trust relationship and your CloudTruth AWS Integration.  If
             your AWS Administrator provided you with a value use it, otherwise we
             will generate a random value for you to give to your AWS Administrator.
-          minLength: 2
-          pattern: ^[\w+=,.@:/\-]*$
-          maxLength: 1224
         aws_role_name:
           type: string
           description: The role that CloudTruth will assume when interacting with
@@ -7923,6 +7924,8 @@ components:
           maxLength: 256
         total_reads:
           type: integer
+          maximum: 2147483647
+          minimum: -2147483648
           description: The number of times the tag has been used to read configuration.
       required:
       - last_read
@@ -8027,7 +8030,6 @@ components:
           format: date-time
           readOnly: true
       required:
-      - body
       - created_at
       - evaluated
       - has_secret
@@ -8059,7 +8061,6 @@ components:
             delimiters of `{{` and `}}` to reference parameter values by name for
             substitution into the template result.
       required:
-      - body
       - name
     TemplateLookupError:
       type: object
@@ -8167,7 +8168,6 @@ components:
             delimiters of `{{` and `}}` to reference parameter values by name for
             substitution into the template result.
       required:
-      - body
       - id
       - name
     User:

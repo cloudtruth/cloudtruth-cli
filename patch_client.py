@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import glob
 import os
+from typing import List
 
 ALLOW_SNAKE_TEXT = "#![allow(non_snake_case)]\n\n"
 BEARER_TEXT = """
@@ -211,64 +212,31 @@ def fix_latest_task(srcdir: str) -> None:
         file_write_content(filename, temp)
 
 
-def fix_last_used_at(srcdir: str) -> None:
-    filelist = glob.glob(f"{srcdir}/models/service_account*.rs")
-    orig_type = "last_used_at: String"
-    update_type = orig_type.replace("String", "Option<String>")
-    serde_props = "rename = \"last_used_at\""
-    serde_opt_props = serde_props + ", skip_serializing_if = \"Option::is_none\""
+def fix_optional(filelist: List[str], var_name: str, var_type: str = "String") -> None:
+    orig_variable = f"{var_name}: {var_type}"
+    update_variable = orig_variable.replace(var_type, f"Option<{var_type}>")
+    orig_serde = f"rename = \"{var_name}\""
+    updated_serde = orig_serde + ", skip_serializing_if = \"Option::is_none\""
 
     for filename in filelist:
         orig = file_read_content(filename)
-        if orig_type not in orig or update_type in orig:
+
+        if orig_variable not in orig:
             continue
 
-        temp = orig.replace(orig_type, update_type)
-        temp = temp.replace(serde_props, serde_opt_props)
+        updated = orig.replace(orig_variable, update_variable).replace(orig_serde, updated_serde)
+        print(f"Updating {filename} with optional {var_name} fix")
+        file_write_content(filename, updated)
 
-        print(f"Updating {filename} last_used_at type")
-        file_write_content(filename, temp)
+
+def fix_last_used_at(srcdir: str) -> None:
+    filelist = glob.glob(f"{srcdir}/models/service_account*.rs")
+    fix_optional(filelist, var_name="last_used_at")
 
 
 def fix_invitation_membership(srcdir: str) -> None:
     filelist = glob.glob(f"{srcdir}/models/invit*.rs")
-    orig_type = "membership: String"
-    update_type = orig_type.replace("String", "Option<String>")
-    serde_props = "rename = \"membership\""
-    serde_opt_props = serde_props + ", skip_serializing_if = \"Option::is_none\""
-
-    for filename in filelist:
-        orig = file_read_content(filename)
-        if orig_type not in orig or update_type in orig:
-            continue
-
-        temp = orig.replace(orig_type, update_type)
-        temp = temp.replace(serde_props, serde_opt_props)
-
-        print(f"Updating {filename} membership type")
-        file_write_content(filename, temp)
-
-
-def fix_template_body(srcdir: str) -> None:
-    filelist = glob.glob(f"{srcdir}/models/template*.rs")
-    orig_type = "body: String"
-    update_type = orig_type.replace("String", "Option<String>")
-    serde_props = "rename = \"body\""
-    serde_opt_props = serde_props + ", skip_serializing_if = \"Option::is_none\""
-
-    for filename in filelist:
-        if "preview" in filename:
-            continue
-
-        orig = file_read_content(filename)
-        if orig_type not in orig or update_type in orig:
-            continue
-
-        temp = orig.replace(orig_type, update_type)
-        temp = temp.replace(serde_props, serde_opt_props)
-
-        print(f"Updating {filename} template body type")
-        file_write_content(filename, temp)
+    fix_optional(filelist, var_name="membership")
 
 
 def add_serde_error_handling_to_mod(srcdir: str) -> None:
@@ -317,6 +285,5 @@ if __name__ == "__main__":
     fix_latest_task(srcdir)
     fix_last_used_at(srcdir)
     fix_invitation_membership(srcdir)
-    fix_template_body(srcdir)
     add_serde_error_handling_to_mod(srcdir)
     serdes_error_handling_calls(srcdir)

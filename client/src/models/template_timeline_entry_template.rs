@@ -28,12 +28,12 @@ pub struct TemplateTimelineEntryTemplate {
 
 impl TemplateTimelineEntryTemplate {
     /// Helper methods for all views or serializers that expose template concepts.
-    pub fn new(id: String, name: String, body: Option<String>) -> TemplateTimelineEntryTemplate {
+    pub fn new(id: String, name: String) -> TemplateTimelineEntryTemplate {
         TemplateTimelineEntryTemplate {
             id,
             name,
             description: None,
-            body,
+            body: None,
         }
     }
 }
