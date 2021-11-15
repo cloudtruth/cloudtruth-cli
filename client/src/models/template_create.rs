@@ -25,11 +25,11 @@ pub struct TemplateCreate {
 
 impl TemplateCreate {
     /// A parameter template in a given project, optionally instantiated against an environment.
-    pub fn new(name: String, body: Option<String>) -> TemplateCreate {
+    pub fn new(name: String) -> TemplateCreate {
         TemplateCreate {
             name,
             description: None,
-            body,
+            body: None,
         }
     }
 }
