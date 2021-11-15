@@ -12,7 +12,7 @@ use reqwest;
 use std::time::Instant;
 
 use super::{configuration, Error};
-use crate::apis::ResponseContent;
+use crate::apis::{handle_serde_error, ResponseContent};
 
 /// struct for typed errors of method `integrations_aws_create`
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -298,7 +298,8 @@ pub fn integrations_aws_create(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
         let local_var_entity: Option<IntegrationsAwsCreateError> =
             serde_json::from_str(&local_var_content).ok();
@@ -459,7 +460,8 @@ pub fn integrations_aws_list(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
         let local_var_entity: Option<IntegrationsAwsListError> =
             serde_json::from_str(&local_var_content).ok();
@@ -529,7 +531,8 @@ pub fn integrations_aws_partial_update(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
         let local_var_entity: Option<IntegrationsAwsPartialUpdateError> =
             serde_json::from_str(&local_var_content).ok();
@@ -599,7 +602,8 @@ pub fn integrations_aws_pulls_create(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
         let local_var_entity: Option<IntegrationsAwsPullsCreateError> =
             serde_json::from_str(&local_var_content).ok();
@@ -767,7 +771,8 @@ pub fn integrations_aws_pulls_list(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
         let local_var_entity: Option<IntegrationsAwsPullsListError> =
             serde_json::from_str(&local_var_content).ok();
@@ -839,7 +844,8 @@ pub fn integrations_aws_pulls_partial_update(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
         let local_var_entity: Option<IntegrationsAwsPullsPartialUpdateError> =
             serde_json::from_str(&local_var_content).ok();
@@ -909,7 +915,8 @@ pub fn integrations_aws_pulls_retrieve(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
         let local_var_entity: Option<IntegrationsAwsPullsRetrieveError> =
             serde_json::from_str(&local_var_content).ok();
@@ -1087,7 +1094,8 @@ pub fn integrations_aws_pulls_tasks_list(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
         let local_var_entity: Option<IntegrationsAwsPullsTasksListError> =
             serde_json::from_str(&local_var_content).ok();
@@ -1159,7 +1167,8 @@ pub fn integrations_aws_pulls_tasks_retrieve(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
         let local_var_entity: Option<IntegrationsAwsPullsTasksRetrieveError> =
             serde_json::from_str(&local_var_content).ok();
@@ -1292,7 +1301,8 @@ pub fn integrations_aws_pulls_tasks_steps_list(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
         let local_var_entity: Option<IntegrationsAwsPullsTasksStepsListError> =
             serde_json::from_str(&local_var_content).ok();
@@ -1359,7 +1369,8 @@ pub fn integrations_aws_pulls_tasks_steps_retrieve(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
         let local_var_entity: Option<IntegrationsAwsPullsTasksStepsRetrieveError> =
             serde_json::from_str(&local_var_content).ok();
@@ -1431,7 +1442,8 @@ pub fn integrations_aws_pulls_update(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
         let local_var_entity: Option<IntegrationsAwsPullsUpdateError> =
             serde_json::from_str(&local_var_content).ok();
@@ -1501,7 +1513,8 @@ pub fn integrations_aws_pushes_create(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
         let local_var_entity: Option<IntegrationsAwsPushesCreateError> =
             serde_json::from_str(&local_var_content).ok();
@@ -1669,7 +1682,8 @@ pub fn integrations_aws_pushes_list(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
         let local_var_entity: Option<IntegrationsAwsPushesListError> =
             serde_json::from_str(&local_var_content).ok();
@@ -1741,7 +1755,8 @@ pub fn integrations_aws_pushes_partial_update(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
         let local_var_entity: Option<IntegrationsAwsPushesPartialUpdateError> =
             serde_json::from_str(&local_var_content).ok();
@@ -1811,7 +1826,8 @@ pub fn integrations_aws_pushes_retrieve(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
         let local_var_entity: Option<IntegrationsAwsPushesRetrieveError> =
             serde_json::from_str(&local_var_content).ok();
@@ -1989,7 +2005,8 @@ pub fn integrations_aws_pushes_tasks_list(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
         let local_var_entity: Option<IntegrationsAwsPushesTasksListError> =
             serde_json::from_str(&local_var_content).ok();
@@ -2061,7 +2078,8 @@ pub fn integrations_aws_pushes_tasks_retrieve(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
         let local_var_entity: Option<IntegrationsAwsPushesTasksRetrieveError> =
             serde_json::from_str(&local_var_content).ok();
@@ -2194,7 +2212,8 @@ pub fn integrations_aws_pushes_tasks_steps_list(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
         let local_var_entity: Option<IntegrationsAwsPushesTasksStepsListError> =
             serde_json::from_str(&local_var_content).ok();
@@ -2261,7 +2280,8 @@ pub fn integrations_aws_pushes_tasks_steps_retrieve(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
         let local_var_entity: Option<IntegrationsAwsPushesTasksStepsRetrieveError> =
             serde_json::from_str(&local_var_content).ok();
@@ -2333,7 +2353,8 @@ pub fn integrations_aws_pushes_update(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
         let local_var_entity: Option<IntegrationsAwsPushesUpdateError> =
             serde_json::from_str(&local_var_content).ok();
@@ -2406,7 +2427,8 @@ pub fn integrations_aws_retrieve(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
         let local_var_entity: Option<IntegrationsAwsRetrieveError> =
             serde_json::from_str(&local_var_content).ok();
@@ -2476,7 +2498,8 @@ pub fn integrations_aws_update(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
         let local_var_entity: Option<IntegrationsAwsUpdateError> =
             serde_json::from_str(&local_var_content).ok();
@@ -2559,7 +2582,8 @@ pub fn integrations_explore_list(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
         let local_var_entity: Option<IntegrationsExploreListError> =
             serde_json::from_str(&local_var_content).ok();
@@ -2625,7 +2649,8 @@ pub fn integrations_github_create(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
         let local_var_entity: Option<IntegrationsGithubCreateError> =
             serde_json::from_str(&local_var_content).ok();
@@ -2781,7 +2806,8 @@ pub fn integrations_github_list(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
         let local_var_entity: Option<IntegrationsGithubListError> =
             serde_json::from_str(&local_var_content).ok();
@@ -2854,7 +2880,8 @@ pub fn integrations_github_retrieve(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
         let local_var_entity: Option<IntegrationsGithubRetrieveError> =
             serde_json::from_str(&local_var_content).ok();

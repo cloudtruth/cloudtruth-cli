@@ -12,7 +12,7 @@ use reqwest;
 use std::time::Instant;
 
 use super::{configuration, Error};
-use crate::apis::ResponseContent;
+use crate::apis::{handle_serde_error, ResponseContent};
 
 /// struct for typed errors of method `projects_create`
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -337,7 +337,8 @@ pub fn projects_create(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
         let local_var_entity: Option<ProjectsCreateError> =
             serde_json::from_str(&local_var_content).ok();
@@ -494,7 +495,8 @@ pub fn projects_list(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
         let local_var_entity: Option<ProjectsListError> =
             serde_json::from_str(&local_var_content).ok();
@@ -617,7 +619,8 @@ pub fn projects_parameter_export_list(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
         let local_var_entity: Option<ProjectsParameterExportListError> =
             serde_json::from_str(&local_var_content).ok();
@@ -687,7 +690,8 @@ pub fn projects_parameters_create(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
         let local_var_entity: Option<ProjectsParametersCreateError> =
             serde_json::from_str(&local_var_content).ok();
@@ -889,7 +893,8 @@ pub fn projects_parameters_list(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
         let local_var_entity: Option<ProjectsParametersListError> =
             serde_json::from_str(&local_var_content).ok();
@@ -961,7 +966,8 @@ pub fn projects_parameters_partial_update(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
         let local_var_entity: Option<ProjectsParametersPartialUpdateError> =
             serde_json::from_str(&local_var_content).ok();
@@ -1056,7 +1062,8 @@ pub fn projects_parameters_pushes_list(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
         let local_var_entity: Option<ProjectsParametersPushesListError> =
             serde_json::from_str(&local_var_content).ok();
@@ -1165,7 +1172,8 @@ pub fn projects_parameters_retrieve(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
         let local_var_entity: Option<ProjectsParametersRetrieveError> =
             serde_json::from_str(&local_var_content).ok();
@@ -1237,7 +1245,8 @@ pub fn projects_parameters_rules_create(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
         let local_var_entity: Option<ProjectsParametersRulesCreateError> =
             serde_json::from_str(&local_var_content).ok();
@@ -1399,7 +1408,8 @@ pub fn projects_parameters_rules_list(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
         let local_var_entity: Option<ProjectsParametersRulesListError> =
             serde_json::from_str(&local_var_content).ok();
@@ -1473,7 +1483,8 @@ pub fn projects_parameters_rules_partial_update(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
         let local_var_entity: Option<ProjectsParametersRulesPartialUpdateError> =
             serde_json::from_str(&local_var_content).ok();
@@ -1545,7 +1556,8 @@ pub fn projects_parameters_rules_retrieve(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
         let local_var_entity: Option<ProjectsParametersRulesRetrieveError> =
             serde_json::from_str(&local_var_content).ok();
@@ -1619,7 +1631,8 @@ pub fn projects_parameters_rules_update(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
         let local_var_entity: Option<ProjectsParametersRulesUpdateError> =
             serde_json::from_str(&local_var_content).ok();
@@ -1699,7 +1712,8 @@ pub fn projects_parameters_timeline_retrieve(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
         let local_var_entity: Option<ProjectsParametersTimelineRetrieveError> =
             serde_json::from_str(&local_var_content).ok();
@@ -1777,7 +1791,8 @@ pub fn projects_parameters_timelines_retrieve(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
         let local_var_entity: Option<ProjectsParametersTimelinesRetrieveError> =
             serde_json::from_str(&local_var_content).ok();
@@ -1849,7 +1864,8 @@ pub fn projects_parameters_update(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
         let local_var_entity: Option<ProjectsParametersUpdateError> =
             serde_json::from_str(&local_var_content).ok();
@@ -1932,7 +1948,8 @@ pub fn projects_parameters_values_create(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
         let local_var_entity: Option<ProjectsParametersValuesCreateError> =
             serde_json::from_str(&local_var_content).ok();
@@ -2135,7 +2152,8 @@ pub fn projects_parameters_values_list(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
         let local_var_entity: Option<ProjectsParametersValuesListError> =
             serde_json::from_str(&local_var_content).ok();
@@ -2220,7 +2238,8 @@ pub fn projects_parameters_values_partial_update(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
         let local_var_entity: Option<ProjectsParametersValuesPartialUpdateError> =
             serde_json::from_str(&local_var_content).ok();
@@ -2332,7 +2351,8 @@ pub fn projects_parameters_values_retrieve(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
         let local_var_entity: Option<ProjectsParametersValuesRetrieveError> =
             serde_json::from_str(&local_var_content).ok();
@@ -2417,7 +2437,8 @@ pub fn projects_parameters_values_update(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
         let local_var_entity: Option<ProjectsParametersValuesUpdateError> =
             serde_json::from_str(&local_var_content).ok();
@@ -2483,7 +2504,8 @@ pub fn projects_partial_update(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
         let local_var_entity: Option<ProjectsPartialUpdateError> =
             serde_json::from_str(&local_var_content).ok();
@@ -2547,7 +2569,8 @@ pub fn projects_retrieve(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
         let local_var_entity: Option<ProjectsRetrieveError> =
             serde_json::from_str(&local_var_content).ok();
@@ -2637,7 +2660,8 @@ pub fn projects_template_preview_create(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
         let local_var_entity: Option<ProjectsTemplatePreviewCreateError> =
             serde_json::from_str(&local_var_content).ok();
@@ -2707,7 +2731,8 @@ pub fn projects_templates_create(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
         let local_var_entity: Option<ProjectsTemplatesCreateError> =
             serde_json::from_str(&local_var_content).ok();
@@ -2889,7 +2914,8 @@ pub fn projects_templates_list(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
         let local_var_entity: Option<ProjectsTemplatesListError> =
             serde_json::from_str(&local_var_content).ok();
@@ -2961,7 +2987,8 @@ pub fn projects_templates_partial_update(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
         let local_var_entity: Option<ProjectsTemplatesPartialUpdateError> =
             serde_json::from_str(&local_var_content).ok();
@@ -3055,7 +3082,8 @@ pub fn projects_templates_retrieve(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
         let local_var_entity: Option<ProjectsTemplatesRetrieveError> =
             serde_json::from_str(&local_var_content).ok();
@@ -3140,7 +3168,8 @@ pub fn projects_templates_timeline_retrieve(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
         let local_var_entity: Option<ProjectsTemplatesTimelineRetrieveError> =
             serde_json::from_str(&local_var_content).ok();
@@ -3223,7 +3252,8 @@ pub fn projects_templates_timelines_retrieve(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
         let local_var_entity: Option<ProjectsTemplatesTimelinesRetrieveError> =
             serde_json::from_str(&local_var_content).ok();
@@ -3295,7 +3325,8 @@ pub fn projects_templates_update(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
         let local_var_entity: Option<ProjectsTemplatesUpdateError> =
             serde_json::from_str(&local_var_content).ok();
@@ -3361,7 +3392,8 @@ pub fn projects_update(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        serde_json::from_str(&local_var_content).map_err(Error::from)
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
         let local_var_entity: Option<ProjectsUpdateError> =
             serde_json::from_str(&local_var_content).ok();

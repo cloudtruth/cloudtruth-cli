@@ -1,3 +1,4 @@
+use reqwest::{Method, Url};
 use std::error;
 use std::fmt;
 
@@ -73,3 +74,35 @@ pub mod serviceaccounts_api;
 pub mod users_api;
 
 pub mod configuration;
+
+pub fn handle_serde_error<T>(
+    err: serde_json::Error,
+    method: &Method,
+    url: &Url,
+    content: &str,
+) -> Error<T> {
+    if err.is_data() {
+        println!("{} {} error content:\n{}\n", method, url, content);
+        if err.line() == 1 {
+            let column = err.column();
+            let fixed_start = if column < 100 { 0 } else { column - 100 };
+            let start = content[..column].rfind('{').unwrap_or(fixed_start);
+            // TODO: ignore values containing '}'??
+            let end = content[column..].find('}').unwrap_or(column) + column + 1;
+            let shortened = &content[start..end];
+
+            let mut fieldname = "Unknown";
+            if let Some(end) = content[..column].rfind("\":") {
+                if let Some(start) = content[..end].rfind('\"') {
+                    fieldname = &content[start + 1..end];
+                }
+            }
+
+            println!(
+                "Context (circa {}):\n  {}\n\nLikely field: {}\n",
+                column, shortened, fieldname
+            );
+        }
+    }
+    Error::Serde(err)
+}
