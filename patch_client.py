@@ -38,7 +38,7 @@ SERDES_ERROR_FUNC = """\
 
 pub fn handle_serde_error<T>(err: serde_json::Error, method: &Method, url: &Url, content: &str) -> Error<T> {
     if err.is_data() {
-        println!("{} {} error content:\\n{}\\n", method, url, content);
+        eprintln!("{} {} error content:\\n{}\\n", method, url, content);
         if err.line() == 1 {
             let column = err.column();
             let fixed_start = if column < 100 { 0 } else { column - 100 };
@@ -54,7 +54,7 @@ pub fn handle_serde_error<T>(err: serde_json::Error, method: &Method, url: &Url,
                 }
             }
 
-            println!("Context (circa {}):\\n  {}\\n\\nLikely field: {}\\n", column, shortened, fieldname);
+            eprintln!("Context (circa {}):\\n  {}\\n\\nLikely field: {}\\n", column, shortened, fieldname);
         }
     }
     Error::Serde(err)
