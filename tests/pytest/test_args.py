@@ -115,6 +115,9 @@ class TestTopLevelArgs(TestCase):
 
         for (subcmd, aliases) in {
             "actions": ["action", "act", "ac"],
+            "actions imports": [
+                "action import", "action imp", "act import", "act im", "act i", "ac imports",
+            ],
             "actions pushes": [
                 "action push", "action pu", "act pushes", "act pu", "act p",
             ],

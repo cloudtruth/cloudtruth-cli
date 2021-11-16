@@ -1,11 +1,11 @@
 use crate::database::{
     auth_details, extract_details, last_from_url, parent_id_from_url, response_message,
-    IntegrationDetails, IntegrationError, IntegrationNode, OpenApiConfig, PushDetails, TaskDetail,
-    PAGE_SIZE,
+    ActionDetails, IntegrationDetails, IntegrationError, IntegrationNode, OpenApiConfig,
+    TaskDetail, PAGE_SIZE,
 };
 use cloudtruth_restapi::apis::integrations_api::*;
 use cloudtruth_restapi::apis::Error::ResponseError;
-use cloudtruth_restapi::models::{AwsPush, AwsPushUpdate, AwsRegionEnum, AwsServiceEnum};
+use cloudtruth_restapi::models::{AwsPull, AwsPush, AwsPushUpdate, AwsRegionEnum, AwsServiceEnum};
 
 const NO_ORDERING: Option<&str> = None;
 
@@ -328,12 +328,15 @@ impl Integrations {
         Ok(())
     }
 
+    ///==========================================
+    /// Integration push
+    ///==========================================
     fn get_aws_push_list(
         &self,
         rest_cfg: &OpenApiConfig,
         integration_id: &str,
         name: Option<&str>,
-    ) -> Result<Vec<PushDetails>, IntegrationError> {
+    ) -> Result<Vec<ActionDetails>, IntegrationError> {
         let response = integrations_aws_pushes_list(
             rest_cfg,
             integration_id,
@@ -346,10 +349,10 @@ impl Integrations {
         );
         match response {
             Ok(data) => {
-                let mut result: Vec<PushDetails> = Vec::new();
+                let mut result: Vec<ActionDetails> = Vec::new();
                 if let Some(list) = data.results {
                     for api in list {
-                        result.push(PushDetails::from(&api));
+                        result.push(ActionDetails::from(&api));
                     }
                 }
                 Ok(result)
@@ -365,21 +368,17 @@ impl Integrations {
         &self,
         rest_cfg: &OpenApiConfig,
         integration_id: &str,
-    ) -> Result<Vec<PushDetails>, IntegrationError> {
-        // NOTE: no current
-        let mut total: Vec<PushDetails> = vec![];
-        let mut aws_pushes = self.get_aws_push_list(rest_cfg, integration_id, None)?;
-        total.append(&mut aws_pushes);
-        Ok(total)
+    ) -> Result<Vec<ActionDetails>, IntegrationError> {
+        self.get_aws_push_list(rest_cfg, integration_id, None)
     }
 
     fn get_all_aws_pushes(
         &self,
         rest_cfg: &OpenApiConfig,
         name: Option<&str>,
-    ) -> Result<Vec<PushDetails>, IntegrationError> {
+    ) -> Result<Vec<ActionDetails>, IntegrationError> {
         let int_details = self.get_aws_integration_details(rest_cfg)?;
-        let mut total: Vec<PushDetails> = vec![];
+        let mut total: Vec<ActionDetails> = vec![];
         for entry in int_details {
             let mut pushes = self.get_aws_push_list(rest_cfg, &entry.id, name)?;
             for p in &mut pushes {
@@ -393,7 +392,7 @@ impl Integrations {
     pub fn get_all_pushes(
         &self,
         rest_cfg: &OpenApiConfig,
-    ) -> Result<Vec<PushDetails>, IntegrationError> {
+    ) -> Result<Vec<ActionDetails>, IntegrationError> {
         self.get_all_aws_pushes(rest_cfg, None)
     }
 
@@ -401,7 +400,7 @@ impl Integrations {
         &self,
         rest_cfg: &OpenApiConfig,
         push_name: &str,
-    ) -> Result<Vec<PushDetails>, IntegrationError> {
+    ) -> Result<Vec<ActionDetails>, IntegrationError> {
         self.get_all_aws_pushes(rest_cfg, Some(push_name))
     }
 
@@ -410,7 +409,7 @@ impl Integrations {
         rest_cfg: &OpenApiConfig,
         integration_id: &str,
         push_name: &str,
-    ) -> Result<Option<PushDetails>, IntegrationError> {
+    ) -> Result<Option<ActionDetails>, IntegrationError> {
         let response = integrations_aws_pushes_list(
             rest_cfg,
             integration_id,
@@ -425,7 +424,7 @@ impl Integrations {
             Ok(data) => match data.results {
                 Some(list) => match list.is_empty() {
                     true => Ok(None),
-                    _ => Ok(Some(PushDetails::from(&list[0]))),
+                    _ => Ok(Some(ActionDetails::from(&list[0]))),
                 },
                 _ => Ok(None),
             },
@@ -441,7 +440,7 @@ impl Integrations {
         rest_cfg: &OpenApiConfig,
         integration_id: &str,
         push_name: &str,
-    ) -> Result<Option<PushDetails>, IntegrationError> {
+    ) -> Result<Option<ActionDetails>, IntegrationError> {
         self.get_aws_push_by_name(rest_cfg, integration_id, push_name)
     }
 
@@ -529,7 +528,7 @@ impl Integrations {
         description: Option<&str>,
         projects: Vec<String>,
         tags: Vec<String>,
-    ) -> Result<PushDetails, IntegrationError> {
+    ) -> Result<ActionDetails, IntegrationError> {
         let reg_enum = aws_region_from_str(region).unwrap_or(AwsRegionEnum::UsEast1);
         let ser_enum = aws_service_from_str(service).unwrap_or(AwsServiceEnum::Ssm);
         let push_create = AwsPush {
@@ -548,7 +547,7 @@ impl Integrations {
         };
         let response = integrations_aws_pushes_create(rest_cfg, integration_id, push_create);
         match response {
-            Ok(api) => Ok(PushDetails::from(&api)),
+            Ok(api) => Ok(ActionDetails::from(&api)),
             Err(ResponseError(ref content)) => {
                 Err(response_error(&content.status, &content.content))
             }
@@ -568,7 +567,7 @@ impl Integrations {
         description: Option<&str>,
         projects: Vec<String>,
         tags: Vec<String>,
-    ) -> Result<PushDetails, IntegrationError> {
+    ) -> Result<ActionDetails, IntegrationError> {
         self.create_aws_push(
             rest_cfg,
             integration_id,
@@ -639,7 +638,7 @@ impl Integrations {
     fn sync_aws_push(
         &self,
         rest_cfg: &OpenApiConfig,
-        push_details: &PushDetails,
+        push_details: &ActionDetails,
     ) -> Result<(), IntegrationError> {
         let description = if push_details.description.is_empty() {
             None
@@ -681,8 +680,364 @@ impl Integrations {
     pub fn sync_push(
         &self,
         rest_cfg: &OpenApiConfig,
-        push_details: &PushDetails,
+        push_details: &ActionDetails,
     ) -> Result<(), IntegrationError> {
         self.sync_aws_push(rest_cfg, push_details)
+    }
+
+    ///==========================================
+    /// Integration pulls
+    ///==========================================
+    fn get_aws_pull_list(
+        &self,
+        rest_cfg: &OpenApiConfig,
+        integration_id: &str,
+        name: Option<&str>,
+    ) -> Result<Vec<ActionDetails>, IntegrationError> {
+        let response = integrations_aws_pulls_list(
+            rest_cfg,
+            integration_id,
+            None,
+            name,
+            None,
+            NO_ORDERING,
+            None,
+            PAGE_SIZE,
+        );
+        match response {
+            Ok(data) => {
+                let mut result: Vec<ActionDetails> = Vec::new();
+                if let Some(list) = data.results {
+                    for api in list {
+                        result.push(ActionDetails::from(&api));
+                    }
+                }
+                Ok(result)
+            }
+            Err(ResponseError(ref content)) => {
+                Err(response_error(&content.status, &content.content))
+            }
+            Err(e) => Err(IntegrationError::UnhandledError(e.to_string())),
+        }
+    }
+
+    pub fn get_pull_list(
+        &self,
+        rest_cfg: &OpenApiConfig,
+        integration_id: &str,
+    ) -> Result<Vec<ActionDetails>, IntegrationError> {
+        self.get_aws_pull_list(rest_cfg, integration_id, None)
+    }
+
+    fn get_all_aws_pulls(
+        &self,
+        rest_cfg: &OpenApiConfig,
+        name: Option<&str>,
+    ) -> Result<Vec<ActionDetails>, IntegrationError> {
+        let int_details = self.get_aws_integration_details(rest_cfg)?;
+        let mut total: Vec<ActionDetails> = vec![];
+        for entry in int_details {
+            let mut pulls = self.get_aws_pull_list(rest_cfg, &entry.id, name)?;
+            for p in &mut pulls {
+                p.integration_name = entry.name.clone();
+            }
+            total.append(&mut pulls);
+        }
+        Ok(total)
+    }
+
+    pub fn get_all_pulls(
+        &self,
+        rest_cfg: &OpenApiConfig,
+    ) -> Result<Vec<ActionDetails>, IntegrationError> {
+        self.get_all_aws_pulls(rest_cfg, None)
+    }
+
+    pub fn get_all_pulls_by_name(
+        &self,
+        rest_cfg: &OpenApiConfig,
+        name: &str,
+    ) -> Result<Vec<ActionDetails>, IntegrationError> {
+        self.get_all_aws_pulls(rest_cfg, Some(name))
+    }
+
+    fn get_aws_pull_by_name(
+        &self,
+        rest_cfg: &OpenApiConfig,
+        integration_id: &str,
+        pull_name: &str,
+    ) -> Result<Option<ActionDetails>, IntegrationError> {
+        let response = integrations_aws_pulls_list(
+            rest_cfg,
+            integration_id,
+            None,
+            Some(pull_name),
+            None,
+            NO_ORDERING,
+            None,
+            PAGE_SIZE,
+        );
+        match response {
+            Ok(data) => match data.results {
+                Some(list) => match list.is_empty() {
+                    true => Ok(None),
+                    _ => Ok(Some(ActionDetails::from(&list[0]))),
+                },
+                _ => Ok(None),
+            },
+            Err(ResponseError(ref content)) => {
+                Err(response_error(&content.status, &content.content))
+            }
+            Err(e) => Err(IntegrationError::UnhandledError(e.to_string())),
+        }
+    }
+
+    pub fn get_pull_by_name(
+        &self,
+        rest_cfg: &OpenApiConfig,
+        integration_id: &str,
+        pull_name: &str,
+    ) -> Result<Option<ActionDetails>, IntegrationError> {
+        self.get_aws_pull_by_name(rest_cfg, integration_id, pull_name)
+    }
+
+    fn get_aws_pull_tasks(
+        &self,
+        rest_cfg: &OpenApiConfig,
+        integration_id: &str,
+        pull_id: &str,
+    ) -> Result<Vec<TaskDetail>, IntegrationError> {
+        let response = integrations_aws_pulls_tasks_list(
+            rest_cfg,
+            integration_id,
+            pull_id,
+            None,
+            None,
+            None,
+            NO_ORDERING,
+            None,
+            PAGE_SIZE,
+            None,
+        );
+        match response {
+            Ok(data) => {
+                let mut result: Vec<TaskDetail> = Vec::new();
+                if let Some(list) = data.results {
+                    for api in list {
+                        result.push(TaskDetail::from(&api));
+                    }
+                }
+                Ok(result)
+            }
+            Err(ResponseError(ref content)) => {
+                Err(response_error(&content.status, &content.content))
+            }
+            Err(e) => Err(IntegrationError::UnhandledError(e.to_string())),
+        }
+    }
+
+    pub fn get_pull_tasks(
+        &self,
+        rest_cfg: &OpenApiConfig,
+        integration_id: &str,
+        pull_id: &str,
+    ) -> Result<Vec<TaskDetail>, IntegrationError> {
+        let mut total: Vec<TaskDetail> = vec![];
+        let mut aws_tasks = self.get_aws_pull_tasks(rest_cfg, integration_id, pull_id)?;
+        total.append(&mut aws_tasks);
+        Ok(total)
+    }
+
+    fn delete_aws_pull(
+        &self,
+        rest_cfg: &OpenApiConfig,
+        integration_id: &str,
+        pull_id: &str,
+    ) -> Result<Option<String>, IntegrationError> {
+        let response = integrations_aws_pulls_destroy(rest_cfg, integration_id, pull_id);
+        match response {
+            Ok(_) => Ok(Some(pull_id.to_string())),
+            Err(ResponseError(ref content)) => {
+                Err(response_error(&content.status, &content.content))
+            }
+            Err(e) => Err(IntegrationError::UnhandledError(e.to_string())),
+        }
+    }
+
+    pub fn delete_pull(
+        &self,
+        rest_cfg: &OpenApiConfig,
+        integration_id: &str,
+        pull_id: &str,
+    ) -> Result<Option<String>, IntegrationError> {
+        self.delete_aws_pull(rest_cfg, integration_id, pull_id)
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn create_aws_pull(
+        &self,
+        rest_cfg: &OpenApiConfig,
+        integration_id: &str,
+        pull_name: &str,
+        resource: &str,
+        region: &str,
+        service: &str,
+        description: Option<&str>,
+        dry_run: Option<bool>,
+    ) -> Result<ActionDetails, IntegrationError> {
+        let reg_enum = aws_region_from_str(region).unwrap_or(AwsRegionEnum::UsEast1);
+        let ser_enum = aws_service_from_str(service).unwrap_or(AwsServiceEnum::Ssm);
+        let pull_create = AwsPull {
+            url: "".to_string(),
+            id: "".to_string(),
+            name: pull_name.to_string(),
+            description: description.map(String::from),
+            region: Box::new(reg_enum),
+            service: Box::new(ser_enum),
+            resource: resource.to_string(),
+            latest_task: None,
+            created_at: "".to_string(),
+            modified_at: "".to_string(),
+            dry_run,
+        };
+        let response = integrations_aws_pulls_create(rest_cfg, integration_id, pull_create);
+        match response {
+            Ok(api) => Ok(ActionDetails::from(&api)),
+            Err(ResponseError(ref content)) => {
+                Err(response_error(&content.status, &content.content))
+            }
+            Err(e) => Err(IntegrationError::UnhandledError(e.to_string())),
+        }
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    pub fn create_pull(
+        &self,
+        rest_cfg: &OpenApiConfig,
+        integration_id: &str,
+        pull_name: &str,
+        resource: &str,
+        region: &str,
+        service: &str,
+        description: Option<&str>,
+        dry_run: Option<bool>,
+    ) -> Result<ActionDetails, IntegrationError> {
+        self.create_aws_pull(
+            rest_cfg,
+            integration_id,
+            pull_name,
+            resource,
+            region,
+            service,
+            description,
+            dry_run,
+        )
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn update_aws_pull(
+        &self,
+        rest_cfg: &OpenApiConfig,
+        integration_id: &str,
+        pull_id: &str,
+        pull_name: &str,
+        resource: &str,
+        description: Option<&str>,
+        dry_run: Option<bool>,
+    ) -> Result<(), IntegrationError> {
+        let pull_update = AwsPull {
+            url: "".to_string(),
+            id: "".to_string(),
+            name: pull_name.to_string(),
+            description: description.map(String::from),
+            latest_task: None,
+            created_at: "".to_string(),
+            modified_at: "".to_string(),
+            dry_run,
+            // TODO: can these be updated? will things barf if they're changed
+            region: Box::new(AwsRegionEnum::AfSouth1),
+            service: Box::new(AwsServiceEnum::S3),
+            resource: resource.to_string(),
+        };
+        let response =
+            integrations_aws_pulls_update(rest_cfg, integration_id, pull_id, pull_update);
+        match response {
+            Ok(_) => Ok(()),
+            Err(ResponseError(ref content)) => {
+                Err(response_error(&content.status, &content.content))
+            }
+            Err(e) => Err(IntegrationError::UnhandledError(e.to_string())),
+        }
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    pub fn update_pull(
+        &self,
+        rest_cfg: &OpenApiConfig,
+        integration_id: &str,
+        pull_id: &str,
+        pull_name: &str,
+        resource: &str, // NOTE: unfortunately, this needs to be specified each time
+        description: Option<&str>,
+        dry_run: Option<bool>,
+    ) -> Result<(), IntegrationError> {
+        self.update_aws_pull(
+            rest_cfg,
+            integration_id,
+            pull_id,
+            pull_name,
+            resource,
+            description,
+            dry_run,
+        )
+    }
+
+    fn sync_aws_pull(
+        &self,
+        rest_cfg: &OpenApiConfig,
+        pull_details: &ActionDetails,
+    ) -> Result<(), IntegrationError> {
+        let description = if pull_details.description.is_empty() {
+            None
+        } else {
+            Some(pull_details.description.clone())
+        };
+        let reg_enum = aws_region_from_str(&pull_details.region).unwrap();
+        let srv_enum = aws_service_from_str(&pull_details.service).unwrap();
+        let integration_id = parent_id_from_url(&pull_details.url, "pulls/");
+        let sync_body = AwsPull {
+            url: pull_details.url.clone(),
+            id: pull_details.id.clone(),
+            name: pull_details.name.clone(),
+            description,
+            region: Box::new(reg_enum),
+            service: Box::new(srv_enum),
+            resource: pull_details.resource.clone(),
+            latest_task: None,
+            created_at: "".to_string(),
+            modified_at: "".to_string(),
+            dry_run: None,
+        };
+        let response = integrations_aws_pulls_sync_create(
+            rest_cfg,
+            integration_id,
+            &pull_details.id,
+            sync_body,
+        );
+        match response {
+            Ok(_) => Ok(()),
+            Err(ResponseError(ref content)) => {
+                Err(response_error(&content.status, &content.content))
+            }
+            Err(e) => Err(IntegrationError::UnhandledError(e.to_string())),
+        }
+    }
+
+    pub fn sync_pull(
+        &self,
+        rest_cfg: &OpenApiConfig,
+        pull_details: &ActionDetails,
+    ) -> Result<(), IntegrationError> {
+        self.sync_aws_pull(rest_cfg, pull_details)
     }
 }

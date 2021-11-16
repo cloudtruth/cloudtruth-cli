@@ -14,6 +14,7 @@ pub const INVITE_NAME_ARG: &str = "e-mail";
 pub const KEY_ARG: &str = "KEY";
 pub const NAME_ARG: &str = "NAME";
 pub const PARENT_ARG: &str = "parent";
+pub const PULL_NAME_ARG: &str = "import-name";
 pub const PUSH_NAME_ARG: &str = "push-name";
 pub const RAW_FLAG: &str = "raw";
 pub const RENAME_OPT: &str = "new-name";
@@ -29,9 +30,11 @@ pub const DIFF_SUBCMD: &str = "differences";
 pub const EDIT_SUBCMD: &str = "edit";
 pub const GET_SUBCMD: &str = "get";
 pub const HISTORY_SUBCMD: &str = "history";
+pub const IMPORT_SUBCMD: &str = "imports";
 pub const LIST_SUBCMD: &str = "list";
 pub const PUSH_SUBCMD: &str = "pushes";
 pub const SET_SUBCMD: &str = "set";
+pub const SYNC_SUBCMD: &str = "sync";
 pub const TAG_SUBCMD: &str = "tag";
 pub const TASKS_SUBCMD: &str = "tasks";
 pub const TREE_SUBCMD: &str = "tree";
@@ -42,9 +45,11 @@ const DELETE_ALIASES: &[&str] = &["del", "d"];
 const DIFF_ALIASES: &[&str] = &["difference", "differ", "diff", "di"];
 const EDIT_ALIASES: &[&str] = &["ed", "e"];
 const HISTORY_ALIASES: &[&str] = &["hist", "h"];
+const IMPORT_ALIASES: &[&str] = &["import", "imp", "im", "i"];
 const LIST_ALIASES: &[&str] = &["ls", "l"];
 const PUSH_ALIASES: &[&str] = &["push", "pu", "p"];
 const SET_ALIASES: &[&str] = &["s"];
+const SYNC_ALIASES: &[&str] = &["syn", "sy"];
 const TASKS_ALIASES: &[&str] = &["task", "ta", "t"];
 const TREE_ALIASES: &[&str] = &["tr"];
 
@@ -239,6 +244,14 @@ fn integration_name_opt() -> Arg<'static, 'static> {
         .takes_value(true)
         .value_name("name")
         .help("Integration name")
+}
+
+fn pull_name_arg() -> Arg<'static, 'static> {
+    Arg::with_name(PULL_NAME_ARG)
+        .takes_value(true)
+        .index(1)
+        .required(true)
+        .help("Import name")
 }
 
 fn push_name_arg() -> Arg<'static, 'static> {
@@ -860,7 +873,7 @@ pub fn build_cli() -> App<'static, 'static> {
                             .visible_aliases(LIST_ALIASES)
                             .about("List CloudTruth pushes")
                             .arg(integration_name_opt())
-                            .arg(values_flag())
+                            .arg(values_flag().help("Show push info values"))
                             .arg(show_times_arg())
                             .arg(table_format_options().help("Push info output format")),
                         SubCommand::with_name(SET_SUBCMD)
@@ -917,7 +930,8 @@ pub fn build_cli() -> App<'static, 'static> {
                                 .default_value("ssm")
                                 .possible_values(&["ssm", "secretsmanager"])
                                 .help("Service for the push to use (create only)")),
-                        SubCommand::with_name("sync")
+                        SubCommand::with_name(SYNC_SUBCMD)
+                            .visible_aliases(SYNC_ALIASES)
                             .about("Manually initiate action on existing push")
                             .arg(integration_name_opt())
                             .arg(push_name_arg()),
@@ -926,9 +940,74 @@ pub fn build_cli() -> App<'static, 'static> {
                             .about("List tasks for the specified CloudTruth push")
                             .arg(integration_name_opt())
                             .arg(push_name_arg())
-                            .arg(values_flag())
+                            .arg(values_flag().help("Show push task info values"))
                             .arg(show_times_arg())
-                            .arg(table_format_options()),
+                            .arg(table_format_options().help("Push task info format")),
+                    ]),
+                SubCommand::with_name(IMPORT_SUBCMD)
+                    .visible_aliases(IMPORT_ALIASES)
+                    .about("Manage CloudTruth imports")
+                    .subcommands(vec![
+                        SubCommand::with_name(DELETE_SUBCMD)
+                            .visible_aliases(DELETE_ALIASES)
+                            .about("Delete a CloudTruth import")
+                            .arg(confirm_flag())
+                            .arg(integration_name_opt())
+                            .arg(pull_name_arg()),
+                        SubCommand::with_name(GET_SUBCMD)
+                            .about("Gets all the information for the specified CloudTruth import")
+                            .arg(pull_name_arg())
+                            .arg(integration_name_opt()),
+                        SubCommand::with_name(LIST_SUBCMD)
+                            .visible_aliases(LIST_ALIASES)
+                            .about("List CloudTruth imports")
+                            .arg(integration_name_opt())
+                            .arg(values_flag().help("Show import info values"))
+                            .arg(show_times_arg())
+                            .arg(table_format_options().help("Format for import info")),
+                        SubCommand::with_name(SET_SUBCMD)
+                            .visible_aliases(SET_ALIASES)
+                            .about("Create/modify CloudTruth integration import")
+                            .arg(pull_name_arg())
+                            .arg(integration_name_opt().help("Integration name (required on create)"))
+                            .arg(rename_option().help("New import name"))
+                            .arg(description_option().help("Description for the import"))
+                            .arg(Arg::with_name("dry-run")
+                                .long("dry-run").help("Check that the import will work without doing it."))
+                            .arg(Arg::with_name("resource")
+                                .long("resource")
+                                .takes_value(true)
+                                .help(concat!(
+                                    "Resource string (required for create, [default: ",
+                                    "'/{{ environment} }/{{ project }}/{{ parameter }}'])"
+                                )))
+                            .arg(Arg::with_name("region")
+                                .long("region")
+                                .takes_value(true)
+                                .default_value("us-east-1")
+                                .possible_values(REGION_VALUES)
+                                .hide_possible_values(true) // list is too long, but want check
+                                .help("Region where import tasks run (create only)"))
+                            .arg(Arg::with_name("service")
+                                .long("service")
+                                .takes_value(true)
+                                .default_value("ssm")
+                                .possible_values(&["ssm", "secretsmanager"])
+                                .help("Service for the import to use (create only)")),
+                        SubCommand::with_name(SYNC_SUBCMD)
+                            .visible_aliases(SYNC_ALIASES)
+                            .about("Manually initiate action on existing import")
+                            .arg(pull_name_arg())
+                            .arg(integration_name_opt()),
+                        SubCommand::with_name(TASKS_SUBCMD)
+                            .visible_aliases(TASKS_ALIASES)
+                            .about("List tasks for the specified CloudTruth import")
+                            .arg(pull_name_arg())
+                            .arg(integration_name_opt())
+                            .arg(values_flag().help("Show import task info values"))
+                            .arg(show_times_arg())
+                            .arg(table_format_options().help("Format for import task info")),
+
                     ]),
             ]))
         .subcommand(SubCommand::with_name("users")

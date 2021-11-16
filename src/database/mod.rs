@@ -1,3 +1,4 @@
+mod action_details;
 mod api;
 mod api_error;
 mod audit_log_details;
@@ -30,7 +31,6 @@ mod parameters;
 mod project_details;
 mod project_error;
 mod projects;
-mod push_details;
 mod task_detail;
 mod template_details;
 mod template_error;
@@ -40,6 +40,7 @@ mod user_details;
 mod user_error;
 mod users;
 
+pub use action_details::ActionDetails;
 pub use api::Api;
 pub use api_error::ApiError;
 pub use audit_log_details::AuditLogDetails;
@@ -77,7 +78,6 @@ pub use parameters::{ParameterDetailMap, Parameters};
 pub use project_details::ProjectDetails;
 pub use project_error::ProjectError;
 pub use projects::Projects;
-pub use push_details::PushDetails;
 pub use task_detail::TaskDetail;
 pub use template_details::TemplateDetails;
 pub use template_error::TemplateError;

@@ -43,8 +43,136 @@ FLAGS:
     -V, --version    Prints version information
 
 SUBCOMMANDS:
+    help       Prints this message or the help of the given subcommand(s)
+    imports    Manage CloudTruth imports [aliases: import, imp, im, i]
+    pushes     Manage CloudTruth pushes [aliases: push, pu, p]
+========================================
+cloudtruth-actions-imports 
+Manage CloudTruth imports
+
+USAGE:
+    cloudtruth actions imports [SUBCOMMAND]
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+SUBCOMMANDS:
+    delete    Delete a CloudTruth import [aliases: del, d]
+    get       Gets all the information for the specified CloudTruth import
     help      Prints this message or the help of the given subcommand(s)
-    pushes    Manage CloudTruth pushes [aliases: push, pu, p]
+    list      List CloudTruth imports [aliases: ls, l]
+    set       Create/modify CloudTruth integration import [aliases: s]
+    sync      Manually initiate action on existing import [aliases: syn, sy]
+    tasks     List tasks for the specified CloudTruth import [aliases: task, ta, t]
+====================
+cloudtruth-actions-imports-delete 
+Delete a CloudTruth import
+
+USAGE:
+    cloudtruth actions imports delete [FLAGS] [OPTIONS] <import-name>
+
+FLAGS:
+    -y, --yes        Avoid confirmation prompt(s)
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+OPTIONS:
+    -i, --integration <name>    Integration name
+
+ARGS:
+    <import-name>    Import name
+====================
+cloudtruth-actions-imports-get 
+Gets all the information for the specified CloudTruth import
+
+USAGE:
+    cloudtruth actions imports get [OPTIONS] <import-name>
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+OPTIONS:
+    -i, --integration <name>    Integration name
+
+ARGS:
+    <import-name>    Import name
+====================
+cloudtruth-actions-imports-list 
+List CloudTruth imports
+
+USAGE:
+    cloudtruth actions imports list [FLAGS] [OPTIONS]
+
+FLAGS:
+    -h, --help          Prints help information
+        --show-times    Show create and modified times.
+    -v, --values        Show import info values
+    -V, --version       Prints version information
+
+OPTIONS:
+    -f, --format <format>       Format for import info [default: table]  [possible values: table, csv, json, yaml]
+    -i, --integration <name>    Integration name
+====================
+cloudtruth-actions-imports-set 
+Create/modify CloudTruth integration import
+
+USAGE:
+    cloudtruth actions imports set [FLAGS] [OPTIONS] <import-name>
+
+FLAGS:
+        --dry-run    Check that the import will work without doing it.
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+OPTIONS:
+    -d, --desc <description>     Description for the import
+    -i, --integration <name>     Integration name (required on create)
+    -r, --rename <new-name>      New import name
+        --region <region>        Region where import tasks run (create only) [default: us-east-1]
+        --resource <resource>    Resource string (required for create, [default: '/{{ environment} }/{{ project }}/{{
+                                 parameter }}'])
+        --service <service>      Service for the import to use (create only) [default: ssm]  [possible values: ssm,
+                                 secretsmanager]
+
+ARGS:
+    <import-name>    Import name
+====================
+cloudtruth-actions-imports-sync 
+Manually initiate action on existing import
+
+USAGE:
+    cloudtruth actions imports sync [OPTIONS] <import-name>
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+OPTIONS:
+    -i, --integration <name>    Integration name
+
+ARGS:
+    <import-name>    Import name
+====================
+cloudtruth-actions-imports-tasks 
+List tasks for the specified CloudTruth import
+
+USAGE:
+    cloudtruth actions imports tasks [FLAGS] [OPTIONS] <import-name>
+
+FLAGS:
+    -h, --help          Prints help information
+        --show-times    Show create and modified times.
+    -v, --values        Show import task info values
+    -V, --version       Prints version information
+
+OPTIONS:
+    -f, --format <format>       Format for import task info [default: table]  [possible values: table, csv, json, yaml]
+    -i, --integration <name>    Integration name
+
+ARGS:
+    <import-name>    Import name
 ========================================
 cloudtruth-actions-pushes 
 Manage CloudTruth pushes
@@ -62,7 +190,7 @@ SUBCOMMANDS:
     help      Prints this message or the help of the given subcommand(s)
     list      List CloudTruth pushes [aliases: ls, l]
     set       Create/modify CloudTruth integration push [aliases: s]
-    sync      Manually initiate action on existing push
+    sync      Manually initiate action on existing push [aliases: syn, sy]
     tasks     List tasks for the specified CloudTruth push [aliases: task, ta, t]
 ====================
 cloudtruth-actions-pushes-delete 
@@ -107,7 +235,7 @@ USAGE:
 FLAGS:
     -h, --help          Prints help information
         --show-times    Show create and modified times.
-    -v, --values        
+    -v, --values        Show push info values
     -V, --version       Prints version information
 
 OPTIONS:
@@ -166,11 +294,11 @@ USAGE:
 FLAGS:
     -h, --help          Prints help information
         --show-times    Show create and modified times.
-    -v, --values        
+    -v, --values        Show push task info values
     -V, --version       Prints version information
 
 OPTIONS:
-    -f, --format <format>        [default: table]  [possible values: table, csv, json, yaml]
+    -f, --format <format>       Push task info format [default: table]  [possible values: table, csv, json, yaml]
     -i, --integration <name>    Integration name
 
 ARGS:
