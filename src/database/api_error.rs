@@ -1,4 +1,4 @@
-use serde_yaml::Error;
+use serde_json::Error;
 use std::error;
 use std::fmt;
 use std::fmt::Formatter;
@@ -6,7 +6,7 @@ use std::fmt::Formatter;
 #[derive(Debug)]
 pub enum ApiError {
     Authentication(String),
-    MalformedApiFile(serde_yaml::Error),
+    MalformedApiFile(serde_json::Error),
     ResponseError(String),
     UnsupportedFormat(String),
     UnhandledError(String),
@@ -26,7 +26,7 @@ impl fmt::Display for ApiError {
     }
 }
 
-impl From<serde_yaml::Error> for ApiError {
+impl From<serde_json::Error> for ApiError {
     fn from(e: Error) -> Self {
         Self::MalformedApiFile(e)
     }

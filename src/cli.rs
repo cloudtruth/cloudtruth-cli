@@ -273,6 +273,22 @@ fn environment_tag_validator(arg_value: String) -> Result<(), String> {
     }
 }
 
+fn schema_format_arg() -> Arg<'static, 'static> {
+    Arg::with_name(FORMAT_OPT)
+        .takes_value(true)
+        .short("f")
+        .long("format")
+        .possible_values(&["yaml", "json"])
+        .default_value("yaml")
+        .help("Schema output format")
+}
+
+fn schema_version_arg() -> Arg<'static, 'static> {
+    Arg::with_name("version")
+        .long("version")
+        .help("Display just the schema version")
+}
+
 pub fn build_cli() -> App<'static, 'static> {
     app_from_crate!()
         .setting(AppSettings::SubcommandRequiredElseHelp)
@@ -1083,20 +1099,23 @@ pub fn build_cli() -> App<'static, 'static> {
             ])
         )
         .subcommand(SubCommand::with_name("schema")
-            .arg(Arg::with_name("format")
-                .short("f")
-                .long("format")
-                .takes_value(true)
-                .possible_values(&["yaml", "json"])
-                .default_value("yaml")
-                .help("Schema format"))
-            .arg(Arg::with_name("local")
-                .short("l")
-                .long("local")
-                .help("Local schema version (compiled into CLI)"))
-            .arg(Arg::with_name("version")
-                .short("v")
-                .long("version")
-                .help("Show just the server schema version"))
-            .about("Get the schema"))
+            .about("View CloudTruth OpenAPI schema")
+            .subcommands([
+                SubCommand::with_name("server")
+                    .visible_aliases(&["serv", "s"])
+                    .arg(schema_format_arg())
+                    .arg(schema_version_arg())
+                    .about("Show the schema in use by the server"),
+                SubCommand::with_name("local")
+                    .visible_aliases(&["loc", "l"])
+                    .arg(schema_format_arg())
+                    .arg(schema_version_arg())
+                    .about("Show the schema used to compile the CLI"),
+                SubCommand::with_name(DIFF_SUBCMD)
+                    .visible_aliases(DIFF_ALIASES)
+                    .arg(schema_format_arg())
+                    .arg(schema_version_arg())
+                    .about("Compare the server and local schemas"),
+            ])
+        )
 }

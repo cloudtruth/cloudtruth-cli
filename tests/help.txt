@@ -28,7 +28,7 @@ SUBCOMMANDS:
     parameters       Work with CloudTruth parameters [aliases: parameter, params, param, p]
     projects         Work with CloudTruth projects [aliases: project, proj]
     run              Run a shell with the parameters in place [aliases: run, r]
-    schema           Get the schema
+    schema           View CloudTruth OpenAPI schema
     templates        Work with CloudTruth templates [aliases: template, temp, t]
     users            Work with CloudTruth users [aliases: user, us]
 ============================================================
@@ -1040,18 +1040,59 @@ ARGS:
     <arguments>...    Treat the rest of the arguments as the command
 ============================================================
 cloudtruth-schema 
-Get the schema
+View CloudTruth OpenAPI schema
 
 USAGE:
-    cloudtruth schema [FLAGS] [OPTIONS]
+    cloudtruth schema [SUBCOMMAND]
 
 FLAGS:
     -h, --help       Prints help information
-    -l, --local      Local schema version (compiled into CLI)
-    -v, --version    Show just the server schema version
+    -V, --version    Prints version information
+
+SUBCOMMANDS:
+    differences    Compare the server and local schemas [aliases: difference, differ, diff, di]
+    help           Prints this message or the help of the given subcommand(s)
+    local          Show the schema used to compile the CLI [aliases: loc, l]
+    server         Show the schema in use by the server [aliases: serv, s]
+========================================
+cloudtruth-schema-differences 
+Compare the server and local schemas
+
+USAGE:
+    cloudtruth schema differences [OPTIONS]
+
+FLAGS:
+    -h, --help       Prints help information
+        --version    Display just the schema version
 
 OPTIONS:
-    -f, --format <format>    Schema format [default: yaml]  [possible values: yaml, json]
+    -f, --format <format>    Schema output format [default: yaml]  [possible values: yaml, json]
+========================================
+cloudtruth-schema-local 
+Show the schema used to compile the CLI
+
+USAGE:
+    cloudtruth schema local [OPTIONS]
+
+FLAGS:
+    -h, --help       Prints help information
+        --version    Display just the schema version
+
+OPTIONS:
+    -f, --format <format>    Schema output format [default: yaml]  [possible values: yaml, json]
+========================================
+cloudtruth-schema-server 
+Show the schema in use by the server
+
+USAGE:
+    cloudtruth schema server [OPTIONS]
+
+FLAGS:
+    -h, --help       Prints help information
+        --version    Display just the schema version
+
+OPTIONS:
+    -f, --format <format>    Schema output format [default: yaml]  [possible values: yaml, json]
 ============================================================
 cloudtruth-templates 
 Work with CloudTruth templates
