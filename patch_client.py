@@ -239,6 +239,22 @@ def fix_invitation_membership(srcdir: str) -> None:
     fix_optional(filelist, var_name="membership")
 
 
+def schema_returns_string(srcdir: str) -> None:
+    filename = f"{srcdir}/apis/api_api.rs"
+    orig = file_read_content(filename)
+    orig_return = "Result<::std::collections::HashMap<String, serde_json::Value>, Error<ApiSchemaRetrieveError>>"
+    updated_return = "Result<String, Error<ApiSchemaRetrieveError>>"
+    orig_parse = "serde_json::from_str(&local_var_content).map_err(Error::from)"
+    updated_parse = "Ok(local_var_content)"
+
+    if updated_return in orig or orig_return not in orig:
+        return
+
+    updated = orig.replace(orig_return, updated_return).replace(orig_parse, updated_parse)
+    print(f"Updating {filename} with schema string return")
+    file_write_content(filename, updated)
+
+
 def add_serde_error_handling_to_mod(srcdir: str) -> None:
     filename = f"{srcdir}/apis/mod.rs"
     added_use = "use reqwest::{Method, Url};\n"
@@ -265,6 +281,9 @@ def serdes_error_handling_calls(srcdir: str) -> None:
         orig = file_read_content(filename)
 
         if updated_use in orig or orig_use not in orig:
+            continue
+
+        if orig_serde_err not in orig:
             continue
 
         updated = orig.replace(orig_use, updated_use).replace(orig_serde_err, updated_serde_err)
@@ -305,6 +324,7 @@ if __name__ == "__main__":
     fix_latest_task(srcdir)
     fix_last_used_at(srcdir)
     fix_invitation_membership(srcdir)
+    schema_returns_string(srcdir)
     add_serde_error_handling_to_mod(srcdir)
     serdes_error_handling_calls(srcdir)
     object_type_string(srcdir)
