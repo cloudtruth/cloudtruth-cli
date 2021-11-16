@@ -26,7 +26,7 @@ pub struct AuditTrail {
     pub object_name: String,
     /// The type of object associated with the action.
     #[serde(rename = "object_type")]
-    pub object_type: Box<crate::models::ObjectTypeEnum>,
+    pub object_type: String,
     /// The timestamp of the activity that was audited.
     #[serde(rename = "timestamp")]
     pub timestamp: String,
@@ -42,7 +42,7 @@ impl AuditTrail {
         action: String,
         object_id: String,
         object_name: String,
-        object_type: crate::models::ObjectTypeEnum,
+        object_type: String,
         timestamp: String,
         user: crate::models::User,
     ) -> AuditTrail {
@@ -52,7 +52,7 @@ impl AuditTrail {
             action,
             object_id,
             object_name,
-            object_type: Box::new(object_type),
+            object_type,
             timestamp,
             user: Box::new(user),
         }

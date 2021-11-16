@@ -1,15 +1,47 @@
 use crate::cli::{FORMAT_OPT, LIST_SUBCMD};
-use crate::database::{to_object_type, AuditLogs, OpenApiConfig, Users};
+use crate::database::{AuditLogs, OpenApiConfig, Users};
 use crate::table::Table;
-use crate::{error_message, parse_datetime, warn_missing_subcommand};
+use crate::{error_message, help_message, parse_datetime, warn_missing_subcommand};
 use clap::ArgMatches;
 use color_eyre::eyre::Result;
 use indoc::printdoc;
 use std::process;
 
+const OBJECT_TYPE_VALUES: &[&str] = &[
+    "Aws",
+    "Environment",
+    "Github",
+    "Invitation",
+    "Membership",
+    "Organization",
+    "Parameter",
+    "Rule",
+    "Project",
+    "Pull",
+    "Push",
+    "ServiceAccount",
+    "Tag",
+    "Task",
+    "Template",
+    "Value",
+];
+
 /// Print a consistent `error_message()`
 fn invalid_time_format(arg: &str) {
     error_message(format!("Invalid '{}' value", arg));
+}
+
+fn resolve_object_type(input: &str) -> String {
+    let lowerin = input.to_lowercase();
+    for v in OBJECT_TYPE_VALUES {
+        if v.to_lowercase() == lowerin {
+            return v.to_string();
+        }
+    }
+    if lowerin == "service-account" {
+        return "ServiceAccount".to_string();
+    }
+    input.to_string()
 }
 
 fn proc_audit_list(
@@ -18,10 +50,9 @@ fn proc_audit_list(
     audit_logs: &AuditLogs,
 ) -> Result<()> {
     let action = subcmd_args.value_of("action");
-    let cli_obj_type = to_object_type(subcmd_args.value_of("object-type"));
+    let object_type = subcmd_args.value_of("object-type").map(resolve_object_type);
     let before = parse_datetime(subcmd_args.value_of("before"));
     let after = parse_datetime(subcmd_args.value_of("after"));
-    let object_type = cli_obj_type.map(|x| x.to_server_string());
     let name = subcmd_args.value_of("contains");
     let username = subcmd_args.value_of("username");
     let max_entries = subcmd_args
@@ -66,8 +97,14 @@ fn proc_audit_list(
 
     if details.is_empty() {
         let mut constraints: Vec<String> = vec![];
-        if let Some(o) = cli_obj_type {
-            constraints.push(format!("type=={}", o.to_string()));
+        if let Some(o) = object_type {
+            constraints.push(format!("type=={}", o));
+            if !OBJECT_TYPE_VALUES.contains(&o.as_str()) {
+                help_message(format!(
+                    "The specified --type is not one of the recognized values: {}",
+                    OBJECT_TYPE_VALUES.join(", ")
+                ));
+            }
         }
         if let Some(n) = name {
             constraints.push(format!("name-contains '{}'", n));
