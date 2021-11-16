@@ -43,13 +43,14 @@ class TestActions(TestCase):
     def tearDown(self) -> None:
         # delete any possibly lingering pushes
         for entry in self._pushes:
-            cmd = self._base_cmd + f"act push del \"{entry[0]}\" \"{entry[1]}\" -y"
+            cmd = self._base_cmd + f"act push del -i \"{entry[0]}\" \"{entry[1]}\" -y"
             subprocess.run(cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
         # delete any possibly lingering pulls
         for entry in self._pulls:
-            cmd = self._base_cmd + f"act import del \"{entry[0]}\" \"{entry[1]}\" -y"
+            cmd = self._base_cmd + f"act import del -i \"{entry[0]}\" \"{entry[1]}\" -y"
             subprocess.run(cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
         super().tearDown()
 
     @unittest.skipIf(missing_any(CT_PUSH_RUN), "Need all CT_PUSH_RUN parameters")
@@ -240,6 +241,22 @@ class TestActions(TestCase):
         self.assertIsNotNone(entry.get("Reason"))
         self.assertIsNotNone(entry.get("State"))
         self.assertIsNotNone(entry.get("Status Info"))
+        # task_name = entry.get("Reason")
+
+        ########################
+        # task step list
+        result = self.run_cli(cmd_env, base_cmd + f"act push steps '{push_name2}' -f json --show-times")
+        self.assertResultSuccess(result)
+        # TODO: why no steps???
+        """
+        steps = eval(result.out()).get("action-push-task-step")
+        self.assertGreaterEqual(len(steps), 1)
+        entry = steps[0]
+        self.assertEqual(entry.get("Task"), task_name)
+        self.assertIsNotNone(entry.get("Venue"))
+        self.assertIsNotNone(entry.get(PROP_CREATED))
+        self.assertIsNotNone(entry.get(PROP_MODIFIED))
+        """
 
         ########################
         # delete the push
@@ -317,6 +334,9 @@ class TestActions(TestCase):
         result = self.run_cli(cmd_env, base_cmd + f"act push task -i '{integ_name}' '{push_name2}'")
         self.assertResultError(result, no_push_msg)
 
+        result = self.run_cli(cmd_env, base_cmd + f"act push step -i '{integ_name}' '{push_name2}'")
+        self.assertResultError(result, no_push_msg)
+
         result = self.run_cli(cmd_env, base_cmd + f"act push get -i '{integ_name}' '{push_name2}'")
         self.assertResultError(result, no_push_msg)
 
@@ -327,6 +347,9 @@ class TestActions(TestCase):
         # error out for invalid push name (without an integration name)
         no_push_msg2 = f"Push action '{push_name2}' not found"
         result = self.run_cli(cmd_env, base_cmd + f"act push task '{push_name2}'")
+        self.assertResultError(result, no_push_msg2)
+
+        result = self.run_cli(cmd_env, base_cmd + f"act push step '{push_name2}'")
         self.assertResultError(result, no_push_msg2)
 
         result = self.run_cli(cmd_env, base_cmd + f"act push get '{push_name2}'")
@@ -351,6 +374,9 @@ class TestActions(TestCase):
         self.assertResultError(result, no_integration_msg)
 
         result = self.run_cli(cmd_env, base_cmd + f"act p task -i '{bad_int_name}' '{push_name1}' -v")
+        self.assertResultError(result, no_integration_msg)
+
+        result = self.run_cli(cmd_env, base_cmd + f"act p step -i '{bad_int_name}' '{push_name1}' -v")
         self.assertResultError(result, no_integration_msg)
 
         result = self.run_cli(cmd_env, base_cmd + f"act p del -i '{bad_int_name}' '{push_name1}' -y")
@@ -483,6 +509,22 @@ class TestActions(TestCase):
         self.assertIsNotNone(entry.get("Reason"))
         self.assertIsNotNone(entry.get("State"))
         self.assertIsNotNone(entry.get("Status Info"))
+        # task_name = entry.get("Reason")
+
+        ########################
+        # task step list
+        result = self.run_cli(cmd_env, base_cmd + f"act import steps '{import_name2}' -f json --show-times")
+        self.assertResultSuccess(result)
+        # TODO: why no steps???
+        """
+        steps = eval(result.out()).get("action-import-task-step")
+        self.assertGreaterEqual(len(steps), 1)
+        entry = steps[0]
+        self.assertEqual(entry.get("Task"), task_name)
+        self.assertIsNotNone(entry.get("Venue"))
+        self.assertIsNotNone(entry.get(PROP_CREATED))
+        self.assertIsNotNone(entry.get(PROP_MODIFIED))
+        """
 
         ########################
         # delete the import
@@ -545,6 +587,9 @@ class TestActions(TestCase):
         result = self.run_cli(cmd_env, base_cmd + f"act import task -i '{integ_name}' '{import_name2}'")
         self.assertResultError(result, no_import_msg)
 
+        result = self.run_cli(cmd_env, base_cmd + f"act import step -i '{integ_name}' '{import_name2}'")
+        self.assertResultError(result, no_import_msg)
+
         result = self.run_cli(cmd_env, base_cmd + f"act import get -i '{integ_name}' '{import_name2}'")
         self.assertResultError(result, no_import_msg)
 
@@ -555,6 +600,9 @@ class TestActions(TestCase):
         # error out for invalid import name (without an integration name)
         no_import_msg2 = f"Import action '{import_name2}' not found"
         result = self.run_cli(cmd_env, base_cmd + f"act im task '{import_name2}'")
+        self.assertResultError(result, no_import_msg2)
+
+        result = self.run_cli(cmd_env, base_cmd + f"act im step '{import_name2}'")
         self.assertResultError(result, no_import_msg2)
 
         result = self.run_cli(cmd_env, base_cmd + f"act im get '{import_name2}'")
@@ -579,6 +627,9 @@ class TestActions(TestCase):
         self.assertResultError(result, no_integration_msg)
 
         result = self.run_cli(cmd_env, base_cmd + f"act i task -i '{bad_int_name}' '{import_name1}' -v")
+        self.assertResultError(result, no_integration_msg)
+
+        result = self.run_cli(cmd_env, base_cmd + f"act i step -i '{bad_int_name}' '{import_name1}' -v")
         self.assertResultError(result, no_integration_msg)
 
         result = self.run_cli(cmd_env, base_cmd + f"act i del -i '{bad_int_name}' '{import_name1}' -y")
