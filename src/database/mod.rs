@@ -20,7 +20,6 @@ mod invitation_details;
 mod invitation_error;
 mod invitations;
 mod member_details;
-mod object_type;
 mod openapi;
 mod parameter_details;
 mod parameter_error;
@@ -65,7 +64,6 @@ pub use invitation_details::InvitationDetails;
 pub use invitation_error::InvitationError;
 pub use invitations::Invitations;
 pub use member_details::MemberDetails;
-pub use object_type::{to_object_type, ObjectType};
 pub use openapi::{
     auth_details, extract_details, extract_from_json, last_from_url, parent_id_from_url,
     response_message, OpenApiConfig, PAGE_SIZE, WRAP_SECRETS,

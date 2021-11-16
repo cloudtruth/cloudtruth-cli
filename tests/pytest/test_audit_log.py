@@ -95,7 +95,7 @@ class TestAuditLogs(TestCase):
 
         # NOTE: cannot allow all types because of issue with Tag object_type
         entries = self.audit_entries(cmd_env, "parameter")
-        filtered = find_by_prop(entries, PROP_TYPE, "parameter")
+        filtered = find_by_prop(entries, PROP_TYPE, "Parameter")
         self.assertEqual(len(entries), len(filtered))
         filtered = find_by_prop(entries, PROP_NAME, param1)
         self.assertCreateDelete(filtered)
@@ -103,14 +103,14 @@ class TestAuditLogs(TestCase):
         max_entries = 25
         entries = self.audit_entries(cmd_env, "template", temp_name, max_entries=max_entries)
         self.assertLessEqual(len(entries), max_entries)
-        filtered = find_by_prop(entries, PROP_TYPE, "template")
+        filtered = find_by_prop(entries, PROP_TYPE, "Template")
         self.assertEqual(len(entries), len(filtered))
         filtered = find_by_prop(entries, PROP_NAME, temp_name)
         self.assertCreateDelete(filtered)
 
         action = "create"
         entries = self.audit_entries(cmd_env, "environment", env_name, action=action)
-        filtered = find_by_prop(entries, PROP_TYPE, "environment")
+        filtered = find_by_prop(entries, PROP_TYPE, "Environment")
         self.assertEqual(len(entries), len(filtered))
         filtered = find_by_prop(entries, PROP_ACTION, action)
         self.assertEqual(len(entries), len(filtered))
@@ -118,7 +118,7 @@ class TestAuditLogs(TestCase):
         value_name = f"{param1}:{env_name}"
         max_entries = 5
         entries = self.audit_entries(cmd_env, "value", value_name, max_entries=max_entries)
-        filtered = find_by_prop(entries, PROP_TYPE, "value")
+        filtered = find_by_prop(entries, PROP_TYPE, "Value")
         self.assertEqual(len(entries), len(filtered))
         filtered = find_by_prop(entries, PROP_NAME, value_name)
         self.assertCreateDelete(filtered)
@@ -126,8 +126,8 @@ class TestAuditLogs(TestCase):
         #####################################
         # just a basic thing to make sure our filters work
         for obj_type in [
-            "aws", "github", "invitation", "membership", "organization", "rule", "push",
-            "service-account", "tag",
+            "Aws", "Github", "Invitation", "Membership", "Organization", "Rule", "Push",
+            "Pull", "ServiceAccount", "Tag", "Task"
         ]:
             max_entries = 5
             entries = self.audit_entries(cmd_env, obj_type, max_entries=max_entries)
@@ -204,6 +204,11 @@ class TestAuditLogs(TestCase):
         # unfiltered
         entries = self.audit_entries(cmd_env)
         self.assertNotEqual(len(entries), 0)
+
+        ######################################
+        # no such object_type -- future-proofing means we don't fail
+        result = self.run_cli(cmd_env, base_cmd + "aud ls --type snafoo")
+        self.assertResultWarning(result, "The specified --type is not one of the recognized values")
 
         # final snapshot
         result = self.run_cli(cmd_env, audit_cmd + "sum")

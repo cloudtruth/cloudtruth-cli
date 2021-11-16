@@ -272,6 +272,26 @@ def serdes_error_handling_calls(srcdir: str) -> None:
         file_write_content(filename, updated)
 
 
+def object_type_string(srcdir: str) -> None:
+    filename = f"{srcdir}/models/audit_trail.rs"
+    orig_type = "pub object_type: Box<crate::models::ObjectTypeEnum>"
+    new_type = "pub object_type: String"
+    orig_new_arg = "object_type: crate::models::ObjectTypeEnum"
+    new_new_arg = "object_type: String"
+    orig_create_arg = "object_type: Box::new(object_type)"
+    new_create_arg = "object_type"
+
+    orig = file_read_content(filename)
+    if orig_type not in orig:
+        return
+
+    updated = orig.replace(orig_type, new_type)
+    updated = updated.replace(orig_new_arg, new_new_arg)
+    updated = updated.replace(orig_create_arg, new_create_arg)
+    print(f"Updating {filename} with object type string")
+    file_write_content(filename, updated)
+
+
 if __name__ == "__main__":
     client_dir = os.getcwd() + "/client"
     srcdir = client_dir + "/src"
@@ -287,3 +307,4 @@ if __name__ == "__main__":
     fix_invitation_membership(srcdir)
     add_serde_error_handling_to_mod(srcdir)
     serdes_error_handling_calls(srcdir)
+    object_type_string(srcdir)

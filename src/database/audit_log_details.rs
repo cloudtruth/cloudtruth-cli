@@ -1,4 +1,3 @@
-use crate::database::ObjectType;
 use cloudtruth_restapi::models::AuditTrail;
 
 #[derive(Clone, Debug)]
@@ -7,7 +6,7 @@ pub struct AuditLogDetails {
     pub action: String,
     pub object_id: String,
     pub object_name: String,
-    pub object_type: ObjectType,
+    pub object_type: String,
     pub timestamp: String,
     pub user: String,
 }
@@ -20,7 +19,7 @@ impl From<&AuditTrail> for AuditLogDetails {
             action: api.action.clone(),
             object_id: api.object_id.clone(),
             object_name: api.object_name.clone(),
-            object_type: ObjectType::from(*api.object_type),
+            object_type: api.object_type.clone(),
             timestamp: api.timestamp.clone(),
             user: user
                 .name
