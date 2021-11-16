@@ -36,6 +36,7 @@ pub const PUSH_SUBCMD: &str = "pushes";
 pub const SET_SUBCMD: &str = "set";
 pub const SYNC_SUBCMD: &str = "sync";
 pub const TAG_SUBCMD: &str = "tag";
+pub const TASK_STEPS_SUBCMD: &str = "task-steps";
 pub const TASKS_SUBCMD: &str = "tasks";
 pub const TREE_SUBCMD: &str = "tree";
 
@@ -51,6 +52,7 @@ const PUSH_ALIASES: &[&str] = &["push", "pu", "p"];
 const SET_ALIASES: &[&str] = &["s"];
 const SYNC_ALIASES: &[&str] = &["syn", "sy"];
 const TASKS_ALIASES: &[&str] = &["task", "ta", "t"];
+const TASK_STEPS_ALIASES: &[&str] = &["steps", "step", "st", "ts"];
 const TREE_ALIASES: &[&str] = &["tr"];
 
 const REGION_VALUES: &[&str] = &[
@@ -935,6 +937,14 @@ pub fn build_cli() -> App<'static, 'static> {
                             .about("Manually initiate action on existing push")
                             .arg(integration_name_opt())
                             .arg(push_name_arg()),
+                        SubCommand::with_name(TASK_STEPS_SUBCMD)
+                            .visible_aliases(TASK_STEPS_ALIASES)
+                            .about("List task steps for the specified CloudTruth push")
+                            .arg(integration_name_opt())
+                            .arg(push_name_arg())
+                            .arg(values_flag().help("Show push task step info values"))
+                            .arg(show_times_arg())
+                            .arg(table_format_options().help("Push task steps info format")),
                         SubCommand::with_name(TASKS_SUBCMD)
                             .visible_aliases(TASKS_ALIASES)
                             .about("List tasks for the specified CloudTruth push")
@@ -999,6 +1009,14 @@ pub fn build_cli() -> App<'static, 'static> {
                             .about("Manually initiate action on existing import")
                             .arg(pull_name_arg())
                             .arg(integration_name_opt()),
+                        SubCommand::with_name(TASK_STEPS_SUBCMD)
+                            .visible_aliases(TASK_STEPS_ALIASES)
+                            .about("List task steps for the specified CloudTruth import")
+                            .arg(integration_name_opt())
+                            .arg(pull_name_arg())
+                            .arg(values_flag().help("Show import task step info values"))
+                            .arg(show_times_arg())
+                            .arg(table_format_options().help("Import task step info format")),
                         SubCommand::with_name(TASKS_SUBCMD)
                             .visible_aliases(TASKS_ALIASES)
                             .about("List tasks for the specified CloudTruth import")

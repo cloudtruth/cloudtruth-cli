@@ -1,7 +1,7 @@
 use crate::database::{
     auth_details, extract_details, last_from_url, parent_id_from_url, response_message,
     ActionDetails, IntegrationDetails, IntegrationError, IntegrationNode, OpenApiConfig,
-    TaskDetail, PAGE_SIZE,
+    TaskDetail, TaskStep, PAGE_SIZE,
 };
 use cloudtruth_restapi::apis::integrations_api::*;
 use cloudtruth_restapi::apis::Error::ResponseError;
@@ -491,6 +491,77 @@ impl Integrations {
         Ok(total)
     }
 
+    fn get_aws_push_task_steps(
+        &self,
+        rest_cfg: &OpenApiConfig,
+        integration_id: &str,
+        push_id: &str,
+        task_id: &str,
+    ) -> Result<Vec<TaskStep>, IntegrationError> {
+        let response = integrations_aws_pushes_tasks_steps_list(
+            rest_cfg,
+            integration_id,
+            push_id,
+            task_id,
+            None,
+            None,
+            None,
+            None,
+            None,
+            NO_ORDERING,
+            None,
+            PAGE_SIZE,
+            None,
+            None,
+            None,
+            None,
+            None,
+        );
+        match response {
+            Ok(data) => {
+                let mut result: Vec<TaskStep> = Vec::new();
+                if let Some(list) = data.results {
+                    for api in list {
+                        result.push(TaskStep::from(&api));
+                    }
+                }
+                Ok(result)
+            }
+            Err(ResponseError(ref content)) => {
+                Err(response_error(&content.status, &content.content))
+            }
+            Err(e) => Err(IntegrationError::UnhandledError(e.to_string())),
+        }
+    }
+
+    fn get_aws_push_all_task_steps(
+        &self,
+        rest_cfg: &OpenApiConfig,
+        integration_id: &str,
+        push_id: &str,
+    ) -> Result<Vec<TaskStep>, IntegrationError> {
+        let task_details = self.get_aws_push_tasks(rest_cfg, integration_id, push_id)?;
+        let mut total: Vec<TaskStep> = Vec::new();
+        for task_entry in task_details {
+            let mut task_steps =
+                self.get_aws_push_task_steps(rest_cfg, integration_id, push_id, &task_entry.id)?;
+            for step in &mut task_steps {
+                step.task_name = task_entry.reason.clone();
+            }
+            total.append(&mut task_steps)
+        }
+        Ok(total)
+    }
+
+    pub fn get_push_all_task_steps(
+        &self,
+        rest_cfg: &OpenApiConfig,
+        integration_id: &str,
+        push_id: &str,
+    ) -> Result<Vec<TaskStep>, IntegrationError> {
+        self.get_aws_push_all_task_steps(rest_cfg, integration_id, push_id)
+    }
+
     fn delete_aws_push(
         &self,
         rest_cfg: &OpenApiConfig,
@@ -846,6 +917,77 @@ impl Integrations {
         let mut aws_tasks = self.get_aws_pull_tasks(rest_cfg, integration_id, pull_id)?;
         total.append(&mut aws_tasks);
         Ok(total)
+    }
+
+    fn get_aws_pull_task_steps(
+        &self,
+        rest_cfg: &OpenApiConfig,
+        integration_id: &str,
+        pull_id: &str,
+        task_id: &str,
+    ) -> Result<Vec<TaskStep>, IntegrationError> {
+        let response = integrations_aws_pulls_tasks_steps_list(
+            rest_cfg,
+            integration_id,
+            pull_id,
+            task_id,
+            None,
+            None,
+            None,
+            None,
+            None,
+            NO_ORDERING,
+            None,
+            PAGE_SIZE,
+            None,
+            None,
+            None,
+            None,
+            None,
+        );
+        match response {
+            Ok(data) => {
+                let mut result: Vec<TaskStep> = Vec::new();
+                if let Some(list) = data.results {
+                    for api in list {
+                        result.push(TaskStep::from(&api));
+                    }
+                }
+                Ok(result)
+            }
+            Err(ResponseError(ref content)) => {
+                Err(response_error(&content.status, &content.content))
+            }
+            Err(e) => Err(IntegrationError::UnhandledError(e.to_string())),
+        }
+    }
+
+    fn get_aws_pull_all_task_steps(
+        &self,
+        rest_cfg: &OpenApiConfig,
+        integration_id: &str,
+        pull_id: &str,
+    ) -> Result<Vec<TaskStep>, IntegrationError> {
+        let task_details = self.get_aws_pull_tasks(rest_cfg, integration_id, pull_id)?;
+        let mut total: Vec<TaskStep> = Vec::new();
+        for task_entry in task_details {
+            let mut task_steps =
+                self.get_aws_pull_task_steps(rest_cfg, integration_id, pull_id, &task_entry.id)?;
+            for step in &mut task_steps {
+                step.task_name = task_entry.reason.clone();
+            }
+            total.append(&mut task_steps)
+        }
+        Ok(total)
+    }
+
+    pub fn get_pull_all_task_steps(
+        &self,
+        rest_cfg: &OpenApiConfig,
+        integration_id: &str,
+        pull_id: &str,
+    ) -> Result<Vec<TaskStep>, IntegrationError> {
+        self.get_aws_pull_all_task_steps(rest_cfg, integration_id, pull_id)
     }
 
     fn delete_aws_pull(

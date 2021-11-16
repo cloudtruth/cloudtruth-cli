@@ -1,7 +1,7 @@
 use crate::cli::{
     show_values, CONFIRM_FLAG, DELETE_SUBCMD, DESCRIPTION_OPT, FORMAT_OPT, GET_SUBCMD,
     IMPORT_SUBCMD, INTEGRATION_NAME_ARG, LIST_SUBCMD, PULL_NAME_ARG, PUSH_NAME_ARG, PUSH_SUBCMD,
-    RENAME_OPT, SET_SUBCMD, SHOW_TIMES_FLAG, SYNC_SUBCMD, TASKS_SUBCMD,
+    RENAME_OPT, SET_SUBCMD, SHOW_TIMES_FLAG, SYNC_SUBCMD, TASKS_SUBCMD, TASK_STEPS_SUBCMD,
 };
 use crate::database::{
     last_from_url, parent_id_from_url, ActionDetails, Environments, IntegrationError, Integrations,
@@ -561,6 +561,74 @@ fn proc_action_push_sync(
     Ok(())
 }
 
+fn proc_action_push_task_steps(
+    subcmd_args: &ArgMatches,
+    rest_cfg: &OpenApiConfig,
+    integrations: &Integrations,
+) -> Result<()> {
+    let push_name = subcmd_args.value_of(PUSH_NAME_ARG).unwrap();
+    let integ_name = subcmd_args.value_of(INTEGRATION_NAME_ARG);
+    let show_times = subcmd_args.is_present(SHOW_TIMES_FLAG);
+    let show_values = show_values(subcmd_args);
+    let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
+    let resolved = resolve_push_details(rest_cfg, integrations, integ_name, push_name)?;
+
+    if resolved.is_none() {
+        error_message(push_not_found_message(push_name, integ_name));
+        process::exit(31);
+    }
+
+    let details = resolved.unwrap();
+    let push_id = details.id.clone();
+    let integ_name = details.integration_name.clone();
+    let integ_id = get_push_integration_id(&details.url);
+
+    let steps = integrations.get_push_all_task_steps(rest_cfg, &integ_id, &push_id)?;
+    if steps.is_empty() {
+        println!(
+            "No push task steps found for import '{}' for integration '{}'",
+            push_name, integ_name
+        );
+    } else if !show_values {
+        let list = steps
+            .iter()
+            .map(|d| d.venue_name.clone())
+            .collect::<Vec<String>>();
+        println!("{}", list.join("\n"))
+    } else {
+        let mut hdr = vec![
+            "Task",
+            "Result",
+            "Venue",
+            "Project",
+            "Environment",
+            "Parameter",
+        ];
+        let mut properties = vec![
+            "task-name",
+            "result",
+            "venue-name",
+            "project",
+            "environment",
+            "parameter",
+        ];
+        if show_times {
+            hdr.push("Created At");
+            hdr.push("Modified At");
+            properties.push("created-at");
+            properties.push("modified-at");
+        }
+
+        let mut table = Table::new("action-push-task-step");
+        table.set_header(&hdr);
+        for entry in steps {
+            table.add_row(entry.get_properties(&properties));
+        }
+        table.render(fmt)?;
+    }
+    Ok(())
+}
+
 fn proc_action_push_tasks(
     subcmd_args: &ArgMatches,
     rest_cfg: &OpenApiConfig,
@@ -629,6 +697,8 @@ fn proc_action_push_command(
         proc_action_push_set(subcmd_args, rest_cfg, integrations)?;
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(SYNC_SUBCMD) {
         proc_action_push_sync(subcmd_args, rest_cfg, integrations)?;
+    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(TASK_STEPS_SUBCMD) {
+        proc_action_push_task_steps(subcmd_args, rest_cfg, integrations)?;
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(TASKS_SUBCMD) {
         proc_action_push_tasks(subcmd_args, rest_cfg, integrations)?;
     } else {
@@ -962,6 +1032,74 @@ fn proc_action_pull_sync(
     Ok(())
 }
 
+fn proc_action_pull_task_steps(
+    subcmd_args: &ArgMatches,
+    rest_cfg: &OpenApiConfig,
+    integrations: &Integrations,
+) -> Result<()> {
+    let pull_name = subcmd_args.value_of(PULL_NAME_ARG).unwrap();
+    let integ_name = subcmd_args.value_of(INTEGRATION_NAME_ARG);
+    let show_times = subcmd_args.is_present(SHOW_TIMES_FLAG);
+    let show_values = show_values(subcmd_args);
+    let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
+    let resolved = resolve_pull_details(rest_cfg, integrations, integ_name, pull_name)?;
+
+    if resolved.is_none() {
+        error_message(pull_not_found_message(pull_name, integ_name));
+        process::exit(31);
+    }
+
+    let details = resolved.unwrap();
+    let pull_id = details.id.clone();
+    let integ_name = details.integration_name.clone();
+    let integ_id = get_pull_integration_id(&details.url);
+
+    let steps = integrations.get_pull_all_task_steps(rest_cfg, &integ_id, &pull_id)?;
+    if steps.is_empty() {
+        println!(
+            "No import task steps found for import '{}' for integration '{}'",
+            pull_name, integ_name
+        );
+    } else if !show_values {
+        let list = steps
+            .iter()
+            .map(|d| d.venue_name.clone())
+            .collect::<Vec<String>>();
+        println!("{}", list.join("\n"))
+    } else {
+        let mut hdr = vec![
+            "Task",
+            "Result",
+            "Venue",
+            "Project",
+            "Environment",
+            "Parameter",
+        ];
+        let mut properties = vec![
+            "task-name",
+            "result",
+            "venue-name",
+            "project",
+            "environment",
+            "parameter",
+        ];
+        if show_times {
+            hdr.push("Created At");
+            hdr.push("Modified At");
+            properties.push("created-at");
+            properties.push("modified-at");
+        }
+
+        let mut table = Table::new("action-import-task-step");
+        table.set_header(&hdr);
+        for entry in steps {
+            table.add_row(entry.get_properties(&properties));
+        }
+        table.render(fmt)?;
+    }
+    Ok(())
+}
+
 fn proc_action_pull_tasks(
     subcmd_args: &ArgMatches,
     rest_cfg: &OpenApiConfig,
@@ -1030,6 +1168,8 @@ fn proc_action_import_command(
         proc_action_pull_set(subcmd_args, rest_cfg, integrations)?;
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(SYNC_SUBCMD) {
         proc_action_pull_sync(subcmd_args, rest_cfg, integrations)?;
+    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(TASK_STEPS_SUBCMD) {
+        proc_action_pull_task_steps(subcmd_args, rest_cfg, integrations)?;
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(TASKS_SUBCMD) {
         proc_action_pull_tasks(subcmd_args, rest_cfg, integrations)?;
     } else {
