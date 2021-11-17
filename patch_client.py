@@ -225,13 +225,23 @@ def fix_optional(filelist: List[str], var_name: str, var_type: str = "String") -
             continue
 
         updated = orig.replace(orig_variable, update_variable).replace(orig_serde, updated_serde)
+        if var_type.startswith("Box"):
+            # convert the Box into an Option<Box>
+            orig_box_use = f"{var_name}: Box::new({var_name})"
+            updated_box_use = f"{var_name}: Some(Box::new({var_name}))"
+            updated = updated.replace(orig_box_use, updated_box_use)
         print(f"Updating {filename} with optional {var_name} fix")
         file_write_content(filename, updated)
 
 
-def fix_last_used_at(srcdir: str) -> None:
+def fix_service_account_last_used_at(srcdir: str) -> None:
     filelist = glob.glob(f"{srcdir}/models/service_account*.rs")
     fix_optional(filelist, var_name="last_used_at")
+
+
+def fix_service_account_user(srcdir: str) -> None:
+    filelist = glob.glob(f"{srcdir}/models/service_account*.rs")
+    fix_optional(filelist, var_name="user", var_type="Box<crate::models::User>")
 
 
 def fix_invitation_membership(srcdir: str) -> None:
@@ -322,7 +332,8 @@ if __name__ == "__main__":
     add_debug_profiling(srcdir)
     add_debug_errors(srcdir)
     fix_latest_task(srcdir)
-    fix_last_used_at(srcdir)
+    fix_service_account_last_used_at(srcdir)
+    fix_service_account_user(srcdir)
     fix_invitation_membership(srcdir)
     schema_returns_string(srcdir)
     add_serde_error_handling_to_mod(srcdir)
