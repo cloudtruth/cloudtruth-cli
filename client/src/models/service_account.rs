@@ -14,8 +14,8 @@ pub struct ServiceAccount {
     pub url: String,
     #[serde(rename = "id")]
     pub id: String,
-    #[serde(rename = "user")]
-    pub user: Box<crate::models::User>,
+    #[serde(rename = "user", skip_serializing_if = "Option::is_none")]
+    pub user: Option<Box<crate::models::User>>,
     /// An optional description of the process or system using the service account.
     #[serde(rename = "description", skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
@@ -40,7 +40,7 @@ impl ServiceAccount {
         ServiceAccount {
             url,
             id,
-            user: Box::new(user),
+            user: Some(Box::new(user)),
             description: None,
             created_at,
             modified_at,
