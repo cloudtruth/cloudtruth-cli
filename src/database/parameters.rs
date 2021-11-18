@@ -212,16 +212,17 @@ impl Parameters {
         as_of: Option<String>,
         tag: Option<String>,
     ) -> Result<Option<ParameterDetails>, ParameterError> {
-        let has_values = evaluate || tag.is_some();
-        let env_arg = if has_values { Some(env_id) } else { None };
-        let value_arg = if has_values { None } else { VALUES_FALSE };
-        let eval_arg = Some(evaluate);
+        let env_arg = if !env_id.is_empty() {
+            Some(env_id)
+        } else {
+            None
+        };
         let response = projects_parameters_list(
             rest_cfg,
             proj_id,
             as_of,
             env_arg,
-            eval_arg,
+            Some(evaluate),
             mask_secrets_arg(mask_secrets),
             Some(key_name),
             NO_ORDERING,
@@ -230,7 +231,7 @@ impl Parameters {
             PARTIAL_SUCCESS,
             ONLY_SECRETS,
             tag.as_deref(),
-            value_arg,
+            None,
             wrap_secrets_arg(mask_secrets),
         );
         match response {
