@@ -1510,7 +1510,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/PaginatedAwsPushTaskList"
+                                    "$ref": "#/components/schemas/PaginatedAwsPullTaskList"
                                 }
                             }
                         },
@@ -1674,7 +1674,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/PaginatedAwsPushTaskStepList"
+                                    "$ref": "#/components/schemas/PaginatedAwsPullTaskStepList"
                                 }
                             }
                         },
@@ -1741,7 +1741,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/AwsPushTaskStep"
+                                    "$ref": "#/components/schemas/AwsPullTaskStep"
                                 }
                             }
                         },
@@ -1799,7 +1799,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/AwsPushTask"
+                                    "$ref": "#/components/schemas/AwsPullTask"
                                 }
                             }
                         },
@@ -8299,6 +8299,147 @@
                     "url"
                 ]
             },
+            "AwsPullTaskStep": {
+                "type": "object",
+                "description": "Pull task step for an AWS integration.",
+                "properties": {
+                    "url": {
+                        "type": "string",
+                        "format": "uri",
+                        "readOnly": true
+                    },
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "readOnly": true,
+                        "description": "Unique identifier for a task step."
+                    },
+                    "operation": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/OperationEnum"
+                            }
+                        ],
+                        "description": "The operation performed, if any.\n\nWhen the operation is an update, there may be additional details in the success_detail field to describe the change.\n\nWhen the project is filled in but the environment and parameterare not, the operation is on the project.  When the environmentis filled in but the project and parameter are not, the operationis on the environment.  When the project and parameter are filledin but the environment is not, the operation is on the parameter.When all three are filled in, the operation is on the value ofthe parameter of the project in the specified environment."
+                    },
+                    "success": {
+                        "type": "boolean",
+                        "description": "Indicates if the operation was successful."
+                    },
+                    "success_detail": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "Additional details about the successful operation, if any."
+                    },
+                    "fqn": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "The fully-qualified name (FQN) this of the value that was changed.",
+                        "maxLength": 1024
+                    },
+                    "environment": {
+                        "type": "string",
+                        "format": "uri",
+                        "readOnly": true,
+                        "nullable": true,
+                        "description": "The environment affected by this step."
+                    },
+                    "environment_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "nullable": true,
+                        "description": "The environment id involved in the operation."
+                    },
+                    "environment_name": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "The environment name involved in the operation.",
+                        "maxLength": 256
+                    },
+                    "project": {
+                        "type": "string",
+                        "format": "uri",
+                        "readOnly": true,
+                        "nullable": true,
+                        "description": "The project affected by this step."
+                    },
+                    "project_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "nullable": true,
+                        "description": "The project id involved in the operation."
+                    },
+                    "project_name": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "The project name involved in the operation.",
+                        "maxLength": 256
+                    },
+                    "parameter": {
+                        "type": "string",
+                        "format": "uri",
+                        "readOnly": true,
+                        "nullable": true,
+                        "description": "The parameter affected by this step."
+                    },
+                    "parameter_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "nullable": true,
+                        "description": "The parameter id involved in the operation."
+                    },
+                    "parameter_name": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "The parameter name involved in the operation.",
+                        "maxLength": 256
+                    },
+                    "venue_id": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "The integration-native id for the resource.",
+                        "maxLength": 1024
+                    },
+                    "venue_name": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "The name of the item or resource as known by the integration.",
+                        "maxLength": 256
+                    },
+                    "error_code": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "An error code, if not successful.",
+                        "maxLength": 256
+                    },
+                    "error_detail": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "Details on the error that occurred during processing."
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    },
+                    "modified_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    }
+                },
+                "required": [
+                    "created_at",
+                    "environment",
+                    "id",
+                    "modified_at",
+                    "operation",
+                    "parameter",
+                    "project",
+                    "success",
+                    "url"
+                ]
+            },
             "AwsPush": {
                 "type": "object",
                 "description": "Push actions can be configured to send configuration and secrets to\nintegrations when tags are updated.",
@@ -9286,6 +9427,60 @@
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/AwsPull"
+                        }
+                    }
+                }
+            },
+            "PaginatedAwsPullTaskList": {
+                "type": "object",
+                "properties": {
+                    "count": {
+                        "type": "integer",
+                        "example": 123
+                    },
+                    "next": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?page=4"
+                    },
+                    "previous": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?page=2"
+                    },
+                    "results": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/AwsPullTask"
+                        }
+                    }
+                }
+            },
+            "PaginatedAwsPullTaskStepList": {
+                "type": "object",
+                "properties": {
+                    "count": {
+                        "type": "integer",
+                        "example": 123
+                    },
+                    "next": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?page=4"
+                    },
+                    "previous": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?page=2"
+                    },
+                    "results": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/AwsPullTaskStep"
                         }
                     }
                 }

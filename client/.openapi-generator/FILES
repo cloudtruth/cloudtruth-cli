@@ -10,6 +10,7 @@ docs/AwsIntegration.md
 docs/AwsIntegrationCreate.md
 docs/AwsPull.md
 docs/AwsPullTask.md
+docs/AwsPullTaskStep.md
 docs/AwsPush.md
 docs/AwsPushTask.md
 docs/AwsPushTaskStep.md
@@ -40,6 +41,8 @@ docs/OrganizationsApi.md
 docs/PaginatedAuditTrailList.md
 docs/PaginatedAwsIntegrationList.md
 docs/PaginatedAwsPullList.md
+docs/PaginatedAwsPullTaskList.md
+docs/PaginatedAwsPullTaskStepList.md
 docs/PaginatedAwsPushList.md
 docs/PaginatedAwsPushTaskList.md
 docs/PaginatedAwsPushTaskStepList.md
@@ -128,6 +131,7 @@ src/models/aws_integration.rs
 src/models/aws_integration_create.rs
 src/models/aws_pull.rs
 src/models/aws_pull_task.rs
+src/models/aws_pull_task_step.rs
 src/models/aws_push.rs
 src/models/aws_push_task.rs
 src/models/aws_push_task_step.rs
@@ -154,6 +158,8 @@ src/models/organization_create.rs
 src/models/paginated_audit_trail_list.rs
 src/models/paginated_aws_integration_list.rs
 src/models/paginated_aws_pull_list.rs
+src/models/paginated_aws_pull_task_list.rs
+src/models/paginated_aws_pull_task_step_list.rs
 src/models/paginated_aws_push_list.rs
 src/models/paginated_aws_push_task_list.rs
 src/models/paginated_aws_push_task_step_list.rs
