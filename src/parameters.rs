@@ -1,12 +1,12 @@
 use crate::cli::{
     binary_name, show_values, true_false_option, AS_OF_ARG, CONFIRM_FLAG, DELETE_SUBCMD,
-    DESCRIPTION_OPT, DIFF_SUBCMD, FORMAT_OPT, GET_SUBCMD, KEY_ARG, LIST_SUBCMD, RENAME_OPT,
-    SECRETS_FLAG, SET_SUBCMD, SHOW_TIMES_FLAG,
+    DESCRIPTION_OPT, DIFF_SUBCMD, FORMAT_OPT, GET_SUBCMD, KEY_ARG, LIST_SUBCMD, PUSH_SUBCMD,
+    RENAME_OPT, SECRETS_FLAG, SET_SUBCMD, SHOW_TIMES_FLAG,
 };
 use crate::config::DEFAULT_ENV_NAME;
 use crate::database::{
     EnvironmentDetails, Environments, OpenApiConfig, ParamExportFormat, ParamExportOptions,
-    ParamRuleType, ParamType, ParameterDetails, ParameterError, Parameters, Projects,
+    ParamRuleType, ParamType, ParameterDetails, ParameterError, Parameters, Projects, TaskStep,
 };
 use crate::table::Table;
 use crate::{
@@ -998,6 +998,74 @@ fn proc_param_unset(
     Ok(())
 }
 
+fn proc_param_push(
+    subcmd_args: &ArgMatches,
+    rest_cfg: &OpenApiConfig,
+    parameters: &Parameters,
+    resolved: &ResolvedIds,
+) -> Result<()> {
+    let key_name = subcmd_args.value_of(KEY_ARG);
+    let proj_id = resolved.project_id();
+    let proj_name = resolved.project_display_name();
+    let show_times = subcmd_args.is_present(SHOW_TIMES_FLAG);
+    let show_values = show_values(subcmd_args);
+    let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
+
+    let steps: Vec<TaskStep>;
+    let qualifier: String;
+    let include_param_name: bool;
+    if let Some(param_name) = key_name {
+        if let Some(details) = parameters
+            .get_details_by_name(rest_cfg, proj_id, "", param_name, false, true, None, None)?
+        {
+            steps = parameters.get_task_steps(rest_cfg, proj_id, &details.id)?;
+            qualifier = format!(" for parameter '{}'", param_name);
+            include_param_name = false;
+        } else {
+            error_message(format!(
+                "Did not find parameter '{}' from project '{}'.",
+                param_name, proj_name,
+            ));
+            process::exit(44);
+        }
+    } else {
+        steps = parameters.get_all_task_steps(rest_cfg, proj_id)?;
+        qualifier = "".to_string();
+        include_param_name = true;
+    }
+
+    if steps.is_empty() {
+        println!("No pushes found in project '{}'{}.", proj_name, qualifier);
+    } else if !show_values {
+        let list = steps
+            .iter()
+            .map(|s| s.venue_name.clone())
+            .collect::<Vec<String>>();
+        println!("{}", list.join("\n"))
+    } else {
+        let mut hdr = vec!["Venue", "Environment", "Result"];
+        let mut props = vec!["venue-name", "environment", "result"];
+        if include_param_name {
+            hdr.insert(1, "Parameter");
+            props.insert(1, "parameter");
+        }
+        if show_times {
+            hdr.push("Created At");
+            hdr.push("Modified At");
+            props.push("created-at");
+            props.push("modified-at");
+        }
+
+        let mut table = Table::new("parameter-push-task-steps");
+        table.set_header(&hdr);
+        for entry in steps {
+            table.add_row(entry.get_properties(&props));
+        }
+        table.render(fmt)?;
+    }
+    Ok(())
+}
+
 /// Process the 'parameters' sub-command
 pub fn process_parameters_command(
     subcmd_args: &ArgMatches,
@@ -1021,6 +1089,8 @@ pub fn process_parameters_command(
         proc_param_diff(subcmd_args, rest_cfg, &parameters, resolved)?;
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("environment") {
         proc_param_env(subcmd_args, rest_cfg, &parameters, resolved)?;
+    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(PUSH_SUBCMD) {
+        proc_param_push(subcmd_args, rest_cfg, &parameters, resolved)?;
     } else {
         warn_missing_subcommand("parameters");
     }

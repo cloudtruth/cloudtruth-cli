@@ -728,6 +728,13 @@ pub fn build_cli() -> App<'static, 'static> {
                             .help("Up to two times to be compared"))
                         .arg(table_format_options().help("Display difference format"))
                         .arg(secrets_display_flag().help("Show secret values")),
+                    SubCommand::with_name(PUSH_SUBCMD)
+                        .visible_aliases(PUSH_ALIASES)
+                        .about("Show push task steps for parameters")
+                        .arg(key_arg().required(false).help("Parameter name"))
+                        .arg(show_times_arg())
+                        .arg(values_flag().help("Display push task step info"))
+                        .arg(table_format_options().help("Format for push task step info")),
                 ]),
         )
         .subcommand(SubCommand::with_name("templates")
