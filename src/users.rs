@@ -274,23 +274,20 @@ fn proc_users_invite_command(
 }
 
 /// Process the 'users' sub-command
-pub fn process_users_command(
-    subcmd_args: &ArgMatches,
-    rest_cfg: &OpenApiConfig,
-    users: &Users,
-) -> Result<()> {
+pub fn process_users_command(subcmd_args: &ArgMatches, rest_cfg: &OpenApiConfig) -> Result<()> {
+    let users = Users::new();
     if let Some(subcmd_args) = subcmd_args.subcommand_matches(DELETE_SUBCMD) {
-        proc_users_delete(subcmd_args, rest_cfg, users)?;
+        proc_users_delete(subcmd_args, rest_cfg, &users)?;
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(GET_SUBCMD) {
-        proc_users_get(subcmd_args, rest_cfg, users)?;
+        proc_users_get(subcmd_args, rest_cfg, &users)?;
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(LIST_SUBCMD) {
-        proc_users_list(subcmd_args, rest_cfg, users)?;
+        proc_users_list(subcmd_args, rest_cfg, &users)?;
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(SET_SUBCMD) {
-        proc_users_set(subcmd_args, rest_cfg, users)?;
+        proc_users_set(subcmd_args, rest_cfg, &users)?;
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("current") {
-        proc_users_current(subcmd_args, rest_cfg, users)?;
+        proc_users_current(subcmd_args, rest_cfg, &users)?;
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("invitations") {
-        proc_users_invite_command(subcmd_args, rest_cfg, users)?;
+        proc_users_invite_command(subcmd_args, rest_cfg, &users)?;
     } else {
         warn_missing_subcommand("users");
     }

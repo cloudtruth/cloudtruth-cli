@@ -14,9 +14,9 @@ use std::str::FromStr;
 pub fn process_run_command(
     subcmd_args: &ArgMatches,
     rest_cfg: &OpenApiConfig,
-    sub_proc: &mut SubProcess,
     resolved: &ResolvedIds,
 ) -> Result<()> {
+    let mut sub_proc = SubProcess::new();
     let as_of = parse_datetime(subcmd_args.value_of(AS_OF_ARG));
     let tag = parse_tag(subcmd_args.value_of(AS_OF_ARG));
     let mut arguments: Vec<String>;

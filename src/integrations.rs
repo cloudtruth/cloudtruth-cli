@@ -152,16 +152,16 @@ fn proc_integ_refresh(
 pub fn process_integrations_command(
     subcmd_args: &ArgMatches,
     rest_cfg: &OpenApiConfig,
-    integrations: &Integrations,
 ) -> Result<()> {
+    let integrations = Integrations::new();
     if let Some(subcmd_args) = subcmd_args.subcommand_matches("explore") {
-        proc_integ_explore(subcmd_args, rest_cfg, integrations)?;
+        proc_integ_explore(subcmd_args, rest_cfg, &integrations)?;
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(GET_SUBCMD) {
-        proc_integ_get(subcmd_args, rest_cfg, integrations)?;
+        proc_integ_get(subcmd_args, rest_cfg, &integrations)?;
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(LIST_SUBCMD) {
-        proc_integ_list(subcmd_args, rest_cfg, integrations)?;
+        proc_integ_list(subcmd_args, rest_cfg, &integrations)?;
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("refresh") {
-        proc_integ_refresh(subcmd_args, rest_cfg, integrations)?;
+        proc_integ_refresh(subcmd_args, rest_cfg, &integrations)?;
     } else {
         warn_missing_subcommand("integrations");
     }

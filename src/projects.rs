@@ -160,19 +160,16 @@ fn proc_proj_tree(
 }
 
 /// Process the 'project' sub-command
-pub fn process_project_command(
-    subcmd_args: &ArgMatches,
-    rest_cfg: &OpenApiConfig,
-    projects: &Projects,
-) -> Result<()> {
+pub fn process_project_command(subcmd_args: &ArgMatches, rest_cfg: &OpenApiConfig) -> Result<()> {
+    let projects = Projects::new();
     if let Some(subcmd_args) = subcmd_args.subcommand_matches(DELETE_SUBCMD) {
-        proc_proj_delete(subcmd_args, rest_cfg, projects)?;
+        proc_proj_delete(subcmd_args, rest_cfg, &projects)?;
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(LIST_SUBCMD) {
-        proc_proj_list(subcmd_args, rest_cfg, projects)?;
+        proc_proj_list(subcmd_args, rest_cfg, &projects)?;
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(SET_SUBCMD) {
-        proc_proj_set(subcmd_args, rest_cfg, projects)?;
+        proc_proj_set(subcmd_args, rest_cfg, &projects)?;
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(TREE_SUBCMD) {
-        proc_proj_tree(subcmd_args, rest_cfg, projects)?;
+        proc_proj_tree(subcmd_args, rest_cfg, &projects)?;
     } else {
         warn_missing_subcommand("projects");
     }
