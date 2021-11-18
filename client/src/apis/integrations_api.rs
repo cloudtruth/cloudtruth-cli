@@ -1019,7 +1019,7 @@ pub fn integrations_aws_pulls_tasks_list(
     page: Option<i32>,
     page_size: Option<i32>,
     state: Option<&str>,
-) -> Result<crate::models::PaginatedAwsPushTaskList, Error<IntegrationsAwsPullsTasksListError>> {
+) -> Result<crate::models::PaginatedAwsPullTaskList, Error<IntegrationsAwsPullsTasksListError>> {
     let local_var_client = &configuration.client;
 
     let local_var_uri_str = format!(
@@ -1119,7 +1119,7 @@ pub fn integrations_aws_pulls_tasks_retrieve(
     awsintegration_pk: &str,
     awspull_pk: &str,
     id: &str,
-) -> Result<crate::models::AwsPushTask, Error<IntegrationsAwsPullsTasksRetrieveError>> {
+) -> Result<crate::models::AwsPullTask, Error<IntegrationsAwsPullsTasksRetrieveError>> {
     let local_var_client = &configuration.client;
 
     let local_var_uri_str = format!(
@@ -1206,7 +1206,7 @@ pub fn integrations_aws_pulls_tasks_steps_list(
     venue_name: Option<&str>,
     venue_name__icontains: Option<&str>,
 ) -> Result<
-    crate::models::PaginatedAwsPushTaskStepList,
+    crate::models::PaginatedAwsPullTaskStepList,
     Error<IntegrationsAwsPullsTasksStepsListError>,
 > {
     let local_var_client = &configuration.client;
@@ -1327,7 +1327,7 @@ pub fn integrations_aws_pulls_tasks_steps_retrieve(
     awspull_pk: &str,
     awspulltask_pk: &str,
     id: &str,
-) -> Result<crate::models::AwsPushTaskStep, Error<IntegrationsAwsPullsTasksStepsRetrieveError>> {
+) -> Result<crate::models::AwsPullTaskStep, Error<IntegrationsAwsPullsTasksStepsRetrieveError>> {
     let local_var_client = &configuration.client;
 
     let local_var_uri_str = format!("{}/api/v1/integrations/aws/{awsintegration_pk}/pulls/{awspull_pk}/tasks/{awspulltask_pk}/steps/{id}/", configuration.base_path, awsintegration_pk=awsintegration_pk, awspull_pk=awspull_pk, awspulltask_pk=awspulltask_pk, id=id);
