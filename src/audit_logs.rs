@@ -161,15 +161,12 @@ fn proc_audit_summary(
     Ok(())
 }
 
-pub fn process_audit_log_command(
-    subcmd_args: &ArgMatches,
-    rest_cfg: &OpenApiConfig,
-    audit_logs: &AuditLogs,
-) -> Result<()> {
+pub fn process_audit_log_command(subcmd_args: &ArgMatches, rest_cfg: &OpenApiConfig) -> Result<()> {
+    let audit_logs = AuditLogs::new();
     if let Some(subcmd_args) = subcmd_args.subcommand_matches(LIST_SUBCMD) {
-        proc_audit_list(subcmd_args, rest_cfg, audit_logs)?;
+        proc_audit_list(subcmd_args, rest_cfg, &audit_logs)?;
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("summary") {
-        proc_audit_summary(subcmd_args, rest_cfg, audit_logs)?;
+        proc_audit_summary(subcmd_args, rest_cfg, &audit_logs)?;
     } else {
         warn_missing_subcommand("audit-logs");
     }

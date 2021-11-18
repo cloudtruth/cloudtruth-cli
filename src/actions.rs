@@ -1179,15 +1179,12 @@ fn proc_action_import_command(
 }
 
 /// Process the 'actions' sub-command
-pub fn process_actions_command(
-    subcmd_args: &ArgMatches,
-    rest_cfg: &OpenApiConfig,
-    integrations: &Integrations,
-) -> Result<()> {
+pub fn process_actions_command(subcmd_args: &ArgMatches, rest_cfg: &OpenApiConfig) -> Result<()> {
+    let integrations = Integrations::new();
     if let Some(subcmd_args) = subcmd_args.subcommand_matches(PUSH_SUBCMD) {
-        proc_action_push_command(subcmd_args, rest_cfg, integrations)?;
+        proc_action_push_command(subcmd_args, rest_cfg, &integrations)?;
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(IMPORT_SUBCMD) {
-        proc_action_import_command(subcmd_args, rest_cfg, integrations)?;
+        proc_action_import_command(subcmd_args, rest_cfg, &integrations)?;
     } else {
         warn_missing_subcommand("actions");
     }

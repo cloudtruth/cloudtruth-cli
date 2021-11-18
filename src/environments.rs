@@ -327,18 +327,18 @@ fn proc_env_tag(
 pub fn process_environment_command(
     subcmd_args: &ArgMatches,
     rest_cfg: &OpenApiConfig,
-    environments: &Environments,
 ) -> Result<()> {
+    let environments = Environments::new();
     if let Some(subcmd_args) = subcmd_args.subcommand_matches(DELETE_SUBCMD) {
-        proc_env_delete(subcmd_args, rest_cfg, environments)?;
+        proc_env_delete(subcmd_args, rest_cfg, &environments)?;
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(LIST_SUBCMD) {
-        proc_env_list(subcmd_args, rest_cfg, environments)?;
+        proc_env_list(subcmd_args, rest_cfg, &environments)?;
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(SET_SUBCMD) {
-        proc_env_set(subcmd_args, rest_cfg, environments)?;
+        proc_env_set(subcmd_args, rest_cfg, &environments)?;
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(TREE_SUBCMD) {
-        proc_env_tree(subcmd_args, rest_cfg, environments)?;
+        proc_env_tree(subcmd_args, rest_cfg, &environments)?;
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(TAG_SUBCMD) {
-        proc_env_tag(subcmd_args, rest_cfg, environments)?;
+        proc_env_tag(subcmd_args, rest_cfg, &environments)?;
     } else {
         warn_missing_subcommand("environments");
     }

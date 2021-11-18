@@ -56,17 +56,14 @@ fn proc_schema_server(subcmd_args: &ArgMatches, rest_cfg: &OpenApiConfig, api: &
     Ok(())
 }
 
-pub fn process_schema_command(
-    subcmd_args: &ArgMatches,
-    rest_cfg: &OpenApiConfig,
-    api: &Api,
-) -> Result<()> {
+pub fn process_schema_command(subcmd_args: &ArgMatches, rest_cfg: &OpenApiConfig) -> Result<()> {
+    let api = Api::new();
     if let Some(subcmd_args) = subcmd_args.subcommand_matches(DIFF_SUBCMD) {
-        proc_schema_diff(subcmd_args, rest_cfg, api)?;
+        proc_schema_diff(subcmd_args, rest_cfg, &api)?;
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("local") {
-        proc_schema_local(subcmd_args, rest_cfg, api)?;
+        proc_schema_local(subcmd_args, rest_cfg, &api)?;
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("server") {
-        proc_schema_server(subcmd_args, rest_cfg, api)?;
+        proc_schema_server(subcmd_args, rest_cfg, &api)?;
     } else {
         warn_missing_subcommand("schema");
     }

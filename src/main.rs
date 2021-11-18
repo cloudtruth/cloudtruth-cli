@@ -25,10 +25,7 @@ use crate::audit_logs::process_audit_log_command;
 use crate::config::env::ConfigEnv;
 use crate::config::{Config, CT_PROFILE, DEFAULT_ENV_NAME};
 use crate::configuration::process_config_command;
-use crate::database::{
-    Api, AuditLogs, Environments, Integrations, OpenApiConfig, Parameters, Projects, Templates,
-    Users,
-};
+use crate::database::{Environments, OpenApiConfig, Projects};
 use crate::environments::process_environment_command;
 use crate::integrations::process_integrations_command;
 use crate::login::process_login_command;
@@ -37,7 +34,6 @@ use crate::parameters::process_parameters_command;
 use crate::projects::process_project_command;
 use crate::run::process_run_command;
 use crate::schema::process_schema_command;
-use crate::subprocess::SubProcess;
 use crate::templates::process_templates_command;
 use crate::users::process_users_command;
 use chrono::{DateTime, Datelike, NaiveDate, NaiveDateTime, NaiveTime, Utc};
@@ -423,8 +419,7 @@ fn main() -> Result<()> {
     }
 
     if let Some(matches) = matches.subcommand_matches("schema") {
-        let api = Api::new();
-        process_schema_command(matches, &rest_cfg, &api)?;
+        process_schema_command(matches, &rest_cfg)?;
         process::exit(0)
     }
 
@@ -432,38 +427,32 @@ fn main() -> Result<()> {
     check_config()?;
 
     if let Some(matches) = matches.subcommand_matches("users") {
-        let users = Users::new();
-        process_users_command(matches, &rest_cfg, &users)?;
+        process_users_command(matches, &rest_cfg)?;
         process::exit(0)
     }
 
     if let Some(matches) = matches.subcommand_matches("environments") {
-        let environments = Environments::new();
-        process_environment_command(matches, &rest_cfg, &environments)?;
+        process_environment_command(matches, &rest_cfg)?;
         process::exit(0)
     }
 
     if let Some(matches) = matches.subcommand_matches("projects") {
-        let projects = Projects::new();
-        process_project_command(matches, &rest_cfg, &projects)?;
+        process_project_command(matches, &rest_cfg)?;
         process::exit(0)
     }
 
     if let Some(matches) = matches.subcommand_matches("integrations") {
-        let integrations = Integrations::new();
-        process_integrations_command(matches, &rest_cfg, &integrations)?;
+        process_integrations_command(matches, &rest_cfg)?;
         process::exit(0)
     }
 
     if let Some(matches) = matches.subcommand_matches("actions") {
-        let integrations = Integrations::new();
-        process_actions_command(matches, &rest_cfg, &integrations)?;
+        process_actions_command(matches, &rest_cfg)?;
         process::exit(0)
     }
 
     if let Some(matches) = matches.subcommand_matches("audit-logs") {
-        let audit_logs = AuditLogs::new();
-        process_audit_log_command(matches, &rest_cfg, &audit_logs)?;
+        process_audit_log_command(matches, &rest_cfg)?;
         process::exit(0);
     }
 
@@ -471,18 +460,15 @@ fn main() -> Result<()> {
     let resolved = resolve_ids(Config::global(), &rest_cfg)?;
 
     if let Some(matches) = matches.subcommand_matches("parameters") {
-        let parameters = Parameters::new();
-        process_parameters_command(matches, &rest_cfg, &parameters, &resolved)?;
+        process_parameters_command(matches, &rest_cfg, &resolved)?;
     }
 
     if let Some(matches) = matches.subcommand_matches("templates") {
-        let templates = Templates::new();
-        process_templates_command(matches, &rest_cfg, &templates, &resolved)?;
+        process_templates_command(matches, &rest_cfg, &resolved)?;
     }
 
     if let Some(matches) = matches.subcommand_matches("run") {
-        let mut sub_proc = SubProcess::new();
-        process_run_command(matches, &rest_cfg, &mut sub_proc, &resolved)?;
+        process_run_command(matches, &rest_cfg, &resolved)?;
     }
 
     Ok(())

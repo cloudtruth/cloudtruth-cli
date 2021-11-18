@@ -1002,25 +1002,25 @@ fn proc_param_unset(
 pub fn process_parameters_command(
     subcmd_args: &ArgMatches,
     rest_cfg: &OpenApiConfig,
-    parameters: &Parameters,
     resolved: &ResolvedIds,
 ) -> Result<()> {
+    let parameters = Parameters::new();
     if let Some(subcmd_args) = subcmd_args.subcommand_matches(LIST_SUBCMD) {
-        proc_param_list(subcmd_args, rest_cfg, parameters, resolved)?;
+        proc_param_list(subcmd_args, rest_cfg, &parameters, resolved)?;
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(GET_SUBCMD) {
-        proc_param_get(subcmd_args, rest_cfg, parameters, resolved)?;
+        proc_param_get(subcmd_args, rest_cfg, &parameters, resolved)?;
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(SET_SUBCMD) {
-        proc_param_set(subcmd_args, rest_cfg, parameters, resolved)?;
+        proc_param_set(subcmd_args, rest_cfg, &parameters, resolved)?;
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(DELETE_SUBCMD) {
-        proc_param_delete(subcmd_args, rest_cfg, parameters, resolved)?;
+        proc_param_delete(subcmd_args, rest_cfg, &parameters, resolved)?;
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("export") {
-        proc_param_export(subcmd_args, rest_cfg, parameters, resolved)?;
+        proc_param_export(subcmd_args, rest_cfg, &parameters, resolved)?;
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("unset") {
-        proc_param_unset(subcmd_args, rest_cfg, parameters, resolved)?;
+        proc_param_unset(subcmd_args, rest_cfg, &parameters, resolved)?;
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(DIFF_SUBCMD) {
-        proc_param_diff(subcmd_args, rest_cfg, parameters, resolved)?;
+        proc_param_diff(subcmd_args, rest_cfg, &parameters, resolved)?;
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("environment") {
-        proc_param_env(subcmd_args, rest_cfg, parameters, resolved)?;
+        proc_param_env(subcmd_args, rest_cfg, &parameters, resolved)?;
     } else {
         warn_missing_subcommand("parameters");
     }

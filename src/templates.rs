@@ -505,27 +505,27 @@ fn proc_template_validate(
 pub fn process_templates_command(
     subcmd_args: &ArgMatches,
     rest_cfg: &OpenApiConfig,
-    templates: &Templates,
     resolved: &ResolvedIds,
 ) -> Result<()> {
+    let templates = Templates::new();
     if let Some(subcmd_args) = subcmd_args.subcommand_matches(DELETE_SUBCMD) {
-        proc_template_delete(subcmd_args, rest_cfg, templates, resolved)?;
+        proc_template_delete(subcmd_args, rest_cfg, &templates, resolved)?;
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(DIFF_SUBCMD) {
-        proc_template_diff(subcmd_args, rest_cfg, templates, resolved)?;
+        proc_template_diff(subcmd_args, rest_cfg, &templates, resolved)?;
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(EDIT_SUBCMD) {
-        proc_template_edit(subcmd_args, rest_cfg, templates, resolved)?;
+        proc_template_edit(subcmd_args, rest_cfg, &templates, resolved)?;
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(LIST_SUBCMD) {
-        proc_template_list(subcmd_args, rest_cfg, templates, resolved)?;
+        proc_template_list(subcmd_args, rest_cfg, &templates, resolved)?;
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(GET_SUBCMD) {
-        proc_template_get(subcmd_args, rest_cfg, templates, resolved)?;
+        proc_template_get(subcmd_args, rest_cfg, &templates, resolved)?;
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("preview") {
-        proc_template_preview(subcmd_args, rest_cfg, templates, resolved)?;
+        proc_template_preview(subcmd_args, rest_cfg, &templates, resolved)?;
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(SET_SUBCMD) {
-        proc_template_set(subcmd_args, rest_cfg, templates, resolved)?;
+        proc_template_set(subcmd_args, rest_cfg, &templates, resolved)?;
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(HISTORY_SUBCMD) {
-        proc_template_history(subcmd_args, rest_cfg, templates, resolved)?;
+        proc_template_history(subcmd_args, rest_cfg, &templates, resolved)?;
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("validate") {
-        proc_template_validate(subcmd_args, rest_cfg, templates, resolved)?;
+        proc_template_validate(subcmd_args, rest_cfg, &templates, resolved)?;
     } else {
         warn_missing_subcommand("templates");
     }
