@@ -710,6 +710,7 @@ impl Parameters {
         &self,
         rest_cfg: &OpenApiConfig,
         proj_id: &str,
+        env_id: &str,
         param_id: &str,
     ) -> Result<Vec<TaskStep>, ParameterError> {
         let mut result = vec![];
@@ -729,7 +730,9 @@ impl Parameters {
                 Ok(data) => {
                     if let Some(list) = data.results {
                         for ref task in list {
-                            result.push(TaskStep::from(task));
+                            if task.environment_id.clone().unwrap_or_default().as_str() == env_id {
+                                result.push(TaskStep::from(task));
+                            }
                         }
                         page_count += 1;
                     } else {
@@ -752,12 +755,13 @@ impl Parameters {
         &self,
         rest_cfg: &OpenApiConfig,
         proj_id: &str,
+        env_id: &str,
     ) -> Result<Vec<TaskStep>, ParameterError> {
         // need the parameter id for getting task steps, so get list of parameters
         let params = self.get_parameter_details(rest_cfg, proj_id, "", true, false, None, None)?;
         let mut total = vec![];
         for p in params {
-            let mut tasks = self.get_task_steps(rest_cfg, proj_id, &p.id)?;
+            let mut tasks = self.get_task_steps(rest_cfg, proj_id, env_id, &p.id)?;
             total.append(&mut tasks);
         }
         Ok(total)

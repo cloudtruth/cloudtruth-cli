@@ -1007,6 +1007,7 @@ fn proc_param_push(
     let key_name = subcmd_args.value_of(KEY_ARG);
     let proj_id = resolved.project_id();
     let proj_name = resolved.project_display_name();
+    let env_id = resolved.environment_id();
     let show_times = subcmd_args.is_present(SHOW_TIMES_FLAG);
     let show_values = show_values(subcmd_args);
     let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
@@ -1018,7 +1019,7 @@ fn proc_param_push(
         if let Some(details) = parameters
             .get_details_by_name(rest_cfg, proj_id, "", param_name, false, true, None, None)?
         {
-            steps = parameters.get_task_steps(rest_cfg, proj_id, &details.id)?;
+            steps = parameters.get_task_steps(rest_cfg, proj_id, env_id, &details.id)?;
             qualifier = format!(" for parameter '{}'", param_name);
             include_param_name = false;
         } else {
@@ -1029,7 +1030,7 @@ fn proc_param_push(
             process::exit(44);
         }
     } else {
-        steps = parameters.get_all_task_steps(rest_cfg, proj_id)?;
+        steps = parameters.get_all_task_steps(rest_cfg, proj_id, env_id)?;
         qualifier = "".to_string();
         include_param_name = true;
     }
@@ -1056,7 +1057,7 @@ fn proc_param_push(
             props.push("modified-at");
         }
 
-        let mut table = Table::new("parameter-push-task-steps");
+        let mut table = Table::new("parameter-push-task-step");
         table.set_header(&hdr);
         for entry in steps {
             table.add_row(entry.get_properties(&props));
