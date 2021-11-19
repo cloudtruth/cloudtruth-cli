@@ -1,6 +1,6 @@
 use crate::database::{
     auth_details, response_message, OpenApiConfig, TemplateDetails, TemplateError, TemplateHistory,
-    Users, PAGE_SIZE,
+    Users, NO_PAGE, PAGE_SIZE,
 };
 use cloudtruth_restapi::apis::projects_api::*;
 use cloudtruth_restapi::apis::Error::ResponseError;
@@ -91,7 +91,7 @@ impl Templates {
             Some(!show_secrets),
             Some(template_name),
             NO_ORDERING,
-            None,
+            NO_PAGE,
             PAGE_SIZE,
             tag.as_deref(),
         );
@@ -132,44 +132,53 @@ impl Templates {
         rest_cfg: &OpenApiConfig,
         proj_id: &str,
     ) -> Result<Vec<TemplateDetails>, TemplateError> {
-        let evaluate = Some(false);
-        let mask_secrets = Some(true);
-        let env_name = None;
-        let as_of = None;
-        let tag = None;
-        let name = None; // get everything
-        let response = projects_templates_list(
-            rest_cfg,
-            proj_id,
-            as_of,
-            env_name,
-            evaluate,
-            mask_secrets,
-            name,
-            NO_ORDERING,
-            None,
-            PAGE_SIZE,
-            tag,
-        );
-        match response {
-            Ok(data) => {
-                let mut list: Vec<TemplateDetails> = Vec::new();
-                if let Some(templates) = data.results {
-                    for template in templates {
-                        list.push(TemplateDetails::from(&template));
+        let mut result: Vec<TemplateDetails> = Vec::new();
+        let mut page_count = 1;
+        loop {
+            let evaluate = Some(false);
+            let mask_secrets = Some(true);
+            let env_name = None;
+            let as_of = None;
+            let tag = None;
+            let name = None; // get everything
+            let response = projects_templates_list(
+                rest_cfg,
+                proj_id,
+                as_of,
+                env_name,
+                evaluate,
+                mask_secrets,
+                name,
+                NO_ORDERING,
+                Some(page_count),
+                PAGE_SIZE,
+                tag,
+            );
+            match response {
+                Ok(data) => {
+                    if let Some(templates) = data.results {
+                        for template in templates {
+                            result.push(TemplateDetails::from(&template));
+                        }
+                        page_count += 1;
+                    } else {
+                        break;
                     }
-                    list.sort_by(|l, r| l.name.cmp(&r.name));
+                    if data.next.is_none() {
+                        break;
+                    }
                 }
-                Ok(list)
+                Err(ResponseError(ref content)) => match &content.entity {
+                    Some(ProjectsTemplatesListError::Status422(tle)) => {
+                        return Err(TemplateError::EvaluateFailed(tle.clone()))
+                    }
+                    _ => return Err(response_error(&content.status, &content.content, env_name)),
+                },
+                Err(e) => return Err(TemplateError::UnhandledError(e.to_string())),
             }
-            Err(ResponseError(ref content)) => match &content.entity {
-                Some(ProjectsTemplatesListError::Status422(tle)) => {
-                    Err(TemplateError::EvaluateFailed(tle.clone()))
-                }
-                _ => Err(response_error(&content.status, &content.content, env_name)),
-            },
-            Err(e) => Err(TemplateError::UnhandledError(e.to_string())),
         }
+        result.sort_by(|l, r| l.name.cmp(&r.name));
+        Ok(result)
     }
 
     pub fn create_template(

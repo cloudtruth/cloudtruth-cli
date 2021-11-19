@@ -1,7 +1,7 @@
 use crate::database::{
     auth_details, extract_details, last_from_url, parent_id_from_url, response_message,
     ActionDetails, IntegrationDetails, IntegrationError, IntegrationNode, OpenApiConfig,
-    TaskDetail, TaskStep, PAGE_SIZE,
+    TaskDetail, TaskStep, NO_PAGE, PAGE_SIZE,
 };
 use cloudtruth_restapi::apis::integrations_api::*;
 use cloudtruth_restapi::apis::Error::ResponseError;
@@ -107,44 +107,70 @@ impl Integrations {
         &self,
         rest_cfg: &OpenApiConfig,
     ) -> Result<Vec<IntegrationDetails>, IntegrationError> {
-        let response = integrations_aws_list(rest_cfg, None, None, NO_ORDERING, None, PAGE_SIZE);
-        match response {
-            Ok(data) => {
-                let mut result: Vec<IntegrationDetails> = Vec::new();
-                if let Some(list) = data.results {
-                    for gh in list {
-                        result.push(IntegrationDetails::from(&gh));
+        let mut result: Vec<IntegrationDetails> = Vec::new();
+        let mut page_count = 1;
+        loop {
+            let response = integrations_aws_list(
+                rest_cfg,
+                None,
+                None,
+                NO_ORDERING,
+                Some(page_count),
+                PAGE_SIZE,
+            );
+            match response {
+                Ok(data) => {
+                    if let Some(list) = data.results {
+                        for gh in list {
+                            result.push(IntegrationDetails::from(&gh));
+                        }
+                        page_count += 1;
+                    } else {
+                        break;
+                    }
+                    if data.next.is_none() {
+                        break;
                     }
                 }
-                Ok(result)
+                Err(ResponseError(ref content)) => {
+                    return Err(response_error(&content.status, &content.content));
+                }
+                Err(e) => return Err(IntegrationError::UnhandledError(e.to_string())),
             }
-            Err(ResponseError(ref content)) => {
-                Err(response_error(&content.status, &content.content))
-            }
-            Err(e) => Err(IntegrationError::UnhandledError(e.to_string())),
-        }
+        } // loop
+        Ok(result)
     }
 
     fn get_github_integration_details(
         &self,
         rest_cfg: &OpenApiConfig,
     ) -> Result<Vec<IntegrationDetails>, IntegrationError> {
-        let response = integrations_github_list(rest_cfg, None, NO_ORDERING, None, PAGE_SIZE);
-        match response {
-            Ok(data) => {
-                let mut result: Vec<IntegrationDetails> = Vec::new();
-                if let Some(list) = data.results {
-                    for gh in list {
-                        result.push(IntegrationDetails::from(&gh));
+        let mut result: Vec<IntegrationDetails> = Vec::new();
+        let mut page_count = 1;
+        loop {
+            let response =
+                integrations_github_list(rest_cfg, None, NO_ORDERING, Some(page_count), PAGE_SIZE);
+            match response {
+                Ok(data) => {
+                    if let Some(list) = data.results {
+                        for gh in list {
+                            result.push(IntegrationDetails::from(&gh));
+                        }
+                        page_count += 1;
+                    } else {
+                        break;
+                    }
+                    if data.next.is_none() {
+                        break;
                     }
                 }
-                Ok(result)
+                Err(ResponseError(ref content)) => {
+                    return Err(response_error(&content.status, &content.content))
+                }
+                Err(e) => return Err(IntegrationError::UnhandledError(e.to_string())),
             }
-            Err(ResponseError(ref content)) => {
-                Err(response_error(&content.status, &content.content))
-            }
-            Err(e) => Err(IntegrationError::UnhandledError(e.to_string())),
-        }
+        } // loop
+        Ok(result)
     }
 
     /// Gets a list of `IntegrationDetails` for all integration types.
@@ -166,36 +192,45 @@ impl Integrations {
         rest_cfg: &OpenApiConfig,
         fqn: Option<&str>,
     ) -> Result<Vec<IntegrationNode>, IntegrationError> {
-        let response = integrations_explore_list(rest_cfg, fqn, NO_ORDERING, None, PAGE_SIZE);
-        if let Ok(response) = response {
-            let mut results: Vec<IntegrationNode> = Vec::new();
-            if let Some(list) = response.results {
-                for item in list {
-                    results.push(IntegrationNode::from(&item))
+        let mut results: Vec<IntegrationNode> = Vec::new();
+        let page_count = 1;
+        loop {
+            let response =
+                integrations_explore_list(rest_cfg, fqn, NO_ORDERING, Some(page_count), PAGE_SIZE);
+            if let Ok(data) = response {
+                if let Some(list) = data.results {
+                    for item in list {
+                        results.push(IntegrationNode::from(&item))
+                    }
+                } else {
+                    break;
                 }
-                results.sort_by(|l, r| l.fqn.cmp(&r.fqn));
-            }
-            Ok(results)
-        } else if let Err(ResponseError(ref content)) = response {
-            let fqn = fqn.unwrap_or_default();
-            let name = last_from_url(fqn);
-            let details = extract_details(&content.content);
-            if content.status == 415 {
-                Ok(vec![binary_node(fqn, name, &details)])
-            } else if content.status == 507 {
-                Ok(vec![large_node(fqn, name, &details)])
-            } else if content.status == 401 || content.status == 403 {
-                Err(auth_error(&content.content))
-            } else if content.status == 400 || content.status == 404 {
-                Err(IntegrationError::NotFound(details))
+                if data.next.is_none() {
+                    break;
+                }
+            } else if let Err(ResponseError(ref content)) = response {
+                let fqn = fqn.unwrap_or_default();
+                let name = last_from_url(fqn);
+                let details = extract_details(&content.content);
+                if content.status == 415 {
+                    results.push(binary_node(fqn, name, &details))
+                } else if content.status == 507 {
+                    results.push(large_node(fqn, name, &details))
+                } else if content.status == 401 || content.status == 403 {
+                    return Err(auth_error(&content.content));
+                } else if content.status == 400 || content.status == 404 {
+                    return Err(IntegrationError::NotFound(details));
+                } else {
+                    return Err(response_error(&content.status, &content.content));
+                }
             } else {
-                Err(response_error(&content.status, &content.content))
+                return Err(IntegrationError::UnhandledError(
+                    response.unwrap_err().to_string(),
+                ));
             }
-        } else {
-            Err(IntegrationError::UnhandledError(
-                response.unwrap_err().to_string(),
-            ))
         }
+        results.sort_by(|l, r| l.fqn.cmp(&r.fqn));
+        Ok(results)
     }
 
     fn get_aws_id(
@@ -337,31 +372,39 @@ impl Integrations {
         integration_id: &str,
         name: Option<&str>,
     ) -> Result<Vec<ActionDetails>, IntegrationError> {
-        let response = integrations_aws_pushes_list(
-            rest_cfg,
-            integration_id,
-            None,
-            name,
-            None,
-            NO_ORDERING,
-            None,
-            PAGE_SIZE,
-        );
-        match response {
-            Ok(data) => {
-                let mut result: Vec<ActionDetails> = Vec::new();
-                if let Some(list) = data.results {
-                    for api in list {
-                        result.push(ActionDetails::from(&api));
+        let mut result: Vec<ActionDetails> = Vec::new();
+        let page_count = 1;
+        loop {
+            let response = integrations_aws_pushes_list(
+                rest_cfg,
+                integration_id,
+                None,
+                name,
+                None,
+                NO_ORDERING,
+                Some(page_count),
+                PAGE_SIZE,
+            );
+            match response {
+                Ok(data) => {
+                    if let Some(list) = data.results {
+                        for api in list {
+                            result.push(ActionDetails::from(&api));
+                        }
+                    } else {
+                        break;
+                    }
+                    if data.next.is_none() {
+                        break;
                     }
                 }
-                Ok(result)
+                Err(ResponseError(ref content)) => {
+                    return Err(response_error(&content.status, &content.content))
+                }
+                Err(e) => return Err(IntegrationError::UnhandledError(e.to_string())),
             }
-            Err(ResponseError(ref content)) => {
-                Err(response_error(&content.status, &content.content))
-            }
-            Err(e) => Err(IntegrationError::UnhandledError(e.to_string())),
-        }
+        } // loop
+        Ok(result)
     }
 
     pub fn get_push_list(
@@ -417,7 +460,7 @@ impl Integrations {
             Some(push_name),
             None,
             NO_ORDERING,
-            None,
+            NO_PAGE,
             PAGE_SIZE,
         );
         match response {
@@ -450,33 +493,42 @@ impl Integrations {
         integration_id: &str,
         push_id: &str,
     ) -> Result<Vec<TaskDetail>, IntegrationError> {
-        let response = integrations_aws_pushes_tasks_list(
-            rest_cfg,
-            integration_id,
-            push_id,
-            None,
-            None,
-            None,
-            NO_ORDERING,
-            None,
-            PAGE_SIZE,
-            None,
-        );
-        match response {
-            Ok(data) => {
-                let mut result: Vec<TaskDetail> = Vec::new();
-                if let Some(list) = data.results {
-                    for api in list {
-                        result.push(TaskDetail::from(&api));
+        let mut result: Vec<TaskDetail> = Vec::new();
+        let mut page_count = 1;
+        loop {
+            let response = integrations_aws_pushes_tasks_list(
+                rest_cfg,
+                integration_id,
+                push_id,
+                None,
+                None,
+                None,
+                NO_ORDERING,
+                Some(page_count),
+                PAGE_SIZE,
+                None,
+            );
+            match response {
+                Ok(data) => {
+                    if let Some(list) = data.results {
+                        for api in list {
+                            result.push(TaskDetail::from(&api));
+                        }
+                        page_count += 1;
+                    } else {
+                        break;
+                    }
+                    if data.next.is_none() {
+                        break;
                     }
                 }
-                Ok(result)
+                Err(ResponseError(ref content)) => {
+                    return Err(response_error(&content.status, &content.content))
+                }
+                Err(e) => return Err(IntegrationError::UnhandledError(e.to_string())),
             }
-            Err(ResponseError(ref content)) => {
-                Err(response_error(&content.status, &content.content))
-            }
-            Err(e) => Err(IntegrationError::UnhandledError(e.to_string())),
         }
+        Ok(result)
     }
 
     pub fn get_push_tasks(
@@ -498,40 +550,49 @@ impl Integrations {
         push_id: &str,
         task_id: &str,
     ) -> Result<Vec<TaskStep>, IntegrationError> {
-        let response = integrations_aws_pushes_tasks_steps_list(
-            rest_cfg,
-            integration_id,
-            push_id,
-            task_id,
-            None,
-            None,
-            None,
-            None,
-            None,
-            NO_ORDERING,
-            None,
-            PAGE_SIZE,
-            None,
-            None,
-            None,
-            None,
-            None,
-        );
-        match response {
-            Ok(data) => {
-                let mut result: Vec<TaskStep> = Vec::new();
-                if let Some(list) = data.results {
-                    for api in list {
-                        result.push(TaskStep::from(&api));
+        let mut result: Vec<TaskStep> = Vec::new();
+        let mut page_count = 1;
+        loop {
+            let response = integrations_aws_pushes_tasks_steps_list(
+                rest_cfg,
+                integration_id,
+                push_id,
+                task_id,
+                None,
+                None,
+                None,
+                None,
+                None,
+                NO_ORDERING,
+                Some(page_count),
+                PAGE_SIZE,
+                None,
+                None,
+                None,
+                None,
+                None,
+            );
+            match response {
+                Ok(data) => {
+                    if let Some(list) = data.results {
+                        for api in list {
+                            result.push(TaskStep::from(&api));
+                        }
+                        page_count += 1;
+                    } else {
+                        break;
+                    }
+                    if data.next.is_none() {
+                        break;
                     }
                 }
-                Ok(result)
+                Err(ResponseError(ref content)) => {
+                    return Err(response_error(&content.status, &content.content))
+                }
+                Err(e) => return Err(IntegrationError::UnhandledError(e.to_string())),
             }
-            Err(ResponseError(ref content)) => {
-                Err(response_error(&content.status, &content.content))
-            }
-            Err(e) => Err(IntegrationError::UnhandledError(e.to_string())),
-        }
+        } // loop
+        Ok(result)
     }
 
     fn get_aws_push_all_task_steps(
@@ -765,31 +826,40 @@ impl Integrations {
         integration_id: &str,
         name: Option<&str>,
     ) -> Result<Vec<ActionDetails>, IntegrationError> {
-        let response = integrations_aws_pulls_list(
-            rest_cfg,
-            integration_id,
-            None,
-            name,
-            None,
-            NO_ORDERING,
-            None,
-            PAGE_SIZE,
-        );
-        match response {
-            Ok(data) => {
-                let mut result: Vec<ActionDetails> = Vec::new();
-                if let Some(list) = data.results {
-                    for api in list {
-                        result.push(ActionDetails::from(&api));
+        let mut result: Vec<ActionDetails> = Vec::new();
+        let mut page_count = 1;
+        loop {
+            let response = integrations_aws_pulls_list(
+                rest_cfg,
+                integration_id,
+                None,
+                name,
+                None,
+                NO_ORDERING,
+                Some(page_count),
+                PAGE_SIZE,
+            );
+            match response {
+                Ok(data) => {
+                    if let Some(list) = data.results {
+                        for api in list {
+                            result.push(ActionDetails::from(&api));
+                        }
+                        page_count += 1;
+                    } else {
+                        break;
+                    }
+                    if data.next.is_none() {
+                        break;
                     }
                 }
-                Ok(result)
+                Err(ResponseError(ref content)) => {
+                    return Err(response_error(&content.status, &content.content))
+                }
+                Err(e) => return Err(IntegrationError::UnhandledError(e.to_string())),
             }
-            Err(ResponseError(ref content)) => {
-                Err(response_error(&content.status, &content.content))
-            }
-            Err(e) => Err(IntegrationError::UnhandledError(e.to_string())),
         }
+        Ok(result)
     }
 
     pub fn get_pull_list(
@@ -845,7 +915,7 @@ impl Integrations {
             Some(pull_name),
             None,
             NO_ORDERING,
-            None,
+            NO_PAGE,
             PAGE_SIZE,
         );
         match response {
@@ -878,33 +948,42 @@ impl Integrations {
         integration_id: &str,
         pull_id: &str,
     ) -> Result<Vec<TaskDetail>, IntegrationError> {
-        let response = integrations_aws_pulls_tasks_list(
-            rest_cfg,
-            integration_id,
-            pull_id,
-            None,
-            None,
-            None,
-            NO_ORDERING,
-            None,
-            PAGE_SIZE,
-            None,
-        );
-        match response {
-            Ok(data) => {
-                let mut result: Vec<TaskDetail> = Vec::new();
-                if let Some(list) = data.results {
-                    for api in list {
-                        result.push(TaskDetail::from(&api));
+        let mut result: Vec<TaskDetail> = Vec::new();
+        let mut page_count = 1;
+        loop {
+            let response = integrations_aws_pulls_tasks_list(
+                rest_cfg,
+                integration_id,
+                pull_id,
+                None,
+                None,
+                None,
+                NO_ORDERING,
+                Some(page_count),
+                PAGE_SIZE,
+                None,
+            );
+            match response {
+                Ok(data) => {
+                    if let Some(list) = data.results {
+                        for api in list {
+                            result.push(TaskDetail::from(&api));
+                        }
+                        page_count += 1;
+                    } else {
+                        break;
+                    }
+                    if data.next.is_none() {
+                        break;
                     }
                 }
-                Ok(result)
+                Err(ResponseError(ref content)) => {
+                    return Err(response_error(&content.status, &content.content))
+                }
+                Err(e) => return Err(IntegrationError::UnhandledError(e.to_string())),
             }
-            Err(ResponseError(ref content)) => {
-                Err(response_error(&content.status, &content.content))
-            }
-            Err(e) => Err(IntegrationError::UnhandledError(e.to_string())),
         }
+        Ok(result)
     }
 
     pub fn get_pull_tasks(
@@ -926,40 +1005,49 @@ impl Integrations {
         pull_id: &str,
         task_id: &str,
     ) -> Result<Vec<TaskStep>, IntegrationError> {
-        let response = integrations_aws_pulls_tasks_steps_list(
-            rest_cfg,
-            integration_id,
-            pull_id,
-            task_id,
-            None,
-            None,
-            None,
-            None,
-            None,
-            NO_ORDERING,
-            None,
-            PAGE_SIZE,
-            None,
-            None,
-            None,
-            None,
-            None,
-        );
-        match response {
-            Ok(data) => {
-                let mut result: Vec<TaskStep> = Vec::new();
-                if let Some(list) = data.results {
-                    for api in list {
-                        result.push(TaskStep::from(&api));
+        let mut result: Vec<TaskStep> = Vec::new();
+        let mut page_count = 1;
+        loop {
+            let response = integrations_aws_pulls_tasks_steps_list(
+                rest_cfg,
+                integration_id,
+                pull_id,
+                task_id,
+                None,
+                None,
+                None,
+                None,
+                None,
+                NO_ORDERING,
+                Some(page_count),
+                PAGE_SIZE,
+                None,
+                None,
+                None,
+                None,
+                None,
+            );
+            match response {
+                Ok(data) => {
+                    if let Some(list) = data.results {
+                        for api in list {
+                            result.push(TaskStep::from(&api));
+                        }
+                        page_count += 1;
+                    } else {
+                        break;
+                    }
+                    if data.next.is_none() {
+                        break;
                     }
                 }
-                Ok(result)
+                Err(ResponseError(ref content)) => {
+                    return Err(response_error(&content.status, &content.content))
+                }
+                Err(e) => return Err(IntegrationError::UnhandledError(e.to_string())),
             }
-            Err(ResponseError(ref content)) => {
-                Err(response_error(&content.status, &content.content))
-            }
-            Err(e) => Err(IntegrationError::UnhandledError(e.to_string())),
         }
+        Ok(result)
     }
 
     fn get_aws_pull_all_task_steps(

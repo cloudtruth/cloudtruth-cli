@@ -2,7 +2,7 @@ use crate::database::openapi::key_from_config;
 use crate::database::{
     extract_details, extract_from_json, response_message, secret_encode_wrap, secret_unwrap_decode,
     CryptoAlgorithm, OpenApiConfig, ParamExportOptions, ParamRuleType, ParamType, ParameterDetails,
-    ParameterError, PAGE_SIZE, WRAP_SECRETS,
+    ParameterError, NO_PAGE, PAGE_SIZE, WRAP_SECRETS,
 };
 use cloudtruth_restapi::apis::projects_api::*;
 use cloudtruth_restapi::apis::Error::ResponseError;
@@ -220,7 +220,7 @@ impl Parameters {
             mask_secrets_arg(mask_secrets),
             Some(key_name),
             NO_ORDERING,
-            None,
+            NO_PAGE,
             PAGE_SIZE,
             PARTIAL_SUCCESS,
             ONLY_SECRETS,
@@ -300,49 +300,59 @@ impl Parameters {
         as_of: Option<String>,
         tag: Option<String>,
     ) -> Result<Vec<ParameterDetails>, ParameterError> {
-        let has_values = include_values || tag.is_some();
-        let env_arg = if has_values { Some(env_id) } else { None };
-        let value_arg = if has_values { None } else { VALUES_FALSE };
-        let eval_arg = Some(include_values);
-        let response = projects_parameters_list(
-            rest_cfg,
-            proj_id,
-            as_of,
-            env_arg,
-            eval_arg,
-            mask_secrets_arg(mask_secrets),
-            None,
-            NO_ORDERING,
-            None,
-            PAGE_SIZE,
-            PARTIAL_SUCCESS,
-            ONLY_SECRETS,
-            tag.as_deref(),
-            value_arg,
-            wrap_secrets_arg(mask_secrets),
-        );
-        match response {
-            Ok(data) => {
-                let mut list: Vec<ParameterDetails> = Vec::new();
-                if let Some(parameters) = data.results {
-                    for param in parameters {
-                        let mut details = ParameterDetails::from(&param);
-                        if WRAP_SECRETS && !mask_secrets && details.encrypted() {
-                            let key = key_from_config(rest_cfg);
-                            let plaintext = secret_unwrap_decode(key.as_bytes(), &details.value)?;
-                            details.value = plaintext;
+        let mut result: Vec<ParameterDetails> = Vec::new();
+        let mut page_count = 1;
+        loop {
+            let has_values = include_values || tag.is_some();
+            let env_arg = if has_values { Some(env_id) } else { None };
+            let value_arg = if has_values { None } else { VALUES_FALSE };
+            let eval_arg = Some(include_values);
+            let response = projects_parameters_list(
+                rest_cfg,
+                proj_id,
+                as_of.clone(),
+                env_arg,
+                eval_arg,
+                mask_secrets_arg(mask_secrets),
+                None,
+                NO_ORDERING,
+                Some(page_count),
+                PAGE_SIZE,
+                PARTIAL_SUCCESS,
+                ONLY_SECRETS,
+                tag.as_deref(),
+                value_arg,
+                wrap_secrets_arg(mask_secrets),
+            );
+            match response {
+                Ok(data) => {
+                    if let Some(parameters) = data.results {
+                        for param in parameters {
+                            let mut details = ParameterDetails::from(&param);
+                            if WRAP_SECRETS && !mask_secrets && details.encrypted() {
+                                let key = key_from_config(rest_cfg);
+                                let plaintext =
+                                    secret_unwrap_decode(key.as_bytes(), &details.value)?;
+                                details.value = plaintext;
+                            }
+                            result.push(details);
                         }
-                        list.push(details);
+                        page_count += 1;
+                    } else {
+                        break;
                     }
-                    list.sort_by(|l, r| l.key.cmp(&r.key));
+                    if data.next.is_none() {
+                        break;
+                    }
                 }
-                Ok(list)
+                Err(ResponseError(ref content)) => {
+                    return Err(response_error(&content.status, &content.content))
+                }
+                Err(e) => return Err(ParameterError::UnhandledError(e.to_string())),
             }
-            Err(ResponseError(ref content)) => {
-                Err(response_error(&content.status, &content.content))
-            }
-            Err(e) => Err(ParameterError::UnhandledError(e.to_string())),
         }
+        result.sort_by(|l, r| l.key.cmp(&r.key));
+        Ok(result)
     }
 
     /// Gets a map of parameter names to `ParameterDetails` in the specified environment.
@@ -373,50 +383,59 @@ impl Parameters {
         mask_secrets: bool,
         as_of: Option<String>,
     ) -> Result<ParameterDetailMap, ParameterError> {
-        let eval_arg = VALUES_TRUE;
-        let response = projects_parameters_list(
-            rest_cfg,
-            proj_id,
-            as_of,
-            None, // cannot give an environment, or it will only get for that environment
-            eval_arg,
-            mask_secrets_arg(mask_secrets),
-            Some(param_name),
-            NO_ORDERING,
-            None,
-            PAGE_SIZE,
-            PARTIAL_SUCCESS,
-            ONLY_SECRETS,
-            None, // cannot use a tag without an environment
-            VALUES_TRUE,
-            wrap_secrets_arg(mask_secrets),
-        );
-        match response {
-            Ok(data) => {
-                let mut result = ParameterDetailMap::new();
-                let key = key_from_config(rest_cfg);
-                if let Some(values) = data.results {
-                    for api_param in values {
-                        let mut details = ParameterDetails::from(&api_param);
-                        for (_, api_value) in api_param.values {
-                            if let Some(value) = api_value {
-                                details.set_value(&value);
-                                if WRAP_SECRETS && !mask_secrets && details.encrypted() {
-                                    details.value =
-                                        secret_unwrap_decode(key.as_bytes(), &details.value)?;
+        let mut result = ParameterDetailMap::new();
+        let mut page_count = 1;
+        loop {
+            let eval_arg = VALUES_TRUE;
+            let response = projects_parameters_list(
+                rest_cfg,
+                proj_id,
+                as_of.clone(),
+                None, // cannot give an environment, or it will only get for that environment
+                eval_arg,
+                mask_secrets_arg(mask_secrets),
+                Some(param_name),
+                NO_ORDERING,
+                Some(page_count),
+                PAGE_SIZE,
+                PARTIAL_SUCCESS,
+                ONLY_SECRETS,
+                None, // cannot use a tag without an environment
+                VALUES_TRUE,
+                wrap_secrets_arg(mask_secrets),
+            );
+            match response {
+                Ok(data) => {
+                    let key = key_from_config(rest_cfg);
+                    if let Some(values) = data.results {
+                        for api_param in values {
+                            let mut details = ParameterDetails::from(&api_param);
+                            for (_, api_value) in api_param.values {
+                                if let Some(value) = api_value {
+                                    details.set_value(&value);
+                                    if WRAP_SECRETS && !mask_secrets && details.encrypted() {
+                                        details.value =
+                                            secret_unwrap_decode(key.as_bytes(), &details.value)?;
+                                    }
+                                    result.insert(details.env_url.clone(), details.clone());
                                 }
-                                result.insert(details.env_url.clone(), details.clone());
                             }
                         }
+                        page_count += 1;
+                    } else {
+                        break;
+                    }
+                    if data.next.is_none() {
+                        break;
                     }
                 }
-                Ok(result)
+                Err(ResponseError(ref content)) => {
+                    return Err(response_error(&content.status, &content.content))
+                }
+                Err(e) => return Err(ParameterError::UnhandledError(e.to_string())),
             }
-            Err(ResponseError(ref content)) => {
-                Err(response_error(&content.status, &content.content))
-            }
-            Err(e) => Err(ParameterError::UnhandledError(e.to_string())),
         }
+        Ok(result)
     }
 
     /// Creates the `Parameter` entry.

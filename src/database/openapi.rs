@@ -8,6 +8,9 @@ pub type OpenApiConfig = Configuration;
 /// This is our fixed page size. The current CLI is not setup to handle paging.
 pub const PAGE_SIZE: Option<i32> = None;
 
+/// This is used to denote places where paging is not needed, due do filtering
+pub const NO_PAGE: Option<i32> = None;
+
 pub const WRAP_SECRETS: bool = false;
 
 pub fn extract_from_json(value: &serde_json::Value) -> String {

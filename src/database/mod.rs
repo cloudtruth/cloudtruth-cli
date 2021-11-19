@@ -68,7 +68,7 @@ pub use invitations::Invitations;
 pub use member_details::MemberDetails;
 pub use openapi::{
     auth_details, extract_details, extract_from_json, last_from_url, parent_id_from_url,
-    response_message, OpenApiConfig, PAGE_SIZE, WRAP_SECRETS,
+    response_message, OpenApiConfig, NO_PAGE, PAGE_SIZE, WRAP_SECRETS,
 };
 pub use parameter_details::ParameterDetails;
 pub use parameter_error::ParameterError;
