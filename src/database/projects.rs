@@ -1,6 +1,6 @@
 use crate::database::{
-    auth_details, last_from_url, response_message, OpenApiConfig, ProjectDetails, ProjectError,
-    NO_PAGE, PAGE_SIZE,
+    auth_details, last_from_url, page_size, response_message, OpenApiConfig, ProjectDetails,
+    ProjectError, NO_PAGE,
 };
 
 use cloudtruth_restapi::apis::projects_api::*;
@@ -43,7 +43,7 @@ impl Projects {
                 NO_NAME_CONTAINS,
                 NO_ORDERING,
                 Some(page_count),
-                PAGE_SIZE,
+                page_size(rest_cfg),
             );
             if let Ok(data) = response {
                 if let Some(projects) = data.results {
@@ -93,7 +93,7 @@ impl Projects {
             NO_NAME_CONTAINS,
             NO_ORDERING,
             NO_PAGE,
-            PAGE_SIZE,
+            page_size(rest_cfg),
         );
 
         match response {
@@ -152,7 +152,7 @@ impl Projects {
                 NO_NAME_CONTAINS,
                 NO_ORDERING,
                 Some(page_count),
-                PAGE_SIZE,
+                page_size(rest_cfg),
             );
 
             match response {

@@ -1,6 +1,6 @@
 use crate::database::{
-    auth_details, response_message, MemberDetails, OpenApiConfig, UserDetails, UserError, NO_PAGE,
-    PAGE_SIZE,
+    auth_details, page_size, response_message, MemberDetails, OpenApiConfig, UserDetails,
+    UserError, NO_PAGE,
 };
 use cloudtruth_restapi::apis::memberships_api::{
     memberships_create, memberships_list, memberships_partial_update,
@@ -58,7 +58,8 @@ impl Users {
         let mut result: Vec<UserDetails> = Vec::new();
         let mut page_count = 1;
         loop {
-            let response = serviceaccounts_list(rest_cfg, NO_ORDERING, Some(page_count), PAGE_SIZE);
+            let response =
+                serviceaccounts_list(rest_cfg, NO_ORDERING, Some(page_count), page_size(rest_cfg));
             match response {
                 Ok(data) => {
                     if let Some(accounts) = data.results {
@@ -89,7 +90,13 @@ impl Users {
         let mut result: Vec<UserDetails> = Vec::new();
         let mut page_count = 1;
         loop {
-            let response = users_list(rest_cfg, NO_ORDERING, Some(page_count), PAGE_SIZE, None);
+            let response = users_list(
+                rest_cfg,
+                NO_ORDERING,
+                Some(page_count),
+                page_size(rest_cfg),
+                None,
+            );
             match response {
                 Ok(data) => {
                     if let Some(accounts) = data.results {
@@ -289,7 +296,7 @@ impl Users {
             rest_cfg,
             NO_ORDERING,
             NO_PAGE,
-            PAGE_SIZE,
+            page_size(rest_cfg),
             None,
             Some(user_url),
         );
@@ -332,7 +339,7 @@ impl Users {
                 rest_cfg,
                 NO_ORDERING,
                 Some(page_count),
-                PAGE_SIZE,
+                page_size(rest_cfg),
                 None,
                 None,
             );
@@ -368,7 +375,7 @@ impl Users {
                 rest_cfg,
                 NO_ORDERING,
                 Some(page_count),
-                PAGE_SIZE,
+                page_size(rest_cfg),
                 None,
                 None,
             );
@@ -462,7 +469,13 @@ impl Users {
         let mut user_map = UserNameMap::new();
         let mut page_count = 1;
         loop {
-            let response = users_list(rest_cfg, NO_ORDERING, Some(page_count), PAGE_SIZE, None);
+            let response = users_list(
+                rest_cfg,
+                NO_ORDERING,
+                Some(page_count),
+                page_size(rest_cfg),
+                None,
+            );
             match response {
                 Ok(data) => {
                     if let Some(accounts) = data.results {
@@ -494,7 +507,13 @@ impl Users {
         let mut user_map = UserNameMap::new();
         let mut page_count = 1;
         loop {
-            let response = users_list(rest_cfg, NO_ORDERING, Some(page_count), PAGE_SIZE, None);
+            let response = users_list(
+                rest_cfg,
+                NO_ORDERING,
+                Some(page_count),
+                page_size(rest_cfg),
+                None,
+            );
             match response {
                 Ok(data) => {
                     if let Some(accounts) = data.results {

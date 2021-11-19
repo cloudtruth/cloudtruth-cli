@@ -1,6 +1,6 @@
 use crate::database::{
-    auth_details, response_message, OpenApiConfig, TemplateDetails, TemplateError, TemplateHistory,
-    Users, NO_PAGE, PAGE_SIZE,
+    auth_details, page_size, response_message, OpenApiConfig, TemplateDetails, TemplateError,
+    TemplateHistory, Users, NO_PAGE,
 };
 use cloudtruth_restapi::apis::projects_api::*;
 use cloudtruth_restapi::apis::Error::ResponseError;
@@ -92,7 +92,7 @@ impl Templates {
             Some(template_name),
             NO_ORDERING,
             NO_PAGE,
-            PAGE_SIZE,
+            page_size(rest_cfg),
             tag.as_deref(),
         );
         match response {
@@ -151,7 +151,7 @@ impl Templates {
                 name,
                 NO_ORDERING,
                 Some(page_count),
-                PAGE_SIZE,
+                page_size(rest_cfg),
                 tag,
             );
             match response {

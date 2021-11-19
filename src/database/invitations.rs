@@ -1,6 +1,6 @@
 use crate::database::{
-    auth_details, response_message, InvitationDetails, InvitationError, OpenApiConfig, Users,
-    NO_PAGE, PAGE_SIZE,
+    auth_details, page_size, response_message, InvitationDetails, InvitationError, OpenApiConfig,
+    Users, NO_PAGE,
 };
 use cloudtruth_restapi::apis::invitations_api::{
     invitations_create, invitations_destroy, invitations_list, invitations_partial_update,
@@ -52,7 +52,7 @@ impl Invitations {
                 None,
                 NO_ORDERING,
                 Some(page_count),
-                PAGE_SIZE,
+                page_size(rest_cfg),
                 None,
                 None,
             );
@@ -98,7 +98,7 @@ impl Invitations {
             Some(email),
             NO_ORDERING,
             NO_PAGE,
-            PAGE_SIZE,
+            page_size(rest_cfg),
             None,
             None,
         );

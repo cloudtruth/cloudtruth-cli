@@ -115,6 +115,7 @@ impl ConfigFile {
             project: project.map(String::from),
             request_timeout: None,
             rest_debug: None,
+            rest_page_size: None,
             server_url: None,
             source_profile: source.map(String::from),
         };
@@ -168,6 +169,7 @@ impl ConfigFile {
             server_url: profile.server_url.clone(),
             request_timeout: profile.request_timeout.map(|t| format!("{}", t)),
             rest_debug: profile.rest_debug,
+            rest_page_size: profile.rest_page_size,
         }
     }
 
@@ -658,6 +660,7 @@ mod tests {
                 project: None,
                 server_url: None,
                 rest_debug: None,
+                rest_page_size: None,
                 request_timeout: None,
             },
         );

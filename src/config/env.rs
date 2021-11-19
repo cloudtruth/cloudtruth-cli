@@ -1,9 +1,9 @@
 use crate::config::profiles::Profile;
 use crate::config::{
-    CT_API_KEY, CT_ENVIRONMENT, CT_PROJECT, CT_REQ_TIMEOUT, CT_REST_DEBUG, CT_SERVER_URL,
+    CT_API_KEY, CT_ENVIRONMENT, CT_PROJECT, CT_REQ_TIMEOUT, CT_REST_DEBUG, CT_REST_PAGE_SIZE,
+    CT_SERVER_URL,
 };
 use std::env;
-use std::str::FromStr;
 
 pub struct ConfigEnv {}
 
@@ -15,8 +15,8 @@ impl ConfigEnv {
             environment: ConfigEnv::get_override(CT_ENVIRONMENT),
             project: ConfigEnv::get_override(CT_PROJECT),
             request_timeout: ConfigEnv::get_duration_override(),
-            rest_debug: ConfigEnv::get_override(CT_REST_DEBUG)
-                .map(|s| bool::from_str(&s.to_lowercase()).unwrap()),
+            rest_debug: ConfigEnv::get_rest_debug(),
+            rest_page_size: ConfigEnv::get_rest_page_size(),
             server_url: ConfigEnv::get_override(CT_SERVER_URL),
             source_profile: None,
         }
@@ -40,6 +40,21 @@ impl ConfigEnv {
             }
         }
         result
+    }
+
+    pub fn get_rest_debug() -> Option<bool> {
+        ConfigEnv::get_override(CT_REST_DEBUG)
+            .map(|e| matches!(e.to_lowercase().as_str(), "true" | "1" | "yes"))
+    }
+
+    pub fn get_rest_page_size() -> Option<i32> {
+        match ConfigEnv::get_override(CT_REST_PAGE_SIZE) {
+            Some(env_value) => match env_value.trim().parse() {
+                Ok(int_value) => Some(int_value),
+                _ => None,
+            },
+            _ => None,
+        }
     }
 }
 
@@ -88,6 +103,7 @@ mod tests {
                 project: Some("skunkworks".to_string()),
                 request_timeout: Some(500),
                 rest_debug: Some(true),
+                rest_page_size: None,
                 server_url: Some("http://localhost:7001/graphql".to_string()),
                 source_profile: None
             },

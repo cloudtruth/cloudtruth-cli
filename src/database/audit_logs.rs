@@ -1,6 +1,6 @@
 use crate::database::{
-    auth_details, response_message, AuditLogDetails, AuditLogError, AuditLogSummary, OpenApiConfig,
-    PAGE_SIZE,
+    auth_details, page_size, response_message, AuditLogDetails, AuditLogError, AuditLogSummary,
+    OpenApiConfig,
 };
 use cloudtruth_restapi::apis::audit_api::{audit_list, audit_summary_retrieve};
 use cloudtruth_restapi::apis::Error::ResponseError;
@@ -46,7 +46,7 @@ impl AuditLogs {
                 object_type,
                 NO_ORDERING,
                 Some(page_count),
-                PAGE_SIZE,
+                page_size(rest_cfg),
                 user_id,
             );
             match response {

@@ -1,8 +1,8 @@
 use crate::database::openapi::key_from_config;
 use crate::database::{
-    extract_details, extract_from_json, response_message, secret_encode_wrap, secret_unwrap_decode,
-    CryptoAlgorithm, OpenApiConfig, ParamExportOptions, ParamRuleType, ParamType, ParameterDetails,
-    ParameterError, NO_PAGE, PAGE_SIZE, WRAP_SECRETS,
+    extract_details, extract_from_json, page_size, response_message, secret_encode_wrap,
+    secret_unwrap_decode, CryptoAlgorithm, OpenApiConfig, ParamExportOptions, ParamRuleType,
+    ParamType, ParameterDetails, ParameterError, NO_PAGE, WRAP_SECRETS,
 };
 use cloudtruth_restapi::apis::projects_api::*;
 use cloudtruth_restapi::apis::Error::ResponseError;
@@ -221,7 +221,7 @@ impl Parameters {
             Some(key_name),
             NO_ORDERING,
             NO_PAGE,
-            PAGE_SIZE,
+            page_size(rest_cfg),
             PARTIAL_SUCCESS,
             ONLY_SECRETS,
             tag.as_deref(),
@@ -317,7 +317,7 @@ impl Parameters {
                 None,
                 NO_ORDERING,
                 Some(page_count),
-                PAGE_SIZE,
+                page_size(rest_cfg),
                 PARTIAL_SUCCESS,
                 ONLY_SECRETS,
                 tag.as_deref(),
@@ -397,7 +397,7 @@ impl Parameters {
                 Some(param_name),
                 NO_ORDERING,
                 Some(page_count),
-                PAGE_SIZE,
+                page_size(rest_cfg),
                 PARTIAL_SUCCESS,
                 ONLY_SECRETS,
                 None, // cannot use a tag without an environment

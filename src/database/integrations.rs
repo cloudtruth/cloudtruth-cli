@@ -1,7 +1,7 @@
 use crate::database::{
-    auth_details, extract_details, last_from_url, parent_id_from_url, response_message,
+    auth_details, extract_details, last_from_url, page_size, parent_id_from_url, response_message,
     ActionDetails, IntegrationDetails, IntegrationError, IntegrationNode, OpenApiConfig,
-    TaskDetail, TaskStep, NO_PAGE, PAGE_SIZE,
+    TaskDetail, TaskStep, NO_PAGE,
 };
 use cloudtruth_restapi::apis::integrations_api::*;
 use cloudtruth_restapi::apis::Error::ResponseError;
@@ -116,7 +116,7 @@ impl Integrations {
                 None,
                 NO_ORDERING,
                 Some(page_count),
-                PAGE_SIZE,
+                page_size(rest_cfg),
             );
             match response {
                 Ok(data) => {
@@ -148,8 +148,13 @@ impl Integrations {
         let mut result: Vec<IntegrationDetails> = Vec::new();
         let mut page_count = 1;
         loop {
-            let response =
-                integrations_github_list(rest_cfg, None, NO_ORDERING, Some(page_count), PAGE_SIZE);
+            let response = integrations_github_list(
+                rest_cfg,
+                None,
+                NO_ORDERING,
+                Some(page_count),
+                page_size(rest_cfg),
+            );
             match response {
                 Ok(data) => {
                     if let Some(list) = data.results {
@@ -195,8 +200,13 @@ impl Integrations {
         let mut results: Vec<IntegrationNode> = Vec::new();
         let page_count = 1;
         loop {
-            let response =
-                integrations_explore_list(rest_cfg, fqn, NO_ORDERING, Some(page_count), PAGE_SIZE);
+            let response = integrations_explore_list(
+                rest_cfg,
+                fqn,
+                NO_ORDERING,
+                Some(page_count),
+                page_size(rest_cfg),
+            );
             if let Ok(data) = response {
                 if let Some(list) = data.results {
                     for item in list {
@@ -383,7 +393,7 @@ impl Integrations {
                 None,
                 NO_ORDERING,
                 Some(page_count),
-                PAGE_SIZE,
+                page_size(rest_cfg),
             );
             match response {
                 Ok(data) => {
@@ -461,7 +471,7 @@ impl Integrations {
             None,
             NO_ORDERING,
             NO_PAGE,
-            PAGE_SIZE,
+            page_size(rest_cfg),
         );
         match response {
             Ok(data) => match data.results {
@@ -505,7 +515,7 @@ impl Integrations {
                 None,
                 NO_ORDERING,
                 Some(page_count),
-                PAGE_SIZE,
+                page_size(rest_cfg),
                 None,
             );
             match response {
@@ -565,7 +575,7 @@ impl Integrations {
                 None,
                 NO_ORDERING,
                 Some(page_count),
-                PAGE_SIZE,
+                page_size(rest_cfg),
                 None,
                 None,
                 None,
@@ -837,7 +847,7 @@ impl Integrations {
                 None,
                 NO_ORDERING,
                 Some(page_count),
-                PAGE_SIZE,
+                page_size(rest_cfg),
             );
             match response {
                 Ok(data) => {
@@ -916,7 +926,7 @@ impl Integrations {
             None,
             NO_ORDERING,
             NO_PAGE,
-            PAGE_SIZE,
+            page_size(rest_cfg),
         );
         match response {
             Ok(data) => match data.results {
@@ -960,7 +970,7 @@ impl Integrations {
                 None,
                 NO_ORDERING,
                 Some(page_count),
-                PAGE_SIZE,
+                page_size(rest_cfg),
                 None,
             );
             match response {
@@ -1020,7 +1030,7 @@ impl Integrations {
                 None,
                 NO_ORDERING,
                 Some(page_count),
-                PAGE_SIZE,
+                page_size(rest_cfg),
                 None,
                 None,
                 None,
