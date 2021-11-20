@@ -1,6 +1,6 @@
 use crate::database::{
     auth_details, page_size, response_message, MemberDetails, OpenApiConfig, UserDetails,
-    UserError, NO_PAGE,
+    UserError, NO_PAGE_COUNT, NO_PAGE_SIZE,
 };
 use cloudtruth_restapi::apis::memberships_api::{
     memberships_create, memberships_list, memberships_partial_update,
@@ -295,8 +295,8 @@ impl Users {
         let response = memberships_list(
             rest_cfg,
             NO_ORDERING,
-            NO_PAGE,
-            page_size(rest_cfg),
+            NO_PAGE_COUNT,
+            NO_PAGE_SIZE,
             None,
             Some(user_url),
         );

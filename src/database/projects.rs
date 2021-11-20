@@ -1,6 +1,6 @@
 use crate::database::{
     auth_details, last_from_url, page_size, response_message, OpenApiConfig, ProjectDetails,
-    ProjectError, NO_PAGE,
+    ProjectError, NO_PAGE_COUNT, NO_PAGE_SIZE,
 };
 
 use cloudtruth_restapi::apis::projects_api::*;
@@ -92,8 +92,8 @@ impl Projects {
             Some(proj_name),
             NO_NAME_CONTAINS,
             NO_ORDERING,
-            NO_PAGE,
-            page_size(rest_cfg),
+            NO_PAGE_COUNT,
+            NO_PAGE_SIZE,
         );
 
         match response {

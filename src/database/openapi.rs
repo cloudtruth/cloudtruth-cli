@@ -5,8 +5,9 @@ use std::env;
 
 pub type OpenApiConfig = Configuration;
 
-/// This is used to denote places where paging is not needed, due do filtering
-pub const NO_PAGE: Option<i32> = None;
+/// These are used to denote places where paging is not needed, due do filtering
+pub const NO_PAGE_COUNT: Option<i32> = None;
+pub const NO_PAGE_SIZE: Option<i32> = None;
 
 pub const WRAP_SECRETS: bool = false;
 

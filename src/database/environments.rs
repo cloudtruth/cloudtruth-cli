@@ -1,6 +1,6 @@
 use crate::database::{
     auth_details, extract_details, last_from_url, page_size, response_message, EnvironmentDetails,
-    EnvironmentError, EnvironmentTag, OpenApiConfig, NO_PAGE,
+    EnvironmentError, EnvironmentTag, OpenApiConfig, NO_PAGE_COUNT, NO_PAGE_SIZE,
 };
 use cloudtruth_restapi::apis::environments_api::*;
 use cloudtruth_restapi::apis::Error::ResponseError;
@@ -112,8 +112,8 @@ impl Environments {
             Some(env_name),
             NO_NAME_CONTAINS,
             NO_ORDERING,
-            NO_PAGE,
-            page_size(rest_cfg),
+            NO_PAGE_COUNT,
+            NO_PAGE_SIZE,
             NO_PARENT_NAME,
             NO_PARENT_CONTAINS,
         );
@@ -363,8 +363,8 @@ impl Environments {
             Some(tag_name),
             None,
             None,
-            NO_PAGE,
-            page_size(rest_cfg),
+            NO_PAGE_COUNT,
+            NO_PAGE_SIZE,
             None,
             None,
             None,

@@ -1,7 +1,7 @@
 use crate::database::{
     auth_details, extract_details, last_from_url, page_size, parent_id_from_url, response_message,
     ActionDetails, IntegrationDetails, IntegrationError, IntegrationNode, OpenApiConfig,
-    TaskDetail, TaskStep, NO_PAGE,
+    TaskDetail, TaskStep, NO_PAGE_COUNT, NO_PAGE_SIZE,
 };
 use cloudtruth_restapi::apis::integrations_api::*;
 use cloudtruth_restapi::apis::Error::ResponseError;
@@ -470,8 +470,8 @@ impl Integrations {
             Some(push_name),
             None,
             NO_ORDERING,
-            NO_PAGE,
-            page_size(rest_cfg),
+            NO_PAGE_COUNT,
+            NO_PAGE_SIZE,
         );
         match response {
             Ok(data) => match data.results {
@@ -925,8 +925,8 @@ impl Integrations {
             Some(pull_name),
             None,
             NO_ORDERING,
-            NO_PAGE,
-            page_size(rest_cfg),
+            NO_PAGE_COUNT,
+            NO_PAGE_SIZE,
         );
         match response {
             Ok(data) => match data.results {
