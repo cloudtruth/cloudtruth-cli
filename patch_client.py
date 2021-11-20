@@ -141,17 +141,19 @@ def optional_values(srcdir: str) -> None:
             file_write_content(filename, temp)
 
 
-def add_rest_debug_to_config(srcdir: str) -> None:
+def update_rest_config(srcdir: str) -> None:
     filename = srcdir + "/apis/configuration.rs"
     temp = file_read_content(filename)
 
     rest_debug_param = "    pub rest_debug: bool,\n"
+    rest_page_size_param = "    pub rest_page_size: Option<i32>,\n"
     api_key_param = "    pub api_key: Option<ApiKey>,\n"
     rest_debug_init = "            rest_debug: false,\n"
+    rest_page_size_init = "            rest_page_size: None,\n"
     api_key_init = "            api_key: None,\n"
     if rest_debug_param not in temp:
-        temp = temp.replace(api_key_param, api_key_param + rest_debug_param)
-        temp = temp.replace(api_key_init, api_key_init + rest_debug_init)
+        temp = temp.replace(api_key_param, api_key_param + rest_debug_param + rest_page_size_param)
+        temp = temp.replace(api_key_init, api_key_init + rest_debug_init + rest_page_size_init)
         assert rest_debug_param in temp, "Did not add rest_debug param"
         print(f"Updating {filename} with rest_debug parameter")
         file_write_content(filename, temp)
@@ -328,7 +330,7 @@ if __name__ == "__main__":
     support_api_key(srcdir)
     update_gitpush(client_dir)
     optional_values(srcdir)
-    add_rest_debug_to_config(srcdir)
+    update_rest_config(srcdir)
     add_debug_profiling(srcdir)
     add_debug_errors(srcdir)
     fix_latest_task(srcdir)

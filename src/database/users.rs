@@ -1,5 +1,6 @@
 use crate::database::{
-    auth_details, response_message, MemberDetails, OpenApiConfig, UserDetails, UserError, PAGE_SIZE,
+    auth_details, page_size, response_message, MemberDetails, OpenApiConfig, UserDetails,
+    UserError, NO_PAGE_COUNT, NO_PAGE_SIZE,
 };
 use cloudtruth_restapi::apis::memberships_api::{
     memberships_create, memberships_list, memberships_partial_update,
@@ -54,44 +55,69 @@ impl Users {
         &self,
         rest_cfg: &OpenApiConfig,
     ) -> Result<Vec<UserDetails>, UserError> {
-        let response = serviceaccounts_list(rest_cfg, NO_ORDERING, None, PAGE_SIZE);
-        match response {
-            Ok(data) => {
-                let mut list: Vec<UserDetails> = Vec::new();
-                if let Some(accounts) = data.results {
-                    for acct in accounts {
-                        list.push(UserDetails::from(&acct));
+        let mut result: Vec<UserDetails> = Vec::new();
+        let mut page_count = 1;
+        loop {
+            let response =
+                serviceaccounts_list(rest_cfg, NO_ORDERING, Some(page_count), page_size(rest_cfg));
+            match response {
+                Ok(data) => {
+                    if let Some(accounts) = data.results {
+                        for acct in accounts {
+                            result.push(UserDetails::from(&acct));
+                        }
+                        page_count += 1;
+                    } else {
+                        break;
+                    }
+                    if data.next.is_none() {
+                        break;
                     }
                 }
-                Ok(list)
+                Err(ResponseError(ref content)) => {
+                    return Err(response_error(&content.status, &content.content))
+                }
+                Err(e) => return Err(UserError::UnhandledError(e.to_string())),
             }
-            Err(ResponseError(ref content)) => {
-                Err(response_error(&content.status, &content.content))
-            }
-            Err(e) => Err(UserError::UnhandledError(e.to_string())),
         }
+        Ok(result)
     }
 
     fn get_user_account_details(
         &self,
         rest_cfg: &OpenApiConfig,
     ) -> Result<Vec<UserDetails>, UserError> {
-        let response = users_list(rest_cfg, NO_ORDERING, None, PAGE_SIZE, None);
-        match response {
-            Ok(data) => {
-                let mut list: Vec<UserDetails> = Vec::new();
-                if let Some(accounts) = data.results {
-                    for acct in accounts {
-                        list.push(UserDetails::from(&acct));
+        let mut result: Vec<UserDetails> = Vec::new();
+        let mut page_count = 1;
+        loop {
+            let response = users_list(
+                rest_cfg,
+                NO_ORDERING,
+                Some(page_count),
+                page_size(rest_cfg),
+                None,
+            );
+            match response {
+                Ok(data) => {
+                    if let Some(accounts) = data.results {
+                        for acct in accounts {
+                            result.push(UserDetails::from(&acct));
+                        }
+                        page_count += 1;
+                    } else {
+                        break;
+                    }
+                    if data.next.is_none() {
+                        break;
                     }
                 }
-                Ok(list)
+                Err(ResponseError(ref content)) => {
+                    return Err(response_error(&content.status, &content.content))
+                }
+                Err(e) => return Err(UserError::UnhandledError(e.to_string())),
             }
-            Err(ResponseError(ref content)) => {
-                Err(response_error(&content.status, &content.content))
-            }
-            Err(e) => Err(UserError::UnhandledError(e.to_string())),
         }
+        Ok(result)
     }
 
     fn get_current_user_account(&self, rest_cfg: &OpenApiConfig) -> Result<UserDetails, UserError> {
@@ -266,8 +292,14 @@ impl Users {
         rest_cfg: &OpenApiConfig,
         user_url: &str,
     ) -> Result<String, UserError> {
-        let response =
-            memberships_list(rest_cfg, NO_ORDERING, None, PAGE_SIZE, None, Some(user_url));
+        let response = memberships_list(
+            rest_cfg,
+            NO_ORDERING,
+            NO_PAGE_COUNT,
+            NO_PAGE_SIZE,
+            None,
+            Some(user_url),
+        );
         match response {
             Ok(data) => match data.results {
                 Some(list) => match list.is_empty() {
@@ -301,48 +333,74 @@ impl Users {
         user_url: &str,
     ) -> Result<Option<MemberDetails>, UserError> {
         // should be able do the filtering using the user_url, but the server does not like it!
-        let response = memberships_list(rest_cfg, NO_ORDERING, None, PAGE_SIZE, None, None);
-        match response {
-            Ok(data) => match data.results {
-                Some(mut list) => match list.is_empty() {
-                    true => Err(UserError::MembershipNotFound()),
-                    false => {
+        let mut page_count = 1;
+        loop {
+            let response = memberships_list(
+                rest_cfg,
+                NO_ORDERING,
+                Some(page_count),
+                page_size(rest_cfg),
+                None,
+                None,
+            );
+            match response {
+                Ok(data) => {
+                    if let Some(mut list) = data.results {
                         list.retain(|m| m.user == user_url);
                         if !list.is_empty() {
-                            Ok(Some(MemberDetails::from(&list[0])))
-                        } else {
-                            Ok(None)
+                            return Ok(Some(MemberDetails::from(&list[0])));
                         }
+                        page_count += 1;
+                    } else {
+                        break;
                     }
-                },
-                None => Err(UserError::MembershipNotFound()),
-            },
-            Err(ResponseError(ref content)) => {
-                Err(response_error(&content.status, &content.content))
+                    if data.next.is_none() {
+                        break;
+                    }
+                }
+                Err(ResponseError(ref content)) => {
+                    return Err(response_error(&content.status, &content.content))
+                }
+                Err(e) => return Err(UserError::UnhandledError(e.to_string())),
             }
-            Err(e) => Err(UserError::UnhandledError(e.to_string())),
         }
+        Ok(None)
     }
 
     fn get_membership_map(&self, rest_cfg: &OpenApiConfig) -> Result<MembershipUrlMap, UserError> {
-        let response = memberships_list(rest_cfg, NO_ORDERING, None, PAGE_SIZE, None, None);
-        match response {
-            Ok(data) => match data.results {
-                Some(list) => {
-                    let mut map = MembershipUrlMap::new();
-                    for item in list {
-                        let details = MemberDetails::from(&item);
-                        map.insert(item.user, details);
+        let mut map = MembershipUrlMap::new();
+        let mut page_count = 1;
+        loop {
+            let response = memberships_list(
+                rest_cfg,
+                NO_ORDERING,
+                Some(page_count),
+                page_size(rest_cfg),
+                None,
+                None,
+            );
+            match response {
+                Ok(data) => {
+                    if let Some(list) = data.results {
+                        for item in list {
+                            let details = MemberDetails::from(&item);
+                            map.insert(item.user, details);
+                        }
+                        page_count += 1;
+                    } else {
+                        break;
                     }
-                    Ok(map)
+                    if data.next.is_none() {
+                        break;
+                    }
                 }
-                None => Ok(MembershipUrlMap::new()),
-            },
-            Err(ResponseError(ref content)) => {
-                Err(response_error(&content.status, &content.content))
+                Err(ResponseError(ref content)) => {
+                    return Err(response_error(&content.status, &content.content))
+                }
+                Err(e) => return Err(UserError::UnhandledError(e.to_string())),
             }
-            Err(e) => Err(UserError::UnhandledError(e.to_string())),
         }
+        Ok(map)
     }
 
     pub fn create_user(
@@ -408,22 +466,37 @@ impl Users {
         &self,
         rest_cfg: &OpenApiConfig,
     ) -> Result<UserNameMap, UserError> {
-        let response = users_list(rest_cfg, NO_ORDERING, None, PAGE_SIZE, None);
-        match response {
-            Ok(data) => {
-                let mut user_map = UserNameMap::new();
-                if let Some(accounts) = data.results {
-                    for acct in accounts {
-                        user_map.insert(acct.id, acct.name.unwrap_or_default());
+        let mut user_map = UserNameMap::new();
+        let mut page_count = 1;
+        loop {
+            let response = users_list(
+                rest_cfg,
+                NO_ORDERING,
+                Some(page_count),
+                page_size(rest_cfg),
+                None,
+            );
+            match response {
+                Ok(data) => {
+                    if let Some(accounts) = data.results {
+                        for acct in accounts {
+                            user_map.insert(acct.id, acct.name.unwrap_or_default());
+                        }
+                        page_count += 1;
+                    } else {
+                        break;
+                    }
+                    if data.next.is_none() {
+                        break;
                     }
                 }
-                Ok(user_map)
+                Err(ResponseError(ref content)) => {
+                    return Err(response_error(&content.status, &content.content))
+                }
+                Err(e) => return Err(UserError::UnhandledError(e.to_string())),
             }
-            Err(ResponseError(ref content)) => {
-                Err(response_error(&content.status, &content.content))
-            }
-            Err(e) => Err(UserError::UnhandledError(e.to_string())),
         }
+        Ok(user_map)
     }
 
     /// Gets a map of user URL to name for all account types.
@@ -431,21 +504,36 @@ impl Users {
         &self,
         rest_cfg: &OpenApiConfig,
     ) -> Result<UserNameMap, UserError> {
-        let response = users_list(rest_cfg, NO_ORDERING, None, PAGE_SIZE, None);
-        match response {
-            Ok(data) => {
-                let mut user_map = UserNameMap::new();
-                if let Some(accounts) = data.results {
-                    for acct in accounts {
-                        user_map.insert(acct.url, acct.name.unwrap_or_default());
+        let mut user_map = UserNameMap::new();
+        let mut page_count = 1;
+        loop {
+            let response = users_list(
+                rest_cfg,
+                NO_ORDERING,
+                Some(page_count),
+                page_size(rest_cfg),
+                None,
+            );
+            match response {
+                Ok(data) => {
+                    if let Some(accounts) = data.results {
+                        for acct in accounts {
+                            user_map.insert(acct.url, acct.name.unwrap_or_default());
+                        }
+                        page_count += 1;
+                    } else {
+                        break;
+                    }
+                    if data.next.is_none() {
+                        break;
                     }
                 }
-                Ok(user_map)
+                Err(ResponseError(ref content)) => {
+                    return Err(response_error(&content.status, &content.content))
+                }
+                Err(e) => return Err(UserError::UnhandledError(e.to_string())),
             }
-            Err(ResponseError(ref content)) => {
-                Err(response_error(&content.status, &content.content))
-            }
-            Err(e) => Err(UserError::UnhandledError(e.to_string())),
         }
+        Ok(user_map)
     }
 }

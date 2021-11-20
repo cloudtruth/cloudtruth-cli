@@ -1,6 +1,6 @@
 use crate::database::{
-    auth_details, last_from_url, response_message, OpenApiConfig, ProjectDetails, ProjectError,
-    PAGE_SIZE,
+    auth_details, last_from_url, page_size, response_message, OpenApiConfig, ProjectDetails,
+    ProjectError, NO_PAGE_COUNT, NO_PAGE_SIZE,
 };
 
 use cloudtruth_restapi::apis::projects_api::*;
@@ -33,21 +33,32 @@ impl Projects {
 
     /// This provides a means to get an entire list of project URLs to names.
     pub fn get_url_name_map(&self, rest_cfg: &OpenApiConfig) -> ProjectUrlMap {
-        let response = projects_list(
-            rest_cfg,
-            NO_DESC_CONTAINS,
-            None,
-            NO_NAME_CONTAINS,
-            NO_ORDERING,
-            None,
-            PAGE_SIZE,
-        );
         let mut result: ProjectUrlMap = ProjectUrlMap::new();
-        if let Ok(list) = response {
-            if let Some(projects) = list.results {
-                for prj in projects {
-                    result.insert(prj.url, prj.name);
+        let mut page_count = 1;
+        loop {
+            let response = projects_list(
+                rest_cfg,
+                NO_DESC_CONTAINS,
+                None,
+                NO_NAME_CONTAINS,
+                NO_ORDERING,
+                Some(page_count),
+                page_size(rest_cfg),
+            );
+            if let Ok(data) = response {
+                if let Some(projects) = data.results {
+                    for prj in projects {
+                        result.insert(prj.url, prj.name);
+                    }
+                    page_count += 1;
+                } else {
+                    break;
                 }
+                if data.next.is_none() {
+                    break;
+                }
+            } else {
+                break;
             }
         }
         result
@@ -81,8 +92,8 @@ impl Projects {
             Some(proj_name),
             NO_NAME_CONTAINS,
             NO_ORDERING,
-            None,
-            PAGE_SIZE,
+            NO_PAGE_COUNT,
+            NO_PAGE_SIZE,
         );
 
         match response {
@@ -130,47 +141,52 @@ impl Projects {
         &self,
         rest_cfg: &OpenApiConfig,
     ) -> Result<Vec<ProjectDetails>, ProjectError> {
-        let response = projects_list(
-            rest_cfg,
-            NO_DESC_CONTAINS,
-            None,
-            NO_NAME_CONTAINS,
-            NO_ORDERING,
-            None,
-            PAGE_SIZE,
-        );
+        let mut projects: Vec<ProjectDetails> = vec![];
+        let mut url_map: ProjectUrlMap = ProjectUrlMap::new();
+        let mut page_count = 1;
+        loop {
+            let response = projects_list(
+                rest_cfg,
+                NO_DESC_CONTAINS,
+                None,
+                NO_NAME_CONTAINS,
+                NO_ORDERING,
+                Some(page_count),
+                page_size(rest_cfg),
+            );
 
-        match response {
-            Ok(data) => match data.results {
-                Some(list) => {
-                    let mut projects: Vec<ProjectDetails> = vec![];
-
-                    // create the list of ProjectDetails and a map of url to name
-                    let mut url_map: ProjectUrlMap = ProjectUrlMap::new();
-                    for api_prj in list {
-                        let details = ProjectDetails::from(&api_prj);
-                        url_map.insert(details.url.clone(), details.name.clone());
-                        projects.push(details);
-                    }
-
-                    // populate the parent names
-                    for prj in &mut projects {
-                        if !prj.parent_url.is_empty() {
-                            prj.parent_name = url_map.get(&prj.parent_url).unwrap().clone();
+            match response {
+                Ok(data) => {
+                    if let Some(list) = data.results {
+                        for api_prj in list {
+                            let details = ProjectDetails::from(&api_prj);
+                            url_map.insert(details.url.clone(), details.name.clone());
+                            projects.push(details);
                         }
+                        page_count += 1;
+                    } else {
+                        break;
                     }
-                    projects.sort_by(|l, r| l.name.cmp(&r.name));
-                    Ok(projects)
+                    if data.next.is_none() {
+                        break;
+                    }
                 }
-                None => Ok(vec![]),
-            },
-            Err(ResponseError(ref content)) => match content.status.as_u16() {
-                401 => Err(auth_error(&content.content)),
-                403 => Err(auth_error(&content.content)),
-                _ => Err(response_error(&content.status, &content.content)),
-            },
-            Err(e) => Err(ProjectError::UnhandledError(e.to_string())),
+                Err(ResponseError(ref content)) => match content.status.as_u16() {
+                    401 => return Err(auth_error(&content.content)),
+                    403 => return Err(auth_error(&content.content)),
+                    _ => return Err(response_error(&content.status, &content.content)),
+                },
+                Err(e) => return Err(ProjectError::UnhandledError(e.to_string())),
+            }
         }
+        // populate the parent names
+        for prj in &mut projects {
+            if !prj.parent_url.is_empty() {
+                prj.parent_name = url_map.get(&prj.parent_url).unwrap().clone();
+            }
+        }
+        projects.sort_by(|l, r| l.name.cmp(&r.name));
+        Ok(projects)
     }
 
     fn get_all_descendants_from_list(

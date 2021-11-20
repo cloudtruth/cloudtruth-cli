@@ -1,5 +1,6 @@
 from testcase import TestCase
 from testcase import DEFAULT_ENV_NAME
+from testcase import TEST_PAGE_SIZE
 
 
 class TestEnvironments(TestCase):
@@ -169,6 +170,24 @@ class TestEnvironments(TestCase):
         self.delete_environment(cmd_env, env_name2)
         self.delete_environment(cmd_env, env_name1)
 
+    def test_environment_pagination(self):
+        base_cmd = self.get_cli_base_cmd()
+        cmd_env = self.get_cmd_env()
+
+        page_size = TEST_PAGE_SIZE
+        env_count = page_size + 1
+
+        for idx in range(env_count):
+            env_name = self.make_name(f"test-pag-{idx}")
+            self.create_environment(cmd_env, env_name)
+
+        self.assertPaginated(cmd_env, base_cmd + "env ls", "/environments/?")
+
+        # cleanup
+        for idx in range(env_count):
+            env_name = self.make_name(f"test-pag-{idx}")
+            self.delete_environment(cmd_env, env_name)
+
     def test_environment_tagging(self):
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
@@ -313,4 +332,21 @@ class TestEnvironments(TestCase):
 
         # cleanup
         self.delete_project(cmd_env, proj_name)
+        self.delete_environment(cmd_env, env_name)
+
+    def test_environment_tag_pagination(self):
+        base_cmd = self.get_cli_base_cmd()
+        cmd_env = self.get_cmd_env()
+        env_name = self.make_name("test-env-pag-tag")
+        self.create_environment(cmd_env, env_name)
+
+        page_size = TEST_PAGE_SIZE
+        tag_count = page_size + 1
+        for idx in range(tag_count):
+            tag_name = f"pag-{idx}"
+            self.create_env_tag(cmd_env, env_name, tag_name)
+
+        self.assertPaginated(cmd_env, base_cmd + f"env tag ls {env_name}", "/tags/?")
+
+        # cleanup
         self.delete_environment(cmd_env, env_name)

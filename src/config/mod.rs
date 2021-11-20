@@ -57,6 +57,9 @@ pub const CT_PROFILE: &str = "CLOUDTRUTH_PROFILE";
 /// Environment variable name used to enable REST debugging statements.
 pub const CT_REST_DEBUG: &str = "CLOUDTRUTH_REST_DEBUG";
 
+/// Environment variable name used to set the REST page size.
+pub const CT_REST_PAGE_SIZE: &str = "CLOUDTRUTH_REST_PAGE_SIZE";
+
 /// List of variables to remove to make a clean environment.
 #[allow(dead_code)]
 pub const CT_APP_REMOVABLE_VARS: &[&str] = &[CT_SERVER_URL, CT_API_KEY];
@@ -84,6 +87,7 @@ pub struct Config {
     pub server_url: String,
     pub request_timeout: Option<Duration>,
     pub rest_debug: bool,
+    pub rest_page_size: Option<i32>,
 }
 
 pub struct ValidationError {
@@ -113,6 +117,7 @@ fn profile_into_config(prof_name: &str, profile: &Profile) -> Config {
             0,
         )),
         rest_debug: profile.rest_debug.unwrap_or(false),
+        rest_page_size: profile.rest_page_size,
     }
 }
 
@@ -129,6 +134,7 @@ const PARAM_ENVIRONMENT: &str = "Environment";
 const PARAM_SERVER_URL: &str = "Server URL";
 const PARAM_REQUEST_TIMEOUT: &str = "Request timeout";
 const PARAM_REST_DEBUG: &str = "REST debug";
+const PARAM_REST_PAGE_SIZE: &str = "REST page size";
 const PARAM_CLI_VERSION: &str = "CLI version";
 const PARAM_USER: &str = "User";
 const PARAM_ROLE: &str = "Role";
@@ -550,8 +556,8 @@ impl Config {
         // REST debug
         let mut value = "false".to_string();
         let mut source = SRC_DEFAULT.to_string();
-        if let Some(env_value) = ConfigEnv::get_override(CT_REST_DEBUG) {
-            value = env_value;
+        if let Some(env_value) = ConfigEnv::get_rest_debug() {
+            value = env_value.to_string();
             source = SRC_ENV.to_string();
         } else {
             for profile in &profiles {
@@ -564,6 +570,30 @@ impl Config {
         }
         results.push(ConfigValue {
             name: PARAM_REST_DEBUG.to_string(),
+            value,
+            source,
+            secret: false,
+            extension: true,
+        });
+
+        //////////////////
+        // REST page size
+        let mut value = "".to_string();
+        let mut source = SRC_DEFAULT.to_string();
+        if let Some(env_value) = ConfigEnv::get_rest_page_size() {
+            value = env_value.to_string();
+            source = SRC_ENV.to_string();
+        } else {
+            for profile in &profiles {
+                if let Some(ref prof_value) = profile.rest_page_size {
+                    value = prof_value.to_string();
+                    source = format!("{} ({})", SRC_PROFILE, profile.name);
+                    break;
+                }
+            }
+        }
+        results.push(ConfigValue {
+            name: PARAM_REST_PAGE_SIZE.to_string(),
             value,
             source,
             secret: false,

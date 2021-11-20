@@ -141,6 +141,39 @@ class TestUsers(TestCase):
         result = self.run_cli(cmd_env, sub_cmd + f"delete {user_name} --confirm")
         self.assertResultWarning(result, f"User '{user_name}' does not exist")
 
+    def test_user_pagination(self):
+        cmd_env = self.get_cmd_env()
+        base_cmd = self.get_cli_base_cmd()
+        user_cmd = base_cmd + "user "
+
+        page_size = 2
+        user_count = page_size + 1
+        user_names = []
+        for idx in range(user_count):
+            name = f"ci-user+{idx}"
+            job_id = self.make_name("")
+            if job_id:
+                name += f"-{job_id}"
+            user_names.append(name)
+
+        for name in user_names:
+            result = self.run_cli(cmd_env, user_cmd + f"set {name}")
+            self.assertResultSuccess(result)
+
+        invite_list_cmd = user_cmd + "ls"
+        self.assertPaginated(cmd_env, invite_list_cmd, "/users/?", page_size=page_size)
+
+        result = self.run_cli(cmd_env, invite_list_cmd)
+        self.assertResultSuccess(result)
+        output = result.out()
+        for name in user_names:
+            self.assertIn(name, output)
+
+        # cleanup
+        for name in user_names:
+            result = self.run_cli(cmd_env, user_cmd + f"del -y {name}")
+            self.assertResultSuccess(result)
+
     def _get_invite_entry(self, cmd_env, email: str) -> Dict:
         result = self.run_cli(cmd_env, self._base_cmd + "users invite ls -v -f json")
         self.assertResultSuccess(result)
@@ -229,3 +262,37 @@ class TestUsers(TestCase):
         # invites from this user get removed, too!
         entry = self._get_invite_entry(cmd_env, email)
         self.assertIsNone(entry)
+
+    def test_user_invitation_pagination(self):
+        cmd_env = self.get_cmd_env()
+        base_cmd = self.get_cli_base_cmd()
+        invite_cmd = base_cmd + "user invite "
+
+        page_size = 2
+        invite_count = page_size + 1
+        email_addrs = []
+        for idx in range(invite_count):
+            name = f"ci-testing+{idx}"
+            job_id = self.make_name("")
+            if job_id:
+                job_id = f"+{job_id}"
+            email = name + job_id + "@cloudtruth.com"
+            email_addrs.append(email)
+
+        for email in email_addrs:
+            result = self.run_cli(cmd_env, invite_cmd + f"set {email}")
+            self.assertResultSuccess(result)
+
+        invite_list_cmd = invite_cmd + "ls"
+        self.assertPaginated(cmd_env, invite_list_cmd, "/invitations/?", page_size=page_size)
+
+        result = self.run_cli(cmd_env, invite_list_cmd)
+        self.assertResultSuccess(result)
+        output = result.out()
+        for email in email_addrs:
+            self.assertIn(email, output)
+
+        # cleanup
+        for email in email_addrs:
+            result = self.run_cli(cmd_env, invite_cmd + f"del -y {email}")
+            self.assertResultSuccess(result)

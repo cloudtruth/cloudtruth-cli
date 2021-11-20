@@ -5,8 +5,9 @@ use std::env;
 
 pub type OpenApiConfig = Configuration;
 
-/// This is our fixed page size. The current CLI is not setup to handle paging.
-pub const PAGE_SIZE: Option<i32> = None;
+/// These are used to denote places where paging is not needed, due do filtering
+pub const NO_PAGE_COUNT: Option<i32> = None;
+pub const NO_PAGE_SIZE: Option<i32> = None;
 
 pub const WRAP_SECRETS: bool = false;
 
@@ -107,6 +108,9 @@ fn user_agent_name() -> String {
 pub fn key_from_config(rest_cfg: &OpenApiConfig) -> String {
     rest_cfg.api_key.clone().unwrap().key
 }
+pub fn page_size(rest_cfg: &OpenApiConfig) -> Option<i32> {
+    rest_cfg.rest_page_size
+}
 
 impl From<&CloudTruthConfig> for OpenApiConfig {
     fn from(ct_cfg: &CloudTruthConfig) -> Self {
@@ -128,6 +132,7 @@ impl From<&CloudTruthConfig> for OpenApiConfig {
                 key: ct_cfg.api_key.clone(),
             }),
             rest_debug: ct_cfg.rest_debug,
+            rest_page_size: ct_cfg.rest_page_size,
         }
     }
 }
@@ -151,6 +156,7 @@ mod tests {
             server_url: url.to_string(),
             request_timeout: Some(Duration::new(120, 0)),
             rest_debug: true,
+            rest_page_size: Some(2300),
         };
         let openapi_cfg = OpenApiConfig::from(&ct_cfg);
         // check that the trailing slash removed from the URL
@@ -162,6 +168,7 @@ mod tests {
         assert_eq!(openapi_cfg.user_agent.unwrap(), user_agent_name());
         assert_eq!(openapi_cfg.bearer_access_token, None);
         assert_eq!(openapi_cfg.rest_debug, true);
+        assert_eq!(openapi_cfg.rest_page_size, Some(2300))
         // unfortunately, no means to interrogate the client to find the timeout
     }
 

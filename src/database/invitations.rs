@@ -1,6 +1,6 @@
 use crate::database::{
-    auth_details, response_message, InvitationDetails, InvitationError, OpenApiConfig, Users,
-    PAGE_SIZE,
+    auth_details, page_size, response_message, InvitationDetails, InvitationError, OpenApiConfig,
+    Users, NO_PAGE_COUNT, NO_PAGE_SIZE,
 };
 use cloudtruth_restapi::apis::invitations_api::{
     invitations_create, invitations_destroy, invitations_list, invitations_partial_update,
@@ -44,22 +44,39 @@ impl Invitations {
         &self,
         rest_cfg: &OpenApiConfig,
     ) -> Result<Vec<InvitationDetails>, InvitationError> {
-        let response = invitations_list(rest_cfg, None, NO_ORDERING, None, PAGE_SIZE, None, None);
-        match response {
-            Ok(data) => {
-                let mut list: Vec<InvitationDetails> = Vec::new();
-                if let Some(invites) = data.results {
-                    for inv in invites {
-                        list.push(InvitationDetails::from(&inv));
+        let mut result: Vec<InvitationDetails> = Vec::new();
+        let mut page_count = 1;
+        loop {
+            let response = invitations_list(
+                rest_cfg,
+                None,
+                NO_ORDERING,
+                Some(page_count),
+                page_size(rest_cfg),
+                None,
+                None,
+            );
+            match response {
+                Ok(data) => {
+                    if let Some(invites) = data.results {
+                        for inv in invites {
+                            result.push(InvitationDetails::from(&inv));
+                        }
+                        page_count += 1;
+                    } else {
+                        break;
+                    }
+                    if data.next.is_none() {
+                        break;
                     }
                 }
-                Ok(list)
+                Err(ResponseError(ref content)) => {
+                    return Err(response_error(&content.status, &content.content))
+                }
+                Err(e) => return Err(InvitationError::UnhandledError(e.to_string())),
             }
-            Err(ResponseError(ref content)) => {
-                Err(response_error(&content.status, &content.content))
-            }
-            Err(e) => Err(InvitationError::UnhandledError(e.to_string())),
         }
+        Ok(result)
     }
 
     pub fn get_invitation_details(
@@ -80,8 +97,8 @@ impl Invitations {
             rest_cfg,
             Some(email),
             NO_ORDERING,
-            None,
-            PAGE_SIZE,
+            NO_PAGE_COUNT,
+            NO_PAGE_SIZE,
             None,
             None,
         );

@@ -1,6 +1,6 @@
 use crate::database::{
-    auth_details, extract_details, last_from_url, response_message, EnvironmentDetails,
-    EnvironmentError, EnvironmentTag, OpenApiConfig, PAGE_SIZE,
+    auth_details, extract_details, last_from_url, page_size, response_message, EnvironmentDetails,
+    EnvironmentError, EnvironmentTag, OpenApiConfig, NO_PAGE_COUNT, NO_PAGE_SIZE,
 };
 use cloudtruth_restapi::apis::environments_api::*;
 use cloudtruth_restapi::apis::Error::ResponseError;
@@ -50,23 +50,32 @@ impl Environments {
 
     /// This provides a means to get an entire list of environment URLs to names.
     pub fn get_url_name_map(&self, rest_cfg: &OpenApiConfig) -> EnvironmentUrlMap {
-        let response = environments_list(
-            rest_cfg,
-            NO_DESC_CONTAINS,
-            None,
-            NO_NAME_CONTAINS,
-            NO_ORDERING,
-            None,
-            PAGE_SIZE,
-            NO_PARENT_NAME,
-            NO_PARENT_CONTAINS,
-        );
         let mut result: EnvironmentUrlMap = EnvironmentUrlMap::new();
-        if let Ok(list) = response {
-            if let Some(environments) = list.results {
-                for env in environments {
-                    result.insert(env.url, env.name);
+        let mut page_count = 1;
+        loop {
+            let response = environments_list(
+                rest_cfg,
+                NO_DESC_CONTAINS,
+                None,
+                NO_NAME_CONTAINS,
+                NO_ORDERING,
+                Some(page_count),
+                page_size(rest_cfg),
+                NO_PARENT_NAME,
+                NO_PARENT_CONTAINS,
+            );
+            if let Ok(data) = response {
+                if let Some(environments) = data.results {
+                    for env in environments {
+                        result.insert(env.url, env.name);
+                    }
+                    page_count += 1;
                 }
+                if data.next.is_none() {
+                    break;
+                }
+            } else {
+                break;
             }
         }
         result
@@ -103,8 +112,8 @@ impl Environments {
             Some(env_name),
             NO_NAME_CONTAINS,
             NO_ORDERING,
-            None,
-            PAGE_SIZE,
+            NO_PAGE_COUNT,
+            NO_PAGE_SIZE,
             NO_PARENT_NAME,
             NO_PARENT_CONTAINS,
         );
@@ -150,51 +159,58 @@ impl Environments {
         &self,
         rest_cfg: &OpenApiConfig,
     ) -> Result<Vec<EnvironmentDetails>, EnvironmentError> {
-        let response = environments_list(
-            rest_cfg,
-            NO_DESC_CONTAINS,
-            None,
-            NO_NAME_CONTAINS,
-            NO_ORDERING,
-            None,
-            PAGE_SIZE,
-            NO_PARENT_NAME,
-            NO_PARENT_CONTAINS,
-        );
-
-        match response {
-            Ok(data) => match data.results {
-                Some(list) => {
-                    let mut env_info: Vec<EnvironmentDetails> = Vec::new();
-                    let mut url_map: EnvironmentUrlMap = EnvironmentUrlMap::new();
-                    for env in list {
-                        let details = EnvironmentDetails::from(&env);
-                        url_map.insert(details.url.clone(), details.name.clone());
-                        env_info.push(details);
-                    }
-
-                    // now, fill in the names
-                    let default_envname = "".to_string();
-                    for details in &mut env_info {
-                        if !details.parent_url.is_empty() {
-                            details.parent_name = url_map
-                                .get(&details.parent_url)
-                                .unwrap_or(&default_envname)
-                                .clone();
+        let mut env_info: Vec<EnvironmentDetails> = Vec::new();
+        let mut url_map: EnvironmentUrlMap = EnvironmentUrlMap::new();
+        let mut page_count = 1;
+        loop {
+            let response = environments_list(
+                rest_cfg,
+                NO_DESC_CONTAINS,
+                None,
+                NO_NAME_CONTAINS,
+                NO_ORDERING,
+                Some(page_count),
+                page_size(rest_cfg),
+                NO_PARENT_NAME,
+                NO_PARENT_CONTAINS,
+            );
+            match response {
+                Ok(data) => {
+                    if let Some(list) = data.results {
+                        for env in list {
+                            let details = EnvironmentDetails::from(&env);
+                            url_map.insert(details.url.clone(), details.name.clone());
+                            env_info.push(details);
                         }
+                        page_count += 1;
+                    } else {
+                        break;
                     }
-                    env_info.sort_by(|l, r| l.name.cmp(&r.name));
-                    Ok(env_info)
+                    if data.next.is_none() {
+                        break;
+                    }
                 }
-                None => Ok(vec![]),
-            },
-            Err(ResponseError(ref content)) => match content.status.as_u16() {
-                401 => Err(auth_error(&content.content)),
-                403 => Err(auth_error(&content.content)),
-                _ => Err(response_error(&content.status, &content.content)),
-            },
-            Err(e) => Err(EnvironmentError::UnhandledError(e.to_string())),
+                Err(ResponseError(ref content)) => match content.status.as_u16() {
+                    401 => return Err(auth_error(&content.content)),
+                    403 => return Err(auth_error(&content.content)),
+                    _ => return Err(response_error(&content.status, &content.content)),
+                },
+                Err(e) => return Err(EnvironmentError::UnhandledError(e.to_string())),
+            }
+        } // loop
+
+        // now, fill in the names
+        let default_envname = "".to_string();
+        for details in &mut env_info {
+            if !details.parent_url.is_empty() {
+                details.parent_name = url_map
+                    .get(&details.parent_url)
+                    .unwrap_or(&default_envname)
+                    .clone();
+            }
         }
+        env_info.sort_by(|l, r| l.name.cmp(&r.name));
+        Ok(env_info)
     }
 
     pub fn create_environment(
@@ -284,34 +300,44 @@ impl Environments {
         rest_cfg: &OpenApiConfig,
         environment_id: &str,
     ) -> Result<Vec<EnvironmentTag>, EnvironmentError> {
-        let response = environments_tags_list(
-            rest_cfg,
-            environment_id,
-            None,
-            None,
-            None,
-            None,
-            None,
-            PAGE_SIZE,
-            None,
-            None,
-            None,
-        );
-        match response {
-            Ok(data) => {
-                let mut result: Vec<EnvironmentTag> = vec![];
-                if let Some(list) = data.results {
-                    for ref entry in list {
-                        result.push(EnvironmentTag::from(entry));
+        let mut result: Vec<EnvironmentTag> = vec![];
+        let mut page_count = 1;
+
+        loop {
+            let response = environments_tags_list(
+                rest_cfg,
+                environment_id,
+                None,
+                None,
+                None,
+                None,
+                Some(page_count),
+                page_size(rest_cfg),
+                None,
+                None,
+                None,
+            );
+            match response {
+                Ok(data) => {
+                    if let Some(list) = data.results {
+                        for ref entry in list {
+                            result.push(EnvironmentTag::from(entry));
+                        }
+                        page_count += 1;
+                    } else {
+                        break;
+                    }
+                    if data.next.is_none() {
+                        break;
                     }
                 }
-                Ok(result)
+                Err(ResponseError(ref content)) => {
+                    return Err(response_error(&content.status, &content.content))
+                }
+                Err(e) => return Err(EnvironmentError::UnhandledError(e.to_string())),
             }
-            Err(ResponseError(ref content)) => {
-                Err(response_error(&content.status, &content.content))
-            }
-            Err(e) => Err(EnvironmentError::UnhandledError(e.to_string())),
-        }
+        } // loop
+        Ok(result)
     }
 
     pub fn get_tag_id(
@@ -320,34 +346,8 @@ impl Environments {
         environment_id: &str,
         tag_name: &str,
     ) -> Result<Option<String>, EnvironmentError> {
-        let response = environments_tags_list(
-            rest_cfg,
-            environment_id,
-            None,
-            Some(tag_name),
-            None,
-            None,
-            None,
-            PAGE_SIZE,
-            None,
-            None,
-            None,
-        );
-        match response {
-            Ok(data) => {
-                let mut result = None;
-                if let Some(list) = data.results {
-                    if !list.is_empty() {
-                        result = Some(list[0].id.clone());
-                    }
-                }
-                Ok(result)
-            }
-            Err(ResponseError(ref content)) => {
-                Err(response_error(&content.status, &content.content))
-            }
-            Err(e) => Err(EnvironmentError::UnhandledError(e.to_string())),
-        }
+        let details = self.get_tag_by_name(rest_cfg, environment_id, tag_name)?;
+        Ok(details.map(|d| d.id))
     }
 
     pub fn get_tag_by_name(
@@ -363,8 +363,8 @@ impl Environments {
             Some(tag_name),
             None,
             None,
-            None,
-            PAGE_SIZE,
+            NO_PAGE_COUNT,
+            NO_PAGE_SIZE,
             None,
             None,
             None,

@@ -17,12 +17,14 @@ CT_PROJ = "CLOUDTRUTH_PROJECT"
 CT_URL = "CLOUDTRUTH_SERVER_URL"
 CT_TIMEOUT = "CLOUDTRUTH_REQUEST_TIMEOUT"
 CT_REST_DEBUG = "CLOUDTRUTH_REST_DEBUG"
+CT_REST_PAGE_SIZE = "CLOUDTRUTH_REST_PAGE_SIZE"
 
 DEFAULT_SERVER_URL = "https://api.cloudtruth.io"
 DEFAULT_ENV_NAME = "default"
 DEFAULT_PROFILE_NAME = "default"
 
 AUTO_DESCRIPTION = "Automated testing via live_test"
+TEST_PAGE_SIZE = 5
 
 CT_TEST_LOG_COMMANDS = "CT_LIVE_TEST_LOG_COMMANDS"
 CT_TEST_LOG_OUTPUT = "CT_LIVE_TEST_LOG_OUTPUT"
@@ -208,6 +210,23 @@ class TestCase(unittest.TestCase):
         """
         self.assertIn(err_msg, result.err())
         self.assertNotEqual(result.return_value, 0)
+
+    def assertPaginated(self, cmd_env, command: str, in_req: str, page_size: int = TEST_PAGE_SIZE):
+        """
+        Sets an artificially low CLOUDTRUTH_REST_PAGE_SIZE so we get paginated results for the
+        provided command, and checks the output includes the URLs that specify additional pages.
+        """
+        local_env = deepcopy(cmd_env)
+        local_env[CT_REST_DEBUG] = "true"
+        local_env[CT_REST_PAGE_SIZE] = str(page_size)
+        result = self.run_cli(local_env, command)
+        self.assertResultSuccess(result)
+        gets = [_ for _ in result.stdout if "URL GET" in _ and in_req in _]
+        size_search = f"page_size={page_size}"
+        size_spec = [_ for _ in gets if size_search in _]
+        self.assertGreaterEqual(len(size_spec), 2)  # should have at least 2 paginated requests
+        self.assertGreaterEqual(len([_ for _ in gets if "page=1" in _]), 1)
+        self.assertGreaterEqual(len([_ for _ in gets if "page=2" in _]), 1)
 
     def run_cli(self, env: Dict[str, str], cmd) -> Result:
         # WARNING: DOS prompt does not like the single quotes, so use double
