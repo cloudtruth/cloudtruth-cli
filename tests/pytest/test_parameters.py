@@ -8,6 +8,7 @@ from testcase import PROP_CREATED
 from testcase import PROP_MODIFIED
 from testcase import PROP_VALUE
 from testcase import REDACTED
+from testcase import TEST_PAGE_SIZE
 
 
 class TestParameters(TestCase):
@@ -2643,3 +2644,29 @@ Name,Value,Project
         self.delete_project(cmd_env, child1_name)
         self.delete_project(cmd_env, child2_name)
         self.delete_project(cmd_env, parent_name)
+
+    def test_parameter_pagination(self):
+        cmd_env = self.get_cmd_env()
+        base_cmd = self.get_cli_base_cmd()
+
+        # add a set of projects
+        proj_name = self.make_name("test-param-pagination")
+
+        self.create_project(cmd_env, proj_name)
+
+        param_base = "param"
+        param_count = TEST_PAGE_SIZE + 1
+        for idx in range(param_count):
+            self.set_param(cmd_env, proj_name, f"{param_base}{idx}", )
+
+        list_cmd = base_cmd + f"--project {proj_name} param ls"
+        self.assertPaginated(cmd_env, list_cmd, "/parameters/?")
+
+        result = self.run_cli(cmd_env, list_cmd)
+        self.assertResultSuccess(result)
+        output = result.out()
+        for idx in range(param_count):
+            self.assertIn(f"{param_base}{idx}", output)
+
+        # cleanup
+        self.delete_project(cmd_env, proj_name)

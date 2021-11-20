@@ -1,5 +1,6 @@
 from testcase import TestCase
 from testcase import find_by_prop
+from testcase import TEST_PAGE_SIZE
 
 
 class TestProjects(TestCase):
@@ -213,3 +214,21 @@ class TestProjects(TestCase):
         self.delete_project(cmd_env, proj_name3)
         self.delete_project(cmd_env, proj_name2)
         self.delete_project(cmd_env, proj_name1)
+
+    def test_project_pagination(self):
+        base_cmd = self.get_cli_base_cmd()
+        cmd_env = self.get_cmd_env()
+
+        page_size = TEST_PAGE_SIZE
+        proj_count = page_size + 1
+
+        for idx in range(proj_count):
+            proj_name = self.make_name(f"test-pag-{idx}")
+            self.create_project(cmd_env, proj_name)
+
+        self.assertPaginated(cmd_env, base_cmd + "proj ls", "/projects/?")
+
+        # cleanup
+        for idx in range(proj_count):
+            proj_name = self.make_name(f"test-pag-{idx}")
+            self.delete_project(cmd_env, proj_name)

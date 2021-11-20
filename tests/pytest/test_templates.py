@@ -965,3 +965,28 @@ PARAMETER={{{{{param1}}}}}
         # cleanup
         self.delete_file(filename)
         self.delete_project(cmd_env, proj_name)
+
+    def test_template_pagination(self):
+        base_cmd = self.get_cli_base_cmd()
+        cmd_env = self.get_cmd_env()
+        temp_base = "temp-name"
+
+        filename = self.make_name("paged-temp") + ".txt"
+        body1 = "nothing to evaluate here"
+        self.write_file(filename, body1)
+
+        proj_name = self.make_name("test-temp-paged")
+        self.create_project(cmd_env, proj_name)
+
+        sub_cmd = base_cmd + f"--project '{proj_name}' template "
+
+        page_size = 3
+        temp_count = page_size + 1
+        for idx in range(temp_count):
+            result = self.run_cli(cmd_env, sub_cmd + f"set {temp_base}-{idx} --body '{filename}'")
+            self.assertResultSuccess(result)
+
+        self.assertPaginated(cmd_env, sub_cmd + "ls", "/templates/?", page_size=page_size)
+
+        # cleanup
+        self.delete_project(cmd_env, proj_name)
