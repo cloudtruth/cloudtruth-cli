@@ -150,10 +150,10 @@ class TestUsers(TestCase):
         user_count = page_size + 1
         user_names = []
         for idx in range(user_count):
-            name = f"ci-user-{idx}"
+            name = f"ci-user+{idx}"
             job_id = self.make_name("")
             if job_id:
-                name = f"+{job_id}"
+                name += f"-{job_id}"
             user_names.append(name)
 
         for name in user_names:
