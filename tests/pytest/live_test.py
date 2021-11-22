@@ -86,6 +86,12 @@ def parse_args(*args) -> argparse.Namespace:
         default=[],
         help="Only include tests containing the provided string(s) in the name"
     )
+    parser.add_argument(
+        "--list",
+        dest="list_only",
+        action="store_true",
+        help="Only print the tests that will be run (without running them)."
+    )
     return parser.parse_args(*args)
 
 
@@ -110,6 +116,17 @@ def debugTestRunner(enable_debug: bool, verbosity: int, failfast: bool):
         failfast=failfast,
         resultclass=DebugTestResult,
     )
+
+
+def print_suite(suite):
+    if hasattr(suite, '__iter__'):
+        for x in suite:
+            print_suite(x)
+    elif hasattr(suite, "_testMethodName"):
+        name = getattr(suite, "_testMethodName")
+        print(f"{name}")
+    else:
+        print("invalid")
 
 
 def live_test(*args):
@@ -142,6 +159,10 @@ def live_test(*args):
         # must be because of a filter or file filter
         print(f"No tests matching:\n\tfilters: {', '.join(args.test_filter)},\n\tfile: {args.file_filter}")
         return 3
+
+    if args.list_only:
+        print_suite(suite)
+        return 0
 
     runner = debugTestRunner(
         enable_debug=args.pdb, verbosity=args.verbosity, failfast=args.failfast
