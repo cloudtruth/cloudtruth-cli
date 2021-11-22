@@ -982,6 +982,7 @@ SUBCOMMANDS:
                    [aliases: expo, exp, ex]
     get            Gets value for parameter in the selected environment
     help           Prints this message or the help of the given subcommand(s)
+    history        View parameter history [aliases: hist, h]
     list           List CloudTruth parameters [aliases: ls, l]
     pushes         Show push task steps for parameters [aliases: push, pu, p]
     set            Set a value in the selected project/environment for an existing parameter or creates a new one if
@@ -1097,6 +1098,24 @@ OPTIONS:
 
 ARGS:
     <KEY>    Name of parameter to get
+========================================
+cloudtruth-parameters-history 
+View parameter history
+
+USAGE:
+    cloudtruth parameters history [OPTIONS] [KEY]
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+OPTIONS:
+        --as-of <datetime|tag>    Date/time (or tag) for parameter history
+    -f, --format <format>         Format for parameter history output [default: table]  [possible values: table, csv,
+                                  json, yaml]
+
+ARGS:
+    <KEY>    Parameter name (optional)
 ========================================
 cloudtruth-parameters-list 
 List CloudTruth parameters
