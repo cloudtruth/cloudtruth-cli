@@ -1,6 +1,6 @@
 use crate::database::{
-    auth_details, page_size, response_message, MemberDetails, OpenApiConfig, UserDetails,
-    UserError, NO_PAGE_COUNT, NO_PAGE_SIZE,
+    auth_details, last_from_url, page_size, response_message, MemberDetails, OpenApiConfig,
+    UserDetails, UserError, NO_PAGE_COUNT, NO_PAGE_SIZE,
 };
 use cloudtruth_restapi::apis::memberships_api::{
     memberships_create, memberships_list, memberships_partial_update,
@@ -16,6 +16,7 @@ use cloudtruth_restapi::models::{
     ServiceAccountCreateRequest,
 };
 use std::collections::HashMap;
+use urlencoding::decode;
 
 const NO_ORDERING: Option<&str> = None;
 
@@ -44,6 +45,12 @@ fn to_role_enum(value: &str) -> Result<RoleEnum, UserError> {
         "VIEWER" => Ok(RoleEnum::VIEWER),
         _ => Err(UserError::InvalidRole(value.to_string())),
     }
+}
+
+fn user_id_from_url(url: &str) -> String {
+    let encoded_id = last_from_url(url);
+    // The id in the URL is encoded. Decode it, since the API takes the decoded version.
+    decode(encoded_id).expect("failed to decode").to_string()
 }
 
 impl Users {
@@ -284,21 +291,19 @@ impl Users {
         }
     }
 
-    /// This version of `get_membership_id()` does not seem to work due to the `user` field value
-    /// not being found. In the other version of this function, we get all the memberships and do
-    /// the filtering ourself.
-    fn _get_membership_id(
+    fn get_membership_id(
         &self,
         rest_cfg: &OpenApiConfig,
         user_url: &str,
     ) -> Result<String, UserError> {
+        let user_id = user_id_from_url(user_url);
         let response = memberships_list(
             rest_cfg,
             NO_ORDERING,
             NO_PAGE_COUNT,
             NO_PAGE_SIZE,
             None,
-            Some(user_url),
+            Some(&user_id),
         );
         match response {
             Ok(data) => match data.results {
@@ -315,56 +320,33 @@ impl Users {
         }
     }
 
-    fn get_membership_id(
-        &self,
-        rest_cfg: &OpenApiConfig,
-        user_url: &str,
-    ) -> Result<String, UserError> {
-        let response = self.get_membership_by_url(rest_cfg, user_url)?;
-        match response {
-            Some(details) => Ok(details.id),
-            _ => Err(UserError::MembershipNotFound()),
-        }
-    }
-
     fn get_membership_by_url(
         &self,
         rest_cfg: &OpenApiConfig,
         user_url: &str,
     ) -> Result<Option<MemberDetails>, UserError> {
-        // should be able do the filtering using the user_url, but the server does not like it!
-        let mut page_count = 1;
-        loop {
-            let response = memberships_list(
-                rest_cfg,
-                NO_ORDERING,
-                Some(page_count),
-                page_size(rest_cfg),
-                None,
-                None,
-            );
-            match response {
-                Ok(data) => {
-                    if let Some(mut list) = data.results {
-                        list.retain(|m| m.user == user_url);
-                        if !list.is_empty() {
-                            return Ok(Some(MemberDetails::from(&list[0])));
-                        }
-                        page_count += 1;
-                    } else {
-                        break;
-                    }
-                    if data.next.is_none() {
-                        break;
-                    }
-                }
-                Err(ResponseError(ref content)) => {
-                    return Err(response_error(&content.status, &content.content))
-                }
-                Err(e) => return Err(UserError::UnhandledError(e.to_string())),
+        let user_id = user_id_from_url(user_url);
+        let response = memberships_list(
+            rest_cfg,
+            NO_ORDERING,
+            NO_PAGE_COUNT,
+            NO_PAGE_SIZE,
+            None,
+            Some(&user_id),
+        );
+        match response {
+            Ok(data) => match data.results {
+                Some(list) => match list.is_empty() {
+                    true => Ok(None),
+                    false => Ok(Some(MemberDetails::from(&list[0]))),
+                },
+                _ => Ok(None),
+            },
+            Err(ResponseError(ref content)) => {
+                Err(response_error(&content.status, &content.content))
             }
+            Err(e) => Err(UserError::UnhandledError(e.to_string())),
         }
-        Ok(None)
     }
 
     fn get_membership_map(&self, rest_cfg: &OpenApiConfig) -> Result<MembershipUrlMap, UserError> {
