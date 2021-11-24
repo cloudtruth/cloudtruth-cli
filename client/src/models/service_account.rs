@@ -23,8 +23,8 @@ pub struct ServiceAccount {
     pub created_at: String,
     #[serde(rename = "modified_at")]
     pub modified_at: String,
-    /// The most recent date and time the service account was used.
-    #[serde(rename = "last_used_at", skip_serializing_if = "Option::is_none")]
+    /// The most recent date and time the service account was used.  It will be null if the service account has not been used.
+    #[serde(rename = "last_used_at")]
     pub last_used_at: Option<String>,
 }
 
