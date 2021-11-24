@@ -1,3 +1,16 @@
+# 1.1.1 - 2021-11-24
+
+* Add `actions imports` commands.
+* Add `actions push task-steps` command.
+* Add `parameters push` command to show push action task-steps for parameters.
+* Improve feedback when encounter parsing error.
+* Avoid issues with `audit-logs` not knowing about new object types.
+* Improve `schema` commands:
+  * Avoid issues with display changing every time.
+  * Added `diff` command to compare local and server differences.
+* Improve behavior when server reports a service account without a user.
+* Properly handle pagination for many list commands, and make pagination configurable.
+
 # 1.1.0 - 2021-11-12
 
 * BREAKING CHANGE:
