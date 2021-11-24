@@ -1,13 +1,17 @@
+import datetime
 import os
+import time
 import unittest
 import subprocess
 
 from typing import List
+from typing import Optional
 
 from testcase import TestCase
 from testcase import PROP_CREATED
 from testcase import PROP_NAME
 from testcase import PROP_MODIFIED
+from testcase import PROP_VALUE
 from testcase import find_by_prop
 
 CT_PUSH_INTEG_NAME = "CLOUDTRUTH_TEST_PUSH_INTEGRATION_NAME"
@@ -22,6 +26,11 @@ CT_IMPORT_BAD_INT_NAME = "CLOUDTRUTH_TEST_IMPORT_BAD_INTEGRATION_NAME"
 CT_IMPORT_RUN = [
     CT_IMPORT_INTEG_NAME,
     CT_IMPORT_BAD_INT_NAME,
+]
+
+CT_COMP_INTEG_NAME = "CLOUDTRUTH_TEST_COMPLETE_INTEGRATION_NAME"
+CT_COMP_RUN = [
+    CT_COMP_INTEG_NAME,
 ]
 
 
@@ -630,3 +639,270 @@ class TestActions(TestCase):
 
         result = self.run_cli(cmd_env, base_cmd + f"act i del -i '{bad_int_name}' '{import_name1}' -y")
         self.assertResultError(result, no_integration_msg)
+
+    def get_param_pushes(
+        self,
+        cmd_env,
+        proj_name: str,
+        env_name: Optional[str] = None,
+        param_name: Optional[str] = None,
+    ) -> List[dict]:
+        push_list_cmd = self._base_cmd + f"--project '{proj_name}' "
+        if env_name:
+            push_list_cmd += f"--env '{env_name}' "
+        push_list_cmd += "param push "
+        if param_name:
+            push_list_cmd += f"'{param_name}' "
+        push_list_cmd += "-f json --show-times"
+        result = self.run_cli(cmd_env, push_list_cmd)
+        self.assertResultSuccess(result)
+        if "No pushes found" in result.out():
+            return []
+        return eval(result.out()).get("parameter-push-task-step")
+
+    def success_with(self, cmd_env, command: str, expected: str) -> bool:
+        result = self.run_cli(cmd_env, command)
+        self.assertResultSuccess(result)
+        return expected in result.out()
+
+    def waitFor(
+            self,
+            func,
+            timeout_minutes: int = 3,
+            sleep_seconds: int = 3,
+    ) -> bool:
+        completed = False
+        start_time = datetime.datetime.now()
+        max_time = datetime.timedelta(minutes=timeout_minutes)
+        end_time = start_time + max_time
+        while datetime.datetime.now() < end_time and not completed:
+            time.sleep(sleep_seconds)  # don't hammer the server too hard
+            completed = func()
+
+        self.assertTrue(completed, "Timed out without succeeding")
+
+    @unittest.skipIf(missing_any(CT_COMP_RUN), "Need all CT_COMP_RUN parameters")
+    def test_action_complete(self):
+        base_cmd = self.get_cli_base_cmd()
+        cmd_env = self.get_cmd_env()
+
+        # TODO: other tests include:
+        #  1. secrets -- how are they handled (saved in plaintest to SSM? if existing param, not a secret)
+        #  2. unsaved parameters in project -- removed or retained?
+        integ_name = os.environ.get(CT_COMP_INTEG_NAME)
+
+        ########################
+        # create a couple environments
+        env_name_a = self.make_name("act-comp-a")
+        self.create_environment(cmd_env, env_name_a)
+        env_name_b = self.make_name("act-comp-b")
+        self.create_environment(cmd_env, env_name_b)
+
+        ########################
+        # define a couple projects, parameters, and values
+        proj_name1 = self.make_name("test-comp-army")
+        param11 = "soldier"
+        value11a = "private"
+        value11b = "infantryman"
+        param21 = "officer"
+        value21a = "captain"
+        value21b = "engineer"
+
+        proj_name2 = self.make_name("test-comp-airforce")
+        param12 = "officer"
+        value12a = "navigator"
+        value12b = "major"
+        param22 = "airman"
+        value22a = "mechanic"
+        value22b = "techsergeant"
+
+        def create_project1():
+            ########################
+            # create parameters and values
+            self.create_project(cmd_env, proj_name1)
+            self.set_param(cmd_env, proj_name1, param11, value=value11a, env=env_name_a)
+            self.set_param(cmd_env, proj_name1, param11, value=value11b, env=env_name_b)
+            self.set_param(cmd_env, proj_name1, param21, value=value21a, env=env_name_a)
+            self.set_param(cmd_env, proj_name1, param21, value=value21b, env=env_name_b)
+
+        def create_project2():
+            self.create_project(cmd_env, proj_name2)
+            self.set_param(cmd_env, proj_name2, param12, value=value12a, env=env_name_a)
+            self.set_param(cmd_env, proj_name2, param12, value=value12b, env=env_name_b)
+            self.set_param(cmd_env, proj_name2, param22, value=value22a, env=env_name_a)
+            self.set_param(cmd_env, proj_name2, param22, value=value22b, env=env_name_b)
+
+        def validate_project1a():
+            output = self.list_params(cmd_env, proj_name1, env=env_name_a, fmt="json")
+            proj1a_params = eval(output.out()).get("parameter")
+            entry = find_by_prop(proj1a_params, PROP_NAME, param11)[0]
+            self.assertEqual(entry.get(PROP_VALUE), value11a)
+            entry = find_by_prop(proj1a_params, PROP_NAME, param21)[0]
+            self.assertEqual(entry.get(PROP_VALUE), value21a)
+
+        def validated_project1b():
+            output = self.list_params(cmd_env, proj_name1, env=env_name_b, fmt="json")
+            proj1a_params = eval(output.out()).get("parameter")
+            entry = find_by_prop(proj1a_params, PROP_NAME, param11)[0]
+            self.assertEqual(entry.get(PROP_VALUE), value11b)
+            entry = find_by_prop(proj1a_params, PROP_NAME, param21)[0]
+            self.assertEqual(entry.get(PROP_VALUE), value21b)
+
+        def validate_project2a():
+            output = self.list_params(cmd_env, proj_name2, env=env_name_a, fmt="json")
+            proj1a_params = eval(output.out()).get("parameter")
+            entry = find_by_prop(proj1a_params, PROP_NAME, param12)[0]
+            self.assertEqual(entry.get(PROP_VALUE), value12a)
+            entry = find_by_prop(proj1a_params, PROP_NAME, param22)[0]
+            self.assertEqual(entry.get(PROP_VALUE), value22a)
+
+        def validate_project2b():
+            output = self.list_params(cmd_env, proj_name2, env=env_name_b, fmt="json")
+            proj1a_params = eval(output.out()).get("parameter")
+            entry = find_by_prop(proj1a_params, PROP_NAME, param12)[0]
+            self.assertEqual(entry.get(PROP_VALUE), value12b)
+            entry = find_by_prop(proj1a_params, PROP_NAME, param22)[0]
+            self.assertEqual(entry.get(PROP_VALUE), value22b)
+
+        # create and validate the projects here
+        create_project1()
+        create_project2()
+        validate_project1a()
+        validated_project1b()
+        validate_project2a()
+        validate_project2b()
+
+        # create tags on the environments
+        env_a_tag_name = "war"
+        env_b_tag_name = "peace"
+        tag_a = f"{env_name_a}:{env_a_tag_name}"
+        tag_b = f"{env_name_b}:{env_b_tag_name}"
+        self.create_env_tag(cmd_env, env_name_a, env_a_tag_name)
+        self.create_env_tag(cmd_env, env_name_b, env_b_tag_name)
+
+        ########################
+        # create the push of both projects -- the path includes a test-specific
+        prefix = self.make_name("action-complete")
+        resource = f"/{prefix}" + "/{{ environment }}/{{ project }}/{{ parameter }}"
+        push_name = self.make_name("test-comp-push")
+        self._pushes.append((integ_name, push_name))
+        create_push_cmd = (
+            base_cmd + f"action push set {push_name} --integration '{integ_name}' "
+            f"--resource '{resource}' --project '{proj_name1}' --project '{proj_name2}' "
+            f"--tag '{tag_a}' --tag '{tag_b}' "
+        )
+        result = self.run_cli(cmd_env, create_push_cmd)
+        self.assertResultSuccess(result)
+
+        # wait for the push to complete
+        def push_success() -> bool:
+            get_push_cmd = base_cmd + f"action push get '{push_name}' -i '{integ_name}'"
+            return self.success_with(cmd_env, get_push_cmd, "State: success")
+        self.waitFor(push_success)
+
+        # check that we have a step for each
+        result = self.run_cli(cmd_env, base_cmd + f"action push steps '{push_name}' -i '{integ_name}' -f json")
+        self.assertResultSuccess(result)
+        push_steps = eval(result.out()).get("action-push-task-step")
+        push_step_len = len(push_steps)
+        self.assertEqual(push_step_len, 8)
+        self.assertEqual(len(find_by_prop(push_steps, "Task", "push created")), push_step_len)
+
+        ########################
+        # look at push tasks from the parameter standpoint -- one for each variable
+        param_pushes = self.get_param_pushes(cmd_env, proj_name1, env_name=env_name_a)
+        self.assertEqual(len(param_pushes), 2)
+        param_pushes = self.get_param_pushes(cmd_env, proj_name1, env_name=env_name_b)
+        self.assertEqual(len(param_pushes), 2)
+        param_pushes = self.get_param_pushes(cmd_env, proj_name2, env_name=env_name_a)
+        self.assertEqual(len(param_pushes), 2)
+        param_pushes = self.get_param_pushes(cmd_env, proj_name2, env_name=env_name_b)
+        self.assertEqual(len(param_pushes), 2)
+
+        ########################
+        # delete/modify project data -- no tags harmed
+
+        # delete one project and one environment (should be restored by import)
+        self.delete_project(cmd_env, proj_name2)
+
+        # change values in the other project... should be overwritten, or restored
+        self.set_param(cmd_env, proj_name1, param11, value="marine", env=env_name_a)
+        self.delete_param(cmd_env, proj_name1, param12)
+
+        ########################
+        # create the import
+        import_name = self.make_name("my-comp-imp")
+        self._pulls.append((integ_name, import_name))
+        create_import_cmd = (
+            base_cmd + f"act imp set '{import_name}' --integration '{integ_name}' "
+            f"--resource '{resource}'"
+        )
+        result = self.run_cli(cmd_env, create_import_cmd)
+        self.assertResultSuccess(result)
+
+        # wait for the push to complete
+        def pull_success() -> bool:
+            get_import_cmd = base_cmd + f"action import get '{import_name}' -i '{integ_name}'"
+            return self.success_with(cmd_env, get_import_cmd, "State: success")
+        self.waitFor(pull_success)
+
+        result = self.run_cli(cmd_env, base_cmd + f"ac im st '{import_name}' -i '{integ_name}' -f json")
+        self.assertResultSuccess(result)
+        import_steps = eval(result.out()).get("action-import-task-step")
+        import_step_len = len(import_steps)
+        self.assertGreaterEqual(import_step_len, 8)
+        self.assertEqual(len(find_by_prop(import_steps, "Task", "pull created")), import_step_len)
+
+        # verify everything was put back to the original state
+        validate_project1a()
+        validated_project1b()
+        validate_project2a()
+        validate_project2b()
+
+        ########################
+        # delete an environment -- deletes tags and causes push update
+        self.delete_environment(cmd_env, env_name_b)
+
+        # wait for push update
+        def more_push_steps() -> bool:
+            push_step_cmd = base_cmd + f"act push task-steps {push_name} -f json"
+            push_res = self.run_cli(cmd_env, push_step_cmd)
+            self.assertResultSuccess(push_res)
+            more_steps = eval(push_res.out()).get("action-push-task-step")
+            return len(more_steps) > push_step_len and push_success()
+        self.waitFor(more_push_steps)
+
+        ########################
+        # change project data again
+        self.delete_project(cmd_env, proj_name1)
+        self.set_param(cmd_env, proj_name2, param22, "grunt", env=env_name_a)
+
+        ########################
+        # import again
+        result = self.run_cli(cmd_env, base_cmd + f"ac imp sync '{import_name}'")
+        self.assertResultSuccess(result)
+
+        def more_pull_steps() -> bool:
+            import_step_cmd = base_cmd + f"act import task-steps {import_name} -f json"
+            imp_res = self.run_cli(cmd_env, import_step_cmd)
+            self.assertResultSuccess(imp_res)
+            more_steps = eval(imp_res.out()).get("action-import-task-step")
+            return len(more_steps) > import_step_len and pull_success()
+        self.waitFor(more_pull_steps)
+
+        validate_project1a()
+        validate_project2a()
+        result = self.run_cli(cmd_env, "env ls -f json")
+        self.assertResultSuccess(result)
+        environments = eval(result.out()).get("environment")
+        self.assertEqual(0, len(find_by_prop(environments, PROP_NAME, env_name_b)))
+
+        # cleanup
+        self.run_cli(cmd_env, base_cmd + f"action push del '{push_name}' -yi '{integ_name}'")
+        self.assertResultSuccess(result)
+        self.run_cli(cmd_env, base_cmd + f"action import del '{import_name}' -yi '{integ_name}'")
+        self.assertResultSuccess(result)
+        self.delete_project(cmd_env, proj_name1)
+        self.delete_project(cmd_env, proj_name2)
+        self.delete_environment(cmd_env, env_name_a)
+        self.delete_environment(cmd_env, env_name_b)
