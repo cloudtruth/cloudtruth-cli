@@ -190,21 +190,18 @@ class TestActions(TestCase):
         desc2 = "Updated description"
         self._pushes.append((integ_name, push_name2))
         tag3 = f"{env_name1}:{env1_tag2}"
-        # tag4 = f"{env_name2}:{env2_tag2}"  # TODO: fix resource checking vs tags
+        tag4 = f"{env_name2}:{env2_tag2}"
         cmd = (
             set_cmd + f"'{push_name2}' -d '{desc2}' --no-project '{proj_name1}' --no-tag '{tag1}' "
-            f"--tag '{tag3}' "
-            # f"--tag '{tag4}'"
+            f"--tag '{tag3}' --tag '{tag4}' "
         )
-        '''
         confused_msg = "Multiple tags from the same environment in the same push action require using `{{ tag }}`"
         result = self.run_cli(cmd_env, cmd)
         self.assertResultError(result, confused_msg)
 
         # so, change the resource string, too
         resource3 = f"{resource2}/{{{{ tag }}}}"
-        cmd += f"--resource {resource3}"
-        '''
+        cmd += f"--resource '{resource3}'"
         result = self.run_cli(cmd_env, cmd)
         self.assertResultSuccess(result)
         self.assertIn("Updated", result.out())
@@ -226,9 +223,8 @@ class TestActions(TestCase):
         self.assertNotIn(tag1, entry_tags)
         self.assertIn(tag2, entry_tags)
         self.assertIn(tag3, entry_tags)
-        # self.assertIn(tag4, entry_tags)
-        # self.assertEqual(len(entry_tags.split(' ')), 3)
-        self.assertEqual(len(entry_tags.split(' ')), 2)
+        self.assertIn(tag4, entry_tags)
+        self.assertEqual(len(entry_tags.split(' ')), 3)
 
         ########################
         # task list
