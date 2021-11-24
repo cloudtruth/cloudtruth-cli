@@ -2,7 +2,8 @@ use crate::database::openapi::key_from_config;
 use crate::database::{
     extract_details, extract_from_json, page_size, response_message, secret_encode_wrap,
     secret_unwrap_decode, CryptoAlgorithm, OpenApiConfig, ParamExportOptions, ParamRuleType,
-    ParamType, ParameterDetails, ParameterError, NO_PAGE_COUNT, NO_PAGE_SIZE, WRAP_SECRETS,
+    ParamType, ParameterDetails, ParameterError, TaskStep, NO_PAGE_COUNT, NO_PAGE_SIZE,
+    WRAP_SECRETS,
 };
 use cloudtruth_restapi::apis::projects_api::*;
 use cloudtruth_restapi::apis::Error::ResponseError;
@@ -211,11 +212,16 @@ impl Parameters {
         as_of: Option<String>,
         tag: Option<String>,
     ) -> Result<Option<ParameterDetails>, ParameterError> {
+        let env_arg = if !env_id.is_empty() {
+            Some(env_id)
+        } else {
+            None
+        };
         let response = projects_parameters_list(
             rest_cfg,
             proj_id,
             as_of,
-            Some(env_id),
+            env_arg,
             Some(evaluate),
             mask_secrets_arg(mask_secrets),
             Some(key_name),
@@ -698,5 +704,66 @@ impl Parameters {
             Err(ResponseError(ref content)) => Err(rule_error(action, &content.content)),
             Err(e) => Err(ParameterError::UnhandledError(e.to_string())),
         }
+    }
+
+    pub fn get_task_steps(
+        &self,
+        rest_cfg: &OpenApiConfig,
+        proj_id: &str,
+        env_id: &str,
+        param_id: &str,
+    ) -> Result<Vec<TaskStep>, ParameterError> {
+        let mut result = vec![];
+        let mut page_count = 1;
+        loop {
+            let response = projects_parameters_pushes_list(
+                rest_cfg,
+                param_id,
+                proj_id,
+                None,
+                NO_ORDERING,
+                Some(page_count),
+                page_size(rest_cfg),
+                None,
+            );
+            match response {
+                Ok(data) => {
+                    if let Some(list) = data.results {
+                        for ref task in list {
+                            if task.environment_id.clone().unwrap_or_default().as_str() == env_id {
+                                result.push(TaskStep::from(task));
+                            }
+                        }
+                        page_count += 1;
+                    } else {
+                        break;
+                    }
+                    if data.next.is_none() {
+                        break;
+                    }
+                }
+                Err(ResponseError(ref content)) => {
+                    return Err(response_error(&content.status, &content.content))
+                }
+                Err(e) => return Err(ParameterError::UnhandledError(e.to_string())),
+            }
+        }
+        Ok(result)
+    }
+
+    pub fn get_all_task_steps(
+        &self,
+        rest_cfg: &OpenApiConfig,
+        proj_id: &str,
+        env_id: &str,
+    ) -> Result<Vec<TaskStep>, ParameterError> {
+        // need the parameter id for getting task steps, so get list of parameters
+        let params = self.get_parameter_details(rest_cfg, proj_id, "", true, false, None, None)?;
+        let mut total = vec![];
+        for p in params {
+            let mut tasks = self.get_task_steps(rest_cfg, proj_id, env_id, &p.id)?;
+            total.append(&mut tasks);
+        }
+        Ok(total)
     }
 }
