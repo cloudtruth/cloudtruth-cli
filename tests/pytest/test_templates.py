@@ -1,5 +1,3 @@
-import unittest
-
 from testcase import TestCase
 from testcase import CT_ENV
 from testcase import PROP_MODIFIED
@@ -566,7 +564,6 @@ this.is.a.template.value=PARAM1
         self.delete_project(cmd_env, proj_name)
         self.delete_environment(cmd_env, env_name)
 
-    @unittest.skip("Waiting for server fix")
     def test_template_diff(self):
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
