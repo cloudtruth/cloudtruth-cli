@@ -18,8 +18,8 @@ pub struct AwsPullTaskStep {
     #[serde(rename = "id")]
     pub id: String,
     /// The operation performed, if any.  When the operation is an update, there may be additional details in the success_detail field to describe the change.  When the project is filled in but the environment and parameterare not, the operation is on the project.  When the environmentis filled in but the project and parameter are not, the operationis on the environment.  When the project and parameter are filledin but the environment is not, the operation is on the parameter.When all three are filled in, the operation is on the value ofthe parameter of the project in the specified environment.
-    #[serde(rename = "operation")]
-    pub operation: Box<crate::models::OperationEnum>,
+    #[serde(rename = "operation", skip_serializing_if = "Option::is_none")]
+    pub operation: Option<Box<crate::models::OperationEnum>>,
     /// Indicates if the operation was successful.
     #[serde(rename = "success")]
     pub success: bool,
@@ -79,7 +79,6 @@ impl AwsPullTaskStep {
     pub fn new(
         url: String,
         id: String,
-        operation: crate::models::OperationEnum,
         success: bool,
         environment: Option<String>,
         project: Option<String>,
@@ -90,7 +89,7 @@ impl AwsPullTaskStep {
         AwsPullTaskStep {
             url,
             id,
-            operation: Box::new(operation),
+            operation: None,
             success,
             success_detail: None,
             fqn: None,

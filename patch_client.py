@@ -236,11 +236,6 @@ def fix_optional(filelist: List[str], var_name: str, var_type: str = "String") -
         file_write_content(filename, updated)
 
 
-def fix_service_account_last_used_at(srcdir: str) -> None:
-    filelist = glob.glob(f"{srcdir}/models/service_account*.rs")
-    fix_optional(filelist, var_name="last_used_at")
-
-
 def fix_service_account_user(srcdir: str) -> None:
     filelist = glob.glob(f"{srcdir}/models/service_account*.rs")
     fix_optional(filelist, var_name="user", var_type="Box<crate::models::User>")
@@ -334,7 +329,6 @@ if __name__ == "__main__":
     add_debug_profiling(srcdir)
     add_debug_errors(srcdir)
     fix_latest_task(srcdir)
-    fix_service_account_last_used_at(srcdir)
     fix_service_account_user(srcdir)
     fix_invitation_membership(srcdir)
     schema_returns_string(srcdir)

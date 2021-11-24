@@ -1035,6 +1035,7 @@ paths:
         name: operation
         schema:
           type: string
+          nullable: true
           enum:
           - create
           - delete
@@ -1544,6 +1545,7 @@ paths:
         name: operation
         schema:
           type: string
+          nullable: true
           enum:
           - create
           - delete
@@ -5408,6 +5410,7 @@ components:
         operation:
           allOf:
           - $ref: '#/components/schemas/OperationEnum'
+          nullable: true
           description: |-
             The operation performed, if any.
 
@@ -5506,7 +5509,6 @@ components:
       - environment
       - id
       - modified_at
-      - operation
       - parameter
       - project
       - success
@@ -5665,6 +5667,7 @@ components:
         operation:
           allOf:
           - $ref: '#/components/schemas/OperationEnum'
+          nullable: true
           description: |-
             The operation performed, if any.
 
@@ -5763,7 +5766,6 @@ components:
       - environment
       - id
       - modified_at
-      - operation
       - parameter
       - project
       - success
@@ -7574,7 +7576,9 @@ components:
           type: string
           format: date-time
           readOnly: true
-          description: The most recent date and time the service account was used.
+          nullable: true
+          description: The most recent date and time the service account was used.  It
+            will be null if the service account has not been used.
     PatchedTagUpdate:
       type: object
       description: Details for updating a tag.
@@ -7918,7 +7922,9 @@ components:
           type: string
           format: date-time
           readOnly: true
-          description: The most recent date and time the service account was used.
+          nullable: true
+          description: The most recent date and time the service account was used.  It
+            will be null if the service account has not been used.
       required:
       - created_at
       - id
@@ -7969,7 +7975,9 @@ components:
           type: string
           format: date-time
           readOnly: true
-          description: The most recent date and time the service account was used.
+          nullable: true
+          description: The most recent date and time the service account was used.  It
+            will be null if the service account has not been used.
         apikey:
           type: string
           readOnly: true

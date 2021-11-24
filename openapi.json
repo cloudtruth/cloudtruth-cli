@@ -1586,6 +1586,7 @@
                         "name": "operation",
                         "schema": {
                             "type": "string",
+                            "nullable": true,
                             "enum": [
                                 "create",
                                 "delete",
@@ -2418,6 +2419,7 @@
                         "name": "operation",
                         "schema": {
                             "type": "string",
+                            "nullable": true,
                             "enum": [
                                 "create",
                                 "delete",
@@ -8320,6 +8322,7 @@
                                 "$ref": "#/components/schemas/OperationEnum"
                             }
                         ],
+                        "nullable": true,
                         "description": "The operation performed, if any.\n\nWhen the operation is an update, there may be additional details in the success_detail field to describe the change.\n\nWhen the project is filled in but the environment and parameterare not, the operation is on the project.  When the environmentis filled in but the project and parameter are not, the operationis on the environment.  When the project and parameter are filledin but the environment is not, the operation is on the parameter.When all three are filled in, the operation is on the value ofthe parameter of the project in the specified environment."
                     },
                     "success": {
@@ -8433,7 +8436,6 @@
                     "environment",
                     "id",
                     "modified_at",
-                    "operation",
                     "parameter",
                     "project",
                     "success",
@@ -8619,6 +8621,7 @@
                                 "$ref": "#/components/schemas/OperationEnum"
                             }
                         ],
+                        "nullable": true,
                         "description": "The operation performed, if any.\n\nWhen the operation is an update, there may be additional details in the success_detail field to describe the change.\n\nWhen the project is filled in but the environment and parameterare not, the operation is on the project.  When the environmentis filled in but the project and parameter are not, the operationis on the environment.  When the project and parameter are filledin but the environment is not, the operation is on the parameter.When all three are filled in, the operation is on the value ofthe parameter of the project in the specified environment."
                     },
                     "success": {
@@ -8732,7 +8735,6 @@
                     "environment",
                     "id",
                     "modified_at",
-                    "operation",
                     "parameter",
                     "project",
                     "success",
@@ -10931,7 +10933,8 @@
                         "type": "string",
                         "format": "date-time",
                         "readOnly": true,
-                        "description": "The most recent date and time the service account was used."
+                        "nullable": true,
+                        "description": "The most recent date and time the service account was used.  It will be null if the service account has not been used."
                     }
                 }
             },
@@ -11297,7 +11300,8 @@
                         "type": "string",
                         "format": "date-time",
                         "readOnly": true,
-                        "description": "The most recent date and time the service account was used."
+                        "nullable": true,
+                        "description": "The most recent date and time the service account was used.  It will be null if the service account has not been used."
                     }
                 },
                 "required": [
@@ -11364,7 +11368,8 @@
                         "type": "string",
                         "format": "date-time",
                         "readOnly": true,
-                        "description": "The most recent date and time the service account was used."
+                        "nullable": true,
+                        "description": "The most recent date and time the service account was used.  It will be null if the service account has not been used."
                     },
                     "apikey": {
                         "type": "string",
