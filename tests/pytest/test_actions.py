@@ -685,6 +685,8 @@ class TestActions(TestCase):
     def test_action_complete(self):
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
+        push_cmd = base_cmd + "act push "
+        imp_cmd = base_cmd + "act imp "
 
         # TODO: other tests include:
         #  1. secrets -- how are they handled (saved in plaintest to SSM? if existing param, not a secret)
@@ -787,7 +789,7 @@ class TestActions(TestCase):
         push_name = self.make_name("test-comp-push")
         self._pushes.append((integ_name, push_name))
         create_push_cmd = (
-            base_cmd + f"action push set {push_name} --integration '{integ_name}' "
+            push_cmd + f"set {push_name} --integration '{integ_name}' "
             f"--resource '{resource}' --project '{proj_name1}' --project '{proj_name2}' "
             f"--tag '{tag_a}' --tag '{tag_b}' "
         )
@@ -796,14 +798,13 @@ class TestActions(TestCase):
 
         # wait for the push to complete
         def push_success() -> bool:
-            get_push_cmd = base_cmd + f"action push get '{push_name}' -i '{integ_name}'"
+            get_push_cmd = push_cmd + f"get '{push_name}' -i '{integ_name}'"
             return self.success_with(cmd_env, get_push_cmd, "State: success")
         self.waitFor(push_success)
 
         # check that we have a step for each
-        result = self.run_cli(cmd_env, base_cmd + f"action push steps '{push_name}' -i '{integ_name}' -f json")
-        self.assertResultSuccess(result)
-        push_steps = eval(result.out()).get("action-push-task-step")
+        cmd = push_cmd + f"steps '{push_name}' -i '{integ_name}' -f json"
+        push_steps = self.get_cli_entries(cmd_env, cmd, "action-push-task-step")
         push_step_len = len(push_steps)
         self.assertEqual(push_step_len, 8)
         self.assertEqual(len(find_by_prop(push_steps, "Task", "push created")), push_step_len)
@@ -820,6 +821,14 @@ class TestActions(TestCase):
         self.assertEqual(len(param_pushes), 2)
 
         ########################
+        # both projects listed in push
+        cmd = push_cmd + f"list -i '{integ_name}' -f json"
+        entries = self.get_cli_entries(cmd_env, cmd, "action-push")
+        push_entry = find_by_prop(entries, PROP_NAME, push_name)[0]
+        self.assertIn(proj_name1, push_entry.get("Projects"))
+        self.assertIn(proj_name2, push_entry.get("Projects"))
+
+        ########################
         # delete/modify project data -- no tags harmed
 
         # delete one project and one environment (should be restored by import)
@@ -834,21 +843,19 @@ class TestActions(TestCase):
         import_name = self.make_name("my-comp-imp")
         self._pulls.append((integ_name, import_name))
         create_import_cmd = (
-            base_cmd + f"act imp set '{import_name}' --integration '{integ_name}' "
-            f"--resource '{resource}'"
+            imp_cmd + f"set '{import_name}' --integration '{integ_name}' --resource '{resource}'"
         )
         result = self.run_cli(cmd_env, create_import_cmd)
         self.assertResultSuccess(result)
 
         # wait for the push to complete
         def pull_success() -> bool:
-            get_import_cmd = base_cmd + f"action import get '{import_name}' -i '{integ_name}'"
+            get_import_cmd = imp_cmd + f"get '{import_name}' -i '{integ_name}'"
             return self.success_with(cmd_env, get_import_cmd, "State: success")
         self.waitFor(pull_success)
 
-        result = self.run_cli(cmd_env, base_cmd + f"ac im st '{import_name}' -i '{integ_name}' -f json")
-        self.assertResultSuccess(result)
-        import_steps = eval(result.out()).get("action-import-task-step")
+        cmd = imp_cmd + f"st '{import_name}' -i '{integ_name}' -f json"
+        import_steps = self.get_cli_entries(cmd_env, cmd, "action-import-task-step")
         import_step_len = len(import_steps)
         self.assertGreaterEqual(import_step_len, 8)
         self.assertEqual(len(find_by_prop(import_steps, "Task", "pull created")), import_step_len)
@@ -860,16 +867,30 @@ class TestActions(TestCase):
         validate_project2b()
 
         ########################
+        # project2 was restored, it does not have the same id, so is no longer associated
+        cmd = push_cmd + f"list -i '{integ_name}' -f json"
+        entries = self.get_cli_entries(cmd_env, cmd, "action-push")
+        push_entry = find_by_prop(entries, PROP_NAME, push_name)[0]
+        self.assertEqual(push_entry.get("Projects"), proj_name1)
+
+        ########################
         # delete an environment -- deletes tags and causes push update
         self.delete_environment(cmd_env, env_name_b)
 
         # wait for push update
         def more_push_steps() -> bool:
-            push_step_cmd = base_cmd + f"act push task-steps {push_name} -f json"
-            push_res = self.run_cli(cmd_env, push_step_cmd)
-            self.assertResultSuccess(push_res)
-            more_steps = eval(push_res.out()).get("action-push-task-step")
+            push_step_cmd = push_cmd + f"task-steps {push_name} -f json"
+            more_steps = self.get_cli_entries(cmd_env, push_step_cmd, "action-push-task-step")
             return len(more_steps) > push_step_len and push_success()
+        self.waitFor(more_push_steps)
+
+        ########################
+        # re-establish project2 push connection
+        entries = self.get_cli_entries(cmd_env, push_cmd + f"st {push_name} -f json", "action-push-task-step")
+        push_step_len = len(entries)
+
+        result = self.run_cli(cmd_env, push_cmd + f"set {push_name} -i '{integ_name}' --project {proj_name2}")
+        self.assertResultSuccess(result)
         self.waitFor(more_push_steps)
 
         ########################
@@ -879,22 +900,18 @@ class TestActions(TestCase):
 
         ########################
         # import again
-        result = self.run_cli(cmd_env, base_cmd + f"ac imp sync '{import_name}'")
+        result = self.run_cli(cmd_env, imp_cmd + f"sync '{import_name}'")
         self.assertResultSuccess(result)
 
         def more_pull_steps() -> bool:
-            import_step_cmd = base_cmd + f"act import task-steps {import_name} -f json"
-            imp_res = self.run_cli(cmd_env, import_step_cmd)
-            self.assertResultSuccess(imp_res)
-            more_steps = eval(imp_res.out()).get("action-import-task-step")
+            import_step_cmd = imp_cmd + f"task-steps {import_name} -f json"
+            more_steps = self.get_cli_entries(cmd_env, import_step_cmd, "action-import-task-step")
             return len(more_steps) > import_step_len and pull_success()
         self.waitFor(more_pull_steps)
 
         validate_project1a()
         validate_project2a()
-        result = self.run_cli(cmd_env, "env ls -f json")
-        self.assertResultSuccess(result)
-        environments = eval(result.out()).get("environment")
+        environments = self.get_cli_entries(cmd_env, base_cmd + "env ls -f json", "environment")
         self.assertEqual(0, len(find_by_prop(environments, PROP_NAME, env_name_b)))
 
         # cleanup
