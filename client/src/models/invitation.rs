@@ -34,7 +34,7 @@ pub struct Invitation {
     #[serde(rename = "state_detail")]
     pub state_detail: String,
     /// The resulting membership, should the user accept.
-    #[serde(rename = "membership", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "membership")]
     pub membership: Option<String>,
 }
 

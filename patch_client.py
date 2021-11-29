@@ -241,11 +241,6 @@ def fix_service_account_user(srcdir: str) -> None:
     fix_optional(filelist, var_name="user", var_type="Box<crate::models::User>")
 
 
-def fix_invitation_membership(srcdir: str) -> None:
-    filelist = glob.glob(f"{srcdir}/models/invit*.rs")
-    fix_optional(filelist, var_name="membership")
-
-
 def schema_returns_string(srcdir: str) -> None:
     filename = f"{srcdir}/apis/api_api.rs"
     orig = file_read_content(filename)
@@ -330,7 +325,6 @@ if __name__ == "__main__":
     add_debug_errors(srcdir)
     fix_latest_task(srcdir)
     fix_service_account_user(srcdir)
-    fix_invitation_membership(srcdir)
     schema_returns_string(srcdir)
     add_serde_error_handling_to_mod(srcdir)
     serdes_error_handling_calls(srcdir)
