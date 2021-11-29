@@ -228,7 +228,7 @@ class TestCase(unittest.TestCase):
         self.assertGreaterEqual(len([_ for _ in gets if "page=1" in _]), 1)
         self.assertGreaterEqual(len([_ for _ in gets if "page=2" in _]), 1)
 
-    def run_cli(self, env: Dict[str, str], cmd) -> Result:
+    def run_cli(self, env: Dict[str, str], cmd: str) -> Result:
         # WARNING: DOS prompt does not like the single quotes, so use double
         cmd = cmd.replace("'", "\"")
 
@@ -289,6 +289,13 @@ class TestCase(unittest.TestCase):
                 print("\n".join(result.stderr))
 
         return result
+
+    def get_cli_entries(self, env: Dict[str, str], cmd: str, label: str) -> Optional[List[Dict]]:
+        result = self.run_cli(env, cmd)
+        self.assertResultSuccess(result)
+        if result.out().startswith("No "):
+            return []
+        return eval(result.out()).get(label)
 
     def get_profile(self, cmd_env, prof_name: str) -> Optional[Dict]:
         result = self.run_cli(cmd_env, self._base_cmd + "config prof list --values --format csv -s")

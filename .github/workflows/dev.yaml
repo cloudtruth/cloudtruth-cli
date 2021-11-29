@@ -13,7 +13,7 @@ jobs:
 
     env:
       # TODO: modify this filter to focus testing
-      CLOUDTRUTH_TEST_FILTER: template
+      CLOUDTRUTH_TEST_FILTER: action_complete
 
       # these show the commands and the output from the commands
       CLOUDTRUTH_TEST_EXTRA_ARGS: --log-command --log-output
@@ -53,6 +53,8 @@ jobs:
       CLOUDTRUTH_TEST_IMPORT_INTEGRATION_NAME: ct-stage-write@943604981792
       CLOUDTRUTH_TEST_IMPORT_BAD_INTEGRATION_NAME: my-missing-integration
 
+      CLOUDTRUTH_TEST_COMPLETE_INTEGRATION_NAME: ct-stage-write@943604981792
+
     steps:
       - uses: actions/checkout@v2
 
@@ -70,7 +72,7 @@ jobs:
 
       - run: cargo build
 
-      - name: Basic Test
+      - name: Filtered integration Test
         env:
           OS: ${{ runner.os }}
         run: |
