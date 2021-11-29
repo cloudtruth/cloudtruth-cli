@@ -6096,6 +6096,7 @@ components:
           type: string
           format: uri
           readOnly: true
+          nullable: true
           description: The resulting membership, should the user accept.
       required:
       - email
@@ -7292,6 +7293,7 @@ components:
           type: string
           format: uri
           readOnly: true
+          nullable: true
           description: The resulting membership, should the user accept.
     PatchedMembership:
       type: object
