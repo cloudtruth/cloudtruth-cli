@@ -889,7 +889,13 @@ class TestActions(TestCase):
         entries = self.get_cli_entries(cmd_env, push_cmd + f"st {push_name} -f json", "action-push-task-step")
         push_step_len = len(entries)
 
-        result = self.run_cli(cmd_env, push_cmd + f"set {push_name} -i '{integ_name}' --project {proj_name2}")
+        # update the tag
+        result = self.run_cli(cmd_env, base_cmd + f"env tag set {env_name_a} {env_a_tag_name} --current")
+        self.assertResultSuccess(result)
+
+        # assign the project and environment/tag
+        cmd = push_cmd + f"set {push_name} -i '{integ_name}' --project {proj_name2} --tag {tag_a}"
+        result = self.run_cli(cmd_env, cmd)
         self.assertResultSuccess(result)
         self.waitFor(more_push_steps)
 
@@ -922,4 +928,4 @@ class TestActions(TestCase):
         self.delete_project(cmd_env, proj_name1)
         self.delete_project(cmd_env, proj_name2)
         self.delete_environment(cmd_env, env_name_a)
-        self.delete_environment(cmd_env, env_name_b)
+        # NOTE: env_name_b was deleted earlier
