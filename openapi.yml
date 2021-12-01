@@ -8358,6 +8358,22 @@ components:
           type: string
           nullable: true
           readOnly: true
+        organization_name:
+          type: string
+          nullable: true
+          readOnly: true
+          description: The user's organization name.
+        membership_id:
+          type: string
+          nullable: true
+          readOnly: true
+          description: Membership identifier for user.
+        role:
+          type: string
+          nullable: true
+          readOnly: true
+          description: The user's role in the current organization (defined by the
+            request authorization header).
         email:
           type: string
           nullable: true
@@ -8378,9 +8394,12 @@ components:
       - created_at
       - email
       - id
+      - membership_id
       - modified_at
       - name
+      - organization_name
       - picture_url
+      - role
       - url
     Value:
       type: object

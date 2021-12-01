@@ -127,17 +127,18 @@ const SRC_ENV: &str = "shell";
 const SRC_PROFILE: &str = "profile";
 const SRC_BINARY: &str = "binary";
 
-const PARAM_PROFILE: &str = "Profile";
-const PARAM_API_KEY: &str = "API key";
-const PARAM_PROJECT: &str = "Project";
-const PARAM_ENVIRONMENT: &str = "Environment";
-const PARAM_SERVER_URL: &str = "Server URL";
-const PARAM_REQUEST_TIMEOUT: &str = "Request timeout";
-const PARAM_REST_DEBUG: &str = "REST debug";
-const PARAM_REST_PAGE_SIZE: &str = "REST page size";
-const PARAM_CLI_VERSION: &str = "CLI version";
-const PARAM_USER: &str = "User";
-const PARAM_ROLE: &str = "Role";
+pub const PARAM_PROFILE: &str = "Profile";
+pub const PARAM_API_KEY: &str = "API key";
+pub const PARAM_PROJECT: &str = "Project";
+pub const PARAM_ENVIRONMENT: &str = "Environment";
+pub const PARAM_SERVER_URL: &str = "Server URL";
+pub const PARAM_REQUEST_TIMEOUT: &str = "Request timeout";
+pub const PARAM_REST_DEBUG: &str = "REST debug";
+pub const PARAM_REST_PAGE_SIZE: &str = "REST page size";
+pub const PARAM_CLI_VERSION: &str = "CLI version";
+pub const PARAM_USER: &str = "User";
+pub const PARAM_ROLE: &str = "Role";
+pub const PARAM_ORG: &str = "Organization";
 
 #[derive(Clone, Debug)]
 pub struct ConfigValue {
@@ -415,6 +416,16 @@ impl Config {
             value,
             source,
             secret: true,
+            extension: false,
+        });
+
+        //////////////////
+        // Organization -- not filled in
+        results.push(ConfigValue {
+            name: PARAM_ORG.to_string(),
+            value: "".to_string(),
+            source: "".to_string(),
+            secret: false,
             extension: false,
         });
 

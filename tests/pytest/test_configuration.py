@@ -161,7 +161,7 @@ class TestConfiguration(TestCase):
         profile = eval(result.out()).get("profile")
         this_profile = f"profile ({prof_name})"
         param_names = [e.get("Parameter") for e in profile]
-        expected = ["Profile", "API key", "User", "Role", "Project", "Environment"]
+        expected = ["Profile", "API key", "Organization", "User", "Role", "Project", "Environment"]
         self.assertEqual(param_names, expected)
 
         entry = find_by_prop(profile, "Parameter", "Profile")[0]
@@ -179,6 +179,10 @@ class TestConfiguration(TestCase):
         entry = find_by_prop(profile, "Parameter", "Environment")[0]
         self.assertEqual(entry.get("Value"), env_name)
         self.assertEqual(entry.get("Source"), this_profile)
+
+        entry = find_by_prop(profile, "Parameter", "Organization")[0]
+        self.assertEqual(entry.get("Value"), "")
+        self.assertEqual(entry.get("Source"), "")
 
         entry = find_by_prop(profile, "Parameter", "User")[0]
         self.assertEqual(entry.get("Value"), "")
@@ -203,6 +207,10 @@ class TestConfiguration(TestCase):
         entry = find_by_prop(profile, "Parameter", "Profile")[0]
         self.assertEqual(entry.get("Value"), prof_name)
         self.assertEqual(entry.get("Source"), "argument")
+
+        entry = find_by_prop(profile, "Parameter", "Organization")[0]
+        self.assertEqual(entry.get("Value"), "")
+        self.assertEqual(entry.get("Source"), "")
 
         entry = find_by_prop(profile, "Parameter", "User")[0]
         self.assertEqual(entry.get("Value"), "")
@@ -234,6 +242,9 @@ class TestConfiguration(TestCase):
         profile = eval(result.out()).get("profile")
         entry = find_by_prop(profile, "Parameter", "API key")[0]
         self.assertEqual(entry.get("Value"), REDACTED)
+        entry = find_by_prop(profile, "Parameter", "Organization")[0]
+        self.assertNotEqual(entry.get("Value"), "")
+        self.assertEqual(entry.get("Source"), "API key")
         entry = find_by_prop(profile, "Parameter", "User")[0]
         self.assertNotEqual(entry.get("Value"), "")
         self.assertEqual(entry.get("Source"), "API key")

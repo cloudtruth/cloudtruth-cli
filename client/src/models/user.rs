@@ -20,6 +20,15 @@ pub struct User {
     pub _type: Option<String>,
     #[serde(rename = "name")]
     pub name: Option<String>,
+    /// The user's organization name.
+    #[serde(rename = "organization_name")]
+    pub organization_name: Option<String>,
+    /// Membership identifier for user.
+    #[serde(rename = "membership_id")]
+    pub membership_id: Option<String>,
+    /// The user's role in the current organization (defined by the request authorization header).
+    #[serde(rename = "role")]
+    pub role: Option<String>,
     #[serde(rename = "email")]
     pub email: Option<String>,
     #[serde(rename = "picture_url")]
@@ -35,6 +44,9 @@ impl User {
         url: String,
         id: String,
         name: Option<String>,
+        organization_name: Option<String>,
+        membership_id: Option<String>,
+        role: Option<String>,
         email: Option<String>,
         picture_url: Option<String>,
         created_at: String,
@@ -45,6 +57,9 @@ impl User {
             id,
             _type: None,
             name,
+            organization_name,
+            membership_id,
+            role,
             email,
             picture_url,
             created_at,

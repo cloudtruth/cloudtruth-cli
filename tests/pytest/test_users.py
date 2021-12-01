@@ -80,6 +80,7 @@ class TestUsers(TestCase):
         self.assertResultSuccess(result)
         self.assertIn(f"Name: {user_name}", result.out())
         self.assertIn(f"Role: {new_role}", result.out())
+        self.assertIn("Organization: ", result.out())
         self.assertIn(f"Description: {new_desc}", result.out())
         self.assertIn(f"Type: {SERVICE_TYPE}", result.out())
         self.assertIn("Created At: ", result.out())
