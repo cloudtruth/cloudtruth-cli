@@ -25,7 +25,7 @@ use crate::audit_logs::process_audit_log_command;
 use crate::config::env::ConfigEnv;
 use crate::config::{Config, CT_PROFILE, DEFAULT_ENV_NAME};
 use crate::configuration::process_config_command;
-use crate::database::{Environments, OpenApiConfig, Projects};
+use crate::database::{OpenApiConfig, Resolver};
 use crate::environments::process_environment_command;
 use crate::integrations::process_integrations_command;
 use crate::login::process_login_command;
@@ -72,33 +72,6 @@ impl fmt::Display for ApplicationError {
 }
 
 impl error::Error for ApplicationError {}
-
-pub struct ResolvedIds {
-    pub env_name: Option<String>,
-    pub env_id: Option<String>,
-    pub proj_name: Option<String>,
-    pub proj_id: Option<String>,
-}
-
-impl ResolvedIds {
-    fn environment_display_name(&self) -> String {
-        self.env_name
-            .clone()
-            .unwrap_or_else(|| DEFAULT_ENV_NAME.to_string())
-    }
-
-    fn project_display_name(&self) -> String {
-        self.proj_name.clone().unwrap_or_default()
-    }
-
-    fn project_id(&self) -> &str {
-        self.proj_id.as_deref().unwrap()
-    }
-
-    fn environment_id(&self) -> &str {
-        self.env_id.as_deref().unwrap()
-    }
-}
 
 /// Print a message to stderr in the specified color.
 fn stderr_message(message: String, color: Color) {
@@ -220,52 +193,6 @@ fn user_confirm(message: String, default: Option<bool>) -> bool {
         }
     }
     confirmed
-}
-
-/// Resolves the environment and project strings.
-///
-/// If either fails, it prints an error and exits.
-/// On success, it returns a `ResolvedIds` structure that contains ids to avoid needing to resolve
-/// the names again.
-fn resolve_ids(config: &Config, rest_cfg: &OpenApiConfig) -> Result<ResolvedIds> {
-    // The `err` value is used to allow accumulation of multiple errors to the user.
-    let mut err = false;
-    let env = config.environment.as_deref().unwrap_or(DEFAULT_ENV_NAME);
-    let proj = config.project.as_deref();
-    let environments = Environments::new();
-    let env_id = environments.get_id(rest_cfg, env)?;
-    if env_id.is_none() {
-        error_no_environment_message(env);
-        err = true;
-    }
-
-    let mut proj_id = None;
-    if let Some(proj_str) = proj {
-        let projects = Projects::new();
-        proj_id = projects.get_id(rest_cfg, proj_str)?;
-        if proj_id.is_none() {
-            error_message(format!(
-                "The '{}' project could not be found in your account.",
-                proj_str,
-            ));
-            err = true;
-        }
-    } else {
-        error_message("No project name was provided!".to_owned());
-        err = true;
-    }
-
-    // if any errors were encountered, exit with an error code
-    if err {
-        process::exit(2);
-    }
-
-    Ok(ResolvedIds {
-        env_name: Some(env.to_string()),
-        env_id,
-        proj_name: proj.map(String::from),
-        proj_id,
-    })
 }
 
 /// Get the web application URL for the `API_KEY_PAGE`
@@ -457,7 +384,11 @@ fn main() -> Result<()> {
     }
 
     // Everything below here requires resolved environment/project values
-    let resolved = resolve_ids(Config::global(), &rest_cfg)?;
+    let resolver = Resolver::new();
+    let config = Config::global();
+    let env_name = config.environment.as_deref().unwrap_or(DEFAULT_ENV_NAME);
+    let proj_name = config.project.as_deref().unwrap_or_default();
+    let resolved = resolver.resolve_ids(&rest_cfg, proj_name, env_name)?;
 
     if let Some(matches) = matches.subcommand_matches("parameters") {
         process_parameters_command(matches, &rest_cfg, &resolved)?;
