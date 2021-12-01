@@ -45,9 +45,8 @@ env:
 
   CLOUDTRUTH_TEST_COMPLETE_INTEGRATION_NAME: ct-stage-write@943604981792
 
-  PART_A_FILTER: test_action test_arg test_audit test_configuration test_environment test_integration test_misc
-  PART_B_FILTER: test_parameter
-  PART_C_FILTER: test_project test_run test_template test_timing test_user
+  PART_A_END: test_parameter
+  PART_C_START: test_project
 
 jobs:
   lint:
@@ -130,7 +129,7 @@ jobs:
         if: runner.os == 'macOs'
         run: |
           cd tests/pytest
-          python3 live_test.py --job-id "${OS}-${GITHUB_RUN_NUMBER}" --filter ${{ env.PART_A_FILTER }}
+          python3 live_test.py --job-id "${OS}-${GITHUB_RUN_NUMBER}" --before ${{ env.PART_A_END }}
 
       - name: Integration Test - Part B
         env:
@@ -138,7 +137,7 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           cd tests/pytest
-          python3 live_test.py --job-id "${OS}-${GITHUB_RUN_NUMBER}" --filter ${{ env.PART_B_FILTER }}
+          python3 live_test.py --job-id "${OS}-${GITHUB_RUN_NUMBER}" --after ${{ env.PART_A_END }} --before ${{ env.PART_C_START }}
 
       - name: Integration Test - Part C
         env:
@@ -146,4 +145,4 @@ jobs:
         if: runner.os == 'Windows'
         run: |
           cd tests\pytest
-          py live_test.py --job-id "$ENV:OS-$ENV:GITHUB_RUN_NUMBER" --filter ${{ env.PART_C_FILTER }}
+          py live_test.py --job-id "$ENV:OS-$ENV:GITHUB_RUN_NUMBER" --after ${{ env.PART_C_START }}

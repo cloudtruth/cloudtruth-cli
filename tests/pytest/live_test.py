@@ -92,6 +92,23 @@ def parse_args(*args) -> argparse.Namespace:
         action="store_true",
         help="Only print the tests that will be run (without running them)."
     )
+    parser.add_argument(
+        "--before",
+        dest="before",
+        help="Only run tests before the specified string"
+    )
+    parser.add_argument(
+        "--after",
+        dest="after",
+        help="Only run tests after the specified string"
+    )
+    parser.add_argument(
+        "--exclude",
+        dest="test_exclude",
+        nargs="+",
+        default=[],
+        help="Exclude tests containing the provided string(s) in the name"
+    )
     return parser.parse_args(*args)
 
 
@@ -129,6 +146,38 @@ def print_suite(suite):
         print("invalid")
 
 
+def filter_suite(suite, func, compared_to: str):
+    for testmodule in suite:
+        for testsuite in testmodule:
+            tests_to_remove = []
+            for index, testcase in enumerate(testsuite._tests):
+                if func(testcase._testMethodName, compared_to):
+                    tests_to_remove.append(index)
+
+            # do this in reverse order, so index does not change
+            for index in reversed(tests_to_remove):
+                testsuite._tests.pop(index)
+    return suite
+
+
+def filter_before(suite, before: str):
+    def is_before(testname: str, compared_to: str) -> bool:
+        return testname > compared_to
+    return filter_suite(suite, is_before, before)
+
+
+def filter_after(suite, after: str):
+    def is_after(testname: str, compared_to: str) -> bool:
+        return testname < compared_to
+    return filter_suite(suite, is_after, after)
+
+
+def filter_exclude(suite, exclude: str):
+    def is_excluded(testname: str, compared_to: str) -> bool:
+        return exclude in testname
+    return filter_suite(suite, is_excluded, exclude)
+
+
 def live_test(*args):
     args = parse_args(*args)
     env = os.environ
@@ -152,12 +201,32 @@ def live_test(*args):
 
     test_directory = '.'
     loader = unittest.TestLoader()
+    applied_filter = []
+    if args.file_filter:
+        applied_filter.append(f"file: {args.file_filter}")
+
     if args.test_filter:
+        applied_filter.append(f"filters: {', '.join(args.test_filter)}")
         loader.testNamePatterns = [f"*{_}*" for _ in args.test_filter]
     suite = loader.discover(test_directory, pattern=args.file_filter)
+
+    if args.before:
+        applied_filter.append(f"before: {args.before}")
+        suite = filter_before(suite, args.before)
+
+    if args.after:
+        applied_filter.append(f"after: {args.after}")
+        suite = filter_after(suite, args.after)
+
+    if args.test_exclude:
+        applied_filter.append(f"excludes: {', '.join(args.test_exclude)}")
+        for ex in args.test_exclude:
+            suite = filter_exclude(suite, ex)
+
     if suite.countTestCases() == 0:
         # must be because of a filter or file filter
-        print(f"No tests matching:\n\tfilters: {', '.join(args.test_filter)},\n\tfile: {args.file_filter}")
+        sep = "\n\t"
+        print(f"No tests matching:{sep}{sep.join(applied_filter)}")
         return 3
 
     if args.list_only:
