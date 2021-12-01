@@ -1,28 +1,33 @@
-use crate::config::DEFAULT_ENV_NAME;
-
 pub struct ResolvedDetails {
-    pub env_name: Option<String>,
-    pub env_id: Option<String>,
-    pub proj_name: Option<String>,
-    pub proj_id: Option<String>,
+    env_name: String,
+    env_id: String,
+    proj_name: String,
+    proj_id: String,
 }
 
 impl ResolvedDetails {
-    pub fn environment_display_name(&self) -> String {
-        self.env_name
-            .clone()
-            .unwrap_or_else(|| DEFAULT_ENV_NAME.to_string())
+    pub fn new(env_name: String, env_id: String, proj_name: String, proj_id: String) -> Self {
+        Self {
+            env_name,
+            env_id,
+            proj_name,
+            proj_id,
+        }
     }
 
-    pub fn project_display_name(&self) -> String {
-        self.proj_name.clone().unwrap_or_default()
+    pub fn environment_display_name(&self) -> &str {
+        &self.env_name
+    }
+
+    pub fn project_display_name(&self) -> &str {
+        &self.proj_name
     }
 
     pub fn project_id(&self) -> &str {
-        self.proj_id.as_deref().unwrap()
+        &self.proj_id
     }
 
     pub fn environment_id(&self) -> &str {
-        self.env_id.as_deref().unwrap()
+        &self.env_id
     }
 }

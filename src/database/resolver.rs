@@ -47,12 +47,12 @@ impl Resolver {
         if !errors.is_empty() {
             Err(ResolveError::ResolutionNotFound(errors))
         } else {
-            Ok(ResolvedDetails {
-                env_name: Some(env_name.to_string()),
-                env_id,
-                proj_name: Some(proj_name.to_string()),
-                proj_id,
-            })
+            Ok(ResolvedDetails::new(
+                env_name.to_string(),
+                env_id.unwrap(),
+                proj_name.to_string(),
+                proj_id.unwrap(),
+            ))
         }
     }
 }

@@ -146,11 +146,11 @@ fn proc_param_diff(
         env1_name = env_list[0].to_string();
         env2_name = env_list[1].to_string();
     } else if env_list.len() == 1 {
-        env1_name = resolved.environment_display_name();
+        env1_name = resolved.environment_display_name().to_string();
         env2_name = env_list[0].to_string();
     } else {
-        env1_name = resolved.environment_display_name();
-        env2_name = resolved.environment_display_name();
+        env1_name = resolved.environment_display_name().to_string();
+        env2_name = resolved.environment_display_name().to_string();
     }
 
     let as_tag1: Option<&str>;
@@ -312,7 +312,7 @@ fn proc_param_env(
         let env_id = resolved.environment_id();
         let env_name = resolved.environment_display_name();
         let environments = Environments::new();
-        as_of = Some(environments.get_tag_time(rest_cfg, env_id, &env_name, &tag_name)?);
+        as_of = Some(environments.get_tag_time(rest_cfg, env_id, env_name, &tag_name)?);
     }
 
     // fetch all environments once, and then determine id's from the same map that is
@@ -562,7 +562,7 @@ fn proc_param_list(
 
         details.clear(); // starting over with just the children
         let projects = Projects::new();
-        let proj_details = projects.get_project_descendants(rest_cfg, &proj_name)?;
+        let proj_details = projects.get_project_descendants(rest_cfg, proj_name)?;
         // loop through all the projects to find parameters defined in each
         for prj in proj_details {
             let mut child_details = parameters.get_parameter_details(
