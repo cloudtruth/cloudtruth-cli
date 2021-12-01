@@ -1,10 +1,7 @@
 use crate::database::{
-    auth_details, last_from_url, page_size, response_message, MemberDetails, OpenApiConfig,
-    UserDetails, UserError, NO_PAGE_COUNT, NO_PAGE_SIZE,
+    auth_details, page_size, response_message, OpenApiConfig, UserDetails, UserError,
 };
-use cloudtruth_restapi::apis::memberships_api::{
-    memberships_create, memberships_list, memberships_partial_update,
-};
+use cloudtruth_restapi::apis::memberships_api::{memberships_create, memberships_partial_update};
 use cloudtruth_restapi::apis::serviceaccounts_api::{
     serviceaccounts_create, serviceaccounts_destroy, serviceaccounts_list,
     serviceaccounts_partial_update,
@@ -16,12 +13,10 @@ use cloudtruth_restapi::models::{
     ServiceAccountCreateRequest,
 };
 use std::collections::HashMap;
-use urlencoding::decode;
 
 const NO_ORDERING: Option<&str> = None;
 
 pub type UserNameMap = HashMap<String, String>;
-type MembershipUrlMap = HashMap<String, MemberDetails>;
 
 pub struct Users {}
 
@@ -45,12 +40,6 @@ fn to_role_enum(value: &str) -> Result<RoleEnum, UserError> {
         "VIEWER" => Ok(RoleEnum::VIEWER),
         _ => Err(UserError::InvalidRole(value.to_string())),
     }
-}
-
-fn user_id_from_url(url: &str) -> String {
-    let encoded_id = last_from_url(url);
-    // The id in the URL is encoded. Decode it, since the API takes the decoded version.
-    decode(encoded_id).expect("failed to decode").to_string()
 }
 
 impl Users {
@@ -150,14 +139,6 @@ impl Users {
         user_accounts.retain(|x| x.account_type != "service");
         total.append(&mut user_accounts);
 
-        // resolve membership roles
-        let membership = self.get_membership_map(rest_cfg)?;
-        for user in &mut total {
-            if let Some(member) = membership.get(&user.user_url) {
-                user.role = member.role.clone();
-            }
-        }
-
         total.sort_by(|l, r| l.name.to_lowercase().cmp(&r.name.to_lowercase()));
         Ok(total)
     }
@@ -179,13 +160,6 @@ impl Users {
             user_accounts.retain(|x| x.name == user_name);
             if !user_accounts.is_empty() {
                 result = Some(user_accounts[0].clone());
-            }
-        }
-
-        // resolve the user role (if applicable)
-        if let Some(details) = &mut result {
-            if let Some(membership) = self.get_membership_by_url(rest_cfg, &details.user_url)? {
-                details.role = membership.role;
             }
         }
 
@@ -291,100 +265,6 @@ impl Users {
         }
     }
 
-    fn get_membership_id(
-        &self,
-        rest_cfg: &OpenApiConfig,
-        user_url: &str,
-    ) -> Result<String, UserError> {
-        let user_id = user_id_from_url(user_url);
-        let response = memberships_list(
-            rest_cfg,
-            NO_ORDERING,
-            NO_PAGE_COUNT,
-            NO_PAGE_SIZE,
-            None,
-            Some(&user_id),
-        );
-        match response {
-            Ok(data) => match data.results {
-                Some(list) => match list.is_empty() {
-                    true => Err(UserError::MembershipNotFound()),
-                    false => Ok(list[0].id.clone()),
-                },
-                None => Err(UserError::MembershipNotFound()),
-            },
-            Err(ResponseError(ref content)) => {
-                Err(response_error(&content.status, &content.content))
-            }
-            Err(e) => Err(UserError::UnhandledError(e.to_string())),
-        }
-    }
-
-    fn get_membership_by_url(
-        &self,
-        rest_cfg: &OpenApiConfig,
-        user_url: &str,
-    ) -> Result<Option<MemberDetails>, UserError> {
-        let user_id = user_id_from_url(user_url);
-        let response = memberships_list(
-            rest_cfg,
-            NO_ORDERING,
-            NO_PAGE_COUNT,
-            NO_PAGE_SIZE,
-            None,
-            Some(&user_id),
-        );
-        match response {
-            Ok(data) => match data.results {
-                Some(list) => match list.is_empty() {
-                    true => Ok(None),
-                    false => Ok(Some(MemberDetails::from(&list[0]))),
-                },
-                _ => Ok(None),
-            },
-            Err(ResponseError(ref content)) => {
-                Err(response_error(&content.status, &content.content))
-            }
-            Err(e) => Err(UserError::UnhandledError(e.to_string())),
-        }
-    }
-
-    fn get_membership_map(&self, rest_cfg: &OpenApiConfig) -> Result<MembershipUrlMap, UserError> {
-        let mut map = MembershipUrlMap::new();
-        let mut page_count = 1;
-        loop {
-            let response = memberships_list(
-                rest_cfg,
-                NO_ORDERING,
-                Some(page_count),
-                page_size(rest_cfg),
-                None,
-                None,
-            );
-            match response {
-                Ok(data) => {
-                    if let Some(list) = data.results {
-                        for item in list {
-                            let details = MemberDetails::from(&item);
-                            map.insert(item.user, details);
-                        }
-                        page_count += 1;
-                    } else {
-                        break;
-                    }
-                    if data.next.is_none() {
-                        break;
-                    }
-                }
-                Err(ResponseError(ref content)) => {
-                    return Err(response_error(&content.status, &content.content))
-                }
-                Err(e) => return Err(UserError::UnhandledError(e.to_string())),
-            }
-        }
-        Ok(map)
-    }
-
     pub fn create_user(
         &self,
         rest_cfg: &OpenApiConfig,
@@ -417,8 +297,7 @@ impl Users {
         // do the update anyway, since we need the user_url
         let details = self.update_service_account(rest_cfg, user_id, description)?;
         if role_enum.is_some() {
-            let member_id = self.get_membership_id(rest_cfg, &details.user_url)?;
-            self.update_membership(rest_cfg, &member_id, role_enum)?;
+            self.update_membership(rest_cfg, &details.membership_id, role_enum)?;
         }
         Ok(())
     }
@@ -435,11 +314,7 @@ impl Users {
     }
 
     pub fn get_current_user(&self, rest_cfg: &OpenApiConfig) -> Result<UserDetails, UserError> {
-        let mut details = self.get_current_user_account(rest_cfg)?;
-        let membership = self.get_membership_by_url(rest_cfg, &details.user_url)?;
-        if let Some(membership) = membership {
-            details.role = membership.role;
-        }
+        let details = self.get_current_user_account(rest_cfg)?;
         Ok(details)
     }
 

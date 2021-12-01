@@ -2,7 +2,9 @@ use crate::cli::{
     show_values, API_KEY_OPT, CONFIRM_FLAG, DELETE_SUBCMD, DESCRIPTION_OPT, EDIT_SUBCMD,
     FORMAT_OPT, LIST_SUBCMD, NAME_ARG, SECRETS_FLAG, SET_SUBCMD,
 };
-use crate::config::{Config, ConfigValue};
+use crate::config::{
+    Config, ConfigValue, PARAM_API_KEY, PARAM_ORG, PARAM_PROFILE, PARAM_ROLE, PARAM_USER,
+};
 use crate::database::{OpenApiConfig, Users};
 use crate::table::Table;
 use crate::{
@@ -125,10 +127,10 @@ fn proc_config_current(
     let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
     let mut values = Config::get_sources(profile_name, api_key, proj_name, env_name)?;
 
-    if let Some(api_key) = find_property_value(&values, "API key") {
+    if let Some(api_key) = find_property_value(&values, PARAM_API_KEY) {
         // pull API key and profile name from the list, since the values passed in here are just the CLI arguments,
         // and need to be informed by the environment variables.
-        let prof_name = find_property_value(&values, "Profile");
+        let prof_name = find_property_value(&values, PARAM_PROFILE);
         let config =
             Config::load_config(Some(&api_key), prof_name.as_deref(), env_name, proj_name).unwrap();
         let rest_cfg = OpenApiConfig::from(&config);
@@ -137,8 +139,9 @@ fn proc_config_current(
         // NOTE: these only get updated if we can fetch info from the server
         if let Ok(current_user) = users.get_current_user(&rest_cfg) {
             let source = "API key";
-            update_property_value(&mut values, "User", &current_user.name, source);
-            update_property_value(&mut values, "Role", &current_user.role, source);
+            update_property_value(&mut values, PARAM_USER, &current_user.name, source);
+            update_property_value(&mut values, PARAM_ROLE, &current_user.role, source);
+            update_property_value(&mut values, PARAM_ORG, &current_user.organization, source);
         }
     }
 

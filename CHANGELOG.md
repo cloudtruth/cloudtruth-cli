@@ -1,3 +1,7 @@
+# x.x.x - 2021-12-xx
+
+* Add `Organization` to `user current`, and `config current` displays.
+
 # 1.1.1 - 2021-11-24
 
 * Add `actions imports` commands.

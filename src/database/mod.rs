@@ -20,7 +20,6 @@ mod integrations;
 mod invitation_details;
 mod invitation_error;
 mod invitations;
-mod member_details;
 mod openapi;
 mod parameter_details;
 mod parameter_error;
@@ -65,7 +64,6 @@ pub use integrations::Integrations;
 pub use invitation_details::InvitationDetails;
 pub use invitation_error::InvitationError;
 pub use invitations::Invitations;
-pub use member_details::MemberDetails;
 pub use openapi::{
     auth_details, extract_details, extract_from_json, last_from_url, page_size, parent_id_from_url,
     response_message, OpenApiConfig, NO_PAGE_COUNT, NO_PAGE_SIZE, WRAP_SECRETS,

@@ -17,6 +17,7 @@ fn print_user(details: &UserDetails) {
             Type: {}
             Role: {}
             Email: {}
+            Organization: {}
             Description: {}
             Last Used At: {}
             ID: {}
@@ -28,6 +29,7 @@ fn print_user(details: &UserDetails) {
         details.account_type,
         details.role,
         details.email,
+        details.organization,
         details.description,
         details.last_used,
         details.id,
