@@ -1,7 +1,6 @@
-use crate::config::{
-    CT_APP_REMOVABLE_VARS, CT_ENVIRONMENT, CT_PROJECT, DEFAULT_ENV_NAME, DEFAULT_PROF_NAME,
-};
-use crate::{warn_user, ResolvedIds};
+use crate::config::{CT_APP_REMOVABLE_VARS, CT_ENVIRONMENT, CT_PROJECT};
+use crate::database::ResolvedDetails;
+use crate::warn_user;
 use color_eyre::eyre::{ErrReport, Result};
 use color_eyre::Report;
 use std::collections::HashMap;
@@ -127,7 +126,7 @@ impl SubProcess {
 
     pub fn set_environment(
         &mut self,
-        resolved: &ResolvedIds,
+        resolved: &ResolvedDetails,
         inherit: Inheritance,
         overrides: &[String],
         removals: &[String],
@@ -141,17 +140,11 @@ impl SubProcess {
         // Add breadcrumbs about which environment.
         self.env_vars.insert(
             CT_ENVIRONMENT.to_string(),
-            resolved
-                .env_name
-                .clone()
-                .unwrap_or_else(|| DEFAULT_ENV_NAME.to_string()),
+            resolved.environment_display_name().to_string(),
         );
         self.env_vars.insert(
             CT_PROJECT.to_string(),
-            resolved
-                .proj_name
-                .clone()
-                .unwrap_or_else(|| DEFAULT_PROF_NAME.to_string()),
+            resolved.project_display_name().to_string(),
         );
 
         // Add in the items from the CloudTruth environment (looking for collisions)

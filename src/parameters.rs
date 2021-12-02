@@ -6,13 +6,13 @@ use crate::cli::{
 use crate::config::DEFAULT_ENV_NAME;
 use crate::database::{
     EnvironmentDetails, Environments, OpenApiConfig, ParamExportFormat, ParamExportOptions,
-    ParamRuleType, ParamType, ParameterDetails, ParameterError, Parameters, Projects, TaskStep,
+    ParamRuleType, ParamType, ParameterDetails, ParameterError, Parameters, Projects,
+    ResolvedDetails, TaskStep,
 };
 use crate::table::Table;
 use crate::{
     error_message, format_param_error, parse_datetime, parse_tag, user_confirm,
-    warn_missing_subcommand, warn_unresolved_params, warning_message, ResolvedIds, DEL_CONFIRM,
-    FILE_READ_ERR,
+    warn_missing_subcommand, warn_unresolved_params, warning_message, DEL_CONFIRM, FILE_READ_ERR,
 };
 use clap::ArgMatches;
 use color_eyre::eyre::Result;
@@ -27,7 +27,7 @@ fn proc_param_delete(
     subcmd_args: &ArgMatches,
     rest_cfg: &OpenApiConfig,
     parameters: &Parameters,
-    resolved: &ResolvedIds,
+    resolved: &ResolvedDetails,
 ) -> Result<()> {
     let key_name = subcmd_args.value_of(KEY_ARG).unwrap();
     let confirmed = subcmd_args.is_present(CONFIRM_FLAG);
@@ -113,7 +113,7 @@ fn proc_param_diff(
     subcmd_args: &ArgMatches,
     rest_cfg: &OpenApiConfig,
     parameters: &Parameters,
-    resolved: &ResolvedIds,
+    resolved: &ResolvedDetails,
 ) -> Result<()> {
     let show_secrets = subcmd_args.is_present(SECRETS_FLAG);
     let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
@@ -146,11 +146,11 @@ fn proc_param_diff(
         env1_name = env_list[0].to_string();
         env2_name = env_list[1].to_string();
     } else if env_list.len() == 1 {
-        env1_name = resolved.environment_display_name();
+        env1_name = resolved.environment_display_name().to_string();
         env2_name = env_list[0].to_string();
     } else {
-        env1_name = resolved.environment_display_name();
-        env2_name = resolved.environment_display_name();
+        env1_name = resolved.environment_display_name().to_string();
+        env2_name = resolved.environment_display_name().to_string();
     }
 
     let as_tag1: Option<&str>;
@@ -295,7 +295,7 @@ fn proc_param_env(
     subcmd_args: &ArgMatches,
     rest_cfg: &OpenApiConfig,
     parameters: &Parameters,
-    resolved: &ResolvedIds,
+    resolved: &ResolvedDetails,
 ) -> Result<()> {
     let param_name = subcmd_args.value_of(KEY_ARG).unwrap();
     let mut as_of = parse_datetime(subcmd_args.value_of(AS_OF_ARG));
@@ -312,7 +312,7 @@ fn proc_param_env(
         let env_id = resolved.environment_id();
         let env_name = resolved.environment_display_name();
         let environments = Environments::new();
-        as_of = Some(environments.get_tag_time(rest_cfg, env_id, &env_name, &tag_name)?);
+        as_of = Some(environments.get_tag_time(rest_cfg, env_id, env_name, &tag_name)?);
     }
 
     // fetch all environments once, and then determine id's from the same map that is
@@ -385,7 +385,7 @@ fn proc_param_export(
     subcmd_args: &ArgMatches,
     rest_cfg: &OpenApiConfig,
     parameters: &Parameters,
-    resolved: &ResolvedIds,
+    resolved: &ResolvedDetails,
 ) -> Result<()> {
     let proj_id = resolved.project_id();
     let env_id = resolved.environment_id();
@@ -426,7 +426,7 @@ fn proc_param_get(
     subcmd_args: &ArgMatches,
     rest_cfg: &OpenApiConfig,
     parameters: &Parameters,
-    resolved: &ResolvedIds,
+    resolved: &ResolvedDetails,
 ) -> Result<()> {
     let key = subcmd_args.value_of(KEY_ARG).unwrap();
     let show_details = subcmd_args.is_present("details");
@@ -513,7 +513,7 @@ fn proc_param_list(
     subcmd_args: &ArgMatches,
     rest_cfg: &OpenApiConfig,
     parameters: &Parameters,
-    resolved: &ResolvedIds,
+    resolved: &ResolvedDetails,
 ) -> Result<()> {
     let proj_id = resolved.project_id();
     let proj_name = resolved.project_display_name();
@@ -562,7 +562,7 @@ fn proc_param_list(
 
         details.clear(); // starting over with just the children
         let projects = Projects::new();
-        let proj_details = projects.get_project_descendants(rest_cfg, &proj_name)?;
+        let proj_details = projects.get_project_descendants(rest_cfg, proj_name)?;
         // loop through all the projects to find parameters defined in each
         for prj in proj_details {
             let mut child_details = parameters.get_parameter_details(
@@ -735,7 +735,7 @@ fn proc_param_set(
     subcmd_args: &ArgMatches,
     rest_cfg: &OpenApiConfig,
     parameters: &Parameters,
-    resolved: &ResolvedIds,
+    resolved: &ResolvedDetails,
 ) -> Result<()> {
     let key_name = subcmd_args.value_of(KEY_ARG).unwrap();
     let proj_id = resolved.project_id();
@@ -967,7 +967,7 @@ fn proc_param_unset(
     subcmd_args: &ArgMatches,
     rest_cfg: &OpenApiConfig,
     parameters: &Parameters,
-    resolved: &ResolvedIds,
+    resolved: &ResolvedDetails,
 ) -> Result<()> {
     let key_name = subcmd_args.value_of(KEY_ARG).unwrap();
     let proj_id = resolved.project_id();
@@ -1002,7 +1002,7 @@ fn proc_param_push(
     subcmd_args: &ArgMatches,
     rest_cfg: &OpenApiConfig,
     parameters: &Parameters,
-    resolved: &ResolvedIds,
+    resolved: &ResolvedDetails,
 ) -> Result<()> {
     let key_name = subcmd_args.value_of(KEY_ARG);
     let proj_id = resolved.project_id();
@@ -1071,7 +1071,7 @@ fn proc_param_push(
 pub fn process_parameters_command(
     subcmd_args: &ArgMatches,
     rest_cfg: &OpenApiConfig,
-    resolved: &ResolvedIds,
+    resolved: &ResolvedDetails,
 ) -> Result<()> {
     let parameters = Parameters::new();
     if let Some(subcmd_args) = subcmd_args.subcommand_matches(LIST_SUBCMD) {

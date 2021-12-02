@@ -1,9 +1,9 @@
 use crate::cli::AS_OF_ARG;
-use crate::database::{OpenApiConfig, Parameters};
+use crate::database::{OpenApiConfig, Parameters, ResolvedDetails};
 use crate::subprocess::{EnvSettings, Inheritance, SubProcess};
 use crate::{
     format_param_error, parse_datetime, parse_tag, warn_missing_subcommand, warn_unresolved_params,
-    warn_user, ResolvedIds,
+    warn_user,
 };
 use clap::ArgMatches;
 use color_eyre::eyre::Result;
@@ -14,7 +14,7 @@ use std::str::FromStr;
 pub fn process_run_command(
     subcmd_args: &ArgMatches,
     rest_cfg: &OpenApiConfig,
-    resolved: &ResolvedIds,
+    resolved: &ResolvedDetails,
 ) -> Result<()> {
     let mut sub_proc = SubProcess::new();
     let as_of = parse_datetime(subcmd_args.value_of(AS_OF_ARG));

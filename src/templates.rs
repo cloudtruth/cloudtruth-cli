@@ -3,11 +3,11 @@ use crate::cli::{
     FORMAT_OPT, GET_SUBCMD, HISTORY_SUBCMD, LIST_SUBCMD, NAME_ARG, RAW_FLAG, RENAME_OPT,
     SECRETS_FLAG, SET_SUBCMD, SHOW_TIMES_FLAG, TEMPLATE_FILE_OPT,
 };
-use crate::database::{HistoryAction, OpenApiConfig, TemplateHistory, Templates};
+use crate::database::{HistoryAction, OpenApiConfig, ResolvedDetails, TemplateHistory, Templates};
 use crate::table::Table;
 use crate::{
     error_message, parse_datetime, parse_tag, user_confirm, warn_missing_subcommand,
-    warning_message, ResolvedIds, DEL_CONFIRM, FILE_READ_ERR,
+    warning_message, DEL_CONFIRM, FILE_READ_ERR,
 };
 use clap::ArgMatches;
 use color_eyre::eyre::Result;
@@ -22,12 +22,12 @@ fn proc_template_delete(
     subcmd_args: &ArgMatches,
     rest_cfg: &OpenApiConfig,
     templates: &Templates,
-    resolved: &ResolvedIds,
+    resolved: &ResolvedDetails,
 ) -> Result<()> {
     let proj_name = resolved.project_display_name();
     let proj_id = resolved.project_id();
     let template_name = subcmd_args.value_of(NAME_ARG).unwrap();
-    let response = templates.get_id(rest_cfg, &proj_name, proj_id, template_name);
+    let response = templates.get_id(rest_cfg, proj_name, proj_id, template_name);
 
     if let Ok(template_id) = response {
         let mut confirmed = subcmd_args.is_present(CONFIRM_FLAG);
@@ -66,14 +66,14 @@ fn proc_template_edit(
     subcmd_args: &ArgMatches,
     rest_cfg: &OpenApiConfig,
     templates: &Templates,
-    resolved: &ResolvedIds,
+    resolved: &ResolvedDetails,
 ) -> Result<()> {
     let proj_name = resolved.project_display_name();
     let proj_id = resolved.project_id();
     let template_name = subcmd_args.value_of(NAME_ARG).unwrap();
     let details = templates.get_details_by_name(
         rest_cfg,
-        &proj_name,
+        proj_name,
         proj_id,
         template_name,
         false,
@@ -106,7 +106,7 @@ fn proc_template_list(
     subcmd_args: &ArgMatches,
     rest_cfg: &OpenApiConfig,
     templates: &Templates,
-    resolved: &ResolvedIds,
+    resolved: &ResolvedDetails,
 ) -> Result<()> {
     let proj_name = resolved.project_display_name();
     let proj_id = resolved.project_id();
@@ -147,7 +147,7 @@ fn proc_template_get(
     subcmd_args: &ArgMatches,
     rest_cfg: &OpenApiConfig,
     templates: &Templates,
-    resolved: &ResolvedIds,
+    resolved: &ResolvedDetails,
 ) -> Result<()> {
     let proj_name = resolved.project_display_name();
     let template_name = subcmd_args.value_of(NAME_ARG).unwrap();
@@ -156,11 +156,11 @@ fn proc_template_get(
     let tag = parse_tag(subcmd_args.value_of(AS_OF_ARG));
     let raw = subcmd_args.is_present(RAW_FLAG);
     let proj_id = resolved.project_id();
-    let env_name = resolved.environment_display_name();
+    let env_name = resolved.environment_display_name().to_string();
 
     let details = templates.get_details_by_name(
         rest_cfg,
-        &proj_name,
+        proj_name,
         proj_id,
         template_name,
         !raw,
@@ -181,7 +181,7 @@ fn proc_template_diff(
     subcmd_args: &ArgMatches,
     rest_cfg: &OpenApiConfig,
     templates: &Templates,
-    resolved: &ResolvedIds,
+    resolved: &ResolvedDetails,
 ) -> Result<()> {
     let show_secrets = subcmd_args.is_present(SECRETS_FLAG);
     let raw = subcmd_args.is_present(RAW_FLAG);
@@ -218,10 +218,10 @@ fn proc_template_diff(
         env2_name = env_list[1].to_string();
     } else if env_list.len() == 1 {
         env1_name = env_list[0].to_string();
-        env2_name = resolved.environment_display_name();
+        env2_name = resolved.environment_display_name().to_string();
     } else {
-        env1_name = resolved.environment_display_name();
-        env2_name = resolved.environment_display_name();
+        env1_name = resolved.environment_display_name().to_string();
+        env2_name = resolved.environment_display_name().to_string();
     }
 
     let as_tag1: Option<&str>;
@@ -263,7 +263,7 @@ fn proc_template_diff(
 
     let details1 = templates.get_details_by_name(
         rest_cfg,
-        &proj_name,
+        proj_name,
         proj_id,
         template_name,
         !raw,
@@ -274,7 +274,7 @@ fn proc_template_diff(
     )?;
     let details2 = templates.get_details_by_name(
         rest_cfg,
-        &proj_name,
+        proj_name,
         proj_id,
         template_name,
         !raw,
@@ -297,7 +297,7 @@ fn proc_template_preview(
     subcmd_args: &ArgMatches,
     rest_cfg: &OpenApiConfig,
     templates: &Templates,
-    resolved: &ResolvedIds,
+    resolved: &ResolvedDetails,
 ) -> Result<()> {
     let proj_id = resolved.project_id();
     let env_name = resolved.environment_display_name();
@@ -306,15 +306,8 @@ fn proc_template_preview(
     let body = fs::read_to_string(filename).expect(FILE_READ_ERR);
     let as_of = parse_datetime(subcmd_args.value_of(AS_OF_ARG));
     let tag = parse_tag(subcmd_args.value_of(AS_OF_ARG));
-    let result = templates.preview_template(
-        rest_cfg,
-        proj_id,
-        &env_name,
-        &body,
-        show_secrets,
-        as_of,
-        tag,
-    )?;
+    let result =
+        templates.preview_template(rest_cfg, proj_id, env_name, &body, show_secrets, as_of, tag)?;
     println!("{}", result);
     Ok(())
 }
@@ -323,7 +316,7 @@ fn proc_template_set(
     subcmd_args: &ArgMatches,
     rest_cfg: &OpenApiConfig,
     templates: &Templates,
-    resolved: &ResolvedIds,
+    resolved: &ResolvedDetails,
 ) -> Result<()> {
     let filename = subcmd_args.value_of(TEMPLATE_FILE_OPT);
     let proj_id = resolved.project_id();
@@ -331,7 +324,7 @@ fn proc_template_set(
     let template_name = subcmd_args.value_of(NAME_ARG).unwrap();
     let rename = subcmd_args.value_of(RENAME_OPT);
     let description = subcmd_args.value_of(DESCRIPTION_OPT);
-    let response = templates.get_id(rest_cfg, &proj_name, proj_id, template_name);
+    let response = templates.get_id(rest_cfg, proj_name, proj_id, template_name);
 
     if let Ok(template_id) = response {
         if description.is_none() && rename.is_none() && filename.is_none() {
@@ -417,7 +410,7 @@ fn proc_template_history(
     subcmd_args: &ArgMatches,
     rest_cfg: &OpenApiConfig,
     templates: &Templates,
-    resolved: &ResolvedIds,
+    resolved: &ResolvedDetails,
 ) -> Result<()> {
     let proj_name = resolved.project_display_name();
     let proj_id = resolved.project_id();
@@ -431,7 +424,7 @@ fn proc_template_history(
     let history: Vec<TemplateHistory>;
 
     if let Some(temp_name) = template_name {
-        let template_id = templates.get_id(rest_cfg, &proj_name, proj_id, temp_name)?;
+        let template_id = templates.get_id(rest_cfg, proj_name, proj_id, temp_name)?;
         modifier = format!("for '{}' ", temp_name);
         add_name = false;
         history = templates.get_history_for(rest_cfg, proj_id, &template_id, env_id, as_of, tag)?;
@@ -479,16 +472,16 @@ fn proc_template_validate(
     subcmd_args: &ArgMatches,
     rest_cfg: &OpenApiConfig,
     templates: &Templates,
-    resolved: &ResolvedIds,
+    resolved: &ResolvedDetails,
 ) -> Result<()> {
     let proj_name = resolved.project_display_name();
     let proj_id = resolved.project_id();
-    let env_name = resolved.environment_display_name();
+    let env_name = resolved.environment_display_name().to_string();
     let template_name = subcmd_args.value_of(NAME_ARG).unwrap();
 
     templates.get_details_by_name(
         rest_cfg,
-        &proj_name,
+        proj_name,
         proj_id,
         template_name,
         true,
@@ -505,7 +498,7 @@ fn proc_template_validate(
 pub fn process_templates_command(
     subcmd_args: &ArgMatches,
     rest_cfg: &OpenApiConfig,
-    resolved: &ResolvedIds,
+    resolved: &ResolvedDetails,
 ) -> Result<()> {
     let templates = Templates::new();
     if let Some(subcmd_args) = subcmd_args.subcommand_matches(DELETE_SUBCMD) {
