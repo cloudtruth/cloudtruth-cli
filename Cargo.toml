@@ -57,6 +57,7 @@ sha2 = "0.9.5"
 similar = "2.0.0"
 subprocess = "0.1"
 termcolor = "1.1"
+version-compare = "0.1.0"
 webbrowser = "0.5.5"
 
 [dev-dependencies]

@@ -1052,7 +1052,7 @@ pub fn build_cli() -> App<'static, 'static> {
                     ]),
             ]))
         .subcommand(SubCommand::with_name("users")
-            .visible_aliases(&["user", "us"])
+            .visible_aliases(&["user", "us", "u"])
             .about("Work with CloudTruth users")
             .subcommands(vec![
                 SubCommand::with_name("current")
@@ -1123,6 +1123,19 @@ pub fn build_cli() -> App<'static, 'static> {
                     .arg(schema_format_arg())
                     .arg(schema_version_arg())
                     .about("Compare the server and local schemas"),
+            ])
+        )
+        .subcommand(SubCommand::with_name("versions")
+            .visible_aliases(&["version", "vers", "ver", "v"])
+            .about("Manage CloudTruth CLI versions")
+            .subcommands([
+                SubCommand::with_name("check")
+                    .visible_aliases(&["ch", "c"])
+                    .about("Check the CLI is running the latest version")
+                    .arg(Arg::with_name("quiet")
+                        .short("q")
+                        .long("quiet")
+                        .help("Do not print version, just return error on outdated version.")),
             ])
         )
 }
