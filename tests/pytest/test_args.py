@@ -131,6 +131,8 @@ class TestTopLevelArgs(TestCase):
             "projects": ["project", "proj"],
             "run": ["r"],
             "templates": ["template", "t"],
+            "updates": ["update", "up"],
+            "users": ["user", "us"],
         }.items():
             for alias in [subcmd] + aliases:
                 result = self.run_cli(cmd_env, base_cmd + alias)

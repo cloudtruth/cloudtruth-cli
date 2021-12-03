@@ -18,6 +18,7 @@ mod schema;
 mod subprocess;
 mod table;
 mod templates;
+mod updates;
 mod users;
 
 use crate::actions::process_actions_command;
@@ -35,6 +36,7 @@ use crate::projects::process_project_command;
 use crate::run::process_run_command;
 use crate::schema::process_schema_command;
 use crate::templates::process_templates_command;
+use crate::updates::process_update_command;
 use crate::users::process_users_command;
 use chrono::{DateTime, Datelike, NaiveDate, NaiveDateTime, NaiveTime, Utc};
 use clap::ArgMatches;
@@ -384,6 +386,11 @@ fn main() -> Result<()> {
 
     if let Some(matches) = matches.subcommand_matches("configuration") {
         process_config_command(matches, profile_arg, api_key, proj_name, env_name)?;
+        process::exit(0)
+    }
+
+    if let Some(matches) = matches.subcommand_matches("updates") {
+        process_update_command(matches)?;
         process::exit(0)
     }
 

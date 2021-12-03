@@ -1125,4 +1125,17 @@ pub fn build_cli() -> App<'static, 'static> {
                     .about("Compare the server and local schemas"),
             ])
         )
+        .subcommand(SubCommand::with_name("updates")
+            .visible_aliases(&["update", "up"])
+            .about("Manage CloudTruth CLI updates")
+            .subcommands([
+                SubCommand::with_name("check")
+                    .visible_aliases(&["ch", "c"])
+                    .about("Check the CLI is running the latest version")
+                    .arg(Arg::with_name("quiet")
+                        .short("q")
+                        .long("quiet")
+                        .help("Do not print version, just return error on outdated version.")),
+            ])
+        )
 }

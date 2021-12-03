@@ -30,6 +30,7 @@ SUBCOMMANDS:
     run              Run a shell with the parameters in place [aliases: run, r]
     schema           View CloudTruth OpenAPI schema
     templates        Work with CloudTruth templates [aliases: template, temp, t]
+    updates          Manage CloudTruth CLI updates [aliases: update, up]
     users            Work with CloudTruth users [aliases: user, us]
 ============================================================
 cloudtruth-actions 
@@ -1280,6 +1281,31 @@ FLAGS:
 
 ARGS:
     <NAME>    Template name
+============================================================
+cloudtruth-updates 
+Manage CloudTruth CLI updates
+
+USAGE:
+    cloudtruth updates [SUBCOMMAND]
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+SUBCOMMANDS:
+    check    Check the CLI is running the latest version [aliases: ch, c]
+    help     Prints this message or the help of the given subcommand(s)
+========================================
+cloudtruth-updates-check 
+Check the CLI is running the latest version
+
+USAGE:
+    cloudtruth updates check [FLAGS]
+
+FLAGS:
+    -h, --help       Prints help information
+    -q, --quiet      Do not print version, just return error on outdated version.
+    -V, --version    Prints version information
 ============================================================
 cloudtruth-users 
 Work with CloudTruth users
