@@ -1052,7 +1052,7 @@ pub fn build_cli() -> App<'static, 'static> {
                     ]),
             ]))
         .subcommand(SubCommand::with_name("users")
-            .visible_aliases(&["user", "us"])
+            .visible_aliases(&["user", "us", "u"])
             .about("Work with CloudTruth users")
             .subcommands(vec![
                 SubCommand::with_name("current")
@@ -1125,9 +1125,9 @@ pub fn build_cli() -> App<'static, 'static> {
                     .about("Compare the server and local schemas"),
             ])
         )
-        .subcommand(SubCommand::with_name("updates")
-            .visible_aliases(&["update", "up"])
-            .about("Manage CloudTruth CLI updates")
+        .subcommand(SubCommand::with_name("versions")
+            .visible_aliases(&["version", "vers", "ver", "v"])
+            .about("Manage CloudTruth CLI versions")
             .subcommands([
                 SubCommand::with_name("check")
                     .visible_aliases(&["ch", "c"])

@@ -30,8 +30,8 @@ SUBCOMMANDS:
     run              Run a shell with the parameters in place [aliases: run, r]
     schema           View CloudTruth OpenAPI schema
     templates        Work with CloudTruth templates [aliases: template, temp, t]
-    updates          Manage CloudTruth CLI updates [aliases: update, up]
-    users            Work with CloudTruth users [aliases: user, us]
+    users            Work with CloudTruth users [aliases: user, us, u]
+    versions         Manage CloudTruth CLI versions [aliases: version, vers, ver, v]
 ============================================================
 cloudtruth-actions 
 Manage CloudTruth actions
@@ -1282,31 +1282,6 @@ FLAGS:
 ARGS:
     <NAME>    Template name
 ============================================================
-cloudtruth-updates 
-Manage CloudTruth CLI updates
-
-USAGE:
-    cloudtruth updates [SUBCOMMAND]
-
-FLAGS:
-    -h, --help       Prints help information
-    -V, --version    Prints version information
-
-SUBCOMMANDS:
-    check    Check the CLI is running the latest version [aliases: ch, c]
-    help     Prints this message or the help of the given subcommand(s)
-========================================
-cloudtruth-updates-check 
-Check the CLI is running the latest version
-
-USAGE:
-    cloudtruth updates check [FLAGS]
-
-FLAGS:
-    -h, --help       Prints help information
-    -q, --quiet      Do not print version, just return error on outdated version.
-    -V, --version    Prints version information
-============================================================
 cloudtruth-users 
 Work with CloudTruth users
 
@@ -1470,4 +1445,29 @@ OPTIONS:
 
 ARGS:
     <NAME>    Account name
+============================================================
+cloudtruth-versions 
+Manage CloudTruth CLI versions
+
+USAGE:
+    cloudtruth versions [SUBCOMMAND]
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+SUBCOMMANDS:
+    check    Check the CLI is running the latest version [aliases: ch, c]
+    help     Prints this message or the help of the given subcommand(s)
+========================================
+cloudtruth-versions-check 
+Check the CLI is running the latest version
+
+USAGE:
+    cloudtruth versions check [FLAGS]
+
+FLAGS:
+    -h, --help       Prints help information
+    -q, --quiet      Do not print version, just return error on outdated version.
+    -V, --version    Prints version information
 

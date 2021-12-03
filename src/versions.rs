@@ -7,7 +7,8 @@ use version_compare::Version;
 pub const LATEST_CHECK_URL: &str =
     "https://api.github.com/repos/cloudtruth/cloudtruth-cli/releases/latest";
 
-fn get_latest_version(client: &reqwest::Client) -> Result<String> {
+fn get_latest_version() -> Result<String> {
+    let client = reqwest::Client::builder().build().unwrap();
     let request = client
         .request(reqwest::Method::GET, LATEST_CHECK_URL)
         .build()?;
@@ -28,9 +29,9 @@ fn get_latest_version(client: &reqwest::Client) -> Result<String> {
     Ok("0.0.0".to_string())
 }
 
-fn proc_update_check(subcmd_args: &ArgMatches, client: &reqwest::Client) -> Result<()> {
+fn proc_version_check(subcmd_args: &ArgMatches) -> Result<()> {
     let quiet = subcmd_args.is_present("quiet");
-    let latest_str = get_latest_version(client)?;
+    let latest_str = get_latest_version()?;
     let latest_ver = Version::from(&latest_str).unwrap();
     let my_str = env!("CARGO_PKG_VERSION");
     let my_ver = Version::from(my_str).unwrap();
@@ -50,13 +51,12 @@ fn proc_update_check(subcmd_args: &ArgMatches, client: &reqwest::Client) -> Resu
     Ok(())
 }
 
-pub fn process_update_command(subcmd_args: &ArgMatches) -> Result<()> {
+pub fn process_version_command(subcmd_args: &ArgMatches) -> Result<()> {
     // TODO: specify timeout?
-    let client = reqwest::Client::builder().build().unwrap();
     if let Some(subcmd_args) = subcmd_args.subcommand_matches("check") {
-        proc_update_check(subcmd_args, &client)?;
+        proc_version_check(subcmd_args)?;
     } else {
-        warn_missing_subcommand("updates");
+        warn_missing_subcommand("versions");
     }
     Ok(())
 }

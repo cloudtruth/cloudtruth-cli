@@ -18,8 +18,8 @@ mod schema;
 mod subprocess;
 mod table;
 mod templates;
-mod updates;
 mod users;
+mod versions;
 
 use crate::actions::process_actions_command;
 use crate::audit_logs::process_audit_log_command;
@@ -36,8 +36,8 @@ use crate::projects::process_project_command;
 use crate::run::process_run_command;
 use crate::schema::process_schema_command;
 use crate::templates::process_templates_command;
-use crate::updates::process_update_command;
 use crate::users::process_users_command;
+use crate::versions::process_version_command;
 use chrono::{DateTime, Datelike, NaiveDate, NaiveDateTime, NaiveTime, Utc};
 use clap::ArgMatches;
 use color_eyre::eyre::Result;
@@ -389,8 +389,8 @@ fn main() -> Result<()> {
         process::exit(0)
     }
 
-    if let Some(matches) = matches.subcommand_matches("updates") {
-        process_update_command(matches)?;
+    if let Some(matches) = matches.subcommand_matches("versions") {
+        process_version_command(matches)?;
         process::exit(0)
     }
 
