@@ -1457,8 +1457,9 @@ FLAGS:
     -V, --version    Prints version information
 
 SUBCOMMANDS:
-    check    Check the CLI is running the latest version [aliases: ch, c]
-    help     Prints this message or the help of the given subcommand(s)
+    check      Check the CLI is running the latest version [aliases: ch, c]
+    help       Prints this message or the help of the given subcommand(s)
+    install    Update to the latest CLI version [aliases: inst, in, i]
 ========================================
 cloudtruth-versions-check 
 Check the CLI is running the latest version
@@ -1467,6 +1468,18 @@ USAGE:
     cloudtruth versions check [FLAGS]
 
 FLAGS:
+    -h, --help       Prints help information
+    -q, --quiet      Do not print version, just return error on outdated version.
+    -V, --version    Prints version information
+========================================
+cloudtruth-versions-install 
+Update to the latest CLI version
+
+USAGE:
+    cloudtruth versions install [FLAGS]
+
+FLAGS:
+    -f, --force      Re-install even if already running the latest version
     -h, --help       Prints help information
     -q, --quiet      Do not print version, just return error on outdated version.
     -V, --version    Prints version information

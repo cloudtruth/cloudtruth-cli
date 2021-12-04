@@ -1136,6 +1136,17 @@ pub fn build_cli() -> App<'static, 'static> {
                         .short("q")
                         .long("quiet")
                         .help("Do not print version, just return error on outdated version.")),
+                SubCommand::with_name("install")
+                    .visible_aliases(&["inst", "in", "i"])
+                    .about("Update to the latest CLI version")
+                    .arg(Arg::with_name("force")
+                        .short("f")
+                        .long("force")
+                        .help("Re-install even if already running the latest version"))
+                    .arg(Arg::with_name("quiet")
+                        .short("q")
+                        .long("quiet")
+                        .help("Do not print version, just return error on outdated version."))
             ])
         )
 }

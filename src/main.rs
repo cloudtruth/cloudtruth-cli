@@ -7,6 +7,7 @@ mod config;
 mod configuration;
 mod database;
 mod environments;
+mod installation;
 mod integrations;
 mod lib;
 mod login;

@@ -88,3 +88,17 @@ class TestMiscellaneous(TestCase):
         for shell in ["zsh", "bash", "fish", "powershell", "elvish"]:
             result = self.run_cli(cmd_env, base_cmd + f"completions {shell}")
             self.assertResultSuccess(result)
+
+    def test_misc_install(self):
+        cmd_env = self.get_cmd_env()
+        base_cmd = self.get_cli_base_cmd()
+
+        result = self.run_cli(cmd_env, base_cmd + "--version")
+        self.assertResultSuccess(result)
+        cli_ver = result.out().split(" ")[-1]
+
+        result = self.run_cli(cmd_env, base_cmd + "version check")
+        self.assertResultIn(result, cli_ver)
+
+        result = self.run_cli(cmd_env, base_cmd + "version install -f")
+        # self.assertResultUnknown(result)
