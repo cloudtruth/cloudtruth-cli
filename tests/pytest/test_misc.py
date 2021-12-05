@@ -89,6 +89,7 @@ class TestMiscellaneous(TestCase):
             result = self.run_cli(cmd_env, base_cmd + f"completions {shell}")
             self.assertResultSuccess(result)
 
+    @unittest.skipIf(platform.system() == "Windows", "YWindows test issue")
     def test_misc_install(self):
         cmd_env = self.get_cmd_env()
         base_cmd = self.get_cli_base_cmd()
