@@ -102,3 +102,4 @@ class TestMiscellaneous(TestCase):
 
         result = self.run_cli(cmd_env, base_cmd + "version install -f")
         # self.assertResultUnknown(result)
+        pass
