@@ -9,7 +9,7 @@ on:
 jobs:
   test:
     name: Test
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     env:
       # TODO: modify this filter to focus testing
