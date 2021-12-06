@@ -348,6 +348,7 @@ dependencies = [
  "sha2",
  "similar",
  "subprocess",
+ "tempfile",
  "termcolor",
  "version-compare",
  "webbrowser",

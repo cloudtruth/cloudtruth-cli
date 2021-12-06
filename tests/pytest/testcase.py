@@ -93,6 +93,9 @@ class Result:
                 return line
         return None
 
+    def all(self) -> str:
+        return self.out() + "\n" + self.err()
+
 
 class TestCase(unittest.TestCase):
     """
@@ -210,6 +213,12 @@ class TestCase(unittest.TestCase):
         """
         self.assertIn(err_msg, result.err())
         self.assertNotEqual(result.return_value, 0)
+
+    def assertResultIn(self, result: Result, needle: str):
+        """
+        This is a convenience method to check for the needle in either stdout or stderr
+        """
+        self.assertIn(needle, result.all())
 
     def assertPaginated(self, cmd_env, command: str, in_req: str, page_size: int = TEST_PAGE_SIZE):
         """
