@@ -25,10 +25,11 @@ mod versions;
 use crate::actions::process_actions_command;
 use crate::audit_logs::process_audit_log_command;
 use crate::config::env::ConfigEnv;
-use crate::config::{Config, CT_PROFILE, DEFAULT_ENV_NAME};
+use crate::config::{Action, Config, Updates, CT_PROFILE, DEFAULT_ENV_NAME};
 use crate::configuration::process_config_command;
 use crate::database::{OpenApiConfig, Resolver};
 use crate::environments::process_environment_command;
+use crate::installation::{binary_version, get_latest_version, install_latest_version};
 use crate::integrations::process_integrations_command;
 use crate::login::process_login_command;
 use crate::logout::process_logout_command;
@@ -50,6 +51,7 @@ use std::io;
 use std::io::{stdin, stdout, Write};
 use std::process;
 use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
+use version_compare::Version;
 
 // The `DEL_CONFIRM` is the default value for delete confirmation across different types
 const DEL_CONFIRM: Option<bool> = Some(false);
@@ -130,6 +132,48 @@ fn check_config() -> Result<()> {
                 help_message(err.help_message);
             }
             process::exit(1)
+        }
+    }
+    Ok(())
+}
+
+fn check_updates(updates: &Updates) -> Result<()> {
+    // NOTE: the next_update() returns None if the check is disabled...
+    if let Some(next_update) = updates.next_update() {
+        let now = Utc::today();
+        let today = NaiveDate::from_ymd(now.year(), now.month(), now.day());
+        if today >= next_update {
+            let latest_str = get_latest_version();
+            let latest_ver = Version::from(&latest_str).unwrap();
+            let bin_str = binary_version();
+            let bin_ver = Version::from(&bin_str).unwrap();
+
+            if bin_ver < latest_ver {
+                // NOTE: do not update last_checked date after we detect we're behind...
+                match updates.action.unwrap_or_default() {
+                    Action::Warn => {
+                        warning_message(format!(
+                            "Version {} is available, running {}",
+                            latest_ver, bin_ver
+                        ));
+                    }
+                    Action::Update => {
+                        println!("Installing version {}", latest_ver);
+                        install_latest_version(false)?;
+                    }
+                    Action::Error => {
+                        error_message(format!(
+                            "Version {} is available, running {}",
+                            latest_ver, bin_ver
+                        ));
+                        process::exit(50);
+                    }
+                }
+            } else {
+                let mut updated = *updates;
+                updated.last_checked = Some(today);
+                Config::set_updates(&updated)?;
+            }
         }
     }
     Ok(())
@@ -320,6 +364,11 @@ fn main() -> Result<()> {
     if let Some(matches) = matches.subcommand_matches("versions") {
         process_version_command(matches)?;
         process::exit(0)
+    }
+
+    // check for updates based on the configuration (if any)
+    if let Some(updates) = Config::load_updates()? {
+        check_updates(&updates)?;
     }
 
     // wait until after processing the config command to load the config -- if we fail to load the
