@@ -1,12 +1,15 @@
+mod config_date;
 pub(crate) mod env;
 mod file;
 mod file_errors;
 mod profiles;
+mod update;
 
 use crate::cli::binary_name;
 use crate::config::env::ConfigEnv;
 use crate::config::file::ConfigFile;
 use crate::config::profiles::{Profile, ProfileDetails};
+pub use crate::config::update::{Action, Frequency, Updates};
 use color_eyre::eyre::Result;
 use directories::ProjectDirs;
 use indoc::formatdoc;
@@ -612,6 +615,30 @@ impl Config {
         });
 
         Ok(results)
+    }
+
+    /// Gets the `Updates` structure if the config file is present.
+    pub fn load_updates() -> Result<Option<Updates>> {
+        let config_file = Self::config_file().unwrap();
+        if !config_file.exists() {
+            return Ok(None);
+        }
+
+        let content = Self::read_config(&config_file)?;
+        let updates = ConfigFile::load_updates(&content)?;
+        Ok(Some(updates))
+    }
+
+    pub fn set_updates(updates: &Updates) -> Result<()> {
+        if let Some(filename) = Self::config_file() {
+            if !filename.exists() {
+                Self::create_config()?;
+            }
+            let content = Self::read_config(filename.as_path())?;
+            let updated = ConfigFile::set_updates(&content, updates)?;
+            fs::write(filename.as_path(), updated)?;
+        }
+        Ok(())
     }
 }
 

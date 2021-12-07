@@ -1,5 +1,6 @@
 use crate::config::file_errors::ConfigFileError;
 use crate::config::profiles::{Profile, ProfileDetails};
+use crate::config::update::Updates;
 use color_eyre::eyre::Result;
 use indoc::indoc;
 use serde::{Deserialize, Serialize};
@@ -9,8 +10,12 @@ use std::collections::HashMap;
 #[derive(Deserialize, Serialize, Debug, Default)]
 #[serde(default)]
 pub struct ConfigFile {
+    updates: Option<Updates>,
     profiles: HashMap<String, Profile>,
 }
+
+const HDR_UPDATES: &str = "updates";
+const HDR_PROFILES: &str = "profiles";
 
 type ConfigFileResult<T> = std::result::Result<T, ConfigFileError>;
 
@@ -24,6 +29,8 @@ impl ConfigFile {
             # which profile to load. Profiles can inherit values from other profiles by using the
             # `source_profile` setting, providing it with the name of another profile. Profile
             # chains can be arbitrarily deep, but may not contain cycles.
+            updates:
+              check: true
 
             profiles:
               default:
@@ -78,7 +85,12 @@ impl ConfigFile {
         let indent_plus = format!("{} ", indent);
         let needle = format!("{}{}:", indent, profile_name);
         let mut start = false;
+        let mut prof_start = false;
         for line in config_lines {
+            if !prof_start {
+                prof_start = line.starts_with(HDR_PROFILES);
+                continue;
+            }
             if line.starts_with(&needle) {
                 prof_lines.push(line);
                 start = true;
@@ -91,7 +103,10 @@ impl ConfigFile {
             if line.starts_with(&indent) && !line.starts_with(&indent_plus) {
                 break;
             }
-
+            // if we're outside the current profile, we're done
+            if !line.is_empty() && !line.starts_with(&indent) {
+                break;
+            }
             prof_lines.push(line);
         }
         prof_lines.join("\n")
@@ -269,13 +284,65 @@ impl ConfigFile {
             }
         }
     }
+
+    fn get_update_text(content: &str) -> String {
+        // TODO: solve this with a regex
+        let config_lines: Vec<&str> = content.split('\n').collect();
+        let mut update_lines: Vec<&str> = vec![];
+        let indent = " ".repeat(2);
+
+        let mut start = false;
+        for line in config_lines {
+            if !start {
+                start = line.starts_with(HDR_UPDATES);
+                if start {
+                    update_lines.push(line);
+                }
+                continue;
+            }
+
+            // if we hit the next key (or comment), we're done
+            if !line.is_empty() && !line.starts_with(&indent) {
+                break;
+            }
+
+            update_lines.push(line);
+        }
+        update_lines.join("\n")
+    }
+
+    pub fn load_updates(config: &str) -> ConfigFileResult<Updates> {
+        let config_file: ConfigFile = serde_yaml::from_str(config)?;
+        if let Some(updates) = config_file.updates {
+            Ok(updates)
+        } else {
+            Ok(Updates::default())
+        }
+    }
+
+    pub fn set_updates(config: &str, updates: &Updates) -> ConfigFileResult<String> {
+        let result: String;
+        let current = ConfigFile::get_update_text(config);
+        let mut next = serde_yaml::to_string(&updates)?;
+        let replacement = format!("{}{}", "\n", " ".repeat(2));
+        let header = format!("{}:", HDR_UPDATES);
+        next = next.replace("\n", &replacement).replace("---", &header);
+        if current.is_empty() {
+            result = format!("{}\n{}", config, next);
+        } else {
+            result = config.replace(&current, &next);
+        }
+        Ok(result)
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use crate::config::file::{ConfigFile, ConfigFileError};
     use crate::config::profiles::ProfileDetails;
+    use crate::config::{Action, Frequency, Updates};
     use assert_matches::assert_matches;
+    use chrono::NaiveDate;
     use indoc::indoc;
 
     #[test]
@@ -982,5 +1049,75 @@ mod tests {
         assert!(result.is_ok());
         let result = result.unwrap();
         assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn add_updates() {
+        let original = indoc!(
+            r#"
+        profiles:
+          default:
+            # comment lost -- not ideal
+            api_key: default_key
+            server_url: http://localhost:7001/graphql
+
+        "#
+        );
+
+        let updates = Updates {
+            check: true,
+            action: None,
+            last_checked: None,
+            frequency: None,
+        };
+        let expected = format!("{}\nupdates:\n  check: true\n  ", original);
+        let result = ConfigFile::set_updates(original, &updates);
+        assert!(result.is_ok());
+        let result = result.unwrap();
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn update_updates() {
+        let original = indoc!(
+            r#"
+        updates:
+          check: false
+
+        profiles:
+          default:
+            # comment lost -- not ideal
+            api_key: default_key
+            server_url: http://localhost:7001/graphql
+
+        "#
+        );
+        let expected = indoc!(
+            r#"
+        updates:
+          check: true
+          action: Error
+          last_checked: 2021-01-20
+          frequency: Monthly
+          
+        profiles:
+          default:
+            # comment lost -- not ideal
+            api_key: default_key
+            server_url: http://localhost:7001/graphql
+
+        "#
+        );
+
+        let updates = Updates {
+            check: true,
+            action: Some(Action::Error),
+            last_checked: Some(NaiveDate::from_ymd(2021, 1, 20)),
+            frequency: Some(Frequency::Monthly),
+        };
+
+        let result = ConfigFile::set_updates(original, &updates);
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), expected);
     }
 }
