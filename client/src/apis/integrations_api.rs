@@ -298,6 +298,10 @@ pub fn integrations_aws_create(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         serde_json::from_str(&local_var_content)
             .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
@@ -372,6 +376,10 @@ pub fn integrations_aws_destroy(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         Ok(())
     } else {
         let local_var_entity: Option<IntegrationsAwsDestroyError> =
@@ -460,6 +468,10 @@ pub fn integrations_aws_list(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         serde_json::from_str(&local_var_content)
             .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
@@ -531,6 +543,10 @@ pub fn integrations_aws_partial_update(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         serde_json::from_str(&local_var_content)
             .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
@@ -602,6 +618,10 @@ pub fn integrations_aws_pulls_create(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         serde_json::from_str(&local_var_content)
             .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
@@ -673,6 +693,10 @@ pub fn integrations_aws_pulls_destroy(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         Ok(())
     } else {
         let local_var_entity: Option<IntegrationsAwsPullsDestroyError> =
@@ -771,6 +795,10 @@ pub fn integrations_aws_pulls_list(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         serde_json::from_str(&local_var_content)
             .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
@@ -844,6 +872,10 @@ pub fn integrations_aws_pulls_partial_update(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         serde_json::from_str(&local_var_content)
             .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
@@ -915,6 +947,10 @@ pub fn integrations_aws_pulls_retrieve(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         serde_json::from_str(&local_var_content)
             .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
@@ -989,6 +1025,10 @@ pub fn integrations_aws_pulls_sync_create(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         Ok(())
     } else {
         let local_var_entity: Option<IntegrationsAwsPullsSyncCreateError> =
@@ -1094,6 +1134,10 @@ pub fn integrations_aws_pulls_tasks_list(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         serde_json::from_str(&local_var_content)
             .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
@@ -1167,6 +1211,10 @@ pub fn integrations_aws_pulls_tasks_retrieve(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         serde_json::from_str(&local_var_content)
             .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
@@ -1301,6 +1349,10 @@ pub fn integrations_aws_pulls_tasks_steps_list(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         serde_json::from_str(&local_var_content)
             .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
@@ -1369,6 +1421,10 @@ pub fn integrations_aws_pulls_tasks_steps_retrieve(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         serde_json::from_str(&local_var_content)
             .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
@@ -1442,6 +1498,10 @@ pub fn integrations_aws_pulls_update(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         serde_json::from_str(&local_var_content)
             .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
@@ -1513,6 +1573,10 @@ pub fn integrations_aws_pushes_create(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         serde_json::from_str(&local_var_content)
             .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
@@ -1584,6 +1648,10 @@ pub fn integrations_aws_pushes_destroy(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         Ok(())
     } else {
         let local_var_entity: Option<IntegrationsAwsPushesDestroyError> =
@@ -1682,6 +1750,10 @@ pub fn integrations_aws_pushes_list(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         serde_json::from_str(&local_var_content)
             .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
@@ -1755,6 +1827,10 @@ pub fn integrations_aws_pushes_partial_update(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         serde_json::from_str(&local_var_content)
             .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
@@ -1826,6 +1902,10 @@ pub fn integrations_aws_pushes_retrieve(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         serde_json::from_str(&local_var_content)
             .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
@@ -1900,6 +1980,10 @@ pub fn integrations_aws_pushes_sync_create(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         Ok(())
     } else {
         let local_var_entity: Option<IntegrationsAwsPushesSyncCreateError> =
@@ -2005,6 +2089,10 @@ pub fn integrations_aws_pushes_tasks_list(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         serde_json::from_str(&local_var_content)
             .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
@@ -2078,6 +2166,10 @@ pub fn integrations_aws_pushes_tasks_retrieve(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         serde_json::from_str(&local_var_content)
             .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
@@ -2212,6 +2304,10 @@ pub fn integrations_aws_pushes_tasks_steps_list(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         serde_json::from_str(&local_var_content)
             .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
@@ -2280,6 +2376,10 @@ pub fn integrations_aws_pushes_tasks_steps_retrieve(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         serde_json::from_str(&local_var_content)
             .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
@@ -2353,6 +2453,10 @@ pub fn integrations_aws_pushes_update(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         serde_json::from_str(&local_var_content)
             .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
@@ -2427,6 +2531,10 @@ pub fn integrations_aws_retrieve(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         serde_json::from_str(&local_var_content)
             .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
@@ -2498,6 +2606,10 @@ pub fn integrations_aws_update(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         serde_json::from_str(&local_var_content)
             .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
@@ -2582,6 +2694,10 @@ pub fn integrations_explore_list(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         serde_json::from_str(&local_var_content)
             .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
@@ -2649,6 +2765,10 @@ pub fn integrations_github_create(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         serde_json::from_str(&local_var_content)
             .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
@@ -2723,6 +2843,10 @@ pub fn integrations_github_destroy(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         Ok(())
     } else {
         let local_var_entity: Option<IntegrationsGithubDestroyError> =
@@ -2806,6 +2930,10 @@ pub fn integrations_github_list(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         serde_json::from_str(&local_var_content)
             .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
@@ -2880,6 +3008,10 @@ pub fn integrations_github_retrieve(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         serde_json::from_str(&local_var_content)
             .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {

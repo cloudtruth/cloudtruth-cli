@@ -152,6 +152,10 @@ pub fn environments_create(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         serde_json::from_str(&local_var_content)
             .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
@@ -221,6 +225,10 @@ pub fn environments_destroy(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         Ok(())
     } else {
         let local_var_entity: Option<EnvironmentsDestroyError> =
@@ -324,6 +332,10 @@ pub fn environments_list(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         serde_json::from_str(&local_var_content)
             .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
@@ -395,6 +407,10 @@ pub fn environments_partial_update(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         serde_json::from_str(&local_var_content)
             .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
@@ -480,6 +496,10 @@ pub fn environments_pushes_list(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         serde_json::from_str(&local_var_content)
             .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
@@ -549,6 +569,10 @@ pub fn environments_retrieve(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         serde_json::from_str(&local_var_content)
             .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
@@ -621,6 +645,10 @@ pub fn environments_tags_create(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         serde_json::from_str(&local_var_content)
             .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
@@ -693,6 +721,10 @@ pub fn environments_tags_destroy(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         Ok(())
     } else {
         let local_var_entity: Option<EnvironmentsTagsDestroyError> =
@@ -807,6 +839,10 @@ pub fn environments_tags_list(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         serde_json::from_str(&local_var_content)
             .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
@@ -881,6 +917,10 @@ pub fn environments_tags_partial_update(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         serde_json::from_str(&local_var_content)
             .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
@@ -953,6 +993,10 @@ pub fn environments_tags_retrieve(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         serde_json::from_str(&local_var_content)
             .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
@@ -1027,6 +1071,10 @@ pub fn environments_tags_update(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         serde_json::from_str(&local_var_content)
             .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
@@ -1098,6 +1146,10 @@ pub fn environments_update(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         serde_json::from_str(&local_var_content)
             .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {

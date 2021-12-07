@@ -132,6 +132,7 @@ impl From<&CloudTruthConfig> for OpenApiConfig {
                 key: ct_cfg.api_key.clone(),
             }),
             rest_debug: ct_cfg.rest_debug,
+            rest_success: vec![],
             rest_page_size: ct_cfg.rest_page_size,
         }
     }

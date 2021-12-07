@@ -60,6 +60,39 @@ pub fn handle_serde_error<T>(err: serde_json::Error, method: &Method, url: &Url,
     Error::Serde(err)
 }
 """
+FUNCTION_MACRO = """\
+
+macro_rules! function {
+    () => {{
+        fn f() {}
+        fn type_name_of<T>(_: T) -> &'static str {
+            std::any::type_name::<T>()
+        }
+        let name = type_name_of(f);
+
+        // Find and cut the rest of the path
+        match &name[..name.len() - 3].rfind(':') {
+            Some(pos) => &name[pos + 1..name.len() - 3],
+            None => &name[..name.len() - 3],
+        }
+    }};
+}
+
+pub(crate) use function;
+"""
+DEBUG_SUCCESS_FUNCTION = """\
+
+    pub fn debug_success(&self, func_name: &str) -> bool {
+        self.rest_debug
+            && (self.rest_success.contains(&func_name.to_string())
+                || self.rest_success.contains(&"all".to_string()))
+    }
+"""
+DEBUG_SUCCESS_CALL = """\
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+"""
 
 
 def file_read_content(filename: str) -> str:
@@ -146,15 +179,26 @@ def update_rest_config(srcdir: str) -> None:
     temp = file_read_content(filename)
 
     rest_debug_param = "    pub rest_debug: bool,\n"
+    rest_success_param = "    pub rest_success: Vec<String>,\n"
     rest_page_size_param = "    pub rest_page_size: Option<i32>,\n"
     api_key_param = "    pub api_key: Option<ApiKey>,\n"
+
     rest_debug_init = "            rest_debug: false,\n"
+    rest_success_init = "            rest_success: vec![],\n"
     rest_page_size_init = "            rest_page_size: None,\n"
     api_key_init = "            api_key: None,\n"
+
+    config_impl = "pub fn new() -> Configuration {\n        Configuration::default()\n    }\n"
+
     if rest_debug_param not in temp:
-        temp = temp.replace(api_key_param, api_key_param + rest_debug_param + rest_page_size_param)
-        temp = temp.replace(api_key_init, api_key_init + rest_debug_init + rest_page_size_init)
+        temp = temp.replace(
+            api_key_param,
+            api_key_param + rest_debug_param + rest_success_param + rest_page_size_param,
+        )
+        temp = temp.replace(api_key_init, api_key_init + rest_debug_init + rest_success_init + rest_page_size_init)
+        temp = temp.replace(config_impl, config_impl + DEBUG_SUCCESS_FUNCTION)
         assert rest_debug_param in temp, "Did not add rest_debug param"
+
         print(f"Updating {filename} with rest_debug parameter")
         file_write_content(filename, temp)
 
@@ -269,6 +313,19 @@ def add_serde_error_handling_to_mod(srcdir: str) -> None:
     file_write_content(filename, added_use + orig + SERDES_ERROR_FUNC)
 
 
+def add_func_macro_to_mod(srcdir: str) -> None:
+    filename = f"{srcdir}/apis/mod.rs"
+    macro_def = "macro_rules! function"
+    assert(macro_def in FUNCTION_MACRO)
+
+    orig = file_read_content(filename)
+    if macro_def in orig:
+        return
+
+    print(f"Updating {filename} with function macro")
+    file_write_content(filename, orig + FUNCTION_MACRO)
+
+
 def serdes_error_handling_calls(srcdir: str) -> None:
     filelist = glob.glob(f"{srcdir}/apis/*.rs")
     orig_use = "use crate::apis::ResponseContent;"
@@ -290,6 +347,22 @@ def serdes_error_handling_calls(srcdir: str) -> None:
 
         updated = orig.replace(orig_use, updated_use).replace(orig_serde_err, updated_serde_err)
         print(f"Updating {filename} with improved serde error handling")
+        file_write_content(filename, updated)
+
+
+def add_debug_success_calls(srcdir: str) -> None:
+    filelist = glob.glob(f"{srcdir}/apis/*.rs")
+    orig_check = "if !local_var_status.is_client_error() && !local_var_status.is_server_error() {"
+    call_macro = "super::function!"
+
+    for filename in filelist:
+        orig = file_read_content(filename)
+
+        if call_macro in orig or orig_check not in orig:
+            continue
+
+        updated = orig.replace(orig_check, orig_check + DEBUG_SUCCESS_CALL)
+        print(f"Updating {filename} with success check")
         file_write_content(filename, updated)
 
 
@@ -323,9 +396,11 @@ if __name__ == "__main__":
     update_rest_config(srcdir)
     add_debug_profiling(srcdir)
     add_debug_errors(srcdir)
+    add_debug_success_calls(srcdir)
     fix_latest_task(srcdir)
     fix_service_account_user(srcdir)
     schema_returns_string(srcdir)
     add_serde_error_handling_to_mod(srcdir)
+    add_func_macro_to_mod(srcdir)
     serdes_error_handling_calls(srcdir)
     object_type_string(srcdir)
