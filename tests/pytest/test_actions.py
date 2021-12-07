@@ -916,8 +916,8 @@ class TestActions(TestCase):
             import_step_cmd = imp_cmd + f"task-steps {import_name} -f json"
             more_steps = self.get_cli_entries(cmd_env, import_step_cmd, "action-import-task-step")
             update_steps = find_by_prop(more_steps, "Task", "pull updated")
-            success_steps = find_by_prop(update_steps, "Result", "SUCCESS")
-            print(f"Update task steps: {update_steps}, successufl: {success_steps}")
+            success_steps = find_by_prop(update_steps, "Result", "SUCCESS ")
+            print(f"Update task steps: {len(update_steps)}, successful: {len(success_steps)}")
             return len(more_steps) > import_step_len and pull_success()
         self.waitFor(more_pull_steps)
 
