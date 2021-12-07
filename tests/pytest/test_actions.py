@@ -866,6 +866,9 @@ class TestActions(TestCase):
         validate_project2a()
         validate_project2b()
 
+        self.log_commands = True
+        self.log_output = True
+
         ########################
         # project2 was restored, it does not have the same id, so is no longer associated
         cmd = push_cmd + f"list -i '{integ_name}' -f json"
@@ -912,6 +915,10 @@ class TestActions(TestCase):
         def more_pull_steps() -> bool:
             import_step_cmd = imp_cmd + f"task-steps {import_name} -f json"
             more_steps = self.get_cli_entries(cmd_env, import_step_cmd, "action-import-task-step")
+            update_steps = find_by_prop(more_steps, "Task", "pull updated")
+            success_steps = find_by_prop(update_steps, "Result", "SUCCESS")
+            if len(update_steps) != len(success_steps):
+                print(f"Update task steps: {update_steps}, successufl: {success_steps}")
             return len(more_steps) > import_step_len and pull_success()
         self.waitFor(more_pull_steps)
 
