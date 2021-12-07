@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Deserialize, Debug, PartialEq, Serialize)]
+#[derive(Clone, Deserialize, Debug, PartialEq, Serialize, Default)]
 #[serde(default)]
 pub struct Profile {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -39,23 +39,6 @@ pub struct ProfileDetails {
     pub rest_debug: Option<bool>,
     pub rest_success: Vec<String>,
     pub rest_page_size: Option<i32>,
-}
-
-impl Default for Profile {
-    fn default() -> Self {
-        Self {
-            api_key: None,
-            description: None,
-            environment: None,
-            project: None,
-            request_timeout: None,
-            server_url: None,
-            source_profile: None,
-            rest_debug: None,
-            rest_success: vec![],
-            rest_page_size: None,
-        }
-    }
 }
 
 fn empty_to_none(value: &Option<String>) -> Option<String> {
