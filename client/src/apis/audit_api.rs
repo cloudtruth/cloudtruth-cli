@@ -125,6 +125,10 @@ pub fn audit_list(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         serde_json::from_str(&local_var_content)
             .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
@@ -191,6 +195,10 @@ pub fn audit_retrieve(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         serde_json::from_str(&local_var_content)
             .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
@@ -256,6 +264,10 @@ pub fn audit_summary_retrieve(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         serde_json::from_str(&local_var_content)
             .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {

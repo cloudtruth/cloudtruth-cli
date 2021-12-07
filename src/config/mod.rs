@@ -60,6 +60,9 @@ pub const CT_PROFILE: &str = "CLOUDTRUTH_PROFILE";
 /// Environment variable name used to enable REST debugging statements.
 pub const CT_REST_DEBUG: &str = "CLOUDTRUTH_REST_DEBUG";
 
+/// Environment variable name used to enable debug of successful REST responses.
+pub const CT_REST_SUCCESS: &str = "CLOUDTRUTH_REST_SUCCESS";
+
 /// Environment variable name used to set the REST page size.
 pub const CT_REST_PAGE_SIZE: &str = "CLOUDTRUTH_REST_PAGE_SIZE";
 
@@ -91,6 +94,7 @@ pub struct Config {
     pub request_timeout: Option<Duration>,
     pub rest_debug: bool,
     pub rest_page_size: Option<i32>,
+    pub rest_success: Vec<String>,
 }
 
 pub struct ValidationError {
@@ -120,6 +124,7 @@ fn profile_into_config(prof_name: &str, profile: &Profile) -> Config {
             0,
         )),
         rest_debug: profile.rest_debug.unwrap_or(false),
+        rest_success: profile.rest_success.clone(),
         rest_page_size: profile.rest_page_size,
     }
 }
@@ -137,6 +142,7 @@ pub const PARAM_ENVIRONMENT: &str = "Environment";
 pub const PARAM_SERVER_URL: &str = "Server URL";
 pub const PARAM_REQUEST_TIMEOUT: &str = "Request timeout";
 pub const PARAM_REST_DEBUG: &str = "REST debug";
+pub const PARAM_REST_SUCCESS: &str = "REST success";
 pub const PARAM_REST_PAGE_SIZE: &str = "REST page size";
 pub const PARAM_CLI_VERSION: &str = "CLI version";
 pub const PARAM_USER: &str = "User";
@@ -584,6 +590,31 @@ impl Config {
         }
         results.push(ConfigValue {
             name: PARAM_REST_DEBUG.to_string(),
+            value,
+            source,
+            secret: false,
+            extension: true,
+        });
+
+        //////////////////
+        // REST success
+        let mut value = "".to_string();
+        let mut source = SRC_DEFAULT.to_string();
+        let env_value = ConfigEnv::get_rest_success();
+        if !env_value.is_empty() {
+            value = env_value.join(", ");
+            source = SRC_ENV.to_string();
+        } else {
+            for profile in &profiles {
+                if !profile.rest_success.is_empty() {
+                    value = profile.rest_success.join(", ");
+                    source = format!("{} ({})", SRC_PROFILE, profile.name);
+                    break;
+                }
+            }
+        }
+        results.push(ConfigValue {
+            name: PARAM_REST_SUCCESS.to_string(),
             value,
             source,
             secret: false,

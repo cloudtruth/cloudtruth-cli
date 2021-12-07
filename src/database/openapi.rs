@@ -132,6 +132,7 @@ impl From<&CloudTruthConfig> for OpenApiConfig {
                 key: ct_cfg.api_key.clone(),
             }),
             rest_debug: ct_cfg.rest_debug,
+            rest_success: ct_cfg.rest_success.clone(),
             rest_page_size: ct_cfg.rest_page_size,
         }
     }
@@ -156,6 +157,7 @@ mod tests {
             server_url: url.to_string(),
             request_timeout: Some(Duration::new(120, 0)),
             rest_debug: true,
+            rest_success: vec!["abc".to_string(), "def".to_string()],
             rest_page_size: Some(2300),
         };
         let openapi_cfg = OpenApiConfig::from(&ct_cfg);
@@ -168,8 +170,42 @@ mod tests {
         assert_eq!(openapi_cfg.user_agent.unwrap(), user_agent_name());
         assert_eq!(openapi_cfg.bearer_access_token, None);
         assert_eq!(openapi_cfg.rest_debug, true);
-        assert_eq!(openapi_cfg.rest_page_size, Some(2300))
+        assert_eq!(
+            openapi_cfg.rest_success,
+            vec!["abc".to_string(), "def".to_string()]
+        );
+        assert_eq!(openapi_cfg.rest_page_size, Some(2300));
         // unfortunately, no means to interrogate the client to find the timeout
+    }
+
+    #[test]
+    fn openapi_debug_success() {
+        let mut cfg = OpenApiConfig::new();
+
+        assert_eq!(cfg.debug_success("foo"), false);
+
+        cfg.rest_debug = true;
+        assert_eq!(cfg.debug_success("foo"), false);
+
+        cfg.rest_success.push("foo".to_string());
+        assert_eq!(cfg.debug_success("foo"), true);
+        assert_eq!(cfg.debug_success("sna"), false);
+
+        cfg.rest_success.push("sna".to_string());
+        assert_eq!(cfg.debug_success("foo"), true);
+        assert_eq!(cfg.debug_success("sna"), true);
+
+        cfg.rest_success.clear();
+        assert_eq!(cfg.debug_success("foo"), false);
+        assert_eq!(cfg.debug_success("sna"), false);
+
+        cfg.rest_success.push("all".to_string());
+        assert_eq!(cfg.debug_success("foo"), true);
+        assert_eq!(cfg.debug_success("sna"), true);
+
+        cfg.rest_debug = false;
+        assert_eq!(cfg.debug_success("foo"), false);
+        assert_eq!(cfg.debug_success("sna"), false);
     }
 
     #[test]

@@ -64,6 +64,10 @@ pub fn api_schema_retrieve(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         Ok(local_var_content)
     } else {
         let local_var_entity: Option<ApiSchemaRetrieveError> =

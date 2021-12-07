@@ -1,7 +1,15 @@
 import subprocess
 
-from testcase import TestCase, CT_API_KEY, CT_PROJ, CT_ENV
-from testcase import CT_PROFILE, REDACTED
+from testcase import TestCase
+from testcase import CT_API_KEY
+from testcase import CT_PROJ
+from testcase import CT_ENV
+from testcase import CT_PROFILE
+from testcase import CT_REST_DEBUG
+from testcase import CT_REST_PAGE_SIZE
+from testcase import CT_REST_SUCCESS
+from testcase import CT_TIMEOUT
+from testcase import REDACTED
 from testcase import find_by_prop
 
 
@@ -74,9 +82,7 @@ class TestConfiguration(TestCase):
         result = self.run_cli(cmd_env, set_cmd + f"'{prof_name}'")
         self.assertResultWarning(result, f"Nothing to change for profile '{prof_name}'")
 
-        result = self.run_cli(cmd_env, list_cmd + "-svf json")
-        self.assertResultSuccess(result)
-        profiles = eval(result.out()).get("profile")
+        profiles = self.get_cli_entries(cmd_env, list_cmd + "-svf json", "profile")
         prof = [p for p in profiles if p.get("Name") == prof_name][0]
         self.assertEqual(api_key1, prof.get("API"))
         self.assertEqual(env1, prof.get("Environment"))
@@ -156,9 +162,7 @@ class TestConfiguration(TestCase):
         self.assertIn(prof_name, result.out())
 
         # check the "all" parameters
-        result = self.run_cli(cmd_env, curr_cmd + "-sf json")
-        self.assertResultSuccess(result)
-        profile = eval(result.out()).get("profile")
+        profile = self.get_cli_entries(cmd_env, curr_cmd + "-sf json", "profile")
         this_profile = f"profile ({prof_name})"
         param_names = [e.get("Parameter") for e in profile]
         expected = ["Profile", "API key", "Organization", "User", "Role", "Project", "Environment"]
@@ -193,12 +197,47 @@ class TestConfiguration(TestCase):
         self.assertEqual(entry.get("Source"), "")
 
         ##############################
+        # extended version
+        cmd_env[CT_REST_SUCCESS] = "a,b,c,d"
+        cmd_env[CT_REST_DEBUG] = "false"
+        cmd_env[CT_REST_PAGE_SIZE] = "9"
+        cmd_env[CT_TIMEOUT] = "33"
+        profile = self.get_cli_entries(cmd_env, curr_cmd + "-xsf json", "profile")
+        this_profile = f"profile ({prof_name})"
+        param_names = [e.get("Parameter") for e in profile]
+        extended = [
+            "Profile", "API key", "Organization", "User", "Role", "Project", "Environment",
+            "CLI version", "Server URL", "Request timeout", "REST debug", "REST success",
+            "REST page size",
+        ]
+        self.assertEqual(param_names, extended)
+
+        entry = find_by_prop(profile, "Parameter", "REST debug")[0]
+        self.assertEqual(entry.get("Value"), "false")
+        self.assertEqual(entry.get("Source"), "shell")
+
+        entry = find_by_prop(profile, "Parameter", "REST success")[0]
+        self.assertEqual(entry.get("Value"), "a, b, c, d")
+        self.assertEqual(entry.get("Source"), "shell")
+
+        entry = find_by_prop(profile, "Parameter", "REST page size")[0]
+        self.assertEqual(entry.get("Value"), "9")
+        self.assertEqual(entry.get("Source"), "shell")
+
+        entry = find_by_prop(profile, "Parameter", "Request timeout")[0]
+        self.assertEqual(entry.get("Value"), "33")
+        self.assertEqual(entry.get("Source"), "shell")
+
+        cmd_env.pop(CT_REST_SUCCESS)
+        cmd_env.pop(CT_REST_DEBUG)
+        cmd_env.pop(CT_REST_PAGE_SIZE)
+        cmd_env.pop(CT_TIMEOUT)
+
+        ##############################
         # test with command line arguments
         bogus_api_key = "not-a-real-api-key"
         cmd = base_cmd + f"--api-key '{bogus_api_key}' --profile '{prof_name}' conf curr -sf json"
-        result = self.run_cli(cmd_env, cmd)
-        self.assertResultSuccess(result)
-        profile = eval(result.out()).get("profile")
+        profile = self.get_cli_entries(cmd_env, cmd, "profile")
 
         entry = find_by_prop(profile, "Parameter", "API key")[0]
         self.assertEqual(entry.get("Value"), bogus_api_key)
@@ -237,9 +276,7 @@ class TestConfiguration(TestCase):
         ##############################
         # back to the original user values  -- do not show secrets
         cmd_env = self.get_cmd_env()
-        result = self.run_cli(cmd_env, base_cmd + "conf curr -f json")
-        self.assertResultSuccess(result)
-        profile = eval(result.out()).get("profile")
+        profile = self.get_cli_entries(cmd_env, base_cmd + "conf curr -f json", "profile")
         entry = find_by_prop(profile, "Parameter", "API key")[0]
         self.assertEqual(entry.get("Value"), REDACTED)
         entry = find_by_prop(profile, "Parameter", "Organization")[0]

@@ -20,6 +20,7 @@ pub struct Configuration {
     pub bearer_access_token: Option<String>,
     pub api_key: Option<ApiKey>,
     pub rest_debug: bool,
+    pub rest_success: Vec<String>,
     pub rest_page_size: Option<i32>,
     // TODO: take an oauth2 token source, similar to the go one
 }
@@ -36,6 +37,12 @@ impl Configuration {
     pub fn new() -> Configuration {
         Configuration::default()
     }
+
+    pub fn debug_success(&self, func_name: &str) -> bool {
+        self.rest_debug
+            && (self.rest_success.contains(&func_name.to_string())
+                || self.rest_success.contains(&"all".to_string()))
+    }
 }
 
 impl Default for Configuration {
@@ -49,6 +56,7 @@ impl Default for Configuration {
             bearer_access_token: None,
             api_key: None,
             rest_debug: false,
+            rest_success: vec![],
             rest_page_size: None,
         }
     }

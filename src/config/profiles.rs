@@ -15,6 +15,8 @@ pub struct Profile {
     pub request_timeout: Option<u64>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub rest_debug: Option<bool>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub rest_success: Vec<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub rest_page_size: Option<i32>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -35,6 +37,7 @@ pub struct ProfileDetails {
     pub server_url: Option<String>,
     pub request_timeout: Option<String>,
     pub rest_debug: Option<bool>,
+    pub rest_success: Vec<String>,
     pub rest_page_size: Option<i32>,
 }
 
@@ -49,6 +52,7 @@ impl Default for Profile {
             server_url: None,
             source_profile: None,
             rest_debug: None,
+            rest_success: vec![],
             rest_page_size: None,
         }
     }
@@ -80,6 +84,11 @@ impl Profile {
             project: other.project.clone().or_else(|| self.project.clone()),
             request_timeout: other.request_timeout.or(self.request_timeout),
             rest_debug: other.rest_debug.or(self.rest_debug),
+            rest_success: if !other.rest_success.is_empty() {
+                other.rest_success.clone()
+            } else {
+                self.rest_success.clone()
+            },
             rest_page_size: other.rest_page_size.or(self.rest_page_size),
             server_url: other.server_url.clone().or_else(|| self.server_url.clone()),
             source_profile: self.source_profile.clone(),
@@ -95,6 +104,7 @@ impl Profile {
             project: empty_to_none(&self.project),
             request_timeout: self.request_timeout,
             rest_debug: self.rest_debug,
+            rest_success: self.rest_success.clone(),
             rest_page_size: self.rest_page_size,
             server_url: empty_to_none(&self.server_url),
             source_profile: empty_to_none(&self.source_profile),
@@ -117,6 +127,7 @@ impl Profile {
 #[cfg(test)]
 mod tests {
     use crate::config::profiles::Profile;
+    use indoc::indoc;
 
     #[test]
     fn merged_values_take_priority() {
@@ -131,6 +142,7 @@ mod tests {
             project: Some("skunkworks".to_string()),
             request_timeout: Some(100),
             rest_debug: Some(true),
+            rest_success: vec!["proj".to_string(), "env".to_string()],
             server_url: Some("http://localhost:7001/graphql".to_string()),
             ..Profile::default()
         };
@@ -147,6 +159,7 @@ mod tests {
             project: Some("skunkworks".to_string()),
             request_timeout: Some(23),
             rest_debug: Some(false),
+            rest_success: vec!["proj".to_string(), "env".to_string()],
             rest_page_size: Some(500),
             server_url: Some("http://localhost:7001/graphql".to_string()),
             ..Profile::default()
@@ -222,6 +235,7 @@ mod tests {
             project: Some("".to_string()),
             request_timeout: None,
             rest_debug: None,
+            rest_success: vec![],
             rest_page_size: None,
             server_url: Some("".to_string()),
             source_profile: Some("".to_string()),
@@ -238,11 +252,84 @@ mod tests {
             project: Some("proj".to_string()),
             request_timeout: None,
             rest_debug: None,
+            rest_success: vec![],
             rest_page_size: None,
             server_url: Some("url".to_string()),
             source_profile: Some("src-prof".to_string()),
         };
         let prof2 = prof.remove_empty();
         assert_eq!(prof, prof2);
+    }
+
+    #[test]
+    fn profile_serialize() {
+        let mut prof = Profile::default();
+        let expected = indoc!(
+            r#"
+        ---
+        {}
+        "#
+        );
+        let result = serde_yaml::to_string(&prof).unwrap();
+        assert_eq!(&result, expected);
+
+        prof.project = Some("my-proj".to_string());
+        let expected = indoc!(
+            r#"
+        ---
+        project: my-proj
+        "#
+        );
+        let result = serde_yaml::to_string(&prof).unwrap();
+        assert_eq!(&result, expected);
+
+        prof.rest_debug = Some(true);
+        let expected = indoc!(
+            r#"
+        ---
+        project: my-proj
+        rest_debug: true
+        "#
+        );
+        let result = serde_yaml::to_string(&prof).unwrap();
+        assert_eq!(&result, expected);
+
+        prof.rest_debug = Some(false);
+        let expected = indoc!(
+            r#"
+        ---
+        project: my-proj
+        rest_debug: false
+        "#
+        );
+        let result = serde_yaml::to_string(&prof).unwrap();
+        assert_eq!(&result, expected);
+
+        prof.rest_success.push("sna".to_string());
+        let expected = indoc!(
+            r#"
+        ---
+        project: my-proj
+        rest_debug: false
+        rest_success:
+          - sna
+        "#
+        );
+        let result = serde_yaml::to_string(&prof).unwrap();
+        assert_eq!(&result, expected);
+
+        prof.rest_success.push("bar".to_string());
+        let expected = indoc!(
+            r#"
+        ---
+        project: my-proj
+        rest_debug: false
+        rest_success:
+          - sna
+          - bar
+        "#
+        );
+        let result = serde_yaml::to_string(&prof).unwrap();
+        assert_eq!(&result, expected);
     }
 }

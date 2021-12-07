@@ -337,6 +337,10 @@ pub fn projects_create(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         serde_json::from_str(&local_var_content)
             .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
@@ -402,6 +406,10 @@ pub fn projects_destroy(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         Ok(())
     } else {
         let local_var_entity: Option<ProjectsDestroyError> =
@@ -495,6 +503,10 @@ pub fn projects_list(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         serde_json::from_str(&local_var_content)
             .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
@@ -619,6 +631,10 @@ pub fn projects_parameter_export_list(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         serde_json::from_str(&local_var_content)
             .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
@@ -690,6 +706,10 @@ pub fn projects_parameters_create(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         serde_json::from_str(&local_var_content)
             .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
@@ -761,6 +781,10 @@ pub fn projects_parameters_destroy(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         Ok(())
     } else {
         let local_var_entity: Option<ProjectsParametersDestroyError> =
@@ -893,6 +917,10 @@ pub fn projects_parameters_list(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         serde_json::from_str(&local_var_content)
             .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
@@ -966,6 +994,10 @@ pub fn projects_parameters_partial_update(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         serde_json::from_str(&local_var_content)
             .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
@@ -1062,6 +1094,10 @@ pub fn projects_parameters_pushes_list(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         serde_json::from_str(&local_var_content)
             .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
@@ -1172,6 +1208,10 @@ pub fn projects_parameters_retrieve(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         serde_json::from_str(&local_var_content)
             .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
@@ -1245,6 +1285,10 @@ pub fn projects_parameters_rules_create(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         serde_json::from_str(&local_var_content)
             .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
@@ -1318,6 +1362,10 @@ pub fn projects_parameters_rules_destroy(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         Ok(())
     } else {
         let local_var_entity: Option<ProjectsParametersRulesDestroyError> =
@@ -1408,6 +1456,10 @@ pub fn projects_parameters_rules_list(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         serde_json::from_str(&local_var_content)
             .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
@@ -1483,6 +1535,10 @@ pub fn projects_parameters_rules_partial_update(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         serde_json::from_str(&local_var_content)
             .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
@@ -1556,6 +1612,10 @@ pub fn projects_parameters_rules_retrieve(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         serde_json::from_str(&local_var_content)
             .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
@@ -1631,6 +1691,10 @@ pub fn projects_parameters_rules_update(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         serde_json::from_str(&local_var_content)
             .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
@@ -1712,6 +1776,10 @@ pub fn projects_parameters_timeline_retrieve(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         serde_json::from_str(&local_var_content)
             .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
@@ -1791,6 +1859,10 @@ pub fn projects_parameters_timelines_retrieve(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         serde_json::from_str(&local_var_content)
             .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
@@ -1864,6 +1936,10 @@ pub fn projects_parameters_update(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         serde_json::from_str(&local_var_content)
             .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
@@ -1948,6 +2024,10 @@ pub fn projects_parameters_values_create(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         serde_json::from_str(&local_var_content)
             .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
@@ -2027,6 +2107,10 @@ pub fn projects_parameters_values_destroy(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         Ok(())
     } else {
         let local_var_entity: Option<ProjectsParametersValuesDestroyError> =
@@ -2152,6 +2236,10 @@ pub fn projects_parameters_values_list(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         serde_json::from_str(&local_var_content)
             .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
@@ -2238,6 +2326,10 @@ pub fn projects_parameters_values_partial_update(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         serde_json::from_str(&local_var_content)
             .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
@@ -2351,6 +2443,10 @@ pub fn projects_parameters_values_retrieve(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         serde_json::from_str(&local_var_content)
             .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
@@ -2437,6 +2533,10 @@ pub fn projects_parameters_values_update(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         serde_json::from_str(&local_var_content)
             .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
@@ -2504,6 +2604,10 @@ pub fn projects_partial_update(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         serde_json::from_str(&local_var_content)
             .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
@@ -2569,6 +2673,10 @@ pub fn projects_retrieve(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         serde_json::from_str(&local_var_content)
             .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
@@ -2660,6 +2768,10 @@ pub fn projects_template_preview_create(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         serde_json::from_str(&local_var_content)
             .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
@@ -2731,6 +2843,10 @@ pub fn projects_templates_create(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         serde_json::from_str(&local_var_content)
             .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
@@ -2802,6 +2918,10 @@ pub fn projects_templates_destroy(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         Ok(())
     } else {
         let local_var_entity: Option<ProjectsTemplatesDestroyError> =
@@ -2914,6 +3034,10 @@ pub fn projects_templates_list(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         serde_json::from_str(&local_var_content)
             .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
@@ -2987,6 +3111,10 @@ pub fn projects_templates_partial_update(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         serde_json::from_str(&local_var_content)
             .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
@@ -3082,6 +3210,10 @@ pub fn projects_templates_retrieve(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         serde_json::from_str(&local_var_content)
             .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
@@ -3168,6 +3300,10 @@ pub fn projects_templates_timeline_retrieve(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         serde_json::from_str(&local_var_content)
             .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
@@ -3252,6 +3388,10 @@ pub fn projects_templates_timelines_retrieve(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         serde_json::from_str(&local_var_content)
             .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
@@ -3325,6 +3465,10 @@ pub fn projects_templates_update(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         serde_json::from_str(&local_var_content)
             .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
@@ -3392,6 +3536,10 @@ pub fn projects_update(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
         serde_json::from_str(&local_var_content)
             .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
