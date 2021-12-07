@@ -10,15 +10,15 @@ pub struct ConfigEnv {}
 impl ConfigEnv {
     pub(crate) fn load_profile() -> Profile {
         Profile {
-            api_key: ConfigEnv::get_override(CT_API_KEY),
+            api_key: Self::get_override(CT_API_KEY),
             description: None,
-            environment: ConfigEnv::get_override(CT_ENVIRONMENT),
-            project: ConfigEnv::get_override(CT_PROJECT),
-            request_timeout: ConfigEnv::get_duration_override(),
-            rest_debug: ConfigEnv::get_rest_debug(),
-            rest_success: ConfigEnv::get_rest_success(),
-            rest_page_size: ConfigEnv::get_rest_page_size(),
-            server_url: ConfigEnv::get_override(CT_SERVER_URL),
+            environment: Self::get_override(CT_ENVIRONMENT),
+            project: Self::get_override(CT_PROJECT),
+            request_timeout: Self::get_duration_override(),
+            rest_debug: Self::get_rest_debug(),
+            rest_success: Self::get_rest_success(),
+            rest_page_size: Self::get_rest_page_size(),
+            server_url: Self::get_override(CT_SERVER_URL),
             source_profile: None,
         }
     }
@@ -60,7 +60,7 @@ impl ConfigEnv {
     }
 
     pub fn get_rest_page_size() -> Option<i32> {
-        match ConfigEnv::get_override(CT_REST_PAGE_SIZE) {
+        match Self::get_override(CT_REST_PAGE_SIZE) {
             Some(env_value) => match env_value.trim().parse() {
                 Ok(int_value) => Some(int_value),
                 _ => None,
