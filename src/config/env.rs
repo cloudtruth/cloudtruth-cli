@@ -1,7 +1,7 @@
 use crate::config::profiles::Profile;
 use crate::config::{
     CT_API_KEY, CT_ENVIRONMENT, CT_PROJECT, CT_REQ_TIMEOUT, CT_REST_DEBUG, CT_REST_PAGE_SIZE,
-    CT_SERVER_URL,
+    CT_REST_SUCCESS, CT_SERVER_URL,
 };
 use std::env;
 
@@ -16,6 +16,7 @@ impl ConfigEnv {
             project: ConfigEnv::get_override(CT_PROJECT),
             request_timeout: ConfigEnv::get_duration_override(),
             rest_debug: ConfigEnv::get_rest_debug(),
+            rest_success: ConfigEnv::get_rest_success(),
             rest_page_size: ConfigEnv::get_rest_page_size(),
             server_url: ConfigEnv::get_override(CT_SERVER_URL),
             source_profile: None,
@@ -34,7 +35,7 @@ impl ConfigEnv {
 
     pub fn get_duration_override() -> Option<u64> {
         let mut result = None;
-        if let Some(dur_str) = ConfigEnv::get_override(CT_REQ_TIMEOUT) {
+        if let Some(dur_str) = Self::get_override(CT_REQ_TIMEOUT) {
             if let Ok(dur_val) = dur_str.parse::<u64>() {
                 result = Some(dur_val);
             }
@@ -43,8 +44,19 @@ impl ConfigEnv {
     }
 
     pub fn get_rest_debug() -> Option<bool> {
-        ConfigEnv::get_override(CT_REST_DEBUG)
+        Self::get_override(CT_REST_DEBUG)
             .map(|e| matches!(e.to_lowercase().as_str(), "true" | "1" | "yes"))
+    }
+
+    pub fn get_rest_success() -> Vec<String> {
+        let mut result = vec![];
+        if let Some(env_str) = Self::get_override(CT_REST_SUCCESS) {
+            let items: Vec<&str> = env_str.split(',').collect();
+            for i in items {
+                result.push(i.trim().to_string());
+            }
+        }
+        result
     }
 
     pub fn get_rest_page_size() -> Option<i32> {
@@ -70,6 +82,8 @@ mod tests {
         env::remove_var(CT_REQ_TIMEOUT);
         env::remove_var(CT_SERVER_URL);
         env::remove_var(CT_REST_DEBUG);
+        env::remove_var(CT_REST_SUCCESS);
+        env::remove_var(CT_REST_PAGE_SIZE);
     }
 
     #[test]
@@ -94,6 +108,7 @@ mod tests {
         env::set_var(CT_REQ_TIMEOUT, "500");
         env::set_var(CT_SERVER_URL, "http://localhost:7001/graphql");
         env::set_var(CT_REST_DEBUG, "true");
+        env::set_var(CT_REST_SUCCESS, "sna,foo,bar");
 
         assert_eq!(
             Profile {
@@ -103,6 +118,7 @@ mod tests {
                 project: Some("skunkworks".to_string()),
                 request_timeout: Some(500),
                 rest_debug: Some(true),
+                rest_success: vec!["sna".to_string(), "foo".to_string(), "bar".to_string()],
                 rest_page_size: None,
                 server_url: Some("http://localhost:7001/graphql".to_string()),
                 source_profile: None
