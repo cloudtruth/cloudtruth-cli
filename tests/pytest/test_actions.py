@@ -848,7 +848,7 @@ class TestActions(TestCase):
         result = self.run_cli(cmd_env, create_import_cmd)
         self.assertResultSuccess(result)
 
-        # wait for the push to complete
+        # wait for the pull to complete
         def pull_success() -> bool:
             get_import_cmd = imp_cmd + f"get '{import_name}' -i '{integ_name}'"
             return self.success_with(cmd_env, get_import_cmd, "State: success")
@@ -892,6 +892,11 @@ class TestActions(TestCase):
         # update the tag
         result = self.run_cli(cmd_env, base_cmd + f"env tag set {env_name_a} {env_a_tag_name} --current")
         self.assertResultSuccess(result)
+
+        # wait for the tag update to update the push tasks
+        self.waitFor(more_push_steps)
+        entries = self.get_cli_entries(cmd_env, push_cmd + f"st {push_name} -f json", "action-push-task-step")
+        push_step_len = len(entries)
 
         # assign the project and environment/tag
         cmd = push_cmd + f"set {push_name} -i '{integ_name}' --project {proj_name2} --tag {tag_a}"
