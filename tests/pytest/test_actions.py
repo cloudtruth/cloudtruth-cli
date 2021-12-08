@@ -902,6 +902,14 @@ class TestActions(TestCase):
         self.assertResultSuccess(result)
         self.waitFor(more_push_steps)
 
+        # TODO: remove this block
+        print("RWP: wait")
+        time.sleep(60)
+        cmd = push_cmd + f"list -i '{integ_name}' -f json"
+        entries = self.get_cli_entries(cmd_env, cmd, "action-push")
+        print(f"RWP: # of push entries={len(entries)}")
+        print("RWP: done  waiting")
+
         ########################
         # change project data again
         self.delete_project(cmd_env, proj_name1)
