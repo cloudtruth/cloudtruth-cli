@@ -907,11 +907,6 @@ class TestActions(TestCase):
         self.assertResultSuccess(result)
         self.waitFor(more_push_steps)
 
-        # wait for the push update to update the push tasks
-        self.waitFor(more_push_steps)
-        entries = self.get_cli_entries(cmd_env, push_cmd + f"st {push_name} -f json", "action-push-task-step")
-        push_step_len = len(entries)
-
         ########################
         # change project data again
         self.delete_project(cmd_env, proj_name1)
@@ -925,9 +920,6 @@ class TestActions(TestCase):
         def more_pull_steps() -> bool:
             import_step_cmd = imp_cmd + f"task-steps {import_name} -f json"
             more_steps = self.get_cli_entries(cmd_env, import_step_cmd, "action-import-task-step")
-            update_steps = find_by_prop(more_steps, "Task", "pull updated")
-            success_steps = find_by_prop(update_steps, "Result", "SUCCESS ")
-            print(f"Update task steps: {len(update_steps)}, successful: {len(success_steps)}")
             return len(more_steps) > import_step_len and pull_success()
         self.waitFor(more_pull_steps)
 
