@@ -16,8 +16,7 @@ jobs:
       CLOUDTRUTH_TEST_FILTER: action_complete
 
       # these show the commands and the output from the commands
-      # CLOUDTRUTH_TEST_EXTRA_ARGS: --log-command --log-output
-      CLOUDTRUTH_TEST_EXTRA_ARGS:
+      CLOUDTRUTH_TEST_EXTRA_ARGS: --log-command --log-output
 
       # these are to run against staging
       CLOUDTRUTH_SERVER_URL: https://api.staging.cloudtruth.io

@@ -866,9 +866,6 @@ class TestActions(TestCase):
         validate_project2a()
         validate_project2b()
 
-        self.log_commands = True
-        self.log_output = True
-
         ########################
         # project2 was restored, it does not have the same id, so is no longer associated
         cmd = push_cmd + f"list -i '{integ_name}' -f json"
