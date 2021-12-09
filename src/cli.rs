@@ -205,7 +205,7 @@ fn api_key_arg() -> Arg<'static, 'static> {
         .takes_value(true)
 }
 
-fn raw_template_arg() -> Arg<'static, 'static> {
+fn raw_arg() -> Arg<'static, 'static> {
     Arg::with_name(RAW_FLAG).short("r").long("raw")
 }
 
@@ -510,7 +510,8 @@ pub fn build_cli() -> App<'static, 'static> {
                             .takes_value(true)
                             .help("Integration FQN"))
                         .arg(table_format_options().help("Format integration values data."))
-                        .arg(values_flag().help("Display integration values")),
+                        .arg(values_flag().help("Display integration values"))
+                        .arg(raw_arg().help("Display raw file content (if only one file)")),
                     SubCommand::with_name(GET_SUBCMD)
                         .about("Gets all the information for the specified integration")
                         .arg(integration_name_arg()),
@@ -756,7 +757,7 @@ pub fn build_cli() -> App<'static, 'static> {
                         .default_value("3")
                         .help("Number of lines of difference context"))
                     .arg(secrets_display_flag().help("Compare evaluated secret values"))
-                    .arg(raw_template_arg().help("Compare unevaluated template bodies"))
+                    .arg(raw_arg().help("Compare unevaluated template bodies"))
                     .arg(multi_env_name_arg())
                     .arg(as_of_arg().multiple(true).help("Up to two times to be compared"))
                     .about("Show differences between templates"),
@@ -766,7 +767,7 @@ pub fn build_cli() -> App<'static, 'static> {
                     .arg(name_arg().help("Template name")),
                 SubCommand::with_name(GET_SUBCMD)
                     .about("Get an evaluated template from CloudTruth")
-                    .arg(raw_template_arg().help("Display unevaluated template body"))
+                    .arg(raw_arg().help("Display unevaluated template body"))
                     .arg(as_of_arg().help(" Date/time (or tag) of template (and parameters)"))
                     .arg(secrets_display_flag().help("Display secret values in evaluation"))
                     .arg(name_arg().help("Template name")),
