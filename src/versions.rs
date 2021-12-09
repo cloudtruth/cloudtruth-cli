@@ -1,3 +1,4 @@
+use crate::cli::GET_SUBCMD;
 use crate::installation::{binary_version, get_latest_version, install_latest_version};
 use crate::{error_message, warn_missing_subcommand, warning_message};
 use clap::ArgMatches;
@@ -52,9 +53,23 @@ fn proc_version_install(subcmd_args: &ArgMatches) -> Result<()> {
     Ok(())
 }
 
+fn proc_version_get(subcmd_args: &ArgMatches) -> Result<()> {
+    let latest = subcmd_args.is_present("latest");
+    if latest {
+        let ver = get_latest_version();
+        println!("Latest CLI version {}", ver);
+    } else {
+        let ver = binary_version();
+        println!("Current CLI version {}", ver)
+    }
+    Ok(())
+}
+
 pub fn process_version_command(subcmd_args: &ArgMatches) -> Result<()> {
     if let Some(subcmd_args) = subcmd_args.subcommand_matches("check") {
         proc_version_check(subcmd_args)?;
+    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(GET_SUBCMD) {
+        proc_version_get(subcmd_args)?;
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("install") {
         proc_version_install(subcmd_args)?;
     } else {

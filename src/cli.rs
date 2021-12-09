@@ -1126,9 +1126,15 @@ pub fn build_cli() -> App<'static, 'static> {
             ])
         )
         .subcommand(SubCommand::with_name("versions")
-            .visible_aliases(&["version", "vers", "ver", "v"])
+            .visible_aliases(&["version", "vers", "ver", "ve", "v"])
             .about("Manage CloudTruth CLI versions")
             .subcommands([
+                SubCommand::with_name(GET_SUBCMD)
+                    .arg(Arg::with_name("latest")
+                        .short("l")
+                        .long("latest")
+                        .help("Get the latest CLI version from the server"))
+                    .about("Get the running CLI version"),
                 SubCommand::with_name("check")
                     .visible_aliases(&["ch", "c"])
                     .about("Check the CLI is running the latest version")
