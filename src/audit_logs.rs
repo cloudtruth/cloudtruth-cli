@@ -8,20 +8,21 @@ use indoc::printdoc;
 use std::process;
 
 const OBJECT_TYPE_VALUES: &[&str] = &[
-    "Aws",
+    "AwsIntegration",
     "Environment",
-    "Github",
+    "GitHubIntegration",
     "Invitation",
     "Membership",
     "Organization",
     "Parameter",
-    "Rule",
+    "ParameterRule",
+    "ParameterType",
     "Project",
     "Pull",
     "Push",
     "ServiceAccount",
     "Tag",
-    "Task",
+    "Task", // FIXME: this should be in the OpenAPI spec (currently is not)
     "Template",
     "Value",
 ];

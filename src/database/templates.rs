@@ -283,6 +283,7 @@ impl Templates {
             Some(env_name),
             Some(!show_secrets),
             tag.as_deref(),
+            None,
         );
         match response {
             Ok(r) => Ok(r.body),
