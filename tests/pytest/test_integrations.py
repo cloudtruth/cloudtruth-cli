@@ -88,7 +88,7 @@ class TestIntegrations(TestCase):
         self.delete_project(cmd_env, proj_name)
 
     @unittest.skipIf(missing_any(CT_EXPLORE_RUN), "Need all CT_EXPLORE_RUN parameters")
-    def test_integration_explore(self):
+    def test_integration_explore_success(self):
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
 

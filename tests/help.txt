@@ -684,6 +684,7 @@ USAGE:
 FLAGS:
     -h, --help       Prints help information
     -r, --raw        Display raw file content (if only one file)
+    -s, --secrets    Display raw values, even if secret
     -v, --values     Display integration values
     -V, --version    Prints version information
 

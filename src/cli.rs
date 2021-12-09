@@ -511,7 +511,8 @@ pub fn build_cli() -> App<'static, 'static> {
                             .help("Integration FQN"))
                         .arg(table_format_options().help("Format integration values data."))
                         .arg(values_flag().help("Display integration values"))
-                        .arg(raw_arg().help("Display raw file content (if only one file)")),
+                        .arg(raw_arg().help("Display raw file content (if only one file)"))
+                        .arg(secrets_display_flag().help("Display raw values, even if secret")),
                     SubCommand::with_name(GET_SUBCMD)
                         .about("Gets all the information for the specified integration")
                         .arg(integration_name_arg()),

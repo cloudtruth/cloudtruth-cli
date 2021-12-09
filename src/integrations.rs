@@ -1,5 +1,5 @@
 use crate::cli::{
-    show_values, FORMAT_OPT, GET_SUBCMD, INTEGRATION_NAME_ARG, LIST_SUBCMD, RAW_FLAG,
+    show_values, FORMAT_OPT, GET_SUBCMD, INTEGRATION_NAME_ARG, LIST_SUBCMD, RAW_FLAG, SECRETS_FLAG,
     SHOW_TIMES_FLAG,
 };
 use crate::database::{Integrations, OpenApiConfig};
@@ -21,6 +21,7 @@ fn proc_integ_explore(
 ) -> Result<()> {
     let fqn = subcmd_args.value_of("FQN");
     let show_raw = subcmd_args.is_present(RAW_FLAG);
+    let show_secrets = subcmd_args.is_present(SECRETS_FLAG);
     let show_values = show_values(subcmd_args);
     let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
     let nodes = integrations.get_integration_nodes(rest_cfg, fqn)?;
@@ -42,6 +43,8 @@ fn proc_integ_explore(
                 "Raw content only works for a single file -- specified FQN is {} type.",
                 nodes[0].node_type.to_lowercase()
             ));
+        } else if nodes[0].secret && !show_secrets {
+            warning_message("Must specify --secrets to display secret content".to_string());
         } else {
             println!("{}", &nodes[0].content_data);
         }
