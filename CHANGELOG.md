@@ -1,6 +1,14 @@
-# x.x.x - 2021-12-xx
+# 1.1.2 - 2021-12-10
 
 * Add `Organization` to `user current`, and `config current` displays.
+* Add `versions` commands to display, check, and install the latest CLI version.
+* Enhanced `integrations explore` command with `--raw`, and `--secrets` options.
+* Add configurable version checking
+  * Defaults to checking once a week, and warning when running an older CLI version
+  * Checks can be disabled, or stop CLI execution when running an older CLI version
+* Added ability to see specific successful response types using `CLOUDTRUTH_REST_SUCCESS` when
+  `CLOUDTRUTH_REST_DEBUG` is enabled.
+* Updated to Rust 1.57.0.
 
 # 1.1.1 - 2021-11-24
 
