@@ -88,7 +88,7 @@ class TestIntegrations(TestCase):
         self.delete_project(cmd_env, proj_name)
 
     @unittest.skipIf(missing_any(CT_EXPLORE_RUN), "Need all CT_EXPLORE_RUN parameters")
-    def test_integration_explore(self):
+    def test_integration_explore_success(self):
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
 
@@ -131,6 +131,14 @@ class TestIntegrations(TestCase):
         result = self.run_cli(cmd_env, explore_cmd + f"'{explore_path}'")
         self.assertResultSuccess(result)
         self.assertIn(expected, result.out())
+
+        # verify that we get a warning when trying to display --raw for a file
+        result = self.run_cli(cmd_env, explore_cmd + f"'{base_fqn}' -r")
+        self.assertResultWarning(result, "Raw content only works for a single file")
+
+        # cannot verify output, but the --raw option should be successful (and nothing in stderr)
+        result = self.run_cli(cmd_env, explore_cmd + f"'{explore_path}' --raw")
+        self.assertResultSuccess(result)
 
     @unittest.skipIf(missing_any(CT_PARAM_RUN), "Need all CT_PARAM_RUN parameters")
     def test_integration_parameters(self):

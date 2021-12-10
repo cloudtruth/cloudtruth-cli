@@ -1,9 +1,10 @@
 use crate::cli::{
-    show_values, FORMAT_OPT, GET_SUBCMD, INTEGRATION_NAME_ARG, LIST_SUBCMD, SHOW_TIMES_FLAG,
+    show_values, FORMAT_OPT, GET_SUBCMD, INTEGRATION_NAME_ARG, LIST_SUBCMD, RAW_FLAG, SECRETS_FLAG,
+    SHOW_TIMES_FLAG,
 };
 use crate::database::{Integrations, OpenApiConfig};
 use crate::table::Table;
-use crate::{error_message, warn_missing_subcommand};
+use crate::{error_message, warn_missing_subcommand, warning_message};
 use clap::ArgMatches;
 use color_eyre::eyre::Result;
 use indoc::printdoc;
@@ -19,6 +20,8 @@ fn proc_integ_explore(
     integrations: &Integrations,
 ) -> Result<()> {
     let fqn = subcmd_args.value_of("FQN");
+    let show_raw = subcmd_args.is_present(RAW_FLAG);
+    let show_secrets = subcmd_args.is_present(SECRETS_FLAG);
     let show_values = show_values(subcmd_args);
     let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
     let nodes = integrations.get_integration_nodes(rest_cfg, fqn)?;
@@ -28,6 +31,22 @@ fn proc_integ_explore(
             error_message(format!("Nothing found for FQN '{}'!", fqn));
         } else {
             error_message("No integrations found.".to_string());
+        }
+    } else if show_raw {
+        if nodes.len() > 1 {
+            warning_message(format!(
+                "Raw content only works for a single file -- specified FQN has {} nodes.",
+                nodes.len()
+            ));
+        } else if nodes[0].node_type != "File" {
+            warning_message(format!(
+                "Raw content only works for a single file -- specified FQN is {} type.",
+                nodes[0].node_type.to_lowercase()
+            ));
+        } else if nodes[0].secret && !show_secrets {
+            warning_message("Must specify --secrets to display secret content".to_string());
+        } else {
+            println!("{}", &nodes[0].content_data);
         }
     } else if !show_values {
         for node in nodes {
