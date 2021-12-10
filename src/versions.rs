@@ -22,7 +22,12 @@ fn proc_version_check(subcmd_args: &ArgMatches) -> Result<()> {
         }
         process::exit(45)
     } else if !quiet {
-        println!("Running latest {}", latest_ver);
+        let ver = if bin_ver > latest_ver {
+            format!("{} (future)", bin_ver)
+        } else {
+            latest_ver.to_string()
+        };
+        println!("Running latest {}", ver);
     }
 
     Ok(())
@@ -38,7 +43,7 @@ fn proc_version_install(subcmd_args: &ArgMatches) -> Result<()> {
     if !install {
         let latest_str = get_latest_version();
         let latest_ver = Version::from(&latest_str).unwrap();
-        install = latest_ver != bin_ver;
+        install = latest_ver > bin_ver;
     }
 
     if install {
