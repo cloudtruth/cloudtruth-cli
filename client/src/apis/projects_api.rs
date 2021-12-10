@@ -40,6 +40,7 @@ pub enum ProjectsListError {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum ProjectsParameterExportListError {
+    Status422(crate::models::TemplateLookupError),
     UnknownValue(serde_json::Value),
 }
 
@@ -2706,6 +2707,7 @@ pub fn projects_template_preview_create(
     environment: Option<&str>,
     mask_secrets: Option<bool>,
     tag: Option<&str>,
+    template: Option<&str>,
 ) -> Result<crate::models::TemplatePreview, Error<ProjectsTemplatePreviewCreateError>> {
     let local_var_client = &configuration.client;
 
@@ -2731,6 +2733,10 @@ pub fn projects_template_preview_create(
     }
     if let Some(ref local_var_str) = tag {
         local_var_req_builder = local_var_req_builder.query(&[("tag", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = template {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("template", &local_var_str.to_string())]);
     }
     if let Some(ref local_var_user_agent) = configuration.user_agent {
         local_var_req_builder =

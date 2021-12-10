@@ -185,10 +185,12 @@ impl Parameters {
         );
         match response {
             Ok(export) => Ok(Some(export.body)),
-            // TODO: once fixed in schema, should create ParameterError::EvaluationError with the TemplateLookupError
-            Err(ResponseError(ref content)) => {
-                Err(response_error(&content.status, &content.content))
-            }
+            Err(ResponseError(ref content)) => match &content.entity {
+                Some(ProjectsParameterExportListError::Status422(tle)) => {
+                    Err(ParameterError::TemplateEvalError(tle.clone()))
+                }
+                _ => Err(response_error(&content.status, &content.content)),
+            },
             Err(e) => Err(ParameterError::UnhandledError(e.to_string())),
         }
     }

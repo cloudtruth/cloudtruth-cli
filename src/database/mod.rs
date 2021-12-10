@@ -86,7 +86,7 @@ pub use resolver::Resolver;
 pub use task_detail::TaskDetail;
 pub use task_steps::TaskStep;
 pub use template_details::TemplateDetails;
-pub use template_error::TemplateError;
+pub use template_error::{template_eval_errors, TemplateError};
 pub use template_history::TemplateHistory;
 pub use templates::Templates;
 pub use user_details::UserDetails;

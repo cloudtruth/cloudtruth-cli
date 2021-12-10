@@ -4900,6 +4900,16 @@
                             }
                         },
                         "description": ""
+                    },
+                    "422": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TemplateLookupError"
+                                }
+                            }
+                        },
+                        "description": ""
                     }
                 }
             }
@@ -6742,6 +6752,14 @@
                             "type": "string"
                         },
                         "description": "Specify a tag to retrieve configuration from.  Cannot be specified with `as_of`."
+                    },
+                    {
+                        "in": "query",
+                        "name": "template",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "ID of the template parameter being previewed.  If not specified, this is assumed to be a not-yet-created parameter."
                     }
                 ],
                 "tags": [
@@ -9253,6 +9271,7 @@
                     "Organization",
                     "Parameter",
                     "ParameterRule",
+                    "ParameterType",
                     "Project",
                     "Pull",
                     "Push",
