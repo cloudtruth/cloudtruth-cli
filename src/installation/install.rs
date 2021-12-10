@@ -13,7 +13,9 @@ pub fn install_latest_version(quiet: bool) -> Result<(), InstallError> {
     match result {
         Ok(output) => {
             if !quiet {
-                io::stdout().write_all(output.stdout().unwrap().as_bytes())?;
+                if let Some(stdout_str) = output.stdout() {
+                    io::stdout().write_all(stdout_str.as_bytes())?;
+                }
             }
             Ok(())
         }
