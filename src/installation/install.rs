@@ -7,28 +7,35 @@ use std::str;
 use tempfile::tempdir;
 
 #[cfg(target_os = "windows")]
-const INSTALL_TEXT: &[u8] = include_bytes!("../../install.ps1");
-
-#[cfg(not(target_os = "windows"))]
-const INSTALL_TEXT: &[u8] = include_bytes!("../../install.sh");
-
-#[cfg(target_os = "windows")]
-const EXTENSION: &str = "ps1";
-
-#[cfg(not(target_os = "windows"))]
-const EXTENSION: &str = "sh";
-
 pub fn install_latest_version(quiet: bool) -> Result<(), InstallError> {
-    let filename = format!("cloudtruth-cli-install-{}.{}", binary_version(), EXTENSION);
+    let text = include_str!("../../install.ps1");
+    let result = powershell_script::run(text, false);
+    match result {
+        Ok(output) => {
+            if !quiet {
+                if let Some(stdout_str) = output.stdout() {
+                    io::stdout().write_all(stdout_str.as_bytes())?;
+                }
+            }
+            Ok(())
+        }
+        Err(err) => Err(InstallError::InstallFailed(err.to_string())),
+    }
+}
+
+#[cfg(not(target_os = "windows"))]
+pub fn install_latest_version(quiet: bool) -> Result<(), InstallError> {
+    let filename = format!("cloudtruth-cli-install-{}.sh", binary_version());
     let tempdir = tempdir()?;
     let fullpath = tempdir.path().join(filename);
     let fullname = fullpath.to_str().unwrap();
+    let text = include_str!("../../install.sh");
 
     // write the install script to a file to a temporary directory
-    fs::write(fullname, INSTALL_TEXT)?;
-    if !cfg!(windows) {
-        let _ = Command::new("chmod").arg("a+x").arg(fullname).output();
-    }
+    fs::write(fullname, text)?;
+
+    // attempt the chmod, and hope for success -- ignore failure
+    let _ = Command::new("chmod").arg("a+x").arg(fullname).output();
 
     // now, actually run the installation script
     let result = Command::new(fullname).output();

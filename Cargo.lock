@@ -335,6 +335,7 @@ dependencies = [
  "hkdf",
  "indoc",
  "once_cell",
+ "powershell_script",
  "predicates 1.0.8",
  "prettytable-rs",
  "rand_core 0.6.3",
@@ -1454,6 +1455,12 @@ dependencies = [
  "opaque-debug",
  "universal-hash",
 ]
+
+[[package]]
+name = "powershell_script"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "36d62894f5590e88d99d0d82918742ba8e5bff1985af15d4906b6a65f635adb2"
 
 [[package]]
 name = "ppv-lite86"
