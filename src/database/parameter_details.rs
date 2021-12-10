@@ -76,7 +76,7 @@ impl ParameterDetails {
     pub fn set_value(&mut self, env_value: &Value) {
         self.val_id = env_value.id.clone();
         self.value = env_value.value.clone().unwrap_or_default();
-        self.env_url = env_value.environment.clone();
+        self.env_url = env_value.environment.replace("http://", "https://");
         self.external = env_value.external.unwrap_or(false);
         self.fqn = env_value.external_fqn.clone().unwrap_or_default();
         self.jmes_path = env_value.external_filter.clone().unwrap_or_default();
