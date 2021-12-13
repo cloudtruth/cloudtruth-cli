@@ -2003,6 +2003,11 @@ paths:
           type: string
           format: uri
         description: FQN (URL-like) for third-party integration.
+      - in: query
+        name: jmes
+        schema:
+          type: string
+        description: JMES-path qualifier (key within file)
       - name: ordering
         required: false
         in: query
@@ -6048,6 +6053,9 @@ components:
           type: boolean
         name:
           type: string
+        jmespath:
+          type: string
+          nullable: true
         content_type:
           type: string
           nullable: true
@@ -6194,6 +6202,7 @@ components:
       enum:
       - directory
       - file
+      - value
       type: string
     ObjectTypeEnum:
       enum:
@@ -6206,11 +6215,13 @@ components:
       - Parameter
       - ParameterRule
       - ParameterType
+      - ParameterTypeRule
       - Project
       - Pull
       - Push
       - ServiceAccount
       - Tag
+      - Task
       - Template
       - Value
       type: string

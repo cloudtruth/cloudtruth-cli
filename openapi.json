@@ -3155,6 +3155,14 @@
                         "description": "FQN (URL-like) for third-party integration."
                     },
                     {
+                        "in": "query",
+                        "name": "jmes",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "JMES-path qualifier (key within file)"
+                    },
+                    {
                         "name": "ordering",
                         "required": false,
                         "in": "query",
@@ -9062,6 +9070,10 @@
                     "name": {
                         "type": "string"
                     },
+                    "jmespath": {
+                        "type": "string",
+                        "nullable": true
+                    },
                     "content_type": {
                         "type": "string",
                         "nullable": true
@@ -9257,7 +9269,8 @@
             "NodeTypeEnum": {
                 "enum": [
                     "directory",
-                    "file"
+                    "file",
+                    "value"
                 ],
                 "type": "string"
             },
@@ -9272,11 +9285,13 @@
                     "Parameter",
                     "ParameterRule",
                     "ParameterType",
+                    "ParameterTypeRule",
                     "Project",
                     "Pull",
                     "Push",
                     "ServiceAccount",
                     "Tag",
+                    "Task",
                     "Template",
                     "Value"
                 ],

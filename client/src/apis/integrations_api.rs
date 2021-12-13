@@ -2634,6 +2634,7 @@ pub fn integrations_aws_update(
 pub fn integrations_explore_list(
     configuration: &configuration::Configuration,
     fqn: Option<&str>,
+    jmes: Option<&str>,
     ordering: Option<&str>,
     page: Option<i32>,
     page_size: Option<i32>,
@@ -2646,6 +2647,10 @@ pub fn integrations_explore_list(
 
     if let Some(ref local_var_str) = fqn {
         local_var_req_builder = local_var_req_builder.query(&[("fqn", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = jmes {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("jmes", &local_var_str.to_string())]);
     }
     if let Some(ref local_var_str) = ordering {
         local_var_req_builder =

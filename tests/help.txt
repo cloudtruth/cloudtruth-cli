@@ -22,7 +22,7 @@ SUBCOMMANDS:
     configuration    Configuration options for this application [aliases: config, conf, con, c]
     environments     Work with CloudTruth environments [aliases: environment, envs, env, e]
     help             Prints this message or the help of the given subcommand(s)
-    integrations     Work with CloudTruth integrations [aliases: integration, integrate, integ, int]
+    integrations     Work with CloudTruth integrations [aliases: integration, integrate, integ, int, in]
     login            Sets up a CloudTruth configuration profile api_key
     logout           Removes a CloudTruth configuration profile api_key
     parameters       Work with CloudTruth parameters [aliases: parameter, params, param, p]
@@ -689,7 +689,9 @@ FLAGS:
     -V, --version    Prints version information
 
 OPTIONS:
-    -f, --format <format>    Format integration values data. [default: table]  [possible values: table, csv, json, yaml]
+    -j, --jmes <jmes-path>    JMES path within FQN for external parameter
+    -f, --format <format>     Format integration values data. [default: table]  [possible values: table, csv, json,
+                              yaml]
 
 ARGS:
     <FQN>    Integration FQN
@@ -935,7 +937,7 @@ FLAGS:
 
 OPTIONS:
     -f, --fqn <FQN>              Fully Qualified Name (FQN) reference for external parameter.
-    -j, --jmes <JMES>            JMES path within FQN for external parameter
+    -j, --jmes <jmes-path>       JMES path within FQN for external parameter
         --max <MAX>              Set parameter rule maximum value
         --max-len <MAX-LEN>      Set parameter rule maximum length value
         --min <MIN>              Set parameter rule minimum value

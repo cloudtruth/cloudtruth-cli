@@ -15,6 +15,8 @@ pub enum NodeTypeEnum {
     Directory,
     #[serde(rename = "file")]
     File,
+    #[serde(rename = "value")]
+    Value,
 }
 
 impl ToString for NodeTypeEnum {
@@ -22,6 +24,7 @@ impl ToString for NodeTypeEnum {
         match self {
             Self::Directory => String::from("directory"),
             Self::File => String::from("file"),
+            Self::Value => String::from("value"),
         }
     }
 }

@@ -20,6 +20,8 @@ pub struct IntegrationExplorer {
     pub secret: Option<bool>,
     #[serde(rename = "name", skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
+    #[serde(rename = "jmespath", skip_serializing_if = "Option::is_none")]
+    pub jmespath: Option<String>,
     #[serde(rename = "content_type", skip_serializing_if = "Option::is_none")]
     pub content_type: Option<String>,
     #[serde(rename = "content_data", skip_serializing_if = "Option::is_none")]
@@ -38,6 +40,7 @@ impl IntegrationExplorer {
             node_type,
             secret: None,
             name: None,
+            jmespath: None,
             content_type: None,
             content_data: None,
             content_size: None,

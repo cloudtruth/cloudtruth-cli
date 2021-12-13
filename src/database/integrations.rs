@@ -32,6 +32,7 @@ fn binary_node(fqn: &str, name: &str, err_msg: &str) -> IntegrationNode {
         node_type: "FILE".to_owned(),
         secret: false,
         name: name.to_string(),
+        jmes_path: "".to_owned(),
         content_type: "application/binary".to_owned(),
         content_size: 0,
         content_data: err_msg.to_string(),
@@ -49,6 +50,7 @@ fn large_node(fqn: &str, name: &str, err_msg: &str) -> IntegrationNode {
         node_type: "FILE".to_owned(),
         secret: false,
         name: name.to_string(),
+        jmes_path: "".to_owned(),
         content_type: "".to_owned(),
         content_size: -1,
         content_data: err_msg.to_string(),
@@ -196,6 +198,7 @@ impl Integrations {
         &self,
         rest_cfg: &OpenApiConfig,
         fqn: Option<&str>,
+        jmes: Option<&str>,
     ) -> Result<Vec<IntegrationNode>, IntegrationError> {
         let mut results: Vec<IntegrationNode> = Vec::new();
         let page_count = 1;
@@ -203,6 +206,7 @@ impl Integrations {
             let response = integrations_explore_list(
                 rest_cfg,
                 fqn,
+                jmes,
                 NO_ORDERING,
                 Some(page_count),
                 page_size(rest_cfg),

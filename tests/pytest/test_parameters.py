@@ -2077,15 +2077,18 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
 
         #################
         # negative tests for bad rule types: --max, and --min
+        rule_type_mismatch = "Rule is not valid (type mismatch)"
 
         result = self.run_cli(cmd_env, set_cmd + "--max -10 --min -1")
         self.assertResultError(result, create_err_msg)
-        self.assertIn("max rules not valid for string parameters", result.err())
-        self.assertIn("min rules not valid for string parameters", result.err())
+        # self.assertIn("Rule is not valid (type mismatch)", result.err())
+        # self.assertIn("min rules not valid for string parameters", result.err())
+        self.assertIn(rule_type_mismatch, result.err())
 
         result = self.run_cli(cmd_env, set_cmd + "--max -10")
         self.assertResultError(result, create_err_msg)
-        self.assertIn("max rules not valid for string parameters", result.err())
+        # self.assertIn("max rules not valid for string parameters", result.err())
+        self.assertIn(rule_type_mismatch, result.err())
 
         result = self.run_cli(cmd_env, list_cmd)
         self.assertResultSuccess(result)
@@ -2101,7 +2104,8 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
 
         result = self.run_cli(cmd_env, set_cmd + "--type string --value 9 --max 10")
         self.assertResultError(result, create_err_msg)
-        self.assertIn("max rules not valid for string parameters", result.err())
+        # self.assertIn("max rules not valid for string parameters", result.err())
+        self.assertIn(rule_type_mismatch, result.err())
 
         result = self.run_cli(cmd_env, list_cmd)
         self.assertResultSuccess(result)
@@ -2273,15 +2277,19 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
 
         ################
         # negative tests for bad rule types: --max-len, --min-len, --regex
+        rule_type_mismatch = "Rule is not valid (type mismatch)"
+
         result = self.run_cli(cmd_env, set_cmd + "--max-len -10 --min-len -1 --regex 'abc.*'")
         self.assertResultError(result, create_err_msg)
-        self.assertIn("max-len rules not valid for integer parameters", result.err())
-        self.assertIn("min-len rules not valid for integer parameters", result.err())
-        self.assertIn("regex rules not valid for integer parameters", result.err())
+        # self.assertIn("max-len rules not valid for integer parameters", result.err())
+        # self.assertIn("min-len rules not valid for integer parameters", result.err())
+        # self.assertIn("regex rules not valid for integer parameters", result.err())
+        self.assertIn(rule_type_mismatch, result.err())
 
         result = self.run_cli(cmd_env, set_cmd + "--min-len 10")
         self.assertResultError(result, create_err_msg)
-        self.assertIn("min-len rules not valid for integer parameters", result.err())
+        # self.assertIn("min-len rules not valid for integer parameters", result.err())
+        self.assertIn(rule_type_mismatch, result.err())
 
         result = self.run_cli(cmd_env, list_cmd)
         self.assertResultSuccess(result)
@@ -2297,7 +2305,8 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
 
         result = self.run_cli(cmd_env, set_cmd + "--type integer --value 9 --max-len 100")
         self.assertResultError(result, create_err_msg)
-        self.assertIn("max-len rules not valid for integer parameters", result.err())
+        # self.assertIn("max-len rules not valid for integer parameters", result.err())
+        self.assertIn(rule_type_mismatch, result.err())
 
         result = self.run_cli(cmd_env, list_cmd)
         self.assertResultSuccess(result)
@@ -2335,18 +2344,21 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
 
         ################
         # negative tests for bad rule types: --max, --min, --max-len, --min-len, --regex
+        rule_type_mismatch = "Rule is not valid (type mismatch)"
 
         result = self.run_cli(cmd_env, set_cmd + "--max 100 --min 10 --max-len -10 --min-len -1 --regex 'abc.*'")
         self.assertResultError(result, create_err_msg)
-        self.assertIn("max rules not valid for bool parameters", result.err())
-        self.assertIn("min rules not valid for bool parameters", result.err())
-        self.assertIn("max-len rules not valid for bool parameters", result.err())
-        self.assertIn("min-len rules not valid for bool parameters", result.err())
-        self.assertIn("regex rules not valid for bool parameters", result.err())
+        # self.assertIn("max rules not valid for bool parameters", result.err())
+        # self.assertIn("min rules not valid for bool parameters", result.err())
+        # self.assertIn("max-len rules not valid for bool parameters", result.err())
+        # self.assertIn("min-len rules not valid for bool parameters", result.err())
+        # self.assertIn("regex rules not valid for bool parameters", result.err())
+        self.assertIn(rule_type_mismatch, result.err())
 
         result = self.run_cli(cmd_env, set_cmd + "--min-len 10")
         self.assertResultError(result, create_err_msg)
-        self.assertIn("min-len rules not valid for bool parameters", result.err())
+        # self.assertIn("min-len rules not valid for bool parameters", result.err())
+        self.assertIn(rule_type_mismatch, result.err())
 
         result = self.run_cli(cmd_env, list_cmd)
         self.assertResultSuccess(result)
@@ -2362,7 +2374,8 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
 
         result = self.run_cli(cmd_env, set_cmd + "--type bool --value true --max 10")
         self.assertResultError(result, create_err_msg)
-        self.assertIn("max rules not valid for bool parameters", result.err())
+        # self.assertIn("max rules not valid for bool parameters", result.err())
+        self.assertIn(rule_type_mismatch, result.err())
 
         result = self.run_cli(cmd_env, list_cmd)
         self.assertResultSuccess(result)

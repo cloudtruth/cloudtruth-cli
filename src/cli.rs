@@ -11,6 +11,7 @@ pub const ENV_NAME_ARG: &str = "env-name";
 pub const FORMAT_OPT: &str = "format";
 pub const INTEGRATION_NAME_ARG: &str = "integration-name";
 pub const INVITE_NAME_ARG: &str = "e-mail";
+pub const JMES_PATH_ARG: &str = "JMES";
 pub const KEY_ARG: &str = "KEY";
 pub const NAME_ARG: &str = "NAME";
 pub const PARENT_ARG: &str = "parent";
@@ -264,6 +265,15 @@ fn push_name_arg() -> Arg<'static, 'static> {
         .help("Push name")
 }
 
+fn jmes_path_arg() -> Arg<'static, 'static> {
+    Arg::with_name(JMES_PATH_ARG)
+        .short("j")
+        .long("jmes")
+        .takes_value(true)
+        .value_name("jmes-path")
+        .help("JMES path within FQN for external parameter")
+}
+
 fn environment_tag_validator(arg_value: String) -> Result<(), String> {
     let colons = arg_value.matches(':').count();
     match colons {
@@ -499,7 +509,7 @@ pub fn build_cli() -> App<'static, 'static> {
             .arg(confirm_flag()))
         .subcommand(
             SubCommand::with_name("integrations")
-                .visible_aliases(&["integration", "integrate", "integ", "int"])
+                .visible_aliases(&["integration", "integrate", "integ", "int", "in"])
                 .about("Work with CloudTruth integrations")
                 .subcommands(vec![
                     SubCommand::with_name("explore")
@@ -511,6 +521,7 @@ pub fn build_cli() -> App<'static, 'static> {
                             .help("Integration FQN"))
                         .arg(table_format_options().help("Format integration values data."))
                         .arg(values_flag().help("Display integration values"))
+                        .arg(jmes_path_arg())
                         .arg(raw_arg().help("Display raw file content (if only one file)"))
                         .arg(secrets_display_flag().help("Display raw values, even if secret")),
                     SubCommand::with_name(GET_SUBCMD)
@@ -625,11 +636,7 @@ pub fn build_cli() -> App<'static, 'static> {
                             .long("input")
                             .takes_value(true)
                             .help("Read the static value from the local input file"))
-                        .arg(Arg::with_name("JMES")
-                            .short("j")
-                            .long("jmes")
-                            .takes_value(true)
-                            .help("JMES path within FQN for external parameter"))
+                        .arg(jmes_path_arg())
                         .arg(Arg::with_name("prompt")
                             .short("p")
                             .long("prompt")

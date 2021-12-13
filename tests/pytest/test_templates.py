@@ -230,7 +230,7 @@ ANOTHER_PARAM=PARAM2
         body = base.replace("PARAM1", f"{{{{{no_param}}}}}").replace("PARAM2", f"{{{{{param2}}}}}")
         self.write_file(filename, body)
         result = self.run_cli(cmd_env, sub_cmd + f"preview {filename} --secrets")
-        self.assertResultError(result, "Template references parameter(s) that do not exist")
+        self.assertResultError(result, "references parameter(s) that do not exist")
         self.assertIn(no_param, result.err())
 
         # cleanup
