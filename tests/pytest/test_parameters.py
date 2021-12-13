@@ -2374,7 +2374,8 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
 
         result = self.run_cli(cmd_env, set_cmd + "--type bool --value true --max 10")
         self.assertResultError(result, create_err_msg)
-        self.assertIn("max rules not valid for bool parameters", result.err())
+        # self.assertIn("max rules not valid for bool parameters", result.err())
+        self.assertIn(rule_type_mismatch, result.err())
 
         result = self.run_cli(cmd_env, list_cmd)
         self.assertResultSuccess(result)
