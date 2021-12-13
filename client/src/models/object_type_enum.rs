@@ -29,6 +29,8 @@ pub enum ObjectTypeEnum {
     ParameterRule,
     #[serde(rename = "ParameterType")]
     ParameterType,
+    #[serde(rename = "ParameterTypeRule")]
+    ParameterTypeRule,
     #[serde(rename = "Project")]
     Project,
     #[serde(rename = "Pull")]
@@ -39,6 +41,8 @@ pub enum ObjectTypeEnum {
     ServiceAccount,
     #[serde(rename = "Tag")]
     Tag,
+    #[serde(rename = "Task")]
+    Task,
     #[serde(rename = "Template")]
     Template,
     #[serde(rename = "Value")]
@@ -57,11 +61,13 @@ impl ToString for ObjectTypeEnum {
             Self::Parameter => String::from("Parameter"),
             Self::ParameterRule => String::from("ParameterRule"),
             Self::ParameterType => String::from("ParameterType"),
+            Self::ParameterTypeRule => String::from("ParameterTypeRule"),
             Self::Project => String::from("Project"),
             Self::Pull => String::from("Pull"),
             Self::Push => String::from("Push"),
             Self::ServiceAccount => String::from("ServiceAccount"),
             Self::Tag => String::from("Tag"),
+            Self::Task => String::from("Task"),
             Self::Template => String::from("Template"),
             Self::Value => String::from("Value"),
         }

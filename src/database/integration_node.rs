@@ -4,6 +4,7 @@ use cloudtruth_restapi::models::IntegrationExplorer;
 #[derive(Debug)]
 pub struct IntegrationNode {
     pub fqn: String,
+    pub jmes_path: String,
     pub node_type: String,
     pub secret: bool,
     pub name: String,
@@ -25,6 +26,7 @@ impl From<&IntegrationExplorer> for IntegrationNode {
     fn from(node: &IntegrationExplorer) -> Self {
         IntegrationNode {
             fqn: node.fqn.clone(),
+            jmes_path: node.jmespath.clone().unwrap_or_default(),
             name: get_name(&node.name, &node.fqn),
             node_type: format!("{:?}", node.node_type),
             secret: node.secret.unwrap_or(false),

@@ -1,7 +1,7 @@
 use crate::cli::{
     binary_name, show_values, true_false_option, AS_OF_ARG, CONFIRM_FLAG, DELETE_SUBCMD,
-    DESCRIPTION_OPT, DIFF_SUBCMD, FORMAT_OPT, GET_SUBCMD, KEY_ARG, LIST_SUBCMD, PUSH_SUBCMD,
-    RENAME_OPT, SECRETS_FLAG, SET_SUBCMD, SHOW_TIMES_FLAG,
+    DESCRIPTION_OPT, DIFF_SUBCMD, FORMAT_OPT, GET_SUBCMD, JMES_PATH_ARG, KEY_ARG, LIST_SUBCMD,
+    PUSH_SUBCMD, RENAME_OPT, SECRETS_FLAG, SET_SUBCMD, SHOW_TIMES_FLAG,
 };
 use crate::config::DEFAULT_ENV_NAME;
 use crate::database::{
@@ -744,7 +744,7 @@ fn proc_param_set(
     let prompt_user = subcmd_args.is_present("prompt");
     let filename = subcmd_args.value_of("input-file");
     let fqn = subcmd_args.value_of("FQN");
-    let jmes_path = subcmd_args.value_of("JMES");
+    let jmes_path = subcmd_args.value_of(JMES_PATH_ARG);
     let mut value = subcmd_args.value_of("value");
     let val_str: String;
     let description = subcmd_args.value_of(DESCRIPTION_OPT);

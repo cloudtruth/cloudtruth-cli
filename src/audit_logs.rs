@@ -17,12 +17,13 @@ const OBJECT_TYPE_VALUES: &[&str] = &[
     "Parameter",
     "ParameterRule",
     "ParameterType",
+    "ParameterTypeRule",
     "Project",
     "Pull",
     "Push",
     "ServiceAccount",
     "Tag",
-    "Task", // FIXME: this should be in the OpenAPI spec (currently is not)
+    "Task",
     "Template",
     "Value",
 ];

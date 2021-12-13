@@ -1,6 +1,6 @@
 use crate::cli::{
-    show_values, FORMAT_OPT, GET_SUBCMD, INTEGRATION_NAME_ARG, LIST_SUBCMD, RAW_FLAG, SECRETS_FLAG,
-    SHOW_TIMES_FLAG,
+    show_values, FORMAT_OPT, GET_SUBCMD, INTEGRATION_NAME_ARG, JMES_PATH_ARG, LIST_SUBCMD,
+    RAW_FLAG, SECRETS_FLAG, SHOW_TIMES_FLAG,
 };
 use crate::database::{Integrations, OpenApiConfig};
 use crate::table::Table;
@@ -20,12 +20,14 @@ fn proc_integ_explore(
     integrations: &Integrations,
 ) -> Result<()> {
     let fqn = subcmd_args.value_of("FQN");
+    let jmes = subcmd_args.value_of(JMES_PATH_ARG);
     let show_raw = subcmd_args.is_present(RAW_FLAG);
     let show_secrets = subcmd_args.is_present(SECRETS_FLAG);
     let show_values = show_values(subcmd_args);
     let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
-    let nodes = integrations.get_integration_nodes(rest_cfg, fqn)?;
+    let nodes = integrations.get_integration_nodes(rest_cfg, fqn, jmes)?;
     let indent = "  ";
+    let raw_types: &[&str] = &["File", "Value"];
     if nodes.is_empty() {
         if let Some(fqn) = fqn {
             error_message(format!("Nothing found for FQN '{}'!", fqn));
@@ -38,7 +40,7 @@ fn proc_integ_explore(
                 "Raw content only works for a single file -- specified FQN has {} nodes.",
                 nodes.len()
             ));
-        } else if nodes[0].node_type != "File" {
+        } else if !raw_types.contains(&nodes[0].node_type.as_str()) {
             warning_message(format!(
                 "Raw content only works for a single file -- specified FQN is {} type.",
                 nodes[0].node_type.to_lowercase()
@@ -51,8 +53,13 @@ fn proc_integ_explore(
     } else if !show_values {
         for node in nodes {
             println!("{}", node.name);
+            let mut indent2 = indent.to_string();
+            if !node.jmes_path.is_empty() {
+                println!("{}{{{{ {} }}}}", indent, node.jmes_path);
+                indent2 = indent.repeat(2);
+            }
             for key in node.content_keys {
-                println!("{}{{{{ {} }}}}", indent, key);
+                println!("{}{{{{ {} }}}}", indent2, key);
             }
         }
     } else {
@@ -61,8 +68,14 @@ fn proc_integ_explore(
         for node in nodes {
             // add the node itself
             table.add_row(vec![node.name, node.fqn.clone()]);
+            let mut indent2 = indent.to_string();
+            if !node.jmes_path.is_empty() {
+                let jmes_name = format!("{}{{{{ {} }}}}", indent, node.jmes_path);
+                table.add_row(vec![jmes_name, node.fqn.clone()]);
+                indent2 = indent.repeat(2);
+            }
             for key in node.content_keys {
-                let entry_name = format!("{}{{{{ {} }}}}", indent, key);
+                let entry_name = format!("{}{{{{ {} }}}}", indent2, key);
                 table.add_row(vec![entry_name, node.fqn.clone()]);
             }
         }

@@ -127,8 +127,8 @@ class TestAuditLogs(TestCase):
         # just a basic thing to make sure our filters work
         for obj_type in [
             "AwsIntegration", "Environment", "GitHubIntegration", "Invitation", "Membership", "Organization",
-            "Parameter", "ParameterRule", "ParameterType", "Project", "Pull", "Push", "ServiceAccount", "Tag",
-            "Task", "Template", "Value"
+            "Parameter", "ParameterRule", "ParameterType", "ParameterTypeRule", "Project", "Pull", "Push",
+            "ServiceAccount", "Tag", "Task", "Template", "Value"
         ]:
             max_entries = 5
             entries = self.audit_entries(cmd_env, obj_type, max_entries=max_entries)
