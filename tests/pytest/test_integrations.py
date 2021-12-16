@@ -262,7 +262,6 @@ PARAMETER_2 = PARAM2
         self.delete_project(cmd_env, proj_name)
 
     @unittest.skipIf(missing_any(CT_BROKEN_RUN), "Need all CT_BROKEN_RUN parameters")
-    @unittest.skip("Waiting for partial_success fix")
     def test_integration_broken(self):
         # NOTE: this test is a bit different than the others because everything needs to exist
         base_cmd = self.get_cli_base_cmd()
@@ -288,7 +287,6 @@ PARAMETER_2 = PARAM2
         self.assertIn(temp_name, result.out())
 
         missing_fqn2 = f"The external content of `{fqn2}` is not present"
-        missing_fqn2 = f"An error occurred while retrieving content from `{fqn2}`: {missing_fqn2}"
         missing_param2 = f"{param2}: {missing_fqn2}"
 
         ##########################
