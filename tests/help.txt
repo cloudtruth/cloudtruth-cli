@@ -17,19 +17,19 @@ OPTIONS:
 
 SUBCOMMANDS:
     actions          Manage CloudTruth actions [aliases: action, act, ac]
-    audit-logs       Display audit logs [aliases: audit, aud, log, logs]
+    audit-logs       Display audit logs [aliases: audit, aud, au, log, logs]
     completions      Generate shell completions for this application
-    configuration    Configuration options for this application [aliases: config, conf, con, c]
+    configuration    Configuration options for this application [aliases: config, conf, con, co, c]
     environments     Work with CloudTruth environments [aliases: environment, envs, env, e]
     help             Prints this message or the help of the given subcommand(s)
     integrations     Work with CloudTruth integrations [aliases: integration, integrate, integ, int, in]
     login            Sets up a CloudTruth configuration profile api_key
     logout           Removes a CloudTruth configuration profile api_key
-    parameters       Work with CloudTruth parameters [aliases: parameter, params, param, p]
+    parameters       Work with CloudTruth parameters [aliases: parameter, params, param, par, pa, p]
     projects         Work with CloudTruth projects [aliases: project, proj]
-    run              Run a shell with the parameters in place [aliases: run, r]
+    run              Run a shell with the parameters in place [aliases: run, ru, r]
     schema           View CloudTruth OpenAPI schema
-    templates        Work with CloudTruth templates [aliases: template, temp, t]
+    templates        Work with CloudTruth templates [aliases: template, temp, te, t]
     users            Work with CloudTruth users [aliases: user, us, u]
     versions         Manage CloudTruth CLI versions [aliases: version, vers, ver, ve, v]
 ============================================================
@@ -776,6 +776,7 @@ SUBCOMMANDS:
     environment    Shows the environments with parameter overrides [aliases: environ, env]
     export         Export selected parameters to a known output format. Exported parameters are limited to
                    alphanumeric and underscore  in key names. Formats available are: dotenv, docker, and shell.
+                   [aliases: expo, exp, ex]
     get            Gets value for parameter in the selected environment
     help           Prints this message or the help of the given subcommand(s)
     list           List CloudTruth parameters [aliases: ls, l]

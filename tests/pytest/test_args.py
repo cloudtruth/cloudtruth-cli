@@ -121,19 +121,19 @@ class TestTopLevelArgs(TestCase):
             "actions pushes": [
                 "action push", "action pu", "act pushes", "act pu", "act p",
             ],
-            "audit-logs": ["audit", "aud", "log", "logs"],
-            "configuration": ["config", "conf", "con", "c"],
+            "audit-logs": ["audit", "aud", "au", "log", "logs"],
+            "configuration": ["config", "conf", "con", "co", "c"],
             "configuration profiles": ["config profile", "conf prof", "c p"],
             "environments": ["environment", "envs", "env", "e"],
             "environments tag": ["environment tag", "env ta"],
             "integrations": ["integration", "integrate", "int"],
-            "parameters": ["parameter", "params", "param", "p"],
+            "parameters": ["parameter", "params", "param", "par", "pa", "p"],
             "projects": ["project", "proj"],
-            "run": ["r"],
-            "templates": ["template", "t"],
+            "run": ["ru", "r"],
+            "templates": ["template", "te", "t"],
             "users": ["user", "us", "u"],
             "users invitations": ["user invitation", "us in", "u i"],
-            "versions": ["version", "vers", "ver", "v"],
+            "versions": ["version", "vers", "ver", "ve", "v"],
         }.items():
             for alias in [subcmd] + aliases:
                 result = self.run_cli(cmd_env, base_cmd + alias)

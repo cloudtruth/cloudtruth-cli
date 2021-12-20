@@ -324,7 +324,7 @@ pub fn build_cli() -> App<'static, 'static> {
         )
         .subcommand(SubCommand::with_name("audit-logs")
             .about("Display audit logs")
-            .visible_aliases(&["audit", "aud", "log", "logs"])
+            .visible_aliases(&["audit", "aud", "au", "log", "logs"])
             .subcommands(vec![
                 SubCommand::with_name(LIST_SUBCMD)
                     .visible_aliases(LIST_ALIASES)
@@ -377,7 +377,7 @@ pub fn build_cli() -> App<'static, 'static> {
                 .arg(Arg::with_name("SHELL").possible_values(&Shell::variants()).required(true))
         )
         .subcommand(SubCommand::with_name("configuration")
-            .visible_aliases(&["config", "conf", "con", "c"])
+            .visible_aliases(&["config", "conf", "con", "co", "c"])
             .about("Configuration options for this application")
             .subcommands(vec![
                 SubCommand::with_name(EDIT_SUBCMD)
@@ -541,7 +541,7 @@ pub fn build_cli() -> App<'static, 'static> {
         )
         .subcommand(
             SubCommand::with_name("parameters")
-                .visible_aliases(&["parameter", "params", "param", "p"])
+                .visible_aliases(&["parameter", "params", "param", "par", "pa", "p"])
                 .about("Work with CloudTruth parameters")
                 .subcommands(vec![
                     SubCommand::with_name(DELETE_SUBCMD)
@@ -550,6 +550,7 @@ pub fn build_cli() -> App<'static, 'static> {
                         .arg(confirm_flag())
                         .arg(key_arg().help("Name of parameter to delete")),
                     SubCommand::with_name("export")
+                        .visible_aliases(&["expo", "exp", "ex"])
                         .about(concat!("Export selected parameters to a known output format. ",
                             "Exported parameters are limited to alphanumeric and underscore  in ",
                             "key names. Formats available are: dotenv, docker, and shell."))
@@ -747,7 +748,7 @@ pub fn build_cli() -> App<'static, 'static> {
                 ]),
         )
         .subcommand(SubCommand::with_name("templates")
-            .visible_aliases(&["template", "temp", "t"])
+            .visible_aliases(&["template", "temp", "te", "t"])
             .about("Work with CloudTruth templates")
             .subcommands(vec![
                 SubCommand::with_name(DELETE_SUBCMD)
@@ -812,7 +813,7 @@ pub fn build_cli() -> App<'static, 'static> {
         )
         .subcommand(
             SubCommand::with_name("run")
-                .visible_aliases(&["run", "r"])
+                .visible_aliases(&["run", "ru", "r"])
                 .about("Run a shell with the parameters in place")
                 .args(&[
                     Arg::with_name("inheritance")
