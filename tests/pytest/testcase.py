@@ -300,6 +300,14 @@ class TestCase(unittest.TestCase):
 
         return result
 
+    def add_environment_for_cleanup(self, env_name: str) -> None:
+        if env_name not in self._environments:
+            self._environments.append(env_name)
+
+    def add_project_for_cleanup(self, proj_name: str):
+        if proj_name not in self._projects:
+            self._projects.append(proj_name)
+
     def get_cli_entries(self, env: Dict[str, str], cmd: str, label: str) -> Optional[List[Dict]]:
         result = self.run_cli(env, cmd)
         self.assertResultSuccess(result)

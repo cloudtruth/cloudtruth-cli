@@ -22,6 +22,7 @@ SUBCOMMANDS:
     configuration    Configuration options for this application [aliases: config, conf, con, co, c]
     environments     Work with CloudTruth environments [aliases: environment, envs, env, e]
     help             Prints this message or the help of the given subcommand(s)
+    import           Perform imports into the CloudTruth environment [aliases: imp, im]
     integrations     Work with CloudTruth integrations [aliases: integration, integrate, integ, int, in]
     login            Sets up a CloudTruth configuration profile api_key
     logout           Removes a CloudTruth configuration profile api_key
@@ -657,6 +658,46 @@ FLAGS:
 
 ARGS:
     <NAME>    Show this environment with children [default: default]
+============================================================
+cloudtruth-import 
+Perform imports into the CloudTruth environment
+
+USAGE:
+    cloudtruth import [SUBCOMMAND]
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+SUBCOMMANDS:
+    help          Prints this message or the help of the given subcommand(s)
+    parameters    Import parameter values into a specified project and environment [aliases: parameter, param, par,
+                  pa, p]
+========================================
+cloudtruth-import-parameters 
+Import parameter values into a specified project and environment
+
+USAGE:
+    cloudtruth import parameters [FLAGS] [OPTIONS] <project> <file>
+
+FLAGS:
+    -h, --help          Prints help information
+    -n, --no-inherit    Do NOT inherit duplicate parameter values
+        --preview       Simulate the import without saving any values
+    -s, --secrets       Display secret values
+        --show-times    Show import values created times
+    -V, --version       Prints version information
+
+OPTIONS:
+    -e, --environment <environment>    Environment name into which parameters are imported
+    -f, --format <format>              Format for imported parameter [default: table]  [possible values: table, csv,
+                                       json, yaml]
+    -i, --ignore <param-name>...       Parameters from the file to ignore
+        --secret <param-name>...       Parameters from the file to treat as secrets
+
+ARGS:
+    <project>    Project name into which parameters are imported
+    <file>       File that contains the text to import
 ============================================================
 cloudtruth-integrations 
 Work with CloudTruth integrations
