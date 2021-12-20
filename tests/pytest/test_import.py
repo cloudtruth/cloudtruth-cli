@@ -228,8 +228,8 @@ class ImportTestCase(TestCase):
         self.create_environment(cmd_env, env2_name, parent=env1_name)
 
         # default is to inherit, no need to set secrets
-        env2_cmd = imp_base + f"{proj_name} {filename} --env {env2_name} "
-        imports = self.get_cli_entries(cmd_env, env2_cmd + "--preview -sf json", "parameter")
+        env2_cmd = imp_base + f"{proj_name} {filename} --env {env2_name} --preview -sf json "
+        imports = self.get_cli_entries(cmd_env, env2_cmd, "parameter")
         self.assertEqual(6, len(imports))
         entry = find_by_prop(imports, PROP_NAME, "MY_PARAM")[0]
         self.assertEqual(entry.get(PROP_VALUE), 'no quotes here')
@@ -237,6 +237,46 @@ class ImportTestCase(TestCase):
         entry = find_by_prop(imports, PROP_NAME, "MY_SECRET")[0]
         self.assertEqual(entry.get(PROP_VALUE), "password")
         self.assertEqual(entry.get(PROP_CHANGE), INHERITED)
+        entry = find_by_prop(imports, PROP_NAME, "PARAM1")[0]
+        self.assertEqual(entry.get(PROP_VALUE), "my workspace")
+        self.assertEqual(entry.get(PROP_CHANGE), OVERRIDDEN)
+        entry = find_by_prop(imports, PROP_NAME, "PARAM2")[0]
+        self.assertEqual(entry.get(PROP_VALUE), "UNREFERENCED = going away")
+        self.assertEqual(entry.get(PROP_CHANGE), INHERITED)
+        entry = find_by_prop(imports, PROP_NAME, "secret_2")[0]
+        self.assertEqual(entry.get(PROP_VALUE), "be veewwy quiet")
+        self.assertEqual(entry.get(PROP_CHANGE), OVERRIDDEN)
+        entry = find_by_prop(imports, PROP_NAME, "STRING_PARAM")[0]
+        self.assertEqual(entry.get(PROP_VALUE), "")
+        self.assertEqual(entry.get(PROP_CHANGE), INHERITED)
+
+        #######################
+        # --no-inherit
+        imports = self.get_cli_entries(cmd_env, env2_cmd + "--no-inherit", "parameter")
+        self.assertEqual(6, len(imports))
+        entry = find_by_prop(imports, PROP_NAME, "MY_PARAM")[0]
+        self.assertEqual(entry.get(PROP_VALUE), 'no quotes here')
+        self.assertEqual(entry.get(PROP_CHANGE), OVERRIDDEN)
+        entry = find_by_prop(imports, PROP_NAME, "MY_SECRET")[0]
+        self.assertEqual(entry.get(PROP_VALUE), "password")
+        self.assertEqual(entry.get(PROP_CHANGE), OVERRIDDEN)
+        entry = find_by_prop(imports, PROP_NAME, "PARAM1")[0]
+        self.assertEqual(entry.get(PROP_VALUE), "my workspace")
+        self.assertEqual(entry.get(PROP_CHANGE), OVERRIDDEN)
+        entry = find_by_prop(imports, PROP_NAME, "PARAM2")[0]
+        self.assertEqual(entry.get(PROP_VALUE), "UNREFERENCED = going away")
+        self.assertEqual(entry.get(PROP_CHANGE), OVERRIDDEN)
+        entry = find_by_prop(imports, PROP_NAME, "secret_2")[0]
+        self.assertEqual(entry.get(PROP_VALUE), "be veewwy quiet")
+        self.assertEqual(entry.get(PROP_CHANGE), OVERRIDDEN)
+        entry = find_by_prop(imports, PROP_NAME, "STRING_PARAM")[0]
+        self.assertEqual(entry.get(PROP_VALUE), "")
+        self.assertEqual(entry.get(PROP_CHANGE), OVERRIDDEN)
+
+        #######################
+        # --ignore
+        imports = self.get_cli_entries(cmd_env, env2_cmd + "--ignore MY_PARAM --ignore MY_SECRET", "parameter")
+        self.assertEqual(4, len(imports))
         entry = find_by_prop(imports, PROP_NAME, "PARAM1")[0]
         self.assertEqual(entry.get(PROP_VALUE), "my workspace")
         self.assertEqual(entry.get(PROP_CHANGE), OVERRIDDEN)
