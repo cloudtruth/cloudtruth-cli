@@ -6,8 +6,8 @@ use crate::cli::{
 use crate::config::DEFAULT_ENV_NAME;
 use crate::database::{
     EnvironmentDetails, Environments, OpenApiConfig, ParamExportFormat, ParamExportOptions,
-    ParamRuleType, ParamType, ParameterDetails, ParameterError, Parameters, Projects,
-    ResolvedDetails, TaskStep,
+    ParamRuleType, ParameterDetails, ParameterError, Parameters, Projects, ResolvedDetails,
+    TaskStep,
 };
 use crate::table::Table;
 use crate::{
@@ -767,16 +767,7 @@ fn proc_param_set(
     let evaluated: Option<bool> = true_false_option(subcmd_args.value_of("evaluate"));
     let evaluate = false; // no need to evaluate
     let mask_secrets = true; // do not fetch secrets
-    let param_type = match subcmd_args.value_of("param-type") {
-        None => None,
-        Some("string") => Some(ParamType::String),
-        Some("integer") => Some(ParamType::Integer),
-        Some("bool") => Some(ParamType::Bool),
-        Some(x) => {
-            warning_message(format!("Unhandled type '{}'", x));
-            None
-        }
-    };
+    let param_type = subcmd_args.value_of("param-type");
 
     // make sure the user did not over-specify
     if (jmes_path.is_some() || fqn.is_some())

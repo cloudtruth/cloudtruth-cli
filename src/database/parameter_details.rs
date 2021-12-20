@@ -1,4 +1,4 @@
-use crate::database::{valid_encoding, ParamRuleType, ParamType, ParameterDetailRule};
+use crate::database::{valid_encoding, ParamRuleType, ParameterDetailRule};
 use cloudtruth_restapi::models::{Parameter, Value};
 use once_cell::sync::OnceCell;
 
@@ -12,7 +12,7 @@ pub struct ParameterDetails {
     pub key: String,
     pub description: String,
     pub secret: bool,
-    pub param_type: ParamType,
+    pub param_type: String,
     pub rules: Vec<ParameterDetailRule>,
     pub project_url: String,
     pub project_name: String,
@@ -39,7 +39,7 @@ impl ParameterDetails {
         match property_name {
             "name" => self.key.clone(),
             "value" => self.value.clone(),
-            "type" => self.param_type.to_string(),
+            "type" => self.param_type.clone(),
             "environment" => self.env_name.clone(),
             "fqn" => self.fqn.clone(),
             "jmes-path" => self.jmes_path.clone(),
@@ -115,7 +115,7 @@ impl Default for ParameterDetails {
             key: "".to_string(),
             description: "".to_string(),
             secret: false,
-            param_type: ParamType::String, // this is the default
+            param_type: "string".to_string(),
             rules: vec![],
             project_url: "".to_string(),
             project_name: "".to_string(),
@@ -173,7 +173,7 @@ impl From<&Parameter> for ParameterDetails {
             key: api_param.name.clone(),
             secret: api_param.secret.unwrap_or(false) || env_value.secret.unwrap_or(false),
             description: api_param.description.clone().unwrap_or_default(),
-            param_type: ParamType::from(api_param._type.unwrap()),
+            param_type: api_param._type.clone().unwrap_or_default(),
             project_url: api_param.project.clone(),
             project_name: api_param.project_name.clone(),
             rules: api_param

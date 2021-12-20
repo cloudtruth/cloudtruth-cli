@@ -1142,6 +1142,75 @@
                 }
             }
         },
+        "/api/v1/import/": {
+            "post": {
+                "operationId": "import_create",
+                "description": "Import parameters from the provided data.",
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "mask_secrets",
+                        "schema": {
+                            "type": "boolean",
+                            "default": false
+                        },
+                        "description": "Mask secrets in the response"
+                    },
+                    {
+                        "in": "query",
+                        "name": "preview",
+                        "schema": {
+                            "type": "boolean",
+                            "default": false
+                        },
+                        "description": "Do not create any objects"
+                    }
+                ],
+                "tags": [
+                    "import"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ImportCreateRequest"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ImportCreateRequest"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ImportCreateRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "JWTAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ImportCreateResponse"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
         "/api/v1/integrations/aws/": {
             "get": {
                 "operationId": "integrations_aws_list",
@@ -9054,6 +9123,156 @@
                 ],
                 "type": "string"
             },
+            "ImportCreateRequest": {
+                "type": "object",
+                "properties": {
+                    "project": {
+                        "type": "string",
+                        "description": "Project name or identifier"
+                    },
+                    "environment": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "Environment name or identifier"
+                    },
+                    "body": {
+                        "type": "string",
+                        "description": "Text to turn into variables"
+                    },
+                    "secrets": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "description": "Parameter names that should be secrets"
+                    },
+                    "ignore": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "description": "Parameter names to be ignored"
+                    },
+                    "add_project": {
+                        "type": "boolean",
+                        "default": true,
+                        "description": "Create the project (if it does not exist)"
+                    },
+                    "add_environment": {
+                        "type": "boolean",
+                        "default": true,
+                        "description": "Create the environment (if it does not exist)"
+                    },
+                    "add_parameters": {
+                        "type": "boolean",
+                        "default": true,
+                        "description": "Create the parameters (if they do not exist)"
+                    },
+                    "add_overrides": {
+                        "type": "boolean",
+                        "default": true,
+                        "description": "Create the environment value override (if they do not exist)"
+                    },
+                    "inherit_on_same": {
+                        "type": "boolean",
+                        "default": true,
+                        "description": "Skip adding a parameter override if it is the same"
+                    }
+                },
+                "required": [
+                    "body",
+                    "ignore",
+                    "project",
+                    "secrets"
+                ]
+            },
+            "ImportCreateResponse": {
+                "type": "object",
+                "properties": {
+                    "parameter": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ImportParameter"
+                        },
+                        "description": "Project parameter values after import"
+                    }
+                },
+                "required": [
+                    "parameter"
+                ]
+            },
+            "ImportParameter": {
+                "type": "object",
+                "description": "Describes an imported parameter.",
+                "properties": {
+                    "project_name": {
+                        "type": "string",
+                        "description": "Project name"
+                    },
+                    "project_id": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "Project identifier"
+                    },
+                    "environment_name": {
+                        "type": "string",
+                        "description": "Environment where parameter is defined"
+                    },
+                    "environment_id": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "Environment identifier where value is set"
+                    },
+                    "parameter_name": {
+                        "type": "string",
+                        "description": "Parameter name"
+                    },
+                    "parameter_id": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "Parameter identifier"
+                    },
+                    "secret": {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "Whether to treat the parameter as a secret"
+                    },
+                    "value": {
+                        "type": "string",
+                        "description": "Parameter value in the specified environment"
+                    },
+                    "value_id": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "Parameter value identifier in the environment"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true,
+                        "description": "Date and time the parameter value was created"
+                    },
+                    "modified_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true,
+                        "description": "Date and time the parameter value was updated"
+                    },
+                    "action": {
+                        "type": "string",
+                        "description": "Action taken on environment value for parameter"
+                    }
+                },
+                "required": [
+                    "action",
+                    "created_at",
+                    "environment_name",
+                    "modified_at",
+                    "parameter_name",
+                    "project_name",
+                    "value"
+                ]
+            },
             "IntegrationExplorer": {
                 "type": "object",
                 "description": "Describes the content available at a given location.",
@@ -10010,7 +10229,9 @@
                         "description": "Indicates if this content is secret or not.  When a parameter is considered to be a secret, any internal values are stored in a dedicated vault for your organization for maximum security.  External values are inspected on-demand to ensure they align with the parameter's secret setting and if they do not, those external values are not allowed to be used."
                     },
                     "type": {
-                        "$ref": "#/components/schemas/ParameterTypeEnum"
+                        "type": "string",
+                        "default": "string",
+                        "description": "The type of this Parameter"
                     },
                     "rules": {
                         "type": "array",
@@ -10103,7 +10324,9 @@
                         "description": "Indicates if this content is secret or not.  When a parameter is considered to be a secret, any internal values are stored in a dedicated vault for your organization for maximum security.  External values are inspected on-demand to ensure they align with the parameter's secret setting and if they do not, those external values are not allowed to be used."
                     },
                     "type": {
-                        "$ref": "#/components/schemas/ParameterTypeEnum"
+                        "type": "string",
+                        "default": "string",
+                        "description": "The type of this Parameter"
                     }
                 },
                 "required": [
@@ -10321,14 +10544,6 @@
                     "id",
                     "name"
                 ]
-            },
-            "ParameterTypeEnum": {
-                "enum": [
-                    "string",
-                    "integer",
-                    "bool"
-                ],
-                "type": "string"
             },
             "PatchedAwsIntegration": {
                 "type": "object",
@@ -10773,7 +10988,9 @@
                         "description": "Indicates if this content is secret or not.  When a parameter is considered to be a secret, any internal values are stored in a dedicated vault for your organization for maximum security.  External values are inspected on-demand to ensure they align with the parameter's secret setting and if they do not, those external values are not allowed to be used."
                     },
                     "type": {
-                        "$ref": "#/components/schemas/ParameterTypeEnum"
+                        "type": "string",
+                        "default": "string",
+                        "description": "The type of this Parameter"
                     },
                     "rules": {
                         "type": "array",
