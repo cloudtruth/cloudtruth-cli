@@ -2,8 +2,7 @@ use crate::database::openapi::key_from_config;
 use crate::database::{
     extract_details, extract_from_json, page_size, response_message, secret_encode_wrap,
     secret_unwrap_decode, CryptoAlgorithm, OpenApiConfig, ParamExportOptions, ParamRuleType,
-    ParamType, ParameterDetails, ParameterError, TaskStep, NO_PAGE_COUNT, NO_PAGE_SIZE,
-    WRAP_SECRETS,
+    ParameterDetails, ParameterError, TaskStep, NO_PAGE_COUNT, NO_PAGE_SIZE, WRAP_SECRETS,
 };
 use cloudtruth_restapi::apis::projects_api::*;
 use cloudtruth_restapi::apis::Error::ResponseError;
@@ -456,13 +455,13 @@ impl Parameters {
         key_name: &str,
         description: Option<&str>,
         secret: Option<bool>,
-        param_type: Option<ParamType>,
+        param_type: Option<&str>,
     ) -> Result<ParameterDetails, ParameterError> {
         let param_new = ParameterCreate {
             name: key_name.to_string(),
-            description: description.map(|x| x.to_string()),
+            description: description.map(String::from),
             secret,
-            _type: param_type.map(|x| x.to_api_enum()),
+            _type: param_type.map(String::from),
         };
         let response = projects_parameters_create(rest_cfg, proj_id, param_new);
         match response {
@@ -486,7 +485,7 @@ impl Parameters {
         key_name: &str,
         description: Option<&str>,
         secret: Option<bool>,
-        param_type: Option<ParamType>,
+        param_type: Option<&str>,
     ) -> Result<ParameterDetails, ParameterError> {
         let param_update = PatchedParameter {
             url: None,
@@ -494,7 +493,7 @@ impl Parameters {
             name: Some(key_name.to_string()),
             description: description.map(String::from),
             secret,
-            _type: param_type.map(|x| x.to_api_enum()),
+            _type: param_type.map(String::from),
             rules: None,
             values: None,
             referencing_templates: None,
