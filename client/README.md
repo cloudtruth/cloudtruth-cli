@@ -41,6 +41,7 @@ Class | Method | HTTP request | Description
 *EnvironmentsApi* | [**environments_tags_retrieve**](docs/EnvironmentsApi.md#environments_tags_retrieve) | **GET** /api/v1/environments/{environment_pk}/tags/{id}/ | 
 *EnvironmentsApi* | [**environments_tags_update**](docs/EnvironmentsApi.md#environments_tags_update) | **PUT** /api/v1/environments/{environment_pk}/tags/{id}/ | 
 *EnvironmentsApi* | [**environments_update**](docs/EnvironmentsApi.md#environments_update) | **PUT** /api/v1/environments/{id}/ | 
+*ImportApi* | [**import_create**](docs/ImportApi.md#import_create) | **POST** /api/v1/import/ | 
 *IntegrationsApi* | [**integrations_aws_create**](docs/IntegrationsApi.md#integrations_aws_create) | **POST** /api/v1/integrations/aws/ | Establishes an AWS Integration.
 *IntegrationsApi* | [**integrations_aws_destroy**](docs/IntegrationsApi.md#integrations_aws_destroy) | **DELETE** /api/v1/integrations/aws/{id}/ | Delete an AWS integration.
 *IntegrationsApi* | [**integrations_aws_list**](docs/IntegrationsApi.md#integrations_aws_list) | **GET** /api/v1/integrations/aws/ | 
@@ -164,6 +165,9 @@ Class | Method | HTTP request | Description
  - [GitHubIntegrationCreate](docs/GitHubIntegrationCreate.md)
  - [HistoryModelEnum](docs/HistoryModelEnum.md)
  - [HistoryTypeEnum](docs/HistoryTypeEnum.md)
+ - [ImportCreateRequest](docs/ImportCreateRequest.md)
+ - [ImportCreateResponse](docs/ImportCreateResponse.md)
+ - [ImportParameter](docs/ImportParameter.md)
  - [IntegrationExplorer](docs/IntegrationExplorer.md)
  - [Invitation](docs/Invitation.md)
  - [InvitationCreate](docs/InvitationCreate.md)
@@ -206,7 +210,6 @@ Class | Method | HTTP request | Description
  - [ParameterTimelineEntry](docs/ParameterTimelineEntry.md)
  - [ParameterTimelineEntryEnvironment](docs/ParameterTimelineEntryEnvironment.md)
  - [ParameterTimelineEntryParameter](docs/ParameterTimelineEntryParameter.md)
- - [ParameterTypeEnum](docs/ParameterTypeEnum.md)
  - [PatchedAwsIntegration](docs/PatchedAwsIntegration.md)
  - [PatchedAwsPull](docs/PatchedAwsPull.md)
  - [PatchedAwsPushUpdate](docs/PatchedAwsPushUpdate.md)

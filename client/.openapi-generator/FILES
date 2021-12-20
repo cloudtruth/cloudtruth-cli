@@ -24,6 +24,10 @@ docs/GitHubIntegration.md
 docs/GitHubIntegrationCreate.md
 docs/HistoryModelEnum.md
 docs/HistoryTypeEnum.md
+docs/ImportApi.md
+docs/ImportCreateRequest.md
+docs/ImportCreateResponse.md
+docs/ImportParameter.md
 docs/IntegrationExplorer.md
 docs/IntegrationsApi.md
 docs/Invitation.md
@@ -70,7 +74,6 @@ docs/ParameterTimeline.md
 docs/ParameterTimelineEntry.md
 docs/ParameterTimelineEntryEnvironment.md
 docs/ParameterTimelineEntryParameter.md
-docs/ParameterTypeEnum.md
 docs/PatchedAwsIntegration.md
 docs/PatchedAwsPull.md
 docs/PatchedAwsPushUpdate.md
@@ -116,6 +119,7 @@ src/apis/api_api.rs
 src/apis/audit_api.rs
 src/apis/configuration.rs
 src/apis/environments_api.rs
+src/apis/import_api.rs
 src/apis/integrations_api.rs
 src/apis/invitations_api.rs
 src/apis/memberships_api.rs
@@ -144,6 +148,9 @@ src/models/git_hub_integration.rs
 src/models/git_hub_integration_create.rs
 src/models/history_model_enum.rs
 src/models/history_type_enum.rs
+src/models/import_create_request.rs
+src/models/import_create_response.rs
+src/models/import_parameter.rs
 src/models/integration_explorer.rs
 src/models/invitation.rs
 src/models/invitation_create.rs
@@ -187,7 +194,6 @@ src/models/parameter_timeline.rs
 src/models/parameter_timeline_entry.rs
 src/models/parameter_timeline_entry_environment.rs
 src/models/parameter_timeline_entry_parameter.rs
-src/models/parameter_type_enum.rs
 src/models/patched_aws_integration.rs
 src/models/patched_aws_pull.rs
 src/models/patched_aws_push_update.rs
