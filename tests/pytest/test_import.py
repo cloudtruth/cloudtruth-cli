@@ -194,7 +194,7 @@ class ImportTestCase(TestCase):
         for entry in imports:
             self.assertEqual(entry.get(PROP_PROJ), proj_name)
             self.assertEqual(entry.get(PROP_ENV), env1_name)
-            # self.assertEqual(entry.get(PROP_CHANGE), UNCHANGED)  # TODO: server fix
+            self.assertEqual(entry.get(PROP_CHANGE), UNCHANGED)
 
         #######################
         # use a different text -- do NOT actually do the import
@@ -207,7 +207,7 @@ class ImportTestCase(TestCase):
         self.assertEqual(entry.get(PROP_CHANGE), UPDATED)
         entry = find_by_prop(imports, PROP_NAME, "MY_SECRET")[0]
         self.assertEqual(entry.get(PROP_VALUE), "password")
-        # self.assertEqual(entry.get(PROP_CHANGE), UNCHANGED)  # TODO: server fix
+        self.assertEqual(entry.get(PROP_CHANGE), UNCHANGED)
         entry = find_by_prop(imports, PROP_NAME, "PARAM1")[0]
         self.assertEqual(entry.get(PROP_VALUE), "my workspace")
         self.assertEqual(entry.get(PROP_CHANGE), UPDATED)
