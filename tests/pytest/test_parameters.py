@@ -1878,6 +1878,14 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
 
         # NOTE: no real need to test 'string' types, since that is the default and no illegal values
 
+        unknown_param = "param3"
+        result = self.run_cli(cmd_env, param_cmd + f"set {unknown_param} --type foo")
+        self.assertResultError(result, "Not Found (404): No ParameterType matches the given query.")
+
+        result = self.run_cli(cmd_env, list_cmd)
+        self.assertResultSuccess(result)
+        self.assertNotIn(unknown_param, result.out())
+
         # cleanup
         self.delete_project(cmd_env, proj_name)
 
