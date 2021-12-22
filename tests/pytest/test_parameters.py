@@ -1,4 +1,5 @@
 import datetime
+import unittest
 
 from typing import Tuple, Dict
 from testcase import TestCase
@@ -1775,6 +1776,7 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
         self.delete_environment(cmd_env, env_name_a)
         self.delete_environment(cmd_env, env_name_b)
 
+    @unittest.skip("Waiting for server fix")
     def test_parameter_types(self):
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
@@ -1790,7 +1792,7 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
         # boolean tests
         bool_param = "param1"
         bool_value = "true"
-        bool_type = "bool"
+        bool_type = "boolean"
 
         result = self.run_cli(cmd_env, param_cmd + f"set {bool_param} -t {bool_type} -v {bool_value}")
         self.assertResultSuccess(result)
@@ -2332,7 +2334,7 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
 
         # create a basic parameter without a value, so the rule cannot be violated
         param1 = "param1"
-        self.set_param(cmd_env, proj_name, param1, "true", param_type="bool", env=env_name)
+        self.set_param(cmd_env, proj_name, param1, "true", param_type="boolean", env=env_name)
         self.unset_param(cmd_env, proj_name, param1, env=env_name)
 
         # see no rules
@@ -2362,7 +2364,7 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
 
         result = self.run_cli(cmd_env, list_cmd)
         self.assertResultSuccess(result)
-        self.assertIn(f"{param1},-,,bool,0,internal,false", result.out())
+        self.assertIn(f"{param1},-,,boolean,0,internal,false", result.out())
 
         result = self.run_cli(cmd_env, rules_cmd)
         self.assertResultSuccess(result)
@@ -2372,7 +2374,7 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
         # see we don't leave any parameter behind when creating a parameter with an invalid rule
         self.delete_param(cmd_env, proj_name, param1)
 
-        result = self.run_cli(cmd_env, set_cmd + "--type bool --value true --max 10")
+        result = self.run_cli(cmd_env, set_cmd + "--type boolean --value true --max 10")
         self.assertResultError(result, create_err_msg)
         # self.assertIn("max rules not valid for bool parameters", result.err())
         self.assertIn(rule_type_mismatch, result.err())

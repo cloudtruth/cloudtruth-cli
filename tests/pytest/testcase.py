@@ -4,9 +4,12 @@ import shlex
 import subprocess
 import unittest
 from copy import deepcopy
-from datetime import datetime, timedelta
+from datetime import datetime
+from datetime import timedelta
 from pathlib import Path
-from typing import List, Optional, Dict
+from typing import Dict
+from typing import List
+from typing import Optional
 
 
 # These are environment variable names used by the application
@@ -81,6 +84,7 @@ class Result:
     stdout: List = dataclasses.field(default_factory=list),
     stderr: List = dataclasses.field(default_factory=list),
     timediff: timedelta = timedelta(0)
+    command: Optional[str] = None
 
     def out(self) -> str:
         return "\n".join(self.stdout)
@@ -290,6 +294,7 @@ class TestCase(unittest.TestCase):
             stdout=process.stdout.decode("us-ascii", errors="ignore").replace("\r", "").split("\n"),
             stderr=process.stderr.decode("us-ascii", errors="ignore").replace("\r", "").split("\n"),
             timediff=delta,
+            command=cmd,
         )
 
         if self.log_output:

@@ -948,7 +948,7 @@ OPTIONS:
     -e, --evaluate <evaluate>    Flags whether this value gets evaluated [possible values: true, false]
     -i, --input <input-file>     Read the static value from the local input file
     -r, --rename <new-name>      New parameter name
-    -t, --type <param-type>      The parameter type [possible values: bool, string, integer]
+    -t, --type <param-type>      The parameter type. Fundamental types are: boolean, string, integer
         --secret <secret>        Flags whether this is a secret parameter [possible values: true, false]
     -v, --value <value>          Static parameter value
 
