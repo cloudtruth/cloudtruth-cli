@@ -1,7 +1,7 @@
 import datetime
-import unittest
 
-from typing import Tuple, Dict
+from typing import Dict
+from typing import Tuple
 from testcase import TestCase
 from testcase import DEFAULT_ENV_NAME
 from testcase import DEFAULT_PARAM_VALUE
@@ -1776,7 +1776,6 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
         self.delete_environment(cmd_env, env_name_a)
         self.delete_environment(cmd_env, env_name_b)
 
-    @unittest.skip("Waiting for server fix")
     def test_parameter_types(self):
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
