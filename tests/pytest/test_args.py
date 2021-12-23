@@ -126,6 +126,7 @@ class TestTopLevelArgs(TestCase):
             "configuration profiles": ["config profile", "conf prof", "c p"],
             "environments": ["environment", "envs", "env", "e"],
             "environments tag": ["environment tag", "env ta"],
+            "import": ["imp", "im"],
             "integrations": ["integration", "integrate", "int"],
             "parameters": ["parameter", "params", "param", "par", "pa", "p"],
             "projects": ["project", "proj"],

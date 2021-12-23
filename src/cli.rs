@@ -1164,4 +1164,55 @@ pub fn build_cli() -> App<'static, 'static> {
                         .help("Do not print version, just return error on outdated version."))
             ])
         )
+        .subcommand(SubCommand::with_name("import")
+            .visible_aliases(&["imp", "im"])
+            .about("Perform imports into the CloudTruth environment")
+            .subcommands([
+                SubCommand::with_name("parameters")
+                    .visible_aliases(&["parameter", "param", "par", "pa", "p"])
+                    .about("Import parameter values into a specified project and environment")
+                    .args(&[
+                        Arg::with_name("project")
+                            .required(true)
+                            .takes_value(true)
+                            .index(1)
+                            .help("Project name into which parameters are imported"),
+                        Arg::with_name("file")
+                            .required(true)
+                            .takes_value(true)
+                            .index(2)
+                            .help("File that contains the text to import"),
+                        Arg::with_name("environment")
+                            .short("e")
+                            .long("environment")
+                            .alias("env")
+                            .required(false)
+                            .takes_value(true)
+                            .help("Environment name into which parameters are imported"),
+                        Arg::with_name("preview")
+                            .long("preview")
+                            .help("Simulate the import without saving any values"),
+                        Arg::with_name("no-inherit")
+                            .short("n")
+                            .long("no-inherit")
+                            .help("Do NOT inherit duplicate parameter values"),
+                        Arg::with_name("ignore-param")
+                            .short("i")
+                            .long("ignore")
+                            .value_name("param-name")
+                            .takes_value(true)
+                            .multiple(true)
+                            .help("Parameters from the file to ignore"),
+                        Arg::with_name("secret-param")
+                            .long("secret")
+                            .value_name("param-name")
+                            .takes_value(true)
+                            .multiple(true)
+                            .help("Parameters from the file to treat as secrets"),
+                        secrets_display_flag().help("Display secret values"),
+                        table_format_options().help("Format for imported parameter"),
+                        show_times_arg().help("Show import values created times")
+                    ])
+            ])
+        )
 }
