@@ -968,14 +968,15 @@ USAGE:
     cloudtruth parameters set [FLAGS] [OPTIONS] <KEY>
 
 FLAGS:
-        --no-max        Remove the parameter rule maximum value
-        --no-max-len    Remove the parameter rule maximum length value
-        --no-min        Remove the parameter rule minimum value
-        --no-min-len    Remove the parameter rule minimum length value
-        --no-regex      Remove the parameter rule regex value
-    -h, --help          Prints help information
-    -p, --prompt        Set the static value using unecho'd terminal
-    -V, --version       Prints version information
+        --no-max          Remove the parameter rule maximum value
+        --no-max-len      Remove the parameter rule maximum length value
+        --no-min          Remove the parameter rule minimum value
+        --no-min-len      Remove the parameter rule minimum length value
+        --no-regex        Remove the parameter rule regex value
+        --create-child    Create a parameter in the child project
+    -h, --help            Prints help information
+    -p, --prompt          Set the static value using unecho'd terminal
+    -V, --version         Prints version information
 
 OPTIONS:
     -f, --fqn <FQN>              Fully Qualified Name (FQN) reference for external parameter.
