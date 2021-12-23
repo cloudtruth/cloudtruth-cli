@@ -1,6 +1,7 @@
 import datetime
 
-from typing import Tuple, Dict
+from typing import Dict
+from typing import Tuple
 from testcase import TestCase
 from testcase import DEFAULT_ENV_NAME
 from testcase import DEFAULT_PARAM_VALUE
@@ -1790,7 +1791,7 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
         # boolean tests
         bool_param = "param1"
         bool_value = "true"
-        bool_type = "bool"
+        bool_type = "boolean"
 
         result = self.run_cli(cmd_env, param_cmd + f"set {bool_param} -t {bool_type} -v {bool_value}")
         self.assertResultSuccess(result)
@@ -1875,6 +1876,14 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
         self.assertIn(f"{int_param},{int_value},default,{int_type},0,internal,false", result.out())
 
         # NOTE: no real need to test 'string' types, since that is the default and no illegal values
+
+        unknown_param = "param3"
+        result = self.run_cli(cmd_env, param_cmd + f"set {unknown_param} --type foo")
+        self.assertResultError(result, "Not Found (404): No ParameterType matches the given query.")
+
+        result = self.run_cli(cmd_env, list_cmd)
+        self.assertResultSuccess(result)
+        self.assertNotIn(unknown_param, result.out())
 
         # cleanup
         self.delete_project(cmd_env, proj_name)
@@ -2332,7 +2341,7 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
 
         # create a basic parameter without a value, so the rule cannot be violated
         param1 = "param1"
-        self.set_param(cmd_env, proj_name, param1, "true", param_type="bool", env=env_name)
+        self.set_param(cmd_env, proj_name, param1, "true", param_type="boolean", env=env_name)
         self.unset_param(cmd_env, proj_name, param1, env=env_name)
 
         # see no rules
@@ -2362,7 +2371,7 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
 
         result = self.run_cli(cmd_env, list_cmd)
         self.assertResultSuccess(result)
-        self.assertIn(f"{param1},-,,bool,0,internal,false", result.out())
+        self.assertIn(f"{param1},-,,boolean,0,internal,false", result.out())
 
         result = self.run_cli(cmd_env, rules_cmd)
         self.assertResultSuccess(result)
@@ -2372,7 +2381,7 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
         # see we don't leave any parameter behind when creating a parameter with an invalid rule
         self.delete_param(cmd_env, proj_name, param1)
 
-        result = self.run_cli(cmd_env, set_cmd + "--type bool --value true --max 10")
+        result = self.run_cli(cmd_env, set_cmd + "--type boolean --value true --max 10")
         self.assertResultError(result, create_err_msg)
         # self.assertIn("max rules not valid for bool parameters", result.err())
         self.assertIn(rule_type_mismatch, result.err())
