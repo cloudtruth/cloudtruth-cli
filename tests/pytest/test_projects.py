@@ -1,5 +1,3 @@
-import unittest
-
 from testcase import TestCase
 from testcase import find_by_prop
 from testcase import TEST_PAGE_SIZE
@@ -74,7 +72,6 @@ class TestProjects(TestCase):
         result = self.run_cli(cmd_env, sub_cmd + f"delete {proj_name} --confirm")
         self.assertResultWarning(result, f"Project '{proj_name}' does not exist")
 
-    @unittest.skip("Update test for changed behavior")
     def test_project_parents(self):
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
@@ -136,79 +133,82 @@ class TestProjects(TestCase):
         self.assertIn(f"{proj_name4},{proj_name2},{new_desc}", result.out())
 
         ###########
-        # cannot change to parent with same variables
+        # back to simple projects
         self.create_project(cmd_env, proj_name5)
         self.create_project(cmd_env, proj_name6)
 
         param1 = "param1"
-        value1 = "this"
-        self.set_param(cmd_env, proj_name5, param1, value1)
-        self.set_param(cmd_env, proj_name6, param1, value1)
+        type5 = "integer"
+        type6 = "boolean"
+        value5 = "1"
+        value6 = "false"
+        self.set_param(cmd_env, proj_name5, param1, value5, param_type=type5)
+        self.set_param(cmd_env, proj_name6, param1, value6, param_type=type6)
 
-        # see fail to set parent
-        conflict_msg = "Parameter(s) would not be unique when including project dependencies"
-        result = self.run_cli(cmd_env, base_cmd + f"proj set '{proj_name6}' -p '{proj_name5}'")
-        self.assertResultError(result, conflict_msg)
-        self.assertIn(param1, result.err())
-
-        # verify relationship not established
-        result = self.run_cli(cmd_env, base_cmd + "proj ls -v -f csv")
-        self.assertResultSuccess(result)
-        self.assertIn(f"{proj_name6},,", result.out())  # no parent listed
-
-        ###########
-        # test adding duplicate parameters to parent/child after relationship is esstablished
-
-        # setup the relationship
-        self.delete_param(cmd_env, proj_name5, param1)
+        # able to set parent, even though overlapped  parameter names
         result = self.run_cli(cmd_env, base_cmd + f"proj set '{proj_name6}' -p '{proj_name5}'")
         self.assertResultSuccess(result)
 
+        # verify relationship is established
         result = self.run_cli(cmd_env, base_cmd + "proj ls -v -f csv")
         self.assertResultSuccess(result)
         self.assertIn(f"{proj_name6},{proj_name5},", result.out())
 
-        # now, try to add a value to the parent
-        result = self.run_cli(cmd_env, base_cmd + f"--project '{proj_name5}' param set '{param1}' -v '{value1}'")
-        self.assertResultError(result, conflict_msg)
-        self.assertIn(param1, result.err())
-
-        # verify not added
-        result = self.run_cli(cmd_env, base_cmd + f"--project '{proj_name5}' param ls")
+        # verify values still same for different projects
+        result = self.run_cli(cmd_env, base_cmd + f"--project '{proj_name5}' param get '{param1}' -d")
         self.assertResultSuccess(result)
-        self.assertNotIn(param1, result.out())
+        self.assertIn(f"Parameter Type: {type5}", result.out())
+        self.assertIn(f"Value: {value5}", result.out())
 
-        # repeat adding to child
+        result = self.run_cli(cmd_env, base_cmd + f"--project '{proj_name6}' param get '{param1}' -d")
+        self.assertResultSuccess(result)
+        self.assertIn(f"Parameter Type: {type6}", result.out())
+        self.assertIn(f"Value: {value6}", result.out())
+
+        self.delete_param(cmd_env, proj_name5, param1)
         self.delete_param(cmd_env, proj_name6, param1)
-        self.set_param(cmd_env, proj_name5, param1, value1)
+
+        # now, try to add a value to the parent
+        result = self.run_cli(cmd_env, base_cmd + f"--project '{proj_name5}' param set '{param1}' -v '{value5}'")
+        self.assertResultSuccess(result)
+
+        result = self.run_cli(cmd_env, base_cmd + f"--project '{proj_name5}' param get '{param1}' -d")
+        self.assertResultSuccess(result)
+        self.assertIn(f"Value: {value5}", result.out())
 
         # since it is in the parent, it is visible in both parent and child
-        self.verify_param(cmd_env, proj_name5, param1, value1)
-        self.verify_param(cmd_env, proj_name6, param1, value1)
+        self.verify_param(cmd_env, proj_name5, param1, value5)
+        self.verify_param(cmd_env, proj_name6, param1, value5)
 
-        # verify it cannot be set from the child
-        value2 = "different value"
-        result = self.run_cli(cmd_env, base_cmd + f"--project '{proj_name6}' param set '{param1}' -v '{value2}'")
+        # verify it cannot be set from the child without the special flag
+        cmd = base_cmd + f"--project '{proj_name6}' param set '{param1}' -v '{value6}' "
+        result = self.run_cli(cmd_env, cmd)
         self.assertResultError(result, f"Parameter '{param1}' must be set from project '{proj_name5}'")
 
         # value is unchanged
-        self.verify_param(cmd_env, proj_name5, param1, value1)
-        self.verify_param(cmd_env, proj_name6, param1, value1)
+        self.verify_param(cmd_env, proj_name5, param1, value5)
+        self.verify_param(cmd_env, proj_name6, param1, value5)
+
+        # do it again with the special flag
+        result = self.run_cli(cmd_env, cmd + "--create-child")
+        self.assertResultSuccess(result)
+
+        # values show up appropriately
+        self.verify_param(cmd_env, proj_name5, param1, value5)
+        self.verify_param(cmd_env, proj_name6, param1, value6)
 
         # remove the parent relationship
         result = self.run_cli(cmd_env, base_cmd + f"proj set '{proj_name6}' --parent ''")
         self.assertResultSuccess(result)
 
         # verify parent is remove
-        result = self.run_cli(cmd_env, base_cmd + "proj ls -v -f json")
-        self.assertResultSuccess(result)
-        projects = eval(result.out()).get("project")
+        projects = self.get_cli_entries(cmd_env, base_cmd + "proj ls -v -f json", "project")
         entry = find_by_prop(projects, "Name", proj_name6)[0]
         self.assertEqual(entry.get("Parent"), "")
 
-        # see it no longer has access to parent values
+        # see it we still have it
         result = self.list_params(cmd_env, proj_name6, show_values=False)
-        self.assertNotIn(param1, result.out())
+        self.assertIn(param1, result.out())
 
         # cleanup -- need to unwind in order
         self.delete_project(cmd_env, proj_name6)

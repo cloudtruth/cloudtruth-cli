@@ -820,7 +820,9 @@ fn proc_param_set(
                 key_name, source_proj, proj_name
             ));
             help_message(format!(
-                "If you want to create a parameter in {}, you can use the --create-child flag.",
+                "If you want to create a parameter in {}, you can use the --create-child flag. \
+                This creates another parameter that inherits values, but generally needs to be \
+                managed separately.",
                 proj_name
             ));
             process::exit(20);
@@ -849,7 +851,19 @@ fn proc_param_set(
             set_action = "created child";
             updated = parameters
                 .create_parameter(rest_cfg, proj_id, key_name, desc_arg, sec_arg, type_arg)?;
-            // TODO: rules??
+            if updated.param_type == original.param_type {
+                for orig_rule in original.rules {
+                    let _ = set_rule_type(
+                        parameters,
+                        rest_cfg,
+                        &updated,
+                        proj_id,
+                        false,
+                        orig_rule.rule_type,
+                        &orig_rule.constraint,
+                    );
+                }
+            }
         } else if param_field_update {
             // only update if there is something to update
             updated = parameters.update_parameter(
