@@ -142,6 +142,7 @@ Class | Method | HTTP request | Description
 *UsersApi* | [**users_destroy**](docs/UsersApi.md#users_destroy) | **DELETE** /api/v1/users/{id}/ | Delete the specified user.
 *UsersApi* | [**users_list**](docs/UsersApi.md#users_list) | **GET** /api/v1/users/ | 
 *UsersApi* | [**users_retrieve**](docs/UsersApi.md#users_retrieve) | **GET** /api/v1/users/{id}/ | 
+*UtilsApi* | [**utils_generate_password_create**](docs/UtilsApi.md#utils_generate_password_create) | **POST** /api/v1/utils/generate_password/ | Get a randomly generated password using AWS Secrets Manager, with fallback to /dev/urandom.
 
 
 ## Documentation For Models
