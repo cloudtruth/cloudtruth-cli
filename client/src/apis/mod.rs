@@ -73,6 +73,7 @@ pub mod organizations_api;
 pub mod projects_api;
 pub mod serviceaccounts_api;
 pub mod users_api;
+pub mod utils_api;
 
 pub mod configuration;
 

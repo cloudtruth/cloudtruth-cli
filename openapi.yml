@@ -5104,6 +5104,81 @@ paths:
               schema:
                 $ref: '#/components/schemas/User'
           description: User information
+  /api/v1/utils/generate_password/:
+    post:
+      operationId: utils_generate_password_create
+      description: Endpoint for accessing utility functions
+      summary: Get a randomly generated password using AWS Secrets Manager, with fallback
+        to /dev/urandom.
+      parameters:
+      - in: query
+        name: length
+        schema:
+          type: integer
+        description: The length of the password to generate.  Minimum of 8, maximum
+          of 4095.
+        required: true
+      - in: query
+        name: require_hardware_generation
+        schema:
+          type: boolean
+          default: false
+        description: 'Default behavior is to fallback to /dev/urandom if we fail to
+          get a random password from AWS Secrets Manager.  If set to ''True'', we
+          will not fallback to local password generation using /dev/urandom.  Default:
+          False'
+      - in: query
+        name: require_lowercase
+        schema:
+          type: boolean
+          default: true
+        description: 'The password must include lowercase letters [a-z]. Default:
+          True.'
+      - in: query
+        name: require_numbers
+        schema:
+          type: boolean
+          default: true
+        description: 'The password must include numbers [0-9].  Default: True.'
+      - in: query
+        name: require_spaces
+        schema:
+          type: boolean
+          default: false
+        description: 'The password must include spaces [ ].  Default: False.'
+      - in: query
+        name: require_symbols
+        schema:
+          type: boolean
+          default: false
+        description: 'The password must include symbols [!"#$%&''()*+,-./:;<=>?@[\]^_`{|}~].  Default:
+          False.'
+      - in: query
+        name: require_uppercase
+        schema:
+          type: boolean
+          default: true
+        description: 'The password must include uppercase letters [A-Z].  Default:
+          True.'
+      tags:
+      - utils
+      security:
+      - JWTAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+              examples:
+                GenerateAPassword:
+                  value:
+                    value: S*f4wg8lR$7gfwefhuL>UIuyg4efb
+                  summary: Generate a password
+                  description: Successfully generated random password.
+          description: ''
 components:
   schemas:
     AuditTrail:
@@ -6960,22 +7035,30 @@ components:
             - $ref: '#/components/schemas/Value'
             nullable: true
           readOnly: true
-          description: "\n            Each parameter has an effective value in every\
-            \ environment based on\n            environment inheritance and which\
-            \ environments have had a value set.\n\n            Environments inherit\
-            \ from a single parent to form a tree, as a result\n            a single\
-            \ parameter may have different values present for each environment.\n\
-            \            When a value is not explicitly set in an environment, the\
-            \ parent environment\n            is consulted to see if it has a value\
-            \ defined, and so on.\n\n            The dictionary of values has an environment\
-            \ url as the key, and the optional\n            Value record that it resolves\
-            \ to.  If the Value.environment matches the key,\n            then it\
-            \ is an explicit value set for that environment.  If they differ, the\n\
-            \            value was obtained from a parent environment (directly or\
-            \ indirectly).  If the\n            value is None then no value has ever\
-            \ been set in any environment for this\n            parameter.\n\n   \
-            \         key: Environment url\n            value: optional Value record\n\
-            \        "
+          description: "\n            This dictionary has keys that correspond to\
+            \ environment urls, and values\n            that correspond to the effective\
+            \ value for this parameter in that environment.\n            Each parameter\
+            \ has an effective value in every environment based on\n            project\
+            \ dependencies and environment inheritance.\n\n            The effective\
+            \ value is found by looking (within the keyed environment) up\n      \
+            \      the project dependencies by parameter name.  If a value is not\
+            \ found, the\n            parent environment is consulted with the same\
+            \ logic to locate a value.  It\n            is possible for there to be\
+            \ a `null` value record for an environment, which\n            means there\
+            \ is no value set; it is also possible for there to be a value record\n\
+            \            with a `value` of `null`, which means the value was explicitly\
+            \ set to `null`.\n\n            If the value's parameter does not match\
+            \ the enclosing parameter (holding the\n            values array) then\
+            \ that value is flowing in through project dependencies.\n           \
+            \ Clients must recognize this in case the user asks to modify the value;\
+            \ in this\n            case the client must POST a new Value to the current\
+            \ parameter to override the\n            value coming in from the project\
+            \ dependency.\n\n            If the Value.environment matches the key,\
+            \ then it is an explicit value set for\n            that environment.\
+            \  If they differ, the value was obtained from a parent\n            environment\
+            \ (directly or indirectly).  If the value is None then no value has\n\
+            \            ever been set in any environment for this parameter within\
+            \ all the project\n            dependencies.\n        "
         created_at:
           type: string
           format: date-time
@@ -7617,22 +7700,30 @@ components:
             - $ref: '#/components/schemas/Value'
             nullable: true
           readOnly: true
-          description: "\n            Each parameter has an effective value in every\
-            \ environment based on\n            environment inheritance and which\
-            \ environments have had a value set.\n\n            Environments inherit\
-            \ from a single parent to form a tree, as a result\n            a single\
-            \ parameter may have different values present for each environment.\n\
-            \            When a value is not explicitly set in an environment, the\
-            \ parent environment\n            is consulted to see if it has a value\
-            \ defined, and so on.\n\n            The dictionary of values has an environment\
-            \ url as the key, and the optional\n            Value record that it resolves\
-            \ to.  If the Value.environment matches the key,\n            then it\
-            \ is an explicit value set for that environment.  If they differ, the\n\
-            \            value was obtained from a parent environment (directly or\
-            \ indirectly).  If the\n            value is None then no value has ever\
-            \ been set in any environment for this\n            parameter.\n\n   \
-            \         key: Environment url\n            value: optional Value record\n\
-            \        "
+          description: "\n            This dictionary has keys that correspond to\
+            \ environment urls, and values\n            that correspond to the effective\
+            \ value for this parameter in that environment.\n            Each parameter\
+            \ has an effective value in every environment based on\n            project\
+            \ dependencies and environment inheritance.\n\n            The effective\
+            \ value is found by looking (within the keyed environment) up\n      \
+            \      the project dependencies by parameter name.  If a value is not\
+            \ found, the\n            parent environment is consulted with the same\
+            \ logic to locate a value.  It\n            is possible for there to be\
+            \ a `null` value record for an environment, which\n            means there\
+            \ is no value set; it is also possible for there to be a value record\n\
+            \            with a `value` of `null`, which means the value was explicitly\
+            \ set to `null`.\n\n            If the value's parameter does not match\
+            \ the enclosing parameter (holding the\n            values array) then\
+            \ that value is flowing in through project dependencies.\n           \
+            \ Clients must recognize this in case the user asks to modify the value;\
+            \ in this\n            case the client must POST a new Value to the current\
+            \ parameter to override the\n            value coming in from the project\
+            \ dependency.\n\n            If the Value.environment matches the key,\
+            \ then it is an explicit value set for\n            that environment.\
+            \  If they differ, the value was obtained from a parent\n            environment\
+            \ (directly or indirectly).  If the value is None then no value has\n\
+            \            ever been set in any environment for this parameter within\
+            \ all the project\n            dependencies.\n        "
         created_at:
           type: string
           format: date-time

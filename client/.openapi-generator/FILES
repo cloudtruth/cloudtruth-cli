@@ -112,6 +112,7 @@ docs/TemplateTimelineEntry.md
 docs/TemplateTimelineEntryTemplate.md
 docs/User.md
 docs/UsersApi.md
+docs/UtilsApi.md
 docs/Value.md
 docs/ValueCreate.md
 git_push.sh
@@ -128,6 +129,7 @@ src/apis/organizations_api.rs
 src/apis/projects_api.rs
 src/apis/serviceaccounts_api.rs
 src/apis/users_api.rs
+src/apis/utils_api.rs
 src/lib.rs
 src/models/audit_trail.rs
 src/models/audit_trail_summary.rs
