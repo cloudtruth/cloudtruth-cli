@@ -250,13 +250,11 @@ class TestProjects(TestCase):
         result = self.run_cli(cmd_env, proj2_cmd + f"unset '{param1}'")
         self.assertResultSuccess(result)
 
-        """
         # now, we get a non-boolean type back from the parent
         result = self.run_cli(cmd_env, proj2_cmd + f"get -d {param1}")
         self.assertResultSuccess(result)
         self.assertIn(f"Value: {value1}", result.out())
         self.assertIn(f"Parameter Type: {type2}", result.out())
-        """
 
         # remove the parent relationship
         result = self.run_cli(cmd_env, base_cmd + f"proj set '{proj_name2}' --parent ''")

@@ -864,6 +864,10 @@ fn proc_param_set(
                     );
                 }
             }
+            // remove the parameter stuff, so that we create the Value below
+            updated.val_id = "".to_string();
+            updated.env_name = "".to_string();
+            updated.env_url = "".to_string();
         } else if param_field_update {
             // only update if there is something to update
             updated = parameters.update_parameter(
