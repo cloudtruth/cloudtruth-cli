@@ -132,89 +132,146 @@ class TestProjects(TestCase):
         self.assertResultSuccess(result)
         self.assertIn(f"{proj_name4},{proj_name2},{new_desc}", result.out())
 
-        ###########
-        # back to simple projects
-        self.create_project(cmd_env, proj_name5)
-        self.create_project(cmd_env, proj_name6)
+        # cleanup - unwind the stack
+        self.delete_project(cmd_env, proj_name4)
+        self.delete_project(cmd_env, proj_name3)
+        self.delete_project(cmd_env, proj_name2)
+        self.delete_project(cmd_env, proj_name1)
+
+    def test_project_parent_parameters(self):
+        base_cmd = self.get_cli_base_cmd()
+        cmd_env = self.get_cmd_env()
+
+        proj_name1 = self.make_name("test-ppp-parent")
+        proj_name2 = self.make_name("test-ppp-child")
+        self.create_project(cmd_env, proj_name1)
+        self.create_project(cmd_env, proj_name2)
+        proj1_cmd = base_cmd + f"--project '{proj_name1}' param "
+        proj2_cmd = base_cmd + f"--project '{proj_name2}' param "
 
         param1 = "param1"
-        type5 = "integer"
-        type6 = "boolean"
-        value5 = "1"
-        value6 = "false"
-        self.set_param(cmd_env, proj_name5, param1, value5, param_type=type5)
-        self.set_param(cmd_env, proj_name6, param1, value6, param_type=type6)
+        type1 = "integer"
+        type2 = "boolean"
+        value1 = "1"
+        value2 = "false"
+        self.set_param(cmd_env, proj_name1, param1, value1, param_type=type1)
+        self.set_param(cmd_env, proj_name2, param1, value2, param_type=type2)
 
         # able to set parent, even though overlapped  parameter names
-        result = self.run_cli(cmd_env, base_cmd + f"proj set '{proj_name6}' -p '{proj_name5}'")
+        result = self.run_cli(cmd_env, base_cmd + f"proj set '{proj_name2}' -p '{proj_name1}'")
         self.assertResultSuccess(result)
 
         # verify relationship is established
         result = self.run_cli(cmd_env, base_cmd + "proj ls -v -f csv")
         self.assertResultSuccess(result)
-        self.assertIn(f"{proj_name6},{proj_name5},", result.out())
+        self.assertIn(f"{proj_name2},{proj_name1},", result.out())
 
         # verify values still same for different projects
-        result = self.run_cli(cmd_env, base_cmd + f"--project '{proj_name5}' param get '{param1}' -d")
+        result = self.run_cli(cmd_env, proj1_cmd + f"get '{param1}' -d")
         self.assertResultSuccess(result)
-        self.assertIn(f"Parameter Type: {type5}", result.out())
-        self.assertIn(f"Value: {value5}", result.out())
+        self.assertIn(f"Parameter Type: {type1}", result.out())
+        self.assertIn(f"Value: {value1}", result.out())
 
-        result = self.run_cli(cmd_env, base_cmd + f"--project '{proj_name6}' param get '{param1}' -d")
+        result = self.run_cli(cmd_env, proj2_cmd + f"get '{param1}' -d")
         self.assertResultSuccess(result)
-        self.assertIn(f"Parameter Type: {type6}", result.out())
-        self.assertIn(f"Value: {value6}", result.out())
+        self.assertIn(f"Parameter Type: {type2}", result.out())
+        self.assertIn(f"Value: {value2}", result.out())
 
-        self.delete_param(cmd_env, proj_name5, param1)
-        self.delete_param(cmd_env, proj_name6, param1)
+        self.delete_param(cmd_env, proj_name1, param1)
+        self.delete_param(cmd_env, proj_name2, param1)
 
         # now, try to add a value to the parent
-        result = self.run_cli(cmd_env, base_cmd + f"--project '{proj_name5}' param set '{param1}' -v '{value5}'")
+        result = self.run_cli(cmd_env, proj1_cmd + f"set '{param1}' -v '{value1}' -t {type1} --min 0 --max 10")
         self.assertResultSuccess(result)
 
-        result = self.run_cli(cmd_env, base_cmd + f"--project '{proj_name5}' param get '{param1}' -d")
+        result = self.run_cli(cmd_env, proj1_cmd + f"get '{param1}' -d")
         self.assertResultSuccess(result)
-        self.assertIn(f"Value: {value5}", result.out())
+        self.assertIn(f"Value: {value1}", result.out())
 
         # since it is in the parent, it is visible in both parent and child
-        self.verify_param(cmd_env, proj_name5, param1, value5)
-        self.verify_param(cmd_env, proj_name6, param1, value5)
+        self.verify_param(cmd_env, proj_name1, param1, value1)
+        self.verify_param(cmd_env, proj_name2, param1, value1)
 
         # verify it cannot be set from the child without the special flag
-        cmd = base_cmd + f"--project '{proj_name6}' param set '{param1}' -v '{value6}' "
+        value2 = "8"
+        cmd = base_cmd + f"--project '{proj_name2}' param set '{param1}' -v '{value2}' "
         result = self.run_cli(cmd_env, cmd)
-        self.assertResultError(result, f"Parameter '{param1}' must be set from project '{proj_name5}'")
+        self.assertResultError(result, f"Parameter '{param1}' must be set from project '{proj_name1}'")
 
         # value is unchanged
-        self.verify_param(cmd_env, proj_name5, param1, value5)
-        self.verify_param(cmd_env, proj_name6, param1, value5)
+        self.verify_param(cmd_env, proj_name1, param1, value1)
+        self.verify_param(cmd_env, proj_name2, param1, value1)
 
         # do it again with the special flag
         result = self.run_cli(cmd_env, cmd + "--create-child")
         self.assertResultSuccess(result)
 
-        # values show up appropriately
-        self.verify_param(cmd_env, proj_name5, param1, value5)
-        self.verify_param(cmd_env, proj_name6, param1, value6)
+        # check the rules/types/values
+        result = self.run_cli(cmd_env, proj1_cmd + f"get -d {param1}")
+        self.assertResultSuccess(result)
+        self.assertIn(f"Value: {value1}", result.out())
+        self.assertIn(f"Parameter Type: {type1}", result.out())
+        self.assertIn("Rule Count: 2", result.out())
+
+        # inherit types/rules
+        result = self.run_cli(cmd_env, proj2_cmd + f"get -d {param1}")
+        self.assertResultSuccess(result)
+        self.assertIn(f"Value: {value2}", result.out())
+        self.assertIn(f"Parameter Type: {type1}", result.out())
+        self.assertIn("Rule Count: 2", result.out())
+
+        # now let parent/child be different types... really should be able to do this in 1 command
+        value2 = "true"
+        cmd = proj2_cmd + f"set '{param1}' --no-max --no-min"
+        result = self.run_cli(cmd_env, cmd)
+        self.assertResultSuccess(result)
+        cmd = proj2_cmd + f"set '{param1}' -v '{value2}' -t string"
+        result = self.run_cli(cmd_env, cmd)
+        self.assertResultSuccess(result)
+        cmd = proj2_cmd + f"set '{param1}' -t '{type2}'"
+        result = self.run_cli(cmd_env, cmd)
+        self.assertResultSuccess(result)
+
+        # check the rules/types/values
+        result = self.run_cli(cmd_env, proj1_cmd + f"get -d {param1}")
+        self.assertResultSuccess(result)
+        self.assertIn(f"Value: {value1}", result.out())
+        self.assertIn(f"Parameter Type: {type1}", result.out())
+        self.assertIn("Rule Count: 2", result.out())
+
+        # inherit types/rules
+        result = self.run_cli(cmd_env, proj2_cmd + f"get -d {param1}")
+        self.assertResultSuccess(result)
+        self.assertIn(f"Value: {value2}", result.out())
+        self.assertIn(f"Parameter Type: {type2}", result.out())
+        self.assertIn("Rule Count: 0", result.out())
+
+        # remove the environmental override
+        result = self.run_cli(cmd_env, proj2_cmd + f"unset '{param1}'")
+        self.assertResultSuccess(result)
+
+        """
+        # now, we get a non-boolean type back from the parent
+        result = self.run_cli(cmd_env, proj2_cmd + f"get -d {param1}")
+        self.assertResultSuccess(result)
+        self.assertIn(f"Value: {value1}", result.out())
+        self.assertIn(f"Parameter Type: {type2}", result.out())
+        """
 
         # remove the parent relationship
-        result = self.run_cli(cmd_env, base_cmd + f"proj set '{proj_name6}' --parent ''")
+        result = self.run_cli(cmd_env, base_cmd + f"proj set '{proj_name2}' --parent ''")
         self.assertResultSuccess(result)
 
         # verify parent is remove
         projects = self.get_cli_entries(cmd_env, base_cmd + "proj ls -v -f json", "project")
-        entry = find_by_prop(projects, "Name", proj_name6)[0]
+        entry = find_by_prop(projects, "Name", proj_name2)[0]
         self.assertEqual(entry.get("Parent"), "")
 
         # see it we still have it
-        result = self.list_params(cmd_env, proj_name6, show_values=False)
+        result = self.list_params(cmd_env, proj_name2, show_values=False)
         self.assertIn(param1, result.out())
 
         # cleanup -- need to unwind in order
-        self.delete_project(cmd_env, proj_name6)
-        self.delete_project(cmd_env, proj_name5)
-        self.delete_project(cmd_env, proj_name4)
-        self.delete_project(cmd_env, proj_name3)
         self.delete_project(cmd_env, proj_name2)
         self.delete_project(cmd_env, proj_name1)
 

@@ -162,14 +162,13 @@ fn default_param_value() -> &'static Value {
 
 impl From<&Parameter> for ParameterDetails {
     fn from(api_param: &Parameter) -> Self {
-        let first = api_param.values.values().next();
-        let mut env_value: &Value = match first {
-            Some(Some(v)) => v,
-            _ => default_param_value(),
-        };
-        // in this case, the value comes from another project... ignore it
-        if !env_value.url.contains(&api_param.url) {
-            env_value = default_param_value();
+        let mut env_value = default_param_value();
+        // loop through all the values, looking for the Value that matches this param/project
+        for value in api_param.values.values().flatten() {
+            if value.url.contains(&api_param.url) {
+                env_value = value;
+                break;
+            }
         }
 
         ParameterDetails {

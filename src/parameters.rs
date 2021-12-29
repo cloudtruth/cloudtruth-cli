@@ -821,7 +821,7 @@ fn proc_param_set(
             ));
             help_message(format!(
                 "If you want to create a parameter in {}, you can use the --create-child flag. \
-                This creates another parameter that inherits values, but generally needs to be \
+                \nThis creates another parameter that inherits values, but generally needs to \nbe \
                 managed separately.",
                 proj_name
             ));
