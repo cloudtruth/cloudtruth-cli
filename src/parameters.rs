@@ -11,7 +11,7 @@ use crate::database::{
 };
 use crate::table::Table;
 use crate::{
-    error_message, format_param_error, parse_datetime, parse_tag, user_confirm,
+    error_message, format_param_error, help_message, parse_datetime, parse_tag, user_confirm,
     warn_missing_subcommand, warn_unresolved_params, warning_message, DEL_CONFIRM, FILE_READ_ERR,
 };
 use clap::ArgMatches;
@@ -768,6 +768,7 @@ fn proc_param_set(
     let evaluate = false; // no need to evaluate
     let mask_secrets = true; // do not fetch secrets
     let param_type = subcmd_args.value_of("param-type");
+    let create_child = subcmd_args.is_present("create-child");
 
     // make sure the user did not over-specify
     if (jmes_path.is_some() || fqn.is_some())
@@ -810,17 +811,65 @@ fn proc_param_set(
         None,
         None,
     )? {
-        if !original.project_url.contains(proj_id) {
+        let parent_project = !original.project_url.contains(proj_id);
+        if parent_project && !create_child {
             let projects = Projects::new();
             let source_proj = projects.get_name_from_url(rest_cfg, &original.project_url);
             error_message(format!(
                 "Parameter '{}' must be set from project '{}' -- it is not part of project '{}'",
                 key_name, source_proj, proj_name
             ));
+            help_message(format!(
+                "If you want to create a parameter in {}, you can use the --create-child flag. \
+                \nThis creates another parameter that inherits values, but generally needs to \nbe \
+                managed separately.",
+                proj_name
+            ));
             process::exit(20);
         }
-        // only update if there is something to update
-        if param_field_update {
+
+        if parent_project {
+            let desc_arg = if description.is_some() {
+                description
+            } else if !original.description.is_empty() {
+                Some(original.description.as_str())
+            } else {
+                None
+            };
+            let sec_arg = if secret.is_some() {
+                secret
+            } else {
+                Some(original.secret)
+            };
+            let type_arg = if param_type.is_some() {
+                param_type
+            } else {
+                Some(original.param_type.as_str())
+            };
+
+            param_added = true;
+            set_action = "created child";
+            updated = parameters
+                .create_parameter(rest_cfg, proj_id, key_name, desc_arg, sec_arg, type_arg)?;
+            if updated.param_type == original.param_type {
+                for orig_rule in original.rules {
+                    let _ = set_rule_type(
+                        parameters,
+                        rest_cfg,
+                        &updated,
+                        proj_id,
+                        false,
+                        orig_rule.rule_type,
+                        &orig_rule.constraint,
+                    );
+                }
+            }
+            // remove the parameter stuff, so that we create the Value below
+            updated.val_id = "".to_string();
+            updated.env_name = "".to_string();
+            updated.env_url = "".to_string();
+        } else if param_field_update {
+            // only update if there is something to update
             updated = parameters.update_parameter(
                 rest_cfg,
                 proj_id,
