@@ -20,6 +20,16 @@ pub const PUSH_NAME_ARG: &str = "push-name";
 pub const RAW_FLAG: &str = "raw";
 pub const RENAME_OPT: &str = "new-name";
 pub const ROLE_ARG: &str = "role";
+pub const RULE_MAX_ARG: &str = "MAX";
+pub const RULE_MIN_ARG: &str = "MIN";
+pub const RULE_MAX_LEN_ARG: &str = "MAX-LEN";
+pub const RULE_MIN_LEN_ARG: &str = "MIN-LEN";
+pub const RULE_REGEX_ARG: &str = "REGEX";
+pub const RULE_NO_MAX_ARG: &str = "NO-MAX";
+pub const RULE_NO_MIN_ARG: &str = "NO-MIN";
+pub const RULE_NO_MAX_LEN_ARG: &str = "NO-MAX-LEN";
+pub const RULE_NO_MIN_LEN_ARG: &str = "NO-MIN-LEN";
+pub const RULE_NO_REGEX_ARG: &str = "NO-REGEX";
 pub const SHOW_TIMES_FLAG: &str = "show-time";
 pub const SECRETS_FLAG: &str = "secrets";
 pub const TAG_NAME_ARG: &str = "tag-name";
@@ -297,6 +307,75 @@ fn schema_version_arg() -> Arg<'static, 'static> {
     Arg::with_name("version")
         .long("version")
         .help("Display just the schema version")
+}
+
+fn rule_max_arg() -> Arg<'static, 'static> {
+    Arg::with_name(RULE_MAX_ARG)
+        .long("max")
+        .takes_value(true)
+        .allow_hyphen_values(true)
+        .help("Set parameter rule maximum value")
+}
+
+fn rule_min_arg() -> Arg<'static, 'static> {
+    Arg::with_name(RULE_MIN_ARG)
+        .long("min")
+        .takes_value(true)
+        .allow_hyphen_values(true)
+        .help("Set parameter rule minimum value")
+}
+
+fn rule_max_len_arg() -> Arg<'static, 'static> {
+    Arg::with_name(RULE_MAX_LEN_ARG)
+        .long("max-len")
+        .takes_value(true)
+        .allow_hyphen_values(true)
+        .help("Set parameter rule maximum length value")
+}
+
+fn rule_min_len_arg() -> Arg<'static, 'static> {
+    Arg::with_name(RULE_MIN_LEN_ARG)
+        .long("min-len")
+        .takes_value(true)
+        .allow_hyphen_values(true)
+        .help("Set parameter rule minimum length value")
+}
+
+fn rule_regex_arg() -> Arg<'static, 'static> {
+    Arg::with_name(RULE_REGEX_ARG)
+        .long("regex")
+        .takes_value(true)
+        .help("Set parameter rule regex value")
+}
+
+fn rule_no_max_arg() -> Arg<'static, 'static> {
+    Arg::with_name(RULE_NO_MAX_ARG)
+        .long("no-max")
+        .help("Remove the parameter rule maximum value")
+}
+
+fn rule_no_min_arg() -> Arg<'static, 'static> {
+    Arg::with_name(RULE_NO_MIN_ARG)
+        .long("no-min")
+        .help("Remove the parameter rule minimum value")
+}
+
+fn rule_no_max_len_arg() -> Arg<'static, 'static> {
+    Arg::with_name(RULE_NO_MAX_LEN_ARG)
+        .long("no-max-len")
+        .help("Remove the parameter rule maximum length value")
+}
+
+fn rule_no_min_len_arg() -> Arg<'static, 'static> {
+    Arg::with_name(RULE_NO_MIN_LEN_ARG)
+        .long("no-min-len")
+        .help("Remove the parameter rule minimum length value")
+}
+
+fn rule_no_regex_arg() -> Arg<'static, 'static> {
+    Arg::with_name(RULE_NO_REGEX_ARG)
+        .long("no-regex")
+        .help("Remove the parameter rule regex value")
 }
 
 pub fn build_cli() -> App<'static, 'static> {
@@ -661,45 +740,16 @@ pub fn build_cli() -> App<'static, 'static> {
                             .long("type")
                             .takes_value(true)
                             .help("The parameter type. Fundamental types are: boolean, string, integer"))
-                        .arg(Arg::with_name("MAX")
-                            .long("max")
-                            .takes_value(true)
-                            .allow_hyphen_values(true)
-                            .help("Set parameter rule maximum value"))
-                        .arg(Arg::with_name("NO-MAX")
-                            .long("no-max")
-                            .help("Remove the parameter rule maximum value"))
-                        .arg(Arg::with_name("MIN")
-                            .long("min")
-                            .takes_value(true)
-                            .allow_hyphen_values(true)
-                            .help("Set parameter rule minimum value"))
-                        .arg(Arg::with_name("NO-MIN")
-                            .long("no-min")
-                            .help("Remove the parameter rule minimum value"))
-                        .arg(Arg::with_name("MAX-LEN")
-                            .long("max-len")
-                            .takes_value(true)
-                            .allow_hyphen_values(true)
-                            .help("Set parameter rule maximum length value"))
-                        .arg(Arg::with_name("NO-MAX-LEN")
-                            .long("no-max-len")
-                            .help("Remove the parameter rule maximum length value"))
-                        .arg(Arg::with_name("MIN-LEN")
-                            .long("min-len")
-                            .takes_value(true)
-                            .allow_hyphen_values(true)
-                            .help("Set parameter rule minimum length value"))
-                        .arg(Arg::with_name("NO-MIN-LEN")
-                            .long("no-min-len")
-                            .help("Remove the parameter rule minimum length value"))
-                        .arg(Arg::with_name("REGEX")
-                            .long("regex")
-                            .takes_value(true)
-                            .help("Set parameter rule regex value"))
-                        .arg(Arg::with_name("NO-REGEX")
-                            .long("no-regex")
-                            .help("Remove the parameter rule regex value"))
+                        .arg(rule_max_arg())
+                        .arg(rule_no_max_arg())
+                        .arg(rule_min_arg())
+                        .arg(rule_no_min_arg())
+                        .arg(rule_max_len_arg())
+                        .arg(rule_no_max_len_arg())
+                        .arg(rule_min_len_arg())
+                        .arg(rule_no_min_len_arg())
+                        .arg(rule_regex_arg())
+                        .arg(rule_no_regex_arg())
                         .arg(Arg::with_name("create-child")
                             .long("create-child")
                             .help("Create a parameter in the child project"))

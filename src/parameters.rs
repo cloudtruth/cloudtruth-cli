@@ -1,7 +1,9 @@
 use crate::cli::{
     binary_name, show_values, true_false_option, AS_OF_ARG, CONFIRM_FLAG, DELETE_SUBCMD,
     DESCRIPTION_OPT, DIFF_SUBCMD, FORMAT_OPT, GET_SUBCMD, JMES_PATH_ARG, KEY_ARG, LIST_SUBCMD,
-    PUSH_SUBCMD, RENAME_OPT, SECRETS_FLAG, SET_SUBCMD, SHOW_TIMES_FLAG,
+    PUSH_SUBCMD, RENAME_OPT, RULE_MAX_ARG, RULE_MAX_LEN_ARG, RULE_MIN_ARG, RULE_MIN_LEN_ARG,
+    RULE_NO_MAX_ARG, RULE_NO_MAX_LEN_ARG, RULE_NO_MIN_ARG, RULE_NO_MIN_LEN_ARG, RULE_NO_REGEX_ARG,
+    RULE_REGEX_ARG, SECRETS_FLAG, SET_SUBCMD, SHOW_TIMES_FLAG,
 };
 use crate::config::DEFAULT_ENV_NAME;
 use crate::database::{
@@ -753,16 +755,16 @@ fn proc_param_set(
     let mut param_added = false;
     let mut set_action = "updated";
     let mut env_changed = "".to_string();
-    let max_rule = subcmd_args.value_of("MAX");
-    let min_rule = subcmd_args.value_of("MIN");
-    let max_len_rule = subcmd_args.value_of("MAX-LEN");
-    let min_len_rule = subcmd_args.value_of("MIN-LEN");
-    let regex_rule = subcmd_args.value_of("REGEX");
-    let delete_max = subcmd_args.is_present("NO-MAX");
-    let delete_min = subcmd_args.is_present("NO-MIN");
-    let delete_max_len = subcmd_args.is_present("NO-MAX-LEN");
-    let delete_min_len = subcmd_args.is_present("NO-MIN-LEN");
-    let delete_regex = subcmd_args.is_present("NO-REGEX");
+    let max_rule = subcmd_args.value_of(RULE_MAX_ARG);
+    let min_rule = subcmd_args.value_of(RULE_MIN_ARG);
+    let max_len_rule = subcmd_args.value_of(RULE_MAX_LEN_ARG);
+    let min_len_rule = subcmd_args.value_of(RULE_MIN_LEN_ARG);
+    let regex_rule = subcmd_args.value_of(RULE_REGEX_ARG);
+    let delete_max = subcmd_args.is_present(RULE_NO_MAX_ARG);
+    let delete_min = subcmd_args.is_present(RULE_NO_MIN_ARG);
+    let delete_max_len = subcmd_args.is_present(RULE_NO_MAX_LEN_ARG);
+    let delete_min_len = subcmd_args.is_present(RULE_NO_MIN_LEN_ARG);
+    let delete_regex = subcmd_args.is_present(RULE_NO_REGEX_ARG);
     let secret: Option<bool> = true_false_option(subcmd_args.value_of("secret"));
     let evaluated: Option<bool> = true_false_option(subcmd_args.value_of("evaluate"));
     let evaluate = false; // no need to evaluate
