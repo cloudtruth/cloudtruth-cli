@@ -58,6 +58,8 @@ docs/PaginatedMembershipList.md
 docs/PaginatedOrganizationList.md
 docs/PaginatedParameterList.md
 docs/PaginatedParameterRuleList.md
+docs/PaginatedParameterTypeList.md
+docs/PaginatedParameterTypeRuleList.md
 docs/PaginatedProjectList.md
 docs/PaginatedServiceAccountList.md
 docs/PaginatedTagList.md
@@ -74,6 +76,10 @@ docs/ParameterTimeline.md
 docs/ParameterTimelineEntry.md
 docs/ParameterTimelineEntryEnvironment.md
 docs/ParameterTimelineEntryParameter.md
+docs/ParameterType.md
+docs/ParameterTypeCreate.md
+docs/ParameterTypeRule.md
+docs/ParameterTypeRuleCreate.md
 docs/PatchedAwsIntegration.md
 docs/PatchedAwsPull.md
 docs/PatchedAwsPushUpdate.md
@@ -83,6 +89,8 @@ docs/PatchedMembership.md
 docs/PatchedOrganization.md
 docs/PatchedParameter.md
 docs/PatchedParameterRule.md
+docs/PatchedParameterType.md
+docs/PatchedParameterTypeRule.md
 docs/PatchedProject.md
 docs/PatchedServiceAccount.md
 docs/PatchedTagUpdate.md
@@ -110,6 +118,7 @@ docs/TemplatePreview.md
 docs/TemplateTimeline.md
 docs/TemplateTimelineEntry.md
 docs/TemplateTimelineEntryTemplate.md
+docs/TypesApi.md
 docs/User.md
 docs/UsersApi.md
 docs/UtilsApi.md
@@ -128,6 +137,7 @@ src/apis/mod.rs
 src/apis/organizations_api.rs
 src/apis/projects_api.rs
 src/apis/serviceaccounts_api.rs
+src/apis/types_api.rs
 src/apis/users_api.rs
 src/apis/utils_api.rs
 src/lib.rs
@@ -180,6 +190,8 @@ src/models/paginated_membership_list.rs
 src/models/paginated_organization_list.rs
 src/models/paginated_parameter_list.rs
 src/models/paginated_parameter_rule_list.rs
+src/models/paginated_parameter_type_list.rs
+src/models/paginated_parameter_type_rule_list.rs
 src/models/paginated_project_list.rs
 src/models/paginated_service_account_list.rs
 src/models/paginated_tag_list.rs
@@ -196,6 +208,10 @@ src/models/parameter_timeline.rs
 src/models/parameter_timeline_entry.rs
 src/models/parameter_timeline_entry_environment.rs
 src/models/parameter_timeline_entry_parameter.rs
+src/models/parameter_type.rs
+src/models/parameter_type_create.rs
+src/models/parameter_type_rule.rs
+src/models/parameter_type_rule_create.rs
 src/models/patched_aws_integration.rs
 src/models/patched_aws_pull.rs
 src/models/patched_aws_push_update.rs
@@ -205,6 +221,8 @@ src/models/patched_membership.rs
 src/models/patched_organization.rs
 src/models/patched_parameter.rs
 src/models/patched_parameter_rule.rs
+src/models/patched_parameter_type.rs
+src/models/patched_parameter_type_rule.rs
 src/models/patched_project.rs
 src/models/patched_service_account.rs
 src/models/patched_tag_update.rs
