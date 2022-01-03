@@ -1268,4 +1268,47 @@ pub fn build_cli() -> App<'static, 'static> {
                     ])
             ])
         )
+        .subcommand(SubCommand::with_name("parameter-types")
+            .visible_aliases(&["parameter-type", "param-types", "param-type", "types", "type", "ty"])
+            .about("Manage parameter types in the CloudTruth environment")
+            .subcommands([
+                SubCommand::with_name(DELETE_SUBCMD)
+                    .visible_aliases(DELETE_ALIASES)
+                    .about("Delete specified CloudTruth parameter type")
+                    .args(&[
+                        name_arg().help("Parameter type name"),
+                        confirm_flag(),
+                    ]),
+                SubCommand::with_name(LIST_SUBCMD)
+                    .visible_aliases(LIST_ALIASES)
+                    .about("List CloudTruth parameter types")
+                    .args(&[
+                        values_flag().help("Display parameter type information/values"),
+                        show_times_arg(),
+                        table_format_options().help("Display parameter type value info format"),
+                    ]),
+                SubCommand::with_name(SET_SUBCMD)
+                    .visible_aliases(SET_ALIASES)
+                    .about("Set parameter type and rules")
+                    .args(&[
+                        name_arg().help("Parameter type name"),
+                        rename_option().help("New parameter type name"),
+                        parent_arg().help("Parameter type parent"),
+                        description_option().help("Parameter type description"),
+                        rule_max_arg(),
+                        rule_no_max_arg(),
+                        rule_min_arg(),
+                        rule_no_min_arg(),
+                        rule_max_len_arg(),
+                        rule_no_max_len_arg(),
+                        rule_min_len_arg(),
+                        rule_no_min_len_arg(),
+                        rule_regex_arg(),
+                        rule_no_regex_arg(),
+                    ]),
+                SubCommand::with_name(TREE_SUBCMD)
+                        .visible_aliases(TREE_ALIASES)
+                        .about("Show a tree representation of the parameter types"),
+            ])
+        )
 }

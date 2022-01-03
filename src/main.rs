@@ -20,6 +20,7 @@ mod schema;
 mod subprocess;
 mod table;
 mod templates;
+mod types;
 mod users;
 mod versions;
 
@@ -40,6 +41,7 @@ use crate::projects::process_project_command;
 use crate::run::process_run_command;
 use crate::schema::process_schema_command;
 use crate::templates::process_templates_command;
+use crate::types::process_parameter_type_command;
 use crate::users::process_users_command;
 use crate::versions::process_version_command;
 use chrono::{DateTime, Datelike, NaiveDate, NaiveDateTime, NaiveTime, Utc};
@@ -444,6 +446,11 @@ fn main() -> Result<()> {
 
     if let Some(matches) = matches.subcommand_matches("import") {
         process_import_command(matches, &rest_cfg)?;
+        process::exit(0);
+    }
+
+    if let Some(matches) = matches.subcommand_matches("parameter-types") {
+        process_parameter_type_command(matches, &rest_cfg)?;
         process::exit(0);
     }
 

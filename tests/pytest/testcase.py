@@ -115,6 +115,7 @@ class TestCase(unittest.TestCase):
         self._environments = None
         self._users = None
         self._invites = None
+        self._types = None
         self._filenames = None
         super().__init__(*args, **kwargs)
         self.maxDiff = None
@@ -125,6 +126,7 @@ class TestCase(unittest.TestCase):
         self._environments = list()
         self._users = list()
         self._invites = list()
+        self._types = list()
         self._filenames = set()
         super().setUp()
 
@@ -149,6 +151,12 @@ class TestCase(unittest.TestCase):
         # delete any possibly lingering invitations
         for email in self._invites:
             cmd = self._base_cmd + f"user invitations del --confirm \"{email}\""
+            subprocess.run(cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+        # tear down any possibly lingering types -- they should have been deleted in reverse
+        # order in case there are any children.
+        for typename in reversed(self._types):
+            cmd = self._base_cmd + f"typ del \"{typename}\" --confirm"
             subprocess.run(cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
         # remove any added files
@@ -283,6 +291,10 @@ class TestCase(unittest.TestCase):
                 email = _next_part(args, "set")
                 if email and email not in self._invites:
                     self._invites.append(email)
+            elif set(args) & set(["parameter-types", "param-types", "param-type", "types", "type", "ty"]):
+                typename = _next_part(args, "set")
+                if typename and typename not in self._types:
+                    self._types.append(typename)
 
         start = datetime.now()
         process = subprocess.run(
@@ -371,6 +383,20 @@ class TestCase(unittest.TestCase):
 
     def delete_environment(self, cmd_env, env_name: str) -> Result:
         result = self.run_cli(cmd_env, self._base_cmd + f"env del '{env_name}' --confirm")
+        self.assertResultSuccess(result)
+        return result
+
+    def create_type(self, cmd_env, type_name: str, parent: Optional[str] = None) -> Result:
+        type_cmd = self._base_cmd + f"param-type set '{type_name}' -d '{AUTO_DESCRIPTION}' "
+        if parent:
+            type_cmd += f"--parent '{parent}'"
+        result = self.run_cli(cmd_env, type_cmd)
+        self.assertResultSuccess(result)
+        self.assertIn(f"Created parameter type '{type_name}'", result.out())
+        return result
+
+    def delete_type(self, cmd_env, type_name: str) -> Result:
+        result = self.run_cli(cmd_env, self._base_cmd + f"param-type delete '{type_name}' --confirm")
         self.assertResultSuccess(result)
         return result
 
