@@ -118,7 +118,7 @@ my_param,cRaZy value,default,string,0,internal,false,this is just a test descrip
         key1 = "renamed_param"
         result = self.run_cli(cmd_env, sub_cmd + f"set {orig_name} -r {key1}")
         self.assertResultSuccess(result)
-        self.assertIn(f"Successfully updated parameter '{key1}'", result.out())
+        self.assertIn(f"Updated parameter '{key1}'", result.out())
 
         ########
         # update the just the description
@@ -130,7 +130,7 @@ my_param,cRaZy value,default,string,0,internal,false,this is just a test descrip
         # no updates provided
         result = self.run_cli(cmd_env, sub_cmd + f"set {key1}")
         self.assertResultSuccess(result)
-        self.assertIn("Successfully updated parameter", result.out())
+        self.assertIn("Updated parameter", result.out())
 
         result = self.run_cli(cmd_env, sub_cmd + "ls -v")
         self.assertResultSuccess(result)
@@ -146,7 +146,7 @@ my_param,cRaZy value,default,string,0,internal,false,this is just a test descrip
         # delete the parameter
         result = self.run_cli(cmd_env, sub_cmd + f"delete --yes '{key1}'")
         self.assertResultSuccess(result)
-        self.assertIn(f"Successfully removed parameter '{key1}'", result.out())
+        self.assertIn(f"Removed parameter '{key1}'", result.out())
 
         # make sure it is gone
         result = self.run_cli(cmd_env, sub_cmd + "list --values --secrets")
@@ -167,7 +167,7 @@ my_param,cRaZy value,default,string,0,internal,false,this is just a test descrip
         # create a parameter with no value
         result = self.run_cli(cmd_env, sub_cmd + f"set '{key1}'")
         self.assertResultSuccess(result)
-        self.assertIn("Successfully created parameter", result.out())
+        self.assertIn("Created parameter", result.out())
         self.assertNotIn("for environment", result.out())
 
         result = self.run_cli(cmd_env, sub_cmd + "list --values -f csv")
@@ -343,7 +343,7 @@ my_param,super-SENSITIVE-vAluE,default,string,0,internal,true,my secret value
         # delete the parameter
         result = self.run_cli(cmd_env, sub_cmd + f"delete -y '{key1}'")
         self.assertResultSuccess(result)
-        self.assertIn(f"Successfully removed parameter '{key1}'", result.out())
+        self.assertIn(f"Removed parameter '{key1}'", result.out())
 
         # make sure it is gone
         result = self.run_cli(cmd_env, sub_cmd + "list --values --secrets")
@@ -364,7 +364,7 @@ my_param,super-SENSITIVE-vAluE,default,string,0,internal,true,my secret value
         # create a secret with no value
         result = self.run_cli(cmd_env, sub_cmd + f"set '{key1}' --secret true")
         self.assertResultSuccess(result)
-        self.assertIn("Successfully created parameter", result.out())
+        self.assertIn("Created parameter", result.out())
         self.assertNotIn("for environment", result.out())
 
         result = self.run_cli(cmd_env, sub_cmd + "list --values -f csv")
@@ -579,7 +579,7 @@ SNA=fu
         unset_cmd = f"param unset '{var1_name}'"
         result = self.run_cli(cmd_env, proj_cmd + f"--env {env_name2} " + unset_cmd)
         self.assertResultSuccess(result)
-        self.assertIn(f"Successfully removed parameter value '{var1_name}'", result.out())
+        self.assertIn(f"Removed parameter value '{var1_name}'", result.out())
         self.assertIn(f"for environment '{env_name2}'", result.out())
 
         result = self.run_cli(cmd_env, env3_list)
@@ -597,7 +597,7 @@ SNA=fu
         # remove env3 override
         result = self.run_cli(cmd_env, proj_cmd + f"--env {env_name3} " + unset_cmd)
         self.assertResultSuccess(result)
-        self.assertIn(f"Successfully removed parameter value '{var1_name}'", result.out())
+        self.assertIn(f"Removed parameter value '{var1_name}'", result.out())
         self.assertIn(f"for environment '{env_name3}'", result.out())
 
         result = self.run_cli(cmd_env, env3_list)
@@ -1795,7 +1795,7 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
 
         result = self.run_cli(cmd_env, param_cmd + f"set {bool_param} -t {bool_type} -v {bool_value}")
         self.assertResultSuccess(result)
-        self.assertIn(f"Successfully set parameter '{bool_param}'", result.out())
+        self.assertIn(f"Set parameter '{bool_param}'", result.out())
 
         # see it in the display
         result = self.run_cli(cmd_env, list_cmd)
@@ -1839,7 +1839,7 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
 
         result = self.run_cli(cmd_env, param_cmd + f"set {int_param} -t {int_type} -v {int_value}")
         self.assertResultSuccess(result)
-        self.assertIn(f"Successfully set parameter '{int_param}'", result.out())
+        self.assertIn(f"Set parameter '{int_param}'", result.out())
 
         # see it in the display
         result = self.run_cli(cmd_env, list_cmd)

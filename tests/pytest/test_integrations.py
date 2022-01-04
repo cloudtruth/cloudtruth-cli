@@ -181,7 +181,7 @@ class TestIntegrations(TestCase):
         # flip it to an external value
         result = self.run_cli(cmd_env, param_cmd + f"set {param1} -f {fqn} -j {jmes}")
         self.assertResultSuccess(result)
-        self.assertIn("Successfully updated parameter", result.out())
+        self.assertIn("Updated parameter", result.out())
 
         result = self.run_cli(cmd_env, show_cmd)
         self.assertResultSuccess(result)
@@ -214,7 +214,7 @@ class TestIntegrations(TestCase):
         param2 = "eulers"
         result = self.run_cli(cmd_env, param_cmd + f"set {param2} -f {fqn} -j {jmes}")
         self.assertResultSuccess(result)
-        self.assertIn("Successfully set parameter", result.out())
+        self.assertIn("Set parameter", result.out())
 
         result = self.run_cli(cmd_env, show_cmd)
         self.assertResultSuccess(result)
