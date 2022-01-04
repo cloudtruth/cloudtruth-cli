@@ -16,23 +16,25 @@ OPTIONS:
         --project <project>    The CloudTruth project to work with
 
 SUBCOMMANDS:
-    actions          Manage CloudTruth actions [aliases: action, act, ac]
-    audit-logs       Display audit logs [aliases: audit, aud, au, log, logs]
-    completions      Generate shell completions for this application
-    configuration    Configuration options for this application [aliases: config, conf, con, co, c]
-    environments     Work with CloudTruth environments [aliases: environment, envs, env, e]
-    help             Prints this message or the help of the given subcommand(s)
-    import           Perform imports into the CloudTruth environment [aliases: imp, im]
-    integrations     Work with CloudTruth integrations [aliases: integration, integrate, integ, int, in]
-    login            Sets up a CloudTruth configuration profile api_key
-    logout           Removes a CloudTruth configuration profile api_key
-    parameters       Work with CloudTruth parameters [aliases: parameter, params, param, par, pa, p]
-    projects         Work with CloudTruth projects [aliases: project, proj]
-    run              Run a shell with the parameters in place [aliases: run, ru, r]
-    schema           View CloudTruth OpenAPI schema
-    templates        Work with CloudTruth templates [aliases: template, temp, te, t]
-    users            Work with CloudTruth users [aliases: user, us, u]
-    versions         Manage CloudTruth CLI versions [aliases: version, vers, ver, ve, v]
+    actions            Manage CloudTruth actions [aliases: action, act, ac]
+    audit-logs         Display audit logs [aliases: audit, aud, au, log, logs]
+    completions        Generate shell completions for this application
+    configuration      Configuration options for this application [aliases: config, conf, con, co, c]
+    environments       Work with CloudTruth environments [aliases: environment, envs, env, e]
+    help               Prints this message or the help of the given subcommand(s)
+    import             Perform imports into the CloudTruth environment [aliases: imp, im]
+    integrations       Work with CloudTruth integrations [aliases: integration, integrate, integ, int, in]
+    login              Sets up a CloudTruth configuration profile api_key
+    logout             Removes a CloudTruth configuration profile api_key
+    parameter-types    Manage parameter types in the CloudTruth environment [aliases: parameter-type, param-types,
+                       param-type, types, type, ty]
+    parameters         Work with CloudTruth parameters [aliases: parameter, params, param, par, pa, p]
+    projects           Work with CloudTruth projects [aliases: project, proj]
+    run                Run a shell with the parameters in place [aliases: run, ru, r]
+    schema             View CloudTruth OpenAPI schema
+    templates          Work with CloudTruth templates [aliases: template, temp, te, t]
+    users              Work with CloudTruth users [aliases: user, us, u]
+    versions           Manage CloudTruth CLI versions [aliases: version, vers, ver, ve, v]
 ============================================================
 cloudtruth-actions 
 Manage CloudTruth actions
@@ -798,6 +800,92 @@ USAGE:
 
 FLAGS:
     -y, --yes        Avoid confirmation prompt(s)
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+============================================================
+cloudtruth-parameter-types 
+Manage parameter types in the CloudTruth environment
+
+USAGE:
+    cloudtruth parameter-types [SUBCOMMAND]
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+SUBCOMMANDS:
+    delete    Delete specified CloudTruth parameter type [aliases: del, d]
+    help      Prints this message or the help of the given subcommand(s)
+    list      List CloudTruth parameter types [aliases: ls, l]
+    set       Set parameter type and rules [aliases: s]
+    tree      Show a tree representation of the parameter types [aliases: tr]
+========================================
+cloudtruth-parameter-types-delete 
+Delete specified CloudTruth parameter type
+
+USAGE:
+    cloudtruth parameter-types delete [FLAGS] <NAME>
+
+FLAGS:
+    -y, --yes        Avoid confirmation prompt(s)
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+ARGS:
+    <NAME>    Parameter type name
+========================================
+cloudtruth-parameter-types-list 
+List CloudTruth parameter types
+
+USAGE:
+    cloudtruth parameter-types list [FLAGS] [OPTIONS]
+
+FLAGS:
+    -h, --help          Prints help information
+        --rules         Display the parameter type rules.
+        --show-times    Show create and modified times.
+    -v, --values        Display parameter type information/values
+    -V, --version       Prints version information
+
+OPTIONS:
+    -f, --format <format>    Display parameter type value info format [default: table]  [possible values: table, csv,
+                             json, yaml]
+========================================
+cloudtruth-parameter-types-set 
+Set parameter type and rules
+
+USAGE:
+    cloudtruth parameter-types set [FLAGS] [OPTIONS] <NAME>
+
+FLAGS:
+        --no-max        Remove the parameter rule maximum value
+        --no-max-len    Remove the parameter rule maximum length value
+        --no-min        Remove the parameter rule minimum value
+        --no-min-len    Remove the parameter rule minimum length value
+        --no-regex      Remove the parameter rule regex value
+    -h, --help          Prints help information
+    -V, --version       Prints version information
+
+OPTIONS:
+        --max <MAX>             Set parameter rule maximum value
+        --max-len <MAX-LEN>     Set parameter rule maximum length value
+        --min <MIN>             Set parameter rule minimum value
+        --min-len <MIN-LEN>     Set parameter rule minimum length value
+        --regex <REGEX>         Set parameter rule regex value
+    -d, --desc <description>    Parameter type description
+    -r, --rename <new-name>     New parameter type name
+    -p, --parent <parent>       Parameter type parent
+
+ARGS:
+    <NAME>    Parameter type name
+========================================
+cloudtruth-parameter-types-tree 
+Show a tree representation of the parameter types
+
+USAGE:
+    cloudtruth parameter-types tree
+
+FLAGS:
     -h, --help       Prints help information
     -V, --version    Prints version information
 ============================================================

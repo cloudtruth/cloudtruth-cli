@@ -1,4 +1,4 @@
-use cloudtruth_restapi::models::{ParameterRule, ParameterRuleTypeEnum};
+use cloudtruth_restapi::models::{ParameterRule, ParameterRuleTypeEnum, ParameterTypeRule};
 use std::fmt;
 use std::fmt::Formatter;
 
@@ -12,7 +12,7 @@ pub enum ParamRuleType {
 }
 
 #[derive(Clone, Debug)]
-pub struct ParameterDetailRule {
+pub struct ParameterRuleDetail {
     pub id: String,
     pub rule_type: ParamRuleType,
     pub constraint: String,
@@ -56,8 +56,20 @@ impl fmt::Display for ParamRuleType {
     }
 }
 
-impl From<&ParameterRule> for ParameterDetailRule {
+impl From<&ParameterRule> for ParameterRuleDetail {
     fn from(api: &ParameterRule) -> Self {
+        Self {
+            id: api.id.clone(),
+            rule_type: ParamRuleType::from(api._type),
+            constraint: api.constraint.clone(),
+            created_at: api.created_at.clone(),
+            modified_at: api.modified_at.clone(),
+        }
+    }
+}
+
+impl From<&ParameterTypeRule> for ParameterRuleDetail {
+    fn from(api: &ParameterTypeRule) -> Self {
         Self {
             id: api.id.clone(),
             rule_type: ParamRuleType::from(api._type),

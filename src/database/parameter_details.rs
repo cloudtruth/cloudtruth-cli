@@ -1,4 +1,4 @@
-use crate::database::{valid_encoding, ParamRuleType, ParameterDetailRule};
+use crate::database::{valid_encoding, ParamRuleType, ParameterRuleDetail};
 use cloudtruth_restapi::models::{Parameter, Value};
 use once_cell::sync::OnceCell;
 
@@ -13,7 +13,7 @@ pub struct ParameterDetails {
     pub description: String,
     pub secret: bool,
     pub param_type: String,
-    pub rules: Vec<ParameterDetailRule>,
+    pub rules: Vec<ParameterRuleDetail>,
     pub project_url: String,
     pub project_name: String,
 
@@ -179,7 +179,7 @@ impl From<&Parameter> for ParameterDetails {
             rules: api_param
                 .rules
                 .iter()
-                .map(ParameterDetailRule::from)
+                .map(ParameterRuleDetail::from)
                 .collect(),
 
             val_id: env_value.id.clone(),

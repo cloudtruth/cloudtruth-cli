@@ -138,6 +138,18 @@ Class | Method | HTTP request | Description
 *ServiceaccountsApi* | [**serviceaccounts_partial_update**](docs/ServiceaccountsApi.md#serviceaccounts_partial_update) | **PATCH** /api/v1/serviceaccounts/{id}/ | 
 *ServiceaccountsApi* | [**serviceaccounts_retrieve**](docs/ServiceaccountsApi.md#serviceaccounts_retrieve) | **GET** /api/v1/serviceaccounts/{id}/ | 
 *ServiceaccountsApi* | [**serviceaccounts_update**](docs/ServiceaccountsApi.md#serviceaccounts_update) | **PUT** /api/v1/serviceaccounts/{id}/ | 
+*TypesApi* | [**types_create**](docs/TypesApi.md#types_create) | **POST** /api/v1/types/ | 
+*TypesApi* | [**types_destroy**](docs/TypesApi.md#types_destroy) | **DELETE** /api/v1/types/{id}/ | 
+*TypesApi* | [**types_list**](docs/TypesApi.md#types_list) | **GET** /api/v1/types/ | 
+*TypesApi* | [**types_partial_update**](docs/TypesApi.md#types_partial_update) | **PATCH** /api/v1/types/{id}/ | 
+*TypesApi* | [**types_retrieve**](docs/TypesApi.md#types_retrieve) | **GET** /api/v1/types/{id}/ | 
+*TypesApi* | [**types_rules_create**](docs/TypesApi.md#types_rules_create) | **POST** /api/v1/types/{parametertype_pk}/rules/ | 
+*TypesApi* | [**types_rules_destroy**](docs/TypesApi.md#types_rules_destroy) | **DELETE** /api/v1/types/{parametertype_pk}/rules/{id}/ | 
+*TypesApi* | [**types_rules_list**](docs/TypesApi.md#types_rules_list) | **GET** /api/v1/types/{parametertype_pk}/rules/ | 
+*TypesApi* | [**types_rules_partial_update**](docs/TypesApi.md#types_rules_partial_update) | **PATCH** /api/v1/types/{parametertype_pk}/rules/{id}/ | 
+*TypesApi* | [**types_rules_retrieve**](docs/TypesApi.md#types_rules_retrieve) | **GET** /api/v1/types/{parametertype_pk}/rules/{id}/ | 
+*TypesApi* | [**types_rules_update**](docs/TypesApi.md#types_rules_update) | **PUT** /api/v1/types/{parametertype_pk}/rules/{id}/ | 
+*TypesApi* | [**types_update**](docs/TypesApi.md#types_update) | **PUT** /api/v1/types/{id}/ | 
 *UsersApi* | [**users_current_retrieve**](docs/UsersApi.md#users_current_retrieve) | **GET** /api/v1/users/current/ | Current user information
 *UsersApi* | [**users_destroy**](docs/UsersApi.md#users_destroy) | **DELETE** /api/v1/users/{id}/ | Delete the specified user.
 *UsersApi* | [**users_list**](docs/UsersApi.md#users_list) | **GET** /api/v1/users/ | 
@@ -195,6 +207,8 @@ Class | Method | HTTP request | Description
  - [PaginatedOrganizationList](docs/PaginatedOrganizationList.md)
  - [PaginatedParameterList](docs/PaginatedParameterList.md)
  - [PaginatedParameterRuleList](docs/PaginatedParameterRuleList.md)
+ - [PaginatedParameterTypeList](docs/PaginatedParameterTypeList.md)
+ - [PaginatedParameterTypeRuleList](docs/PaginatedParameterTypeRuleList.md)
  - [PaginatedProjectList](docs/PaginatedProjectList.md)
  - [PaginatedServiceAccountList](docs/PaginatedServiceAccountList.md)
  - [PaginatedTagList](docs/PaginatedTagList.md)
@@ -211,6 +225,10 @@ Class | Method | HTTP request | Description
  - [ParameterTimelineEntry](docs/ParameterTimelineEntry.md)
  - [ParameterTimelineEntryEnvironment](docs/ParameterTimelineEntryEnvironment.md)
  - [ParameterTimelineEntryParameter](docs/ParameterTimelineEntryParameter.md)
+ - [ParameterType](docs/ParameterType.md)
+ - [ParameterTypeCreate](docs/ParameterTypeCreate.md)
+ - [ParameterTypeRule](docs/ParameterTypeRule.md)
+ - [ParameterTypeRuleCreate](docs/ParameterTypeRuleCreate.md)
  - [PatchedAwsIntegration](docs/PatchedAwsIntegration.md)
  - [PatchedAwsPull](docs/PatchedAwsPull.md)
  - [PatchedAwsPushUpdate](docs/PatchedAwsPushUpdate.md)
@@ -220,6 +238,8 @@ Class | Method | HTTP request | Description
  - [PatchedOrganization](docs/PatchedOrganization.md)
  - [PatchedParameter](docs/PatchedParameter.md)
  - [PatchedParameterRule](docs/PatchedParameterRule.md)
+ - [PatchedParameterType](docs/PatchedParameterType.md)
+ - [PatchedParameterTypeRule](docs/PatchedParameterTypeRule.md)
  - [PatchedProject](docs/PatchedProject.md)
  - [PatchedServiceAccount](docs/PatchedServiceAccount.md)
  - [PatchedTagUpdate](docs/PatchedTagUpdate.md)

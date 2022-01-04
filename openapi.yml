@@ -92,6 +92,7 @@ paths:
           - ml
           - mn
           - mr
+          - ms
           - my
           - nb
           - ne
@@ -4987,6 +4988,415 @@ paths:
       responses:
         '204':
           description: No response body
+  /api/v1/types/:
+    get:
+      operationId: types_list
+      parameters:
+      - in: query
+        name: description__icontains
+        schema:
+          type: string
+      - in: query
+        name: name__icontains
+        schema:
+          type: string
+      - in: query
+        name: name__iexact
+        schema:
+          type: string
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: parent__name__icontains
+        schema:
+          type: string
+      - in: query
+        name: parent__name__iexact
+        schema:
+          type: string
+      tags:
+      - types
+      security:
+      - JWTAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedParameterTypeList'
+          description: ''
+    post:
+      operationId: types_create
+      tags:
+      - types
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ParameterTypeCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ParameterTypeCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ParameterTypeCreate'
+        required: true
+      security:
+      - JWTAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParameterType'
+          description: ''
+  /api/v1/types/{parametertype_pk}/rules/:
+    get:
+      operationId: types_rules_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: path
+        name: parametertype_pk
+        schema:
+          type: string
+          format: uuid
+        description: The parameter type id.
+        required: true
+      - in: query
+        name: type
+        schema:
+          type: string
+          enum:
+          - max
+          - max_len
+          - min
+          - min_len
+          - regex
+      tags:
+      - types
+      security:
+      - JWTAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedParameterTypeRuleList'
+          description: ''
+    post:
+      operationId: types_rules_create
+      parameters:
+      - in: path
+        name: parametertype_pk
+        schema:
+          type: string
+          format: uuid
+        description: The parameter type id.
+        required: true
+      tags:
+      - types
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ParameterTypeRuleCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ParameterTypeRuleCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ParameterTypeRuleCreate'
+        required: true
+      security:
+      - JWTAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParameterTypeRule'
+          description: ''
+  /api/v1/types/{parametertype_pk}/rules/{id}/:
+    get:
+      operationId: types_rules_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this parameter type rule.
+        required: true
+      - in: path
+        name: parametertype_pk
+        schema:
+          type: string
+          format: uuid
+        description: The parameter type id.
+        required: true
+      tags:
+      - types
+      security:
+      - JWTAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParameterTypeRule'
+          description: ''
+    put:
+      operationId: types_rules_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this parameter type rule.
+        required: true
+      - in: path
+        name: parametertype_pk
+        schema:
+          type: string
+          format: uuid
+        description: The parameter type id.
+        required: true
+      tags:
+      - types
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ParameterTypeRule'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ParameterTypeRule'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ParameterTypeRule'
+        required: true
+      security:
+      - JWTAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParameterTypeRule'
+          description: ''
+    patch:
+      operationId: types_rules_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this parameter type rule.
+        required: true
+      - in: path
+        name: parametertype_pk
+        schema:
+          type: string
+          format: uuid
+        description: The parameter type id.
+        required: true
+      tags:
+      - types
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedParameterTypeRule'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedParameterTypeRule'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedParameterTypeRule'
+      security:
+      - JWTAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParameterTypeRule'
+          description: ''
+    delete:
+      operationId: types_rules_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this parameter type rule.
+        required: true
+      - in: path
+        name: parametertype_pk
+        schema:
+          type: string
+          format: uuid
+        description: The parameter type id.
+        required: true
+      tags:
+      - types
+      security:
+      - JWTAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/types/{id}/:
+    get:
+      operationId: types_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+          description: A unique identifier for the parameter type.
+        required: true
+      tags:
+      - types
+      security:
+      - JWTAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParameterType'
+          description: ''
+    put:
+      operationId: types_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+          description: A unique identifier for the parameter type.
+        required: true
+      tags:
+      - types
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ParameterType'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ParameterType'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ParameterType'
+        required: true
+      security:
+      - JWTAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParameterType'
+          description: ''
+    patch:
+      operationId: types_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+          description: A unique identifier for the parameter type.
+        required: true
+      tags:
+      - types
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedParameterType'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedParameterType'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedParameterType'
+      security:
+      - JWTAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParameterType'
+          description: ''
+    delete:
+      operationId: types_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+          description: A unique identifier for the parameter type.
+        required: true
+      tags:
+      - types
+      security:
+      - JWTAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '204':
+          description: No response body
   /api/v1/users/:
     get:
       operationId: users_list
@@ -6848,6 +7258,46 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ParameterRule'
+    PaginatedParameterTypeList:
+      type: object
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ParameterType'
+    PaginatedParameterTypeRuleList:
+      type: object
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ParameterTypeRule'
     PaginatedProjectList:
       type: object
       properties:
@@ -7277,6 +7727,137 @@ components:
       required:
       - id
       - name
+    ParameterType:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+          readOnly: true
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+          description: A unique identifier for the parameter type.
+        name:
+          type: string
+          description: The parameter type name.
+          maxLength: 256
+        description:
+          type: string
+          description: A description of the parameter type, provide documentation
+            on how to use this type here.
+        parent:
+          type: string
+          format: uri
+          nullable: true
+          description: All types must derive, either directly or indirectly, from
+            one of the CloudTruth built-in types.   This is the ParameterType that
+            this type is derived from.
+        parent_name:
+          type: string
+          readOnly: true
+          nullable: true
+          description: Name of the parent ParameterType (if any).
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        modified_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - modified_at
+      - name
+      - parent_name
+      - url
+    ParameterTypeCreate:
+      type: object
+      properties:
+        name:
+          type: string
+          description: The parameter type name.
+          maxLength: 256
+        description:
+          type: string
+          description: A description of the parameter type, provide documentation
+            on how to use this type here.
+        parent:
+          type: string
+          format: uri
+          nullable: true
+          description: All types must derive, either directly or indirectly, from
+            one of the CloudTruth built-in types.   This is the ParameterType that
+            this type is derived from.
+      required:
+      - name
+    ParameterTypeRule:
+      type: object
+      description: |-
+        A type of `ModelSerializer` that uses hyperlinked relationships with compound keys instead
+        of primary key relationships.  Specifically:
+
+        * A 'url' field is included instead of the 'id' field.
+        * Relationships to other instances are hyperlinks, instead of primary keys.
+
+        NOTE: this only works with DRF 3.1.0 and above.
+      properties:
+        url:
+          type: string
+          format: uri
+          readOnly: true
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        parameter_type:
+          type: string
+          format: uri
+          readOnly: true
+          description: The type this rule is for.
+        type:
+          $ref: '#/components/schemas/ParameterRuleTypeEnum'
+        constraint:
+          type: string
+          maxLength: 1024
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        modified_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - constraint
+      - created_at
+      - id
+      - modified_at
+      - parameter_type
+      - type
+      - url
+    ParameterTypeRuleCreate:
+      type: object
+      description: |-
+        A type of `ModelSerializer` that uses hyperlinked relationships with compound keys instead
+        of primary key relationships.  Specifically:
+
+        * A 'url' field is included instead of the 'id' field.
+        * Relationships to other instances are hyperlinks, instead of primary keys.
+
+        NOTE: this only works with DRF 3.1.0 and above.
+      properties:
+        type:
+          $ref: '#/components/schemas/ParameterRuleTypeEnum'
+        constraint:
+          type: string
+          maxLength: 1024
+      required:
+      - constraint
+      - type
     PatchedAwsIntegration:
       type: object
       properties:
@@ -7756,6 +8337,83 @@ components:
           format: uri
           readOnly: true
           description: The parameter this rule is for.
+        type:
+          $ref: '#/components/schemas/ParameterRuleTypeEnum'
+        constraint:
+          type: string
+          maxLength: 1024
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        modified_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedParameterType:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+          readOnly: true
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+          description: A unique identifier for the parameter type.
+        name:
+          type: string
+          description: The parameter type name.
+          maxLength: 256
+        description:
+          type: string
+          description: A description of the parameter type, provide documentation
+            on how to use this type here.
+        parent:
+          type: string
+          format: uri
+          nullable: true
+          description: All types must derive, either directly or indirectly, from
+            one of the CloudTruth built-in types.   This is the ParameterType that
+            this type is derived from.
+        parent_name:
+          type: string
+          readOnly: true
+          nullable: true
+          description: Name of the parent ParameterType (if any).
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        modified_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedParameterTypeRule:
+      type: object
+      description: |-
+        A type of `ModelSerializer` that uses hyperlinked relationships with compound keys instead
+        of primary key relationships.  Specifically:
+
+        * A 'url' field is included instead of the 'id' field.
+        * Relationships to other instances are hyperlinks, instead of primary keys.
+
+        NOTE: this only works with DRF 3.1.0 and above.
+      properties:
+        url:
+          type: string
+          format: uri
+          readOnly: true
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        parameter_type:
+          type: string
+          format: uri
+          readOnly: true
+          description: The type this rule is for.
         type:
           $ref: '#/components/schemas/ParameterRuleTypeEnum'
         constraint:
