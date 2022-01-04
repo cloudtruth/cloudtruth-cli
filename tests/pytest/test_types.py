@@ -1,6 +1,14 @@
 from testcase import TestCase
 from testcase import find_by_prop
 from testcase import TEST_PAGE_SIZE
+from testcase import PROP_NAME
+from testcase import PROP_CREATED
+from testcase import PROP_MODIFIED
+
+PROP_CONSTRAINT = "Constraint"
+PROP_COUNT = "Rules"
+PROP_PARENT = "Parent"
+PROP_TYPE = "Rule Type"
 
 
 class TestParameterTypes(TestCase):
@@ -19,7 +27,7 @@ class TestParameterTypes(TestCase):
         result = self.run_cli(cmd_env, sub_cmd + f"set {type_name} --desc \"{orig_desc}\"")
         self.assertResultSuccess(result)
         entries = self.get_cli_entries(cmd_env, sub_cmd + "ls -f json", "parameter-type")
-        entry = find_by_prop(entries, "Name", type_name)[0]
+        entry = find_by_prop(entries, PROP_NAME, type_name)[0]
         self.assertEqual(entry.get("Parent"), "string")  # default
         self.assertEqual(entry.get("Description"), orig_desc)
 
@@ -29,7 +37,7 @@ class TestParameterTypes(TestCase):
         self.assertResultSuccess(result)
         result = self.run_cli(cmd_env, sub_cmd + "ls --values -f csv")
         self.assertResultSuccess(result)
-        self.assertIn(f"{type_name},string,{new_desc}", result.out())
+        self.assertIn(f"{type_name},string,0,{new_desc}", result.out())
 
         # idempotent - do it again
         result = self.run_cli(cmd_env, sub_cmd + f"set {type_name} --desc \"{new_desc}\"")
@@ -41,13 +49,6 @@ class TestParameterTypes(TestCase):
         result = self.run_cli(cmd_env, sub_cmd + f"set {orig_name} --rename \"{type_name}\"")
         self.assertResultSuccess(result)
         self.assertIn(f"Updated parameter type '{type_name}'", result.out())
-
-        # nothing to update
-        result = self.run_cli(cmd_env, sub_cmd + f"set {type_name}")
-        self.assertResultWarning(
-            result,
-            f"Parameter type '{type_name}' not updated: nothing to update",
-        )
 
         # test the list without the values
         result = self.run_cli(cmd_env, sub_cmd + "list")
@@ -132,7 +133,7 @@ class TestParameterTypes(TestCase):
 
         # make sure description was updated, yet parent remains
         entries = self.get_cli_entries(cmd_env, base_cmd + "ty ls -f json", "parameter-type")
-        entry = find_by_prop(entries, "Name", type_name4)[0]
+        entry = find_by_prop(entries, PROP_NAME, type_name4)[0]
         self.assertEqual(entry.get("Parent"), type_name2)
         self.assertEqual(entry.get("Description"), new_desc)
 
@@ -159,3 +160,179 @@ class TestParameterTypes(TestCase):
         for idx in range(type_count):
             type_name = self.make_name(f"test-pag-{idx}")
             self.delete_type(cmd_env, type_name)
+
+    def test_type_integers(self):
+        base_cmd = self.get_cli_base_cmd()
+        cmd_env = self.get_cmd_env()
+        type_cmd = base_cmd + "type "
+
+        # create a couple types based off an integer
+        base_type = "integer"
+        type_name1 = self.make_name("type-int-parent")
+        self.create_type(cmd_env, type_name1, parent=base_type)
+        type_name2 = self.make_name("type-int-child")
+        self.create_type(cmd_env, type_name2, parent=type_name1)
+
+        ###################
+        # create project/parameters to use
+        invalid_type_err = "Rule violation: Value is not of type"
+        proj_name = self.make_name("type-int-test")
+        self.create_project(cmd_env, proj_name)
+        param1 = "param1"
+        param2 = "param2"
+        param_cmd = base_cmd + f"--project '{proj_name}' param "
+        result = self.run_cli(cmd_env, param_cmd + f"set '{param1}' -t '{type_name1}' -v abc")
+        self.assertResultError(result, invalid_type_err)
+        result = self.run_cli(cmd_env, param_cmd + f"set '{param2}' -t '{type_name2}' -v abc")
+        self.assertResultError(result, invalid_type_err)
+
+        ###################
+        # cannot set some rules on integer types
+        min_len = -10
+        max_len = 100
+        regex = "abc.*"
+        cmd = type_cmd + f"set {type_name2} --min-len {min_len} --max-len {max_len} --regex '{regex}'"
+        result = self.run_cli(cmd_env, cmd)
+        self.assertResultError(result, "Rule create error")
+        self.assertIn(f"max-len rules not valid for {type_name2} parameters", result.err())
+        self.assertIn(f"min-len rules not valid for {type_name2} parameters", result.err())
+        self.assertIn(f"regex rules not valid for {type_name2} parameters", result.err())
+
+        ###################
+        # add some rules
+        min_a = -10
+        max_a = 100
+        cmd = type_cmd + f"set {type_name1} --max {max_a} --min {min_a}"
+        result = self.run_cli(cmd_env, cmd)
+        self.assertResultSuccess(result)
+
+        entries = self.get_cli_entries(cmd_env, type_cmd + "ls -f json", "parameter-type")
+        entry = find_by_prop(entries, PROP_NAME, type_name1)[0]
+        self.assertEqual(entry.get(PROP_COUNT), "2")
+        entry = find_by_prop(entries, PROP_NAME, type_name2)[0]
+        self.assertEqual(entry.get(PROP_COUNT), "0")
+
+        ###################
+        # parameter range checking, before child rules
+        less_than_err = "Rule violation: Value is less than the minimum value of "
+        greater_than_err = "Rule violation: Value is greater than the maximum value of "
+        result = self.run_cli(cmd_env, param_cmd + f"set '{param1}' -t '{type_name1}' -v {min_a - 1}")
+        self.assertResultError(result, less_than_err)
+        result = self.run_cli(cmd_env, param_cmd + f"set '{param1}' -t '{type_name1}' -v {max_a + 1}")
+        self.assertResultError(result, greater_than_err)
+        result = self.run_cli(cmd_env, param_cmd + f"set '{param2}' -t '{type_name2}' -v {min_a - 1}")
+        self.assertResultError(result, less_than_err)
+        result = self.run_cli(cmd_env, param_cmd + f"set '{param2}' -t '{type_name2}' -v {max_a + 1}")
+        self.assertResultError(result, greater_than_err)
+
+        ###################
+        # add child rules
+        min_b = -20
+        max_b = 1000
+        cmd = type_cmd + f"set {type_name2} --max {max_b} --min {min_b}"
+        result = self.run_cli(cmd_env, cmd)
+        self.assertResultSuccess(result)
+
+        entries = self.get_cli_entries(cmd_env, type_cmd + "ls --rules -f json --show-times", "parameter-type")
+        entry1 = find_by_prop(entries, PROP_NAME, type_name1)
+        entry = find_by_prop(entry1, PROP_TYPE, "max")[0]
+        self.assertEqual(entry.get(PROP_CONSTRAINT), str(max_a))
+        self.assertEqual(entry.get(PROP_PARENT), base_type)
+        self.assertIsNotNone(entry.get(PROP_CREATED))
+        self.assertIsNotNone(entry.get(PROP_MODIFIED))
+        entry = find_by_prop(entry1, PROP_TYPE, "min")[0]
+        self.assertEqual(entry.get(PROP_CONSTRAINT), str(min_a))
+        self.assertEqual(entry.get(PROP_PARENT), base_type)
+        self.assertIsNotNone(entry.get(PROP_CREATED))
+        self.assertIsNotNone(entry.get(PROP_MODIFIED))
+        entry2 = find_by_prop(entries, PROP_NAME, type_name2)
+        entry = find_by_prop(entry2, PROP_TYPE, "max")[0]
+        self.assertEqual(entry.get(PROP_CONSTRAINT), str(max_b))
+        self.assertEqual(entry.get(PROP_PARENT), type_name1)
+        self.assertIsNotNone(entry.get(PROP_CREATED))
+        self.assertIsNotNone(entry.get(PROP_MODIFIED))
+        entry = find_by_prop(entry2, PROP_TYPE, "min")[0]
+        self.assertEqual(entry.get(PROP_CONSTRAINT), str(min_b))
+        self.assertEqual(entry.get(PROP_PARENT), type_name1)
+        self.assertIsNotNone(entry.get(PROP_CREATED))
+        self.assertIsNotNone(entry.get(PROP_MODIFIED))
+
+        ###################
+        # parameter range checking, after child rules
+        result = self.run_cli(cmd_env, param_cmd + f"set '{param1}' -t '{type_name1}' -v {min_a - 1}")
+        self.assertResultError(result, less_than_err)
+        result = self.run_cli(cmd_env, param_cmd + f"set '{param1}' -t '{type_name1}' -v {max_a + 1}")
+        self.assertResultError(result, greater_than_err)
+        result = self.run_cli(cmd_env, param_cmd + f"set '{param2}' -t '{type_name2}' -v {min_b - 1}")
+        self.assertResultError(result, less_than_err)
+        result = self.run_cli(cmd_env, param_cmd + f"set '{param2}' -t '{type_name2}' -v {max_b + 1}")
+        self.assertResultError(result, greater_than_err)
+        # must meet parent constraints, too
+        result = self.run_cli(cmd_env, param_cmd + f"set '{param1}' -t '{type_name2}' -v {min_a - 1}")
+        self.assertResultError(result, less_than_err)
+        result = self.run_cli(cmd_env, param_cmd + f"set '{param1}' -t '{type_name2}' -v {max_a + 1}")
+        self.assertResultError(result, greater_than_err)
+
+        # check success
+        value_a = int(min_a + (max_a - min_a) / 2)
+        result = self.run_cli(cmd_env, param_cmd + f"set '{param1}' -t '{type_name1}' -v {value_a}")
+        self.assertResultSuccess(result)
+        value_b = value_a + 1
+        result = self.run_cli(cmd_env, param_cmd + f"set '{param2}' -t '{type_name2}' -v {value_b}")
+        self.assertResultSuccess(result)
+        self.verify_param(cmd_env, proj_name, param1, str(value_a))
+        self.verify_param(cmd_env, proj_name, param2, str(value_b))
+
+        ###################
+        # update child rules to be more restrictive
+        min_b = value_b - 10
+        max_b = value_b + 10
+        cmd = type_cmd + f"set {type_name2} --max {max_b} --min {min_b}"
+        result = self.run_cli(cmd_env, cmd)
+        self.assertResultSuccess(result)
+
+        result = self.run_cli(cmd_env, type_cmd + "ls --rules -f csv")
+        self.assertResultSuccess(result)
+        self.assertIn(f"{type_name2},{type_name1},max,{max_b}", result.out())
+        self.assertIn(f"{type_name2},{type_name1},min,{min_b}", result.out())
+
+        ###################
+        # fail to change rules with type in use and out of bounds
+        def update_err(type_name: str, param_name: str) -> str:
+            return f"Rule update error: Rule may not be applied to {type_name}: {param_name}"
+
+        result = self.run_cli(cmd_env, type_cmd + f"set {type_name1} --max {value_a - 1}")
+        self.assertResultError(result, update_err(type_name1, param1))
+        result = self.run_cli(cmd_env, type_cmd + f"set {type_name1} --min {value_a + 1}")
+        self.assertResultError(result, update_err(type_name1, param1))
+        result = self.run_cli(cmd_env, type_cmd + f"set {type_name2} --max {value_b - 1}")
+        self.assertResultError(result, update_err(type_name2, param2))
+        result = self.run_cli(cmd_env, type_cmd + f"set {type_name2} --min {value_b + 1}")
+        self.assertResultError(result, update_err(type_name2, param2))
+
+        ###################
+        # delete rules - starting with parent rules
+        result = self.run_cli(cmd_env, type_cmd + f"set {type_name1} --no-min --no-max")
+        self.assertResultSuccess(result)
+
+        result = self.run_cli(cmd_env, type_cmd + "ls -f csv")
+        self.assertResultSuccess(result)
+        self.assertIn(f"{type_name1},{base_type},0,", result.out())
+        self.assertIn(f"{type_name2},{type_name1},2,", result.out())
+
+        # see the constraint has gone away on parent, but not child
+        new_value = str(max_a + 10)
+        result = self.run_cli(cmd_env, param_cmd + f"set {param1} -v {new_value}")
+        self.assertResultSuccess(result)
+        self.verify_param(cmd_env, proj_name, param1, new_value)
+        result = self.run_cli(cmd_env, param_cmd + f"set {param2} -v {new_value}")
+        self.assertResultError(result, greater_than_err)
+
+        # idempotent
+        result = self.run_cli(cmd_env, type_cmd + f"set {type_name1} --no-min --no-max")
+        self.assertResultSuccess(result)
+
+        # cleanup
+        self.delete_project(cmd_env, proj_name)
+        self.delete_type(cmd_env, type_name2)
+        self.delete_type(cmd_env, type_name1)

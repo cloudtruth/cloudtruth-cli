@@ -82,7 +82,7 @@ pub use openapi::{
 pub use parameter_details::ParameterDetails;
 pub use parameter_error::ParameterError;
 pub use parameter_export::{ParamExportFormat, ParamExportOptions};
-pub use parameter_rules::{ParamRuleType, ParameterDetailRule};
+pub use parameter_rules::{ParamRuleType, ParameterRuleDetail};
 pub use parameters::{ParameterDetailMap, Parameters};
 pub use project_details::ProjectDetails;
 pub use project_error::ProjectError;

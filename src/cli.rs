@@ -1286,6 +1286,9 @@ pub fn build_cli() -> App<'static, 'static> {
                         values_flag().help("Display parameter type information/values"),
                         show_times_arg(),
                         table_format_options().help("Display parameter type value info format"),
+                        Arg::with_name("rules")
+                            .long("rules")
+                            .help("Display the parameter type rules."),
                     ]),
                 SubCommand::with_name(SET_SUBCMD)
                     .visible_aliases(SET_ALIASES)

@@ -842,6 +842,7 @@ USAGE:
 
 FLAGS:
     -h, --help          Prints help information
+        --rules         Display the parameter type rules.
         --show-times    Show create and modified times.
     -v, --values        Display parameter type information/values
     -V, --version       Prints version information

@@ -1,10 +1,14 @@
 use crate::database::{
-    page_size, response_message, OpenApiConfig, TypeDetails, TypeError, NO_PAGE_COUNT, NO_PAGE_SIZE,
+    extract_details, page_size, response_message, OpenApiConfig, ParamRuleType,
+    ParameterRuleDetail, TypeDetails, TypeError, NO_PAGE_COUNT, NO_PAGE_SIZE,
 };
 
 use cloudtruth_restapi::apis::types_api::*;
 use cloudtruth_restapi::apis::Error::ResponseError;
-use cloudtruth_restapi::models::{ParameterTypeCreate, PatchedParameterType};
+use cloudtruth_restapi::models::{
+    ParameterRuleTypeEnum, ParameterTypeCreate, ParameterTypeRuleCreate, PatchedParameterType,
+    PatchedParameterTypeRule,
+};
 use std::result::Result;
 
 const NO_DESC_CONTAINS: Option<&str> = None;
@@ -15,6 +19,10 @@ pub struct Types {}
 
 fn response_error(status: &reqwest::StatusCode, content: &str) -> TypeError {
     TypeError::ResponseError(response_message(status, content))
+}
+
+fn rule_error(action: String, content: &str) -> TypeError {
+    TypeError::RuleViolation(action, extract_details(content))
 }
 
 impl Types {
@@ -48,7 +56,8 @@ impl Types {
                     } else {
                         // TODO: handle more than one??
                         let api_type = &list[0];
-                        let details = TypeDetails::from(api_type);
+                        let mut details = TypeDetails::from(api_type);
+                        details.rules = self.list_rules(rest_cfg, &details.id)?; // TODO: remove
                         Ok(Some(details))
                     }
                 }
@@ -98,7 +107,8 @@ impl Types {
                 Ok(data) => {
                     if let Some(list) = data.results {
                         for api_prj in list {
-                            let details = TypeDetails::from(&api_prj);
+                            let mut details = TypeDetails::from(&api_prj);
+                            details.rules = self.list_rules(rest_cfg, &details.id)?; // TODO: remove
                             types.push(details);
                         }
                         page_count += 1;
@@ -125,7 +135,7 @@ impl Types {
         type_name: &str,
         description: Option<&str>,
         parent_url: Option<&str>,
-    ) -> Result<Option<String>, TypeError> {
+    ) -> Result<TypeDetails, TypeError> {
         let create_type = ParameterTypeCreate {
             name: type_name.to_string(),
             description: description.map(String::from),
@@ -134,7 +144,7 @@ impl Types {
         let response = types_create(rest_cfg, create_type);
         match response {
             // return the type id of the newly minted type
-            Ok(param_type) => Ok(Some(param_type.id)),
+            Ok(param_type) => Ok(TypeDetails::from(&param_type)),
             Err(ResponseError(ref content)) => {
                 Err(response_error(&content.status, &content.content))
             }
@@ -166,7 +176,7 @@ impl Types {
         type_id: &str,
         description: Option<&str>,
         parent_url: Option<&str>,
-    ) -> Result<Option<String>, TypeError> {
+    ) -> Result<TypeDetails, TypeError> {
         let type_update = PatchedParameterType {
             url: None,
             id: None,
@@ -179,10 +189,106 @@ impl Types {
         };
         let response = types_partial_update(rest_cfg, type_id, Some(type_update));
         match response {
-            Ok(param_type) => Ok(Some(param_type.id)),
+            Ok(param_type) => {
+                let mut details = TypeDetails::from(&param_type);
+                details.rules = self.list_rules(rest_cfg, &details.id)?;
+                Ok(details)
+            }
             Err(ResponseError(ref content)) => {
                 Err(response_error(&content.status, &content.content))
             }
+            Err(e) => Err(TypeError::UnhandledError(e.to_string())),
+        }
+    }
+
+    pub fn create_type_rule(
+        &self,
+        rest_cfg: &OpenApiConfig,
+        type_id: &str,
+        rule_type: ParamRuleType,
+        constraint: &str,
+    ) -> Result<String, TypeError> {
+        let rule_create = ParameterTypeRuleCreate {
+            _type: ParameterRuleTypeEnum::from(rule_type),
+            constraint: constraint.to_string(),
+        };
+        let response = types_rules_create(rest_cfg, type_id, rule_create);
+        let action = "create".to_string();
+        match response {
+            Ok(rule) => Ok(rule.id),
+            Err(ResponseError(ref content)) => Err(rule_error(action, &content.content)),
+            Err(e) => Err(TypeError::UnhandledError(e.to_string())),
+        }
+    }
+
+    pub fn update_type_rule(
+        &self,
+        rest_cfg: &OpenApiConfig,
+        type_id: &str,
+        rule_id: &str,
+        rule_type: Option<ParamRuleType>,
+        constraint: Option<&str>,
+    ) -> Result<String, TypeError> {
+        let patch_rule = PatchedParameterTypeRule {
+            url: None,
+            id: None,
+            parameter_type: None,
+            _type: rule_type.map(ParameterRuleTypeEnum::from),
+            constraint: constraint.map(String::from),
+            created_at: None,
+            modified_at: None,
+        };
+        let response = types_rules_partial_update(rest_cfg, rule_id, type_id, Some(patch_rule));
+        let action = "update".to_string();
+        match response {
+            Ok(rule) => Ok(rule.id),
+            Err(ResponseError(ref content)) => Err(rule_error(action, &content.content)),
+            Err(e) => Err(TypeError::UnhandledError(e.to_string())),
+        }
+    }
+
+    pub fn delete_type_rule(
+        &self,
+        rest_cfg: &OpenApiConfig,
+        type_id: &str,
+        rule_id: &str,
+    ) -> Result<String, TypeError> {
+        let response = types_rules_destroy(rest_cfg, rule_id, type_id);
+        let action = "delete".to_string();
+        match response {
+            Ok(_) => Ok(rule_id.to_string()),
+            Err(ResponseError(ref content)) => Err(rule_error(action, &content.content)),
+            Err(e) => Err(TypeError::UnhandledError(e.to_string())),
+        }
+    }
+
+    fn list_rules(
+        &self,
+        rest_cfg: &OpenApiConfig,
+        type_id: &str,
+    ) -> Result<Vec<ParameterRuleDetail>, TypeError> {
+        let response = types_rules_list(
+            rest_cfg,
+            type_id,
+            NO_ORDERING,
+            NO_PAGE_COUNT,
+            NO_PAGE_SIZE,
+            None,
+        );
+        let action = "list".to_string();
+        match response {
+            Ok(data) => match data.results {
+                Some(list) => {
+                    if !list.is_empty() {
+                        let result = list.iter().map(ParameterRuleDetail::from).collect();
+                        Ok(result)
+                    } else {
+                        Ok(vec![])
+                    }
+                }
+                _ => Ok(vec![]),
+            },
+            Err(ResponseError(ref content)) => Err(rule_error(action, &content.content)),
             Err(e) => Err(TypeError::UnhandledError(e.to_string())),
         }
     }

@@ -156,7 +156,7 @@ class TestCase(unittest.TestCase):
         # tear down any possibly lingering types -- they should have been deleted in reverse
         # order in case there are any children.
         for typename in reversed(self._types):
-            cmd = self._base_cmd + f"typ del \"{typename}\" --confirm"
+            cmd = self._base_cmd + f"type del \"{typename}\" --confirm"
             subprocess.run(cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
         # remove any added files

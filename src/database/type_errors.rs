@@ -6,6 +6,7 @@ use std::fmt::Formatter;
 pub enum TypeError {
     ResponseError(String),
     UnhandledError(String),
+    RuleViolation(String, String),
 }
 
 impl fmt::Display for TypeError {
@@ -13,6 +14,9 @@ impl fmt::Display for TypeError {
         match self {
             TypeError::ResponseError(msg) => write!(f, "{}", msg),
             TypeError::UnhandledError(msg) => write!(f, "Unhandled error: {}", msg),
+            TypeError::RuleViolation(action, msg) => {
+                write!(f, "Rule {} error: {}", action, msg.replace("_len", "-len"))
+            }
         }
     }
 }
