@@ -1,3 +1,14 @@
+# 1.1.3 - 2022-01-04
+
+* Add `import parameters` command for easy project and environment creation/update
+* Add `parameter-types` command to manage custom types
+  * Removed restriction on `parameter set --type <param-type>` values
+  * Changed `parameter set --type bool` to `parameter set --type boolean`
+* Allow overriding parent project parameter values
+  * Use `--create-child` to create the parameter in a child project
+* Add `integration explore [-j|--jmes <path>]` to get specific JMES path values
+* Add shorter versions of several commands
+
 # 1.1.2 - 2021-12-10
 
 * Add `Organization` to `user current`, and `config current` displays.
