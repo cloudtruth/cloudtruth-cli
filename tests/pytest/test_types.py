@@ -235,6 +235,7 @@ class TestParameterTypes(TestCase):
 
         entries = self.get_cli_entries(cmd_env, type_cmd + "ls --rules -f json --show-times", "parameter-type")
         entry1 = find_by_prop(entries, PROP_NAME, type_name1)
+        self.assertEqual(len(entry1), 2)
         entry = find_by_prop(entry1, PROP_TYPE, "max")[0]
         self.assertEqual(entry.get(PROP_CONSTRAINT), str(max_a))
         self.assertEqual(entry.get(PROP_PARENT), base_type)
@@ -246,6 +247,7 @@ class TestParameterTypes(TestCase):
         self.assertIsNotNone(entry.get(PROP_CREATED))
         self.assertIsNotNone(entry.get(PROP_MODIFIED))
         entry2 = find_by_prop(entries, PROP_NAME, type_name2)
+        self.assertEqual(len(entry2), 2)
         entry = find_by_prop(entry2, PROP_TYPE, "max")[0]
         self.assertEqual(entry.get(PROP_CONSTRAINT), str(max_b))
         self.assertEqual(entry.get(PROP_PARENT), type_name1)
@@ -330,6 +332,300 @@ class TestParameterTypes(TestCase):
 
         # idempotent
         result = self.run_cli(cmd_env, type_cmd + f"set {type_name1} --no-min --no-max")
+        self.assertResultSuccess(result)
+
+        # cleanup
+        self.delete_project(cmd_env, proj_name)
+        self.delete_type(cmd_env, type_name2)
+        self.delete_type(cmd_env, type_name1)
+
+    def test_type_boolean(self):
+        base_cmd = self.get_cli_base_cmd()
+        cmd_env = self.get_cmd_env()
+        type_cmd = base_cmd + "type "
+
+        # create a couple types based off an integer
+        base_type = "boolean"
+        type_name1 = self.make_name("type-bool-parent")
+        self.create_type(cmd_env, type_name1, parent=base_type)
+        type_name2 = self.make_name("type-bool-child")
+        self.create_type(cmd_env, type_name2, parent=type_name1)
+
+        ###################
+        # create project/parameters to use
+        invalid_type_err = "Rule violation: Value is not of type"
+        proj_name = self.make_name("type-bool-test")
+        self.create_project(cmd_env, proj_name)
+        param1 = "param1"
+        param2 = "param2"
+        param_cmd = base_cmd + f"--project '{proj_name}' param "
+        result = self.run_cli(cmd_env, param_cmd + f"set '{param1}' -t '{type_name1}' -v abc")
+        self.assertResultError(result, invalid_type_err)
+        result = self.run_cli(cmd_env, param_cmd + f"set '{param2}' -t '{type_name2}' -v abc")
+        self.assertResultError(result, invalid_type_err)
+
+        ###################
+        # cannot set some rules on integer types
+        min_len = -10
+        max_len = 100
+        regex = "abc.*"
+        min_value = -100
+        max_value = 1000
+        cmd = (
+            type_cmd + f"set {type_name2} --min-len {min_len} --max-len {max_len} "
+            + f"--regex '{regex}' --min {min_value} --max {max_value}"
+        )
+        result = self.run_cli(cmd_env, cmd)
+        self.assertResultError(result, "Rule create error")
+        self.assertIn(f"max-len rules not valid for {type_name2} parameters", result.err())
+        self.assertIn(f"min-len rules not valid for {type_name2} parameters", result.err())
+        self.assertIn(f"regex rules not valid for {type_name2} parameters", result.err())
+        self.assertIn(f"min rules not valid for {type_name2} parameters", result.err())
+        self.assertIn(f"max rules not valid for {type_name2} parameters", result.err())
+
+        ###################
+        # no rules were/can be added
+        entries = self.get_cli_entries(cmd_env, type_cmd + "ls -v -f json --show-times --rules", "parameter-type")
+        self.assertEqual(0, len(find_by_prop(entries, PROP_NAME, type_name1)))
+        self.assertEqual(0, len(find_by_prop(entries, PROP_NAME, type_name2)))
+
+        entries = self.get_cli_entries(cmd_env, type_cmd + "ls -f json --show-times", "parameter-type")
+        entry = find_by_prop(entries, PROP_NAME, type_name1)[0]
+        self.assertEqual(entry.get(PROP_PARENT), base_type)
+        self.assertEqual(entry.get(PROP_COUNT), str(0))
+        self.assertIsNotNone(entry.get(PROP_CREATED))
+        self.assertIsNotNone(entry.get(PROP_MODIFIED))
+        entry = find_by_prop(entries, PROP_NAME, type_name2)[0]
+        self.assertEqual(entry.get(PROP_PARENT), type_name1)
+        self.assertEqual(entry.get(PROP_COUNT), str(0))
+        self.assertIsNotNone(entry.get(PROP_CREATED))
+        self.assertIsNotNone(entry.get(PROP_MODIFIED))
+
+        ###################
+        # more parameter range checking
+        int_value = 22  # NOTE: 1 and 0 are considered valid booleans
+        result = self.run_cli(cmd_env, param_cmd + f"set '{param1}' -t '{type_name1}' -v {int_value}")
+        self.assertResultError(result, invalid_type_err)
+        result = self.run_cli(cmd_env, param_cmd + f"set '{param2}' -t '{type_name2}' -v {int_value}")
+        self.assertResultError(result, invalid_type_err)
+
+        # check success
+        value_a = "true"
+        result = self.run_cli(cmd_env, param_cmd + f"set '{param1}' -t '{type_name1}' -v {value_a}")
+        self.assertResultSuccess(result)
+        value_b = "false"
+        result = self.run_cli(cmd_env, param_cmd + f"set '{param2}' -t '{type_name2}' -v {value_b}")
+        self.assertResultSuccess(result)
+        self.verify_param(cmd_env, proj_name, param1, value_a)
+        self.verify_param(cmd_env, proj_name, param2, value_b)
+
+        ###################
+        # delete rules - starting with parent rules
+        del_rules_cmd = type_cmd + f"set {type_name1} --no-min --no-max --no-min-len --no-max-len --no-regex"
+        result = self.run_cli(cmd_env, del_rules_cmd)
+        self.assertResultSuccess(result)
+
+        # idempotent
+        result = self.run_cli(cmd_env, del_rules_cmd)
+        self.assertResultSuccess(result)
+
+        # cleanup
+        self.delete_project(cmd_env, proj_name)
+        self.delete_type(cmd_env, type_name2)
+        self.delete_type(cmd_env, type_name1)
+
+    def test_type_strings(self):
+        base_cmd = self.get_cli_base_cmd()
+        cmd_env = self.get_cmd_env()
+        type_cmd = base_cmd + "type "
+
+        # create a couple types based off an integer
+        base_type = "string"
+        type_name1 = self.make_name("type-str-parent")
+        self.create_type(cmd_env, type_name1)   # unspecified defaults to string
+        type_name2 = self.make_name("type-str-child")
+        self.create_type(cmd_env, type_name2, parent=type_name1)
+
+        ###################
+        # create project/parameters to use
+        proj_name = self.make_name("type-str-test")
+        self.create_project(cmd_env, proj_name)
+        param1 = "param1"
+        param2 = "param2"
+        param_cmd = base_cmd + f"--project '{proj_name}' param "
+
+        ###################
+        # cannot set some rules on integer types
+        min_value = -10
+        max_value = 100
+        cmd = type_cmd + f"set {type_name2} --min {min_value} --max {max_value}"
+        result = self.run_cli(cmd_env, cmd)
+        self.assertResultError(result, "Rule create error")
+        self.assertIn(f"max rules not valid for {type_name2} parameters", result.err())
+        self.assertIn(f"min rules not valid for {type_name2} parameters", result.err())
+
+        ###################
+        # add some rules
+        min_len_a = 4
+        max_len_a = 10
+        regex_a = "a.*"  # starts with 'a'
+        cmd = type_cmd + f"set {type_name1} --max-len {max_len_a} --min-len {min_len_a} --regex '{regex_a}'"
+        result = self.run_cli(cmd_env, cmd)
+        self.assertResultSuccess(result)
+
+        entries = self.get_cli_entries(cmd_env, type_cmd + "ls -f json", "parameter-type")
+        entry = find_by_prop(entries, PROP_NAME, type_name1)[0]
+        self.assertEqual(entry.get(PROP_COUNT), "3")
+        entry = find_by_prop(entries, PROP_NAME, type_name2)[0]
+        self.assertEqual(entry.get(PROP_COUNT), "0")
+
+        ###################
+        # parameter range checking, before child rules
+        def V(length: int, char: str = 'a') -> str:
+            return char * length
+
+        too_short_err = "Rule violation: Value must be at least "
+        too_long_err = "Rule violation: Value must be at most "
+        regex_err = "Rule violation: Value does not match regular expression "
+        result = self.run_cli(cmd_env, param_cmd + f"set '{param1}' -t '{type_name1}' -v {V(min_len_a - 1)}")
+        self.assertResultError(result, too_short_err)
+        result = self.run_cli(cmd_env, param_cmd + f"set '{param1}' -t '{type_name1}' -v {V(max_len_a + 1)}")
+        self.assertResultError(result, too_long_err)
+        result = self.run_cli(cmd_env, param_cmd + f"set '{param1}' -t '{type_name1}' -v {V(min_len_a, 'b')}")
+        self.assertResultError(result, regex_err)
+        result = self.run_cli(cmd_env, param_cmd + f"set '{param2}' -t '{type_name2}' -v {V(min_len_a - 1)}")
+        self.assertResultError(result, too_short_err)
+        result = self.run_cli(cmd_env, param_cmd + f"set '{param2}' -t '{type_name2}' -v {V(max_len_a + 1)}")
+        self.assertResultError(result, too_long_err)
+        result = self.run_cli(cmd_env, param_cmd + f"set '{param1}' -t '{type_name1}' -v {V(min_len_a, 'b')}")
+        self.assertResultError(result, regex_err)
+
+        ###################
+        # add child rules
+        min_len_b = 2  # would like to do 1, but that means no string is provided...
+        max_len_b = 15
+        regex_b = '.*b'  # ends with 'b'
+        cmd = type_cmd + f"set {type_name2} --max-len {max_len_b} --min-len {min_len_b} --regex '{regex_b}'"
+        result = self.run_cli(cmd_env, cmd)
+        self.assertResultSuccess(result)
+
+        entries = self.get_cli_entries(cmd_env, type_cmd + "ls --rules -f json --show-times", "parameter-type")
+        entry1 = find_by_prop(entries, PROP_NAME, type_name1)
+        self.assertEqual(len(entry1), 3)
+        entry = find_by_prop(entry1, PROP_TYPE, "max-len")[0]
+        self.assertEqual(entry.get(PROP_CONSTRAINT), str(max_len_a))
+        self.assertEqual(entry.get(PROP_PARENT), base_type)
+        self.assertIsNotNone(entry.get(PROP_CREATED))
+        self.assertIsNotNone(entry.get(PROP_MODIFIED))
+        entry = find_by_prop(entry1, PROP_TYPE, "min-len")[0]
+        self.assertEqual(entry.get(PROP_CONSTRAINT), str(min_len_a))
+        self.assertEqual(entry.get(PROP_PARENT), base_type)
+        self.assertIsNotNone(entry.get(PROP_CREATED))
+        self.assertIsNotNone(entry.get(PROP_MODIFIED))
+        entry = find_by_prop(entry1, PROP_TYPE, "regex")[0]
+        self.assertEqual(entry.get(PROP_CONSTRAINT), regex_a)
+        self.assertEqual(entry.get(PROP_PARENT), base_type)
+        self.assertIsNotNone(entry.get(PROP_CREATED))
+        self.assertIsNotNone(entry.get(PROP_MODIFIED))
+        entry2 = find_by_prop(entries, PROP_NAME, type_name2)
+        self.assertEqual(len(entry2), 3)
+        entry = find_by_prop(entry2, PROP_TYPE, "max-len")[0]
+        self.assertEqual(entry.get(PROP_CONSTRAINT), str(max_len_b))
+        self.assertEqual(entry.get(PROP_PARENT), type_name1)
+        self.assertIsNotNone(entry.get(PROP_CREATED))
+        self.assertIsNotNone(entry.get(PROP_MODIFIED))
+        entry = find_by_prop(entry2, PROP_TYPE, "min-len")[0]
+        self.assertEqual(entry.get(PROP_CONSTRAINT), str(min_len_b))
+        self.assertEqual(entry.get(PROP_PARENT), type_name1)
+        self.assertIsNotNone(entry.get(PROP_CREATED))
+        self.assertIsNotNone(entry.get(PROP_MODIFIED))
+        entry = find_by_prop(entry2, PROP_TYPE, "regex")[0]
+        self.assertEqual(entry.get(PROP_CONSTRAINT), regex_b)
+        self.assertEqual(entry.get(PROP_PARENT), type_name1)
+        self.assertIsNotNone(entry.get(PROP_CREATED))
+        self.assertIsNotNone(entry.get(PROP_MODIFIED))
+
+        ###################
+        # parameter range checking, after child rules
+        result = self.run_cli(cmd_env, param_cmd + f"set '{param1}' -t '{type_name1}' -v {V(min_len_a - 1)}")
+        self.assertResultError(result, too_short_err)
+        result = self.run_cli(cmd_env, param_cmd + f"set '{param1}' -t '{type_name1}' -v {V(max_len_a + 1)}")
+        self.assertResultError(result, too_long_err)
+        result = self.run_cli(cmd_env, param_cmd + f"set '{param1}' -t '{type_name1}' -v {V(max_len_a, 'b')}")
+        self.assertResultError(result, regex_err)
+        result = self.run_cli(cmd_env, param_cmd + f"set '{param2}' -t '{type_name2}' -v {V(min_len_b - 1)}")
+        self.assertResultError(result, too_short_err)
+        result = self.run_cli(cmd_env, param_cmd + f"set '{param2}' -t '{type_name2}' -v {V(max_len_b + 1)}")
+        self.assertResultError(result, too_long_err)
+        result = self.run_cli(cmd_env, param_cmd + f"set '{param2}' -t '{type_name2}' -v {V(max_len_a - 1, 'c')}")
+        self.assertResultError(result, regex_err)
+        # must meet parent constraints, too
+        result = self.run_cli(cmd_env, param_cmd + f"set '{param1}' -t '{type_name2}' -v {V(min_len_a - 1)}")
+        self.assertResultError(result, too_short_err)
+        result = self.run_cli(cmd_env, param_cmd + f"set '{param1}' -t '{type_name2}' -v {V(max_len_a + 1)}")
+        self.assertResultError(result, too_long_err)
+        result = self.run_cli(cmd_env, param_cmd + f"set '{param1}' -t '{type_name2}' -v {V(max_len_a, 'b')}")
+        self.assertResultError(result, regex_err)
+
+        # check success
+        value_a = V(int(min_len_a + (max_len_a - min_len_a) / 2))
+        result = self.run_cli(cmd_env, param_cmd + f"set '{param1}' -t '{type_name1}' -v {value_a}")
+        self.assertResultSuccess(result)
+        value_b = V(len(value_a)) + 'b'
+        result = self.run_cli(cmd_env, param_cmd + f"set '{param2}' -t '{type_name2}' -v {value_b}")
+        self.assertResultSuccess(result)
+        self.verify_param(cmd_env, proj_name, param1, str(value_a))
+        self.verify_param(cmd_env, proj_name, param2, str(value_b))
+
+        ###################
+        # update child rules to be more restrictive
+        min_len_b = len(value_b) - 3
+        max_len_b = len(value_b) + 3
+        cmd = type_cmd + f"set {type_name2} --max-len {max_len_b} --min-len {min_len_b}"
+        result = self.run_cli(cmd_env, cmd)
+        self.assertResultSuccess(result)
+
+        result = self.run_cli(cmd_env, type_cmd + "ls --rules -f csv")
+        self.assertResultSuccess(result)
+        self.assertIn(f"{type_name2},{type_name1},max-len,{max_len_b}", result.out())
+        self.assertIn(f"{type_name2},{type_name1},min-len,{min_len_b}", result.out())
+
+        ###################
+        # fail to change rules with type in use and out of bounds
+        def update_err(type_name: str, param_name: str) -> str:
+            return f"Rule update error: Rule may not be applied to {type_name}: {param_name}"
+
+        curr_len = len(value_a)
+        result = self.run_cli(cmd_env, type_cmd + f"set {type_name1} --max-len {curr_len - 1}")
+        self.assertResultError(result, update_err(type_name1, param1))
+        result = self.run_cli(cmd_env, type_cmd + f"set {type_name1} --min-len {curr_len + 1}")
+        self.assertResultError(result, update_err(type_name1, param1))
+        curr_len = len(value_b)
+        result = self.run_cli(cmd_env, type_cmd + f"set {type_name2} --max-len {curr_len - 1}")
+        self.assertResultError(result, update_err(type_name2, param2))
+        result = self.run_cli(cmd_env, type_cmd + f"set {type_name2} --min-len {curr_len + 1}")
+        self.assertResultError(result, update_err(type_name2, param2))
+
+        ###################
+        # delete rules - starting with parent rules
+        result = self.run_cli(cmd_env, type_cmd + f"set {type_name1} --no-min-len --no-max-len --no-regex")
+        self.assertResultSuccess(result)
+
+        result = self.run_cli(cmd_env, type_cmd + "ls -f csv")
+        self.assertResultSuccess(result)
+        self.assertIn(f"{type_name1},{base_type},0,", result.out())
+        self.assertIn(f"{type_name2},{type_name1},3,", result.out())
+
+        # see the constraint has gone away on parent, but not child
+        new_value = V(max_len_a + 10, 'b')
+        result = self.run_cli(cmd_env, param_cmd + f"set {param1} -v {new_value}")
+        self.assertResultSuccess(result)
+        self.verify_param(cmd_env, proj_name, param1, new_value)
+        result = self.run_cli(cmd_env, param_cmd + f"set {param2} -v {new_value}")
+        self.assertResultError(result, too_long_err)
+
+        # idempotent
+        result = self.run_cli(cmd_env, type_cmd + f"set {type_name1} --no-min-len --no-max-len --no-regex")
         self.assertResultSuccess(result)
 
         # cleanup
