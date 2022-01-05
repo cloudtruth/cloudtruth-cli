@@ -154,14 +154,6 @@ jobs:
         run: |
           echo CT_VERSION=${GITHUB_REF#refs/tags/} >> $GITHUB_ENV
 
-      - name: ubuntu-groovy
-        run: |
-          docker build . \
-            --build-arg DOWNLOAD_VERSION="${CT_VERSION}" \
-             -f tests/docker/prerelease/Dockerfile.ubuntu-groovy \
-             -t cloudtruth:ubuntu-groovy
-          docker run -e CLOUDTRUTH_API_KEY --rm -v $(pwd):/truth -t cloudtruth:ubuntu-groovy cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
-
       - name: ubuntu-focal
         run: |
           docker build . \
