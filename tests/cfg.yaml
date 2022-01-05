@@ -22,7 +22,6 @@ jobs:
   ubuntu:
     docker: true
     versions:
-      - groovy
       - focal
       - bionic
       - xenial
