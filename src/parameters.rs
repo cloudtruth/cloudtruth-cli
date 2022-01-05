@@ -95,7 +95,7 @@ fn proc_param_delete(
     match result {
         Some(_) => {
             println!(
-                "Successfully removed parameter '{}' from project '{}'.",
+                "Removed parameter '{}' from project '{}'.",
                 key_name,
                 resolved.project_display_name(),
             );
@@ -753,7 +753,7 @@ fn proc_param_set(
     let rename = subcmd_args.value_of(RENAME_OPT);
     let final_name = rename.unwrap_or(key_name);
     let mut param_added = false;
-    let mut set_action = "updated";
+    let mut set_action = "Updated";
     let mut env_changed = "".to_string();
     let max_rule = subcmd_args.value_of(RULE_MAX_ARG);
     let min_rule = subcmd_args.value_of(RULE_MIN_ARG);
@@ -850,7 +850,7 @@ fn proc_param_set(
             };
 
             param_added = true;
-            set_action = "created child";
+            set_action = "Created child";
             updated = parameters
                 .create_parameter(rest_cfg, proj_id, key_name, desc_arg, sec_arg, type_arg)?;
             if updated.param_type == original.param_type {
@@ -891,7 +891,7 @@ fn proc_param_set(
         }
     } else {
         param_added = true;
-        set_action = "created";
+        set_action = "Created";
         updated = parameters.create_parameter(
             rest_cfg,
             proj_id,
@@ -971,7 +971,7 @@ fn proc_param_set(
         let is_secret = updated.secret;
         // if any existing environment does not match the desired environment
         if !updated.env_url.contains(env_id) {
-            set_action = "set";
+            set_action = "Set";
             let value_add_result = parameters.create_parameter_value(
                 rest_cfg, proj_id, env_id, param_id, is_secret, value, fqn, jmes_path, evaluated,
             );
@@ -996,7 +996,7 @@ fn proc_param_set(
         }
     }
     println!(
-        "Successfully {} parameter '{}' in project '{}'{}.",
+        "{} parameter '{}' in project '{}'{}.",
         set_action,
         final_name,
         resolved.project_display_name(),
@@ -1016,25 +1016,19 @@ fn proc_param_unset(
     let proj_name = resolved.project_display_name();
     let env_id = resolved.environment_id();
     let env_name = resolved.environment_display_name();
-    let result = parameters.delete_parameter_value(rest_cfg, proj_id, env_id, key_name);
+    let result = parameters.delete_parameter_value(rest_cfg, proj_id, env_id, key_name)?;
     match result {
-        Ok(Some(_)) => {
+        Some(_) => {
             println!(
-                "Successfully removed parameter value '{}' from project '{}' for environment '{}'.",
+                "Removed parameter value '{}' from project '{}' for environment '{}'.",
                 key_name, proj_name, env_name,
             );
         }
-        Ok(None) => {
-            println!(
+        None => {
+            warning_message(format!(
                 "Did not find parameter value '{}' to delete from project '{}' for environment '{}'.",
                 key_name, proj_name, env_name,
-            )
-        }
-        _ => {
-            println!(
-                "Failed to remove parameter value '{}' from project '{}' for environment '{}'.",
-                key_name, proj_name, env_name,
-            );
+            ));
         }
     };
     Ok(())
