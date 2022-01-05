@@ -184,6 +184,7 @@ impl Types {
             description: description.map(|d| d.to_string()),
             created_at: None,
             modified_at: None,
+            rules: None,
             parent: parent_url.map(String::from),
             parent_name: None,
         };

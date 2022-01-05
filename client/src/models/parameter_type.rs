@@ -21,6 +21,9 @@ pub struct ParameterType {
     /// A description of the parameter type, provide documentation on how to use this type here.
     #[serde(rename = "description", skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
+    /// Rules applied to this parameter.
+    #[serde(rename = "rules")]
+    pub rules: Vec<crate::models::ParameterTypeRule>,
     /// All types must derive, either directly or indirectly, from one of the CloudTruth built-in types.   This is the ParameterType that this type is derived from.
     #[serde(rename = "parent", skip_serializing_if = "Option::is_none")]
     pub parent: Option<String>,
@@ -38,6 +41,7 @@ impl ParameterType {
         url: String,
         id: String,
         name: String,
+        rules: Vec<crate::models::ParameterTypeRule>,
         parent_name: Option<String>,
         created_at: String,
         modified_at: String,
@@ -47,6 +51,7 @@ impl ParameterType {
             id,
             name,
             description: None,
+            rules,
             parent: None,
             parent_name,
             created_at,

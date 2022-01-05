@@ -21,6 +21,9 @@ pub struct PatchedParameterType {
     /// A description of the parameter type, provide documentation on how to use this type here.
     #[serde(rename = "description", skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
+    /// Rules applied to this parameter.
+    #[serde(rename = "rules", skip_serializing_if = "Option::is_none")]
+    pub rules: Option<Vec<crate::models::ParameterTypeRule>>,
     /// All types must derive, either directly or indirectly, from one of the CloudTruth built-in types.   This is the ParameterType that this type is derived from.
     #[serde(rename = "parent", skip_serializing_if = "Option::is_none")]
     pub parent: Option<String>,
@@ -40,6 +43,7 @@ impl PatchedParameterType {
             id: None,
             name: None,
             description: None,
+            rules: None,
             parent: None,
             parent_name: None,
             created_at: None,

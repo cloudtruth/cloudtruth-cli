@@ -8758,8 +8758,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object",
-                                    "additionalProperties": {}
+                                    "$ref": "#/components/schemas/GeneratedPasswordResponse"
                                 },
                                 "examples": {
                                     "GenerateAPassword": {
@@ -9788,6 +9787,18 @@
                 },
                 "required": [
                     "name"
+                ]
+            },
+            "GeneratedPasswordResponse": {
+                "type": "object",
+                "properties": {
+                    "value": {
+                        "type": "string",
+                        "description": "The generated password value"
+                    }
+                },
+                "required": [
+                    "value"
                 ]
             },
             "GitHubIntegration": {
@@ -11417,6 +11428,14 @@
                         "type": "string",
                         "description": "A description of the parameter type, provide documentation on how to use this type here."
                     },
+                    "rules": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ParameterTypeRule"
+                        },
+                        "readOnly": true,
+                        "description": "Rules applied to this parameter."
+                    },
                     "parent": {
                         "type": "string",
                         "format": "uri",
@@ -11446,6 +11465,7 @@
                     "modified_at",
                     "name",
                     "parent_name",
+                    "rules",
                     "url"
                 ]
             },
@@ -12105,6 +12125,14 @@
                     "description": {
                         "type": "string",
                         "description": "A description of the parameter type, provide documentation on how to use this type here."
+                    },
+                    "rules": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ParameterTypeRule"
+                        },
+                        "readOnly": true,
+                        "description": "Rules applied to this parameter."
                     },
                     "parent": {
                         "type": "string",
