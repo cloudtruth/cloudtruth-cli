@@ -293,6 +293,13 @@ fn environment_tag_validator(arg_value: String) -> Result<(), String> {
     }
 }
 
+fn i32_validator(arg_value: String) -> Result<(), String> {
+    match arg_value.parse::<i32>() {
+        Ok(_) => Ok(()),
+        Err(e) => Err(e.to_string()),
+    }
+}
+
 fn schema_format_arg() -> Arg<'static, 'static> {
     Arg::with_name(FORMAT_OPT)
         .takes_value(true)
@@ -753,6 +760,9 @@ pub fn build_cli() -> App<'static, 'static> {
                         .arg(Arg::with_name("create-child")
                             .long("create-child")
                             .help("Create a parameter in the child project"))
+                        .arg(Arg::with_name("generate")
+                            .long("generate")
+                            .help("Generate a new value"))
                         .arg(Arg::with_name("value")
                             .short("v")
                             .long("value")
@@ -1312,6 +1322,58 @@ pub fn build_cli() -> App<'static, 'static> {
                 SubCommand::with_name(TREE_SUBCMD)
                         .visible_aliases(TREE_ALIASES)
                         .about("Show a tree representation of the parameter types"),
+            ])
+        )
+        .subcommand(SubCommand::with_name("generate")
+            .visible_aliases(&["gen", "ge"])
+            .about("Generate items using CloudTruth service")
+            .subcommands([
+                SubCommand::with_name("password")
+                    .visible_aliases(&["passwd", "pass", "pw", "pa"])
+                    .about("Generate a password and print to console")
+                    .args(&[
+                        Arg::with_name("length")
+                            .long("length")
+                            .validator(i32_validator)
+                            .default_value("15")
+                            .help("Number of characters"),
+                        Arg::with_name("hardware")
+                            .long("hardware")
+                            .help("Require hardware-based entropy"),
+                        Arg::with_name("uppercase")
+                            .long("uppercase")
+                            .help("Require uppercase character"),
+                        Arg::with_name("lowercase")
+                            .long("lowercase")
+                            .help("Require lowercase character"),
+                        Arg::with_name("number")
+                            .long("number")
+                            .help("Require numeric character"),
+                        Arg::with_name("symbol")
+                            .long("symbol")
+                            .help("Require symbol character"),
+                        Arg::with_name("space")
+                            .long("space")
+                            .help("Require space character"),
+                        Arg::with_name("no-hardware")
+                            .long("no-hardware")
+                            .help("Do not require hardware-based entropy"),
+                        Arg::with_name("no-uppercase")
+                            .long("no-uppercase")
+                            .help("Do not require uppercase characters"),
+                        Arg::with_name("no-lowercase")
+                            .long("no-lowercase")
+                            .help("Do not require lowercase character"),
+                        Arg::with_name("no-number")
+                            .long("no-number")
+                            .help("Do not require numeric character"),
+                        Arg::with_name("no-symbol")
+                            .long("no-symbol")
+                            .help("Do not require symbol character"),
+                        Arg::with_name("no-space")
+                            .long("no-space")
+                            .help("Do not require space character"),
+                    ])
             ])
         )
 }

@@ -5,6 +5,7 @@ use crate::database::{
     ParameterDetails, ParameterError, TaskStep, NO_PAGE_COUNT, NO_PAGE_SIZE, WRAP_SECRETS,
 };
 use cloudtruth_restapi::apis::projects_api::*;
+use cloudtruth_restapi::apis::utils_api::utils_generate_password_create;
 use cloudtruth_restapi::apis::Error::ResponseError;
 use cloudtruth_restapi::models::{
     ParameterCreate, ParameterRuleCreate, ParameterRuleTypeEnum, PatchedParameter,
@@ -766,5 +767,37 @@ impl Parameters {
             total.append(&mut tasks);
         }
         Ok(total)
+    }
+
+    /// Use the API to generate a new password according to the provided policy flags
+    #[allow(clippy::too_many_arguments)]
+    pub fn generate_password(
+        &self,
+        rest_cfg: &OpenApiConfig,
+        length: i32,
+        require_hardware_generation: Option<bool>,
+        require_lowercase: Option<bool>,
+        require_numbers: Option<bool>,
+        require_spaces: Option<bool>,
+        require_symbols: Option<bool>,
+        require_uppercase: Option<bool>,
+    ) -> Result<String, ParameterError> {
+        let response = utils_generate_password_create(
+            rest_cfg,
+            length,
+            require_hardware_generation,
+            require_lowercase,
+            require_numbers,
+            require_spaces,
+            require_symbols,
+            require_uppercase,
+        );
+        match response {
+            Ok(data) => Ok(data.value),
+            Err(ResponseError(ref content)) => {
+                Err(response_error(&content.status, &content.content))
+            }
+            Err(e) => Err(ParameterError::UnhandledError(e.to_string())),
+        }
     }
 }

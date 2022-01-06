@@ -2,11 +2,13 @@ import datetime
 
 from typing import Dict
 from typing import Tuple
+from testcase import find_by_prop
 from testcase import TestCase
 from testcase import DEFAULT_ENV_NAME
 from testcase import DEFAULT_PARAM_VALUE
 from testcase import PROP_CREATED
 from testcase import PROP_MODIFIED
+from testcase import PROP_NAME
 from testcase import PROP_VALUE
 from testcase import REDACTED
 from testcase import TEST_PAGE_SIZE
@@ -2656,9 +2658,8 @@ Name,Value,Project
         cmd_env = self.get_cmd_env()
         base_cmd = self.get_cli_base_cmd()
 
-        # add a set of projects
+        # add a project
         proj_name = self.make_name("test-param-pagination")
-
         self.create_project(cmd_env, proj_name)
 
         param_base = "param"
@@ -2674,6 +2675,121 @@ Name,Value,Project
         output = result.out()
         for idx in range(param_count):
             self.assertIn(f"{param_base}{idx}", output)
+
+        # cleanup
+        self.delete_project(cmd_env, proj_name)
+
+    def test_parameter_over_specified(self):
+        cmd_env = self.get_cmd_env()
+        base_cmd = self.get_cli_base_cmd()
+
+        # add a project
+        proj_name = self.make_name("test-param-overdone")
+        self.create_project(cmd_env, proj_name)
+
+        filename = self.make_name("cooked")
+        self.write_file(filename, "bogus value from file")
+
+        err_msg = "Conflicting arguments: cannot specify more than one"
+        set_cmd = base_cmd + f"--project {proj_name} param set param1 "
+        values = [
+            f"-i {filename} ",
+            "-v value ",
+            "--prompt ",
+            "--generate ",
+            "--fqn github://cloudtruth/cloudtruth-cli/main/README.md "
+        ]
+        for index, first in enumerate(values):
+            if index + 1 == len(values):
+                break
+            for second in values[index + 1:]:
+                result = self.run_cli(cmd_env, set_cmd + first + second)
+                self.assertResultError(result, err_msg)
+
+        # cleanup
+        self.delete_file(filename)
+        self.delete_project(cmd_env, proj_name)
+
+    def test_parameter_generate(self):
+        cmd_env = self.get_cmd_env()
+        base_cmd = self.get_cli_base_cmd()
+        default_len = 12
+
+        # add a project
+        proj_name = self.make_name("test-param-overdone")
+        self.create_project(cmd_env, proj_name)
+
+        param_cmd = base_cmd + f"--project {proj_name} param "
+        list_cmd = param_cmd + "ls -sf json"
+        param1 = "param1"
+        param2 = "param2"
+
+        result1 = self.run_cli(cmd_env, param_cmd + f"set {param1} --generate")
+        self.assertResultSuccess(result1)
+        self.assertIn(f"Set parameter '{param1}'", result1.out())
+        result2 = self.run_cli(cmd_env, param_cmd + f"set {param2} --generate --secret true")
+        self.assertResultSuccess(result2)
+        self.assertIn(f"Set parameter '{param2}'", result2.out())
+
+        # see secrets are secret, but generated values do not need to be secret
+        entries = self.get_cli_entries(cmd_env, list_cmd, "parameter")
+        entry = find_by_prop(entries, PROP_NAME, param1)[0]
+        value1 = entry.get(PROP_VALUE)
+        self.assertEqual(len(value1), default_len)
+        self.assertEqual(entry.get("Secret"), "false")
+        entry = find_by_prop(entries, PROP_NAME, param2)[0]
+        value2 = entry.get(PROP_VALUE)
+        self.assertEqual(len(value2), default_len)
+        self.assertEqual(entry.get("Secret"), "true")
+
+        # check that values were not shown during generation
+        self.assertNotIn(value1, result1.out())
+        self.assertNotIn(value2, result2.out())
+        self.assertNotEqual(value1, value2)
+
+        # update the values
+        result1 = self.run_cli(cmd_env, param_cmd + f"set {param1} --generate")
+        self.assertResultSuccess(result1)
+        self.assertIn(f"Updated parameter '{param1}'", result1.out())
+        result2 = self.run_cli(cmd_env, param_cmd + f"set {param2} --generate")
+        self.assertResultSuccess(result2)
+        self.assertIn(f"Updated parameter '{param2}'", result2.out())
+
+        entries = self.get_cli_entries(cmd_env, list_cmd, "parameter")
+        entry = find_by_prop(entries, PROP_NAME, param1)[0]
+        value1a = entry.get(PROP_VALUE)
+        self.assertEqual(len(value1a), default_len)
+        self.assertEqual(entry.get("Secret"), "false")
+        entry = find_by_prop(entries, PROP_NAME, param2)[0]
+        value2a = entry.get(PROP_VALUE)
+        self.assertEqual(len(value2a), default_len)
+        self.assertEqual(entry.get("Secret"), "true")
+
+        # check to make sure values were updated
+        self.assertNotEqual(value1, value1a)
+        self.assertNotEqual(value2, value2a)
+
+        ##########################
+        # does not work with boolean/integer types
+        param3 = "param3"
+        param4 = "param4"
+        value3 = "true"
+        value4 = "123456"
+        self.set_param(cmd_env, proj_name, param3, value=value3, param_type="boolean")
+        self.set_param(cmd_env, proj_name, param4, value=value4, param_type="integer")
+
+        err_msg = "Rule violation: Value is not of type "
+        result = self.run_cli(cmd_env, param_cmd + f"set {param3} --generate")
+        self.assertResultError(result, err_msg + "boolean")
+        result = self.run_cli(cmd_env, param_cmd + f"set {param4} --generate")
+        self.assertResultError(result, err_msg + "integer")
+
+        ##########################
+        # does not work with rules... should possibly change next iteration
+        param5 = "param5"
+        min_len = 50
+        result = self.run_cli(cmd_env, param_cmd + f"set {param5} --min-len {min_len} --generate")
+        self.assertResultError(result, f"Rule violation: Value must be at least {min_len} characters")
 
         # cleanup
         self.delete_project(cmd_env, proj_name)
