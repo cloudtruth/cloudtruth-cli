@@ -71,6 +71,10 @@ def cloudtruth_cleanup(*args):
         print("No search strings provided")
         return -1
 
+    result = cli("config curr -x")
+    print(result.command)
+    print(result.out())
+
     # define a set of elements to cleanup
     elements = [
         CleanupItem(name="projects", list_cmd="proj tree", del_cmd="proj del -y"),
