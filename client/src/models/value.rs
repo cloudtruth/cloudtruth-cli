@@ -10,7 +10,7 @@
 
 /// Value : A value for a parameter in a given environment.
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct Value {
     #[serde(rename = "url")]
     pub url: String,

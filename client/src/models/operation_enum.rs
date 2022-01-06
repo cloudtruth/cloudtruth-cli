@@ -31,3 +31,9 @@ impl ToString for OperationEnum {
         }
     }
 }
+
+impl Default for OperationEnum {
+    fn default() -> OperationEnum {
+        Self::Create
+    }
+}

@@ -44,7 +44,10 @@ impl From<&AwsIntegration> for IntegrationDetails {
             name: aws.name.clone(),
             description: aws.description.clone().unwrap_or_default(),
             fqn: aws.fqn.clone(),
-            status: aws.status.to_string(),
+            status: match &aws.status {
+                Some(s) => s.to_string(),
+                _ => "".to_string(),
+            },
             status_detail: aws.status_detail.clone(),
             status_time: aws.status_last_checked_at.clone(),
             created_at: aws.created_at.clone(),
@@ -61,7 +64,10 @@ impl From<&GitHubIntegration> for IntegrationDetails {
             name: github.name.clone(),
             description: github.description.clone().unwrap_or_default(),
             fqn: github.fqn.clone(),
-            status: github.status.to_string(),
+            status: match &github.status {
+                Some(s) => s.to_string(),
+                _ => "".to_string(),
+            },
             status_detail: github.status_detail.clone(),
             status_time: github.status_last_checked_at.clone(),
             created_at: github.created_at.clone(),

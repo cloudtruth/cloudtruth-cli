@@ -34,3 +34,9 @@ impl ToString for ParameterRuleTypeEnum {
         }
     }
 }
+
+impl Default for ParameterRuleTypeEnum {
+    fn default() -> ParameterRuleTypeEnum {
+        Self::Min
+    }
+}

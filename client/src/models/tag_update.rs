@@ -10,7 +10,7 @@
 
 /// TagUpdate : Details for updating a tag.
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct TagUpdate {
     /// A unique identifier for the tag.
     #[serde(rename = "id")]

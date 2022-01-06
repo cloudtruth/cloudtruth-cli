@@ -28,3 +28,9 @@ impl ToString for HistoryModelEnum {
         }
     }
 }
+
+impl Default for HistoryModelEnum {
+    fn default() -> HistoryModelEnum {
+        Self::Parameter
+    }
+}

@@ -10,7 +10,7 @@
 
 /// PatchedTemplate : A parameter template in a given project, optionally instantiated against an environment.
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct PatchedTemplate {
     /// The templates this value references, if interpolated.
     #[serde(rename = "url", skip_serializing_if = "Option::is_none")]

@@ -228,7 +228,7 @@ impl Users {
     ) -> Result<(), UserError> {
         let member_create = MembershipCreate {
             user: String::from(user_url),
-            role: Box::new(role),
+            role: Some(Box::new(role)),
         };
         let response = memberships_create(rest_cfg, member_create);
         match response {

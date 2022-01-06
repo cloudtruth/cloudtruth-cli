@@ -20,7 +20,10 @@ impl From<&Invitation> for InvitationDetails {
             id: api.id.clone(),
             url: api.url.clone(),
             email: api.email.clone(),
-            role: api.role.to_string().to_lowercase(),
+            role: match &api.role {
+                Some(r) => r.to_string().to_lowercase(),
+                _ => "".to_string(),
+            },
             inviter_url: api.inviter.clone(),
             inviter_name: "".to_string(), // need to fill in later
             state: api.state.to_lowercase(),

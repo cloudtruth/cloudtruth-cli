@@ -10,7 +10,7 @@
 
 /// IntegrationExplorer : Describes the content available at a given location.
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct IntegrationExplorer {
     #[serde(rename = "fqn")]
     pub fqn: String,

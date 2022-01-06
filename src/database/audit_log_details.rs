@@ -13,7 +13,7 @@ pub struct AuditLogDetails {
 
 impl From<&AuditTrail> for AuditLogDetails {
     fn from(api: &AuditTrail) -> Self {
-        let user = &api.user;
+        let user = api.user.clone().unwrap_or_default();
         Self {
             id: api.id.clone(),
             action: api.action.clone(),

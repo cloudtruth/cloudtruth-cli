@@ -14,7 +14,7 @@ use std::time::Instant;
 use super::{configuration, Error};
 use crate::apis::{handle_serde_error, ResponseContent};
 
-/// struct for typed errors of method `utils_generate_password_create`
+/// struct for typed errors of method [`utils_generate_password_create`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum UtilsGeneratePasswordCreateError {
@@ -32,11 +32,13 @@ pub fn utils_generate_password_create(
     require_symbols: Option<bool>,
     require_uppercase: Option<bool>,
 ) -> Result<crate::models::GeneratedPasswordResponse, Error<UtilsGeneratePasswordCreateError>> {
-    let local_var_client = &configuration.client;
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
 
     let local_var_uri_str = format!(
         "{}/api/v1/utils/generate_password/",
-        configuration.base_path
+        local_var_configuration.base_path
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
@@ -66,15 +68,15 @@ pub fn utils_generate_password_create(
         local_var_req_builder =
             local_var_req_builder.query(&[("require_uppercase", &local_var_str.to_string())]);
     }
-    if let Some(ref local_var_user_agent) = configuration.user_agent {
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
     }
 
-    if let Some(ref local_var_token) = configuration.bearer_access_token {
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
         local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
-    if let Some(ref local_var_apikey) = configuration.api_key {
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
         let local_var_key = local_var_apikey.key.clone();
         let local_var_value = match local_var_apikey.prefix {
             Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
@@ -87,7 +89,7 @@ pub fn utils_generate_password_create(
     let method = local_var_req.method().clone();
     let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
-    if configuration.rest_debug {
+    if local_var_configuration.rest_debug {
         let duration = start.elapsed();
         println!(
             "URL {} {} elapsed: {:?}",
@@ -101,7 +103,7 @@ pub fn utils_generate_password_create(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        if configuration.debug_success(super::function!()) {
+        if local_var_configuration.debug_success(super::function!()) {
             println!("RESP {} {}", &local_var_status, &local_var_content);
         }
 
@@ -115,7 +117,7 @@ pub fn utils_generate_password_create(
             content: local_var_content,
             entity: local_var_entity,
         };
-        if configuration.rest_debug {
+        if local_var_configuration.rest_debug {
             println!(
                 "RESP {} {}",
                 &local_var_error.status, &local_var_error.content

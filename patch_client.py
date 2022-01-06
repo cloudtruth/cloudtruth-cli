@@ -1,16 +1,17 @@
 # -*- coding: utf-8 -*-
 import glob
 import os
+import re
 from typing import List
 
 ALLOW_SNAKE_TEXT = "#![allow(non_snake_case)]\n\n"
 BEARER_TEXT = """
-    if let Some(ref local_var_token) = configuration.bearer_access_token {
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
         local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
 """
 API_KEY_TEXT = """\
-    if let Some(ref local_var_apikey) = configuration.api_key {
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
         let local_var_key = local_var_apikey.key.clone();
         let local_var_value = match local_var_apikey.prefix {
             Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
@@ -23,13 +24,13 @@ REST_DEBUG_PROFILING = """\
     let method = local_var_req.method().clone();
     let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
-    if configuration.rest_debug {
+    if local_var_configuration.rest_debug {
         let duration = start.elapsed();
         println!(\"URL {} {} elapsed: {:?}\", method, &local_var_resp.url(), duration);
     }
 """
 REST_DEBUG_ERRORS = """\
-        if configuration.rest_debug {
+        if local_var_configuration.rest_debug {
             println!(\"RESP {} {}\", &local_var_error.status, &local_var_error.content);
         }
         Err(Error::ResponseError(local_var_error))
@@ -89,7 +90,7 @@ DEBUG_SUCCESS_FUNCTION = """\
     }
 """
 DEBUG_SUCCESS_CALL = """\
-        if configuration.debug_success(super::function!()) {
+        if local_var_configuration.debug_success(super::function!()) {
             println!("RESP {} {}", &local_var_status, &local_var_content);
         }
 """
@@ -144,6 +145,9 @@ def support_api_key(srcdir: str) -> None:
 
 
 def update_gitpush(client_dir: str) -> None:
+    """
+    Avoid upsetting shellcheck.
+    """
     filename = client_dir + "/git_push.sh"
     temp = file_read_content(filename)
 
@@ -163,6 +167,11 @@ def update_gitpush(client_dir: str) -> None:
 
 
 def optional_values(srcdir: str) -> None:
+    """
+    Makes the Parameter.values optional.
+
+    This should be fixed on the server side, but will return a NULL for an environment when there is no override.
+    """
     filelist = glob.glob(f"{srcdir}/models/*.rs")
     required_value = "HashMap<String, crate::models::Value>"
     optional_value = "HashMap<String, Option<crate::models::Value>>"
@@ -175,6 +184,16 @@ def optional_values(srcdir: str) -> None:
 
 
 def update_rest_config(srcdir: str) -> None:
+    """
+    Add stuff to the Configuration.
+
+    CloudTruth specific:
+      * `rest_debug`: `true` to display URL & timing info
+      * `rest_success`: list of functions to display returned content for, even when successful
+      * `rest_page_size`: allow tweaking of requested page sizes
+    Should be in the API:
+      * `api_key`:   used to provide the `Bearer token` header.
+    """
     filename = srcdir + "/apis/configuration.rs"
     temp = file_read_content(filename)
 
@@ -204,6 +223,9 @@ def update_rest_config(srcdir: str) -> None:
 
 
 def add_debug_profiling(srcdir: str) -> None:
+    """
+    Prints the URL info and timing information for each query.
+    """
     filelist = glob.glob(f"{srcdir}/apis/*.rs")
     new_use = "use std::time::Instant;"
     old_use = "use reqwest;"
@@ -225,6 +247,9 @@ def add_debug_profiling(srcdir: str) -> None:
 
 
 def add_debug_errors(srcdir: str) -> None:
+    """
+    Prints the error response content when debugging is configured.
+    """
     filelist = glob.glob(f"{srcdir}/apis/*.rs")
     raise_err = "        Err(Error::ResponseError(local_var_error))"
     base_print = "\"RESP {} {}\""
@@ -243,22 +268,10 @@ def add_debug_errors(srcdir: str) -> None:
         file_write_content(filename, temp)
 
 
-def fix_latest_task(srcdir: str) -> None:
-    filelist = glob.glob(f"{srcdir}/models/aws_pu*.rs")
-    box_usage = "latest_task: Box::new(latest_task)"
-    opt_usage = "latest_task: latest_task.map(Box::new)"
-
-    for filename in filelist:
-        orig = file_read_content(filename)
-        if box_usage not in orig or opt_usage in orig:
-            continue
-
-        temp = orig.replace(box_usage, opt_usage)
-        print(f"Updating {filename} with lastest_task fix")
-        file_write_content(filename, temp)
-
-
 def fix_optional(filelist: List[str], var_name: str, var_type: str = "String") -> None:
+    """
+    Utility to update a field optional in the model.
+    """
     orig_variable = f"{var_name}: {var_type}"
     update_variable = orig_variable.replace(var_type, f"Option<{var_type}>")
     orig_serde = f"rename = \"{var_name}\""
@@ -281,11 +294,23 @@ def fix_optional(filelist: List[str], var_name: str, var_type: str = "String") -
 
 
 def fix_service_account_user(srcdir: str) -> None:
+    """
+    Make the ServiceAccount.user optional.
+
+    The service accounts should always have a User, but it sometimes comes back as NULL!
+    This works around the issue, so the CLI does not crash when no User is returned.
+    """
     filelist = glob.glob(f"{srcdir}/models/service_account*.rs")
     fix_optional(filelist, var_name="user", var_type="Box<crate::models::User>")
 
 
 def schema_returns_string(srcdir: str) -> None:
+    """
+    Modifies the schema call to return a string (instead of some sort of hash map).
+
+    Without this, the results varied on each call. And, the server was unable to do anything with the
+    format.
+    """
     filename = f"{srcdir}/apis/api_api.rs"
     orig = file_read_content(filename)
     orig_return = "Result<::std::collections::HashMap<String, serde_json::Value>, Error<ApiSchemaRetrieveError>>"
@@ -302,6 +327,9 @@ def schema_returns_string(srcdir: str) -> None:
 
 
 def add_serde_error_handling_to_mod(srcdir: str) -> None:
+    """
+    Adds the serdes error handler to the module.
+    """
     filename = f"{srcdir}/apis/mod.rs"
     added_use = "use reqwest::{Method, Url};\n"
     orig = file_read_content(filename)
@@ -314,6 +342,11 @@ def add_serde_error_handling_to_mod(srcdir: str) -> None:
 
 
 def add_func_macro_to_mod(srcdir: str) -> None:
+    """
+    Adds macro::function! to the module.
+
+    This is used for determining which functions get debug info on success.
+    """
     filename = f"{srcdir}/apis/mod.rs"
     macro_def = "macro_rules! function"
     assert(macro_def in FUNCTION_MACRO)
@@ -327,6 +360,12 @@ def add_func_macro_to_mod(srcdir: str) -> None:
 
 
 def serdes_error_handling_calls(srcdir: str) -> None:
+    """
+    This improves the information we receive on a serdes parsing error.
+
+    It attempts to find the object that caused the issue, and prints all the content, too. Before this,
+    an unexpected NULL would just say something like "missing field" without even saying which field.
+    """
     filelist = glob.glob(f"{srcdir}/apis/*.rs")
     orig_use = "use crate::apis::ResponseContent;"
     updated_use = orig_use.replace("ResponseContent;", "{handle_serde_error, ResponseContent};")
@@ -351,6 +390,11 @@ def serdes_error_handling_calls(srcdir: str) -> None:
 
 
 def add_debug_success_calls(srcdir: str) -> None:
+    """
+    Allows for printing the received content on success.
+
+    This checks if the function name is in the configuration (or configuration contains `all`).
+    """
     filelist = glob.glob(f"{srcdir}/apis/*.rs")
     orig_check = "if !local_var_status.is_client_error() && !local_var_status.is_server_error() {"
     call_macro = "super::function!"
@@ -367,10 +411,17 @@ def add_debug_success_calls(srcdir: str) -> None:
 
 
 def object_type_string(srcdir: str) -> None:
+    """
+    Turns the `AuditTrail.object_type` into a `String` (from a `ObjectTypeEnum`).
+
+    Every time we'd add a new object type, the CLI would crash when it would receive an entry with that type (since
+    it was not an allowed value when the CLI was compiled). This avoids the issue until we update the server-side
+    code to just push down strings.
+    """
     filename = f"{srcdir}/models/audit_trail.rs"
-    orig_type = "pub object_type: Box<crate::models::ObjectTypeEnum>"
+    orig_type = "pub object_type: Option<Box<crate::models::ObjectTypeEnum>>"
     new_type = "pub object_type: String"
-    orig_new_arg = "object_type: crate::models::ObjectTypeEnum"
+    orig_new_arg = "object_type: Option<crate::models::ObjectTypeEnum>"
     new_new_arg = "object_type: String"
     orig_create_arg = "object_type: Box::new(object_type)"
     new_create_arg = "object_type"
@@ -386,6 +437,24 @@ def object_type_string(srcdir: str) -> None:
     file_write_content(filename, updated)
 
 
+def optional_enums(srcdir: str) -> None:
+    """
+    When updating to v5.3.1, all the enums became optional in the models and broke the generated code!
+    This scans the models makes changes like:
+       - latest_task: Box::new(latest_task)
+       + latest_task: latest_task.map(Box::new)
+    """
+    filelist = glob.glob(f"{srcdir}/models/*.rs")
+    regex = re.compile(r"Box::new\((.*)\)")
+
+    for filename in filelist:
+        orig = file_read_content(filename)
+        updated = regex.sub(r"\1.map(Box::new)", orig)
+        if orig != updated:
+            print(f"Updating {filename} with optional enums")
+            file_write_content(filename, updated)
+
+
 if __name__ == "__main__":
     client_dir = os.getcwd() + "/client"
     srcdir = client_dir + "/src"
@@ -397,10 +466,10 @@ if __name__ == "__main__":
     add_debug_profiling(srcdir)
     add_debug_errors(srcdir)
     add_debug_success_calls(srcdir)
-    fix_latest_task(srcdir)
     fix_service_account_user(srcdir)
     schema_returns_string(srcdir)
     add_serde_error_handling_to_mod(srcdir)
     add_func_macro_to_mod(srcdir)
     serdes_error_handling_calls(srcdir)
     object_type_string(srcdir)
+    optional_enums(srcdir)

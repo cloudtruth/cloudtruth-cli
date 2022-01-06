@@ -28,3 +28,9 @@ impl ToString for NodeTypeEnum {
         }
     }
 }
+
+impl Default for NodeTypeEnum {
+    fn default() -> NodeTypeEnum {
+        Self::Directory
+    }
+}

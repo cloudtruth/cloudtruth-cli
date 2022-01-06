@@ -10,7 +10,7 @@
 
 /// TemplateTimelineEntryTemplate : Helper methods for all views or serializers that expose template concepts.
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct TemplateTimelineEntryTemplate {
     /// A unique identifier for the parameter.
     #[serde(rename = "id")]

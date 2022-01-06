@@ -1,6 +1,5 @@
 use crate::database::HistoryAction;
 use cloudtruth_restapi::models::TemplateTimelineEntry;
-use std::ops::Deref;
 
 #[derive(Debug, Clone)]
 pub struct TemplateHistory {
@@ -18,14 +17,15 @@ pub struct TemplateHistory {
 
 impl From<&TemplateTimelineEntry> for TemplateHistory {
     fn from(api: &TemplateTimelineEntry) -> Self {
+        let api_template = api.history_template.clone().unwrap_or_default();
         TemplateHistory {
-            id: api.history_template.id.clone(),
-            name: api.history_template.name.clone(),
-            description: api.history_template.description.clone().unwrap_or_default(),
-            body: api.history_template.body.clone().unwrap_or_default(),
+            id: api_template.id.clone(),
+            name: api_template.name.clone(),
+            description: api_template.description.clone().unwrap_or_default(),
+            body: api_template.body.clone().unwrap_or_default(),
 
             date: api.history_date.clone(),
-            change_type: HistoryAction::from(*api.history_type.deref()),
+            change_type: HistoryAction::from(*api.history_type.clone().unwrap_or_default()),
             user_id: api.history_user.clone().unwrap_or_default(),
             user_name: "".to_string(), // must currently be resolved later
         }

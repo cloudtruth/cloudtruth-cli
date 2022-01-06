@@ -14,84 +14,84 @@ use std::time::Instant;
 use super::{configuration, Error};
 use crate::apis::{handle_serde_error, ResponseContent};
 
-/// struct for typed errors of method `types_create`
+/// struct for typed errors of method [`types_create`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum TypesCreateError {
     UnknownValue(serde_json::Value),
 }
 
-/// struct for typed errors of method `types_destroy`
+/// struct for typed errors of method [`types_destroy`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum TypesDestroyError {
     UnknownValue(serde_json::Value),
 }
 
-/// struct for typed errors of method `types_list`
+/// struct for typed errors of method [`types_list`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum TypesListError {
     UnknownValue(serde_json::Value),
 }
 
-/// struct for typed errors of method `types_partial_update`
+/// struct for typed errors of method [`types_partial_update`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum TypesPartialUpdateError {
     UnknownValue(serde_json::Value),
 }
 
-/// struct for typed errors of method `types_retrieve`
+/// struct for typed errors of method [`types_retrieve`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum TypesRetrieveError {
     UnknownValue(serde_json::Value),
 }
 
-/// struct for typed errors of method `types_rules_create`
+/// struct for typed errors of method [`types_rules_create`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum TypesRulesCreateError {
     UnknownValue(serde_json::Value),
 }
 
-/// struct for typed errors of method `types_rules_destroy`
+/// struct for typed errors of method [`types_rules_destroy`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum TypesRulesDestroyError {
     UnknownValue(serde_json::Value),
 }
 
-/// struct for typed errors of method `types_rules_list`
+/// struct for typed errors of method [`types_rules_list`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum TypesRulesListError {
     UnknownValue(serde_json::Value),
 }
 
-/// struct for typed errors of method `types_rules_partial_update`
+/// struct for typed errors of method [`types_rules_partial_update`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum TypesRulesPartialUpdateError {
     UnknownValue(serde_json::Value),
 }
 
-/// struct for typed errors of method `types_rules_retrieve`
+/// struct for typed errors of method [`types_rules_retrieve`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum TypesRulesRetrieveError {
     UnknownValue(serde_json::Value),
 }
 
-/// struct for typed errors of method `types_rules_update`
+/// struct for typed errors of method [`types_rules_update`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum TypesRulesUpdateError {
     UnknownValue(serde_json::Value),
 }
 
-/// struct for typed errors of method `types_update`
+/// struct for typed errors of method [`types_update`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum TypesUpdateError {
@@ -102,21 +102,23 @@ pub fn types_create(
     configuration: &configuration::Configuration,
     parameter_type_create: crate::models::ParameterTypeCreate,
 ) -> Result<crate::models::ParameterType, Error<TypesCreateError>> {
-    let local_var_client = &configuration.client;
+    let local_var_configuration = configuration;
 
-    let local_var_uri_str = format!("{}/api/v1/types/", configuration.base_path);
+    let local_var_client = &local_var_configuration.client;
+
+    let local_var_uri_str = format!("{}/api/v1/types/", local_var_configuration.base_path);
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
 
-    if let Some(ref local_var_user_agent) = configuration.user_agent {
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
     }
 
-    if let Some(ref local_var_token) = configuration.bearer_access_token {
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
         local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
-    if let Some(ref local_var_apikey) = configuration.api_key {
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
         let local_var_key = local_var_apikey.key.clone();
         let local_var_value = match local_var_apikey.prefix {
             Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
@@ -130,7 +132,7 @@ pub fn types_create(
     let method = local_var_req.method().clone();
     let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
-    if configuration.rest_debug {
+    if local_var_configuration.rest_debug {
         let duration = start.elapsed();
         println!(
             "URL {} {} elapsed: {:?}",
@@ -144,7 +146,7 @@ pub fn types_create(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        if configuration.debug_success(super::function!()) {
+        if local_var_configuration.debug_success(super::function!()) {
             println!("RESP {} {}", &local_var_status, &local_var_content);
         }
 
@@ -158,7 +160,7 @@ pub fn types_create(
             content: local_var_content,
             entity: local_var_entity,
         };
-        if configuration.rest_debug {
+        if local_var_configuration.rest_debug {
             println!(
                 "RESP {} {}",
                 &local_var_error.status, &local_var_error.content
@@ -172,21 +174,27 @@ pub fn types_destroy(
     configuration: &configuration::Configuration,
     id: &str,
 ) -> Result<(), Error<TypesDestroyError>> {
-    let local_var_client = &configuration.client;
+    let local_var_configuration = configuration;
 
-    let local_var_uri_str = format!("{}/api/v1/types/{id}/", configuration.base_path, id = id);
+    let local_var_client = &local_var_configuration.client;
+
+    let local_var_uri_str = format!(
+        "{}/api/v1/types/{id}/",
+        local_var_configuration.base_path,
+        id = crate::apis::urlencode(id)
+    );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::DELETE, local_var_uri_str.as_str());
 
-    if let Some(ref local_var_user_agent) = configuration.user_agent {
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
     }
 
-    if let Some(ref local_var_token) = configuration.bearer_access_token {
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
         local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
-    if let Some(ref local_var_apikey) = configuration.api_key {
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
         let local_var_key = local_var_apikey.key.clone();
         let local_var_value = match local_var_apikey.prefix {
             Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
@@ -199,7 +207,7 @@ pub fn types_destroy(
     let method = local_var_req.method().clone();
     let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
-    if configuration.rest_debug {
+    if local_var_configuration.rest_debug {
         let duration = start.elapsed();
         println!(
             "URL {} {} elapsed: {:?}",
@@ -213,7 +221,7 @@ pub fn types_destroy(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        if configuration.debug_success(super::function!()) {
+        if local_var_configuration.debug_success(super::function!()) {
             println!("RESP {} {}", &local_var_status, &local_var_content);
         }
 
@@ -226,7 +234,7 @@ pub fn types_destroy(
             content: local_var_content,
             entity: local_var_entity,
         };
-        if configuration.rest_debug {
+        if local_var_configuration.rest_debug {
             println!(
                 "RESP {} {}",
                 &local_var_error.status, &local_var_error.content
@@ -247,9 +255,11 @@ pub fn types_list(
     parent__name__icontains: Option<&str>,
     parent__name__iexact: Option<&str>,
 ) -> Result<crate::models::PaginatedParameterTypeList, Error<TypesListError>> {
-    let local_var_client = &configuration.client;
+    let local_var_configuration = configuration;
 
-    let local_var_uri_str = format!("{}/api/v1/types/", configuration.base_path);
+    let local_var_client = &local_var_configuration.client;
+
+    let local_var_uri_str = format!("{}/api/v1/types/", local_var_configuration.base_path);
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
 
@@ -285,15 +295,15 @@ pub fn types_list(
         local_var_req_builder =
             local_var_req_builder.query(&[("parent__name__iexact", &local_var_str.to_string())]);
     }
-    if let Some(ref local_var_user_agent) = configuration.user_agent {
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
     }
 
-    if let Some(ref local_var_token) = configuration.bearer_access_token {
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
         local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
-    if let Some(ref local_var_apikey) = configuration.api_key {
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
         let local_var_key = local_var_apikey.key.clone();
         let local_var_value = match local_var_apikey.prefix {
             Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
@@ -306,7 +316,7 @@ pub fn types_list(
     let method = local_var_req.method().clone();
     let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
-    if configuration.rest_debug {
+    if local_var_configuration.rest_debug {
         let duration = start.elapsed();
         println!(
             "URL {} {} elapsed: {:?}",
@@ -320,7 +330,7 @@ pub fn types_list(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        if configuration.debug_success(super::function!()) {
+        if local_var_configuration.debug_success(super::function!()) {
             println!("RESP {} {}", &local_var_status, &local_var_content);
         }
 
@@ -334,7 +344,7 @@ pub fn types_list(
             content: local_var_content,
             entity: local_var_entity,
         };
-        if configuration.rest_debug {
+        if local_var_configuration.rest_debug {
             println!(
                 "RESP {} {}",
                 &local_var_error.status, &local_var_error.content
@@ -349,21 +359,27 @@ pub fn types_partial_update(
     id: &str,
     patched_parameter_type: Option<crate::models::PatchedParameterType>,
 ) -> Result<crate::models::ParameterType, Error<TypesPartialUpdateError>> {
-    let local_var_client = &configuration.client;
+    let local_var_configuration = configuration;
 
-    let local_var_uri_str = format!("{}/api/v1/types/{id}/", configuration.base_path, id = id);
+    let local_var_client = &local_var_configuration.client;
+
+    let local_var_uri_str = format!(
+        "{}/api/v1/types/{id}/",
+        local_var_configuration.base_path,
+        id = crate::apis::urlencode(id)
+    );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::PATCH, local_var_uri_str.as_str());
 
-    if let Some(ref local_var_user_agent) = configuration.user_agent {
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
     }
 
-    if let Some(ref local_var_token) = configuration.bearer_access_token {
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
         local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
-    if let Some(ref local_var_apikey) = configuration.api_key {
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
         let local_var_key = local_var_apikey.key.clone();
         let local_var_value = match local_var_apikey.prefix {
             Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
@@ -377,7 +393,7 @@ pub fn types_partial_update(
     let method = local_var_req.method().clone();
     let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
-    if configuration.rest_debug {
+    if local_var_configuration.rest_debug {
         let duration = start.elapsed();
         println!(
             "URL {} {} elapsed: {:?}",
@@ -391,7 +407,7 @@ pub fn types_partial_update(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        if configuration.debug_success(super::function!()) {
+        if local_var_configuration.debug_success(super::function!()) {
             println!("RESP {} {}", &local_var_status, &local_var_content);
         }
 
@@ -405,7 +421,7 @@ pub fn types_partial_update(
             content: local_var_content,
             entity: local_var_entity,
         };
-        if configuration.rest_debug {
+        if local_var_configuration.rest_debug {
             println!(
                 "RESP {} {}",
                 &local_var_error.status, &local_var_error.content
@@ -419,21 +435,27 @@ pub fn types_retrieve(
     configuration: &configuration::Configuration,
     id: &str,
 ) -> Result<crate::models::ParameterType, Error<TypesRetrieveError>> {
-    let local_var_client = &configuration.client;
+    let local_var_configuration = configuration;
 
-    let local_var_uri_str = format!("{}/api/v1/types/{id}/", configuration.base_path, id = id);
+    let local_var_client = &local_var_configuration.client;
+
+    let local_var_uri_str = format!(
+        "{}/api/v1/types/{id}/",
+        local_var_configuration.base_path,
+        id = crate::apis::urlencode(id)
+    );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
 
-    if let Some(ref local_var_user_agent) = configuration.user_agent {
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
     }
 
-    if let Some(ref local_var_token) = configuration.bearer_access_token {
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
         local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
-    if let Some(ref local_var_apikey) = configuration.api_key {
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
         let local_var_key = local_var_apikey.key.clone();
         let local_var_value = match local_var_apikey.prefix {
             Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
@@ -446,7 +468,7 @@ pub fn types_retrieve(
     let method = local_var_req.method().clone();
     let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
-    if configuration.rest_debug {
+    if local_var_configuration.rest_debug {
         let duration = start.elapsed();
         println!(
             "URL {} {} elapsed: {:?}",
@@ -460,7 +482,7 @@ pub fn types_retrieve(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        if configuration.debug_success(super::function!()) {
+        if local_var_configuration.debug_success(super::function!()) {
             println!("RESP {} {}", &local_var_status, &local_var_content);
         }
 
@@ -474,7 +496,7 @@ pub fn types_retrieve(
             content: local_var_content,
             entity: local_var_entity,
         };
-        if configuration.rest_debug {
+        if local_var_configuration.rest_debug {
             println!(
                 "RESP {} {}",
                 &local_var_error.status, &local_var_error.content
@@ -489,25 +511,27 @@ pub fn types_rules_create(
     parametertype_pk: &str,
     parameter_type_rule_create: crate::models::ParameterTypeRuleCreate,
 ) -> Result<crate::models::ParameterTypeRule, Error<TypesRulesCreateError>> {
-    let local_var_client = &configuration.client;
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
 
     let local_var_uri_str = format!(
         "{}/api/v1/types/{parametertype_pk}/rules/",
-        configuration.base_path,
-        parametertype_pk = parametertype_pk
+        local_var_configuration.base_path,
+        parametertype_pk = crate::apis::urlencode(parametertype_pk)
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
 
-    if let Some(ref local_var_user_agent) = configuration.user_agent {
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
     }
 
-    if let Some(ref local_var_token) = configuration.bearer_access_token {
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
         local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
-    if let Some(ref local_var_apikey) = configuration.api_key {
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
         let local_var_key = local_var_apikey.key.clone();
         let local_var_value = match local_var_apikey.prefix {
             Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
@@ -521,7 +545,7 @@ pub fn types_rules_create(
     let method = local_var_req.method().clone();
     let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
-    if configuration.rest_debug {
+    if local_var_configuration.rest_debug {
         let duration = start.elapsed();
         println!(
             "URL {} {} elapsed: {:?}",
@@ -535,7 +559,7 @@ pub fn types_rules_create(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        if configuration.debug_success(super::function!()) {
+        if local_var_configuration.debug_success(super::function!()) {
             println!("RESP {} {}", &local_var_status, &local_var_content);
         }
 
@@ -549,7 +573,7 @@ pub fn types_rules_create(
             content: local_var_content,
             entity: local_var_entity,
         };
-        if configuration.rest_debug {
+        if local_var_configuration.rest_debug {
             println!(
                 "RESP {} {}",
                 &local_var_error.status, &local_var_error.content
@@ -564,26 +588,28 @@ pub fn types_rules_destroy(
     id: &str,
     parametertype_pk: &str,
 ) -> Result<(), Error<TypesRulesDestroyError>> {
-    let local_var_client = &configuration.client;
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
 
     let local_var_uri_str = format!(
         "{}/api/v1/types/{parametertype_pk}/rules/{id}/",
-        configuration.base_path,
-        id = id,
-        parametertype_pk = parametertype_pk
+        local_var_configuration.base_path,
+        id = crate::apis::urlencode(id),
+        parametertype_pk = crate::apis::urlencode(parametertype_pk)
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::DELETE, local_var_uri_str.as_str());
 
-    if let Some(ref local_var_user_agent) = configuration.user_agent {
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
     }
 
-    if let Some(ref local_var_token) = configuration.bearer_access_token {
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
         local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
-    if let Some(ref local_var_apikey) = configuration.api_key {
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
         let local_var_key = local_var_apikey.key.clone();
         let local_var_value = match local_var_apikey.prefix {
             Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
@@ -596,7 +622,7 @@ pub fn types_rules_destroy(
     let method = local_var_req.method().clone();
     let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
-    if configuration.rest_debug {
+    if local_var_configuration.rest_debug {
         let duration = start.elapsed();
         println!(
             "URL {} {} elapsed: {:?}",
@@ -610,7 +636,7 @@ pub fn types_rules_destroy(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        if configuration.debug_success(super::function!()) {
+        if local_var_configuration.debug_success(super::function!()) {
             println!("RESP {} {}", &local_var_status, &local_var_content);
         }
 
@@ -623,7 +649,7 @@ pub fn types_rules_destroy(
             content: local_var_content,
             entity: local_var_entity,
         };
-        if configuration.rest_debug {
+        if local_var_configuration.rest_debug {
             println!(
                 "RESP {} {}",
                 &local_var_error.status, &local_var_error.content
@@ -641,12 +667,14 @@ pub fn types_rules_list(
     page_size: Option<i32>,
     _type: Option<&str>,
 ) -> Result<crate::models::PaginatedParameterTypeRuleList, Error<TypesRulesListError>> {
-    let local_var_client = &configuration.client;
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
 
     let local_var_uri_str = format!(
         "{}/api/v1/types/{parametertype_pk}/rules/",
-        configuration.base_path,
-        parametertype_pk = parametertype_pk
+        local_var_configuration.base_path,
+        parametertype_pk = crate::apis::urlencode(parametertype_pk)
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
@@ -667,15 +695,15 @@ pub fn types_rules_list(
         local_var_req_builder =
             local_var_req_builder.query(&[("type", &local_var_str.to_string())]);
     }
-    if let Some(ref local_var_user_agent) = configuration.user_agent {
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
     }
 
-    if let Some(ref local_var_token) = configuration.bearer_access_token {
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
         local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
-    if let Some(ref local_var_apikey) = configuration.api_key {
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
         let local_var_key = local_var_apikey.key.clone();
         let local_var_value = match local_var_apikey.prefix {
             Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
@@ -688,7 +716,7 @@ pub fn types_rules_list(
     let method = local_var_req.method().clone();
     let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
-    if configuration.rest_debug {
+    if local_var_configuration.rest_debug {
         let duration = start.elapsed();
         println!(
             "URL {} {} elapsed: {:?}",
@@ -702,7 +730,7 @@ pub fn types_rules_list(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        if configuration.debug_success(super::function!()) {
+        if local_var_configuration.debug_success(super::function!()) {
             println!("RESP {} {}", &local_var_status, &local_var_content);
         }
 
@@ -716,7 +744,7 @@ pub fn types_rules_list(
             content: local_var_content,
             entity: local_var_entity,
         };
-        if configuration.rest_debug {
+        if local_var_configuration.rest_debug {
             println!(
                 "RESP {} {}",
                 &local_var_error.status, &local_var_error.content
@@ -732,26 +760,28 @@ pub fn types_rules_partial_update(
     parametertype_pk: &str,
     patched_parameter_type_rule: Option<crate::models::PatchedParameterTypeRule>,
 ) -> Result<crate::models::ParameterTypeRule, Error<TypesRulesPartialUpdateError>> {
-    let local_var_client = &configuration.client;
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
 
     let local_var_uri_str = format!(
         "{}/api/v1/types/{parametertype_pk}/rules/{id}/",
-        configuration.base_path,
-        id = id,
-        parametertype_pk = parametertype_pk
+        local_var_configuration.base_path,
+        id = crate::apis::urlencode(id),
+        parametertype_pk = crate::apis::urlencode(parametertype_pk)
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::PATCH, local_var_uri_str.as_str());
 
-    if let Some(ref local_var_user_agent) = configuration.user_agent {
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
     }
 
-    if let Some(ref local_var_token) = configuration.bearer_access_token {
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
         local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
-    if let Some(ref local_var_apikey) = configuration.api_key {
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
         let local_var_key = local_var_apikey.key.clone();
         let local_var_value = match local_var_apikey.prefix {
             Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
@@ -765,7 +795,7 @@ pub fn types_rules_partial_update(
     let method = local_var_req.method().clone();
     let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
-    if configuration.rest_debug {
+    if local_var_configuration.rest_debug {
         let duration = start.elapsed();
         println!(
             "URL {} {} elapsed: {:?}",
@@ -779,7 +809,7 @@ pub fn types_rules_partial_update(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        if configuration.debug_success(super::function!()) {
+        if local_var_configuration.debug_success(super::function!()) {
             println!("RESP {} {}", &local_var_status, &local_var_content);
         }
 
@@ -793,7 +823,7 @@ pub fn types_rules_partial_update(
             content: local_var_content,
             entity: local_var_entity,
         };
-        if configuration.rest_debug {
+        if local_var_configuration.rest_debug {
             println!(
                 "RESP {} {}",
                 &local_var_error.status, &local_var_error.content
@@ -808,26 +838,28 @@ pub fn types_rules_retrieve(
     id: &str,
     parametertype_pk: &str,
 ) -> Result<crate::models::ParameterTypeRule, Error<TypesRulesRetrieveError>> {
-    let local_var_client = &configuration.client;
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
 
     let local_var_uri_str = format!(
         "{}/api/v1/types/{parametertype_pk}/rules/{id}/",
-        configuration.base_path,
-        id = id,
-        parametertype_pk = parametertype_pk
+        local_var_configuration.base_path,
+        id = crate::apis::urlencode(id),
+        parametertype_pk = crate::apis::urlencode(parametertype_pk)
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
 
-    if let Some(ref local_var_user_agent) = configuration.user_agent {
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
     }
 
-    if let Some(ref local_var_token) = configuration.bearer_access_token {
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
         local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
-    if let Some(ref local_var_apikey) = configuration.api_key {
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
         let local_var_key = local_var_apikey.key.clone();
         let local_var_value = match local_var_apikey.prefix {
             Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
@@ -840,7 +872,7 @@ pub fn types_rules_retrieve(
     let method = local_var_req.method().clone();
     let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
-    if configuration.rest_debug {
+    if local_var_configuration.rest_debug {
         let duration = start.elapsed();
         println!(
             "URL {} {} elapsed: {:?}",
@@ -854,7 +886,7 @@ pub fn types_rules_retrieve(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        if configuration.debug_success(super::function!()) {
+        if local_var_configuration.debug_success(super::function!()) {
             println!("RESP {} {}", &local_var_status, &local_var_content);
         }
 
@@ -868,7 +900,7 @@ pub fn types_rules_retrieve(
             content: local_var_content,
             entity: local_var_entity,
         };
-        if configuration.rest_debug {
+        if local_var_configuration.rest_debug {
             println!(
                 "RESP {} {}",
                 &local_var_error.status, &local_var_error.content
@@ -884,26 +916,28 @@ pub fn types_rules_update(
     parametertype_pk: &str,
     parameter_type_rule: crate::models::ParameterTypeRule,
 ) -> Result<crate::models::ParameterTypeRule, Error<TypesRulesUpdateError>> {
-    let local_var_client = &configuration.client;
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
 
     let local_var_uri_str = format!(
         "{}/api/v1/types/{parametertype_pk}/rules/{id}/",
-        configuration.base_path,
-        id = id,
-        parametertype_pk = parametertype_pk
+        local_var_configuration.base_path,
+        id = crate::apis::urlencode(id),
+        parametertype_pk = crate::apis::urlencode(parametertype_pk)
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::PUT, local_var_uri_str.as_str());
 
-    if let Some(ref local_var_user_agent) = configuration.user_agent {
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
     }
 
-    if let Some(ref local_var_token) = configuration.bearer_access_token {
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
         local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
-    if let Some(ref local_var_apikey) = configuration.api_key {
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
         let local_var_key = local_var_apikey.key.clone();
         let local_var_value = match local_var_apikey.prefix {
             Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
@@ -917,7 +951,7 @@ pub fn types_rules_update(
     let method = local_var_req.method().clone();
     let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
-    if configuration.rest_debug {
+    if local_var_configuration.rest_debug {
         let duration = start.elapsed();
         println!(
             "URL {} {} elapsed: {:?}",
@@ -931,7 +965,7 @@ pub fn types_rules_update(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        if configuration.debug_success(super::function!()) {
+        if local_var_configuration.debug_success(super::function!()) {
             println!("RESP {} {}", &local_var_status, &local_var_content);
         }
 
@@ -945,7 +979,7 @@ pub fn types_rules_update(
             content: local_var_content,
             entity: local_var_entity,
         };
-        if configuration.rest_debug {
+        if local_var_configuration.rest_debug {
             println!(
                 "RESP {} {}",
                 &local_var_error.status, &local_var_error.content
@@ -960,21 +994,27 @@ pub fn types_update(
     id: &str,
     parameter_type: crate::models::ParameterType,
 ) -> Result<crate::models::ParameterType, Error<TypesUpdateError>> {
-    let local_var_client = &configuration.client;
+    let local_var_configuration = configuration;
 
-    let local_var_uri_str = format!("{}/api/v1/types/{id}/", configuration.base_path, id = id);
+    let local_var_client = &local_var_configuration.client;
+
+    let local_var_uri_str = format!(
+        "{}/api/v1/types/{id}/",
+        local_var_configuration.base_path,
+        id = crate::apis::urlencode(id)
+    );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::PUT, local_var_uri_str.as_str());
 
-    if let Some(ref local_var_user_agent) = configuration.user_agent {
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
     }
 
-    if let Some(ref local_var_token) = configuration.bearer_access_token {
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
         local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
-    if let Some(ref local_var_apikey) = configuration.api_key {
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
         let local_var_key = local_var_apikey.key.clone();
         let local_var_value = match local_var_apikey.prefix {
             Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
@@ -988,7 +1028,7 @@ pub fn types_update(
     let method = local_var_req.method().clone();
     let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
-    if configuration.rest_debug {
+    if local_var_configuration.rest_debug {
         let duration = start.elapsed();
         println!(
             "URL {} {} elapsed: {:?}",
@@ -1002,7 +1042,7 @@ pub fn types_update(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        if configuration.debug_success(super::function!()) {
+        if local_var_configuration.debug_success(super::function!()) {
             println!("RESP {} {}", &local_var_status, &local_var_content);
         }
 
@@ -1016,7 +1056,7 @@ pub fn types_update(
             content: local_var_content,
             entity: local_var_entity,
         };
-        if configuration.rest_debug {
+        if local_var_configuration.rest_debug {
             println!(
                 "RESP {} {}",
                 &local_var_error.status, &local_var_error.content

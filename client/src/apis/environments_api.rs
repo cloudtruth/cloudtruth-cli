@@ -14,14 +14,14 @@ use std::time::Instant;
 use super::{configuration, Error};
 use crate::apis::{handle_serde_error, ResponseContent};
 
-/// struct for typed errors of method `environments_create`
+/// struct for typed errors of method [`environments_create`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum EnvironmentsCreateError {
     UnknownValue(serde_json::Value),
 }
 
-/// struct for typed errors of method `environments_destroy`
+/// struct for typed errors of method [`environments_destroy`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum EnvironmentsDestroyError {
@@ -29,77 +29,77 @@ pub enum EnvironmentsDestroyError {
     UnknownValue(serde_json::Value),
 }
 
-/// struct for typed errors of method `environments_list`
+/// struct for typed errors of method [`environments_list`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum EnvironmentsListError {
     UnknownValue(serde_json::Value),
 }
 
-/// struct for typed errors of method `environments_partial_update`
+/// struct for typed errors of method [`environments_partial_update`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum EnvironmentsPartialUpdateError {
     UnknownValue(serde_json::Value),
 }
 
-/// struct for typed errors of method `environments_pushes_list`
+/// struct for typed errors of method [`environments_pushes_list`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum EnvironmentsPushesListError {
     UnknownValue(serde_json::Value),
 }
 
-/// struct for typed errors of method `environments_retrieve`
+/// struct for typed errors of method [`environments_retrieve`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum EnvironmentsRetrieveError {
     UnknownValue(serde_json::Value),
 }
 
-/// struct for typed errors of method `environments_tags_create`
+/// struct for typed errors of method [`environments_tags_create`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum EnvironmentsTagsCreateError {
     UnknownValue(serde_json::Value),
 }
 
-/// struct for typed errors of method `environments_tags_destroy`
+/// struct for typed errors of method [`environments_tags_destroy`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum EnvironmentsTagsDestroyError {
     UnknownValue(serde_json::Value),
 }
 
-/// struct for typed errors of method `environments_tags_list`
+/// struct for typed errors of method [`environments_tags_list`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum EnvironmentsTagsListError {
     UnknownValue(serde_json::Value),
 }
 
-/// struct for typed errors of method `environments_tags_partial_update`
+/// struct for typed errors of method [`environments_tags_partial_update`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum EnvironmentsTagsPartialUpdateError {
     UnknownValue(serde_json::Value),
 }
 
-/// struct for typed errors of method `environments_tags_retrieve`
+/// struct for typed errors of method [`environments_tags_retrieve`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum EnvironmentsTagsRetrieveError {
     UnknownValue(serde_json::Value),
 }
 
-/// struct for typed errors of method `environments_tags_update`
+/// struct for typed errors of method [`environments_tags_update`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum EnvironmentsTagsUpdateError {
     UnknownValue(serde_json::Value),
 }
 
-/// struct for typed errors of method `environments_update`
+/// struct for typed errors of method [`environments_update`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum EnvironmentsUpdateError {
@@ -110,21 +110,23 @@ pub fn environments_create(
     configuration: &configuration::Configuration,
     environment_create: crate::models::EnvironmentCreate,
 ) -> Result<crate::models::Environment, Error<EnvironmentsCreateError>> {
-    let local_var_client = &configuration.client;
+    let local_var_configuration = configuration;
 
-    let local_var_uri_str = format!("{}/api/v1/environments/", configuration.base_path);
+    let local_var_client = &local_var_configuration.client;
+
+    let local_var_uri_str = format!("{}/api/v1/environments/", local_var_configuration.base_path);
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
 
-    if let Some(ref local_var_user_agent) = configuration.user_agent {
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
     }
 
-    if let Some(ref local_var_token) = configuration.bearer_access_token {
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
         local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
-    if let Some(ref local_var_apikey) = configuration.api_key {
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
         let local_var_key = local_var_apikey.key.clone();
         let local_var_value = match local_var_apikey.prefix {
             Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
@@ -138,7 +140,7 @@ pub fn environments_create(
     let method = local_var_req.method().clone();
     let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
-    if configuration.rest_debug {
+    if local_var_configuration.rest_debug {
         let duration = start.elapsed();
         println!(
             "URL {} {} elapsed: {:?}",
@@ -152,7 +154,7 @@ pub fn environments_create(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        if configuration.debug_success(super::function!()) {
+        if local_var_configuration.debug_success(super::function!()) {
             println!("RESP {} {}", &local_var_status, &local_var_content);
         }
 
@@ -166,7 +168,7 @@ pub fn environments_create(
             content: local_var_content,
             entity: local_var_entity,
         };
-        if configuration.rest_debug {
+        if local_var_configuration.rest_debug {
             println!(
                 "RESP {} {}",
                 &local_var_error.status, &local_var_error.content
@@ -180,25 +182,27 @@ pub fn environments_destroy(
     configuration: &configuration::Configuration,
     id: &str,
 ) -> Result<(), Error<EnvironmentsDestroyError>> {
-    let local_var_client = &configuration.client;
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
 
     let local_var_uri_str = format!(
         "{}/api/v1/environments/{id}/",
-        configuration.base_path,
-        id = id
+        local_var_configuration.base_path,
+        id = crate::apis::urlencode(id)
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::DELETE, local_var_uri_str.as_str());
 
-    if let Some(ref local_var_user_agent) = configuration.user_agent {
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
     }
 
-    if let Some(ref local_var_token) = configuration.bearer_access_token {
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
         local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
-    if let Some(ref local_var_apikey) = configuration.api_key {
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
         let local_var_key = local_var_apikey.key.clone();
         let local_var_value = match local_var_apikey.prefix {
             Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
@@ -211,7 +215,7 @@ pub fn environments_destroy(
     let method = local_var_req.method().clone();
     let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
-    if configuration.rest_debug {
+    if local_var_configuration.rest_debug {
         let duration = start.elapsed();
         println!(
             "URL {} {} elapsed: {:?}",
@@ -225,7 +229,7 @@ pub fn environments_destroy(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        if configuration.debug_success(super::function!()) {
+        if local_var_configuration.debug_success(super::function!()) {
             println!("RESP {} {}", &local_var_status, &local_var_content);
         }
 
@@ -238,7 +242,7 @@ pub fn environments_destroy(
             content: local_var_content,
             entity: local_var_entity,
         };
-        if configuration.rest_debug {
+        if local_var_configuration.rest_debug {
             println!(
                 "RESP {} {}",
                 &local_var_error.status, &local_var_error.content
@@ -259,9 +263,11 @@ pub fn environments_list(
     parent__name: Option<&str>,
     parent__name__icontains: Option<&str>,
 ) -> Result<crate::models::PaginatedEnvironmentList, Error<EnvironmentsListError>> {
-    let local_var_client = &configuration.client;
+    let local_var_configuration = configuration;
 
-    let local_var_uri_str = format!("{}/api/v1/environments/", configuration.base_path);
+    let local_var_client = &local_var_configuration.client;
+
+    let local_var_uri_str = format!("{}/api/v1/environments/", local_var_configuration.base_path);
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
 
@@ -297,15 +303,15 @@ pub fn environments_list(
         local_var_req_builder =
             local_var_req_builder.query(&[("parent__name__icontains", &local_var_str.to_string())]);
     }
-    if let Some(ref local_var_user_agent) = configuration.user_agent {
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
     }
 
-    if let Some(ref local_var_token) = configuration.bearer_access_token {
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
         local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
-    if let Some(ref local_var_apikey) = configuration.api_key {
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
         let local_var_key = local_var_apikey.key.clone();
         let local_var_value = match local_var_apikey.prefix {
             Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
@@ -318,7 +324,7 @@ pub fn environments_list(
     let method = local_var_req.method().clone();
     let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
-    if configuration.rest_debug {
+    if local_var_configuration.rest_debug {
         let duration = start.elapsed();
         println!(
             "URL {} {} elapsed: {:?}",
@@ -332,7 +338,7 @@ pub fn environments_list(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        if configuration.debug_success(super::function!()) {
+        if local_var_configuration.debug_success(super::function!()) {
             println!("RESP {} {}", &local_var_status, &local_var_content);
         }
 
@@ -346,7 +352,7 @@ pub fn environments_list(
             content: local_var_content,
             entity: local_var_entity,
         };
-        if configuration.rest_debug {
+        if local_var_configuration.rest_debug {
             println!(
                 "RESP {} {}",
                 &local_var_error.status, &local_var_error.content
@@ -361,25 +367,27 @@ pub fn environments_partial_update(
     id: &str,
     patched_environment: Option<crate::models::PatchedEnvironment>,
 ) -> Result<crate::models::Environment, Error<EnvironmentsPartialUpdateError>> {
-    let local_var_client = &configuration.client;
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
 
     let local_var_uri_str = format!(
         "{}/api/v1/environments/{id}/",
-        configuration.base_path,
-        id = id
+        local_var_configuration.base_path,
+        id = crate::apis::urlencode(id)
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::PATCH, local_var_uri_str.as_str());
 
-    if let Some(ref local_var_user_agent) = configuration.user_agent {
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
     }
 
-    if let Some(ref local_var_token) = configuration.bearer_access_token {
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
         local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
-    if let Some(ref local_var_apikey) = configuration.api_key {
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
         let local_var_key = local_var_apikey.key.clone();
         let local_var_value = match local_var_apikey.prefix {
             Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
@@ -393,7 +401,7 @@ pub fn environments_partial_update(
     let method = local_var_req.method().clone();
     let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
-    if configuration.rest_debug {
+    if local_var_configuration.rest_debug {
         let duration = start.elapsed();
         println!(
             "URL {} {} elapsed: {:?}",
@@ -407,7 +415,7 @@ pub fn environments_partial_update(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        if configuration.debug_success(super::function!()) {
+        if local_var_configuration.debug_success(super::function!()) {
             println!("RESP {} {}", &local_var_status, &local_var_content);
         }
 
@@ -421,7 +429,7 @@ pub fn environments_partial_update(
             content: local_var_content,
             entity: local_var_entity,
         };
-        if configuration.rest_debug {
+        if local_var_configuration.rest_debug {
             println!(
                 "RESP {} {}",
                 &local_var_error.status, &local_var_error.content
@@ -439,12 +447,14 @@ pub fn environments_pushes_list(
     page: Option<i32>,
     page_size: Option<i32>,
 ) -> Result<crate::models::PaginatedAwsPushTaskStepList, Error<EnvironmentsPushesListError>> {
-    let local_var_client = &configuration.client;
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
 
     let local_var_uri_str = format!(
         "{}/api/v1/environments/{environment_pk}/pushes/",
-        configuration.base_path,
-        environment_pk = environment_pk
+        local_var_configuration.base_path,
+        environment_pk = crate::apis::urlencode(environment_pk)
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
@@ -461,15 +471,15 @@ pub fn environments_pushes_list(
         local_var_req_builder =
             local_var_req_builder.query(&[("page_size", &local_var_str.to_string())]);
     }
-    if let Some(ref local_var_user_agent) = configuration.user_agent {
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
     }
 
-    if let Some(ref local_var_token) = configuration.bearer_access_token {
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
         local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
-    if let Some(ref local_var_apikey) = configuration.api_key {
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
         let local_var_key = local_var_apikey.key.clone();
         let local_var_value = match local_var_apikey.prefix {
             Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
@@ -482,7 +492,7 @@ pub fn environments_pushes_list(
     let method = local_var_req.method().clone();
     let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
-    if configuration.rest_debug {
+    if local_var_configuration.rest_debug {
         let duration = start.elapsed();
         println!(
             "URL {} {} elapsed: {:?}",
@@ -496,7 +506,7 @@ pub fn environments_pushes_list(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        if configuration.debug_success(super::function!()) {
+        if local_var_configuration.debug_success(super::function!()) {
             println!("RESP {} {}", &local_var_status, &local_var_content);
         }
 
@@ -510,7 +520,7 @@ pub fn environments_pushes_list(
             content: local_var_content,
             entity: local_var_entity,
         };
-        if configuration.rest_debug {
+        if local_var_configuration.rest_debug {
             println!(
                 "RESP {} {}",
                 &local_var_error.status, &local_var_error.content
@@ -524,25 +534,27 @@ pub fn environments_retrieve(
     configuration: &configuration::Configuration,
     id: &str,
 ) -> Result<crate::models::Environment, Error<EnvironmentsRetrieveError>> {
-    let local_var_client = &configuration.client;
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
 
     let local_var_uri_str = format!(
         "{}/api/v1/environments/{id}/",
-        configuration.base_path,
-        id = id
+        local_var_configuration.base_path,
+        id = crate::apis::urlencode(id)
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
 
-    if let Some(ref local_var_user_agent) = configuration.user_agent {
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
     }
 
-    if let Some(ref local_var_token) = configuration.bearer_access_token {
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
         local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
-    if let Some(ref local_var_apikey) = configuration.api_key {
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
         let local_var_key = local_var_apikey.key.clone();
         let local_var_value = match local_var_apikey.prefix {
             Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
@@ -555,7 +567,7 @@ pub fn environments_retrieve(
     let method = local_var_req.method().clone();
     let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
-    if configuration.rest_debug {
+    if local_var_configuration.rest_debug {
         let duration = start.elapsed();
         println!(
             "URL {} {} elapsed: {:?}",
@@ -569,7 +581,7 @@ pub fn environments_retrieve(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        if configuration.debug_success(super::function!()) {
+        if local_var_configuration.debug_success(super::function!()) {
             println!("RESP {} {}", &local_var_status, &local_var_content);
         }
 
@@ -583,7 +595,7 @@ pub fn environments_retrieve(
             content: local_var_content,
             entity: local_var_entity,
         };
-        if configuration.rest_debug {
+        if local_var_configuration.rest_debug {
             println!(
                 "RESP {} {}",
                 &local_var_error.status, &local_var_error.content
@@ -599,25 +611,27 @@ pub fn environments_tags_create(
     environment_pk: &str,
     tag_create: crate::models::TagCreate,
 ) -> Result<crate::models::Tag, Error<EnvironmentsTagsCreateError>> {
-    let local_var_client = &configuration.client;
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
 
     let local_var_uri_str = format!(
         "{}/api/v1/environments/{environment_pk}/tags/",
-        configuration.base_path,
-        environment_pk = environment_pk
+        local_var_configuration.base_path,
+        environment_pk = crate::apis::urlencode(environment_pk)
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
 
-    if let Some(ref local_var_user_agent) = configuration.user_agent {
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
     }
 
-    if let Some(ref local_var_token) = configuration.bearer_access_token {
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
         local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
-    if let Some(ref local_var_apikey) = configuration.api_key {
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
         let local_var_key = local_var_apikey.key.clone();
         let local_var_value = match local_var_apikey.prefix {
             Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
@@ -631,7 +645,7 @@ pub fn environments_tags_create(
     let method = local_var_req.method().clone();
     let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
-    if configuration.rest_debug {
+    if local_var_configuration.rest_debug {
         let duration = start.elapsed();
         println!(
             "URL {} {} elapsed: {:?}",
@@ -645,7 +659,7 @@ pub fn environments_tags_create(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        if configuration.debug_success(super::function!()) {
+        if local_var_configuration.debug_success(super::function!()) {
             println!("RESP {} {}", &local_var_status, &local_var_content);
         }
 
@@ -659,7 +673,7 @@ pub fn environments_tags_create(
             content: local_var_content,
             entity: local_var_entity,
         };
-        if configuration.rest_debug {
+        if local_var_configuration.rest_debug {
             println!(
                 "RESP {} {}",
                 &local_var_error.status, &local_var_error.content
@@ -675,26 +689,28 @@ pub fn environments_tags_destroy(
     environment_pk: &str,
     id: &str,
 ) -> Result<(), Error<EnvironmentsTagsDestroyError>> {
-    let local_var_client = &configuration.client;
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
 
     let local_var_uri_str = format!(
         "{}/api/v1/environments/{environment_pk}/tags/{id}/",
-        configuration.base_path,
-        environment_pk = environment_pk,
-        id = id
+        local_var_configuration.base_path,
+        environment_pk = crate::apis::urlencode(environment_pk),
+        id = crate::apis::urlencode(id)
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::DELETE, local_var_uri_str.as_str());
 
-    if let Some(ref local_var_user_agent) = configuration.user_agent {
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
     }
 
-    if let Some(ref local_var_token) = configuration.bearer_access_token {
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
         local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
-    if let Some(ref local_var_apikey) = configuration.api_key {
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
         let local_var_key = local_var_apikey.key.clone();
         let local_var_value = match local_var_apikey.prefix {
             Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
@@ -707,7 +723,7 @@ pub fn environments_tags_destroy(
     let method = local_var_req.method().clone();
     let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
-    if configuration.rest_debug {
+    if local_var_configuration.rest_debug {
         let duration = start.elapsed();
         println!(
             "URL {} {} elapsed: {:?}",
@@ -721,7 +737,7 @@ pub fn environments_tags_destroy(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        if configuration.debug_success(super::function!()) {
+        if local_var_configuration.debug_success(super::function!()) {
             println!("RESP {} {}", &local_var_status, &local_var_content);
         }
 
@@ -734,7 +750,7 @@ pub fn environments_tags_destroy(
             content: local_var_content,
             entity: local_var_entity,
         };
-        if configuration.rest_debug {
+        if local_var_configuration.rest_debug {
             println!(
                 "RESP {} {}",
                 &local_var_error.status, &local_var_error.content
@@ -758,12 +774,14 @@ pub fn environments_tags_list(
     timestamp__gte: Option<String>,
     timestamp__lte: Option<String>,
 ) -> Result<crate::models::PaginatedTagList, Error<EnvironmentsTagsListError>> {
-    let local_var_client = &configuration.client;
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
 
     let local_var_uri_str = format!(
         "{}/api/v1/environments/{environment_pk}/tags/",
-        configuration.base_path,
-        environment_pk = environment_pk
+        local_var_configuration.base_path,
+        environment_pk = crate::apis::urlencode(environment_pk)
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
@@ -804,15 +822,15 @@ pub fn environments_tags_list(
         local_var_req_builder =
             local_var_req_builder.query(&[("timestamp__lte", &local_var_str.to_string())]);
     }
-    if let Some(ref local_var_user_agent) = configuration.user_agent {
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
     }
 
-    if let Some(ref local_var_token) = configuration.bearer_access_token {
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
         local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
-    if let Some(ref local_var_apikey) = configuration.api_key {
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
         let local_var_key = local_var_apikey.key.clone();
         let local_var_value = match local_var_apikey.prefix {
             Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
@@ -825,7 +843,7 @@ pub fn environments_tags_list(
     let method = local_var_req.method().clone();
     let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
-    if configuration.rest_debug {
+    if local_var_configuration.rest_debug {
         let duration = start.elapsed();
         println!(
             "URL {} {} elapsed: {:?}",
@@ -839,7 +857,7 @@ pub fn environments_tags_list(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        if configuration.debug_success(super::function!()) {
+        if local_var_configuration.debug_success(super::function!()) {
             println!("RESP {} {}", &local_var_status, &local_var_content);
         }
 
@@ -853,7 +871,7 @@ pub fn environments_tags_list(
             content: local_var_content,
             entity: local_var_entity,
         };
-        if configuration.rest_debug {
+        if local_var_configuration.rest_debug {
             println!(
                 "RESP {} {}",
                 &local_var_error.status, &local_var_error.content
@@ -870,26 +888,28 @@ pub fn environments_tags_partial_update(
     id: &str,
     patched_tag_update: Option<crate::models::PatchedTagUpdate>,
 ) -> Result<crate::models::TagUpdate, Error<EnvironmentsTagsPartialUpdateError>> {
-    let local_var_client = &configuration.client;
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
 
     let local_var_uri_str = format!(
         "{}/api/v1/environments/{environment_pk}/tags/{id}/",
-        configuration.base_path,
-        environment_pk = environment_pk,
-        id = id
+        local_var_configuration.base_path,
+        environment_pk = crate::apis::urlencode(environment_pk),
+        id = crate::apis::urlencode(id)
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::PATCH, local_var_uri_str.as_str());
 
-    if let Some(ref local_var_user_agent) = configuration.user_agent {
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
     }
 
-    if let Some(ref local_var_token) = configuration.bearer_access_token {
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
         local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
-    if let Some(ref local_var_apikey) = configuration.api_key {
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
         let local_var_key = local_var_apikey.key.clone();
         let local_var_value = match local_var_apikey.prefix {
             Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
@@ -903,7 +923,7 @@ pub fn environments_tags_partial_update(
     let method = local_var_req.method().clone();
     let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
-    if configuration.rest_debug {
+    if local_var_configuration.rest_debug {
         let duration = start.elapsed();
         println!(
             "URL {} {} elapsed: {:?}",
@@ -917,7 +937,7 @@ pub fn environments_tags_partial_update(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        if configuration.debug_success(super::function!()) {
+        if local_var_configuration.debug_success(super::function!()) {
             println!("RESP {} {}", &local_var_status, &local_var_content);
         }
 
@@ -931,7 +951,7 @@ pub fn environments_tags_partial_update(
             content: local_var_content,
             entity: local_var_entity,
         };
-        if configuration.rest_debug {
+        if local_var_configuration.rest_debug {
             println!(
                 "RESP {} {}",
                 &local_var_error.status, &local_var_error.content
@@ -947,26 +967,28 @@ pub fn environments_tags_retrieve(
     environment_pk: &str,
     id: &str,
 ) -> Result<crate::models::Tag, Error<EnvironmentsTagsRetrieveError>> {
-    let local_var_client = &configuration.client;
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
 
     let local_var_uri_str = format!(
         "{}/api/v1/environments/{environment_pk}/tags/{id}/",
-        configuration.base_path,
-        environment_pk = environment_pk,
-        id = id
+        local_var_configuration.base_path,
+        environment_pk = crate::apis::urlencode(environment_pk),
+        id = crate::apis::urlencode(id)
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
 
-    if let Some(ref local_var_user_agent) = configuration.user_agent {
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
     }
 
-    if let Some(ref local_var_token) = configuration.bearer_access_token {
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
         local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
-    if let Some(ref local_var_apikey) = configuration.api_key {
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
         let local_var_key = local_var_apikey.key.clone();
         let local_var_value = match local_var_apikey.prefix {
             Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
@@ -979,7 +1001,7 @@ pub fn environments_tags_retrieve(
     let method = local_var_req.method().clone();
     let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
-    if configuration.rest_debug {
+    if local_var_configuration.rest_debug {
         let duration = start.elapsed();
         println!(
             "URL {} {} elapsed: {:?}",
@@ -993,7 +1015,7 @@ pub fn environments_tags_retrieve(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        if configuration.debug_success(super::function!()) {
+        if local_var_configuration.debug_success(super::function!()) {
             println!("RESP {} {}", &local_var_status, &local_var_content);
         }
 
@@ -1007,7 +1029,7 @@ pub fn environments_tags_retrieve(
             content: local_var_content,
             entity: local_var_entity,
         };
-        if configuration.rest_debug {
+        if local_var_configuration.rest_debug {
             println!(
                 "RESP {} {}",
                 &local_var_error.status, &local_var_error.content
@@ -1024,26 +1046,28 @@ pub fn environments_tags_update(
     id: &str,
     tag_update: crate::models::TagUpdate,
 ) -> Result<crate::models::TagUpdate, Error<EnvironmentsTagsUpdateError>> {
-    let local_var_client = &configuration.client;
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
 
     let local_var_uri_str = format!(
         "{}/api/v1/environments/{environment_pk}/tags/{id}/",
-        configuration.base_path,
-        environment_pk = environment_pk,
-        id = id
+        local_var_configuration.base_path,
+        environment_pk = crate::apis::urlencode(environment_pk),
+        id = crate::apis::urlencode(id)
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::PUT, local_var_uri_str.as_str());
 
-    if let Some(ref local_var_user_agent) = configuration.user_agent {
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
     }
 
-    if let Some(ref local_var_token) = configuration.bearer_access_token {
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
         local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
-    if let Some(ref local_var_apikey) = configuration.api_key {
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
         let local_var_key = local_var_apikey.key.clone();
         let local_var_value = match local_var_apikey.prefix {
             Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
@@ -1057,7 +1081,7 @@ pub fn environments_tags_update(
     let method = local_var_req.method().clone();
     let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
-    if configuration.rest_debug {
+    if local_var_configuration.rest_debug {
         let duration = start.elapsed();
         println!(
             "URL {} {} elapsed: {:?}",
@@ -1071,7 +1095,7 @@ pub fn environments_tags_update(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        if configuration.debug_success(super::function!()) {
+        if local_var_configuration.debug_success(super::function!()) {
             println!("RESP {} {}", &local_var_status, &local_var_content);
         }
 
@@ -1085,7 +1109,7 @@ pub fn environments_tags_update(
             content: local_var_content,
             entity: local_var_entity,
         };
-        if configuration.rest_debug {
+        if local_var_configuration.rest_debug {
             println!(
                 "RESP {} {}",
                 &local_var_error.status, &local_var_error.content
@@ -1100,25 +1124,27 @@ pub fn environments_update(
     id: &str,
     environment: crate::models::Environment,
 ) -> Result<crate::models::Environment, Error<EnvironmentsUpdateError>> {
-    let local_var_client = &configuration.client;
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
 
     let local_var_uri_str = format!(
         "{}/api/v1/environments/{id}/",
-        configuration.base_path,
-        id = id
+        local_var_configuration.base_path,
+        id = crate::apis::urlencode(id)
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::PUT, local_var_uri_str.as_str());
 
-    if let Some(ref local_var_user_agent) = configuration.user_agent {
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
     }
 
-    if let Some(ref local_var_token) = configuration.bearer_access_token {
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
         local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
-    if let Some(ref local_var_apikey) = configuration.api_key {
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
         let local_var_key = local_var_apikey.key.clone();
         let local_var_value = match local_var_apikey.prefix {
             Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
@@ -1132,7 +1158,7 @@ pub fn environments_update(
     let method = local_var_req.method().clone();
     let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
-    if configuration.rest_debug {
+    if local_var_configuration.rest_debug {
         let duration = start.elapsed();
         println!(
             "URL {} {} elapsed: {:?}",
@@ -1146,7 +1172,7 @@ pub fn environments_update(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        if configuration.debug_success(super::function!()) {
+        if local_var_configuration.debug_success(super::function!()) {
             println!("RESP {} {}", &local_var_status, &local_var_content);
         }
 
@@ -1160,7 +1186,7 @@ pub fn environments_update(
             content: local_var_content,
             entity: local_var_entity,
         };
-        if configuration.rest_debug {
+        if local_var_configuration.rest_debug {
             println!(
                 "RESP {} {}",
                 &local_var_error.status, &local_var_error.content

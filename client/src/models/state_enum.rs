@@ -34,3 +34,9 @@ impl ToString for StateEnum {
         }
     }
 }
+
+impl Default for StateEnum {
+    fn default() -> StateEnum {
+        Self::Queued
+    }
+}
