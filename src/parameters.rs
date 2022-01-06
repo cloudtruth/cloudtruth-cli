@@ -744,6 +744,7 @@ fn proc_param_set(
     let proj_name = resolved.project_display_name();
     let env_id = resolved.environment_id();
     let prompt_user = subcmd_args.is_present("prompt");
+    let generate = subcmd_args.is_present("generate");
     let filename = subcmd_args.value_of("input-file");
     let fqn = subcmd_args.value_of("FQN");
     let jmes_path = subcmd_args.value_of(JMES_PATH_ARG);
@@ -773,13 +774,19 @@ fn proc_param_set(
     let create_child = subcmd_args.is_present("create-child");
 
     // make sure the user did not over-specify
-    if (jmes_path.is_some() || fqn.is_some())
-        && (value.is_some() || prompt_user || filename.is_some())
-    {
+    let mut specified: Vec<bool> = vec![
+        jmes_path.is_some() || fqn.is_some(),
+        value.is_some(),
+        prompt_user,
+        generate,
+        filename.is_some(),
+    ];
+    specified.retain(|x| *x);
+    if specified.len() > 1 {
         error_message(
             concat!(
-                "Conflicting arguments: cannot specify prompt/input-file/value, ",
-                "and fqn/jmes-path"
+                "Conflicting arguments: cannot specify more than one of: prompt, input-file, value, ",
+                "generate, or fqn/jmes-path"
             )
             .to_string(),
         );
@@ -793,6 +800,10 @@ fn proc_param_set(
         value = Some(val_str.as_str());
     } else if let Some(filename) = filename {
         val_str = fs::read_to_string(filename).expect(FILE_READ_ERR);
+        value = Some(val_str.as_str());
+    } else if generate {
+        // TODO: peek ahead at length, type??
+        val_str = parameters.generate_password(rest_cfg, 12, None, None, None, None, None, None)?;
         value = Some(val_str.as_str());
     }
 

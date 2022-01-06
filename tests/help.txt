@@ -21,6 +21,7 @@ SUBCOMMANDS:
     completions        Generate shell completions for this application
     configuration      Configuration options for this application [aliases: config, conf, con, co, c]
     environments       Work with CloudTruth environments [aliases: environment, envs, env, e]
+    generate           Generate items using CloudTruth service [aliases: gen, ge]
     help               Prints this message or the help of the given subcommand(s)
     import             Perform imports into the CloudTruth environment [aliases: imp, im]
     integrations       Work with CloudTruth integrations [aliases: integration, integrate, integ, int, in]
@@ -661,6 +662,45 @@ FLAGS:
 ARGS:
     <NAME>    Show this environment with children [default: default]
 ============================================================
+cloudtruth-generate 
+Generate items using CloudTruth service
+
+USAGE:
+    cloudtruth generate [SUBCOMMAND]
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+SUBCOMMANDS:
+    help        Prints this message or the help of the given subcommand(s)
+    password    Generate a password and print to console [aliases: passwd, pass, pw, pa]
+========================================
+cloudtruth-generate-password 
+Generate a password and print to console
+
+USAGE:
+    cloudtruth generate password [FLAGS] [OPTIONS]
+
+FLAGS:
+        --hardware        Require hardware assistance
+    -h, --help            Prints help information
+        --lowercase       Require lowercase character
+        --no-hardware     Do not require hardware assistance
+        --no-lowercase    Do not require lowercase character
+        --no-number       Do not require numeric character
+        --no-space        Do not require space character
+        --no-symbol       Do not require symbol character
+        --no-uppercase    Do not require uppercase characters
+        --number          Require numeric character
+        --space           Require space character
+        --symbol          Require symbol character
+        --uppercase       Require uppercase character
+    -V, --version         Prints version information
+
+OPTIONS:
+        --length <length>    Number of characters [default: 15]
+============================================================
 cloudtruth-import 
 Perform imports into the CloudTruth environment
 
@@ -1062,6 +1102,7 @@ FLAGS:
         --no-min-len      Remove the parameter rule minimum length value
         --no-regex        Remove the parameter rule regex value
         --create-child    Create a parameter in the child project
+        --generate        Generate a new value
     -h, --help            Prints help information
     -p, --prompt          Set the static value using unecho'd terminal
     -V, --version         Prints version information

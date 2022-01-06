@@ -7,6 +7,7 @@ mod config;
 mod configuration;
 mod database;
 mod environments;
+mod generate;
 mod import;
 mod installation;
 mod integrations;
@@ -31,6 +32,7 @@ use crate::config::{Action, Config, Updates, CT_PROFILE, DEFAULT_ENV_NAME};
 use crate::configuration::process_config_command;
 use crate::database::{OpenApiConfig, Resolver};
 use crate::environments::process_environment_command;
+use crate::generate::process_generate_command;
 use crate::import::process_import_command;
 use crate::installation::{binary_version, get_latest_version, install_latest_version};
 use crate::integrations::process_integrations_command;
@@ -451,6 +453,11 @@ fn main() -> Result<()> {
 
     if let Some(matches) = matches.subcommand_matches("parameter-types") {
         process_parameter_type_command(matches, &rest_cfg)?;
+        process::exit(0);
+    }
+
+    if let Some(matches) = matches.subcommand_matches("generate") {
+        process_generate_command(matches, &rest_cfg)?;
         process::exit(0);
     }
 
