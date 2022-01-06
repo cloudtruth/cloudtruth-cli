@@ -24,7 +24,11 @@ impl From<&ParameterType> for TypeDetails {
             description: api_ptype.description.clone().unwrap_or_default(),
             parent_url: api_ptype.parent.clone().unwrap_or_default(),
             parent_name: api_ptype.parent_name.clone().unwrap_or_default(),
-            rules: vec![],
+            rules: api_ptype
+                .rules
+                .iter()
+                .map(ParameterRuleDetail::from)
+                .collect(),
             created_at: api_ptype.created_at.clone(),
             modified_at: api_ptype.modified_at.clone(),
         }

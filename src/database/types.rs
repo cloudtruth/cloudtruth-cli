@@ -1,6 +1,6 @@
 use crate::database::{
-    extract_details, page_size, response_message, OpenApiConfig, ParamRuleType,
-    ParameterRuleDetail, TypeDetails, TypeError, NO_PAGE_COUNT, NO_PAGE_SIZE,
+    extract_details, page_size, response_message, OpenApiConfig, ParamRuleType, TypeDetails,
+    TypeError, NO_PAGE_COUNT, NO_PAGE_SIZE,
 };
 
 use cloudtruth_restapi::apis::types_api::*;
@@ -56,8 +56,7 @@ impl Types {
                     } else {
                         // TODO: handle more than one??
                         let api_type = &list[0];
-                        let mut details = TypeDetails::from(api_type);
-                        details.rules = self.list_rules(rest_cfg, &details.id)?; // TODO: remove
+                        let details = TypeDetails::from(api_type);
                         Ok(Some(details))
                     }
                 }
@@ -107,8 +106,7 @@ impl Types {
                 Ok(data) => {
                     if let Some(list) = data.results {
                         for api_prj in list {
-                            let mut details = TypeDetails::from(&api_prj);
-                            details.rules = self.list_rules(rest_cfg, &details.id)?; // TODO: remove
+                            let details = TypeDetails::from(&api_prj);
                             types.push(details);
                         }
                         page_count += 1;
@@ -191,8 +189,7 @@ impl Types {
         let response = types_partial_update(rest_cfg, type_id, Some(type_update));
         match response {
             Ok(param_type) => {
-                let mut details = TypeDetails::from(&param_type);
-                details.rules = self.list_rules(rest_cfg, &details.id)?;
+                let details = TypeDetails::from(&param_type);
                 Ok(details)
             }
             Err(ResponseError(ref content)) => {
@@ -258,37 +255,6 @@ impl Types {
         let action = "delete".to_string();
         match response {
             Ok(_) => Ok(rule_id.to_string()),
-            Err(ResponseError(ref content)) => Err(rule_error(action, &content.content)),
-            Err(e) => Err(TypeError::UnhandledError(e.to_string())),
-        }
-    }
-
-    fn list_rules(
-        &self,
-        rest_cfg: &OpenApiConfig,
-        type_id: &str,
-    ) -> Result<Vec<ParameterRuleDetail>, TypeError> {
-        let response = types_rules_list(
-            rest_cfg,
-            type_id,
-            NO_ORDERING,
-            NO_PAGE_COUNT,
-            NO_PAGE_SIZE,
-            None,
-        );
-        let action = "list".to_string();
-        match response {
-            Ok(data) => match data.results {
-                Some(list) => {
-                    if !list.is_empty() {
-                        let result = list.iter().map(ParameterRuleDetail::from).collect();
-                        Ok(result)
-                    } else {
-                        Ok(vec![])
-                    }
-                }
-                _ => Ok(vec![]),
-            },
             Err(ResponseError(ref content)) => Err(rule_error(action, &content.content)),
             Err(e) => Err(TypeError::UnhandledError(e.to_string())),
         }
