@@ -20,6 +20,7 @@ docs/AwsServiceEnum.md
 docs/Environment.md
 docs/EnvironmentCreate.md
 docs/EnvironmentsApi.md
+docs/GeneratedPasswordResponse.md
 docs/GitHubIntegration.md
 docs/GitHubIntegrationCreate.md
 docs/HistoryModelEnum.md
@@ -156,6 +157,7 @@ src/models/aws_region_enum.rs
 src/models/aws_service_enum.rs
 src/models/environment.rs
 src/models/environment_create.rs
+src/models/generated_password_response.rs
 src/models/git_hub_integration.rs
 src/models/git_hub_integration_create.rs
 src/models/history_model_enum.rs

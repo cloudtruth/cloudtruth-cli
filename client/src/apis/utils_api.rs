@@ -31,10 +31,7 @@ pub fn utils_generate_password_create(
     require_spaces: Option<bool>,
     require_symbols: Option<bool>,
     require_uppercase: Option<bool>,
-) -> Result<
-    ::std::collections::HashMap<String, serde_json::Value>,
-    Error<UtilsGeneratePasswordCreateError>,
-> {
+) -> Result<crate::models::GeneratedPasswordResponse, Error<UtilsGeneratePasswordCreateError>> {
     let local_var_client = &configuration.client;
 
     let local_var_uri_str = format!(

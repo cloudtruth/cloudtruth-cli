@@ -174,6 +174,7 @@ Class | Method | HTTP request | Description
  - [AwsServiceEnum](docs/AwsServiceEnum.md)
  - [Environment](docs/Environment.md)
  - [EnvironmentCreate](docs/EnvironmentCreate.md)
+ - [GeneratedPasswordResponse](docs/GeneratedPasswordResponse.md)
  - [GitHubIntegration](docs/GitHubIntegration.md)
  - [GitHubIntegrationCreate](docs/GitHubIntegrationCreate.md)
  - [HistoryModelEnum](docs/HistoryModelEnum.md)

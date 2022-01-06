@@ -28,6 +28,8 @@ pub mod environment;
 pub use self::environment::Environment;
 pub mod environment_create;
 pub use self::environment_create::EnvironmentCreate;
+pub mod generated_password_response;
+pub use self::generated_password_response::GeneratedPasswordResponse;
 pub mod git_hub_integration;
 pub use self::git_hub_integration::GitHubIntegration;
 pub mod git_hub_integration_create;
