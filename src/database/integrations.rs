@@ -1198,8 +1198,9 @@ impl Integrations {
             created_at: "".to_string(),
             modified_at: "".to_string(),
             dry_run,
-            region: None,
-            service: None,
+            // NOTE: server-side chokes if these are not specified, but they can't be updated
+            region: Some(Box::new(AwsRegionEnum::AfSouth1)),
+            service: Some(Box::new(AwsServiceEnum::S3)),
             resource: resource.to_string(),
         };
         let response =
