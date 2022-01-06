@@ -102,13 +102,11 @@ class TestParameterTypes(TestCase):
         expected = f"  {type_name1}\n    {type_name2}\n      {type_name3}\n      {type_name4}\n"
         self.assertIn(expected, result.out())
 
-        # TODO: attempt to delete something that is used elsewhere
-        '''
+        # attempt to delete something that is used elsewhere
         result = self.run_cli(cmd_env, base_cmd + f"type delete '{type_name2}' --confirm")
-        self.assertResultError(result, "Cannot remove type because the following type(s) depend on it")
+        self.assertResultError(result, "Cannot remove type because it has children: ")
         self.assertIn(type_name3, result.err())
         self.assertIn(type_name4, result.err())
-        '''
 
         # attempt to create without an existing parent
         type_name5 = self.make_name("type-par-5")
