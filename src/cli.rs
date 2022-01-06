@@ -1339,7 +1339,7 @@ pub fn build_cli() -> App<'static, 'static> {
                             .help("Number of characters"),
                         Arg::with_name("hardware")
                             .long("hardware")
-                            .help("Require hardware assistance"),
+                            .help("Require hardware-based entropy"),
                         Arg::with_name("uppercase")
                             .long("uppercase")
                             .help("Require uppercase character"),
@@ -1357,7 +1357,7 @@ pub fn build_cli() -> App<'static, 'static> {
                             .help("Require space character"),
                         Arg::with_name("no-hardware")
                             .long("no-hardware")
-                            .help("Do not require hardware assistance"),
+                            .help("Do not require hardware-based entropy"),
                         Arg::with_name("no-uppercase")
                             .long("no-uppercase")
                             .help("Do not require uppercase characters"),

@@ -683,10 +683,10 @@ USAGE:
     cloudtruth generate password [FLAGS] [OPTIONS]
 
 FLAGS:
-        --hardware        Require hardware assistance
+        --hardware        Require hardware-based entropy
     -h, --help            Prints help information
         --lowercase       Require lowercase character
-        --no-hardware     Do not require hardware assistance
+        --no-hardware     Do not require hardware-based entropy
         --no-lowercase    Do not require lowercase character
         --no-number       Do not require numeric character
         --no-space        Do not require space character
