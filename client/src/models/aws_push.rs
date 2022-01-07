@@ -10,7 +10,7 @@
 
 /// AwsPush : Push actions can be configured to send configuration and secrets to integrations when tags are updated.
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct AwsPush {
     #[serde(rename = "url")]
     pub url: String,
@@ -38,10 +38,10 @@ pub struct AwsPush {
     pub tags: Vec<String>,
     /// The AWS region this push targets.  This region must be enabled in the integration.
     #[serde(rename = "region")]
-    pub region: Box<crate::models::AwsRegionEnum>,
+    pub region: Option<Box<crate::models::AwsRegionEnum>>,
     /// The AWS service this push targets.  This service must be enabled in the integration.
     #[serde(rename = "service")]
-    pub service: Box<crate::models::AwsServiceEnum>,
+    pub service: Option<Box<crate::models::AwsServiceEnum>>,
     /// Defines a path through the integration to the location where values will be pushed.  The following mustache-style substitutions can be used in the string:    - ``{{ environment }}`` to insert the environment name   - ``{{ parameter }}`` to insert the parameter name   - ``{{ project }}`` to insert the project name   - ``{{ push }}`` to insert the push name   - ``{{ tag }}`` to insert the tag name  We recommend that you use project, environment, and parameter at a minimum to disambiguate your pushed resource identifiers.  If you include multiple projects in the push, the `project` substitution is required.  If you include multiple tags from different environments in the push, the `environment` substitution is required.  If you include multiple tags from the same environment in the push, the `tag` substitution is required.  In all cases, the `parameter` substitution is always required.
     #[serde(rename = "resource")]
     pub resource: String,
@@ -58,8 +58,8 @@ impl AwsPush {
         modified_at: String,
         projects: Vec<String>,
         tags: Vec<String>,
-        region: crate::models::AwsRegionEnum,
-        service: crate::models::AwsServiceEnum,
+        region: Option<crate::models::AwsRegionEnum>,
+        service: Option<crate::models::AwsServiceEnum>,
         resource: String,
     ) -> AwsPush {
         AwsPush {
@@ -72,8 +72,8 @@ impl AwsPush {
             modified_at,
             projects,
             tags,
-            region: Box::new(region),
-            service: Box::new(service),
+            region: region.map(Box::new),
+            service: service.map(Box::new),
             resource,
         }
     }

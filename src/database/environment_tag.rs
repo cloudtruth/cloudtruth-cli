@@ -14,7 +14,7 @@ pub struct EnvironmentTag {
 
 impl From<&Tag> for EnvironmentTag {
     fn from(api: &Tag) -> Self {
-        let usage = &api.usage;
+        let usage = api.usage.clone().unwrap_or_default();
         Self {
             id: api.id.clone(),
             url: api.url.clone(),

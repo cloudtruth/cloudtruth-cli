@@ -14,7 +14,7 @@ use std::time::Instant;
 use super::{configuration, Error};
 use crate::apis::{handle_serde_error, ResponseContent};
 
-/// struct for typed errors of method `invitations_accept_create`
+/// struct for typed errors of method [`invitations_accept_create`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum InvitationsAcceptCreateError {
@@ -23,7 +23,7 @@ pub enum InvitationsAcceptCreateError {
     UnknownValue(serde_json::Value),
 }
 
-/// struct for typed errors of method `invitations_create`
+/// struct for typed errors of method [`invitations_create`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum InvitationsCreateError {
@@ -32,28 +32,28 @@ pub enum InvitationsCreateError {
     UnknownValue(serde_json::Value),
 }
 
-/// struct for typed errors of method `invitations_destroy`
+/// struct for typed errors of method [`invitations_destroy`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum InvitationsDestroyError {
     UnknownValue(serde_json::Value),
 }
 
-/// struct for typed errors of method `invitations_list`
+/// struct for typed errors of method [`invitations_list`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum InvitationsListError {
     UnknownValue(serde_json::Value),
 }
 
-/// struct for typed errors of method `invitations_partial_update`
+/// struct for typed errors of method [`invitations_partial_update`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum InvitationsPartialUpdateError {
     UnknownValue(serde_json::Value),
 }
 
-/// struct for typed errors of method `invitations_resend_create`
+/// struct for typed errors of method [`invitations_resend_create`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum InvitationsResendCreateError {
@@ -61,14 +61,14 @@ pub enum InvitationsResendCreateError {
     UnknownValue(serde_json::Value),
 }
 
-/// struct for typed errors of method `invitations_retrieve`
+/// struct for typed errors of method [`invitations_retrieve`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum InvitationsRetrieveError {
     UnknownValue(serde_json::Value),
 }
 
-/// struct for typed errors of method `invitations_update`
+/// struct for typed errors of method [`invitations_update`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum InvitationsUpdateError {
@@ -80,25 +80,27 @@ pub fn invitations_accept_create(
     configuration: &configuration::Configuration,
     id: &str,
 ) -> Result<crate::models::Invitation, Error<InvitationsAcceptCreateError>> {
-    let local_var_client = &configuration.client;
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
 
     let local_var_uri_str = format!(
         "{}/api/v1/invitations/{id}/accept/",
-        configuration.base_path,
-        id = id
+        local_var_configuration.base_path,
+        id = crate::apis::urlencode(id)
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
 
-    if let Some(ref local_var_user_agent) = configuration.user_agent {
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
     }
 
-    if let Some(ref local_var_token) = configuration.bearer_access_token {
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
         local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
-    if let Some(ref local_var_apikey) = configuration.api_key {
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
         let local_var_key = local_var_apikey.key.clone();
         let local_var_value = match local_var_apikey.prefix {
             Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
@@ -111,7 +113,7 @@ pub fn invitations_accept_create(
     let method = local_var_req.method().clone();
     let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
-    if configuration.rest_debug {
+    if local_var_configuration.rest_debug {
         let duration = start.elapsed();
         println!(
             "URL {} {} elapsed: {:?}",
@@ -125,7 +127,7 @@ pub fn invitations_accept_create(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        if configuration.debug_success(super::function!()) {
+        if local_var_configuration.debug_success(super::function!()) {
             println!("RESP {} {}", &local_var_status, &local_var_content);
         }
 
@@ -139,7 +141,7 @@ pub fn invitations_accept_create(
             content: local_var_content,
             entity: local_var_entity,
         };
-        if configuration.rest_debug {
+        if local_var_configuration.rest_debug {
             println!(
                 "RESP {} {}",
                 &local_var_error.status, &local_var_error.content
@@ -154,21 +156,23 @@ pub fn invitations_create(
     configuration: &configuration::Configuration,
     invitation_create: crate::models::InvitationCreate,
 ) -> Result<crate::models::Invitation, Error<InvitationsCreateError>> {
-    let local_var_client = &configuration.client;
+    let local_var_configuration = configuration;
 
-    let local_var_uri_str = format!("{}/api/v1/invitations/", configuration.base_path);
+    let local_var_client = &local_var_configuration.client;
+
+    let local_var_uri_str = format!("{}/api/v1/invitations/", local_var_configuration.base_path);
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
 
-    if let Some(ref local_var_user_agent) = configuration.user_agent {
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
     }
 
-    if let Some(ref local_var_token) = configuration.bearer_access_token {
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
         local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
-    if let Some(ref local_var_apikey) = configuration.api_key {
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
         let local_var_key = local_var_apikey.key.clone();
         let local_var_value = match local_var_apikey.prefix {
             Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
@@ -182,7 +186,7 @@ pub fn invitations_create(
     let method = local_var_req.method().clone();
     let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
-    if configuration.rest_debug {
+    if local_var_configuration.rest_debug {
         let duration = start.elapsed();
         println!(
             "URL {} {} elapsed: {:?}",
@@ -196,7 +200,7 @@ pub fn invitations_create(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        if configuration.debug_success(super::function!()) {
+        if local_var_configuration.debug_success(super::function!()) {
             println!("RESP {} {}", &local_var_status, &local_var_content);
         }
 
@@ -210,7 +214,7 @@ pub fn invitations_create(
             content: local_var_content,
             entity: local_var_entity,
         };
-        if configuration.rest_debug {
+        if local_var_configuration.rest_debug {
             println!(
                 "RESP {} {}",
                 &local_var_error.status, &local_var_error.content
@@ -224,25 +228,27 @@ pub fn invitations_destroy(
     configuration: &configuration::Configuration,
     id: &str,
 ) -> Result<(), Error<InvitationsDestroyError>> {
-    let local_var_client = &configuration.client;
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
 
     let local_var_uri_str = format!(
         "{}/api/v1/invitations/{id}/",
-        configuration.base_path,
-        id = id
+        local_var_configuration.base_path,
+        id = crate::apis::urlencode(id)
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::DELETE, local_var_uri_str.as_str());
 
-    if let Some(ref local_var_user_agent) = configuration.user_agent {
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
     }
 
-    if let Some(ref local_var_token) = configuration.bearer_access_token {
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
         local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
-    if let Some(ref local_var_apikey) = configuration.api_key {
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
         let local_var_key = local_var_apikey.key.clone();
         let local_var_value = match local_var_apikey.prefix {
             Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
@@ -255,7 +261,7 @@ pub fn invitations_destroy(
     let method = local_var_req.method().clone();
     let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
-    if configuration.rest_debug {
+    if local_var_configuration.rest_debug {
         let duration = start.elapsed();
         println!(
             "URL {} {} elapsed: {:?}",
@@ -269,7 +275,7 @@ pub fn invitations_destroy(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        if configuration.debug_success(super::function!()) {
+        if local_var_configuration.debug_success(super::function!()) {
             println!("RESP {} {}", &local_var_status, &local_var_content);
         }
 
@@ -282,7 +288,7 @@ pub fn invitations_destroy(
             content: local_var_content,
             entity: local_var_entity,
         };
-        if configuration.rest_debug {
+        if local_var_configuration.rest_debug {
             println!(
                 "RESP {} {}",
                 &local_var_error.status, &local_var_error.content
@@ -301,9 +307,11 @@ pub fn invitations_list(
     role: Option<&str>,
     state: Option<&str>,
 ) -> Result<crate::models::PaginatedInvitationList, Error<InvitationsListError>> {
-    let local_var_client = &configuration.client;
+    let local_var_configuration = configuration;
 
-    let local_var_uri_str = format!("{}/api/v1/invitations/", configuration.base_path);
+    let local_var_client = &local_var_configuration.client;
+
+    let local_var_uri_str = format!("{}/api/v1/invitations/", local_var_configuration.base_path);
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
 
@@ -331,15 +339,15 @@ pub fn invitations_list(
         local_var_req_builder =
             local_var_req_builder.query(&[("state", &local_var_str.to_string())]);
     }
-    if let Some(ref local_var_user_agent) = configuration.user_agent {
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
     }
 
-    if let Some(ref local_var_token) = configuration.bearer_access_token {
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
         local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
-    if let Some(ref local_var_apikey) = configuration.api_key {
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
         let local_var_key = local_var_apikey.key.clone();
         let local_var_value = match local_var_apikey.prefix {
             Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
@@ -352,7 +360,7 @@ pub fn invitations_list(
     let method = local_var_req.method().clone();
     let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
-    if configuration.rest_debug {
+    if local_var_configuration.rest_debug {
         let duration = start.elapsed();
         println!(
             "URL {} {} elapsed: {:?}",
@@ -366,7 +374,7 @@ pub fn invitations_list(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        if configuration.debug_success(super::function!()) {
+        if local_var_configuration.debug_success(super::function!()) {
             println!("RESP {} {}", &local_var_status, &local_var_content);
         }
 
@@ -380,7 +388,7 @@ pub fn invitations_list(
             content: local_var_content,
             entity: local_var_entity,
         };
-        if configuration.rest_debug {
+        if local_var_configuration.rest_debug {
             println!(
                 "RESP {} {}",
                 &local_var_error.status, &local_var_error.content
@@ -395,25 +403,27 @@ pub fn invitations_partial_update(
     id: &str,
     patched_invitation: Option<crate::models::PatchedInvitation>,
 ) -> Result<crate::models::Invitation, Error<InvitationsPartialUpdateError>> {
-    let local_var_client = &configuration.client;
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
 
     let local_var_uri_str = format!(
         "{}/api/v1/invitations/{id}/",
-        configuration.base_path,
-        id = id
+        local_var_configuration.base_path,
+        id = crate::apis::urlencode(id)
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::PATCH, local_var_uri_str.as_str());
 
-    if let Some(ref local_var_user_agent) = configuration.user_agent {
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
     }
 
-    if let Some(ref local_var_token) = configuration.bearer_access_token {
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
         local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
-    if let Some(ref local_var_apikey) = configuration.api_key {
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
         let local_var_key = local_var_apikey.key.clone();
         let local_var_value = match local_var_apikey.prefix {
             Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
@@ -427,7 +437,7 @@ pub fn invitations_partial_update(
     let method = local_var_req.method().clone();
     let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
-    if configuration.rest_debug {
+    if local_var_configuration.rest_debug {
         let duration = start.elapsed();
         println!(
             "URL {} {} elapsed: {:?}",
@@ -441,7 +451,7 @@ pub fn invitations_partial_update(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        if configuration.debug_success(super::function!()) {
+        if local_var_configuration.debug_success(super::function!()) {
             println!("RESP {} {}", &local_var_status, &local_var_content);
         }
 
@@ -455,7 +465,7 @@ pub fn invitations_partial_update(
             content: local_var_content,
             entity: local_var_entity,
         };
-        if configuration.rest_debug {
+        if local_var_configuration.rest_debug {
             println!(
                 "RESP {} {}",
                 &local_var_error.status, &local_var_error.content
@@ -470,25 +480,27 @@ pub fn invitations_resend_create(
     configuration: &configuration::Configuration,
     id: &str,
 ) -> Result<crate::models::Invitation, Error<InvitationsResendCreateError>> {
-    let local_var_client = &configuration.client;
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
 
     let local_var_uri_str = format!(
         "{}/api/v1/invitations/{id}/resend/",
-        configuration.base_path,
-        id = id
+        local_var_configuration.base_path,
+        id = crate::apis::urlencode(id)
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
 
-    if let Some(ref local_var_user_agent) = configuration.user_agent {
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
     }
 
-    if let Some(ref local_var_token) = configuration.bearer_access_token {
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
         local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
-    if let Some(ref local_var_apikey) = configuration.api_key {
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
         let local_var_key = local_var_apikey.key.clone();
         let local_var_value = match local_var_apikey.prefix {
             Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
@@ -501,7 +513,7 @@ pub fn invitations_resend_create(
     let method = local_var_req.method().clone();
     let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
-    if configuration.rest_debug {
+    if local_var_configuration.rest_debug {
         let duration = start.elapsed();
         println!(
             "URL {} {} elapsed: {:?}",
@@ -515,7 +527,7 @@ pub fn invitations_resend_create(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        if configuration.debug_success(super::function!()) {
+        if local_var_configuration.debug_success(super::function!()) {
             println!("RESP {} {}", &local_var_status, &local_var_content);
         }
 
@@ -529,7 +541,7 @@ pub fn invitations_resend_create(
             content: local_var_content,
             entity: local_var_entity,
         };
-        if configuration.rest_debug {
+        if local_var_configuration.rest_debug {
             println!(
                 "RESP {} {}",
                 &local_var_error.status, &local_var_error.content
@@ -543,25 +555,27 @@ pub fn invitations_retrieve(
     configuration: &configuration::Configuration,
     id: &str,
 ) -> Result<crate::models::Invitation, Error<InvitationsRetrieveError>> {
-    let local_var_client = &configuration.client;
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
 
     let local_var_uri_str = format!(
         "{}/api/v1/invitations/{id}/",
-        configuration.base_path,
-        id = id
+        local_var_configuration.base_path,
+        id = crate::apis::urlencode(id)
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
 
-    if let Some(ref local_var_user_agent) = configuration.user_agent {
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
     }
 
-    if let Some(ref local_var_token) = configuration.bearer_access_token {
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
         local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
-    if let Some(ref local_var_apikey) = configuration.api_key {
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
         let local_var_key = local_var_apikey.key.clone();
         let local_var_value = match local_var_apikey.prefix {
             Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
@@ -574,7 +588,7 @@ pub fn invitations_retrieve(
     let method = local_var_req.method().clone();
     let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
-    if configuration.rest_debug {
+    if local_var_configuration.rest_debug {
         let duration = start.elapsed();
         println!(
             "URL {} {} elapsed: {:?}",
@@ -588,7 +602,7 @@ pub fn invitations_retrieve(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        if configuration.debug_success(super::function!()) {
+        if local_var_configuration.debug_success(super::function!()) {
             println!("RESP {} {}", &local_var_status, &local_var_content);
         }
 
@@ -602,7 +616,7 @@ pub fn invitations_retrieve(
             content: local_var_content,
             entity: local_var_entity,
         };
-        if configuration.rest_debug {
+        if local_var_configuration.rest_debug {
             println!(
                 "RESP {} {}",
                 &local_var_error.status, &local_var_error.content
@@ -617,25 +631,27 @@ pub fn invitations_update(
     id: &str,
     invitation: crate::models::Invitation,
 ) -> Result<crate::models::Invitation, Error<InvitationsUpdateError>> {
-    let local_var_client = &configuration.client;
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
 
     let local_var_uri_str = format!(
         "{}/api/v1/invitations/{id}/",
-        configuration.base_path,
-        id = id
+        local_var_configuration.base_path,
+        id = crate::apis::urlencode(id)
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::PUT, local_var_uri_str.as_str());
 
-    if let Some(ref local_var_user_agent) = configuration.user_agent {
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
     }
 
-    if let Some(ref local_var_token) = configuration.bearer_access_token {
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
         local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
-    if let Some(ref local_var_apikey) = configuration.api_key {
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
         let local_var_key = local_var_apikey.key.clone();
         let local_var_value = match local_var_apikey.prefix {
             Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
@@ -649,7 +665,7 @@ pub fn invitations_update(
     let method = local_var_req.method().clone();
     let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
-    if configuration.rest_debug {
+    if local_var_configuration.rest_debug {
         let duration = start.elapsed();
         println!(
             "URL {} {} elapsed: {:?}",
@@ -663,7 +679,7 @@ pub fn invitations_update(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        if configuration.debug_success(super::function!()) {
+        if local_var_configuration.debug_success(super::function!()) {
             println!("RESP {} {}", &local_var_status, &local_var_content);
         }
 
@@ -677,7 +693,7 @@ pub fn invitations_update(
             content: local_var_content,
             entity: local_var_entity,
         };
-        if configuration.rest_debug {
+        if local_var_configuration.rest_debug {
             println!(
                 "RESP {} {}",
                 &local_var_error.status, &local_var_error.content

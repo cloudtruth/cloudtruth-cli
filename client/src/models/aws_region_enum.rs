@@ -88,3 +88,9 @@ impl ToString for AwsRegionEnum {
         }
     }
 }
+
+impl Default for AwsRegionEnum {
+    fn default() -> AwsRegionEnum {
+        Self::AfSouth1
+    }
+}

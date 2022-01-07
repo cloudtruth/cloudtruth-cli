@@ -31,3 +31,9 @@ impl ToString for RoleEnum {
         }
     }
 }
+
+impl Default for RoleEnum {
+    fn default() -> RoleEnum {
+        Self::OWNER
+    }
+}

@@ -10,7 +10,7 @@
 
 /// TemplateCreate : A parameter template in a given project, optionally instantiated against an environment.
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct TemplateCreate {
     /// The template name.
     #[serde(rename = "name")]

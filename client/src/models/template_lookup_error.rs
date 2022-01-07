@@ -10,7 +10,7 @@
 
 /// TemplateLookupError : Indicates errors occurred while retrieving values to substitute into the template.
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct TemplateLookupError {
     #[serde(rename = "detail")]
     pub detail: Vec<crate::models::TemplateLookupErrorEntry>,

@@ -136,7 +136,7 @@ impl Invitations {
         let role_enum = to_role_enum(role)?;
         let invite_create = InvitationCreate {
             email: email.to_string(),
-            role: Box::new(role_enum),
+            role: Some(Box::new(role_enum)),
         };
         let response = invitations_create(rest_cfg, invite_create);
         match response {

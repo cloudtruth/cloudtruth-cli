@@ -464,6 +464,8 @@ class TestActions(TestCase):
         self.assertIn(f"Name: {import_name2}", result.out())
         self.assertIn(f"Resource: {resource2}", result.out())
         self.assertIn(f"Description: {desc1}", result.out())
+        self.assertIn(f"Region: {default_region}", result.out())
+        self.assertIn(f"Service: {default_service}", result.out())
         self.assertIn(f"Integration: {integ_name}", result.out())
 
         # list without specifying the integration...

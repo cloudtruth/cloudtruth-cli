@@ -10,7 +10,7 @@
 
 /// ImportParameter : Describes an imported parameter.
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct ImportParameter {
     /// Project name
     #[serde(rename = "project_name")]

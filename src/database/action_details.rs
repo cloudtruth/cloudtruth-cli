@@ -87,8 +87,14 @@ impl From<&AwsPush> for ActionDetails {
             tag_names: vec![], // filled in later
             dry_run: false,
             last_task: task_detail,
-            region: api.region.to_string(),
-            service: api.service.to_string(),
+            region: match &api.region {
+                Some(r) => r.to_string(),
+                _ => "".to_string(),
+            },
+            service: match &api.service {
+                Some(s) => s.to_string(),
+                _ => "".to_string(),
+            },
             created_at: api.created_at.clone(),
             modified_at: api.modified_at.clone(),
         }
@@ -118,8 +124,14 @@ impl From<&AwsPull> for ActionDetails {
             tag_urls: vec![],
             tag_names: vec![], // filled in later
             last_task: task_detail,
-            region: api.region.to_string(),
-            service: api.service.to_string(),
+            region: match &api.region {
+                Some(r) => r.to_string(),
+                _ => "".to_string(),
+            },
+            service: match &api.service {
+                Some(s) => s.to_string(),
+                _ => "".to_string(),
+            },
             created_at: api.created_at.clone(),
             modified_at: api.modified_at.clone(),
         }

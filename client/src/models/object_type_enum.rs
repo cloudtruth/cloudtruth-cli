@@ -73,3 +73,9 @@ impl ToString for ObjectTypeEnum {
         }
     }
 }
+
+impl Default for ObjectTypeEnum {
+    fn default() -> ObjectTypeEnum {
+        Self::AwsIntegration
+    }
+}

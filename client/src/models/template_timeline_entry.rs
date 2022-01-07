@@ -10,32 +10,32 @@
 
 /// TemplateTimelineEntry : Details about a single change.
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct TemplateTimelineEntry {
     #[serde(rename = "history_date")]
     pub history_date: String,
     #[serde(rename = "history_type")]
-    pub history_type: Box<crate::models::HistoryTypeEnum>,
+    pub history_type: Option<Box<crate::models::HistoryTypeEnum>>,
     /// The unique identifier of a user.
     #[serde(rename = "history_user", skip_serializing_if = "Option::is_none")]
     pub history_user: Option<String>,
     /// The template record as it was when archived for history.
     #[serde(rename = "history_template")]
-    pub history_template: Box<crate::models::TemplateTimelineEntryTemplate>,
+    pub history_template: Option<Box<crate::models::TemplateTimelineEntryTemplate>>,
 }
 
 impl TemplateTimelineEntry {
     /// Details about a single change.
     pub fn new(
         history_date: String,
-        history_type: crate::models::HistoryTypeEnum,
-        history_template: crate::models::TemplateTimelineEntryTemplate,
+        history_type: Option<crate::models::HistoryTypeEnum>,
+        history_template: Option<crate::models::TemplateTimelineEntryTemplate>,
     ) -> TemplateTimelineEntry {
         TemplateTimelineEntry {
             history_date,
-            history_type: Box::new(history_type),
+            history_type: history_type.map(Box::new),
             history_user: None,
-            history_template: Box::new(history_template),
+            history_template: history_template.map(Box::new),
         }
     }
 }

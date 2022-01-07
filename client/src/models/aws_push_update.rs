@@ -10,7 +10,7 @@
 
 /// AwsPushUpdate : Update a push.  The `region` and `service` cannot be changed on an existing push.
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct AwsPushUpdate {
     /// The action name.
     #[serde(rename = "name")]

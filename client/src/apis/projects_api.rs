@@ -14,14 +14,14 @@ use std::time::Instant;
 use super::{configuration, Error};
 use crate::apis::{handle_serde_error, ResponseContent};
 
-/// struct for typed errors of method `projects_create`
+/// struct for typed errors of method [`projects_create`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum ProjectsCreateError {
     UnknownValue(serde_json::Value),
 }
 
-/// struct for typed errors of method `projects_destroy`
+/// struct for typed errors of method [`projects_destroy`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum ProjectsDestroyError {
@@ -29,14 +29,14 @@ pub enum ProjectsDestroyError {
     UnknownValue(serde_json::Value),
 }
 
-/// struct for typed errors of method `projects_list`
+/// struct for typed errors of method [`projects_list`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum ProjectsListError {
     UnknownValue(serde_json::Value),
 }
 
-/// struct for typed errors of method `projects_parameter_export_list`
+/// struct for typed errors of method [`projects_parameter_export_list`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum ProjectsParameterExportListError {
@@ -44,28 +44,28 @@ pub enum ProjectsParameterExportListError {
     UnknownValue(serde_json::Value),
 }
 
-/// struct for typed errors of method `projects_parameters_create`
+/// struct for typed errors of method [`projects_parameters_create`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum ProjectsParametersCreateError {
     UnknownValue(serde_json::Value),
 }
 
-/// struct for typed errors of method `projects_parameters_destroy`
+/// struct for typed errors of method [`projects_parameters_destroy`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum ProjectsParametersDestroyError {
     UnknownValue(serde_json::Value),
 }
 
-/// struct for typed errors of method `projects_parameters_list`
+/// struct for typed errors of method [`projects_parameters_list`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum ProjectsParametersListError {
     UnknownValue(serde_json::Value),
 }
 
-/// struct for typed errors of method `projects_parameters_partial_update`
+/// struct for typed errors of method [`projects_parameters_partial_update`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum ProjectsParametersPartialUpdateError {
@@ -77,77 +77,77 @@ pub enum ProjectsParametersPartialUpdateError {
     UnknownValue(serde_json::Value),
 }
 
-/// struct for typed errors of method `projects_parameters_pushes_list`
+/// struct for typed errors of method [`projects_parameters_pushes_list`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum ProjectsParametersPushesListError {
     UnknownValue(serde_json::Value),
 }
 
-/// struct for typed errors of method `projects_parameters_retrieve`
+/// struct for typed errors of method [`projects_parameters_retrieve`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum ProjectsParametersRetrieveError {
     UnknownValue(serde_json::Value),
 }
 
-/// struct for typed errors of method `projects_parameters_rules_create`
+/// struct for typed errors of method [`projects_parameters_rules_create`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum ProjectsParametersRulesCreateError {
     UnknownValue(serde_json::Value),
 }
 
-/// struct for typed errors of method `projects_parameters_rules_destroy`
+/// struct for typed errors of method [`projects_parameters_rules_destroy`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum ProjectsParametersRulesDestroyError {
     UnknownValue(serde_json::Value),
 }
 
-/// struct for typed errors of method `projects_parameters_rules_list`
+/// struct for typed errors of method [`projects_parameters_rules_list`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum ProjectsParametersRulesListError {
     UnknownValue(serde_json::Value),
 }
 
-/// struct for typed errors of method `projects_parameters_rules_partial_update`
+/// struct for typed errors of method [`projects_parameters_rules_partial_update`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum ProjectsParametersRulesPartialUpdateError {
     UnknownValue(serde_json::Value),
 }
 
-/// struct for typed errors of method `projects_parameters_rules_retrieve`
+/// struct for typed errors of method [`projects_parameters_rules_retrieve`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum ProjectsParametersRulesRetrieveError {
     UnknownValue(serde_json::Value),
 }
 
-/// struct for typed errors of method `projects_parameters_rules_update`
+/// struct for typed errors of method [`projects_parameters_rules_update`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum ProjectsParametersRulesUpdateError {
     UnknownValue(serde_json::Value),
 }
 
-/// struct for typed errors of method `projects_parameters_timeline_retrieve`
+/// struct for typed errors of method [`projects_parameters_timeline_retrieve`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum ProjectsParametersTimelineRetrieveError {
     UnknownValue(serde_json::Value),
 }
 
-/// struct for typed errors of method `projects_parameters_timelines_retrieve`
+/// struct for typed errors of method [`projects_parameters_timelines_retrieve`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum ProjectsParametersTimelinesRetrieveError {
     UnknownValue(serde_json::Value),
 }
 
-/// struct for typed errors of method `projects_parameters_update`
+/// struct for typed errors of method [`projects_parameters_update`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum ProjectsParametersUpdateError {
@@ -159,63 +159,63 @@ pub enum ProjectsParametersUpdateError {
     UnknownValue(serde_json::Value),
 }
 
-/// struct for typed errors of method `projects_parameters_values_create`
+/// struct for typed errors of method [`projects_parameters_values_create`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum ProjectsParametersValuesCreateError {
     UnknownValue(serde_json::Value),
 }
 
-/// struct for typed errors of method `projects_parameters_values_destroy`
+/// struct for typed errors of method [`projects_parameters_values_destroy`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum ProjectsParametersValuesDestroyError {
     UnknownValue(serde_json::Value),
 }
 
-/// struct for typed errors of method `projects_parameters_values_list`
+/// struct for typed errors of method [`projects_parameters_values_list`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum ProjectsParametersValuesListError {
     UnknownValue(serde_json::Value),
 }
 
-/// struct for typed errors of method `projects_parameters_values_partial_update`
+/// struct for typed errors of method [`projects_parameters_values_partial_update`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum ProjectsParametersValuesPartialUpdateError {
     UnknownValue(serde_json::Value),
 }
 
-/// struct for typed errors of method `projects_parameters_values_retrieve`
+/// struct for typed errors of method [`projects_parameters_values_retrieve`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum ProjectsParametersValuesRetrieveError {
     UnknownValue(serde_json::Value),
 }
 
-/// struct for typed errors of method `projects_parameters_values_update`
+/// struct for typed errors of method [`projects_parameters_values_update`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum ProjectsParametersValuesUpdateError {
     UnknownValue(serde_json::Value),
 }
 
-/// struct for typed errors of method `projects_partial_update`
+/// struct for typed errors of method [`projects_partial_update`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum ProjectsPartialUpdateError {
     UnknownValue(serde_json::Value),
 }
 
-/// struct for typed errors of method `projects_retrieve`
+/// struct for typed errors of method [`projects_retrieve`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum ProjectsRetrieveError {
     UnknownValue(serde_json::Value),
 }
 
-/// struct for typed errors of method `projects_template_preview_create`
+/// struct for typed errors of method [`projects_template_preview_create`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum ProjectsTemplatePreviewCreateError {
@@ -223,7 +223,7 @@ pub enum ProjectsTemplatePreviewCreateError {
     UnknownValue(serde_json::Value),
 }
 
-/// struct for typed errors of method `projects_templates_create`
+/// struct for typed errors of method [`projects_templates_create`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum ProjectsTemplatesCreateError {
@@ -231,7 +231,7 @@ pub enum ProjectsTemplatesCreateError {
     UnknownValue(serde_json::Value),
 }
 
-/// struct for typed errors of method `projects_templates_destroy`
+/// struct for typed errors of method [`projects_templates_destroy`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum ProjectsTemplatesDestroyError {
@@ -239,7 +239,7 @@ pub enum ProjectsTemplatesDestroyError {
     UnknownValue(serde_json::Value),
 }
 
-/// struct for typed errors of method `projects_templates_list`
+/// struct for typed errors of method [`projects_templates_list`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum ProjectsTemplatesListError {
@@ -247,7 +247,7 @@ pub enum ProjectsTemplatesListError {
     UnknownValue(serde_json::Value),
 }
 
-/// struct for typed errors of method `projects_templates_partial_update`
+/// struct for typed errors of method [`projects_templates_partial_update`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum ProjectsTemplatesPartialUpdateError {
@@ -255,7 +255,7 @@ pub enum ProjectsTemplatesPartialUpdateError {
     UnknownValue(serde_json::Value),
 }
 
-/// struct for typed errors of method `projects_templates_retrieve`
+/// struct for typed errors of method [`projects_templates_retrieve`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum ProjectsTemplatesRetrieveError {
@@ -263,21 +263,21 @@ pub enum ProjectsTemplatesRetrieveError {
     UnknownValue(serde_json::Value),
 }
 
-/// struct for typed errors of method `projects_templates_timeline_retrieve`
+/// struct for typed errors of method [`projects_templates_timeline_retrieve`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum ProjectsTemplatesTimelineRetrieveError {
     UnknownValue(serde_json::Value),
 }
 
-/// struct for typed errors of method `projects_templates_timelines_retrieve`
+/// struct for typed errors of method [`projects_templates_timelines_retrieve`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum ProjectsTemplatesTimelinesRetrieveError {
     UnknownValue(serde_json::Value),
 }
 
-/// struct for typed errors of method `projects_templates_update`
+/// struct for typed errors of method [`projects_templates_update`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum ProjectsTemplatesUpdateError {
@@ -285,7 +285,7 @@ pub enum ProjectsTemplatesUpdateError {
     UnknownValue(serde_json::Value),
 }
 
-/// struct for typed errors of method `projects_update`
+/// struct for typed errors of method [`projects_update`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum ProjectsUpdateError {
@@ -296,21 +296,23 @@ pub fn projects_create(
     configuration: &configuration::Configuration,
     project_create: crate::models::ProjectCreate,
 ) -> Result<crate::models::Project, Error<ProjectsCreateError>> {
-    let local_var_client = &configuration.client;
+    let local_var_configuration = configuration;
 
-    let local_var_uri_str = format!("{}/api/v1/projects/", configuration.base_path);
+    let local_var_client = &local_var_configuration.client;
+
+    let local_var_uri_str = format!("{}/api/v1/projects/", local_var_configuration.base_path);
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
 
-    if let Some(ref local_var_user_agent) = configuration.user_agent {
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
     }
 
-    if let Some(ref local_var_token) = configuration.bearer_access_token {
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
         local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
-    if let Some(ref local_var_apikey) = configuration.api_key {
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
         let local_var_key = local_var_apikey.key.clone();
         let local_var_value = match local_var_apikey.prefix {
             Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
@@ -324,7 +326,7 @@ pub fn projects_create(
     let method = local_var_req.method().clone();
     let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
-    if configuration.rest_debug {
+    if local_var_configuration.rest_debug {
         let duration = start.elapsed();
         println!(
             "URL {} {} elapsed: {:?}",
@@ -338,7 +340,7 @@ pub fn projects_create(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        if configuration.debug_success(super::function!()) {
+        if local_var_configuration.debug_success(super::function!()) {
             println!("RESP {} {}", &local_var_status, &local_var_content);
         }
 
@@ -352,7 +354,7 @@ pub fn projects_create(
             content: local_var_content,
             entity: local_var_entity,
         };
-        if configuration.rest_debug {
+        if local_var_configuration.rest_debug {
             println!(
                 "RESP {} {}",
                 &local_var_error.status, &local_var_error.content
@@ -366,21 +368,27 @@ pub fn projects_destroy(
     configuration: &configuration::Configuration,
     id: &str,
 ) -> Result<(), Error<ProjectsDestroyError>> {
-    let local_var_client = &configuration.client;
+    let local_var_configuration = configuration;
 
-    let local_var_uri_str = format!("{}/api/v1/projects/{id}/", configuration.base_path, id = id);
+    let local_var_client = &local_var_configuration.client;
+
+    let local_var_uri_str = format!(
+        "{}/api/v1/projects/{id}/",
+        local_var_configuration.base_path,
+        id = crate::apis::urlencode(id)
+    );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::DELETE, local_var_uri_str.as_str());
 
-    if let Some(ref local_var_user_agent) = configuration.user_agent {
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
     }
 
-    if let Some(ref local_var_token) = configuration.bearer_access_token {
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
         local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
-    if let Some(ref local_var_apikey) = configuration.api_key {
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
         let local_var_key = local_var_apikey.key.clone();
         let local_var_value = match local_var_apikey.prefix {
             Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
@@ -393,7 +401,7 @@ pub fn projects_destroy(
     let method = local_var_req.method().clone();
     let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
-    if configuration.rest_debug {
+    if local_var_configuration.rest_debug {
         let duration = start.elapsed();
         println!(
             "URL {} {} elapsed: {:?}",
@@ -407,7 +415,7 @@ pub fn projects_destroy(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        if configuration.debug_success(super::function!()) {
+        if local_var_configuration.debug_success(super::function!()) {
             println!("RESP {} {}", &local_var_status, &local_var_content);
         }
 
@@ -420,7 +428,7 @@ pub fn projects_destroy(
             content: local_var_content,
             entity: local_var_entity,
         };
-        if configuration.rest_debug {
+        if local_var_configuration.rest_debug {
             println!(
                 "RESP {} {}",
                 &local_var_error.status, &local_var_error.content
@@ -439,9 +447,11 @@ pub fn projects_list(
     page: Option<i32>,
     page_size: Option<i32>,
 ) -> Result<crate::models::PaginatedProjectList, Error<ProjectsListError>> {
-    let local_var_client = &configuration.client;
+    let local_var_configuration = configuration;
 
-    let local_var_uri_str = format!("{}/api/v1/projects/", configuration.base_path);
+    let local_var_client = &local_var_configuration.client;
+
+    let local_var_uri_str = format!("{}/api/v1/projects/", local_var_configuration.base_path);
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
 
@@ -469,15 +479,15 @@ pub fn projects_list(
         local_var_req_builder =
             local_var_req_builder.query(&[("page_size", &local_var_str.to_string())]);
     }
-    if let Some(ref local_var_user_agent) = configuration.user_agent {
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
     }
 
-    if let Some(ref local_var_token) = configuration.bearer_access_token {
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
         local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
-    if let Some(ref local_var_apikey) = configuration.api_key {
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
         let local_var_key = local_var_apikey.key.clone();
         let local_var_value = match local_var_apikey.prefix {
             Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
@@ -490,7 +500,7 @@ pub fn projects_list(
     let method = local_var_req.method().clone();
     let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
-    if configuration.rest_debug {
+    if local_var_configuration.rest_debug {
         let duration = start.elapsed();
         println!(
             "URL {} {} elapsed: {:?}",
@@ -504,7 +514,7 @@ pub fn projects_list(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        if configuration.debug_success(super::function!()) {
+        if local_var_configuration.debug_success(super::function!()) {
             println!("RESP {} {}", &local_var_status, &local_var_content);
         }
 
@@ -518,7 +528,7 @@ pub fn projects_list(
             content: local_var_content,
             entity: local_var_entity,
         };
-        if configuration.rest_debug {
+        if local_var_configuration.rest_debug {
             println!(
                 "RESP {} {}",
                 &local_var_error.status, &local_var_error.content
@@ -544,12 +554,14 @@ pub fn projects_parameter_export_list(
     tag: Option<&str>,
     wrap: Option<bool>,
 ) -> Result<crate::models::ParameterExport, Error<ProjectsParameterExportListError>> {
-    let local_var_client = &configuration.client;
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
 
     let local_var_uri_str = format!(
         "{}/api/v1/projects/{project_pk}/parameter-export/",
-        configuration.base_path,
-        project_pk = project_pk
+        local_var_configuration.base_path,
+        project_pk = crate::apis::urlencode(project_pk)
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
@@ -597,15 +609,15 @@ pub fn projects_parameter_export_list(
         local_var_req_builder =
             local_var_req_builder.query(&[("wrap", &local_var_str.to_string())]);
     }
-    if let Some(ref local_var_user_agent) = configuration.user_agent {
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
     }
 
-    if let Some(ref local_var_token) = configuration.bearer_access_token {
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
         local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
-    if let Some(ref local_var_apikey) = configuration.api_key {
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
         let local_var_key = local_var_apikey.key.clone();
         let local_var_value = match local_var_apikey.prefix {
             Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
@@ -618,7 +630,7 @@ pub fn projects_parameter_export_list(
     let method = local_var_req.method().clone();
     let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
-    if configuration.rest_debug {
+    if local_var_configuration.rest_debug {
         let duration = start.elapsed();
         println!(
             "URL {} {} elapsed: {:?}",
@@ -632,7 +644,7 @@ pub fn projects_parameter_export_list(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        if configuration.debug_success(super::function!()) {
+        if local_var_configuration.debug_success(super::function!()) {
             println!("RESP {} {}", &local_var_status, &local_var_content);
         }
 
@@ -646,7 +658,7 @@ pub fn projects_parameter_export_list(
             content: local_var_content,
             entity: local_var_entity,
         };
-        if configuration.rest_debug {
+        if local_var_configuration.rest_debug {
             println!(
                 "RESP {} {}",
                 &local_var_error.status, &local_var_error.content
@@ -661,25 +673,27 @@ pub fn projects_parameters_create(
     project_pk: &str,
     parameter_create: crate::models::ParameterCreate,
 ) -> Result<crate::models::Parameter, Error<ProjectsParametersCreateError>> {
-    let local_var_client = &configuration.client;
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
 
     let local_var_uri_str = format!(
         "{}/api/v1/projects/{project_pk}/parameters/",
-        configuration.base_path,
-        project_pk = project_pk
+        local_var_configuration.base_path,
+        project_pk = crate::apis::urlencode(project_pk)
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
 
-    if let Some(ref local_var_user_agent) = configuration.user_agent {
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
     }
 
-    if let Some(ref local_var_token) = configuration.bearer_access_token {
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
         local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
-    if let Some(ref local_var_apikey) = configuration.api_key {
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
         let local_var_key = local_var_apikey.key.clone();
         let local_var_value = match local_var_apikey.prefix {
             Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
@@ -693,7 +707,7 @@ pub fn projects_parameters_create(
     let method = local_var_req.method().clone();
     let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
-    if configuration.rest_debug {
+    if local_var_configuration.rest_debug {
         let duration = start.elapsed();
         println!(
             "URL {} {} elapsed: {:?}",
@@ -707,7 +721,7 @@ pub fn projects_parameters_create(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        if configuration.debug_success(super::function!()) {
+        if local_var_configuration.debug_success(super::function!()) {
             println!("RESP {} {}", &local_var_status, &local_var_content);
         }
 
@@ -721,7 +735,7 @@ pub fn projects_parameters_create(
             content: local_var_content,
             entity: local_var_entity,
         };
-        if configuration.rest_debug {
+        if local_var_configuration.rest_debug {
             println!(
                 "RESP {} {}",
                 &local_var_error.status, &local_var_error.content
@@ -736,26 +750,28 @@ pub fn projects_parameters_destroy(
     id: &str,
     project_pk: &str,
 ) -> Result<(), Error<ProjectsParametersDestroyError>> {
-    let local_var_client = &configuration.client;
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
 
     let local_var_uri_str = format!(
         "{}/api/v1/projects/{project_pk}/parameters/{id}/",
-        configuration.base_path,
-        id = id,
-        project_pk = project_pk
+        local_var_configuration.base_path,
+        id = crate::apis::urlencode(id),
+        project_pk = crate::apis::urlencode(project_pk)
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::DELETE, local_var_uri_str.as_str());
 
-    if let Some(ref local_var_user_agent) = configuration.user_agent {
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
     }
 
-    if let Some(ref local_var_token) = configuration.bearer_access_token {
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
         local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
-    if let Some(ref local_var_apikey) = configuration.api_key {
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
         let local_var_key = local_var_apikey.key.clone();
         let local_var_value = match local_var_apikey.prefix {
             Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
@@ -768,7 +784,7 @@ pub fn projects_parameters_destroy(
     let method = local_var_req.method().clone();
     let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
-    if configuration.rest_debug {
+    if local_var_configuration.rest_debug {
         let duration = start.elapsed();
         println!(
             "URL {} {} elapsed: {:?}",
@@ -782,7 +798,7 @@ pub fn projects_parameters_destroy(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        if configuration.debug_success(super::function!()) {
+        if local_var_configuration.debug_success(super::function!()) {
             println!("RESP {} {}", &local_var_status, &local_var_content);
         }
 
@@ -795,7 +811,7 @@ pub fn projects_parameters_destroy(
             content: local_var_content,
             entity: local_var_entity,
         };
-        if configuration.rest_debug {
+        if local_var_configuration.rest_debug {
             println!(
                 "RESP {} {}",
                 &local_var_error.status, &local_var_error.content
@@ -822,12 +838,14 @@ pub fn projects_parameters_list(
     values: Option<bool>,
     wrap: Option<bool>,
 ) -> Result<crate::models::PaginatedParameterList, Error<ProjectsParametersListError>> {
-    let local_var_client = &configuration.client;
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
 
     let local_var_uri_str = format!(
         "{}/api/v1/projects/{project_pk}/parameters/",
-        configuration.base_path,
-        project_pk = project_pk
+        local_var_configuration.base_path,
+        project_pk = crate::apis::urlencode(project_pk)
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
@@ -883,15 +901,15 @@ pub fn projects_parameters_list(
         local_var_req_builder =
             local_var_req_builder.query(&[("wrap", &local_var_str.to_string())]);
     }
-    if let Some(ref local_var_user_agent) = configuration.user_agent {
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
     }
 
-    if let Some(ref local_var_token) = configuration.bearer_access_token {
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
         local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
-    if let Some(ref local_var_apikey) = configuration.api_key {
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
         let local_var_key = local_var_apikey.key.clone();
         let local_var_value = match local_var_apikey.prefix {
             Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
@@ -904,7 +922,7 @@ pub fn projects_parameters_list(
     let method = local_var_req.method().clone();
     let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
-    if configuration.rest_debug {
+    if local_var_configuration.rest_debug {
         let duration = start.elapsed();
         println!(
             "URL {} {} elapsed: {:?}",
@@ -918,7 +936,7 @@ pub fn projects_parameters_list(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        if configuration.debug_success(super::function!()) {
+        if local_var_configuration.debug_success(super::function!()) {
             println!("RESP {} {}", &local_var_status, &local_var_content);
         }
 
@@ -932,7 +950,7 @@ pub fn projects_parameters_list(
             content: local_var_content,
             entity: local_var_entity,
         };
-        if configuration.rest_debug {
+        if local_var_configuration.rest_debug {
             println!(
                 "RESP {} {}",
                 &local_var_error.status, &local_var_error.content
@@ -948,26 +966,28 @@ pub fn projects_parameters_partial_update(
     project_pk: &str,
     patched_parameter: Option<crate::models::PatchedParameter>,
 ) -> Result<crate::models::Parameter, Error<ProjectsParametersPartialUpdateError>> {
-    let local_var_client = &configuration.client;
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
 
     let local_var_uri_str = format!(
         "{}/api/v1/projects/{project_pk}/parameters/{id}/",
-        configuration.base_path,
-        id = id,
-        project_pk = project_pk
+        local_var_configuration.base_path,
+        id = crate::apis::urlencode(id),
+        project_pk = crate::apis::urlencode(project_pk)
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::PATCH, local_var_uri_str.as_str());
 
-    if let Some(ref local_var_user_agent) = configuration.user_agent {
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
     }
 
-    if let Some(ref local_var_token) = configuration.bearer_access_token {
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
         local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
-    if let Some(ref local_var_apikey) = configuration.api_key {
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
         let local_var_key = local_var_apikey.key.clone();
         let local_var_value = match local_var_apikey.prefix {
             Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
@@ -981,7 +1001,7 @@ pub fn projects_parameters_partial_update(
     let method = local_var_req.method().clone();
     let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
-    if configuration.rest_debug {
+    if local_var_configuration.rest_debug {
         let duration = start.elapsed();
         println!(
             "URL {} {} elapsed: {:?}",
@@ -995,7 +1015,7 @@ pub fn projects_parameters_partial_update(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        if configuration.debug_success(super::function!()) {
+        if local_var_configuration.debug_success(super::function!()) {
             println!("RESP {} {}", &local_var_status, &local_var_content);
         }
 
@@ -1009,7 +1029,7 @@ pub fn projects_parameters_partial_update(
             content: local_var_content,
             entity: local_var_entity,
         };
-        if configuration.rest_debug {
+        if local_var_configuration.rest_debug {
             println!(
                 "RESP {} {}",
                 &local_var_error.status, &local_var_error.content
@@ -1030,13 +1050,15 @@ pub fn projects_parameters_pushes_list(
     page_size: Option<i32>,
     tag: Option<&str>,
 ) -> Result<crate::models::PaginatedAwsPushTaskStepList, Error<ProjectsParametersPushesListError>> {
-    let local_var_client = &configuration.client;
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
 
     let local_var_uri_str = format!(
         "{}/api/v1/projects/{project_pk}/parameters/{parameter_pk}/pushes/",
-        configuration.base_path,
-        parameter_pk = parameter_pk,
-        project_pk = project_pk
+        local_var_configuration.base_path,
+        parameter_pk = crate::apis::urlencode(parameter_pk),
+        project_pk = crate::apis::urlencode(project_pk)
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
@@ -1060,15 +1082,15 @@ pub fn projects_parameters_pushes_list(
     if let Some(ref local_var_str) = tag {
         local_var_req_builder = local_var_req_builder.query(&[("tag", &local_var_str.to_string())]);
     }
-    if let Some(ref local_var_user_agent) = configuration.user_agent {
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
     }
 
-    if let Some(ref local_var_token) = configuration.bearer_access_token {
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
         local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
-    if let Some(ref local_var_apikey) = configuration.api_key {
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
         let local_var_key = local_var_apikey.key.clone();
         let local_var_value = match local_var_apikey.prefix {
             Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
@@ -1081,7 +1103,7 @@ pub fn projects_parameters_pushes_list(
     let method = local_var_req.method().clone();
     let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
-    if configuration.rest_debug {
+    if local_var_configuration.rest_debug {
         let duration = start.elapsed();
         println!(
             "URL {} {} elapsed: {:?}",
@@ -1095,7 +1117,7 @@ pub fn projects_parameters_pushes_list(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        if configuration.debug_success(super::function!()) {
+        if local_var_configuration.debug_success(super::function!()) {
             println!("RESP {} {}", &local_var_status, &local_var_content);
         }
 
@@ -1109,7 +1131,7 @@ pub fn projects_parameters_pushes_list(
             content: local_var_content,
             entity: local_var_entity,
         };
-        if configuration.rest_debug {
+        if local_var_configuration.rest_debug {
             println!(
                 "RESP {} {}",
                 &local_var_error.status, &local_var_error.content
@@ -1132,13 +1154,15 @@ pub fn projects_parameters_retrieve(
     values: Option<bool>,
     wrap: Option<bool>,
 ) -> Result<crate::models::Parameter, Error<ProjectsParametersRetrieveError>> {
-    let local_var_client = &configuration.client;
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
 
     let local_var_uri_str = format!(
         "{}/api/v1/projects/{project_pk}/parameters/{id}/",
-        configuration.base_path,
-        id = id,
-        project_pk = project_pk
+        local_var_configuration.base_path,
+        id = crate::apis::urlencode(id),
+        project_pk = crate::apis::urlencode(project_pk)
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
@@ -1174,15 +1198,15 @@ pub fn projects_parameters_retrieve(
         local_var_req_builder =
             local_var_req_builder.query(&[("wrap", &local_var_str.to_string())]);
     }
-    if let Some(ref local_var_user_agent) = configuration.user_agent {
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
     }
 
-    if let Some(ref local_var_token) = configuration.bearer_access_token {
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
         local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
-    if let Some(ref local_var_apikey) = configuration.api_key {
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
         let local_var_key = local_var_apikey.key.clone();
         let local_var_value = match local_var_apikey.prefix {
             Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
@@ -1195,7 +1219,7 @@ pub fn projects_parameters_retrieve(
     let method = local_var_req.method().clone();
     let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
-    if configuration.rest_debug {
+    if local_var_configuration.rest_debug {
         let duration = start.elapsed();
         println!(
             "URL {} {} elapsed: {:?}",
@@ -1209,7 +1233,7 @@ pub fn projects_parameters_retrieve(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        if configuration.debug_success(super::function!()) {
+        if local_var_configuration.debug_success(super::function!()) {
             println!("RESP {} {}", &local_var_status, &local_var_content);
         }
 
@@ -1223,7 +1247,7 @@ pub fn projects_parameters_retrieve(
             content: local_var_content,
             entity: local_var_entity,
         };
-        if configuration.rest_debug {
+        if local_var_configuration.rest_debug {
             println!(
                 "RESP {} {}",
                 &local_var_error.status, &local_var_error.content
@@ -1239,26 +1263,28 @@ pub fn projects_parameters_rules_create(
     project_pk: &str,
     parameter_rule_create: crate::models::ParameterRuleCreate,
 ) -> Result<crate::models::ParameterRule, Error<ProjectsParametersRulesCreateError>> {
-    let local_var_client = &configuration.client;
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
 
     let local_var_uri_str = format!(
         "{}/api/v1/projects/{project_pk}/parameters/{parameter_pk}/rules/",
-        configuration.base_path,
-        parameter_pk = parameter_pk,
-        project_pk = project_pk
+        local_var_configuration.base_path,
+        parameter_pk = crate::apis::urlencode(parameter_pk),
+        project_pk = crate::apis::urlencode(project_pk)
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
 
-    if let Some(ref local_var_user_agent) = configuration.user_agent {
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
     }
 
-    if let Some(ref local_var_token) = configuration.bearer_access_token {
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
         local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
-    if let Some(ref local_var_apikey) = configuration.api_key {
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
         let local_var_key = local_var_apikey.key.clone();
         let local_var_value = match local_var_apikey.prefix {
             Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
@@ -1272,7 +1298,7 @@ pub fn projects_parameters_rules_create(
     let method = local_var_req.method().clone();
     let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
-    if configuration.rest_debug {
+    if local_var_configuration.rest_debug {
         let duration = start.elapsed();
         println!(
             "URL {} {} elapsed: {:?}",
@@ -1286,7 +1312,7 @@ pub fn projects_parameters_rules_create(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        if configuration.debug_success(super::function!()) {
+        if local_var_configuration.debug_success(super::function!()) {
             println!("RESP {} {}", &local_var_status, &local_var_content);
         }
 
@@ -1300,7 +1326,7 @@ pub fn projects_parameters_rules_create(
             content: local_var_content,
             entity: local_var_entity,
         };
-        if configuration.rest_debug {
+        if local_var_configuration.rest_debug {
             println!(
                 "RESP {} {}",
                 &local_var_error.status, &local_var_error.content
@@ -1316,27 +1342,29 @@ pub fn projects_parameters_rules_destroy(
     parameter_pk: &str,
     project_pk: &str,
 ) -> Result<(), Error<ProjectsParametersRulesDestroyError>> {
-    let local_var_client = &configuration.client;
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
 
     let local_var_uri_str = format!(
         "{}/api/v1/projects/{project_pk}/parameters/{parameter_pk}/rules/{id}/",
-        configuration.base_path,
-        id = id,
-        parameter_pk = parameter_pk,
-        project_pk = project_pk
+        local_var_configuration.base_path,
+        id = crate::apis::urlencode(id),
+        parameter_pk = crate::apis::urlencode(parameter_pk),
+        project_pk = crate::apis::urlencode(project_pk)
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::DELETE, local_var_uri_str.as_str());
 
-    if let Some(ref local_var_user_agent) = configuration.user_agent {
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
     }
 
-    if let Some(ref local_var_token) = configuration.bearer_access_token {
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
         local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
-    if let Some(ref local_var_apikey) = configuration.api_key {
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
         let local_var_key = local_var_apikey.key.clone();
         let local_var_value = match local_var_apikey.prefix {
             Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
@@ -1349,7 +1377,7 @@ pub fn projects_parameters_rules_destroy(
     let method = local_var_req.method().clone();
     let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
-    if configuration.rest_debug {
+    if local_var_configuration.rest_debug {
         let duration = start.elapsed();
         println!(
             "URL {} {} elapsed: {:?}",
@@ -1363,7 +1391,7 @@ pub fn projects_parameters_rules_destroy(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        if configuration.debug_success(super::function!()) {
+        if local_var_configuration.debug_success(super::function!()) {
             println!("RESP {} {}", &local_var_status, &local_var_content);
         }
 
@@ -1376,7 +1404,7 @@ pub fn projects_parameters_rules_destroy(
             content: local_var_content,
             entity: local_var_entity,
         };
-        if configuration.rest_debug {
+        if local_var_configuration.rest_debug {
             println!(
                 "RESP {} {}",
                 &local_var_error.status, &local_var_error.content
@@ -1395,13 +1423,15 @@ pub fn projects_parameters_rules_list(
     page_size: Option<i32>,
     _type: Option<&str>,
 ) -> Result<crate::models::PaginatedParameterRuleList, Error<ProjectsParametersRulesListError>> {
-    let local_var_client = &configuration.client;
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
 
     let local_var_uri_str = format!(
         "{}/api/v1/projects/{project_pk}/parameters/{parameter_pk}/rules/",
-        configuration.base_path,
-        parameter_pk = parameter_pk,
-        project_pk = project_pk
+        local_var_configuration.base_path,
+        parameter_pk = crate::apis::urlencode(parameter_pk),
+        project_pk = crate::apis::urlencode(project_pk)
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
@@ -1422,15 +1452,15 @@ pub fn projects_parameters_rules_list(
         local_var_req_builder =
             local_var_req_builder.query(&[("type", &local_var_str.to_string())]);
     }
-    if let Some(ref local_var_user_agent) = configuration.user_agent {
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
     }
 
-    if let Some(ref local_var_token) = configuration.bearer_access_token {
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
         local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
-    if let Some(ref local_var_apikey) = configuration.api_key {
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
         let local_var_key = local_var_apikey.key.clone();
         let local_var_value = match local_var_apikey.prefix {
             Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
@@ -1443,7 +1473,7 @@ pub fn projects_parameters_rules_list(
     let method = local_var_req.method().clone();
     let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
-    if configuration.rest_debug {
+    if local_var_configuration.rest_debug {
         let duration = start.elapsed();
         println!(
             "URL {} {} elapsed: {:?}",
@@ -1457,7 +1487,7 @@ pub fn projects_parameters_rules_list(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        if configuration.debug_success(super::function!()) {
+        if local_var_configuration.debug_success(super::function!()) {
             println!("RESP {} {}", &local_var_status, &local_var_content);
         }
 
@@ -1471,7 +1501,7 @@ pub fn projects_parameters_rules_list(
             content: local_var_content,
             entity: local_var_entity,
         };
-        if configuration.rest_debug {
+        if local_var_configuration.rest_debug {
             println!(
                 "RESP {} {}",
                 &local_var_error.status, &local_var_error.content
@@ -1488,27 +1518,29 @@ pub fn projects_parameters_rules_partial_update(
     project_pk: &str,
     patched_parameter_rule: Option<crate::models::PatchedParameterRule>,
 ) -> Result<crate::models::ParameterRule, Error<ProjectsParametersRulesPartialUpdateError>> {
-    let local_var_client = &configuration.client;
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
 
     let local_var_uri_str = format!(
         "{}/api/v1/projects/{project_pk}/parameters/{parameter_pk}/rules/{id}/",
-        configuration.base_path,
-        id = id,
-        parameter_pk = parameter_pk,
-        project_pk = project_pk
+        local_var_configuration.base_path,
+        id = crate::apis::urlencode(id),
+        parameter_pk = crate::apis::urlencode(parameter_pk),
+        project_pk = crate::apis::urlencode(project_pk)
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::PATCH, local_var_uri_str.as_str());
 
-    if let Some(ref local_var_user_agent) = configuration.user_agent {
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
     }
 
-    if let Some(ref local_var_token) = configuration.bearer_access_token {
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
         local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
-    if let Some(ref local_var_apikey) = configuration.api_key {
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
         let local_var_key = local_var_apikey.key.clone();
         let local_var_value = match local_var_apikey.prefix {
             Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
@@ -1522,7 +1554,7 @@ pub fn projects_parameters_rules_partial_update(
     let method = local_var_req.method().clone();
     let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
-    if configuration.rest_debug {
+    if local_var_configuration.rest_debug {
         let duration = start.elapsed();
         println!(
             "URL {} {} elapsed: {:?}",
@@ -1536,7 +1568,7 @@ pub fn projects_parameters_rules_partial_update(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        if configuration.debug_success(super::function!()) {
+        if local_var_configuration.debug_success(super::function!()) {
             println!("RESP {} {}", &local_var_status, &local_var_content);
         }
 
@@ -1550,7 +1582,7 @@ pub fn projects_parameters_rules_partial_update(
             content: local_var_content,
             entity: local_var_entity,
         };
-        if configuration.rest_debug {
+        if local_var_configuration.rest_debug {
             println!(
                 "RESP {} {}",
                 &local_var_error.status, &local_var_error.content
@@ -1566,27 +1598,29 @@ pub fn projects_parameters_rules_retrieve(
     parameter_pk: &str,
     project_pk: &str,
 ) -> Result<crate::models::ParameterRule, Error<ProjectsParametersRulesRetrieveError>> {
-    let local_var_client = &configuration.client;
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
 
     let local_var_uri_str = format!(
         "{}/api/v1/projects/{project_pk}/parameters/{parameter_pk}/rules/{id}/",
-        configuration.base_path,
-        id = id,
-        parameter_pk = parameter_pk,
-        project_pk = project_pk
+        local_var_configuration.base_path,
+        id = crate::apis::urlencode(id),
+        parameter_pk = crate::apis::urlencode(parameter_pk),
+        project_pk = crate::apis::urlencode(project_pk)
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
 
-    if let Some(ref local_var_user_agent) = configuration.user_agent {
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
     }
 
-    if let Some(ref local_var_token) = configuration.bearer_access_token {
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
         local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
-    if let Some(ref local_var_apikey) = configuration.api_key {
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
         let local_var_key = local_var_apikey.key.clone();
         let local_var_value = match local_var_apikey.prefix {
             Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
@@ -1599,7 +1633,7 @@ pub fn projects_parameters_rules_retrieve(
     let method = local_var_req.method().clone();
     let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
-    if configuration.rest_debug {
+    if local_var_configuration.rest_debug {
         let duration = start.elapsed();
         println!(
             "URL {} {} elapsed: {:?}",
@@ -1613,7 +1647,7 @@ pub fn projects_parameters_rules_retrieve(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        if configuration.debug_success(super::function!()) {
+        if local_var_configuration.debug_success(super::function!()) {
             println!("RESP {} {}", &local_var_status, &local_var_content);
         }
 
@@ -1627,7 +1661,7 @@ pub fn projects_parameters_rules_retrieve(
             content: local_var_content,
             entity: local_var_entity,
         };
-        if configuration.rest_debug {
+        if local_var_configuration.rest_debug {
             println!(
                 "RESP {} {}",
                 &local_var_error.status, &local_var_error.content
@@ -1644,27 +1678,29 @@ pub fn projects_parameters_rules_update(
     project_pk: &str,
     parameter_rule: crate::models::ParameterRule,
 ) -> Result<crate::models::ParameterRule, Error<ProjectsParametersRulesUpdateError>> {
-    let local_var_client = &configuration.client;
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
 
     let local_var_uri_str = format!(
         "{}/api/v1/projects/{project_pk}/parameters/{parameter_pk}/rules/{id}/",
-        configuration.base_path,
-        id = id,
-        parameter_pk = parameter_pk,
-        project_pk = project_pk
+        local_var_configuration.base_path,
+        id = crate::apis::urlencode(id),
+        parameter_pk = crate::apis::urlencode(parameter_pk),
+        project_pk = crate::apis::urlencode(project_pk)
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::PUT, local_var_uri_str.as_str());
 
-    if let Some(ref local_var_user_agent) = configuration.user_agent {
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
     }
 
-    if let Some(ref local_var_token) = configuration.bearer_access_token {
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
         local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
-    if let Some(ref local_var_apikey) = configuration.api_key {
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
         let local_var_key = local_var_apikey.key.clone();
         let local_var_value = match local_var_apikey.prefix {
             Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
@@ -1678,7 +1714,7 @@ pub fn projects_parameters_rules_update(
     let method = local_var_req.method().clone();
     let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
-    if configuration.rest_debug {
+    if local_var_configuration.rest_debug {
         let duration = start.elapsed();
         println!(
             "URL {} {} elapsed: {:?}",
@@ -1692,7 +1728,7 @@ pub fn projects_parameters_rules_update(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        if configuration.debug_success(super::function!()) {
+        if local_var_configuration.debug_success(super::function!()) {
             println!("RESP {} {}", &local_var_status, &local_var_content);
         }
 
@@ -1706,7 +1742,7 @@ pub fn projects_parameters_rules_update(
             content: local_var_content,
             entity: local_var_entity,
         };
-        if configuration.rest_debug {
+        if local_var_configuration.rest_debug {
             println!(
                 "RESP {} {}",
                 &local_var_error.status, &local_var_error.content
@@ -1724,13 +1760,15 @@ pub fn projects_parameters_timeline_retrieve(
     as_of: Option<String>,
     tag: Option<&str>,
 ) -> Result<crate::models::ParameterTimeline, Error<ProjectsParametersTimelineRetrieveError>> {
-    let local_var_client = &configuration.client;
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
 
     let local_var_uri_str = format!(
         "{}/api/v1/projects/{project_pk}/parameters/{id}/timeline/",
-        configuration.base_path,
-        id = id,
-        project_pk = project_pk
+        local_var_configuration.base_path,
+        id = crate::apis::urlencode(id),
+        project_pk = crate::apis::urlencode(project_pk)
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
@@ -1742,15 +1780,15 @@ pub fn projects_parameters_timeline_retrieve(
     if let Some(ref local_var_str) = tag {
         local_var_req_builder = local_var_req_builder.query(&[("tag", &local_var_str.to_string())]);
     }
-    if let Some(ref local_var_user_agent) = configuration.user_agent {
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
     }
 
-    if let Some(ref local_var_token) = configuration.bearer_access_token {
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
         local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
-    if let Some(ref local_var_apikey) = configuration.api_key {
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
         let local_var_key = local_var_apikey.key.clone();
         let local_var_value = match local_var_apikey.prefix {
             Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
@@ -1763,7 +1801,7 @@ pub fn projects_parameters_timeline_retrieve(
     let method = local_var_req.method().clone();
     let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
-    if configuration.rest_debug {
+    if local_var_configuration.rest_debug {
         let duration = start.elapsed();
         println!(
             "URL {} {} elapsed: {:?}",
@@ -1777,7 +1815,7 @@ pub fn projects_parameters_timeline_retrieve(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        if configuration.debug_success(super::function!()) {
+        if local_var_configuration.debug_success(super::function!()) {
             println!("RESP {} {}", &local_var_status, &local_var_content);
         }
 
@@ -1791,7 +1829,7 @@ pub fn projects_parameters_timeline_retrieve(
             content: local_var_content,
             entity: local_var_entity,
         };
-        if configuration.rest_debug {
+        if local_var_configuration.rest_debug {
             println!(
                 "RESP {} {}",
                 &local_var_error.status, &local_var_error.content
@@ -1808,12 +1846,14 @@ pub fn projects_parameters_timelines_retrieve(
     as_of: Option<String>,
     tag: Option<&str>,
 ) -> Result<crate::models::ParameterTimeline, Error<ProjectsParametersTimelinesRetrieveError>> {
-    let local_var_client = &configuration.client;
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
 
     let local_var_uri_str = format!(
         "{}/api/v1/projects/{project_pk}/parameters/timelines/",
-        configuration.base_path,
-        project_pk = project_pk
+        local_var_configuration.base_path,
+        project_pk = crate::apis::urlencode(project_pk)
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
@@ -1825,15 +1865,15 @@ pub fn projects_parameters_timelines_retrieve(
     if let Some(ref local_var_str) = tag {
         local_var_req_builder = local_var_req_builder.query(&[("tag", &local_var_str.to_string())]);
     }
-    if let Some(ref local_var_user_agent) = configuration.user_agent {
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
     }
 
-    if let Some(ref local_var_token) = configuration.bearer_access_token {
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
         local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
-    if let Some(ref local_var_apikey) = configuration.api_key {
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
         let local_var_key = local_var_apikey.key.clone();
         let local_var_value = match local_var_apikey.prefix {
             Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
@@ -1846,7 +1886,7 @@ pub fn projects_parameters_timelines_retrieve(
     let method = local_var_req.method().clone();
     let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
-    if configuration.rest_debug {
+    if local_var_configuration.rest_debug {
         let duration = start.elapsed();
         println!(
             "URL {} {} elapsed: {:?}",
@@ -1860,7 +1900,7 @@ pub fn projects_parameters_timelines_retrieve(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        if configuration.debug_success(super::function!()) {
+        if local_var_configuration.debug_success(super::function!()) {
             println!("RESP {} {}", &local_var_status, &local_var_content);
         }
 
@@ -1874,7 +1914,7 @@ pub fn projects_parameters_timelines_retrieve(
             content: local_var_content,
             entity: local_var_entity,
         };
-        if configuration.rest_debug {
+        if local_var_configuration.rest_debug {
             println!(
                 "RESP {} {}",
                 &local_var_error.status, &local_var_error.content
@@ -1890,26 +1930,28 @@ pub fn projects_parameters_update(
     project_pk: &str,
     parameter: crate::models::Parameter,
 ) -> Result<crate::models::Parameter, Error<ProjectsParametersUpdateError>> {
-    let local_var_client = &configuration.client;
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
 
     let local_var_uri_str = format!(
         "{}/api/v1/projects/{project_pk}/parameters/{id}/",
-        configuration.base_path,
-        id = id,
-        project_pk = project_pk
+        local_var_configuration.base_path,
+        id = crate::apis::urlencode(id),
+        project_pk = crate::apis::urlencode(project_pk)
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::PUT, local_var_uri_str.as_str());
 
-    if let Some(ref local_var_user_agent) = configuration.user_agent {
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
     }
 
-    if let Some(ref local_var_token) = configuration.bearer_access_token {
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
         local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
-    if let Some(ref local_var_apikey) = configuration.api_key {
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
         let local_var_key = local_var_apikey.key.clone();
         let local_var_value = match local_var_apikey.prefix {
             Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
@@ -1923,7 +1965,7 @@ pub fn projects_parameters_update(
     let method = local_var_req.method().clone();
     let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
-    if configuration.rest_debug {
+    if local_var_configuration.rest_debug {
         let duration = start.elapsed();
         println!(
             "URL {} {} elapsed: {:?}",
@@ -1937,7 +1979,7 @@ pub fn projects_parameters_update(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        if configuration.debug_success(super::function!()) {
+        if local_var_configuration.debug_success(super::function!()) {
             println!("RESP {} {}", &local_var_status, &local_var_content);
         }
 
@@ -1951,7 +1993,7 @@ pub fn projects_parameters_update(
             content: local_var_content,
             entity: local_var_entity,
         };
-        if configuration.rest_debug {
+        if local_var_configuration.rest_debug {
             println!(
                 "RESP {} {}",
                 &local_var_error.status, &local_var_error.content
@@ -1970,13 +2012,15 @@ pub fn projects_parameters_values_create(
     evaluate: Option<bool>,
     wrap: Option<bool>,
 ) -> Result<crate::models::Value, Error<ProjectsParametersValuesCreateError>> {
-    let local_var_client = &configuration.client;
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
 
     let local_var_uri_str = format!(
         "{}/api/v1/projects/{project_pk}/parameters/{parameter_pk}/values/",
-        configuration.base_path,
-        parameter_pk = parameter_pk,
-        project_pk = project_pk
+        local_var_configuration.base_path,
+        parameter_pk = crate::apis::urlencode(parameter_pk),
+        project_pk = crate::apis::urlencode(project_pk)
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
@@ -1989,15 +2033,15 @@ pub fn projects_parameters_values_create(
         local_var_req_builder =
             local_var_req_builder.query(&[("wrap", &local_var_str.to_string())]);
     }
-    if let Some(ref local_var_user_agent) = configuration.user_agent {
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
     }
 
-    if let Some(ref local_var_token) = configuration.bearer_access_token {
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
         local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
-    if let Some(ref local_var_apikey) = configuration.api_key {
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
         let local_var_key = local_var_apikey.key.clone();
         let local_var_value = match local_var_apikey.prefix {
             Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
@@ -2011,7 +2055,7 @@ pub fn projects_parameters_values_create(
     let method = local_var_req.method().clone();
     let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
-    if configuration.rest_debug {
+    if local_var_configuration.rest_debug {
         let duration = start.elapsed();
         println!(
             "URL {} {} elapsed: {:?}",
@@ -2025,7 +2069,7 @@ pub fn projects_parameters_values_create(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        if configuration.debug_success(super::function!()) {
+        if local_var_configuration.debug_success(super::function!()) {
             println!("RESP {} {}", &local_var_status, &local_var_content);
         }
 
@@ -2039,7 +2083,7 @@ pub fn projects_parameters_values_create(
             content: local_var_content,
             entity: local_var_entity,
         };
-        if configuration.rest_debug {
+        if local_var_configuration.rest_debug {
             println!(
                 "RESP {} {}",
                 &local_var_error.status, &local_var_error.content
@@ -2057,14 +2101,16 @@ pub fn projects_parameters_values_destroy(
     project_pk: &str,
     evaluate: Option<bool>,
 ) -> Result<(), Error<ProjectsParametersValuesDestroyError>> {
-    let local_var_client = &configuration.client;
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
 
     let local_var_uri_str = format!(
         "{}/api/v1/projects/{project_pk}/parameters/{parameter_pk}/values/{id}/",
-        configuration.base_path,
-        id = id,
-        parameter_pk = parameter_pk,
-        project_pk = project_pk
+        local_var_configuration.base_path,
+        id = crate::apis::urlencode(id),
+        parameter_pk = crate::apis::urlencode(parameter_pk),
+        project_pk = crate::apis::urlencode(project_pk)
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::DELETE, local_var_uri_str.as_str());
@@ -2073,15 +2119,15 @@ pub fn projects_parameters_values_destroy(
         local_var_req_builder =
             local_var_req_builder.query(&[("evaluate", &local_var_str.to_string())]);
     }
-    if let Some(ref local_var_user_agent) = configuration.user_agent {
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
     }
 
-    if let Some(ref local_var_token) = configuration.bearer_access_token {
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
         local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
-    if let Some(ref local_var_apikey) = configuration.api_key {
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
         let local_var_key = local_var_apikey.key.clone();
         let local_var_value = match local_var_apikey.prefix {
             Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
@@ -2094,7 +2140,7 @@ pub fn projects_parameters_values_destroy(
     let method = local_var_req.method().clone();
     let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
-    if configuration.rest_debug {
+    if local_var_configuration.rest_debug {
         let duration = start.elapsed();
         println!(
             "URL {} {} elapsed: {:?}",
@@ -2108,7 +2154,7 @@ pub fn projects_parameters_values_destroy(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        if configuration.debug_success(super::function!()) {
+        if local_var_configuration.debug_success(super::function!()) {
             println!("RESP {} {}", &local_var_status, &local_var_content);
         }
 
@@ -2121,7 +2167,7 @@ pub fn projects_parameters_values_destroy(
             content: local_var_content,
             entity: local_var_entity,
         };
-        if configuration.rest_debug {
+        if local_var_configuration.rest_debug {
             println!(
                 "RESP {} {}",
                 &local_var_error.status, &local_var_error.content
@@ -2148,13 +2194,15 @@ pub fn projects_parameters_values_list(
     tag: Option<&str>,
     wrap: Option<bool>,
 ) -> Result<crate::models::PaginatedValueList, Error<ProjectsParametersValuesListError>> {
-    let local_var_client = &configuration.client;
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
 
     let local_var_uri_str = format!(
         "{}/api/v1/projects/{project_pk}/parameters/{parameter_pk}/values/",
-        configuration.base_path,
-        parameter_pk = parameter_pk,
-        project_pk = project_pk
+        local_var_configuration.base_path,
+        parameter_pk = crate::apis::urlencode(parameter_pk),
+        project_pk = crate::apis::urlencode(project_pk)
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
@@ -2202,15 +2250,15 @@ pub fn projects_parameters_values_list(
         local_var_req_builder =
             local_var_req_builder.query(&[("wrap", &local_var_str.to_string())]);
     }
-    if let Some(ref local_var_user_agent) = configuration.user_agent {
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
     }
 
-    if let Some(ref local_var_token) = configuration.bearer_access_token {
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
         local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
-    if let Some(ref local_var_apikey) = configuration.api_key {
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
         let local_var_key = local_var_apikey.key.clone();
         let local_var_value = match local_var_apikey.prefix {
             Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
@@ -2223,7 +2271,7 @@ pub fn projects_parameters_values_list(
     let method = local_var_req.method().clone();
     let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
-    if configuration.rest_debug {
+    if local_var_configuration.rest_debug {
         let duration = start.elapsed();
         println!(
             "URL {} {} elapsed: {:?}",
@@ -2237,7 +2285,7 @@ pub fn projects_parameters_values_list(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        if configuration.debug_success(super::function!()) {
+        if local_var_configuration.debug_success(super::function!()) {
             println!("RESP {} {}", &local_var_status, &local_var_content);
         }
 
@@ -2251,7 +2299,7 @@ pub fn projects_parameters_values_list(
             content: local_var_content,
             entity: local_var_entity,
         };
-        if configuration.rest_debug {
+        if local_var_configuration.rest_debug {
             println!(
                 "RESP {} {}",
                 &local_var_error.status, &local_var_error.content
@@ -2271,14 +2319,16 @@ pub fn projects_parameters_values_partial_update(
     wrap: Option<bool>,
     patched_value: Option<crate::models::PatchedValue>,
 ) -> Result<crate::models::Value, Error<ProjectsParametersValuesPartialUpdateError>> {
-    let local_var_client = &configuration.client;
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
 
     let local_var_uri_str = format!(
         "{}/api/v1/projects/{project_pk}/parameters/{parameter_pk}/values/{id}/",
-        configuration.base_path,
-        id = id,
-        parameter_pk = parameter_pk,
-        project_pk = project_pk
+        local_var_configuration.base_path,
+        id = crate::apis::urlencode(id),
+        parameter_pk = crate::apis::urlencode(parameter_pk),
+        project_pk = crate::apis::urlencode(project_pk)
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::PATCH, local_var_uri_str.as_str());
@@ -2291,15 +2341,15 @@ pub fn projects_parameters_values_partial_update(
         local_var_req_builder =
             local_var_req_builder.query(&[("wrap", &local_var_str.to_string())]);
     }
-    if let Some(ref local_var_user_agent) = configuration.user_agent {
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
     }
 
-    if let Some(ref local_var_token) = configuration.bearer_access_token {
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
         local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
-    if let Some(ref local_var_apikey) = configuration.api_key {
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
         let local_var_key = local_var_apikey.key.clone();
         let local_var_value = match local_var_apikey.prefix {
             Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
@@ -2313,7 +2363,7 @@ pub fn projects_parameters_values_partial_update(
     let method = local_var_req.method().clone();
     let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
-    if configuration.rest_debug {
+    if local_var_configuration.rest_debug {
         let duration = start.elapsed();
         println!(
             "URL {} {} elapsed: {:?}",
@@ -2327,7 +2377,7 @@ pub fn projects_parameters_values_partial_update(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        if configuration.debug_success(super::function!()) {
+        if local_var_configuration.debug_success(super::function!()) {
             println!("RESP {} {}", &local_var_status, &local_var_content);
         }
 
@@ -2341,7 +2391,7 @@ pub fn projects_parameters_values_partial_update(
             content: local_var_content,
             entity: local_var_entity,
         };
-        if configuration.rest_debug {
+        if local_var_configuration.rest_debug {
             println!(
                 "RESP {} {}",
                 &local_var_error.status, &local_var_error.content
@@ -2366,14 +2416,16 @@ pub fn projects_parameters_values_retrieve(
     tag: Option<&str>,
     wrap: Option<bool>,
 ) -> Result<crate::models::Value, Error<ProjectsParametersValuesRetrieveError>> {
-    let local_var_client = &configuration.client;
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
 
     let local_var_uri_str = format!(
         "{}/api/v1/projects/{project_pk}/parameters/{parameter_pk}/values/{id}/",
-        configuration.base_path,
-        id = id,
-        parameter_pk = parameter_pk,
-        project_pk = project_pk
+        local_var_configuration.base_path,
+        id = crate::apis::urlencode(id),
+        parameter_pk = crate::apis::urlencode(parameter_pk),
+        project_pk = crate::apis::urlencode(project_pk)
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
@@ -2409,15 +2461,15 @@ pub fn projects_parameters_values_retrieve(
         local_var_req_builder =
             local_var_req_builder.query(&[("wrap", &local_var_str.to_string())]);
     }
-    if let Some(ref local_var_user_agent) = configuration.user_agent {
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
     }
 
-    if let Some(ref local_var_token) = configuration.bearer_access_token {
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
         local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
-    if let Some(ref local_var_apikey) = configuration.api_key {
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
         let local_var_key = local_var_apikey.key.clone();
         let local_var_value = match local_var_apikey.prefix {
             Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
@@ -2430,7 +2482,7 @@ pub fn projects_parameters_values_retrieve(
     let method = local_var_req.method().clone();
     let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
-    if configuration.rest_debug {
+    if local_var_configuration.rest_debug {
         let duration = start.elapsed();
         println!(
             "URL {} {} elapsed: {:?}",
@@ -2444,7 +2496,7 @@ pub fn projects_parameters_values_retrieve(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        if configuration.debug_success(super::function!()) {
+        if local_var_configuration.debug_success(super::function!()) {
             println!("RESP {} {}", &local_var_status, &local_var_content);
         }
 
@@ -2458,7 +2510,7 @@ pub fn projects_parameters_values_retrieve(
             content: local_var_content,
             entity: local_var_entity,
         };
-        if configuration.rest_debug {
+        if local_var_configuration.rest_debug {
             println!(
                 "RESP {} {}",
                 &local_var_error.status, &local_var_error.content
@@ -2478,14 +2530,16 @@ pub fn projects_parameters_values_update(
     wrap: Option<bool>,
     value: Option<crate::models::Value>,
 ) -> Result<crate::models::Value, Error<ProjectsParametersValuesUpdateError>> {
-    let local_var_client = &configuration.client;
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
 
     let local_var_uri_str = format!(
         "{}/api/v1/projects/{project_pk}/parameters/{parameter_pk}/values/{id}/",
-        configuration.base_path,
-        id = id,
-        parameter_pk = parameter_pk,
-        project_pk = project_pk
+        local_var_configuration.base_path,
+        id = crate::apis::urlencode(id),
+        parameter_pk = crate::apis::urlencode(parameter_pk),
+        project_pk = crate::apis::urlencode(project_pk)
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::PUT, local_var_uri_str.as_str());
@@ -2498,15 +2552,15 @@ pub fn projects_parameters_values_update(
         local_var_req_builder =
             local_var_req_builder.query(&[("wrap", &local_var_str.to_string())]);
     }
-    if let Some(ref local_var_user_agent) = configuration.user_agent {
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
     }
 
-    if let Some(ref local_var_token) = configuration.bearer_access_token {
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
         local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
-    if let Some(ref local_var_apikey) = configuration.api_key {
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
         let local_var_key = local_var_apikey.key.clone();
         let local_var_value = match local_var_apikey.prefix {
             Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
@@ -2520,7 +2574,7 @@ pub fn projects_parameters_values_update(
     let method = local_var_req.method().clone();
     let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
-    if configuration.rest_debug {
+    if local_var_configuration.rest_debug {
         let duration = start.elapsed();
         println!(
             "URL {} {} elapsed: {:?}",
@@ -2534,7 +2588,7 @@ pub fn projects_parameters_values_update(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        if configuration.debug_success(super::function!()) {
+        if local_var_configuration.debug_success(super::function!()) {
             println!("RESP {} {}", &local_var_status, &local_var_content);
         }
 
@@ -2548,7 +2602,7 @@ pub fn projects_parameters_values_update(
             content: local_var_content,
             entity: local_var_entity,
         };
-        if configuration.rest_debug {
+        if local_var_configuration.rest_debug {
             println!(
                 "RESP {} {}",
                 &local_var_error.status, &local_var_error.content
@@ -2563,21 +2617,27 @@ pub fn projects_partial_update(
     id: &str,
     patched_project: Option<crate::models::PatchedProject>,
 ) -> Result<crate::models::Project, Error<ProjectsPartialUpdateError>> {
-    let local_var_client = &configuration.client;
+    let local_var_configuration = configuration;
 
-    let local_var_uri_str = format!("{}/api/v1/projects/{id}/", configuration.base_path, id = id);
+    let local_var_client = &local_var_configuration.client;
+
+    let local_var_uri_str = format!(
+        "{}/api/v1/projects/{id}/",
+        local_var_configuration.base_path,
+        id = crate::apis::urlencode(id)
+    );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::PATCH, local_var_uri_str.as_str());
 
-    if let Some(ref local_var_user_agent) = configuration.user_agent {
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
     }
 
-    if let Some(ref local_var_token) = configuration.bearer_access_token {
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
         local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
-    if let Some(ref local_var_apikey) = configuration.api_key {
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
         let local_var_key = local_var_apikey.key.clone();
         let local_var_value = match local_var_apikey.prefix {
             Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
@@ -2591,7 +2651,7 @@ pub fn projects_partial_update(
     let method = local_var_req.method().clone();
     let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
-    if configuration.rest_debug {
+    if local_var_configuration.rest_debug {
         let duration = start.elapsed();
         println!(
             "URL {} {} elapsed: {:?}",
@@ -2605,7 +2665,7 @@ pub fn projects_partial_update(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        if configuration.debug_success(super::function!()) {
+        if local_var_configuration.debug_success(super::function!()) {
             println!("RESP {} {}", &local_var_status, &local_var_content);
         }
 
@@ -2619,7 +2679,7 @@ pub fn projects_partial_update(
             content: local_var_content,
             entity: local_var_entity,
         };
-        if configuration.rest_debug {
+        if local_var_configuration.rest_debug {
             println!(
                 "RESP {} {}",
                 &local_var_error.status, &local_var_error.content
@@ -2633,21 +2693,27 @@ pub fn projects_retrieve(
     configuration: &configuration::Configuration,
     id: &str,
 ) -> Result<crate::models::Project, Error<ProjectsRetrieveError>> {
-    let local_var_client = &configuration.client;
+    let local_var_configuration = configuration;
 
-    let local_var_uri_str = format!("{}/api/v1/projects/{id}/", configuration.base_path, id = id);
+    let local_var_client = &local_var_configuration.client;
+
+    let local_var_uri_str = format!(
+        "{}/api/v1/projects/{id}/",
+        local_var_configuration.base_path,
+        id = crate::apis::urlencode(id)
+    );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
 
-    if let Some(ref local_var_user_agent) = configuration.user_agent {
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
     }
 
-    if let Some(ref local_var_token) = configuration.bearer_access_token {
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
         local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
-    if let Some(ref local_var_apikey) = configuration.api_key {
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
         let local_var_key = local_var_apikey.key.clone();
         let local_var_value = match local_var_apikey.prefix {
             Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
@@ -2660,7 +2726,7 @@ pub fn projects_retrieve(
     let method = local_var_req.method().clone();
     let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
-    if configuration.rest_debug {
+    if local_var_configuration.rest_debug {
         let duration = start.elapsed();
         println!(
             "URL {} {} elapsed: {:?}",
@@ -2674,7 +2740,7 @@ pub fn projects_retrieve(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        if configuration.debug_success(super::function!()) {
+        if local_var_configuration.debug_success(super::function!()) {
             println!("RESP {} {}", &local_var_status, &local_var_content);
         }
 
@@ -2688,7 +2754,7 @@ pub fn projects_retrieve(
             content: local_var_content,
             entity: local_var_entity,
         };
-        if configuration.rest_debug {
+        if local_var_configuration.rest_debug {
             println!(
                 "RESP {} {}",
                 &local_var_error.status, &local_var_error.content
@@ -2709,12 +2775,14 @@ pub fn projects_template_preview_create(
     tag: Option<&str>,
     template: Option<&str>,
 ) -> Result<crate::models::TemplatePreview, Error<ProjectsTemplatePreviewCreateError>> {
-    let local_var_client = &configuration.client;
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
 
     let local_var_uri_str = format!(
         "{}/api/v1/projects/{project_pk}/template-preview/",
-        configuration.base_path,
-        project_pk = project_pk
+        local_var_configuration.base_path,
+        project_pk = crate::apis::urlencode(project_pk)
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
@@ -2738,15 +2806,15 @@ pub fn projects_template_preview_create(
         local_var_req_builder =
             local_var_req_builder.query(&[("template", &local_var_str.to_string())]);
     }
-    if let Some(ref local_var_user_agent) = configuration.user_agent {
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
     }
 
-    if let Some(ref local_var_token) = configuration.bearer_access_token {
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
         local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
-    if let Some(ref local_var_apikey) = configuration.api_key {
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
         let local_var_key = local_var_apikey.key.clone();
         let local_var_value = match local_var_apikey.prefix {
             Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
@@ -2760,7 +2828,7 @@ pub fn projects_template_preview_create(
     let method = local_var_req.method().clone();
     let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
-    if configuration.rest_debug {
+    if local_var_configuration.rest_debug {
         let duration = start.elapsed();
         println!(
             "URL {} {} elapsed: {:?}",
@@ -2774,7 +2842,7 @@ pub fn projects_template_preview_create(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        if configuration.debug_success(super::function!()) {
+        if local_var_configuration.debug_success(super::function!()) {
             println!("RESP {} {}", &local_var_status, &local_var_content);
         }
 
@@ -2788,7 +2856,7 @@ pub fn projects_template_preview_create(
             content: local_var_content,
             entity: local_var_entity,
         };
-        if configuration.rest_debug {
+        if local_var_configuration.rest_debug {
             println!(
                 "RESP {} {}",
                 &local_var_error.status, &local_var_error.content
@@ -2803,25 +2871,27 @@ pub fn projects_templates_create(
     project_pk: &str,
     template_create: crate::models::TemplateCreate,
 ) -> Result<crate::models::Template, Error<ProjectsTemplatesCreateError>> {
-    let local_var_client = &configuration.client;
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
 
     let local_var_uri_str = format!(
         "{}/api/v1/projects/{project_pk}/templates/",
-        configuration.base_path,
-        project_pk = project_pk
+        local_var_configuration.base_path,
+        project_pk = crate::apis::urlencode(project_pk)
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
 
-    if let Some(ref local_var_user_agent) = configuration.user_agent {
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
     }
 
-    if let Some(ref local_var_token) = configuration.bearer_access_token {
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
         local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
-    if let Some(ref local_var_apikey) = configuration.api_key {
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
         let local_var_key = local_var_apikey.key.clone();
         let local_var_value = match local_var_apikey.prefix {
             Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
@@ -2835,7 +2905,7 @@ pub fn projects_templates_create(
     let method = local_var_req.method().clone();
     let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
-    if configuration.rest_debug {
+    if local_var_configuration.rest_debug {
         let duration = start.elapsed();
         println!(
             "URL {} {} elapsed: {:?}",
@@ -2849,7 +2919,7 @@ pub fn projects_templates_create(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        if configuration.debug_success(super::function!()) {
+        if local_var_configuration.debug_success(super::function!()) {
             println!("RESP {} {}", &local_var_status, &local_var_content);
         }
 
@@ -2863,7 +2933,7 @@ pub fn projects_templates_create(
             content: local_var_content,
             entity: local_var_entity,
         };
-        if configuration.rest_debug {
+        if local_var_configuration.rest_debug {
             println!(
                 "RESP {} {}",
                 &local_var_error.status, &local_var_error.content
@@ -2878,26 +2948,28 @@ pub fn projects_templates_destroy(
     id: &str,
     project_pk: &str,
 ) -> Result<(), Error<ProjectsTemplatesDestroyError>> {
-    let local_var_client = &configuration.client;
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
 
     let local_var_uri_str = format!(
         "{}/api/v1/projects/{project_pk}/templates/{id}/",
-        configuration.base_path,
-        id = id,
-        project_pk = project_pk
+        local_var_configuration.base_path,
+        id = crate::apis::urlencode(id),
+        project_pk = crate::apis::urlencode(project_pk)
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::DELETE, local_var_uri_str.as_str());
 
-    if let Some(ref local_var_user_agent) = configuration.user_agent {
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
     }
 
-    if let Some(ref local_var_token) = configuration.bearer_access_token {
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
         local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
-    if let Some(ref local_var_apikey) = configuration.api_key {
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
         let local_var_key = local_var_apikey.key.clone();
         let local_var_value = match local_var_apikey.prefix {
             Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
@@ -2910,7 +2982,7 @@ pub fn projects_templates_destroy(
     let method = local_var_req.method().clone();
     let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
-    if configuration.rest_debug {
+    if local_var_configuration.rest_debug {
         let duration = start.elapsed();
         println!(
             "URL {} {} elapsed: {:?}",
@@ -2924,7 +2996,7 @@ pub fn projects_templates_destroy(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        if configuration.debug_success(super::function!()) {
+        if local_var_configuration.debug_success(super::function!()) {
             println!("RESP {} {}", &local_var_status, &local_var_content);
         }
 
@@ -2937,7 +3009,7 @@ pub fn projects_templates_destroy(
             content: local_var_content,
             entity: local_var_entity,
         };
-        if configuration.rest_debug {
+        if local_var_configuration.rest_debug {
             println!(
                 "RESP {} {}",
                 &local_var_error.status, &local_var_error.content
@@ -2960,12 +3032,14 @@ pub fn projects_templates_list(
     page_size: Option<i32>,
     tag: Option<&str>,
 ) -> Result<crate::models::PaginatedTemplateList, Error<ProjectsTemplatesListError>> {
-    let local_var_client = &configuration.client;
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
 
     let local_var_uri_str = format!(
         "{}/api/v1/projects/{project_pk}/templates/",
-        configuration.base_path,
-        project_pk = project_pk
+        local_var_configuration.base_path,
+        project_pk = crate::apis::urlencode(project_pk)
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
@@ -3005,15 +3079,15 @@ pub fn projects_templates_list(
     if let Some(ref local_var_str) = tag {
         local_var_req_builder = local_var_req_builder.query(&[("tag", &local_var_str.to_string())]);
     }
-    if let Some(ref local_var_user_agent) = configuration.user_agent {
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
     }
 
-    if let Some(ref local_var_token) = configuration.bearer_access_token {
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
         local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
-    if let Some(ref local_var_apikey) = configuration.api_key {
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
         let local_var_key = local_var_apikey.key.clone();
         let local_var_value = match local_var_apikey.prefix {
             Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
@@ -3026,7 +3100,7 @@ pub fn projects_templates_list(
     let method = local_var_req.method().clone();
     let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
-    if configuration.rest_debug {
+    if local_var_configuration.rest_debug {
         let duration = start.elapsed();
         println!(
             "URL {} {} elapsed: {:?}",
@@ -3040,7 +3114,7 @@ pub fn projects_templates_list(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        if configuration.debug_success(super::function!()) {
+        if local_var_configuration.debug_success(super::function!()) {
             println!("RESP {} {}", &local_var_status, &local_var_content);
         }
 
@@ -3054,7 +3128,7 @@ pub fn projects_templates_list(
             content: local_var_content,
             entity: local_var_entity,
         };
-        if configuration.rest_debug {
+        if local_var_configuration.rest_debug {
             println!(
                 "RESP {} {}",
                 &local_var_error.status, &local_var_error.content
@@ -3070,26 +3144,28 @@ pub fn projects_templates_partial_update(
     project_pk: &str,
     patched_template: Option<crate::models::PatchedTemplate>,
 ) -> Result<crate::models::Template, Error<ProjectsTemplatesPartialUpdateError>> {
-    let local_var_client = &configuration.client;
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
 
     let local_var_uri_str = format!(
         "{}/api/v1/projects/{project_pk}/templates/{id}/",
-        configuration.base_path,
-        id = id,
-        project_pk = project_pk
+        local_var_configuration.base_path,
+        id = crate::apis::urlencode(id),
+        project_pk = crate::apis::urlencode(project_pk)
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::PATCH, local_var_uri_str.as_str());
 
-    if let Some(ref local_var_user_agent) = configuration.user_agent {
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
     }
 
-    if let Some(ref local_var_token) = configuration.bearer_access_token {
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
         local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
-    if let Some(ref local_var_apikey) = configuration.api_key {
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
         let local_var_key = local_var_apikey.key.clone();
         let local_var_value = match local_var_apikey.prefix {
             Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
@@ -3103,7 +3179,7 @@ pub fn projects_templates_partial_update(
     let method = local_var_req.method().clone();
     let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
-    if configuration.rest_debug {
+    if local_var_configuration.rest_debug {
         let duration = start.elapsed();
         println!(
             "URL {} {} elapsed: {:?}",
@@ -3117,7 +3193,7 @@ pub fn projects_templates_partial_update(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        if configuration.debug_success(super::function!()) {
+        if local_var_configuration.debug_success(super::function!()) {
             println!("RESP {} {}", &local_var_status, &local_var_content);
         }
 
@@ -3131,7 +3207,7 @@ pub fn projects_templates_partial_update(
             content: local_var_content,
             entity: local_var_entity,
         };
-        if configuration.rest_debug {
+        if local_var_configuration.rest_debug {
             println!(
                 "RESP {} {}",
                 &local_var_error.status, &local_var_error.content
@@ -3151,13 +3227,15 @@ pub fn projects_templates_retrieve(
     mask_secrets: Option<bool>,
     tag: Option<&str>,
 ) -> Result<crate::models::Template, Error<ProjectsTemplatesRetrieveError>> {
-    let local_var_client = &configuration.client;
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
 
     let local_var_uri_str = format!(
         "{}/api/v1/projects/{project_pk}/templates/{id}/",
-        configuration.base_path,
-        id = id,
-        project_pk = project_pk
+        local_var_configuration.base_path,
+        id = crate::apis::urlencode(id),
+        project_pk = crate::apis::urlencode(project_pk)
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
@@ -3181,15 +3259,15 @@ pub fn projects_templates_retrieve(
     if let Some(ref local_var_str) = tag {
         local_var_req_builder = local_var_req_builder.query(&[("tag", &local_var_str.to_string())]);
     }
-    if let Some(ref local_var_user_agent) = configuration.user_agent {
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
     }
 
-    if let Some(ref local_var_token) = configuration.bearer_access_token {
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
         local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
-    if let Some(ref local_var_apikey) = configuration.api_key {
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
         let local_var_key = local_var_apikey.key.clone();
         let local_var_value = match local_var_apikey.prefix {
             Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
@@ -3202,7 +3280,7 @@ pub fn projects_templates_retrieve(
     let method = local_var_req.method().clone();
     let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
-    if configuration.rest_debug {
+    if local_var_configuration.rest_debug {
         let duration = start.elapsed();
         println!(
             "URL {} {} elapsed: {:?}",
@@ -3216,7 +3294,7 @@ pub fn projects_templates_retrieve(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        if configuration.debug_success(super::function!()) {
+        if local_var_configuration.debug_success(super::function!()) {
             println!("RESP {} {}", &local_var_status, &local_var_content);
         }
 
@@ -3230,7 +3308,7 @@ pub fn projects_templates_retrieve(
             content: local_var_content,
             entity: local_var_entity,
         };
-        if configuration.rest_debug {
+        if local_var_configuration.rest_debug {
             println!(
                 "RESP {} {}",
                 &local_var_error.status, &local_var_error.content
@@ -3249,13 +3327,15 @@ pub fn projects_templates_timeline_retrieve(
     environment: Option<&str>,
     tag: Option<&str>,
 ) -> Result<crate::models::TemplateTimeline, Error<ProjectsTemplatesTimelineRetrieveError>> {
-    let local_var_client = &configuration.client;
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
 
     let local_var_uri_str = format!(
         "{}/api/v1/projects/{project_pk}/templates/{id}/timeline/",
-        configuration.base_path,
-        id = id,
-        project_pk = project_pk
+        local_var_configuration.base_path,
+        id = crate::apis::urlencode(id),
+        project_pk = crate::apis::urlencode(project_pk)
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
@@ -3271,15 +3351,15 @@ pub fn projects_templates_timeline_retrieve(
     if let Some(ref local_var_str) = tag {
         local_var_req_builder = local_var_req_builder.query(&[("tag", &local_var_str.to_string())]);
     }
-    if let Some(ref local_var_user_agent) = configuration.user_agent {
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
     }
 
-    if let Some(ref local_var_token) = configuration.bearer_access_token {
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
         local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
-    if let Some(ref local_var_apikey) = configuration.api_key {
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
         let local_var_key = local_var_apikey.key.clone();
         let local_var_value = match local_var_apikey.prefix {
             Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
@@ -3292,7 +3372,7 @@ pub fn projects_templates_timeline_retrieve(
     let method = local_var_req.method().clone();
     let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
-    if configuration.rest_debug {
+    if local_var_configuration.rest_debug {
         let duration = start.elapsed();
         println!(
             "URL {} {} elapsed: {:?}",
@@ -3306,7 +3386,7 @@ pub fn projects_templates_timeline_retrieve(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        if configuration.debug_success(super::function!()) {
+        if local_var_configuration.debug_success(super::function!()) {
             println!("RESP {} {}", &local_var_status, &local_var_content);
         }
 
@@ -3320,7 +3400,7 @@ pub fn projects_templates_timeline_retrieve(
             content: local_var_content,
             entity: local_var_entity,
         };
-        if configuration.rest_debug {
+        if local_var_configuration.rest_debug {
             println!(
                 "RESP {} {}",
                 &local_var_error.status, &local_var_error.content
@@ -3338,12 +3418,14 @@ pub fn projects_templates_timelines_retrieve(
     environment: Option<&str>,
     tag: Option<&str>,
 ) -> Result<crate::models::TemplateTimeline, Error<ProjectsTemplatesTimelinesRetrieveError>> {
-    let local_var_client = &configuration.client;
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
 
     let local_var_uri_str = format!(
         "{}/api/v1/projects/{project_pk}/templates/timelines/",
-        configuration.base_path,
-        project_pk = project_pk
+        local_var_configuration.base_path,
+        project_pk = crate::apis::urlencode(project_pk)
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
@@ -3359,15 +3441,15 @@ pub fn projects_templates_timelines_retrieve(
     if let Some(ref local_var_str) = tag {
         local_var_req_builder = local_var_req_builder.query(&[("tag", &local_var_str.to_string())]);
     }
-    if let Some(ref local_var_user_agent) = configuration.user_agent {
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
     }
 
-    if let Some(ref local_var_token) = configuration.bearer_access_token {
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
         local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
-    if let Some(ref local_var_apikey) = configuration.api_key {
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
         let local_var_key = local_var_apikey.key.clone();
         let local_var_value = match local_var_apikey.prefix {
             Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
@@ -3380,7 +3462,7 @@ pub fn projects_templates_timelines_retrieve(
     let method = local_var_req.method().clone();
     let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
-    if configuration.rest_debug {
+    if local_var_configuration.rest_debug {
         let duration = start.elapsed();
         println!(
             "URL {} {} elapsed: {:?}",
@@ -3394,7 +3476,7 @@ pub fn projects_templates_timelines_retrieve(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        if configuration.debug_success(super::function!()) {
+        if local_var_configuration.debug_success(super::function!()) {
             println!("RESP {} {}", &local_var_status, &local_var_content);
         }
 
@@ -3408,7 +3490,7 @@ pub fn projects_templates_timelines_retrieve(
             content: local_var_content,
             entity: local_var_entity,
         };
-        if configuration.rest_debug {
+        if local_var_configuration.rest_debug {
             println!(
                 "RESP {} {}",
                 &local_var_error.status, &local_var_error.content
@@ -3424,26 +3506,28 @@ pub fn projects_templates_update(
     project_pk: &str,
     template: crate::models::Template,
 ) -> Result<crate::models::Template, Error<ProjectsTemplatesUpdateError>> {
-    let local_var_client = &configuration.client;
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
 
     let local_var_uri_str = format!(
         "{}/api/v1/projects/{project_pk}/templates/{id}/",
-        configuration.base_path,
-        id = id,
-        project_pk = project_pk
+        local_var_configuration.base_path,
+        id = crate::apis::urlencode(id),
+        project_pk = crate::apis::urlencode(project_pk)
     );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::PUT, local_var_uri_str.as_str());
 
-    if let Some(ref local_var_user_agent) = configuration.user_agent {
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
     }
 
-    if let Some(ref local_var_token) = configuration.bearer_access_token {
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
         local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
-    if let Some(ref local_var_apikey) = configuration.api_key {
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
         let local_var_key = local_var_apikey.key.clone();
         let local_var_value = match local_var_apikey.prefix {
             Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
@@ -3457,7 +3541,7 @@ pub fn projects_templates_update(
     let method = local_var_req.method().clone();
     let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
-    if configuration.rest_debug {
+    if local_var_configuration.rest_debug {
         let duration = start.elapsed();
         println!(
             "URL {} {} elapsed: {:?}",
@@ -3471,7 +3555,7 @@ pub fn projects_templates_update(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        if configuration.debug_success(super::function!()) {
+        if local_var_configuration.debug_success(super::function!()) {
             println!("RESP {} {}", &local_var_status, &local_var_content);
         }
 
@@ -3485,7 +3569,7 @@ pub fn projects_templates_update(
             content: local_var_content,
             entity: local_var_entity,
         };
-        if configuration.rest_debug {
+        if local_var_configuration.rest_debug {
             println!(
                 "RESP {} {}",
                 &local_var_error.status, &local_var_error.content
@@ -3500,21 +3584,27 @@ pub fn projects_update(
     id: &str,
     project: crate::models::Project,
 ) -> Result<crate::models::Project, Error<ProjectsUpdateError>> {
-    let local_var_client = &configuration.client;
+    let local_var_configuration = configuration;
 
-    let local_var_uri_str = format!("{}/api/v1/projects/{id}/", configuration.base_path, id = id);
+    let local_var_client = &local_var_configuration.client;
+
+    let local_var_uri_str = format!(
+        "{}/api/v1/projects/{id}/",
+        local_var_configuration.base_path,
+        id = crate::apis::urlencode(id)
+    );
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::PUT, local_var_uri_str.as_str());
 
-    if let Some(ref local_var_user_agent) = configuration.user_agent {
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
     }
 
-    if let Some(ref local_var_token) = configuration.bearer_access_token {
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
         local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
-    if let Some(ref local_var_apikey) = configuration.api_key {
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
         let local_var_key = local_var_apikey.key.clone();
         let local_var_value = match local_var_apikey.prefix {
             Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
@@ -3528,7 +3618,7 @@ pub fn projects_update(
     let method = local_var_req.method().clone();
     let start = Instant::now();
     let mut local_var_resp = local_var_client.execute(local_var_req)?;
-    if configuration.rest_debug {
+    if local_var_configuration.rest_debug {
         let duration = start.elapsed();
         println!(
             "URL {} {} elapsed: {:?}",
@@ -3542,7 +3632,7 @@ pub fn projects_update(
     let local_var_content = local_var_resp.text()?;
 
     if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
-        if configuration.debug_success(super::function!()) {
+        if local_var_configuration.debug_success(super::function!()) {
             println!("RESP {} {}", &local_var_status, &local_var_content);
         }
 
@@ -3556,7 +3646,7 @@ pub fn projects_update(
             content: local_var_content,
             entity: local_var_entity,
         };
-        if configuration.rest_debug {
+        if local_var_configuration.rest_debug {
             println!(
                 "RESP {} {}",
                 &local_var_error.status, &local_var_error.content

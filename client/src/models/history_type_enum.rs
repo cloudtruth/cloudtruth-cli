@@ -31,3 +31,9 @@ impl ToString for HistoryTypeEnum {
         }
     }
 }
+
+impl Default for HistoryTypeEnum {
+    fn default() -> HistoryTypeEnum {
+        Self::Create
+    }
+}

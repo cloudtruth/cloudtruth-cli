@@ -10,7 +10,7 @@
 
 /// Parameter : A single parameter inside of a project.
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct Parameter {
     #[serde(rename = "url")]
     pub url: String,

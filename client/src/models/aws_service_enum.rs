@@ -28,3 +28,9 @@ impl ToString for AwsServiceEnum {
         }
     }
 }
+
+impl Default for AwsServiceEnum {
+    fn default() -> AwsServiceEnum {
+        Self::S3
+    }
+}

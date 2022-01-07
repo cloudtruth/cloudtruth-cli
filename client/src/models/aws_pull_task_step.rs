@@ -10,7 +10,7 @@
 
 /// AwsPullTaskStep : Pull task step for an AWS integration.
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct AwsPullTaskStep {
     #[serde(rename = "url")]
     pub url: String,

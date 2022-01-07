@@ -8,7 +8,7 @@ rust_intended := 1.57.0
 rust_installed := $(shell rustc -V | cut -d' ' -f2)
 rust_bad_version := $(shell grep "RUST_VERSION:" .github/workflows/*.yml | grep -v "$(rust_intended)")
 unchecked_results := $(shell grep -nA 1 "self\.run_cli" tests/pytest/*.py | grep -v run_cli | grep -v "\-\-" | grep -v assertResult)
-openapi_gen_version := v5.2.1
+openapi_gen_version := v5.3.1
 
 .DEFAULT = all
 .PHONY = all
@@ -63,7 +63,8 @@ client: openapi.yml patch_client.py
 		-g rust \
 		-o /local/client \
 		--additional-properties=packageName=cloudtruth-restapi,supportAsync=false
-	python3 patch_client.py && cd client && cargo fmt && cargo build
+	python3 patch_client.py
+	cd client && cargo fmt && cargo build
 
 lint:
 	cargo fmt --all -- --check

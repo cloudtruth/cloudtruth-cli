@@ -675,8 +675,8 @@ impl Integrations {
         projects: Vec<String>,
         tags: Vec<String>,
     ) -> Result<ActionDetails, IntegrationError> {
-        let reg_enum = aws_region_from_str(region).unwrap_or(AwsRegionEnum::UsEast1);
-        let ser_enum = aws_service_from_str(service).unwrap_or(AwsServiceEnum::Ssm);
+        let reg_enum = aws_region_from_str(region);
+        let ser_enum = aws_service_from_str(service);
         let push_create = AwsPush {
             url: "".to_string(),
             id: "".to_string(),
@@ -684,8 +684,8 @@ impl Integrations {
             description: description.map(String::from),
             projects,
             tags,
-            region: Box::new(reg_enum),
-            service: Box::new(ser_enum),
+            region: reg_enum.map(Box::new),
+            service: ser_enum.map(Box::new),
             resource: resource.to_string(),
             latest_task: None,
             created_at: "".to_string(),
@@ -791,8 +791,8 @@ impl Integrations {
         } else {
             Some(push_details.description.clone())
         };
-        let reg_enum = aws_region_from_str(&push_details.region).unwrap();
-        let srv_enum = aws_service_from_str(&push_details.service).unwrap();
+        let reg_enum = aws_region_from_str(&push_details.region);
+        let srv_enum = aws_service_from_str(&push_details.service);
         let integration_id = parent_id_from_url(&push_details.url, "pushes/");
         let sync_body = AwsPush {
             url: push_details.url.clone(),
@@ -801,8 +801,8 @@ impl Integrations {
             description,
             projects: push_details.project_urls.clone(),
             tags: push_details.tag_urls.clone(),
-            region: Box::new(reg_enum),
-            service: Box::new(srv_enum),
+            region: reg_enum.map(Box::new),
+            service: srv_enum.map(Box::new),
             resource: push_details.resource.clone(),
             latest_task: None,
             created_at: "".to_string(),
@@ -1129,15 +1129,15 @@ impl Integrations {
         description: Option<&str>,
         dry_run: Option<bool>,
     ) -> Result<ActionDetails, IntegrationError> {
-        let reg_enum = aws_region_from_str(region).unwrap_or(AwsRegionEnum::UsEast1);
-        let ser_enum = aws_service_from_str(service).unwrap_or(AwsServiceEnum::Ssm);
+        let reg_enum = aws_region_from_str(region);
+        let ser_enum = aws_service_from_str(service);
         let pull_create = AwsPull {
             url: "".to_string(),
             id: "".to_string(),
             name: pull_name.to_string(),
             description: description.map(String::from),
-            region: Box::new(reg_enum),
-            service: Box::new(ser_enum),
+            region: reg_enum.map(Box::new),
+            service: ser_enum.map(Box::new),
             resource: resource.to_string(),
             latest_task: None,
             created_at: "".to_string(),
@@ -1198,9 +1198,9 @@ impl Integrations {
             created_at: "".to_string(),
             modified_at: "".to_string(),
             dry_run,
-            // TODO: can these be updated? will things barf if they're changed
-            region: Box::new(AwsRegionEnum::AfSouth1),
-            service: Box::new(AwsServiceEnum::S3),
+            // NOTE: server-side chokes if these are not specified, but they can't be updated
+            region: Some(Box::new(AwsRegionEnum::AfSouth1)),
+            service: Some(Box::new(AwsServiceEnum::S3)),
             resource: resource.to_string(),
         };
         let response =
@@ -1246,16 +1246,16 @@ impl Integrations {
         } else {
             Some(pull_details.description.clone())
         };
-        let reg_enum = aws_region_from_str(&pull_details.region).unwrap();
-        let srv_enum = aws_service_from_str(&pull_details.service).unwrap();
+        let reg_enum = aws_region_from_str(&pull_details.region);
+        let srv_enum = aws_service_from_str(&pull_details.service);
         let integration_id = parent_id_from_url(&pull_details.url, "pulls/");
         let sync_body = AwsPull {
             url: pull_details.url.clone(),
             id: pull_details.id.clone(),
             name: pull_details.name.clone(),
             description,
-            region: Box::new(reg_enum),
-            service: Box::new(srv_enum),
+            region: reg_enum.map(Box::new),
+            service: srv_enum.map(Box::new),
             resource: pull_details.resource.clone(),
             latest_task: None,
             created_at: "".to_string(),

@@ -10,7 +10,7 @@
 
 /// AwsPull : Pull actions can be configured to get configuration and secrets from integrations on demand.
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct AwsPull {
     #[serde(rename = "url")]
     pub url: String,
@@ -35,10 +35,10 @@ pub struct AwsPull {
     pub dry_run: Option<bool>,
     /// The AWS region this pull uses.  This region must be enabled in the integration.
     #[serde(rename = "region")]
-    pub region: Box<crate::models::AwsRegionEnum>,
+    pub region: Option<Box<crate::models::AwsRegionEnum>>,
     /// The AWS service this pull uses.  This service must be enabled in the integration.
     #[serde(rename = "service")]
-    pub service: Box<crate::models::AwsServiceEnum>,
+    pub service: Option<Box<crate::models::AwsServiceEnum>>,
     /// Defines a path through the integration to the location where values will be pulled.  The following mustache-style substitutions must be used in the resource locator string:    - ``{{ environment }}`` to identify the environment name   - ``{{ parameter }}`` to identify the parameter name   - ``{{ project }}`` to identify the project name
     #[serde(rename = "resource")]
     pub resource: String,
@@ -53,8 +53,8 @@ impl AwsPull {
         latest_task: Option<crate::models::AwsPullTask>,
         created_at: String,
         modified_at: String,
-        region: crate::models::AwsRegionEnum,
-        service: crate::models::AwsServiceEnum,
+        region: Option<crate::models::AwsRegionEnum>,
+        service: Option<crate::models::AwsServiceEnum>,
         resource: String,
     ) -> AwsPull {
         AwsPull {
@@ -66,8 +66,8 @@ impl AwsPull {
             created_at,
             modified_at,
             dry_run: None,
-            region: Box::new(region),
-            service: Box::new(service),
+            region: region.map(Box::new),
+            service: service.map(Box::new),
             resource,
         }
     }

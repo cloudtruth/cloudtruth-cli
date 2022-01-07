@@ -37,3 +37,9 @@ impl ToString for StatusEnum {
         }
     }
 }
+
+impl Default for StatusEnum {
+    fn default() -> StatusEnum {
+        Self::Unknown
+    }
+}
