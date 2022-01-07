@@ -1143,6 +1143,8 @@ impl Integrations {
             created_at: "".to_string(),
             modified_at: "".to_string(),
             dry_run,
+            create_environments: None,
+            create_projects: None,
         };
         let response = integrations_aws_pulls_create(rest_cfg, integration_id, pull_create);
         match response {
@@ -1199,6 +1201,8 @@ impl Integrations {
             modified_at: "".to_string(),
             dry_run,
             // NOTE: server-side chokes if these are not specified, but they can't be updated
+            create_environments: None,
+            create_projects: None,
             region: Some(Box::new(AwsRegionEnum::AfSouth1)),
             service: Some(Box::new(AwsServiceEnum::S3)),
             resource: resource.to_string(),
@@ -1261,6 +1265,8 @@ impl Integrations {
             created_at: "".to_string(),
             modified_at: "".to_string(),
             dry_run: None,
+            create_environments: None,
+            create_projects: None,
         };
         let response = integrations_aws_pulls_sync_create(
             rest_cfg,

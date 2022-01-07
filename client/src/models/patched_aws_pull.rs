@@ -33,6 +33,15 @@ pub struct PatchedAwsPull {
     /// When set to dry-run mode an action will report the changes that it would have made in task steps, however those changes are not actually performed.
     #[serde(rename = "dry_run", skip_serializing_if = "Option::is_none")]
     pub dry_run: Option<bool>,
+    /// Allow the pull to create environments.  Any automatically created environments will be children of the `default` environment.  If an environment needs to be created but the action does not allow it, a task step will be added with a null operation, and success_detail will indicate the action did not allow it.
+    #[serde(
+        rename = "create_environments",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub create_environments: Option<bool>,
+    /// Allow the pull to create projects.  If a project needs to be created but the action does not allow it, a task step will be added with a null operation, and success_detail will indicate the action did not allow it.
+    #[serde(rename = "create_projects", skip_serializing_if = "Option::is_none")]
+    pub create_projects: Option<bool>,
     /// The AWS region this pull uses.  This region must be enabled in the integration.
     #[serde(rename = "region", skip_serializing_if = "Option::is_none")]
     pub region: Option<Box<crate::models::AwsRegionEnum>>,
@@ -56,6 +65,8 @@ impl PatchedAwsPull {
             created_at: None,
             modified_at: None,
             dry_run: None,
+            create_environments: None,
+            create_projects: None,
             region: None,
             service: None,
             resource: None,
