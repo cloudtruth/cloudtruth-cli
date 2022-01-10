@@ -1,4 +1,4 @@
-cloudtruth 1.1.3
+cloudtruth 1.1.4
 CloudTruth <support@cloudtruth.com>
 A command-line interface to the CloudTruth configuration management service.
 

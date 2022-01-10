@@ -1,3 +1,12 @@
+# 1.1.4 - 2022-01-10
+
+* Use API for password generation:
+  * Add `generate password` command with many options.
+  * Add `parameter set --generate` to allow generating 12 character value.
+* Removed `Successfully` prefix from parameter operation results.
+* Improve performance for `parameter-type` rules.
+
+
 # 1.1.3 - 2022-01-04
 
 * Add `import parameters` command for easy project and environment creation/update
