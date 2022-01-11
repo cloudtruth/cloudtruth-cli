@@ -29,6 +29,9 @@ class TestAuditLogs(TestCase):
             before: Optional[str] = None,
             after: Optional[str] = None,
             username: Optional[str] = None,
+            environment: Optional[str] = None,
+            project: Optional[str] = None,
+            parameter: Optional[str] = None,
     ) -> List[Dict]:
         cmd = self.get_cli_base_cmd() + "audit-logs ls -f json "
         if type_str:
@@ -45,6 +48,12 @@ class TestAuditLogs(TestCase):
             cmd += f"--after '{after}' "
         if username:
             cmd += f"--user '{username}' "
+        if environment:
+            cmd += f"--env '{environment}' "
+        if project:
+            cmd += f"--project '{project}' "
+        if parameter:
+            cmd += f"--parameter '{parameter}' "
 
         result = self.run_cli(cmd_env, cmd)
         self.assertResultSuccess(result)
@@ -78,6 +87,51 @@ class TestAuditLogs(TestCase):
         temp_name = "my-aud-temp"
         body = "# this template has just fixed text"
         self.set_template(cmd_env, proj_name, temp_name, body=body)
+
+        #####################################
+        # testing for --project, --parameter, and --environment must be done while they exist
+        max_entries = 20
+
+        # have the 'create' entries for all types of objects
+        entries = self.audit_entries(cmd_env, project=proj_name, max_entries=max_entries)
+        self.assertEqual(len(entries), 4)
+        self.assertEqual(4, len(find_by_prop(entries, PROP_ACTION, "create")))
+        self.assertEqual(1, len(find_by_prop(entries, PROP_TYPE, "Project")))
+        self.assertEqual(1, len(find_by_prop(entries, PROP_TYPE, "Parameter")))
+        self.assertEqual(1, len(find_by_prop(entries, PROP_TYPE, "Template")))
+        self.assertEqual(1, len(find_by_prop(entries, PROP_TYPE, "Value")))
+
+        # just the Parameter & Value entries
+        entries = self.audit_entries(cmd_env, project=proj_name, parameter=param1, max_entries=max_entries)
+        self.assertEqual(len(entries), 2)
+        self.assertEqual(2, len(find_by_prop(entries, PROP_ACTION, "create")))
+        self.assertEqual(1, len(find_by_prop(entries, PROP_TYPE, "Parameter")))
+        self.assertEqual(1, len(find_by_prop(entries, PROP_TYPE, "Value")))
+
+        # for the environment
+        entries = self.audit_entries(cmd_env, environment=env_name, max_entries=max_entries)
+        self.assertEqual(len(entries), 2)
+        self.assertEqual(2, len(find_by_prop(entries, PROP_ACTION, "create")))
+        self.assertEqual(1, len(find_by_prop(entries, PROP_TYPE, "Value")))
+        self.assertEqual(1, len(find_by_prop(entries, PROP_TYPE, "Environment")))
+
+        #####################################
+        # bad filters for --parameter, --project, and --env
+        bogus_env = "my-bogus-env"
+        result = self.run_cli(cmd_env, base_cmd + f"log ls --env '{bogus_env}'")
+        self.assertResultError(result, f"Environment '{bogus_env}' not found")
+
+        bogus_proj = "my-bogus-proj"
+        result = self.run_cli(cmd_env, base_cmd + f"log ls --project '{bogus_proj}'")
+        self.assertResultError(result, f"Project '{bogus_proj}' not found")
+
+        bogus_param = "my-bogus-param"
+        result = self.run_cli(cmd_env, base_cmd + f"log ls --project '{proj_name}' --parameter '{bogus_param}'")
+        self.assertResultError(result, f"Parameter '{bogus_param}' not found")
+
+        # bad combination
+        result = self.run_cli(cmd_env, base_cmd + f"log ls --parameter '{param1}'")
+        self.assertResultError(result, "Must specify a project when specifying a parameter")
 
         # TODO: update items
 

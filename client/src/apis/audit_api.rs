@@ -40,12 +40,15 @@ pub fn audit_list(
     configuration: &configuration::Configuration,
     action: Option<&str>,
     earliest: Option<String>,
+    environment_id: Option<&str>,
     latest: Option<String>,
     object_id: Option<&str>,
     object_type: Option<&str>,
     ordering: Option<&str>,
     page: Option<i32>,
     page_size: Option<i32>,
+    parameter_id: Option<&str>,
+    project_id: Option<&str>,
     user_id: Option<&str>,
 ) -> Result<crate::models::PaginatedAuditTrailList, Error<AuditListError>> {
     let local_var_configuration = configuration;
@@ -63,6 +66,10 @@ pub fn audit_list(
     if let Some(ref local_var_str) = earliest {
         local_var_req_builder =
             local_var_req_builder.query(&[("earliest", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = environment_id {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("environment_id", &local_var_str.to_string())]);
     }
     if let Some(ref local_var_str) = latest {
         local_var_req_builder =
@@ -87,6 +94,14 @@ pub fn audit_list(
     if let Some(ref local_var_str) = page_size {
         local_var_req_builder =
             local_var_req_builder.query(&[("page_size", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = parameter_id {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("parameter_id", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = project_id {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("project_id", &local_var_str.to_string())]);
     }
     if let Some(ref local_var_str) = user_id {
         local_var_req_builder =
