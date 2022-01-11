@@ -2068,13 +2068,13 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
         self.assertIn("Value must be at most", result.err())
 
         #################
-        result = self.run_cli(cmd_env, set_cmd + f"--min-len {curr_len - 1}")
+        result = self.run_cli(cmd_env, set_cmd + f"--min-len {curr_len - 10}")
         self.assertResultSuccess(result)
         result = self.run_cli(cmd_env, set_cmd + f"--min-len {curr_len + 3}")
         self.assertResultError(result, f"Rule update error: Rule may not be applied to {param1}")
         self.assertIn("Value must be at least", result.err())
 
-        result = self.run_cli(cmd_env, set_cmd + f"--max-len {curr_len + 1}")
+        result = self.run_cli(cmd_env, set_cmd + f"--max-len {curr_len + 10}")
         self.assertResultSuccess(result)
         result = self.run_cli(cmd_env, set_cmd + f"--max-len {curr_len - 2}")
         self.assertResultError(result, f"Rule update error: Rule may not be applied to {param1}")
@@ -2263,17 +2263,25 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
         self.assertIn("Value is greater than the maximum value", result.err())
 
         #################
-        result = self.run_cli(cmd_env, set_cmd + f"--min {value - 1}")
+        result = self.run_cli(cmd_env, set_cmd + f"--min {value - 10}")
         self.assertResultSuccess(result)
         result = self.run_cli(cmd_env, set_cmd + f"--min {value + 3}")
         self.assertResultError(result, f"Rule update error: Rule may not be applied to {param1}")
         self.assertIn("Value is less than the minimum value", result.err())
 
-        result = self.run_cli(cmd_env, set_cmd + f"--max {value + 1}")
+        result = self.run_cli(cmd_env, set_cmd + f"--max {value + 10}")
         self.assertResultSuccess(result)
         result = self.run_cli(cmd_env, set_cmd + f"--max {value - 2}")
         self.assertResultError(result, f"Rule update error: Rule may not be applied to {param1}")
         self.assertIn("Value is greater than the maximum value", result.err())
+
+        # bogus rules -- min/max out of whack
+        err_msg = "Rule update error: Maximum constraint is less than an existing rule's minimum constraint"
+        result = self.run_cli(cmd_env, set_cmd + f"--max {value - 11}")
+        self.assertResultError(result, err_msg)
+        err_msg = "Rule update error: Minimum constraint is greater than an existing rule's maximum constraint"
+        result = self.run_cli(cmd_env, set_cmd + f"--min {value + 11}")
+        self.assertResultError(result, err_msg)
 
         # delete the rules
         result = self.run_cli(cmd_env, set_cmd + "--no-min")
