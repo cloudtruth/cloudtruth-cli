@@ -225,8 +225,8 @@ class TestParameterTypes(TestCase):
 
         ###################
         # add child rules
-        min_b = -20
-        max_b = 1000
+        min_b = -5
+        max_b = 90
         cmd = type_cmd + f"set {type_name2} --max {max_b} --min {min_b}"
         result = self.run_cli(cmd_env, cmd)
         self.assertResultSuccess(result)
@@ -256,6 +256,16 @@ class TestParameterTypes(TestCase):
         self.assertEqual(entry.get(PROP_PARENT), type_name1)
         self.assertIsNotNone(entry.get(PROP_CREATED))
         self.assertIsNotNone(entry.get(PROP_MODIFIED))
+
+        # invalid constraints -- child cannot be more permissive than parent
+        err_msg = "Rule update error: Maximum constraint is greater than an existing rule's maximum constraint"
+        cmd = type_cmd + f"set {type_name2} --max {max_a + 1}"
+        result = self.run_cli(cmd_env, cmd)
+        self.assertResultError(result, err_msg)
+        err_msg = "Rule update error: Minimum constraint is less than an existing rule's minimum constraint"
+        cmd = type_cmd + f"set {type_name2} --min {min_a - 1}"
+        result = self.run_cli(cmd_env, cmd)
+        self.assertResultError(result, err_msg)
 
         ###################
         # parameter range checking, after child rules
@@ -464,8 +474,8 @@ class TestParameterTypes(TestCase):
 
         ###################
         # add some rules
-        min_len_a = 4
-        max_len_a = 10
+        min_len_a = 5
+        max_len_a = 20
         regex_a = "a.*"  # starts with 'a'
         cmd = type_cmd + f"set {type_name1} --max-len {max_len_a} --min-len {min_len_a} --regex '{regex_a}'"
         result = self.run_cli(cmd_env, cmd)
@@ -500,8 +510,8 @@ class TestParameterTypes(TestCase):
 
         ###################
         # add child rules
-        min_len_b = 2  # would like to do 1, but that means no string is provided...
-        max_len_b = 15
+        min_len_b = 6  # would like to do 1, but that means no string is provided...
+        max_len_b = 19
         regex_b = '.*b'  # ends with 'b'
         cmd = type_cmd + f"set {type_name2} --max-len {max_len_b} --min-len {min_len_b} --regex '{regex_b}'"
         result = self.run_cli(cmd_env, cmd)
@@ -542,6 +552,20 @@ class TestParameterTypes(TestCase):
         self.assertEqual(entry.get(PROP_PARENT), type_name1)
         self.assertIsNotNone(entry.get(PROP_CREATED))
         self.assertIsNotNone(entry.get(PROP_MODIFIED))
+
+        # child rules must be more restrictive
+        err_msg = (
+            "Rule update error: Maximum length constraint is greater than an existing rule's maximum length constraint"
+        )
+        cmd = type_cmd + f"set {type_name2} --max-len {max_len_a + 1}"
+        result = self.run_cli(cmd_env, cmd)
+        self.assertResultError(result, err_msg)
+        err_msg = (
+            "Rule update error: Minimum length constraint is less than an existing rule's minimum length constraint"
+        )
+        cmd = type_cmd + f"set {type_name2} --min-len {min_len_a - 1}"
+        result = self.run_cli(cmd_env, cmd)
+        self.assertResultError(result, err_msg)
 
         ###################
         # parameter range checking, after child rules
