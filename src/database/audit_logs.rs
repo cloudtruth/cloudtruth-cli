@@ -33,6 +33,9 @@ impl AuditLogs {
         before: Option<String>,
         after: Option<String>,
         user_id: Option<&str>,
+        environment_id: Option<&str>,
+        project_id: Option<&str>,
+        parameter_id: Option<&str>,
     ) -> Result<Vec<AuditLogDetails>, AuditLogError> {
         let mut total_details: Vec<AuditLogDetails> = vec![];
         let mut page_count = 1;
@@ -41,12 +44,15 @@ impl AuditLogs {
                 rest_cfg,
                 action,
                 after.clone(),
+                environment_id,
                 before.clone(),
                 None,
                 object_type,
                 NO_ORDERING,
                 Some(page_count),
                 page_size(rest_cfg),
+                parameter_id,
+                project_id,
                 user_id,
             );
             match response {

@@ -1,5 +1,5 @@
 use crate::cli::{FORMAT_OPT, LIST_SUBCMD};
-use crate::database::{AuditLogs, OpenApiConfig, Users};
+use crate::database::{AuditLogs, Environments, OpenApiConfig, Parameters, Projects, Users};
 use crate::table::Table;
 use crate::{error_message, help_message, parse_datetime, warn_missing_subcommand};
 use clap::ArgMatches;
@@ -86,6 +86,53 @@ fn proc_audit_list(
         }
     }
 
+    let mut env_id = None;
+    if let Some(env_name) = subcmd_args.value_of("environment") {
+        let environments = Environments::new();
+        env_id = environments.get_id(rest_cfg, env_name)?;
+        if env_id.is_none() {
+            error_message(format!("Environment '{}' not found", env_name));
+            process::exit(36);
+        }
+    }
+
+    let mut proj_id = None;
+    if let Some(proj_name) = subcmd_args.value_of("project") {
+        let projects = Projects::new();
+        proj_id = projects.get_id(rest_cfg, proj_name)?;
+        if proj_id.is_none() {
+            error_message(format!("Project '{}' not found", proj_name));
+            process::exit(37);
+        }
+    }
+
+    let mut param_id = None;
+    if let Some(param_name) = subcmd_args.value_of("parameter") {
+        if let Some(ref project_id) = proj_id {
+            let default_env_name = "default".to_string(); // kinda hacky to use a name instead of value here... may have been renamed
+            let environment_id = env_id.clone().unwrap_or(default_env_name);
+            let parameters = Parameters::new();
+            if let Some(param_details) = parameters.get_details_by_name(
+                rest_cfg,
+                project_id,
+                &environment_id,
+                param_name,
+                false,
+                true,
+                None,
+                None,
+            )? {
+                param_id = Some(param_details.id);
+            } else {
+                error_message(format!("Parameter '{}' not found", param_name));
+                process::exit(38)
+            }
+        } else {
+            error_message("Must specify a project when specifying a parameter".to_string());
+            process::exit(39);
+        }
+    }
+
     let details = audit_logs.get_audit_log_details(
         rest_cfg,
         object_type.as_deref(),
@@ -95,6 +142,9 @@ fn proc_audit_list(
         before,
         after,
         user_id.as_deref(),
+        env_id.as_deref(),
+        proj_id.as_deref(),
+        param_id.as_deref(),
     )?;
 
     if details.is_empty() {
