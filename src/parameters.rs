@@ -9,7 +9,7 @@ use crate::config::DEFAULT_ENV_NAME;
 use crate::database::{
     EnvironmentDetails, Environments, OpenApiConfig, ParamExportFormat, ParamExportOptions,
     ParamRuleType, ParameterDetails, ParameterError, Parameters, Projects, ResolvedDetails,
-    TaskStep,
+    TaskStepDetails,
 };
 use crate::table::Table;
 use crate::{
@@ -1059,7 +1059,7 @@ fn proc_param_push(
     let show_values = show_values(subcmd_args);
     let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
 
-    let steps: Vec<TaskStep>;
+    let steps: Vec<TaskStepDetails>;
     let qualifier: String;
     let include_param_name: bool;
     if let Some(param_name) = key_name {

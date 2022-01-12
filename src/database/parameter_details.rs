@@ -146,6 +146,7 @@ fn default_param_value() -> &'static Value {
         external: None,
         external_fqn: None,
         external_filter: None,
+        external_status: None,
         secret: None,
         internal_value: None,
         interpolated: None,

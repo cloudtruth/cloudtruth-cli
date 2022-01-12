@@ -14,7 +14,7 @@
 pub struct AwsPushTask {
     #[serde(rename = "url")]
     pub url: String,
-    /// The unique identifier for the push action task.
+    /// The unique identifier for the task.
     #[serde(rename = "id")]
     pub id: String,
     /// The reason why this task was triggered.

@@ -30,6 +30,8 @@ pub struct IntegrationExplorer {
     pub content_size: Option<i32>,
     #[serde(rename = "content_keys", skip_serializing_if = "Option::is_none")]
     pub content_keys: Option<Vec<String>>,
+    #[serde(rename = "venue_id", skip_serializing_if = "Option::is_none")]
+    pub venue_id: Option<String>,
 }
 
 impl IntegrationExplorer {
@@ -45,6 +47,7 @@ impl IntegrationExplorer {
             content_data: None,
             content_size: None,
             content_keys: None,
+            venue_id: None,
         }
     }
 }

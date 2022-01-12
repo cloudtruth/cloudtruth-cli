@@ -38,16 +38,19 @@ pub struct PatchedValue {
     /// If the value is `external`, the content returned by the integration can be reduced by applying a JMESpath expression.  This is valid as long as the content is structured and of a supported format.  JMESpath expressions are supported on `json`, `yaml`, and `dotenv` content.
     #[serde(rename = "external_filter", skip_serializing_if = "Option::is_none")]
     pub external_filter: Option<String>,
-    /// If the value is external, and an error occurs retrieving it, the reason for the retrieval error will be placed into this field.  The query parameter `partial_success` can be used to control whether this condition causes an HTTP error response or not.
+    /// This field is deprecated and unused.
     #[serde(rename = "external_error", skip_serializing_if = "Option::is_none")]
     pub external_error: Option<String>,
+    /// The most recent mapped pull status for an external value.
+    #[serde(rename = "external_status", skip_serializing_if = "Option::is_none")]
+    pub external_status: Option<Box<crate::models::TaskStep>>,
     /// This is the content to use when resolving the Value for an internal non-secret, or when storing a secret.  When storing a secret, this content is stored in your organization's dedicated vault and this field is cleared.  This field is required if the value is being created or updated and is `internal`.  This field cannot be specified when creating or updating an `external` value.
     #[serde(rename = "internal_value", skip_serializing_if = "Option::is_none")]
     pub internal_value: Option<String>,
     /// If `true`, apply template substitution rules to this value.  If `false`, this value is a literal value.  Note: secrets cannot be interpolated.
     #[serde(rename = "interpolated", skip_serializing_if = "Option::is_none")]
     pub interpolated: Option<bool>,
-    /// This is the actual content of the Value for the given parameter in the given environment.  Depending on the settings in the Value, the following things occur to calculate the `value`:  For values that are not `external` and parameters that are not `secret`, the system will use the content in `internal_value` to satisfy the request.  For values that are not `external` and parameters that are `secret`, the system will retrieve the content from your organization's dedicated vault.  For values that are `external`, the system will retrieve the content from the integration on-demand.  You can control the error handling behavior of the server through the `partial_success` query parameter.  If the content from the integration is `secret` and the parameter is not, an error will occur.  If an `external_filter` is present then the content will have a JMESpath query applied, and that becomes the resulting value.  If you request secret masking, no secret content will be included in the result and instead a series of asterisks will be used instead for the value.  If you request wrapping, the secret content will be wrapped in an envelope that is bound to your JWT token.  For more information about secret wrapping, see the docs.  Clients applying this value to a shell environment should set `<parameter_name>=<value>` even if `value` is the empty string.  If `value` is `null`, the client should unset that shell environment variable.
+    /// This is the actual content of the Value for the given parameter in the given environment.  If you request secret masking, no secret content will be included in the result and instead a series of asterisks will be used instead for the value.  If you request wrapping, the secret content will be wrapped in an envelope that is bound to your JWT token.  For more information about secret wrapping, see the docs.  Clients applying this value to a shell environment should set `<parameter_name>=<value>` even if `value` is the empty string.  If `value` is `null`, the client should unset that shell environment variable.
     #[serde(rename = "value", skip_serializing_if = "Option::is_none")]
     pub value: Option<String>,
     /// If true, the `value` field has undergone template evaluation.
@@ -88,6 +91,7 @@ impl PatchedValue {
             external_fqn: None,
             external_filter: None,
             external_error: None,
+            external_status: None,
             internal_value: None,
             interpolated: None,
             value: None,

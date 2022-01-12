@@ -42,6 +42,12 @@ pub struct PatchedAwsPull {
     /// Allow the pull to create projects.  If a project needs to be created but the action does not allow it, a task step will be added with a null operation, and success_detail will indicate the action did not allow it.
     #[serde(rename = "create_projects", skip_serializing_if = "Option::is_none")]
     pub create_projects: Option<bool>,
+    /// Values being managed by a mapped pull.
+    #[serde(rename = "mapped_values", skip_serializing_if = "Option::is_none")]
+    pub mapped_values: Option<Vec<crate::models::Value>>,
+    /// The pull mode used.  A pattern pull uses a pattern-matching resource string with mustache-style markers to identify the project, parameter, and environment names.  A mapped pull uses a specific resource and JMESpath expression to deliver a value to a specific project, parameter, and environment.  This leverages external value linkages made in the value editor, and there is one mapped pull per integration provided by the system so that you can trigger external value pull synchronizations.
+    #[serde(rename = "mode", skip_serializing_if = "Option::is_none")]
+    pub mode: Option<Box<crate::models::ModeEnum>>,
     /// The AWS region this pull uses.  This region must be enabled in the integration.
     #[serde(rename = "region", skip_serializing_if = "Option::is_none")]
     pub region: Option<Box<crate::models::AwsRegionEnum>>,
@@ -67,6 +73,8 @@ impl PatchedAwsPull {
             dry_run: None,
             create_environments: None,
             create_projects: None,
+            mapped_values: None,
+            mode: None,
             region: None,
             service: None,
             resource: None,

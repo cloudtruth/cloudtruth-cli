@@ -1,7 +1,7 @@
 use crate::database::{
     auth_details, extract_details, last_from_url, page_size, parent_id_from_url, response_message,
     ActionDetails, IntegrationDetails, IntegrationError, IntegrationNode, OpenApiConfig,
-    TaskDetail, TaskStep, NO_PAGE_COUNT, NO_PAGE_SIZE,
+    TaskDetail, TaskStepDetails, NO_PAGE_COUNT, NO_PAGE_SIZE,
 };
 use cloudtruth_restapi::apis::integrations_api::*;
 use cloudtruth_restapi::apis::Error::ResponseError;
@@ -563,8 +563,8 @@ impl Integrations {
         integration_id: &str,
         push_id: &str,
         task_id: &str,
-    ) -> Result<Vec<TaskStep>, IntegrationError> {
-        let mut result: Vec<TaskStep> = Vec::new();
+    ) -> Result<Vec<TaskStepDetails>, IntegrationError> {
+        let mut result: Vec<TaskStepDetails> = Vec::new();
         let mut page_count = 1;
         loop {
             let response = integrations_aws_pushes_tasks_steps_list(
@@ -590,7 +590,7 @@ impl Integrations {
                 Ok(data) => {
                     if let Some(list) = data.results {
                         for api in list {
-                            result.push(TaskStep::from(&api));
+                            result.push(TaskStepDetails::from(&api));
                         }
                         page_count += 1;
                     } else {
@@ -614,9 +614,9 @@ impl Integrations {
         rest_cfg: &OpenApiConfig,
         integration_id: &str,
         push_id: &str,
-    ) -> Result<Vec<TaskStep>, IntegrationError> {
+    ) -> Result<Vec<TaskStepDetails>, IntegrationError> {
         let task_details = self.get_aws_push_tasks(rest_cfg, integration_id, push_id)?;
-        let mut total: Vec<TaskStep> = Vec::new();
+        let mut total: Vec<TaskStepDetails> = Vec::new();
         for task_entry in task_details {
             let mut task_steps =
                 self.get_aws_push_task_steps(rest_cfg, integration_id, push_id, &task_entry.id)?;
@@ -633,7 +633,7 @@ impl Integrations {
         rest_cfg: &OpenApiConfig,
         integration_id: &str,
         push_id: &str,
-    ) -> Result<Vec<TaskStep>, IntegrationError> {
+    ) -> Result<Vec<TaskStepDetails>, IntegrationError> {
         self.get_aws_push_all_task_steps(rest_cfg, integration_id, push_id)
     }
 
@@ -1018,8 +1018,8 @@ impl Integrations {
         integration_id: &str,
         pull_id: &str,
         task_id: &str,
-    ) -> Result<Vec<TaskStep>, IntegrationError> {
-        let mut result: Vec<TaskStep> = Vec::new();
+    ) -> Result<Vec<TaskStepDetails>, IntegrationError> {
+        let mut result: Vec<TaskStepDetails> = Vec::new();
         let mut page_count = 1;
         loop {
             let response = integrations_aws_pulls_tasks_steps_list(
@@ -1045,7 +1045,7 @@ impl Integrations {
                 Ok(data) => {
                     if let Some(list) = data.results {
                         for api in list {
-                            result.push(TaskStep::from(&api));
+                            result.push(TaskStepDetails::from(&api));
                         }
                         page_count += 1;
                     } else {
@@ -1069,9 +1069,9 @@ impl Integrations {
         rest_cfg: &OpenApiConfig,
         integration_id: &str,
         pull_id: &str,
-    ) -> Result<Vec<TaskStep>, IntegrationError> {
+    ) -> Result<Vec<TaskStepDetails>, IntegrationError> {
         let task_details = self.get_aws_pull_tasks(rest_cfg, integration_id, pull_id)?;
-        let mut total: Vec<TaskStep> = Vec::new();
+        let mut total: Vec<TaskStepDetails> = Vec::new();
         for task_entry in task_details {
             let mut task_steps =
                 self.get_aws_pull_task_steps(rest_cfg, integration_id, pull_id, &task_entry.id)?;
@@ -1088,7 +1088,7 @@ impl Integrations {
         rest_cfg: &OpenApiConfig,
         integration_id: &str,
         pull_id: &str,
-    ) -> Result<Vec<TaskStep>, IntegrationError> {
+    ) -> Result<Vec<TaskStepDetails>, IntegrationError> {
         self.get_aws_pull_all_task_steps(rest_cfg, integration_id, pull_id)
     }
 
@@ -1143,6 +1143,8 @@ impl Integrations {
             created_at: "".to_string(),
             modified_at: "".to_string(),
             dry_run,
+            mode: None,
+            mapped_values: vec![],
             create_environments: None,
             create_projects: None,
         };
@@ -1200,6 +1202,8 @@ impl Integrations {
             created_at: "".to_string(),
             modified_at: "".to_string(),
             dry_run,
+            mode: None,
+            mapped_values: vec![],
             // NOTE: server-side chokes if these are not specified, but they can't be updated
             create_environments: None,
             create_projects: None,
@@ -1265,6 +1269,8 @@ impl Integrations {
             created_at: "".to_string(),
             modified_at: "".to_string(),
             dry_run: None,
+            mode: None,
+            mapped_values: vec![],
             create_environments: None,
             create_projects: None,
         };
