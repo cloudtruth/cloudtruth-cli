@@ -18,6 +18,7 @@ OPTIONS:
 SUBCOMMANDS:
     actions            Manage CloudTruth actions [aliases: action, act, ac]
     audit-logs         Display audit logs [aliases: audit, aud, au, log, logs]
+    backup             Manage backups of CloudTruth data [aliases: back, ba]
     completions        Generate shell completions for this application
     configuration      Configuration options for this application [aliases: config, conf, con, co, c]
     environments       Work with CloudTruth environments [aliases: environment, envs, env, e]
@@ -397,6 +398,34 @@ USAGE:
 FLAGS:
     -h, --help       Prints help information
     -V, --version    Prints version information
+============================================================
+cloudtruth-backup 
+Manage backups of CloudTruth data
+
+USAGE:
+    cloudtruth backup [SUBCOMMAND]
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+SUBCOMMANDS:
+    help        Prints this message or the help of the given subcommand(s)
+    snapshot    Take a snapshot of project/environment/type data for external storage [aliases: snap, sn]
+========================================
+cloudtruth-backup-snapshot 
+Take a snapshot of project/environment/type data for external storage
+
+USAGE:
+    cloudtruth backup snapshot [FLAGS] [OPTIONS]
+
+FLAGS:
+    -y, --yes        Avoid confirmation prompt(s)
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+OPTIONS:
+    -f, --format <format>    Backup snapshot format [default: yaml]  [possible values: yaml, json]
 ============================================================
 cloudtruth-completions 
 Generate shell completions for this application

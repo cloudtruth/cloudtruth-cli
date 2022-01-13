@@ -16,14 +16,14 @@ pub struct BackupParameterValue {
     pub external: Option<Box<crate::models::BackupExternalReference>>,
     #[serde(rename = "environment")]
     pub environment: String,
-    #[serde(rename = "source")]
-    pub source: String,
-    #[serde(rename = "value")]
-    pub value: String,
     #[serde(rename = "evaluated")]
     pub evaluated: bool,
-    #[serde(rename = "project")]
-    pub project: String,
+    #[serde(rename = "source", skip_serializing_if = "Option::is_none")]
+    pub source: Option<String>,
+    #[serde(rename = "project", skip_serializing_if = "Option::is_none")]
+    pub project: Option<String>,
+    #[serde(rename = "value", skip_serializing_if = "Option::is_none")]
+    pub value: Option<String>,
     #[serde(rename = "raw", skip_serializing_if = "Option::is_none")]
     pub raw: Option<String>,
 }
@@ -33,18 +33,15 @@ impl BackupParameterValue {
     pub fn new(
         external: Option<crate::models::BackupExternalReference>,
         environment: String,
-        source: String,
-        value: String,
         evaluated: bool,
-        project: String,
     ) -> BackupParameterValue {
         BackupParameterValue {
             external: external.map(Box::new),
             environment,
-            source,
-            value,
             evaluated,
-            project,
+            source: None,
+            project: None,
+            value: None,
             raw: None,
         }
     }

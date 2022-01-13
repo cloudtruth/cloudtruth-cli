@@ -5,6 +5,8 @@ mod audit_log_details;
 mod audit_log_errors;
 mod audit_log_summary;
 mod audit_logs;
+mod backup_error;
+mod backups;
 mod crypto;
 mod crypto_algorithm;
 mod crypto_error;
@@ -55,6 +57,8 @@ pub use audit_log_details::AuditLogDetails;
 pub use audit_log_errors::AuditLogError;
 pub use audit_log_summary::AuditLogSummary;
 pub use audit_logs::AuditLogs;
+pub use backup_error::BackupError;
+pub use backups::{BackupSnapshotDetails, Backups};
 pub use crypto::{
     secret_encode_wrap, secret_unwrap_decode, valid_encoding, ENCODED_PART_COUNT, ENCRYPTION_PREFIX,
 };

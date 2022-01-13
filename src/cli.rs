@@ -300,14 +300,17 @@ fn i32_validator(arg_value: String) -> Result<(), String> {
     }
 }
 
-fn schema_format_arg() -> Arg<'static, 'static> {
+fn serialized_format_arg() -> Arg<'static, 'static> {
     Arg::with_name(FORMAT_OPT)
         .takes_value(true)
         .short("f")
         .long("format")
         .possible_values(&["yaml", "json"])
         .default_value("yaml")
-        .help("Schema output format")
+}
+
+fn schema_format_arg() -> Arg<'static, 'static> {
+    serialized_format_arg().help("Schema output format")
 }
 
 fn schema_version_arg() -> Arg<'static, 'static> {
@@ -1385,6 +1388,19 @@ pub fn build_cli() -> App<'static, 'static> {
                         Arg::with_name("no-space")
                             .long("no-space")
                             .help("Do not require space character"),
+                    ])
+            ])
+        )
+        .subcommand(SubCommand::with_name("backup")
+            .visible_aliases(&["back", "ba"])
+            .about("Manage backups of CloudTruth data")
+            .subcommands([
+                SubCommand::with_name("snapshot")
+                    .visible_aliases(&["snap", "sn"])
+                    .about("Take a snapshot of project/environment/type data for external storage")
+                    .args(&[
+                        serialized_format_arg().help("Backup snapshot format"),
+                        confirm_flag(),
                     ])
             ])
         )

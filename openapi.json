@@ -10680,17 +10680,20 @@
                     "environment": {
                         "type": "string"
                     },
-                    "source": {
-                        "type": "string"
-                    },
-                    "value": {
-                        "type": "string"
-                    },
                     "evaluated": {
                         "type": "boolean"
                     },
+                    "source": {
+                        "type": "string",
+                        "nullable": true
+                    },
                     "project": {
-                        "type": "string"
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "value": {
+                        "type": "string",
+                        "nullable": true
                     },
                     "raw": {
                         "type": "string",
@@ -10700,10 +10703,7 @@
                 "required": [
                     "environment",
                     "evaluated",
-                    "external",
-                    "project",
-                    "source",
-                    "value"
+                    "external"
                 ]
             },
             "BackupProject": {
