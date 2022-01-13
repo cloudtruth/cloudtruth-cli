@@ -91,7 +91,7 @@ pub use resolve_details::ResolvedDetails;
 pub use resolve_error::ResolveError;
 pub use resolver::Resolver;
 pub use task_detail::TaskDetail;
-pub use task_steps::TaskStep;
+pub use task_steps::TaskStepDetails;
 pub use template_details::TemplateDetails;
 pub use template_error::{template_eval_errors, TemplateError};
 pub use template_history::TemplateHistory;

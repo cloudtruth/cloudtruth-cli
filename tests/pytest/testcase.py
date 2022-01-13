@@ -204,13 +204,15 @@ class TestCase(unittest.TestCase):
             return "SET"
         return "printenv"
 
-    def assertResultSuccess(self, result: Result):
+    def assertResultSuccess(self, result: Result, success_msg: Optional[str] = None):
         """
         This is a convenience method to check the return code, and error output.
         """
         # check the error message is empty first, since it gives the most info about a failure
         self.assertEqual(result.err(), "")
         self.assertEqual(result.return_value, 0)
+        if success_msg:
+            self.assertIn(success_msg, result.out())
 
     def assertResultWarning(self, result: Result, warn_msg: str):
         """

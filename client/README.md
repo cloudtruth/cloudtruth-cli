@@ -29,6 +29,7 @@ Class | Method | HTTP request | Description
 *AuditApi* | [**audit_list**](docs/AuditApi.md#audit_list) | **GET** /api/v1/audit/ | 
 *AuditApi* | [**audit_retrieve**](docs/AuditApi.md#audit_retrieve) | **GET** /api/v1/audit/{id}/ | 
 *AuditApi* | [**audit_summary_retrieve**](docs/AuditApi.md#audit_summary_retrieve) | **GET** /api/v1/audit/summary/ | 
+*BackupApi* | [**backup_snapshot_create**](docs/BackupApi.md#backup_snapshot_create) | **POST** /api/v1/backup/snapshot/ | Get a snapshot of all Projects with parameters
 *EnvironmentsApi* | [**environments_create**](docs/EnvironmentsApi.md#environments_create) | **POST** /api/v1/environments/ | 
 *EnvironmentsApi* | [**environments_destroy**](docs/EnvironmentsApi.md#environments_destroy) | **DELETE** /api/v1/environments/{id}/ | 
 *EnvironmentsApi* | [**environments_list**](docs/EnvironmentsApi.md#environments_list) | **GET** /api/v1/environments/ | 
@@ -75,6 +76,15 @@ Class | Method | HTTP request | Description
 *IntegrationsApi* | [**integrations_github_create**](docs/IntegrationsApi.md#integrations_github_create) | **POST** /api/v1/integrations/github/ | Establishes a GitHub Integration.
 *IntegrationsApi* | [**integrations_github_destroy**](docs/IntegrationsApi.md#integrations_github_destroy) | **DELETE** /api/v1/integrations/github/{id}/ | Delete a GitHub integration.
 *IntegrationsApi* | [**integrations_github_list**](docs/IntegrationsApi.md#integrations_github_list) | **GET** /api/v1/integrations/github/ | 
+*IntegrationsApi* | [**integrations_github_pulls_list**](docs/IntegrationsApi.md#integrations_github_pulls_list) | **GET** /api/v1/integrations/github/{githubintegration_pk}/pulls/ | 
+*IntegrationsApi* | [**integrations_github_pulls_partial_update**](docs/IntegrationsApi.md#integrations_github_pulls_partial_update) | **PATCH** /api/v1/integrations/github/{githubintegration_pk}/pulls/{id}/ | 
+*IntegrationsApi* | [**integrations_github_pulls_retrieve**](docs/IntegrationsApi.md#integrations_github_pulls_retrieve) | **GET** /api/v1/integrations/github/{githubintegration_pk}/pulls/{id}/ | 
+*IntegrationsApi* | [**integrations_github_pulls_sync_create**](docs/IntegrationsApi.md#integrations_github_pulls_sync_create) | **POST** /api/v1/integrations/github/{githubintegration_pk}/pulls/{id}/sync/ | 
+*IntegrationsApi* | [**integrations_github_pulls_tasks_list**](docs/IntegrationsApi.md#integrations_github_pulls_tasks_list) | **GET** /api/v1/integrations/github/{githubintegration_pk}/pulls/{githubpull_pk}/tasks/ | 
+*IntegrationsApi* | [**integrations_github_pulls_tasks_retrieve**](docs/IntegrationsApi.md#integrations_github_pulls_tasks_retrieve) | **GET** /api/v1/integrations/github/{githubintegration_pk}/pulls/{githubpull_pk}/tasks/{id}/ | 
+*IntegrationsApi* | [**integrations_github_pulls_tasks_steps_list**](docs/IntegrationsApi.md#integrations_github_pulls_tasks_steps_list) | **GET** /api/v1/integrations/github/{githubintegration_pk}/pulls/{githubpull_pk}/tasks/{githubpulltask_pk}/steps/ | 
+*IntegrationsApi* | [**integrations_github_pulls_tasks_steps_retrieve**](docs/IntegrationsApi.md#integrations_github_pulls_tasks_steps_retrieve) | **GET** /api/v1/integrations/github/{githubintegration_pk}/pulls/{githubpull_pk}/tasks/{githubpulltask_pk}/steps/{id}/ | 
+*IntegrationsApi* | [**integrations_github_pulls_update**](docs/IntegrationsApi.md#integrations_github_pulls_update) | **PUT** /api/v1/integrations/github/{githubintegration_pk}/pulls/{id}/ | 
 *IntegrationsApi* | [**integrations_github_retrieve**](docs/IntegrationsApi.md#integrations_github_retrieve) | **GET** /api/v1/integrations/github/{id}/ | Get details of a GitHub Integration.
 *InvitationsApi* | [**invitations_accept_create**](docs/InvitationsApi.md#invitations_accept_create) | **POST** /api/v1/invitations/{id}/accept/ | Accept an invitation.
 *InvitationsApi* | [**invitations_create**](docs/InvitationsApi.md#invitations_create) | **POST** /api/v1/invitations/ | Create an invitation.
@@ -173,11 +183,23 @@ Class | Method | HTTP request | Description
  - [AwsPushUpdate](docs/AwsPushUpdate.md)
  - [AwsRegionEnum](docs/AwsRegionEnum.md)
  - [AwsServiceEnum](docs/AwsServiceEnum.md)
+ - [BackupDataSnapshot](docs/BackupDataSnapshot.md)
+ - [BackupEnvironment](docs/BackupEnvironment.md)
+ - [BackupExternalReference](docs/BackupExternalReference.md)
+ - [BackupParameter](docs/BackupParameter.md)
+ - [BackupParameterRule](docs/BackupParameterRule.md)
+ - [BackupParameterType](docs/BackupParameterType.md)
+ - [BackupParameterValue](docs/BackupParameterValue.md)
+ - [BackupProject](docs/BackupProject.md)
+ - [BackupTemplate](docs/BackupTemplate.md)
  - [Environment](docs/Environment.md)
  - [EnvironmentCreate](docs/EnvironmentCreate.md)
  - [GeneratedPasswordResponse](docs/GeneratedPasswordResponse.md)
  - [GitHubIntegration](docs/GitHubIntegration.md)
  - [GitHubIntegrationCreate](docs/GitHubIntegrationCreate.md)
+ - [GitHubPull](docs/GitHubPull.md)
+ - [GitHubPullTask](docs/GitHubPullTask.md)
+ - [GitHubPullTaskStep](docs/GitHubPullTaskStep.md)
  - [HistoryModelEnum](docs/HistoryModelEnum.md)
  - [HistoryTypeEnum](docs/HistoryTypeEnum.md)
  - [ImportCreateRequest](docs/ImportCreateRequest.md)
@@ -188,6 +210,7 @@ Class | Method | HTTP request | Description
  - [InvitationCreate](docs/InvitationCreate.md)
  - [Membership](docs/Membership.md)
  - [MembershipCreate](docs/MembershipCreate.md)
+ - [ModeEnum](docs/ModeEnum.md)
  - [NodeTypeEnum](docs/NodeTypeEnum.md)
  - [ObjectTypeEnum](docs/ObjectTypeEnum.md)
  - [OperationEnum](docs/OperationEnum.md)
@@ -203,6 +226,9 @@ Class | Method | HTTP request | Description
  - [PaginatedAwsPushTaskStepList](docs/PaginatedAwsPushTaskStepList.md)
  - [PaginatedEnvironmentList](docs/PaginatedEnvironmentList.md)
  - [PaginatedGitHubIntegrationList](docs/PaginatedGitHubIntegrationList.md)
+ - [PaginatedGitHubPullList](docs/PaginatedGitHubPullList.md)
+ - [PaginatedGitHubPullTaskList](docs/PaginatedGitHubPullTaskList.md)
+ - [PaginatedGitHubPullTaskStepList](docs/PaginatedGitHubPullTaskStepList.md)
  - [PaginatedIntegrationExplorerList](docs/PaginatedIntegrationExplorerList.md)
  - [PaginatedInvitationList](docs/PaginatedInvitationList.md)
  - [PaginatedMembershipList](docs/PaginatedMembershipList.md)
@@ -214,6 +240,7 @@ Class | Method | HTTP request | Description
  - [PaginatedProjectList](docs/PaginatedProjectList.md)
  - [PaginatedServiceAccountList](docs/PaginatedServiceAccountList.md)
  - [PaginatedTagList](docs/PaginatedTagList.md)
+ - [PaginatedTaskStepList](docs/PaginatedTaskStepList.md)
  - [PaginatedTemplateList](docs/PaginatedTemplateList.md)
  - [PaginatedUserList](docs/PaginatedUserList.md)
  - [PaginatedValueList](docs/PaginatedValueList.md)
@@ -235,6 +262,7 @@ Class | Method | HTTP request | Description
  - [PatchedAwsPull](docs/PatchedAwsPull.md)
  - [PatchedAwsPushUpdate](docs/PatchedAwsPushUpdate.md)
  - [PatchedEnvironment](docs/PatchedEnvironment.md)
+ - [PatchedGitHubPull](docs/PatchedGitHubPull.md)
  - [PatchedInvitation](docs/PatchedInvitation.md)
  - [PatchedMembership](docs/PatchedMembership.md)
  - [PatchedOrganization](docs/PatchedOrganization.md)
@@ -259,6 +287,7 @@ Class | Method | HTTP request | Description
  - [TagCreate](docs/TagCreate.md)
  - [TagReadUsage](docs/TagReadUsage.md)
  - [TagUpdate](docs/TagUpdate.md)
+ - [TaskStep](docs/TaskStep.md)
  - [Template](docs/Template.md)
  - [TemplateCreate](docs/TemplateCreate.md)
  - [TemplateLookupError](docs/TemplateLookupError.md)

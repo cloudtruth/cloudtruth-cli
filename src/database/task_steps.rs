@@ -1,6 +1,6 @@
-use cloudtruth_restapi::models::{AwsPullTaskStep, AwsPushTaskStep};
+use cloudtruth_restapi::models::{AwsPullTaskStep, AwsPushTaskStep, TaskStep};
 
-pub struct TaskStep {
+pub struct TaskStepDetails {
     pub url: String,
     pub id: String,
     pub provider: String,
@@ -17,7 +17,7 @@ pub struct TaskStep {
     pub modified_at: String,
 }
 
-impl TaskStep {
+impl TaskStepDetails {
     pub fn get_property(&self, property_name: &str) -> String {
         match property_name {
             "id" => self.id.clone(),
@@ -45,7 +45,7 @@ impl TaskStep {
     }
 }
 
-impl From<&AwsPushTaskStep> for TaskStep {
+impl From<&AwsPushTaskStep> for TaskStepDetails {
     fn from(api: &AwsPushTaskStep) -> Self {
         let detail = if api.success {
             api.success_detail.clone().unwrap_or_default()
@@ -69,7 +69,7 @@ impl From<&AwsPushTaskStep> for TaskStep {
     }
 }
 
-impl From<&AwsPullTaskStep> for TaskStep {
+impl From<&AwsPullTaskStep> for TaskStepDetails {
     fn from(api: &AwsPullTaskStep) -> Self {
         let detail = if api.success {
             api.success_detail.clone().unwrap_or_default()
@@ -80,6 +80,30 @@ impl From<&AwsPullTaskStep> for TaskStep {
             url: api.url.clone(),
             id: api.id.clone(),
             provider: "aws".to_string(),
+            success: api.success,
+            detail,
+            task_name: "".to_string(), // to be filled in later
+            project_name: api.project_name.clone().unwrap_or_default(),
+            environment_name: api.environment_name.clone().unwrap_or_default(),
+            parameter_name: api.parameter_name.clone().unwrap_or_default(),
+            venue_name: api.venue_name.clone().unwrap_or_default(),
+            created_at: api.created_at.clone(),
+            modified_at: api.modified_at.clone(),
+        }
+    }
+}
+
+impl From<&TaskStep> for TaskStepDetails {
+    fn from(api: &TaskStep) -> Self {
+        let detail = if api.success {
+            api.success_detail.clone().unwrap_or_default()
+        } else {
+            api.error_detail.clone().unwrap_or_default()
+        };
+        Self {
+            url: api.url.clone(),
+            id: api.id.clone(),
+            provider: "".to_string(), // to be filled in later?
             success: api.success,
             detail,
             task_name: "".to_string(), // to be filled in later

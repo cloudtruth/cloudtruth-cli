@@ -439,14 +439,14 @@ pub fn environments_partial_update(
     }
 }
 
-/// The complete history of push operations that this environment was involved in.
+/// The push operations that this environment was involved in.
 pub fn environments_pushes_list(
     configuration: &configuration::Configuration,
     environment_pk: &str,
     ordering: Option<&str>,
     page: Option<i32>,
     page_size: Option<i32>,
-) -> Result<crate::models::PaginatedAwsPushTaskStepList, Error<EnvironmentsPushesListError>> {
+) -> Result<crate::models::PaginatedTaskStepList, Error<EnvironmentsPushesListError>> {
     let local_var_configuration = configuration;
 
     let local_var_client = &local_var_configuration.client;

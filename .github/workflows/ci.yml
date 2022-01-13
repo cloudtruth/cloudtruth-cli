@@ -23,11 +23,16 @@ env:
   CLOUDTRUTH_TEST_BROKEN_PARAM3: param3
   CLOUDTRUTH_TEST_BROKEN_PARAM4: param4
   CLOUDTRUTH_TEST_BROKEN_VALUE1: value1
-  CLOUDTRUTH_TEST_BROKEN_FQN2: github://rickporter-tuono/hello-world/master/README.md
-  CLOUDTRUTH_TEST_BROKEN_FQN3: github://rickporter-tuono/cloudtruth_test/main/README.md
+  CLOUDTRUTH_TEST_BROKEN_VALUE2: King
+  CLOUDTRUTH_TEST_BROKEN_VALUE3: voluptas
+  CLOUDTRUTH_TEST_BROKEN_JMES2: speicla.beef_brocolli
+  CLOUDTRUTH_TEST_BROKEN_JMES3: numquam.doloremque
+  CLOUDTRUTH_TEST_BROKEN_FQN2: github://rickporter-tuono/hello-world/master/jade.yml
+  CLOUDTRUTH_TEST_BROKEN_FQN3: github://rickporter-tuono/cloudtruth_test/trimmed/more_config/anotherconfig.yaml
 
   CLOUDTRUTH_TEST_EXPLORE_FQN: github://rickporter-tuono/cloudtruth_test/main/short.yaml
   CLOUDTRUTH_TEST_EXPLORE_JMES: speicla.POrk_Egg_Foo_Young
+  CLOUDTRUTH_TEST_EXPLORE_VALUE: Healey
 
   CLOUDTRUTH_TEST_PARAMETERS_FQN: github://rickporter-tuono/cloudtruth_test/my-branch/short.yaml
   CLOUDTRUTH_TEST_PARAMETERS_JMES: speicla.POrk_Egg_Foo_Young

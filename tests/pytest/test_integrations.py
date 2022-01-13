@@ -17,8 +17,12 @@ CT_BROKEN_PARAM2 = "CLOUDTRUTH_TEST_BROKEN_PARAM2"
 CT_BROKEN_PARAM3 = "CLOUDTRUTH_TEST_BROKEN_PARAM3"
 CT_BROKEN_PARAM4 = "CLOUDTRUTH_TEST_BROKEN_PARAM4"
 CT_BROKEN_VALUE1 = "CLOUDTRUTH_TEST_BROKEN_VALUE1"
+CT_BROKEN_VALUE2 = "CLOUDTRUTH_TEST_BROKEN_VALUE2"
+CT_BROKEN_VALUE3 = "CLOUDTRUTH_TEST_BROKEN_VALUE3"
 CT_BROKEN_FQN2 = "CLOUDTRUTH_TEST_BROKEN_FQN2"
 CT_BROKEN_FQN3 = "CLOUDTRUTH_TEST_BROKEN_FQN3"
+CT_BROKEN_JMES2 = "CLOUDTRUTH_TEST_BROKEN_JMES2"
+CT_BROKEN_JMES3 = "CLOUDTRUTH_TEST_BROKEN_JMES3"
 CT_BROKEN_RUN = [
     CT_BROKEN_PROJ,
     CT_BROKEN_TEMP,
@@ -27,15 +31,21 @@ CT_BROKEN_RUN = [
     CT_BROKEN_PARAM3,
     CT_BROKEN_PARAM4,
     CT_BROKEN_VALUE1,
+    CT_BROKEN_VALUE2,
+    CT_BROKEN_VALUE3,
     CT_BROKEN_FQN2,
     CT_BROKEN_FQN3,
+    CT_BROKEN_JMES2,
+    CT_BROKEN_JMES3,
 ]
 
 CT_EXP_FQN = "CLOUDTRUTH_TEST_EXPLORE_FQN"
 CT_EXP_JMES = "CLOUDTRUTH_TEST_EXPLORE_JMES"
+CT_EXP_VALUE = "CLOUDTRUTH_TEST_EXPLORE_VALUE"
 CT_EXPLORE_RUN = [
     CT_EXP_FQN,
     CT_EXP_JMES,
+    CT_EXP_VALUE,
 ]
 
 CT_PARAM_FQN = "CLOUDTRUTH_TEST_PARAMETERS_FQN"
@@ -94,6 +104,7 @@ class TestIntegrations(TestCase):
 
         fqn = os.environ.get(CT_EXP_FQN)
         jmes = os.environ.get(CT_EXP_JMES)
+        value = os.environ.get(CT_EXP_VALUE)
         url = urlparse(fqn)
         base_fqn = f"{url.scheme}://{url.netloc}"
 
@@ -139,6 +150,11 @@ class TestIntegrations(TestCase):
         # cannot verify output, but the --raw option should be successful (and nothing in stderr)
         result = self.run_cli(cmd_env, explore_cmd + f"'{explore_path}' --raw")
         self.assertResultSuccess(result)
+
+        # one more time with JMES path, showing the value
+        result = self.run_cli(cmd_env, explore_cmd + f"'{fqn}' -j '{jmes}' --raw")
+        self.assertResultSuccess(result)
+        self.assertIn(value, result.out())
 
     @unittest.skipIf(missing_any(CT_PARAM_RUN), "Need all CT_PARAM_RUN parameters")
     def test_integration_parameters(self):
@@ -273,9 +289,13 @@ PARAMETER_2 = PARAM2
         value1 = os.environ.get(CT_BROKEN_VALUE1)
         param2 = os.environ.get(CT_BROKEN_PARAM2)
         fqn2 = os.environ.get(CT_BROKEN_FQN2)
+        jmes2 = os.environ.get(CT_BROKEN_JMES2)
+        value2 = os.environ.get(CT_BROKEN_VALUE2)
         param3 = os.environ.get(CT_BROKEN_PARAM3)
         fqn3 = os.environ.get(CT_BROKEN_FQN3)
-        param4 = os.environ.get(CT_BROKEN_PARAM4)
+        jmes3 = os.environ.get(CT_BROKEN_JMES3)
+        value3 = os.environ.get(CT_BROKEN_VALUE3)
+        param4 = self.make_name(os.environ.get(CT_BROKEN_PARAM4))
 
         # make sure everything exists in the "correct" state
         proj_cmd = base_cmd + f"--project {proj_name} "
@@ -286,25 +306,22 @@ PARAMETER_2 = PARAM2
         self.assertResultSuccess(result)
         self.assertIn(temp_name, result.out())
 
-        missing_fqn2 = f"The external content of `{fqn2}` is not present"
-        missing_param2 = f"{param2}: {missing_fqn2}"
+        ##########################
+        # verify the FQNs are not reachable
+        result = self.run_cli(cmd_env, base_cmd + f"int exp '{fqn2}' -j '{jmes2}' -r")
+        self.assertResultWarning(result, f"Nothing found for FQN '{fqn2}'")
+        result = self.run_cli(cmd_env, base_cmd + f"int exp '{fqn3}' -j '{jmes3}' -r")
+        self.assertResultWarning(result, f"Nothing found for FQN '{fqn3}'")
 
         ##########################
         # parameter checks
-        result = self.run_cli(cmd_env, proj_cmd + "param list")
-        self.assertResultSuccess(result)
-        self.assertIn(param1, result.out())
-        self.assertIn(param2, result.out())
-        self.assertIn(param3, result.out())
-
-        # parameter list should yield warnings, but still show everything
-        result = self.run_cli(cmd_env, proj_cmd + "param list -sf csv")
-        self.assertResultWarning(result, missing_param2)
-        self.assertIn(f"{param1},{value1},", result.out())
-        self.assertIn(f"{param2},,", result.out())  # empty value reported
-        self.assertIn(f"{param3},", result.out())  # do not worry about returned value
-        self.assertNotIn(param3, result.err())
-        self.assertNotIn(fqn3, result.err())
+        entries = self.get_cli_entries(cmd_env, proj_cmd + "param list -vsf json", "parameter")
+        entry = find_by_prop(entries, PROP_NAME, param1)[0]
+        self.assertEqual(entry.get(PROP_VALUE), value1)
+        entry = find_by_prop(entries, PROP_NAME, param2)[0]
+        self.assertEqual(entry.get(PROP_VALUE), value2)
+        entry = find_by_prop(entries, PROP_NAME, param3)[0]
+        self.assertEqual(entry.get(PROP_VALUE), value3)
 
         # list external parameters with no values
         result = self.run_cli(cmd_env, proj_cmd + "param list --external")
@@ -314,49 +331,72 @@ PARAMETER_2 = PARAM2
 
         # list external parameters with FQN/JMES
         result = self.run_cli(cmd_env, proj_cmd + "param list --external -vf csv")
-        self.assertResultWarning(result, missing_param2)
-        self.assertIn(f"{param2},{fqn2}", result.out())
-        self.assertIn(f"{param3},{fqn3}", result.out())
+        self.assertResultSuccess(result)
+        self.assertIn(f"{param2},{fqn2},{jmes2}", result.out())
+        self.assertIn(f"{param3},{fqn3},{jmes3}", result.out())
 
         # getting the broken parameter yields an empty value, and a warning
         result = self.run_cli(cmd_env, proj_cmd + f"param get '{param2}'")
-        self.assertResultWarning(result, missing_fqn2)
-        self.assertEqual("\n", result.out())
+        self.assertResultSuccess(result)
+        self.assertIn(value2, result.out())
+
+        result = self.run_cli(cmd_env, proj_cmd + f"param get '{param3}' -d")
+        self.assertResultSuccess(result)
+        self.assertIn(f"Value: {value3}", result.out())
+        self.assertIn(f"FQN: {fqn3}", result.out())
+        self.assertIn(f"JMES-path: {jmes3}", result.out())
 
         # export will fail, and should provide details about what failed
         result = self.run_cli(cmd_env, proj_cmd + "param export docker")
-        self.assertResultError(result, missing_param2)
+        self.assertResultSuccess(result)
+        self.assertIn(f"{param1.upper()}={value1}", result.out())
+        self.assertIn(f"{param2.upper()}={value2}", result.out())
+        self.assertIn(f"{param3.upper()}={value3}", result.out())
 
-        # see that adding param4 with a reference to param2 is not allowed
+        # see that adding param4 with a reference to param2 is allowed -- does not rely on evaluation
         value4 = f"{{{{{param2}}}}}"
         result = self.run_cli(cmd_env, proj_cmd + f"param set '{param4}' -v '{value4}' -e true")
-        self.assertResultError(result, missing_param2)
+        self.assertResultSuccess(result)
 
         result = self.run_cli(cmd_env, proj_cmd + "param list -vsf csv")
-        self.assertResultWarning(result, missing_param2)
-        self.assertNotIn(param4, result.out())
+        self.assertResultSuccess(result)
+        self.assertIn(f"{param4},{value2}", result.out())
+
+        result = self.run_cli(cmd_env, proj_cmd + f"param del '{param4}' -y")
+        self.assertResultSuccess(result, "Removed")
+
+        # cannot assign with broken FQN
+        result = self.run_cli(cmd_env, proj_cmd + f"param set '{param4}' -f '{fqn2}' -j '{jmes2}'")
+        self.assertResultError(result, f"The external content of `{fqn2}` is not present")
 
         ##########################
-        # template checks
-        filename = "preview.txt"
+        # template checks -- still works using "old" values
 
-        result = self.run_cli(cmd_env, proj_cmd + f"template get '{temp_name}'")
-        self.assertResultError(result, missing_param2)
-
-        result = self.run_cli(cmd_env, proj_cmd + f"template validate '{temp_name}'")
-        self.assertResultError(result, missing_param2)
-
-        # copy current body into a file
+        # make sure the template contains references (not iron-clad, but worth something)
         result = self.run_cli(cmd_env, proj_cmd + f"template get '{temp_name}' --raw")
         self.assertResultSuccess(result)
-        # make sure the template has the references
-        self.write_file(filename, result.out())
         self.assertIn(param1, result.out())
         self.assertIn(param2, result.out())
         self.assertIn(param3, result.out())
 
+        # copy current body into a file
+        filename = "preview.txt"
+        self.write_file(filename, result.out())
+
+        result = self.run_cli(cmd_env, proj_cmd + f"template get '{temp_name}'")
+        self.assertResultSuccess(result)
+        self.assertIn(value1, result.out())
+        self.assertIn(value2, result.out())
+        self.assertIn(value3, result.out())
+
+        result = self.run_cli(cmd_env, proj_cmd + f"template validate '{temp_name}'")
+        self.assertResultSuccess(result)
+
         result = self.run_cli(cmd_env, proj_cmd + f"template preview '{filename}'")
-        self.assertResultError(result, missing_param2)
+        self.assertResultSuccess(result)
+        self.assertIn(value1, result.out())
+        self.assertIn(value2, result.out())
+        self.assertIn(value3, result.out())
 
         # NOTE: do NOT delete the project!!!
         self.delete_file(filename)

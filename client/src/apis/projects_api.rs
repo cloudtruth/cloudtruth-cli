@@ -832,7 +832,6 @@ pub fn projects_parameters_list(
     ordering: Option<&str>,
     page: Option<i32>,
     page_size: Option<i32>,
-    partial_success: Option<bool>,
     secret: Option<bool>,
     tag: Option<&str>,
     values: Option<bool>,
@@ -881,10 +880,6 @@ pub fn projects_parameters_list(
     if let Some(ref local_var_str) = page_size {
         local_var_req_builder =
             local_var_req_builder.query(&[("page_size", &local_var_str.to_string())]);
-    }
-    if let Some(ref local_var_str) = partial_success {
-        local_var_req_builder =
-            local_var_req_builder.query(&[("partial_success", &local_var_str.to_string())]);
     }
     if let Some(ref local_var_str) = secret {
         local_var_req_builder =
@@ -1039,7 +1034,7 @@ pub fn projects_parameters_partial_update(
     }
 }
 
-/// The complete history of push operations that this parameter was involved in.
+/// The push operations that this parameter was involved in.
 pub fn projects_parameters_pushes_list(
     configuration: &configuration::Configuration,
     parameter_pk: &str,
@@ -1049,7 +1044,7 @@ pub fn projects_parameters_pushes_list(
     page: Option<i32>,
     page_size: Option<i32>,
     tag: Option<&str>,
-) -> Result<crate::models::PaginatedAwsPushTaskStepList, Error<ProjectsParametersPushesListError>> {
+) -> Result<crate::models::PaginatedTaskStepList, Error<ProjectsParametersPushesListError>> {
     let local_var_configuration = configuration;
 
     let local_var_client = &local_var_configuration.client;
@@ -1149,7 +1144,6 @@ pub fn projects_parameters_retrieve(
     environment: Option<&str>,
     evaluate: Option<bool>,
     mask_secrets: Option<bool>,
-    partial_success: Option<bool>,
     tag: Option<&str>,
     values: Option<bool>,
     wrap: Option<bool>,
@@ -1182,10 +1176,6 @@ pub fn projects_parameters_retrieve(
     if let Some(ref local_var_str) = mask_secrets {
         local_var_req_builder =
             local_var_req_builder.query(&[("mask_secrets", &local_var_str.to_string())]);
-    }
-    if let Some(ref local_var_str) = partial_success {
-        local_var_req_builder =
-            local_var_req_builder.query(&[("partial_success", &local_var_str.to_string())]);
     }
     if let Some(ref local_var_str) = tag {
         local_var_req_builder = local_var_req_builder.query(&[("tag", &local_var_str.to_string())]);
@@ -2190,7 +2180,6 @@ pub fn projects_parameters_values_list(
     mask_secrets: Option<bool>,
     page: Option<i32>,
     page_size: Option<i32>,
-    partial_success: Option<bool>,
     tag: Option<&str>,
     wrap: Option<bool>,
 ) -> Result<crate::models::PaginatedValueList, Error<ProjectsParametersValuesListError>> {
@@ -2238,10 +2227,6 @@ pub fn projects_parameters_values_list(
     if let Some(ref local_var_str) = page_size {
         local_var_req_builder =
             local_var_req_builder.query(&[("page_size", &local_var_str.to_string())]);
-    }
-    if let Some(ref local_var_str) = partial_success {
-        local_var_req_builder =
-            local_var_req_builder.query(&[("partial_success", &local_var_str.to_string())]);
     }
     if let Some(ref local_var_str) = tag {
         local_var_req_builder = local_var_req_builder.query(&[("tag", &local_var_str.to_string())]);
@@ -2412,7 +2397,6 @@ pub fn projects_parameters_values_retrieve(
     exclude: Option<&str>,
     include: Option<&str>,
     mask_secrets: Option<bool>,
-    partial_success: Option<bool>,
     tag: Option<&str>,
     wrap: Option<bool>,
 ) -> Result<crate::models::Value, Error<ProjectsParametersValuesRetrieveError>> {
@@ -2449,10 +2433,6 @@ pub fn projects_parameters_values_retrieve(
     if let Some(ref local_var_str) = mask_secrets {
         local_var_req_builder =
             local_var_req_builder.query(&[("mask_secrets", &local_var_str.to_string())]);
-    }
-    if let Some(ref local_var_str) = partial_success {
-        local_var_req_builder =
-            local_var_req_builder.query(&[("partial_success", &local_var_str.to_string())]);
     }
     if let Some(ref local_var_str) = tag {
         local_var_req_builder = local_var_req_builder.query(&[("tag", &local_var_str.to_string())]);

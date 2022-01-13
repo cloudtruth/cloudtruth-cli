@@ -54,6 +54,7 @@ pub enum IntegrationsAwsPullsCreateError {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum IntegrationsAwsPullsDestroyError {
+    Status403(),
     UnknownValue(serde_json::Value),
 }
 
@@ -241,6 +242,69 @@ pub enum IntegrationsGithubDestroyError {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum IntegrationsGithubListError {
+    UnknownValue(serde_json::Value),
+}
+
+/// struct for typed errors of method [`integrations_github_pulls_list`]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum IntegrationsGithubPullsListError {
+    UnknownValue(serde_json::Value),
+}
+
+/// struct for typed errors of method [`integrations_github_pulls_partial_update`]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum IntegrationsGithubPullsPartialUpdateError {
+    UnknownValue(serde_json::Value),
+}
+
+/// struct for typed errors of method [`integrations_github_pulls_retrieve`]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum IntegrationsGithubPullsRetrieveError {
+    UnknownValue(serde_json::Value),
+}
+
+/// struct for typed errors of method [`integrations_github_pulls_sync_create`]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum IntegrationsGithubPullsSyncCreateError {
+    UnknownValue(serde_json::Value),
+}
+
+/// struct for typed errors of method [`integrations_github_pulls_tasks_list`]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum IntegrationsGithubPullsTasksListError {
+    UnknownValue(serde_json::Value),
+}
+
+/// struct for typed errors of method [`integrations_github_pulls_tasks_retrieve`]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum IntegrationsGithubPullsTasksRetrieveError {
+    UnknownValue(serde_json::Value),
+}
+
+/// struct for typed errors of method [`integrations_github_pulls_tasks_steps_list`]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum IntegrationsGithubPullsTasksStepsListError {
+    UnknownValue(serde_json::Value),
+}
+
+/// struct for typed errors of method [`integrations_github_pulls_tasks_steps_retrieve`]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum IntegrationsGithubPullsTasksStepsRetrieveError {
+    UnknownValue(serde_json::Value),
+}
+
+/// struct for typed errors of method [`integrations_github_pulls_update`]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum IntegrationsGithubPullsUpdateError {
     UnknownValue(serde_json::Value),
 }
 
@@ -995,7 +1059,7 @@ pub fn integrations_aws_pulls_retrieve(
     }
 }
 
-/// Enqueue a pull synchronization task.
+/// Enqueue a pull synchronization task for mapped external values accessible with this integration.
 pub fn integrations_aws_pulls_sync_create(
     configuration: &configuration::Configuration,
     awsintegration_pk: &str,
@@ -3022,6 +3086,832 @@ pub fn integrations_github_list(
             .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
         let local_var_entity: Option<IntegrationsGithubListError> =
+            serde_json::from_str(&local_var_content).ok();
+        let local_var_error = ResponseContent {
+            status: local_var_status,
+            content: local_var_content,
+            entity: local_var_entity,
+        };
+        if local_var_configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
+        Err(Error::ResponseError(local_var_error))
+    }
+}
+
+pub fn integrations_github_pulls_list(
+    configuration: &configuration::Configuration,
+    githubintegration_pk: &str,
+    description__icontains: Option<&str>,
+    name: Option<&str>,
+    name__icontains: Option<&str>,
+    ordering: Option<&str>,
+    page: Option<i32>,
+    page_size: Option<i32>,
+) -> Result<crate::models::PaginatedGitHubPullList, Error<IntegrationsGithubPullsListError>> {
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
+
+    let local_var_uri_str = format!(
+        "{}/api/v1/integrations/github/{githubintegration_pk}/pulls/",
+        local_var_configuration.base_path,
+        githubintegration_pk = crate::apis::urlencode(githubintegration_pk)
+    );
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+
+    if let Some(ref local_var_str) = description__icontains {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("description__icontains", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = name {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("name", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = name__icontains {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("name__icontains", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = ordering {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("ordering", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = page {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("page", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = page_size {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("page_size", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
+    }
+
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
+        let local_var_key = local_var_apikey.key.clone();
+        let local_var_value = match local_var_apikey.prefix {
+            Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
+            None => local_var_key,
+        };
+        local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
+    };
+
+    let local_var_req = local_var_req_builder.build()?;
+    let method = local_var_req.method().clone();
+    let start = Instant::now();
+    let mut local_var_resp = local_var_client.execute(local_var_req)?;
+    if local_var_configuration.rest_debug {
+        let duration = start.elapsed();
+        println!(
+            "URL {} {} elapsed: {:?}",
+            method,
+            &local_var_resp.url(),
+            duration
+        );
+    }
+
+    let local_var_status = local_var_resp.status();
+    let local_var_content = local_var_resp.text()?;
+
+    if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if local_var_configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
+    } else {
+        let local_var_entity: Option<IntegrationsGithubPullsListError> =
+            serde_json::from_str(&local_var_content).ok();
+        let local_var_error = ResponseContent {
+            status: local_var_status,
+            content: local_var_content,
+            entity: local_var_entity,
+        };
+        if local_var_configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
+        Err(Error::ResponseError(local_var_error))
+    }
+}
+
+pub fn integrations_github_pulls_partial_update(
+    configuration: &configuration::Configuration,
+    githubintegration_pk: &str,
+    id: &str,
+    patched_git_hub_pull: Option<crate::models::PatchedGitHubPull>,
+) -> Result<crate::models::GitHubPull, Error<IntegrationsGithubPullsPartialUpdateError>> {
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
+
+    let local_var_uri_str = format!(
+        "{}/api/v1/integrations/github/{githubintegration_pk}/pulls/{id}/",
+        local_var_configuration.base_path,
+        githubintegration_pk = crate::apis::urlencode(githubintegration_pk),
+        id = crate::apis::urlencode(id)
+    );
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::PATCH, local_var_uri_str.as_str());
+
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
+    }
+
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
+        let local_var_key = local_var_apikey.key.clone();
+        let local_var_value = match local_var_apikey.prefix {
+            Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
+            None => local_var_key,
+        };
+        local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
+    };
+    local_var_req_builder = local_var_req_builder.json(&patched_git_hub_pull);
+
+    let local_var_req = local_var_req_builder.build()?;
+    let method = local_var_req.method().clone();
+    let start = Instant::now();
+    let mut local_var_resp = local_var_client.execute(local_var_req)?;
+    if local_var_configuration.rest_debug {
+        let duration = start.elapsed();
+        println!(
+            "URL {} {} elapsed: {:?}",
+            method,
+            &local_var_resp.url(),
+            duration
+        );
+    }
+
+    let local_var_status = local_var_resp.status();
+    let local_var_content = local_var_resp.text()?;
+
+    if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if local_var_configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
+    } else {
+        let local_var_entity: Option<IntegrationsGithubPullsPartialUpdateError> =
+            serde_json::from_str(&local_var_content).ok();
+        let local_var_error = ResponseContent {
+            status: local_var_status,
+            content: local_var_content,
+            entity: local_var_entity,
+        };
+        if local_var_configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
+        Err(Error::ResponseError(local_var_error))
+    }
+}
+
+pub fn integrations_github_pulls_retrieve(
+    configuration: &configuration::Configuration,
+    githubintegration_pk: &str,
+    id: &str,
+) -> Result<crate::models::GitHubPull, Error<IntegrationsGithubPullsRetrieveError>> {
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
+
+    let local_var_uri_str = format!(
+        "{}/api/v1/integrations/github/{githubintegration_pk}/pulls/{id}/",
+        local_var_configuration.base_path,
+        githubintegration_pk = crate::apis::urlencode(githubintegration_pk),
+        id = crate::apis::urlencode(id)
+    );
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
+    }
+
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
+        let local_var_key = local_var_apikey.key.clone();
+        let local_var_value = match local_var_apikey.prefix {
+            Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
+            None => local_var_key,
+        };
+        local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
+    };
+
+    let local_var_req = local_var_req_builder.build()?;
+    let method = local_var_req.method().clone();
+    let start = Instant::now();
+    let mut local_var_resp = local_var_client.execute(local_var_req)?;
+    if local_var_configuration.rest_debug {
+        let duration = start.elapsed();
+        println!(
+            "URL {} {} elapsed: {:?}",
+            method,
+            &local_var_resp.url(),
+            duration
+        );
+    }
+
+    let local_var_status = local_var_resp.status();
+    let local_var_content = local_var_resp.text()?;
+
+    if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if local_var_configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
+    } else {
+        let local_var_entity: Option<IntegrationsGithubPullsRetrieveError> =
+            serde_json::from_str(&local_var_content).ok();
+        let local_var_error = ResponseContent {
+            status: local_var_status,
+            content: local_var_content,
+            entity: local_var_entity,
+        };
+        if local_var_configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
+        Err(Error::ResponseError(local_var_error))
+    }
+}
+
+/// Enqueue a pull synchronization task for mapped external values accessible with this integration.
+pub fn integrations_github_pulls_sync_create(
+    configuration: &configuration::Configuration,
+    githubintegration_pk: &str,
+    id: &str,
+    git_hub_pull: crate::models::GitHubPull,
+) -> Result<(), Error<IntegrationsGithubPullsSyncCreateError>> {
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
+
+    let local_var_uri_str = format!(
+        "{}/api/v1/integrations/github/{githubintegration_pk}/pulls/{id}/sync/",
+        local_var_configuration.base_path,
+        githubintegration_pk = crate::apis::urlencode(githubintegration_pk),
+        id = crate::apis::urlencode(id)
+    );
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
+
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
+    }
+
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
+        let local_var_key = local_var_apikey.key.clone();
+        let local_var_value = match local_var_apikey.prefix {
+            Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
+            None => local_var_key,
+        };
+        local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
+    };
+    local_var_req_builder = local_var_req_builder.json(&git_hub_pull);
+
+    let local_var_req = local_var_req_builder.build()?;
+    let method = local_var_req.method().clone();
+    let start = Instant::now();
+    let mut local_var_resp = local_var_client.execute(local_var_req)?;
+    if local_var_configuration.rest_debug {
+        let duration = start.elapsed();
+        println!(
+            "URL {} {} elapsed: {:?}",
+            method,
+            &local_var_resp.url(),
+            duration
+        );
+    }
+
+    let local_var_status = local_var_resp.status();
+    let local_var_content = local_var_resp.text()?;
+
+    if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if local_var_configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
+        Ok(())
+    } else {
+        let local_var_entity: Option<IntegrationsGithubPullsSyncCreateError> =
+            serde_json::from_str(&local_var_content).ok();
+        let local_var_error = ResponseContent {
+            status: local_var_status,
+            content: local_var_content,
+            entity: local_var_entity,
+        };
+        if local_var_configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
+        Err(Error::ResponseError(local_var_error))
+    }
+}
+
+pub fn integrations_github_pulls_tasks_list(
+    configuration: &configuration::Configuration,
+    githubintegration_pk: &str,
+    githubpull_pk: &str,
+    modified_at: Option<String>,
+    modified_at__gte: Option<String>,
+    modified_at__lte: Option<String>,
+    ordering: Option<&str>,
+    page: Option<i32>,
+    page_size: Option<i32>,
+    state: Option<&str>,
+) -> Result<crate::models::PaginatedGitHubPullTaskList, Error<IntegrationsGithubPullsTasksListError>>
+{
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
+
+    let local_var_uri_str = format!(
+        "{}/api/v1/integrations/github/{githubintegration_pk}/pulls/{githubpull_pk}/tasks/",
+        local_var_configuration.base_path,
+        githubintegration_pk = crate::apis::urlencode(githubintegration_pk),
+        githubpull_pk = crate::apis::urlencode(githubpull_pk)
+    );
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+
+    if let Some(ref local_var_str) = modified_at {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("modified_at", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = modified_at__gte {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("modified_at__gte", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = modified_at__lte {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("modified_at__lte", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = ordering {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("ordering", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = page {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("page", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = page_size {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("page_size", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = state {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("state", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
+    }
+
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
+        let local_var_key = local_var_apikey.key.clone();
+        let local_var_value = match local_var_apikey.prefix {
+            Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
+            None => local_var_key,
+        };
+        local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
+    };
+
+    let local_var_req = local_var_req_builder.build()?;
+    let method = local_var_req.method().clone();
+    let start = Instant::now();
+    let mut local_var_resp = local_var_client.execute(local_var_req)?;
+    if local_var_configuration.rest_debug {
+        let duration = start.elapsed();
+        println!(
+            "URL {} {} elapsed: {:?}",
+            method,
+            &local_var_resp.url(),
+            duration
+        );
+    }
+
+    let local_var_status = local_var_resp.status();
+    let local_var_content = local_var_resp.text()?;
+
+    if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if local_var_configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
+    } else {
+        let local_var_entity: Option<IntegrationsGithubPullsTasksListError> =
+            serde_json::from_str(&local_var_content).ok();
+        let local_var_error = ResponseContent {
+            status: local_var_status,
+            content: local_var_content,
+            entity: local_var_entity,
+        };
+        if local_var_configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
+        Err(Error::ResponseError(local_var_error))
+    }
+}
+
+pub fn integrations_github_pulls_tasks_retrieve(
+    configuration: &configuration::Configuration,
+    githubintegration_pk: &str,
+    githubpull_pk: &str,
+    id: &str,
+) -> Result<crate::models::GitHubPullTask, Error<IntegrationsGithubPullsTasksRetrieveError>> {
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
+
+    let local_var_uri_str = format!(
+        "{}/api/v1/integrations/github/{githubintegration_pk}/pulls/{githubpull_pk}/tasks/{id}/",
+        local_var_configuration.base_path,
+        githubintegration_pk = crate::apis::urlencode(githubintegration_pk),
+        githubpull_pk = crate::apis::urlencode(githubpull_pk),
+        id = crate::apis::urlencode(id)
+    );
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
+    }
+
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
+        let local_var_key = local_var_apikey.key.clone();
+        let local_var_value = match local_var_apikey.prefix {
+            Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
+            None => local_var_key,
+        };
+        local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
+    };
+
+    let local_var_req = local_var_req_builder.build()?;
+    let method = local_var_req.method().clone();
+    let start = Instant::now();
+    let mut local_var_resp = local_var_client.execute(local_var_req)?;
+    if local_var_configuration.rest_debug {
+        let duration = start.elapsed();
+        println!(
+            "URL {} {} elapsed: {:?}",
+            method,
+            &local_var_resp.url(),
+            duration
+        );
+    }
+
+    let local_var_status = local_var_resp.status();
+    let local_var_content = local_var_resp.text()?;
+
+    if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if local_var_configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
+    } else {
+        let local_var_entity: Option<IntegrationsGithubPullsTasksRetrieveError> =
+            serde_json::from_str(&local_var_content).ok();
+        let local_var_error = ResponseContent {
+            status: local_var_status,
+            content: local_var_content,
+            entity: local_var_entity,
+        };
+        if local_var_configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
+        Err(Error::ResponseError(local_var_error))
+    }
+}
+
+pub fn integrations_github_pulls_tasks_steps_list(
+    configuration: &configuration::Configuration,
+    githubintegration_pk: &str,
+    githubpull_pk: &str,
+    githubpulltask_pk: &str,
+    fqn: Option<&str>,
+    modified_at: Option<String>,
+    modified_at__gte: Option<String>,
+    modified_at__lte: Option<String>,
+    operation: Option<&str>,
+    ordering: Option<&str>,
+    page: Option<i32>,
+    page_size: Option<i32>,
+    success: Option<bool>,
+    venue_id: Option<&str>,
+    venue_id__icontains: Option<&str>,
+    venue_name: Option<&str>,
+    venue_name__icontains: Option<&str>,
+) -> Result<
+    crate::models::PaginatedGitHubPullTaskStepList,
+    Error<IntegrationsGithubPullsTasksStepsListError>,
+> {
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
+
+    let local_var_uri_str = format!("{}/api/v1/integrations/github/{githubintegration_pk}/pulls/{githubpull_pk}/tasks/{githubpulltask_pk}/steps/", local_var_configuration.base_path, githubintegration_pk=crate::apis::urlencode(githubintegration_pk), githubpull_pk=crate::apis::urlencode(githubpull_pk), githubpulltask_pk=crate::apis::urlencode(githubpulltask_pk));
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+
+    if let Some(ref local_var_str) = fqn {
+        local_var_req_builder = local_var_req_builder.query(&[("fqn", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = modified_at {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("modified_at", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = modified_at__gte {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("modified_at__gte", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = modified_at__lte {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("modified_at__lte", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = operation {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("operation", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = ordering {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("ordering", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = page {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("page", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = page_size {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("page_size", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = success {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("success", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = venue_id {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("venue_id", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = venue_id__icontains {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("venue_id__icontains", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = venue_name {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("venue_name", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = venue_name__icontains {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("venue_name__icontains", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
+    }
+
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
+        let local_var_key = local_var_apikey.key.clone();
+        let local_var_value = match local_var_apikey.prefix {
+            Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
+            None => local_var_key,
+        };
+        local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
+    };
+
+    let local_var_req = local_var_req_builder.build()?;
+    let method = local_var_req.method().clone();
+    let start = Instant::now();
+    let mut local_var_resp = local_var_client.execute(local_var_req)?;
+    if local_var_configuration.rest_debug {
+        let duration = start.elapsed();
+        println!(
+            "URL {} {} elapsed: {:?}",
+            method,
+            &local_var_resp.url(),
+            duration
+        );
+    }
+
+    let local_var_status = local_var_resp.status();
+    let local_var_content = local_var_resp.text()?;
+
+    if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if local_var_configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
+    } else {
+        let local_var_entity: Option<IntegrationsGithubPullsTasksStepsListError> =
+            serde_json::from_str(&local_var_content).ok();
+        let local_var_error = ResponseContent {
+            status: local_var_status,
+            content: local_var_content,
+            entity: local_var_entity,
+        };
+        if local_var_configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
+        Err(Error::ResponseError(local_var_error))
+    }
+}
+
+pub fn integrations_github_pulls_tasks_steps_retrieve(
+    configuration: &configuration::Configuration,
+    githubintegration_pk: &str,
+    githubpull_pk: &str,
+    githubpulltask_pk: &str,
+    id: &str,
+) -> Result<crate::models::GitHubPullTaskStep, Error<IntegrationsGithubPullsTasksStepsRetrieveError>>
+{
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
+
+    let local_var_uri_str = format!("{}/api/v1/integrations/github/{githubintegration_pk}/pulls/{githubpull_pk}/tasks/{githubpulltask_pk}/steps/{id}/", local_var_configuration.base_path, githubintegration_pk=crate::apis::urlencode(githubintegration_pk), githubpull_pk=crate::apis::urlencode(githubpull_pk), githubpulltask_pk=crate::apis::urlencode(githubpulltask_pk), id=crate::apis::urlencode(id));
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
+    }
+
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
+        let local_var_key = local_var_apikey.key.clone();
+        let local_var_value = match local_var_apikey.prefix {
+            Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
+            None => local_var_key,
+        };
+        local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
+    };
+
+    let local_var_req = local_var_req_builder.build()?;
+    let method = local_var_req.method().clone();
+    let start = Instant::now();
+    let mut local_var_resp = local_var_client.execute(local_var_req)?;
+    if local_var_configuration.rest_debug {
+        let duration = start.elapsed();
+        println!(
+            "URL {} {} elapsed: {:?}",
+            method,
+            &local_var_resp.url(),
+            duration
+        );
+    }
+
+    let local_var_status = local_var_resp.status();
+    let local_var_content = local_var_resp.text()?;
+
+    if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if local_var_configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
+    } else {
+        let local_var_entity: Option<IntegrationsGithubPullsTasksStepsRetrieveError> =
+            serde_json::from_str(&local_var_content).ok();
+        let local_var_error = ResponseContent {
+            status: local_var_status,
+            content: local_var_content,
+            entity: local_var_entity,
+        };
+        if local_var_configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
+        Err(Error::ResponseError(local_var_error))
+    }
+}
+
+pub fn integrations_github_pulls_update(
+    configuration: &configuration::Configuration,
+    githubintegration_pk: &str,
+    id: &str,
+    git_hub_pull: crate::models::GitHubPull,
+) -> Result<crate::models::GitHubPull, Error<IntegrationsGithubPullsUpdateError>> {
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
+
+    let local_var_uri_str = format!(
+        "{}/api/v1/integrations/github/{githubintegration_pk}/pulls/{id}/",
+        local_var_configuration.base_path,
+        githubintegration_pk = crate::apis::urlencode(githubintegration_pk),
+        id = crate::apis::urlencode(id)
+    );
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::PUT, local_var_uri_str.as_str());
+
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
+    }
+
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
+        let local_var_key = local_var_apikey.key.clone();
+        let local_var_value = match local_var_apikey.prefix {
+            Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
+            None => local_var_key,
+        };
+        local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
+    };
+    local_var_req_builder = local_var_req_builder.json(&git_hub_pull);
+
+    let local_var_req = local_var_req_builder.build()?;
+    let method = local_var_req.method().clone();
+    let start = Instant::now();
+    let mut local_var_resp = local_var_client.execute(local_var_req)?;
+    if local_var_configuration.rest_debug {
+        let duration = start.elapsed();
+        println!(
+            "URL {} {} elapsed: {:?}",
+            method,
+            &local_var_resp.url(),
+            duration
+        );
+    }
+
+    let local_var_status = local_var_resp.status();
+    let local_var_content = local_var_resp.text()?;
+
+    if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if local_var_configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
+    } else {
+        let local_var_entity: Option<IntegrationsGithubPullsUpdateError> =
             serde_json::from_str(&local_var_content).ok();
         let local_var_error = ResponseContent {
             status: local_var_status,

@@ -379,6 +379,35 @@
                 }
             }
         },
+        "/api/v1/backup/snapshot/": {
+            "post": {
+                "operationId": "backup_snapshot_create",
+                "summary": "Get a snapshot of all Projects with parameters",
+                "tags": [
+                    "backup"
+                ],
+                "security": [
+                    {
+                        "JWTAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BackupDataSnapshot"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
         "/api/v1/environments/": {
             "get": {
                 "operationId": "environments_list",
@@ -520,7 +549,7 @@
         "/api/v1/environments/{environment_pk}/pushes/": {
             "get": {
                 "operationId": "environments_pushes_list",
-                "description": "The complete history of push operations that this environment was involved in.",
+                "description": "The push operations that this environment was involved in.",
                 "summary": "List push operations.",
                 "parameters": [
                     {
@@ -576,7 +605,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/PaginatedAwsPushTaskStepList"
+                                    "$ref": "#/components/schemas/PaginatedTaskStepList"
                                 }
                             }
                         },
@@ -1876,7 +1905,7 @@
                         "schema": {
                             "type": "string",
                             "format": "uuid",
-                            "description": "The unique identifier for the push action task."
+                            "description": "The unique identifier for the task."
                         },
                         "required": true
                     }
@@ -2122,8 +2151,8 @@
                     }
                 ],
                 "responses": {
-                    "204": {
-                        "description": "No response body"
+                    "403": {
+                        "description": "Cannot destroy innate mapped pull of a data integration."
                     }
                 }
             }
@@ -2131,7 +2160,7 @@
         "/api/v1/integrations/aws/{awsintegration_pk}/pulls/{id}/sync/": {
             "post": {
                 "operationId": "integrations_aws_pulls_sync_create",
-                "description": "Enqueue a pull synchronization task.",
+                "description": "Enqueue a pull synchronization task for mapped external values accessible with this integration.",
                 "parameters": [
                     {
                         "in": "path",
@@ -2709,7 +2738,7 @@
                         "schema": {
                             "type": "string",
                             "format": "uuid",
-                            "description": "The unique identifier for the push action task."
+                            "description": "The unique identifier for the task."
                         },
                         "required": true
                     }
@@ -3433,6 +3462,742 @@
                             }
                         },
                         "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/integrations/github/{githubintegration_pk}/pulls/": {
+            "get": {
+                "operationId": "integrations_github_pulls_list",
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "description__icontains",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "path",
+                        "name": "githubintegration_pk",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "query",
+                        "name": "name",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "name__icontains",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "ordering",
+                        "required": false,
+                        "in": "query",
+                        "description": "Which field to use when ordering the results.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "required": false,
+                        "in": "query",
+                        "description": "A page number within the paginated result set.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "page_size",
+                        "required": false,
+                        "in": "query",
+                        "description": "Number of results to return per page.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "tags": [
+                    "integrations"
+                ],
+                "security": [
+                    {
+                        "JWTAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PaginatedGitHubPullList"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/integrations/github/{githubintegration_pk}/pulls/{githubpull_pk}/tasks/": {
+            "get": {
+                "operationId": "integrations_github_pulls_tasks_list",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "githubintegration_pk",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "path",
+                        "name": "githubpull_pk",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "query",
+                        "name": "modified_at",
+                        "schema": {
+                            "type": "string",
+                            "format": "date-time"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "modified_at__gte",
+                        "schema": {
+                            "type": "string",
+                            "format": "date-time"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "modified_at__lte",
+                        "schema": {
+                            "type": "string",
+                            "format": "date-time"
+                        }
+                    },
+                    {
+                        "name": "ordering",
+                        "required": false,
+                        "in": "query",
+                        "description": "Which field to use when ordering the results.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "required": false,
+                        "in": "query",
+                        "description": "A page number within the paginated result set.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "page_size",
+                        "required": false,
+                        "in": "query",
+                        "description": "Number of results to return per page.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "state",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "failure",
+                                "queued",
+                                "running",
+                                "skipped",
+                                "success"
+                            ]
+                        },
+                        "description": "The current state of this task."
+                    }
+                ],
+                "tags": [
+                    "integrations"
+                ],
+                "security": [
+                    {
+                        "JWTAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PaginatedGitHubPullTaskList"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/integrations/github/{githubintegration_pk}/pulls/{githubpull_pk}/tasks/{githubpulltask_pk}/steps/": {
+            "get": {
+                "operationId": "integrations_github_pulls_tasks_steps_list",
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "fqn",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "path",
+                        "name": "githubintegration_pk",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "path",
+                        "name": "githubpull_pk",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "path",
+                        "name": "githubpulltask_pk",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "query",
+                        "name": "modified_at",
+                        "schema": {
+                            "type": "string",
+                            "format": "date-time"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "modified_at__gte",
+                        "schema": {
+                            "type": "string",
+                            "format": "date-time"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "modified_at__lte",
+                        "schema": {
+                            "type": "string",
+                            "format": "date-time"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "operation",
+                        "schema": {
+                            "type": "string",
+                            "nullable": true,
+                            "enum": [
+                                "create",
+                                "delete",
+                                "read",
+                                "update"
+                            ]
+                        },
+                        "description": "The operation performed, if any.\n\nWhen the operation is an update, there may be additional details in the success_detail field to describe the change.\n\nWhen the project is filled in but the environment and parameterare not, the operation is on the project.  When the environmentis filled in but the project and parameter are not, the operationis on the environment.  When the project and parameter are filledin but the environment is not, the operation is on the parameter.When all three are filled in, the operation is on the value ofthe parameter of the project in the specified environment."
+                    },
+                    {
+                        "name": "ordering",
+                        "required": false,
+                        "in": "query",
+                        "description": "Which field to use when ordering the results.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "required": false,
+                        "in": "query",
+                        "description": "A page number within the paginated result set.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "page_size",
+                        "required": false,
+                        "in": "query",
+                        "description": "Number of results to return per page.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "success",
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "venue_id",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "venue_id__icontains",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "venue_name",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "venue_name__icontains",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "tags": [
+                    "integrations"
+                ],
+                "security": [
+                    {
+                        "JWTAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PaginatedGitHubPullTaskStepList"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/integrations/github/{githubintegration_pk}/pulls/{githubpull_pk}/tasks/{githubpulltask_pk}/steps/{id}/": {
+            "get": {
+                "operationId": "integrations_github_pulls_tasks_steps_retrieve",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "githubintegration_pk",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "path",
+                        "name": "githubpull_pk",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "path",
+                        "name": "githubpulltask_pk",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "description": "Unique identifier for a task step."
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "integrations"
+                ],
+                "security": [
+                    {
+                        "JWTAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/GitHubPullTaskStep"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/integrations/github/{githubintegration_pk}/pulls/{githubpull_pk}/tasks/{id}/": {
+            "get": {
+                "operationId": "integrations_github_pulls_tasks_retrieve",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "githubintegration_pk",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "path",
+                        "name": "githubpull_pk",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "description": "The unique identifier for the task."
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "integrations"
+                ],
+                "security": [
+                    {
+                        "JWTAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/GitHubPullTask"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/integrations/github/{githubintegration_pk}/pulls/{id}/": {
+            "get": {
+                "operationId": "integrations_github_pulls_retrieve",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "githubintegration_pk",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "description": "Unique identifier for the action."
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "integrations"
+                ],
+                "security": [
+                    {
+                        "JWTAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/GitHubPull"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "put": {
+                "operationId": "integrations_github_pulls_update",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "githubintegration_pk",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "description": "Unique identifier for the action."
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "integrations"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/GitHubPull"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/GitHubPull"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/GitHubPull"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "JWTAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/GitHubPull"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "patch": {
+                "operationId": "integrations_github_pulls_partial_update",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "githubintegration_pk",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "description": "Unique identifier for the action."
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "integrations"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedGitHubPull"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedGitHubPull"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedGitHubPull"
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "JWTAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/GitHubPull"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/integrations/github/{githubintegration_pk}/pulls/{id}/sync/": {
+            "post": {
+                "operationId": "integrations_github_pulls_sync_create",
+                "description": "Enqueue a pull synchronization task for mapped external values accessible with this integration.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "githubintegration_pk",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "description": "Unique identifier for the action."
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "integrations"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/GitHubPull"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/GitHubPull"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/GitHubPull"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "JWTAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": "Synchronization task enqueued."
                     }
                 }
             }
@@ -5093,15 +5858,6 @@
                         }
                     },
                     {
-                        "in": "query",
-                        "name": "partial_success",
-                        "schema": {
-                            "type": "boolean",
-                            "default": false
-                        },
-                        "description": "Determine if the response is allowed to include a partial success.\n\nA partial success can occur if one or more external values cannot be retrieved, for example when an in-use integration is removed using the `leave` option, leaving the values untouched. When `true`, any error that occurs during external value retrieval will be placed into a field named `external_error` in the affected Value, and the `value` field will be empty.  When `false`, any such error will cause the entire request to fail.\nPartial success allows clients to tolerate invalid external values better."
-                    },
-                    {
                         "in": "path",
                         "name": "project_pk",
                         "schema": {
@@ -5229,7 +5985,7 @@
         "/api/v1/projects/{project_pk}/parameters/{parameter_pk}/pushes/": {
             "get": {
                 "operationId": "projects_parameters_pushes_list",
-                "description": "The complete history of push operations that this parameter was involved in.",
+                "description": "The push operations that this parameter was involved in.",
                 "summary": "List push operations.",
                 "parameters": [
                     {
@@ -5311,7 +6067,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/PaginatedAwsPushTaskStepList"
+                                    "$ref": "#/components/schemas/PaginatedTaskStepList"
                                 }
                             }
                         },
@@ -5831,15 +6587,6 @@
                         "required": true
                     },
                     {
-                        "in": "query",
-                        "name": "partial_success",
-                        "schema": {
-                            "type": "boolean",
-                            "default": false
-                        },
-                        "description": "Determine if the response is allowed to include a partial success.\n\nA partial success can occur if one or more external values cannot be retrieved, for example when an in-use integration is removed using the `leave` option, leaving the values untouched. When `true`, any error that occurs during external value retrieval will be placed into a field named `external_error` in the affected Value, and the `value` field will be empty.  When `false`, any such error will cause the entire request to fail.\nPartial success allows clients to tolerate invalid external values better."
-                    },
-                    {
                         "in": "path",
                         "name": "project_pk",
                         "schema": {
@@ -6047,15 +6794,6 @@
                         },
                         "description": "The parameter id.",
                         "required": true
-                    },
-                    {
-                        "in": "query",
-                        "name": "partial_success",
-                        "schema": {
-                            "type": "boolean",
-                            "default": false
-                        },
-                        "description": "Determine if the response is allowed to include a partial success.\n\nA partial success can occur if one or more external values cannot be retrieved, for example when an in-use integration is removed using the `leave` option, leaving the values untouched. When `true`, any error that occurs during external value retrieval will be placed into a field named `external_error` in the affected Value, and the `value` field will be empty.  When `false`, any such error will cause the entire request to fail.\nPartial success allows clients to tolerate invalid external values better."
                     },
                     {
                         "in": "path",
@@ -6412,15 +7150,6 @@
                             "default": false
                         },
                         "description": "If true, masks all secrets."
-                    },
-                    {
-                        "in": "query",
-                        "name": "partial_success",
-                        "schema": {
-                            "type": "boolean",
-                            "default": false
-                        },
-                        "description": "Determine if the response is allowed to include a partial success.\n\nA partial success can occur if one or more external values cannot be retrieved, for example when an in-use integration is removed using the `leave` option, leaving the values untouched. When `true`, any error that occurs during external value retrieval will be placed into a field named `external_error` in the affected Value, and the `value` field will be empty.  When `false`, any such error will cause the entire request to fail.\nPartial success allows clients to tolerate invalid external values better."
                     },
                     {
                         "in": "path",
@@ -9143,6 +9872,23 @@
                         "type": "boolean",
                         "description": "Allow the pull to create projects.  If a project needs to be created but the action does not allow it, a task step will be added with a null operation, and success_detail will indicate the action did not allow it."
                     },
+                    "mapped_values": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Value"
+                        },
+                        "readOnly": true,
+                        "description": "Values being managed by a mapped pull."
+                    },
+                    "mode": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/ModeEnum"
+                            }
+                        ],
+                        "readOnly": true,
+                        "description": "The pull mode used.\n\nA pattern pull uses a pattern-matching resource string with mustache-style markers to identify the project, parameter, and environment names.\n\nA mapped pull uses a specific resource and JMESpath expression to deliver a value to a specific project, parameter, and environment.  This leverages external value linkages made in the value editor, and there is one mapped pull per integration provided by the system so that you can trigger external value pull synchronizations."
+                    },
                     "region": {
                         "allOf": [
                             {
@@ -9169,6 +9915,8 @@
                     "created_at",
                     "id",
                     "latest_task",
+                    "mapped_values",
+                    "mode",
                     "modified_at",
                     "name",
                     "region",
@@ -9190,7 +9938,7 @@
                         "type": "string",
                         "format": "uuid",
                         "readOnly": true,
-                        "description": "The unique identifier for the push action task."
+                        "description": "The unique identifier for the task."
                     },
                     "reason": {
                         "type": "string",
@@ -9489,7 +10237,7 @@
                         "type": "string",
                         "format": "uuid",
                         "readOnly": true,
-                        "description": "The unique identifier for the push action task."
+                        "description": "The unique identifier for the task."
                     },
                     "reason": {
                         "type": "string",
@@ -9757,6 +10505,262 @@
                 ],
                 "type": "string"
             },
+            "BackupDataSnapshot": {
+                "type": "object",
+                "description": "Environment, parameter-type, and project (including parameters and values) data at a point in time.",
+                "properties": {
+                    "environments": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "$ref": "#/components/schemas/BackupEnvironment"
+                        }
+                    },
+                    "types": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "$ref": "#/components/schemas/BackupParameterType"
+                        }
+                    },
+                    "projects": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "$ref": "#/components/schemas/BackupProject"
+                        }
+                    },
+                    "timestamp": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "required": [
+                    "environments",
+                    "projects",
+                    "timestamp",
+                    "types"
+                ]
+            },
+            "BackupEnvironment": {
+                "type": "object",
+                "description": "Basic environment data at a point in time.",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "parent": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "description": {
+                        "type": "string",
+                        "nullable": true
+                    }
+                },
+                "required": [
+                    "name"
+                ]
+            },
+            "BackupExternalReference": {
+                "type": "object",
+                "description": "External reference data at a point in time.",
+                "properties": {
+                    "fqn": {
+                        "type": "string"
+                    },
+                    "jmes_path": {
+                        "type": "string",
+                        "nullable": true
+                    }
+                },
+                "required": [
+                    "fqn"
+                ]
+            },
+            "BackupParameter": {
+                "type": "object",
+                "description": "Parameter, rule, and value data at a point in time.",
+                "properties": {
+                    "rules": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "$ref": "#/components/schemas/BackupParameterRule"
+                        }
+                    },
+                    "values": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/components/schemas/BackupParameterValue"
+                                }
+                            ],
+                            "nullable": true
+                        }
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "param_type": {
+                        "type": "string"
+                    },
+                    "project": {
+                        "type": "string"
+                    },
+                    "secret": {
+                        "type": "boolean"
+                    },
+                    "description": {
+                        "type": "string",
+                        "nullable": true
+                    }
+                },
+                "required": [
+                    "name",
+                    "param_type",
+                    "project",
+                    "rules",
+                    "secret",
+                    "values"
+                ]
+            },
+            "BackupParameterRule": {
+                "type": "object",
+                "description": "Rule that is applied to a parameter or parameter-type at a point in time.",
+                "properties": {
+                    "rule_type": {
+                        "type": "string"
+                    },
+                    "constraint": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "constraint",
+                    "rule_type"
+                ]
+            },
+            "BackupParameterType": {
+                "type": "object",
+                "description": "Parameter type (and rule) data at a point in time.",
+                "properties": {
+                    "rules": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "$ref": "#/components/schemas/BackupParameterRule"
+                        }
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "parent": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string",
+                        "nullable": true
+                    }
+                },
+                "required": [
+                    "name",
+                    "parent",
+                    "rules"
+                ]
+            },
+            "BackupParameterValue": {
+                "type": "object",
+                "description": "Parameter value data at a point in time.",
+                "properties": {
+                    "external": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/BackupExternalReference"
+                            }
+                        ],
+                        "nullable": true
+                    },
+                    "environment": {
+                        "type": "string"
+                    },
+                    "source": {
+                        "type": "string"
+                    },
+                    "value": {
+                        "type": "string"
+                    },
+                    "evaluated": {
+                        "type": "boolean"
+                    },
+                    "project": {
+                        "type": "string"
+                    },
+                    "raw": {
+                        "type": "string",
+                        "nullable": true
+                    }
+                },
+                "required": [
+                    "environment",
+                    "evaluated",
+                    "external",
+                    "project",
+                    "source",
+                    "value"
+                ]
+            },
+            "BackupProject": {
+                "type": "object",
+                "description": "Environment, parameter-type, and project (including parameters and values) data at a point in time.",
+                "properties": {
+                    "parameters": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "$ref": "#/components/schemas/BackupParameter"
+                        }
+                    },
+                    "templates": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "$ref": "#/components/schemas/BackupTemplate"
+                        }
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "parent": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "description": {
+                        "type": "string",
+                        "nullable": true
+                    }
+                },
+                "required": [
+                    "name",
+                    "parameters",
+                    "templates"
+                ]
+            },
+            "BackupTemplate": {
+                "type": "object",
+                "description": "Template data at a given point in time.",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "text": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string",
+                        "nullable": true
+                    }
+                },
+                "required": [
+                    "description",
+                    "name",
+                    "text"
+                ]
+            },
             "Environment": {
                 "type": "object",
                 "properties": {
@@ -9959,6 +10963,294 @@
                 },
                 "required": [
                     "gh_installation_id"
+                ]
+            },
+            "GitHubPull": {
+                "type": "object",
+                "description": "Pull actions can be configured to get configuration and secrets from\nintegrations on demand.",
+                "properties": {
+                    "url": {
+                        "type": "string",
+                        "format": "uri",
+                        "readOnly": true
+                    },
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "readOnly": true,
+                        "description": "Unique identifier for the action."
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "The action name.",
+                        "maxLength": 256
+                    },
+                    "description": {
+                        "type": "string",
+                        "description": "The optional description for the action."
+                    },
+                    "latest_task": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/GitHubPullTask"
+                            }
+                        ],
+                        "readOnly": true,
+                        "nullable": true,
+                        "description": "The most recent task run for this action."
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    },
+                    "modified_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    },
+                    "dry_run": {
+                        "type": "boolean",
+                        "description": "When set to dry-run mode an action will report the changes that it would have made in task steps, however those changes are not actually performed."
+                    },
+                    "create_environments": {
+                        "type": "boolean",
+                        "description": "Allow the pull to create environments.  Any automatically created environments will be children of the `default` environment.  If an environment needs to be created but the action does not allow it, a task step will be added with a null operation, and success_detail will indicate the action did not allow it."
+                    },
+                    "create_projects": {
+                        "type": "boolean",
+                        "description": "Allow the pull to create projects.  If a project needs to be created but the action does not allow it, a task step will be added with a null operation, and success_detail will indicate the action did not allow it."
+                    },
+                    "mapped_values": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Value"
+                        },
+                        "readOnly": true,
+                        "description": "Values being managed by a mapped pull."
+                    },
+                    "mode": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/ModeEnum"
+                            }
+                        ],
+                        "readOnly": true,
+                        "description": "The pull mode used.\n\nA pattern pull uses a pattern-matching resource string with mustache-style markers to identify the project, parameter, and environment names.\n\nA mapped pull uses a specific resource and JMESpath expression to deliver a value to a specific project, parameter, and environment.  This leverages external value linkages made in the value editor, and there is one mapped pull per integration provided by the system so that you can trigger external value pull synchronizations."
+                    }
+                },
+                "required": [
+                    "created_at",
+                    "id",
+                    "latest_task",
+                    "mapped_values",
+                    "mode",
+                    "modified_at",
+                    "name",
+                    "url"
+                ]
+            },
+            "GitHubPullTask": {
+                "type": "object",
+                "description": "Pull task for a GitHub integration.",
+                "properties": {
+                    "url": {
+                        "type": "string",
+                        "format": "uri",
+                        "readOnly": true
+                    },
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "readOnly": true,
+                        "description": "The unique identifier for the task."
+                    },
+                    "reason": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "The reason why this task was triggered.",
+                        "maxLength": 256
+                    },
+                    "dry_run": {
+                        "type": "boolean",
+                        "description": "Indicates task steps were only simulated, not actually performed."
+                    },
+                    "state": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/StateEnum"
+                            }
+                        ],
+                        "description": "The current state of this task."
+                    },
+                    "error_code": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "If an error occurs early during processing, before attempting to process values, this code may be helpful in determining the problem.",
+                        "maxLength": 256
+                    },
+                    "error_detail": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "If an error occurs early during processing, before attempting to process values, this detail may be helpful in determining the problem."
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    },
+                    "modified_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    }
+                },
+                "required": [
+                    "created_at",
+                    "id",
+                    "modified_at",
+                    "url"
+                ]
+            },
+            "GitHubPullTaskStep": {
+                "type": "object",
+                "description": "Pull task step for a GitHub integration.",
+                "properties": {
+                    "url": {
+                        "type": "string",
+                        "format": "uri",
+                        "readOnly": true
+                    },
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "readOnly": true,
+                        "description": "Unique identifier for a task step."
+                    },
+                    "operation": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/OperationEnum"
+                            }
+                        ],
+                        "nullable": true,
+                        "description": "The operation performed, if any.\n\nWhen the operation is an update, there may be additional details in the success_detail field to describe the change.\n\nWhen the project is filled in but the environment and parameterare not, the operation is on the project.  When the environmentis filled in but the project and parameter are not, the operationis on the environment.  When the project and parameter are filledin but the environment is not, the operation is on the parameter.When all three are filled in, the operation is on the value ofthe parameter of the project in the specified environment."
+                    },
+                    "success": {
+                        "type": "boolean",
+                        "description": "Indicates if the operation was successful."
+                    },
+                    "success_detail": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "Additional details about the successful operation, if any."
+                    },
+                    "fqn": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "The fully-qualified name (FQN) this of the value that was changed.",
+                        "maxLength": 1024
+                    },
+                    "environment": {
+                        "type": "string",
+                        "format": "uri",
+                        "readOnly": true,
+                        "nullable": true,
+                        "description": "The environment affected by this step."
+                    },
+                    "environment_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "nullable": true,
+                        "description": "The environment id involved in the operation."
+                    },
+                    "environment_name": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "The environment name involved in the operation.",
+                        "maxLength": 256
+                    },
+                    "project": {
+                        "type": "string",
+                        "format": "uri",
+                        "readOnly": true,
+                        "nullable": true,
+                        "description": "The project affected by this step."
+                    },
+                    "project_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "nullable": true,
+                        "description": "The project id involved in the operation."
+                    },
+                    "project_name": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "The project name involved in the operation.",
+                        "maxLength": 256
+                    },
+                    "parameter": {
+                        "type": "string",
+                        "format": "uri",
+                        "readOnly": true,
+                        "nullable": true,
+                        "description": "The parameter affected by this step."
+                    },
+                    "parameter_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "nullable": true,
+                        "description": "The parameter id involved in the operation."
+                    },
+                    "parameter_name": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "The parameter name involved in the operation.",
+                        "maxLength": 256
+                    },
+                    "venue_id": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "The integration-native id for the resource.",
+                        "maxLength": 1024
+                    },
+                    "venue_name": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "The name of the item or resource as known by the integration.",
+                        "maxLength": 256
+                    },
+                    "error_code": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "An error code, if not successful.",
+                        "maxLength": 256
+                    },
+                    "error_detail": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "Details on the error that occurred during processing."
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    },
+                    "modified_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    }
+                },
+                "required": [
+                    "created_at",
+                    "environment",
+                    "id",
+                    "modified_at",
+                    "parameter",
+                    "project",
+                    "success",
+                    "url"
                 ]
             },
             "HistoryModelEnum": {
@@ -10166,6 +11458,10 @@
                             "type": "string"
                         },
                         "nullable": true
+                    },
+                    "venue_id": {
+                        "type": "string",
+                        "nullable": true
                     }
                 },
                 "required": [
@@ -10339,6 +11635,13 @@
                     "role",
                     "user"
                 ]
+            },
+            "ModeEnum": {
+                "enum": [
+                    "mapped",
+                    "pattern"
+                ],
+                "type": "string"
             },
             "NodeTypeEnum": {
                 "enum": [
@@ -10731,6 +12034,87 @@
                     }
                 }
             },
+            "PaginatedGitHubPullList": {
+                "type": "object",
+                "properties": {
+                    "count": {
+                        "type": "integer",
+                        "example": 123
+                    },
+                    "next": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?page=4"
+                    },
+                    "previous": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?page=2"
+                    },
+                    "results": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/GitHubPull"
+                        }
+                    }
+                }
+            },
+            "PaginatedGitHubPullTaskList": {
+                "type": "object",
+                "properties": {
+                    "count": {
+                        "type": "integer",
+                        "example": 123
+                    },
+                    "next": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?page=4"
+                    },
+                    "previous": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?page=2"
+                    },
+                    "results": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/GitHubPullTask"
+                        }
+                    }
+                }
+            },
+            "PaginatedGitHubPullTaskStepList": {
+                "type": "object",
+                "properties": {
+                    "count": {
+                        "type": "integer",
+                        "example": 123
+                    },
+                    "next": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?page=4"
+                    },
+                    "previous": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?page=2"
+                    },
+                    "results": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/GitHubPullTaskStep"
+                        }
+                    }
+                }
+            },
             "PaginatedIntegrationExplorerList": {
                 "type": "object",
                 "properties": {
@@ -11024,6 +12408,33 @@
                         "type": "array",
                         "items": {
                             "$ref": "#/components/schemas/Tag"
+                        }
+                    }
+                }
+            },
+            "PaginatedTaskStepList": {
+                "type": "object",
+                "properties": {
+                    "count": {
+                        "type": "integer",
+                        "example": 123
+                    },
+                    "next": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?page=4"
+                    },
+                    "previous": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?page=2"
+                    },
+                    "results": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/TaskStep"
                         }
                     }
                 }
@@ -11768,6 +13179,23 @@
                         "type": "boolean",
                         "description": "Allow the pull to create projects.  If a project needs to be created but the action does not allow it, a task step will be added with a null operation, and success_detail will indicate the action did not allow it."
                     },
+                    "mapped_values": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Value"
+                        },
+                        "readOnly": true,
+                        "description": "Values being managed by a mapped pull."
+                    },
+                    "mode": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/ModeEnum"
+                            }
+                        ],
+                        "readOnly": true,
+                        "description": "The pull mode used.\n\nA pattern pull uses a pattern-matching resource string with mustache-style markers to identify the project, parameter, and environment names.\n\nA mapped pull uses a specific resource and JMESpath expression to deliver a value to a specific project, parameter, and environment.  This leverages external value linkages made in the value editor, and there is one mapped pull per integration provided by the system so that you can trigger external value pull synchronizations."
+                    },
                     "region": {
                         "allOf": [
                             {
@@ -11874,6 +13302,81 @@
                         "type": "string",
                         "format": "date-time",
                         "readOnly": true
+                    }
+                }
+            },
+            "PatchedGitHubPull": {
+                "type": "object",
+                "description": "Pull actions can be configured to get configuration and secrets from\nintegrations on demand.",
+                "properties": {
+                    "url": {
+                        "type": "string",
+                        "format": "uri",
+                        "readOnly": true
+                    },
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "readOnly": true,
+                        "description": "Unique identifier for the action."
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "The action name.",
+                        "maxLength": 256
+                    },
+                    "description": {
+                        "type": "string",
+                        "description": "The optional description for the action."
+                    },
+                    "latest_task": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/GitHubPullTask"
+                            }
+                        ],
+                        "readOnly": true,
+                        "nullable": true,
+                        "description": "The most recent task run for this action."
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    },
+                    "modified_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    },
+                    "dry_run": {
+                        "type": "boolean",
+                        "description": "When set to dry-run mode an action will report the changes that it would have made in task steps, however those changes are not actually performed."
+                    },
+                    "create_environments": {
+                        "type": "boolean",
+                        "description": "Allow the pull to create environments.  Any automatically created environments will be children of the `default` environment.  If an environment needs to be created but the action does not allow it, a task step will be added with a null operation, and success_detail will indicate the action did not allow it."
+                    },
+                    "create_projects": {
+                        "type": "boolean",
+                        "description": "Allow the pull to create projects.  If a project needs to be created but the action does not allow it, a task step will be added with a null operation, and success_detail will indicate the action did not allow it."
+                    },
+                    "mapped_values": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Value"
+                        },
+                        "readOnly": true,
+                        "description": "Values being managed by a mapped pull."
+                    },
+                    "mode": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/ModeEnum"
+                            }
+                        ],
+                        "readOnly": true,
+                        "description": "The pull mode used.\n\nA pattern pull uses a pattern-matching resource string with mustache-style markers to identify the project, parameter, and environment names.\n\nA mapped pull uses a specific resource and JMESpath expression to deliver a value to a specific project, parameter, and environment.  This leverages external value linkages made in the value editor, and there is one mapped pull per integration provided by the system so that you can trigger external value pull synchronizations."
                     }
                 }
             },
@@ -12528,7 +14031,17 @@
                         "type": "string",
                         "nullable": true,
                         "readOnly": true,
-                        "description": "If the value is external, and an error occurs retrieving it, the reason for the retrieval error will be placed into this field.  The query parameter `partial_success` can be used to control whether this condition causes an HTTP error response or not."
+                        "description": "This field is deprecated and unused."
+                    },
+                    "external_status": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/TaskStep"
+                            }
+                        ],
+                        "readOnly": true,
+                        "nullable": true,
+                        "description": "The most recent mapped pull status for an external value."
                     },
                     "internal_value": {
                         "type": "string",
@@ -12544,7 +14057,7 @@
                         "type": "string",
                         "nullable": true,
                         "readOnly": true,
-                        "description": "This is the actual content of the Value for the given parameter in the given environment.  Depending on the settings in the Value, the following things occur to calculate the `value`:\n\nFor values that are not `external` and parameters that are not `secret`, the system will use the content in `internal_value` to satisfy the request.\n\nFor values that are not `external` and parameters that are `secret`, the system will retrieve the content from your organization's dedicated vault.\n\nFor values that are `external`, the system will retrieve the content from the integration on-demand.  You can control the error handling behavior of the server through the `partial_success` query parameter.\n\nIf the content from the integration is `secret` and the parameter is not, an error will occur.  If an `external_filter` is present then the content will have a JMESpath query applied, and that becomes the resulting value.\n\nIf you request secret masking, no secret content will be included in the result and instead a series of asterisks will be used instead for the value.  If you request wrapping, the secret content will be wrapped in an envelope that is bound to your JWT token.  For more information about secret wrapping, see the docs.\n\nClients applying this value to a shell environment should set `<parameter_name>=<value>` even if `value` is the empty string.  If `value` is `null`, the client should unset that shell environment variable."
+                        "description": "This is the actual content of the Value for the given parameter in the given environment.\n\nIf you request secret masking, no secret content will be included in the result and instead a series of asterisks will be used instead for the value.  If you request wrapping, the secret content will be wrapped in an envelope that is bound to your JWT token.  For more information about secret wrapping, see the docs.\n\nClients applying this value to a shell environment should set `<parameter_name>=<value>` even if `value` is the empty string.  If `value` is `null`, the client should unset that shell environment variable."
                     },
                     "evaluated": {
                         "type": "boolean",
@@ -12970,6 +14483,147 @@
                     "name"
                 ]
             },
+            "TaskStep": {
+                "type": "object",
+                "description": "Each task detail documents the synchronization of a single\nvalue through an integration.",
+                "properties": {
+                    "url": {
+                        "type": "string",
+                        "format": "uri",
+                        "readOnly": true
+                    },
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "readOnly": true,
+                        "description": "Unique identifier for a task step."
+                    },
+                    "operation": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/OperationEnum"
+                            }
+                        ],
+                        "nullable": true,
+                        "description": "The operation performed, if any.\n\nWhen the operation is an update, there may be additional details in the success_detail field to describe the change.\n\nWhen the project is filled in but the environment and parameterare not, the operation is on the project.  When the environmentis filled in but the project and parameter are not, the operationis on the environment.  When the project and parameter are filledin but the environment is not, the operation is on the parameter.When all three are filled in, the operation is on the value ofthe parameter of the project in the specified environment."
+                    },
+                    "success": {
+                        "type": "boolean",
+                        "description": "Indicates if the operation was successful."
+                    },
+                    "success_detail": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "Additional details about the successful operation, if any."
+                    },
+                    "fqn": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "The fully-qualified name (FQN) this of the value that was changed.",
+                        "maxLength": 1024
+                    },
+                    "environment": {
+                        "type": "string",
+                        "format": "uri",
+                        "readOnly": true,
+                        "nullable": true,
+                        "description": "The environment affected by this step."
+                    },
+                    "environment_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "nullable": true,
+                        "description": "The environment id involved in the operation."
+                    },
+                    "environment_name": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "The environment name involved in the operation.",
+                        "maxLength": 256
+                    },
+                    "project": {
+                        "type": "string",
+                        "format": "uri",
+                        "readOnly": true,
+                        "nullable": true,
+                        "description": "The project affected by this step."
+                    },
+                    "project_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "nullable": true,
+                        "description": "The project id involved in the operation."
+                    },
+                    "project_name": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "The project name involved in the operation.",
+                        "maxLength": 256
+                    },
+                    "parameter": {
+                        "type": "string",
+                        "format": "uri",
+                        "readOnly": true,
+                        "nullable": true,
+                        "description": "The parameter affected by this step."
+                    },
+                    "parameter_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "nullable": true,
+                        "description": "The parameter id involved in the operation."
+                    },
+                    "parameter_name": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "The parameter name involved in the operation.",
+                        "maxLength": 256
+                    },
+                    "venue_id": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "The integration-native id for the resource.",
+                        "maxLength": 1024
+                    },
+                    "venue_name": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "The name of the item or resource as known by the integration.",
+                        "maxLength": 256
+                    },
+                    "error_code": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "An error code, if not successful.",
+                        "maxLength": 256
+                    },
+                    "error_detail": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "Details on the error that occurred during processing."
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    },
+                    "modified_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    }
+                },
+                "required": [
+                    "created_at",
+                    "environment",
+                    "id",
+                    "modified_at",
+                    "parameter",
+                    "project",
+                    "success",
+                    "url"
+                ]
+            },
             "Template": {
                 "type": "object",
                 "description": "A parameter template in a given project, optionally instantiated against an environment.",
@@ -13363,7 +15017,17 @@
                         "type": "string",
                         "nullable": true,
                         "readOnly": true,
-                        "description": "If the value is external, and an error occurs retrieving it, the reason for the retrieval error will be placed into this field.  The query parameter `partial_success` can be used to control whether this condition causes an HTTP error response or not."
+                        "description": "This field is deprecated and unused."
+                    },
+                    "external_status": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/TaskStep"
+                            }
+                        ],
+                        "readOnly": true,
+                        "nullable": true,
+                        "description": "The most recent mapped pull status for an external value."
                     },
                     "internal_value": {
                         "type": "string",
@@ -13379,7 +15043,7 @@
                         "type": "string",
                         "nullable": true,
                         "readOnly": true,
-                        "description": "This is the actual content of the Value for the given parameter in the given environment.  Depending on the settings in the Value, the following things occur to calculate the `value`:\n\nFor values that are not `external` and parameters that are not `secret`, the system will use the content in `internal_value` to satisfy the request.\n\nFor values that are not `external` and parameters that are `secret`, the system will retrieve the content from your organization's dedicated vault.\n\nFor values that are `external`, the system will retrieve the content from the integration on-demand.  You can control the error handling behavior of the server through the `partial_success` query parameter.\n\nIf the content from the integration is `secret` and the parameter is not, an error will occur.  If an `external_filter` is present then the content will have a JMESpath query applied, and that becomes the resulting value.\n\nIf you request secret masking, no secret content will be included in the result and instead a series of asterisks will be used instead for the value.  If you request wrapping, the secret content will be wrapped in an envelope that is bound to your JWT token.  For more information about secret wrapping, see the docs.\n\nClients applying this value to a shell environment should set `<parameter_name>=<value>` even if `value` is the empty string.  If `value` is `null`, the client should unset that shell environment variable."
+                        "description": "This is the actual content of the Value for the given parameter in the given environment.\n\nIf you request secret masking, no secret content will be included in the result and instead a series of asterisks will be used instead for the value.  If you request wrapping, the secret content will be wrapped in an envelope that is bound to your JWT token.  For more information about secret wrapping, see the docs.\n\nClients applying this value to a shell environment should set `<parameter_name>=<value>` even if `value` is the empty string.  If `value` is `null`, the client should unset that shell environment variable."
                     },
                     "evaluated": {
                         "type": "boolean",
@@ -13428,6 +15092,7 @@
                     "environment_name",
                     "evaluated",
                     "external_error",
+                    "external_status",
                     "id",
                     "modified_at",
                     "parameter",

@@ -2,7 +2,7 @@ use crate::database::openapi::key_from_config;
 use crate::database::{
     extract_details, extract_from_json, page_size, response_message, secret_encode_wrap,
     secret_unwrap_decode, CryptoAlgorithm, OpenApiConfig, ParamExportOptions, ParamRuleType,
-    ParameterDetails, ParameterError, TaskStep, NO_PAGE_COUNT, NO_PAGE_SIZE, WRAP_SECRETS,
+    ParameterDetails, ParameterError, TaskStepDetails, NO_PAGE_COUNT, NO_PAGE_SIZE, WRAP_SECRETS,
 };
 use cloudtruth_restapi::apis::projects_api::*;
 use cloudtruth_restapi::apis::utils_api::utils_generate_password_create;
@@ -14,7 +14,6 @@ use cloudtruth_restapi::models::{
 use std::collections::HashMap;
 use std::result::Result;
 
-const PARTIAL_SUCCESS: Option<bool> = Some(true);
 const VALUES_FALSE: Option<bool> = Some(false);
 const VALUES_TRUE: Option<bool> = Some(true);
 const NO_ORDERING: Option<&str> = None;
@@ -230,7 +229,6 @@ impl Parameters {
             NO_ORDERING,
             NO_PAGE_COUNT,
             NO_PAGE_SIZE,
-            PARTIAL_SUCCESS,
             ONLY_SECRETS,
             tag.as_deref(),
             None,
@@ -326,7 +324,6 @@ impl Parameters {
                 NO_ORDERING,
                 Some(page_count),
                 page_size(rest_cfg),
-                PARTIAL_SUCCESS,
                 ONLY_SECRETS,
                 tag.as_deref(),
                 value_arg,
@@ -406,7 +403,6 @@ impl Parameters {
                 NO_ORDERING,
                 Some(page_count),
                 page_size(rest_cfg),
-                PARTIAL_SUCCESS,
                 ONLY_SECRETS,
                 None, // cannot use a tag without an environment
                 VALUES_TRUE,
@@ -615,6 +611,7 @@ impl Parameters {
             earliest_tag: None,
             interpolated: evaluated,
             evaluated: None,
+            external_status: None,
             referenced_parameters: None,
             referenced_templates: None,
         };
@@ -714,7 +711,7 @@ impl Parameters {
         proj_id: &str,
         env_id: &str,
         param_id: &str,
-    ) -> Result<Vec<TaskStep>, ParameterError> {
+    ) -> Result<Vec<TaskStepDetails>, ParameterError> {
         let mut result = vec![];
         let mut page_count = 1;
         loop {
@@ -733,7 +730,7 @@ impl Parameters {
                     if let Some(list) = data.results {
                         for ref task in list {
                             if task.environment_id.clone().unwrap_or_default().as_str() == env_id {
-                                result.push(TaskStep::from(task));
+                                result.push(TaskStepDetails::from(task));
                             }
                         }
                         page_count += 1;
@@ -758,7 +755,7 @@ impl Parameters {
         rest_cfg: &OpenApiConfig,
         proj_id: &str,
         env_id: &str,
-    ) -> Result<Vec<TaskStep>, ParameterError> {
+    ) -> Result<Vec<TaskStepDetails>, ParameterError> {
         // need the parameter id for getting task steps, so get list of parameters
         let params = self.get_parameter_details(rest_cfg, proj_id, "", true, false, None, None)?;
         let mut total = vec![];
