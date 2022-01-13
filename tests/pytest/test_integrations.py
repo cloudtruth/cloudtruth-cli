@@ -33,9 +33,11 @@ CT_BROKEN_RUN = [
 
 CT_EXP_FQN = "CLOUDTRUTH_TEST_EXPLORE_FQN"
 CT_EXP_JMES = "CLOUDTRUTH_TEST_EXPLORE_JMES"
+CT_EXP_VALUE = "CLOUDTRUTH_TEST_EXPLORE_VALUE"
 CT_EXPLORE_RUN = [
     CT_EXP_FQN,
     CT_EXP_JMES,
+    CT_EXP_VALUE,
 ]
 
 CT_PARAM_FQN = "CLOUDTRUTH_TEST_PARAMETERS_FQN"
@@ -94,6 +96,7 @@ class TestIntegrations(TestCase):
 
         fqn = os.environ.get(CT_EXP_FQN)
         jmes = os.environ.get(CT_EXP_JMES)
+        value = os.environ.get(CT_EXP_VALUE)
         url = urlparse(fqn)
         base_fqn = f"{url.scheme}://{url.netloc}"
 
@@ -139,6 +142,11 @@ class TestIntegrations(TestCase):
         # cannot verify output, but the --raw option should be successful (and nothing in stderr)
         result = self.run_cli(cmd_env, explore_cmd + f"'{explore_path}' --raw")
         self.assertResultSuccess(result)
+
+        # one more time with JMES path, showing the value
+        result = self.run_cli(cmd_env, explore_cmd + f"'{fqn}' -j '{jmes}' --raw")
+        self.assertResultSuccess(result)
+        self.assertIn(value, result.out())
 
     @unittest.skipIf(missing_any(CT_PARAM_RUN), "Need all CT_PARAM_RUN parameters")
     def test_integration_parameters(self):

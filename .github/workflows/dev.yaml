@@ -37,6 +37,7 @@ jobs:
 
       CLOUDTRUTH_TEST_EXPLORE_FQN: github://rickporter-tuono/cloudtruth_test/main/short.yaml
       CLOUDTRUTH_TEST_EXPLORE_JMES: speicla.POrk_Egg_Foo_Young
+      CLOUDTRUTH_TEST_EXPLORE_VALUE: Healey
 
       CLOUDTRUTH_TEST_PARAMETERS_FQN: github://rickporter-tuono/cloudtruth_test/my-branch/short.yaml
       CLOUDTRUTH_TEST_PARAMETERS_JMES: speicla.POrk_Egg_Foo_Young
