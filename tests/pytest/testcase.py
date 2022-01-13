@@ -388,10 +388,18 @@ class TestCase(unittest.TestCase):
         self.assertResultSuccess(result)
         return result
 
-    def create_type(self, cmd_env, type_name: str, parent: Optional[str] = None) -> Result:
+    def create_type(
+        self,
+        cmd_env,
+        type_name: str,
+        parent: Optional[str] = None,
+        extra: Optional[str] = None,
+    ) -> Result:
         type_cmd = self._base_cmd + f"param-type set '{type_name}' -d '{AUTO_DESCRIPTION}' "
         if parent:
-            type_cmd += f"--parent '{parent}'"
+            type_cmd += f"--parent '{parent}' "
+        if extra:
+            type_cmd += extra
         result = self.run_cli(cmd_env, type_cmd)
         self.assertResultSuccess(result)
         self.assertIn(f"Created parameter type '{type_name}'", result.out())
@@ -403,12 +411,12 @@ class TestCase(unittest.TestCase):
         return result
 
     def create_env_tag(
-            self,
-            cmd_env,
-            env_name: str,
-            tag_name: str,
-            desc: Optional[str] = None,
-            time: Optional[str] = None
+        self,
+        cmd_env,
+        env_name: str,
+        tag_name: str,
+        desc: Optional[str] = None,
+        time: Optional[str] = None
     ) -> None:
         cmd = self._base_cmd + f"env tag set '{env_name}' '{tag_name}' "
         if desc:
@@ -438,6 +446,7 @@ class TestCase(unittest.TestCase):
             fqn: Optional[str] = None,
             jmes: Optional[str] = None,
             evaluate: Optional[bool] = None,
+            extra: Optional[str] = None
     ) -> Result:
         cmd = self._base_cmd + f"--project '{proj}' "
         if env:
@@ -457,6 +466,8 @@ class TestCase(unittest.TestCase):
             cmd += f"--jmes '{jmes}' "
         if evaluate is not None:
             cmd += f"--evaluate '{str(evaluate).lower()}' "
+        if extra:
+            cmd += extra
         result = self.run_cli(cmd_env, cmd)
         self.assertResultSuccess(result)
         return result

@@ -2,6 +2,7 @@ extern crate rpassword;
 
 mod actions;
 mod audit_logs;
+mod backup;
 mod cli;
 mod config;
 mod configuration;
@@ -27,6 +28,7 @@ mod versions;
 
 use crate::actions::process_actions_command;
 use crate::audit_logs::process_audit_log_command;
+use crate::backup::process_backup_command;
 use crate::config::env::ConfigEnv;
 use crate::config::{Action, Config, Updates, CT_PROFILE, DEFAULT_ENV_NAME};
 use crate::configuration::process_config_command;
@@ -458,6 +460,11 @@ fn main() -> Result<()> {
 
     if let Some(matches) = matches.subcommand_matches("generate") {
         process_generate_command(matches, &rest_cfg)?;
+        process::exit(0);
+    }
+
+    if let Some(matches) = matches.subcommand_matches("backup") {
+        process_backup_command(matches, &rest_cfg)?;
         process::exit(0);
     }
 

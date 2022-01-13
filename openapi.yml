@@ -7010,14 +7010,17 @@ components:
           nullable: true
         environment:
           type: string
-        source:
-          type: string
-        value:
-          type: string
         evaluated:
           type: boolean
+        source:
+          type: string
+          nullable: true
         project:
           type: string
+          nullable: true
+        value:
+          type: string
+          nullable: true
         raw:
           type: string
           nullable: true
@@ -7025,9 +7028,6 @@ components:
       - environment
       - evaluated
       - external
-      - project
-      - source
-      - value
     BackupProject:
       type: object
       description: Environment, parameter-type, and project (including parameters
