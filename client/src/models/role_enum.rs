@@ -19,6 +19,8 @@ pub enum RoleEnum {
     CONTRIB,
     #[serde(rename = "VIEWER")]
     VIEWER,
+    #[serde(rename = "unknown_default_open_api", other)]
+    UnknownDefaultOpenApi,
 }
 
 impl ToString for RoleEnum {
@@ -28,6 +30,7 @@ impl ToString for RoleEnum {
             Self::ADMIN => String::from("ADMIN"),
             Self::CONTRIB => String::from("CONTRIB"),
             Self::VIEWER => String::from("VIEWER"),
+            Self::UnknownDefaultOpenApi => String::from("unknown_default_open_api"),
         }
     }
 }

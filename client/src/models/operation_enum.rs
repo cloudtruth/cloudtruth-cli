@@ -19,6 +19,8 @@ pub enum OperationEnum {
     Update,
     #[serde(rename = "delete")]
     Delete,
+    #[serde(rename = "unknown_default_open_api", other)]
+    UnknownDefaultOpenApi,
 }
 
 impl ToString for OperationEnum {
@@ -28,6 +30,7 @@ impl ToString for OperationEnum {
             Self::Read => String::from("read"),
             Self::Update => String::from("update"),
             Self::Delete => String::from("delete"),
+            Self::UnknownDefaultOpenApi => String::from("unknown_default_open_api"),
         }
     }
 }

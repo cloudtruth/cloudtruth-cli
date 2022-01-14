@@ -9,6 +9,7 @@ pub enum ParamRuleType {
     MaxLen,
     MinLen,
     Regex,
+    Unknown,
 }
 
 #[derive(Clone, Debug)]
@@ -28,6 +29,7 @@ impl From<ParameterRuleTypeEnum> for ParamRuleType {
             ParameterRuleTypeEnum::MaxLen => Self::MaxLen,
             ParameterRuleTypeEnum::MinLen => Self::MinLen,
             ParameterRuleTypeEnum::Regex => Self::Regex,
+            ParameterRuleTypeEnum::UnknownDefaultOpenApi => Self::Unknown,
         }
     }
 }
@@ -40,6 +42,7 @@ impl From<ParamRuleType> for ParameterRuleTypeEnum {
             ParamRuleType::MaxLen => Self::MaxLen,
             ParamRuleType::MinLen => Self::MinLen,
             ParamRuleType::Regex => Self::Regex,
+            ParamRuleType::Unknown => Self::UnknownDefaultOpenApi,
         }
     }
 }
@@ -52,6 +55,7 @@ impl fmt::Display for ParamRuleType {
             Self::MaxLen => write!(f, "max-len"),
             Self::MinLen => write!(f, "min-len"),
             Self::Regex => write!(f, "regex"),
+            Self::Unknown => write!(f, "unknown"),
         }
     }
 }

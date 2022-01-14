@@ -21,6 +21,8 @@ pub enum ParameterRuleTypeEnum {
     MaxLen,
     #[serde(rename = "regex")]
     Regex,
+    #[serde(rename = "unknown_default_open_api", other)]
+    UnknownDefaultOpenApi,
 }
 
 impl ToString for ParameterRuleTypeEnum {
@@ -31,6 +33,7 @@ impl ToString for ParameterRuleTypeEnum {
             Self::MinLen => String::from("min_len"),
             Self::MaxLen => String::from("max_len"),
             Self::Regex => String::from("regex"),
+            Self::UnknownDefaultOpenApi => String::from("unknown_default_open_api"),
         }
     }
 }

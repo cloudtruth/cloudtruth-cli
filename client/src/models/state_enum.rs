@@ -21,6 +21,8 @@ pub enum StateEnum {
     Success,
     #[serde(rename = "failure")]
     Failure,
+    #[serde(rename = "unknown_default_open_api", other)]
+    UnknownDefaultOpenApi,
 }
 
 impl ToString for StateEnum {
@@ -31,6 +33,7 @@ impl ToString for StateEnum {
             Self::Skipped => String::from("skipped"),
             Self::Success => String::from("success"),
             Self::Failure => String::from("failure"),
+            Self::UnknownDefaultOpenApi => String::from("unknown_default_open_api"),
         }
     }
 }

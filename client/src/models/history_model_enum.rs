@@ -17,6 +17,8 @@ pub enum HistoryModelEnum {
     ParameterRule,
     #[serde(rename = "Value")]
     Value,
+    #[serde(rename = "unknown_default_open_api", other)]
+    UnknownDefaultOpenApi,
 }
 
 impl ToString for HistoryModelEnum {
@@ -25,6 +27,7 @@ impl ToString for HistoryModelEnum {
             Self::Parameter => String::from("Parameter"),
             Self::ParameterRule => String::from("ParameterRule"),
             Self::Value => String::from("Value"),
+            Self::UnknownDefaultOpenApi => String::from("unknown_default_open_api"),
         }
     }
 }

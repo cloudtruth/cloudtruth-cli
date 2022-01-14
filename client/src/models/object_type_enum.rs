@@ -47,6 +47,8 @@ pub enum ObjectTypeEnum {
     Template,
     #[serde(rename = "Value")]
     Value,
+    #[serde(rename = "unknown_default_open_api", other)]
+    UnknownDefaultOpenApi,
 }
 
 impl ToString for ObjectTypeEnum {
@@ -70,6 +72,7 @@ impl ToString for ObjectTypeEnum {
             Self::Task => String::from("Task"),
             Self::Template => String::from("Template"),
             Self::Value => String::from("Value"),
+            Self::UnknownDefaultOpenApi => String::from("unknown_default_open_api"),
         }
     }
 }

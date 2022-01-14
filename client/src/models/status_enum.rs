@@ -23,6 +23,8 @@ pub enum StatusEnum {
     Errored,
     #[serde(rename = "missing")]
     Missing,
+    #[serde(rename = "unknown_default_open_api", other)]
+    UnknownDefaultOpenApi,
 }
 
 impl ToString for StatusEnum {
@@ -34,6 +36,7 @@ impl ToString for StatusEnum {
             Self::Connected => String::from("connected"),
             Self::Errored => String::from("errored"),
             Self::Missing => String::from("missing"),
+            Self::UnknownDefaultOpenApi => String::from("unknown_default_open_api"),
         }
     }
 }

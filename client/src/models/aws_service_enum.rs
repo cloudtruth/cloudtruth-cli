@@ -17,6 +17,8 @@ pub enum AwsServiceEnum {
     Secretsmanager,
     #[serde(rename = "ssm")]
     Ssm,
+    #[serde(rename = "unknown_default_open_api", other)]
+    UnknownDefaultOpenApi,
 }
 
 impl ToString for AwsServiceEnum {
@@ -25,6 +27,7 @@ impl ToString for AwsServiceEnum {
             Self::S3 => String::from("s3"),
             Self::Secretsmanager => String::from("secretsmanager"),
             Self::Ssm => String::from("ssm"),
+            Self::UnknownDefaultOpenApi => String::from("unknown_default_open_api"),
         }
     }
 }
