@@ -455,6 +455,29 @@ def optional_enums(srcdir: str) -> None:
             file_write_content(filename, updated)
 
 
+def default_enums(srcdir: str) -> None:
+    """
+    The generator additional-properties including enumUnknownDefaultCase=true adds
+    a 'unknown_default_open_api' variant to the enums. However, this change is
+    required to mark the variant as the default, such that the variant is returned
+    when an unknown string is received.
+
+    This is spot tested in the src/database/history.tests.parse_to_history_type_enum().
+    """
+    filelist = glob.glob(f"{srcdir}/models/*.rs")
+    default_value = "#[serde(rename = \"unknown_default_open_api\")]"
+    default_variant = "#[serde(rename = \"unknown_default_open_api\", other)]"
+
+    for filename in filelist:
+        orig = file_read_content(filename)
+        if default_value not in orig:
+            continue
+
+        updated = orig.replace(default_value, default_variant)
+        print(f"Updating {filename} with default variant")
+        file_write_content(filename, updated)
+
+
 if __name__ == "__main__":
     client_dir = os.getcwd() + "/client"
     srcdir = client_dir + "/src"
@@ -473,3 +496,4 @@ if __name__ == "__main__":
     serdes_error_handling_calls(srcdir)
     object_type_string(srcdir)
     optional_enums(srcdir)
+    default_enums(srcdir)

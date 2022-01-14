@@ -17,6 +17,8 @@ pub enum NodeTypeEnum {
     File,
     #[serde(rename = "value")]
     Value,
+    #[serde(rename = "unknown_default_open_api", other)]
+    UnknownDefaultOpenApi,
 }
 
 impl ToString for NodeTypeEnum {
@@ -25,6 +27,7 @@ impl ToString for NodeTypeEnum {
             Self::Directory => String::from("directory"),
             Self::File => String::from("file"),
             Self::Value => String::from("value"),
+            Self::UnknownDefaultOpenApi => String::from("unknown_default_open_api"),
         }
     }
 }

@@ -15,6 +15,8 @@ pub enum ModeEnum {
     Mapped,
     #[serde(rename = "pattern")]
     Pattern,
+    #[serde(rename = "unknown_default_open_api", other)]
+    UnknownDefaultOpenApi,
 }
 
 impl ToString for ModeEnum {
@@ -22,6 +24,7 @@ impl ToString for ModeEnum {
         match self {
             Self::Mapped => String::from("mapped"),
             Self::Pattern => String::from("pattern"),
+            Self::UnknownDefaultOpenApi => String::from("unknown_default_open_api"),
         }
     }
 }

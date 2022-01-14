@@ -57,6 +57,8 @@ pub enum AwsRegionEnum {
     UsWest1,
     #[serde(rename = "us-west-2")]
     UsWest2,
+    #[serde(rename = "unknown_default_open_api", other)]
+    UnknownDefaultOpenApi,
 }
 
 impl ToString for AwsRegionEnum {
@@ -85,6 +87,7 @@ impl ToString for AwsRegionEnum {
             Self::UsEast2 => String::from("us-east-2"),
             Self::UsWest1 => String::from("us-west-1"),
             Self::UsWest2 => String::from("us-west-2"),
+            Self::UnknownDefaultOpenApi => String::from("unknown_default_open_api"),
         }
     }
 }

@@ -19,6 +19,8 @@ pub enum HistoryTypeEnum {
     Delete,
     #[serde(rename = "nothing")]
     Nothing,
+    #[serde(rename = "unknown_default_open_api", other)]
+    UnknownDefaultOpenApi,
 }
 
 impl ToString for HistoryTypeEnum {
@@ -28,6 +30,7 @@ impl ToString for HistoryTypeEnum {
             Self::Update => String::from("update"),
             Self::Delete => String::from("delete"),
             Self::Nothing => String::from("nothing"),
+            Self::UnknownDefaultOpenApi => String::from("unknown_default_open_api"),
         }
     }
 }
