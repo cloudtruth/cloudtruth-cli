@@ -499,6 +499,7 @@ impl Parameters {
             modified_at: None,
             project: None,
             project_name: None,
+            overrides: None,
         };
         let response =
             projects_parameters_partial_update(rest_cfg, param_id, proj_id, Some(param_update));

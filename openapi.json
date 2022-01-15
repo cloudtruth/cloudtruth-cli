@@ -9907,6 +9907,7 @@
                     },
                     "resource": {
                         "type": "string",
+                        "nullable": true,
                         "description": "Defines a path through the integration to the location where values will be pulled.\n\nThe following mustache-style substitutions must be used in the resource locator string:\n\n  - ``{{ environment }}`` to identify the environment name\n  - ``{{ parameter }}`` to identify the parameter name\n  - ``{{ project }}`` to identify the project name",
                         "maxLength": 1024
                     }
@@ -10087,13 +10088,18 @@
                         "type": "string",
                         "nullable": true,
                         "description": "The integration-native id for the resource.",
-                        "maxLength": 1024
+                        "maxLength": 2048
                     },
                     "venue_name": {
                         "type": "string",
                         "nullable": true,
                         "description": "The name of the item or resource as known by the integration.",
-                        "maxLength": 256
+                        "maxLength": 1024
+                    },
+                    "summary": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "The summary of this step (what it was trying to do)."
                     },
                     "error_code": {
                         "type": "string",
@@ -10206,6 +10212,7 @@
                     },
                     "resource": {
                         "type": "string",
+                        "nullable": true,
                         "description": "Defines a path through the integration to the location where values will be pushed.\n\nThe following mustache-style substitutions can be used in the string:\n\n  - ``{{ environment }}`` to insert the environment name\n  - ``{{ parameter }}`` to insert the parameter name\n  - ``{{ project }}`` to insert the project name\n  - ``{{ push }}`` to insert the push name\n  - ``{{ tag }}`` to insert the tag name\n\nWe recommend that you use project, environment, and parameter at a minimum to disambiguate your pushed resource identifiers.\n\nIf you include multiple projects in the push, the `project` substitution is required.  If you include multiple tags from different environments in the push, the `environment` substitution is required.  If you include multiple tags from the same environment in the push, the `tag` substitution is required.  In all cases, the `parameter` substitution is always required.",
                         "maxLength": 1024
                     }
@@ -10386,13 +10393,18 @@
                         "type": "string",
                         "nullable": true,
                         "description": "The integration-native id for the resource.",
-                        "maxLength": 1024
+                        "maxLength": 2048
                     },
                     "venue_name": {
                         "type": "string",
                         "nullable": true,
                         "description": "The name of the item or resource as known by the integration.",
-                        "maxLength": 256
+                        "maxLength": 1024
+                    },
+                    "summary": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "The summary of this step (what it was trying to do)."
                     },
                     "error_code": {
                         "type": "string",
@@ -10458,6 +10470,7 @@
                     },
                     "resource": {
                         "type": "string",
+                        "nullable": true,
                         "description": "Defines a path through the integration to the location where values will be pushed.\n\nThe following mustache-style substitutions can be used in the string:\n\n  - ``{{ environment }}`` to insert the environment name\n  - ``{{ parameter }}`` to insert the parameter name\n  - ``{{ project }}`` to insert the project name\n  - ``{{ push }}`` to insert the push name\n  - ``{{ tag }}`` to insert the tag name\n\nWe recommend that you use project, environment, and parameter at a minimum to disambiguate your pushed resource identifiers.\n\nIf you include multiple projects in the push, the `project` substitution is required.  If you include multiple tags from different environments in the push, the `environment` substitution is required.  If you include multiple tags from the same environment in the push, the `tag` substitution is required.  In all cases, the `parameter` substitution is always required.",
                         "maxLength": 1024
                     }
@@ -11212,13 +11225,18 @@
                         "type": "string",
                         "nullable": true,
                         "description": "The integration-native id for the resource.",
-                        "maxLength": 1024
+                        "maxLength": 2048
                     },
                     "venue_name": {
                         "type": "string",
                         "nullable": true,
                         "description": "The name of the item or resource as known by the integration.",
-                        "maxLength": 256
+                        "maxLength": 1024
+                    },
+                    "summary": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "The summary of this step (what it was trying to do)."
                     },
                     "error_code": {
                         "type": "string",
@@ -12551,7 +12569,7 @@
                     "type": {
                         "type": "string",
                         "default": "string",
-                        "description": "The type of this Parameter"
+                        "description": "The type of this Parameter."
                     },
                     "rules": {
                         "type": "array",
@@ -12570,7 +12588,7 @@
                     "project_name": {
                         "type": "string",
                         "readOnly": true,
-                        "description": "The project name that the parameter is within"
+                        "description": "The project name that the parameter is within."
                     },
                     "referencing_templates": {
                         "type": "array",
@@ -12601,6 +12619,13 @@
                         "readOnly": true,
                         "description": "\n            This dictionary has keys that correspond to environment urls, and values\n            that correspond to the effective value for this parameter in that environment.\n            Each parameter has an effective value in every environment based on\n            project dependencies and environment inheritance.\n\n            The effective value is found by looking (within the keyed environment) up\n            the project dependencies by parameter name.  If a value is not found, the\n            parent environment is consulted with the same logic to locate a value.  It\n            is possible for there to be a `null` value record for an environment, which\n            means there is no value set; it is also possible for there to be a value record\n            with a `value` of `null`, which means the value was explicitly set to `null`.\n\n            If the value's parameter does not match the enclosing parameter (holding the\n            values array) then that value is flowing in through project dependencies.\n            Clients must recognize this in case the user asks to modify the value; in this\n            case the client must POST a new Value to the current parameter to override the\n            value coming in from the project dependency.\n\n            If the Value.environment matches the key, then it is an explicit value set for\n            that environment.  If they differ, the value was obtained from a parent\n            environment (directly or indirectly).  If the value is None then no value has\n            ever been set in any environment for this parameter within all the project\n            dependencies.\n        "
                     },
+                    "overrides": {
+                        "type": "string",
+                        "format": "uri",
+                        "readOnly": true,
+                        "nullable": true,
+                        "description": "If this parameter's project depends on another project which provides a parameter of the same name, this parameter overrides the one provided by the dependee.  You can use this field to determine if there will be side-effects the user should know about when deleting a parameter.  Deleting a parameter that overrides another one due to an identical name will uncover the one from the dependee project."
+                    },
                     "created_at": {
                         "type": "string",
                         "format": "date-time",
@@ -12617,6 +12642,7 @@
                     "id",
                     "modified_at",
                     "name",
+                    "overrides",
                     "project",
                     "project_name",
                     "referencing_templates",
@@ -12646,7 +12672,7 @@
                     "type": {
                         "type": "string",
                         "default": "string",
-                        "description": "The type of this Parameter"
+                        "description": "The type of this Parameter."
                     }
                 },
                 "required": [
@@ -13214,6 +13240,7 @@
                     },
                     "resource": {
                         "type": "string",
+                        "nullable": true,
                         "description": "Defines a path through the integration to the location where values will be pulled.\n\nThe following mustache-style substitutions must be used in the resource locator string:\n\n  - ``{{ environment }}`` to identify the environment name\n  - ``{{ parameter }}`` to identify the parameter name\n  - ``{{ project }}`` to identify the project name",
                         "maxLength": 1024
                     }
@@ -13250,6 +13277,7 @@
                     },
                     "resource": {
                         "type": "string",
+                        "nullable": true,
                         "description": "Defines a path through the integration to the location where values will be pushed.\n\nThe following mustache-style substitutions can be used in the string:\n\n  - ``{{ environment }}`` to insert the environment name\n  - ``{{ parameter }}`` to insert the parameter name\n  - ``{{ project }}`` to insert the project name\n  - ``{{ push }}`` to insert the push name\n  - ``{{ tag }}`` to insert the tag name\n\nWe recommend that you use project, environment, and parameter at a minimum to disambiguate your pushed resource identifiers.\n\nIf you include multiple projects in the push, the `project` substitution is required.  If you include multiple tags from different environments in the push, the `environment` substitution is required.  If you include multiple tags from the same environment in the push, the `tag` substitution is required.  In all cases, the `parameter` substitution is always required.",
                         "maxLength": 1024
                     }
@@ -13569,7 +13597,7 @@
                     "type": {
                         "type": "string",
                         "default": "string",
-                        "description": "The type of this Parameter"
+                        "description": "The type of this Parameter."
                     },
                     "rules": {
                         "type": "array",
@@ -13588,7 +13616,7 @@
                     "project_name": {
                         "type": "string",
                         "readOnly": true,
-                        "description": "The project name that the parameter is within"
+                        "description": "The project name that the parameter is within."
                     },
                     "referencing_templates": {
                         "type": "array",
@@ -13618,6 +13646,13 @@
                         },
                         "readOnly": true,
                         "description": "\n            This dictionary has keys that correspond to environment urls, and values\n            that correspond to the effective value for this parameter in that environment.\n            Each parameter has an effective value in every environment based on\n            project dependencies and environment inheritance.\n\n            The effective value is found by looking (within the keyed environment) up\n            the project dependencies by parameter name.  If a value is not found, the\n            parent environment is consulted with the same logic to locate a value.  It\n            is possible for there to be a `null` value record for an environment, which\n            means there is no value set; it is also possible for there to be a value record\n            with a `value` of `null`, which means the value was explicitly set to `null`.\n\n            If the value's parameter does not match the enclosing parameter (holding the\n            values array) then that value is flowing in through project dependencies.\n            Clients must recognize this in case the user asks to modify the value; in this\n            case the client must POST a new Value to the current parameter to override the\n            value coming in from the project dependency.\n\n            If the Value.environment matches the key, then it is an explicit value set for\n            that environment.  If they differ, the value was obtained from a parent\n            environment (directly or indirectly).  If the value is None then no value has\n            ever been set in any environment for this parameter within all the project\n            dependencies.\n        "
+                    },
+                    "overrides": {
+                        "type": "string",
+                        "format": "uri",
+                        "readOnly": true,
+                        "nullable": true,
+                        "description": "If this parameter's project depends on another project which provides a parameter of the same name, this parameter overrides the one provided by the dependee.  You can use this field to determine if there will be side-effects the user should know about when deleting a parameter.  Deleting a parameter that overrides another one due to an identical name will uncover the one from the dependee project."
                     },
                     "created_at": {
                         "type": "string",
@@ -14583,13 +14618,18 @@
                         "type": "string",
                         "nullable": true,
                         "description": "The integration-native id for the resource.",
-                        "maxLength": 1024
+                        "maxLength": 2048
                     },
                     "venue_name": {
                         "type": "string",
                         "nullable": true,
                         "description": "The name of the item or resource as known by the integration.",
-                        "maxLength": 256
+                        "maxLength": 1024
+                    },
+                    "summary": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "The summary of this step (what it was trying to do)."
                     },
                     "error_code": {
                         "type": "string",

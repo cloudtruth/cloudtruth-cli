@@ -26,7 +26,7 @@ pub struct PatchedParameter {
     /// Indicates if this content is secret or not.  When a parameter is considered to be a secret, any internal values are stored in a dedicated vault for your organization for maximum security.  External values are inspected on-demand to ensure they align with the parameter's secret setting and if they do not, those external values are not allowed to be used.
     #[serde(rename = "secret", skip_serializing_if = "Option::is_none")]
     pub secret: Option<bool>,
-    /// The type of this Parameter
+    /// The type of this Parameter.
     #[serde(rename = "type", skip_serializing_if = "Option::is_none")]
     pub _type: Option<String>,
     /// Rules applied to this parameter.
@@ -35,7 +35,7 @@ pub struct PatchedParameter {
     /// The project that the parameter is within.
     #[serde(rename = "project", skip_serializing_if = "Option::is_none")]
     pub project: Option<String>,
-    /// The project name that the parameter is within
+    /// The project name that the parameter is within.
     #[serde(rename = "project_name", skip_serializing_if = "Option::is_none")]
     pub project_name: Option<String>,
     /// Templates that reference this Parameter.
@@ -50,6 +50,9 @@ pub struct PatchedParameter {
     ///              This dictionary has keys that correspond to environment urls, and values             that correspond to the effective value for this parameter in that environment.             Each parameter has an effective value in every environment based on             project dependencies and environment inheritance.              The effective value is found by looking (within the keyed environment) up             the project dependencies by parameter name.  If a value is not found, the             parent environment is consulted with the same logic to locate a value.  It             is possible for there to be a `null` value record for an environment, which             means there is no value set; it is also possible for there to be a value record             with a `value` of `null`, which means the value was explicitly set to `null`.              If the value's parameter does not match the enclosing parameter (holding the             values array) then that value is flowing in through project dependencies.             Clients must recognize this in case the user asks to modify the value; in this             case the client must POST a new Value to the current parameter to override the             value coming in from the project dependency.              If the Value.environment matches the key, then it is an explicit value set for             that environment.  If they differ, the value was obtained from a parent             environment (directly or indirectly).  If the value is None then no value has             ever been set in any environment for this parameter within all the project             dependencies.         
     #[serde(rename = "values", skip_serializing_if = "Option::is_none")]
     pub values: Option<::std::collections::HashMap<String, Option<crate::models::Value>>>,
+    /// If this parameter's project depends on another project which provides a parameter of the same name, this parameter overrides the one provided by the dependee.  You can use this field to determine if there will be side-effects the user should know about when deleting a parameter.  Deleting a parameter that overrides another one due to an identical name will uncover the one from the dependee project.
+    #[serde(rename = "overrides", skip_serializing_if = "Option::is_none")]
+    pub overrides: Option<String>,
     #[serde(rename = "created_at", skip_serializing_if = "Option::is_none")]
     pub created_at: Option<String>,
     #[serde(rename = "modified_at", skip_serializing_if = "Option::is_none")]
@@ -72,6 +75,7 @@ impl PatchedParameter {
             referencing_templates: None,
             referencing_values: None,
             values: None,
+            overrides: None,
             created_at: None,
             modified_at: None,
         }

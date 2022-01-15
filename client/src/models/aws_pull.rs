@@ -56,7 +56,7 @@ pub struct AwsPull {
     pub service: Option<Box<crate::models::AwsServiceEnum>>,
     /// Defines a path through the integration to the location where values will be pulled.  The following mustache-style substitutions must be used in the resource locator string:    - ``{{ environment }}`` to identify the environment name   - ``{{ parameter }}`` to identify the parameter name   - ``{{ project }}`` to identify the project name
     #[serde(rename = "resource")]
-    pub resource: String,
+    pub resource: Option<String>,
 }
 
 impl AwsPull {
@@ -72,7 +72,7 @@ impl AwsPull {
         mode: Option<crate::models::ModeEnum>,
         region: Option<crate::models::AwsRegionEnum>,
         service: Option<crate::models::AwsServiceEnum>,
-        resource: String,
+        resource: Option<String>,
     ) -> AwsPull {
         AwsPull {
             url,

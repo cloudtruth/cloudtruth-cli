@@ -44,7 +44,7 @@ pub struct AwsPush {
     pub service: Option<Box<crate::models::AwsServiceEnum>>,
     /// Defines a path through the integration to the location where values will be pushed.  The following mustache-style substitutions can be used in the string:    - ``{{ environment }}`` to insert the environment name   - ``{{ parameter }}`` to insert the parameter name   - ``{{ project }}`` to insert the project name   - ``{{ push }}`` to insert the push name   - ``{{ tag }}`` to insert the tag name  We recommend that you use project, environment, and parameter at a minimum to disambiguate your pushed resource identifiers.  If you include multiple projects in the push, the `project` substitution is required.  If you include multiple tags from different environments in the push, the `environment` substitution is required.  If you include multiple tags from the same environment in the push, the `tag` substitution is required.  In all cases, the `parameter` substitution is always required.
     #[serde(rename = "resource")]
-    pub resource: String,
+    pub resource: Option<String>,
 }
 
 impl AwsPush {
@@ -60,7 +60,7 @@ impl AwsPush {
         tags: Vec<String>,
         region: Option<crate::models::AwsRegionEnum>,
         service: Option<crate::models::AwsServiceEnum>,
-        resource: String,
+        resource: Option<String>,
     ) -> AwsPush {
         AwsPush {
             url,

@@ -6361,6 +6361,7 @@ components:
             in the integration.
         resource:
           type: string
+          nullable: true
           description: |-
             Defines a path through the integration to the location where values will be pulled.
 
@@ -6518,12 +6519,16 @@ components:
           type: string
           nullable: true
           description: The integration-native id for the resource.
-          maxLength: 1024
+          maxLength: 2048
         venue_name:
           type: string
           nullable: true
           description: The name of the item or resource as known by the integration.
-          maxLength: 256
+          maxLength: 1024
+        summary:
+          type: string
+          nullable: true
+          description: The summary of this step (what it was trying to do).
         error_code:
           type: string
           nullable: true
@@ -6612,6 +6617,7 @@ components:
             in the integration.
         resource:
           type: string
+          nullable: true
           description: |-
             Defines a path through the integration to the location where values will be pushed.
 
@@ -6775,12 +6781,16 @@ components:
           type: string
           nullable: true
           description: The integration-native id for the resource.
-          maxLength: 1024
+          maxLength: 2048
         venue_name:
           type: string
           nullable: true
           description: The name of the item or resource as known by the integration.
-          maxLength: 256
+          maxLength: 1024
+        summary:
+          type: string
+          nullable: true
+          description: The summary of this step (what it was trying to do).
         error_code:
           type: string
           nullable: true
@@ -6835,6 +6845,7 @@ components:
             environment in the same push.
         resource:
           type: string
+          nullable: true
           description: |-
             Defines a path through the integration to the location where values will be pushed.
 
@@ -7452,12 +7463,16 @@ components:
           type: string
           nullable: true
           description: The integration-native id for the resource.
-          maxLength: 1024
+          maxLength: 2048
         venue_name:
           type: string
           nullable: true
           description: The name of the item or resource as known by the integration.
-          maxLength: 256
+          maxLength: 1024
+        summary:
+          type: string
+          nullable: true
+          description: The summary of this step (what it was trying to do).
         error_code:
           type: string
           nullable: true
@@ -8468,7 +8483,7 @@ components:
         type:
           type: string
           default: string
-          description: The type of this Parameter
+          description: The type of this Parameter.
         rules:
           type: array
           items:
@@ -8483,7 +8498,7 @@ components:
         project_name:
           type: string
           readOnly: true
-          description: The project name that the parameter is within
+          description: The project name that the parameter is within.
         referencing_templates:
           type: array
           items:
@@ -8527,6 +8542,17 @@ components:
             \ (directly or indirectly).  If the value is None then no value has\n\
             \            ever been set in any environment for this parameter within\
             \ all the project\n            dependencies.\n        "
+        overrides:
+          type: string
+          format: uri
+          readOnly: true
+          nullable: true
+          description: If this parameter's project depends on another project which
+            provides a parameter of the same name, this parameter overrides the one
+            provided by the dependee.  You can use this field to determine if there
+            will be side-effects the user should know about when deleting a parameter.  Deleting
+            a parameter that overrides another one due to an identical name will uncover
+            the one from the dependee project.
         created_at:
           type: string
           format: date-time
@@ -8540,6 +8566,7 @@ components:
       - id
       - modified_at
       - name
+      - overrides
       - project
       - project_name
       - referencing_templates
@@ -8570,7 +8597,7 @@ components:
         type:
           type: string
           default: string
-          description: The type of this Parameter
+          description: The type of this Parameter.
       required:
       - name
     ParameterExport:
@@ -9058,6 +9085,7 @@ components:
             in the integration.
         resource:
           type: string
+          nullable: true
           description: |-
             Defines a path through the integration to the location where values will be pulled.
 
@@ -9095,6 +9123,7 @@ components:
             environment in the same push.
         resource:
           type: string
+          nullable: true
           description: |-
             Defines a path through the integration to the location where values will be pushed.
 
@@ -9378,7 +9407,7 @@ components:
         type:
           type: string
           default: string
-          description: The type of this Parameter
+          description: The type of this Parameter.
         rules:
           type: array
           items:
@@ -9393,7 +9422,7 @@ components:
         project_name:
           type: string
           readOnly: true
-          description: The project name that the parameter is within
+          description: The project name that the parameter is within.
         referencing_templates:
           type: array
           items:
@@ -9437,6 +9466,17 @@ components:
             \ (directly or indirectly).  If the value is None then no value has\n\
             \            ever been set in any environment for this parameter within\
             \ all the project\n            dependencies.\n        "
+        overrides:
+          type: string
+          format: uri
+          readOnly: true
+          nullable: true
+          description: If this parameter's project depends on another project which
+            provides a parameter of the same name, this parameter overrides the one
+            provided by the dependee.  You can use this field to determine if there
+            will be side-effects the user should know about when deleting a parameter.  Deleting
+            a parameter that overrides another one due to an identical name will uncover
+            the one from the dependee project.
         created_at:
           type: string
           format: date-time
@@ -10280,12 +10320,16 @@ components:
           type: string
           nullable: true
           description: The integration-native id for the resource.
-          maxLength: 1024
+          maxLength: 2048
         venue_name:
           type: string
           nullable: true
           description: The name of the item or resource as known by the integration.
-          maxLength: 256
+          maxLength: 1024
+        summary:
+          type: string
+          nullable: true
+          description: The summary of this step (what it was trying to do).
         error_code:
           type: string
           nullable: true

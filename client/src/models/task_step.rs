@@ -62,6 +62,9 @@ pub struct TaskStep {
     /// The name of the item or resource as known by the integration.
     #[serde(rename = "venue_name", skip_serializing_if = "Option::is_none")]
     pub venue_name: Option<String>,
+    /// The summary of this step (what it was trying to do).
+    #[serde(rename = "summary", skip_serializing_if = "Option::is_none")]
+    pub summary: Option<String>,
     /// An error code, if not successful.
     #[serde(rename = "error_code", skip_serializing_if = "Option::is_none")]
     pub error_code: Option<String>,
@@ -104,6 +107,7 @@ impl TaskStep {
             parameter_name: None,
             venue_id: None,
             venue_name: None,
+            summary: None,
             error_code: None,
             error_detail: None,
             created_at,
