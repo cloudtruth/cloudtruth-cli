@@ -80,7 +80,7 @@ impl From<&AwsPush> for ActionDetails {
             description: api.description.clone().unwrap_or_default(),
             provider: "aws".to_string(),
             action_type: "push".to_string(),
-            resource: api.resource.clone(),
+            resource: api.resource.clone().unwrap_or_default(),
             project_urls: api.projects.clone(),
             project_names: vec![], // filled in later
             tag_urls: api.tags.clone(),
@@ -118,7 +118,7 @@ impl From<&AwsPull> for ActionDetails {
             provider: "aws".to_string(),
             action_type: "pull".to_string(),
             dry_run: api.dry_run.unwrap_or(false),
-            resource: api.resource.clone(),
+            resource: api.resource.clone().unwrap_or_default(),
             project_urls: vec![],
             project_names: vec![], // filled in later
             tag_urls: vec![],

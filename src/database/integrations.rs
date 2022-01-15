@@ -686,7 +686,7 @@ impl Integrations {
             tags,
             region: reg_enum.map(Box::new),
             service: ser_enum.map(Box::new),
-            resource: resource.to_string(),
+            resource: Some(resource.to_string()),
             latest_task: None,
             created_at: "".to_string(),
             modified_at: "".to_string(),
@@ -744,7 +744,7 @@ impl Integrations {
             description: description.map(String::from),
             projects,
             tags,
-            resource: resource.to_string(),
+            resource: Some(resource.to_string()),
         };
         let response =
             integrations_aws_pushes_update(rest_cfg, integration_id, push_id, push_update);
@@ -803,7 +803,7 @@ impl Integrations {
             tags: push_details.tag_urls.clone(),
             region: reg_enum.map(Box::new),
             service: srv_enum.map(Box::new),
-            resource: push_details.resource.clone(),
+            resource: Some(push_details.resource.clone()),
             latest_task: None,
             created_at: "".to_string(),
             modified_at: "".to_string(),
@@ -1138,7 +1138,7 @@ impl Integrations {
             description: description.map(String::from),
             region: reg_enum.map(Box::new),
             service: ser_enum.map(Box::new),
-            resource: resource.to_string(),
+            resource: Some(resource.to_string()),
             latest_task: None,
             created_at: "".to_string(),
             modified_at: "".to_string(),
@@ -1209,7 +1209,7 @@ impl Integrations {
             create_projects: None,
             region: Some(Box::new(AwsRegionEnum::AfSouth1)),
             service: Some(Box::new(AwsServiceEnum::S3)),
-            resource: resource.to_string(),
+            resource: Some(resource.to_string()),
         };
         let response =
             integrations_aws_pulls_update(rest_cfg, integration_id, pull_id, pull_update);
@@ -1264,7 +1264,7 @@ impl Integrations {
             description,
             region: reg_enum.map(Box::new),
             service: srv_enum.map(Box::new),
-            resource: pull_details.resource.clone(),
+            resource: Some(pull_details.resource.clone()),
             latest_task: None,
             created_at: "".to_string(),
             modified_at: "".to_string(),

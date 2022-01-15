@@ -21,7 +21,7 @@ pub struct ParameterCreate {
     /// Indicates if this content is secret or not.  When a parameter is considered to be a secret, any internal values are stored in a dedicated vault for your organization for maximum security.  External values are inspected on-demand to ensure they align with the parameter's secret setting and if they do not, those external values are not allowed to be used.
     #[serde(rename = "secret", skip_serializing_if = "Option::is_none")]
     pub secret: Option<bool>,
-    /// The type of this Parameter
+    /// The type of this Parameter.
     #[serde(rename = "type", skip_serializing_if = "Option::is_none")]
     pub _type: Option<String>,
 }
