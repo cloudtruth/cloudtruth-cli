@@ -674,6 +674,8 @@ impl Integrations {
         description: Option<&str>,
         projects: Vec<String>,
         tags: Vec<String>,
+        dry_run: Option<bool>,
+        force: Option<bool>,
     ) -> Result<ActionDetails, IntegrationError> {
         let reg_enum = aws_region_from_str(region);
         let ser_enum = aws_service_from_str(service);
@@ -688,6 +690,8 @@ impl Integrations {
             service: ser_enum.map(Box::new),
             resource: Some(resource.to_string()),
             latest_task: None,
+            dry_run,
+            force,
             created_at: "".to_string(),
             modified_at: "".to_string(),
             coerce_parameters: None,
@@ -718,6 +722,8 @@ impl Integrations {
         description: Option<&str>,
         projects: Vec<String>,
         tags: Vec<String>,
+        dry_run: Option<bool>,
+        force: Option<bool>,
     ) -> Result<ActionDetails, IntegrationError> {
         self.create_aws_push(
             rest_cfg,
@@ -729,6 +735,8 @@ impl Integrations {
             description,
             projects,
             tags,
+            dry_run,
+            force,
         )
     }
 
@@ -795,6 +803,8 @@ impl Integrations {
         &self,
         rest_cfg: &OpenApiConfig,
         push_details: &ActionDetails,
+        dry_run: Option<bool>,
+        force: Option<bool>,
     ) -> Result<(), IntegrationError> {
         let description = if push_details.description.is_empty() {
             None
@@ -815,6 +825,8 @@ impl Integrations {
             service: srv_enum.map(Box::new),
             resource: Some(push_details.resource.clone()),
             latest_task: None,
+            dry_run,
+            force,
             created_at: "".to_string(),
             modified_at: "".to_string(),
             coerce_parameters: None,
@@ -842,8 +854,10 @@ impl Integrations {
         &self,
         rest_cfg: &OpenApiConfig,
         push_details: &ActionDetails,
+        dry_run: Option<bool>,
+        force: Option<bool>,
     ) -> Result<(), IntegrationError> {
-        self.sync_aws_push(rest_cfg, push_details)
+        self.sync_aws_push(rest_cfg, push_details, dry_run, force)
     }
 
     ///==========================================

@@ -1,7 +1,8 @@
 use crate::cli::{
-    show_values, CONFIRM_FLAG, DELETE_SUBCMD, DESCRIPTION_OPT, FORMAT_OPT, GET_SUBCMD,
-    IMPORT_SUBCMD, INTEGRATION_NAME_ARG, LIST_SUBCMD, PULL_NAME_ARG, PUSH_NAME_ARG, PUSH_SUBCMD,
-    RENAME_OPT, SET_SUBCMD, SHOW_TIMES_FLAG, SYNC_SUBCMD, TASKS_SUBCMD, TASK_STEPS_SUBCMD,
+    show_values, CONFIRM_FLAG, DELETE_SUBCMD, DESCRIPTION_OPT, DRY_RUN_FLAG, FORMAT_OPT,
+    GET_SUBCMD, IMPORT_SUBCMD, INTEGRATION_NAME_ARG, LIST_SUBCMD, PULL_NAME_ARG, PUSH_NAME_ARG,
+    PUSH_SUBCMD, RENAME_OPT, SET_SUBCMD, SHOW_TIMES_FLAG, SYNC_SUBCMD, TASKS_SUBCMD,
+    TASK_STEPS_SUBCMD,
 };
 use crate::database::{
     last_from_url, parent_id_from_url, ActionDetails, Environments, IntegrationError, Integrations,
@@ -435,6 +436,12 @@ fn proc_action_push_set(
     let resource = subcmd_args.value_of("resource");
     let region = subcmd_args.value_of("region").unwrap();
     let service = subcmd_args.value_of("service").unwrap();
+    let dry_run = if subcmd_args.is_present(DRY_RUN_FLAG) {
+        Some(true)
+    } else {
+        None
+    };
+    let force = None;
     let proj_to_add: Vec<&str> = subcmd_args
         .values_of("project-add")
         .unwrap_or_default()
@@ -523,6 +530,8 @@ fn proc_action_push_set(
                 description,
                 proj_add_ids.iter().map(String::from).collect(),
                 tag_add_ids.iter().map(String::from).collect(),
+                dry_run,
+                force,
             )?;
             println!(
                 "Created push '{}' in integration '{}'",
@@ -547,9 +556,15 @@ fn proc_action_push_sync(
     let integ_name = subcmd_args.value_of(INTEGRATION_NAME_ARG);
     let push_name = subcmd_args.value_of(PUSH_NAME_ARG).unwrap();
     let resolved = resolve_push_details(rest_cfg, integrations, integ_name, push_name)?;
+    let dry_run = if subcmd_args.is_present(DRY_RUN_FLAG) {
+        Some(true)
+    } else {
+        None
+    };
+    let force = None;
 
     if let Some(details) = resolved {
-        integrations.sync_push(rest_cfg, &details)?;
+        integrations.sync_push(rest_cfg, &details, dry_run, force)?;
         println!(
             "Synchronized push '{}' for integration '{}'",
             push_name, details.integration_name

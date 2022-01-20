@@ -7,6 +7,7 @@ pub const API_KEY_OPT: &str = "api_key";
 pub const AS_OF_ARG: &str = "datetime|tag";
 pub const CONFIRM_FLAG: &str = "confirm";
 pub const DESCRIPTION_OPT: &str = "description";
+pub const DRY_RUN_FLAG: &str = "dry-run";
 pub const ENV_NAME_ARG: &str = "env-name";
 pub const FORMAT_OPT: &str = "format";
 pub const INTEGRATION_NAME_ARG: &str = "integration-name";
@@ -386,6 +387,10 @@ fn rule_no_regex_arg() -> Arg<'static, 'static> {
     Arg::with_name(RULE_NO_REGEX_ARG)
         .long("no-regex")
         .help("Remove the parameter rule regex value")
+}
+
+fn dry_run_opt() -> Arg<'static, 'static> {
+    Arg::with_name(DRY_RUN_FLAG).long("dry-run")
 }
 
 pub fn build_cli() -> App<'static, 'static> {
@@ -1038,6 +1043,7 @@ pub fn build_cli() -> App<'static, 'static> {
                                 .multiple(true)
                                 .long("no-tag")
                                 .help("Tag name(s) to be subtracted"))
+                            .arg(dry_run_opt().help("Dry-run the push without changing any data"))
                             .arg(Arg::with_name("region")
                                 .long("region")
                                 .takes_value(true)
@@ -1055,6 +1061,7 @@ pub fn build_cli() -> App<'static, 'static> {
                             .visible_aliases(SYNC_ALIASES)
                             .about("Manually initiate action on existing push")
                             .arg(integration_name_opt())
+                            .arg(dry_run_opt().help("Dry-run the push without changing any data"))
                             .arg(push_name_arg()),
                         SubCommand::with_name(TASK_STEPS_SUBCMD)
                             .visible_aliases(TASK_STEPS_ALIASES)
@@ -1101,8 +1108,7 @@ pub fn build_cli() -> App<'static, 'static> {
                             .arg(integration_name_opt().help("Integration name (required on create)"))
                             .arg(rename_option().help("New import name"))
                             .arg(description_option().help("Description for the import"))
-                            .arg(Arg::with_name("dry-run")
-                                .long("dry-run").help("Check that the import will work without doing it."))
+                            .arg(dry_run_opt().help("Check that the import will work without doing it."))
                             .arg(Arg::with_name("resource")
                                 .long("resource")
                                 .takes_value(true)

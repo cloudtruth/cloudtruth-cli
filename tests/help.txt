@@ -273,9 +273,10 @@ cloudtruth-actions-pushes-set
 Create/modify CloudTruth integration push
 
 USAGE:
-    cloudtruth actions pushes set [OPTIONS] <push-name>
+    cloudtruth actions pushes set [FLAGS] [OPTIONS] <push-name>
 
 FLAGS:
+        --dry-run    Dry-run the push without changing any data
     -h, --help       Prints help information
     -V, --version    Prints version information
 
@@ -300,9 +301,10 @@ cloudtruth-actions-pushes-sync
 Manually initiate action on existing push
 
 USAGE:
-    cloudtruth actions pushes sync [OPTIONS] <push-name>
+    cloudtruth actions pushes sync [FLAGS] [OPTIONS] <push-name>
 
 FLAGS:
+        --dry-run    Dry-run the push without changing any data
     -h, --help       Prints help information
     -V, --version    Prints version information
 
