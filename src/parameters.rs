@@ -1192,7 +1192,7 @@ fn proc_param_drift(
 
     let mut deltas: Vec<DriftDetails> = vec![];
 
-    // loop through the cloudtruth parameters and add missing/changed
+    // loop through the CloudTruth environment and add items changed in or not present in the shell
     for (k, details) in &param_map {
         let show_this = show_secrets || !details.secret;
         if !env_vars.contains_key(k) {
@@ -1217,7 +1217,7 @@ fn proc_param_drift(
         }
     }
 
-    // loop through environment variables just looking for missing
+    // loop through shell environment, and add items not in the CloudTruth environment
     for (k, v) in &env_vars {
         if !param_map.contains_key(k) {
             deltas.push(DriftDetails {
