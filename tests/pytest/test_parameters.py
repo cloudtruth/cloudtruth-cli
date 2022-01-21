@@ -2919,7 +2919,7 @@ Name,Value,Project
 
         # combination test... 'cloudtruth run' should put all parameters/values in the shell environment, so all the
         # drift is standard OS/shell parameters that are added
-        run_cmd = base_cmd + f"run -c '{base_cmd} param drift -vf json'"
+        run_cmd = base_cmd + f"run --permissive -c '{base_cmd} param drift -vf json'"
         entries = self.get_cli_entries(cmd_env, run_cmd, "parameter-drift")
         self.assertEqual(len(entries), len(find_by_prop(entries, PROP_CHANGE, "added")))
 
