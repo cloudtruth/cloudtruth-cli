@@ -205,6 +205,9 @@ download_draft() {
 # alpine, macos - no package format yet, use generic binary
 if [ "${PKG}" = "apk" ] || [ "${PKG}" = "macos" ]; then
     if [ "${PKG}" = "macos" ]; then
+        if [ "${ARCH}" = "arm64" ]; then
+            ARCH="aarch64"
+        fi
         PACKAGE_DIR=cloudtruth-${CT_CLI_VERSION}-${ARCH}-apple-darwin
     else
         PACKAGE_DIR=cloudtruth-${CT_CLI_VERSION}-${ARCH}-unknown-linux-musl
