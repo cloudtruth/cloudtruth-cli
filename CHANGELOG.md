@@ -1,3 +1,11 @@
+# 1.1.5 - 2022-01-21
+
+* Add `parameter drift` command to compare current shell environment to project/environment.
+* Add `backup snapshot` command to download a full set of parameter-types, environments, and projects (including
+  templates, and parameters/values in the different environments)
+* Add filter options to `audit-log list` for `--project`, `--parameter`, and `--env`.
+* Improve general handling for server-side enumeration updates.
+
 # 1.1.4 - 2022-01-10
 
 * Use API for password generation:
