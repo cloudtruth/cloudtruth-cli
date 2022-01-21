@@ -1,6 +1,6 @@
 use crate::cli::GET_SUBCMD;
 use crate::installation::{binary_version, get_latest_version, install_latest_version};
-use crate::{error_message, warn_missing_subcommand, warning_message};
+use crate::lib::{error_message, warn_missing_subcommand, warning_message};
 use clap::ArgMatches;
 use color_eyre::eyre::Result;
 use std::process;

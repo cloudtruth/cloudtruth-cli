@@ -1,6 +1,6 @@
 use crate::cli::{CONFIRM_FLAG, FORMAT_OPT};
 use crate::database::{Backups, OpenApiConfig};
-use crate::{error_message, user_confirm, warn_missing_subcommand, warning_message};
+use crate::lib::{error_message, user_confirm, warn_missing_subcommand, warning_message};
 use clap::ArgMatches;
 use color_eyre::eyre::Result;
 use indoc::printdoc;

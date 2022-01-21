@@ -1,6 +1,6 @@
 use crate::cli::{DIFF_SUBCMD, FORMAT_OPT};
 use crate::database::{Api, OpenApiConfig};
-use crate::warn_missing_subcommand;
+use crate::lib::warn_missing_subcommand;
 use clap::ArgMatches;
 use color_eyre::eyre::Result;
 use similar::TextDiff;

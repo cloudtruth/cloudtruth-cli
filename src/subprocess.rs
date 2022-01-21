@@ -1,6 +1,6 @@
 use crate::config::{CT_APP_REMOVABLE_VARS, CT_ENVIRONMENT, CT_PROJECT};
 use crate::database::ResolvedDetails;
-use crate::warn_user;
+use crate::lib::warn_user;
 use color_eyre::eyre::{ErrReport, Result};
 use color_eyre::Report;
 use std::collections::HashMap;

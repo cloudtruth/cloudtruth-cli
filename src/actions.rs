@@ -8,11 +8,11 @@ use crate::database::{
     OpenApiConfig, ProjectDetails, Projects,
 };
 use crate::integrations::integration_not_found_message;
-use crate::table::Table;
-use crate::{
+use crate::lib::{
     error_message, help_message, user_confirm, warn_missing_subcommand, warning_message,
     DEL_CONFIRM,
 };
+use crate::table::Table;
 use clap::ArgMatches;
 use color_eyre::eyre::Result;
 use indoc::printdoc;
