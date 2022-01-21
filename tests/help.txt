@@ -975,6 +975,7 @@ FLAGS:
 SUBCOMMANDS:
     delete         Delete the parameter from the project [aliases: del, d]
     differences    Show differences between properties from two environments [aliases: difference, differ, diff, di]
+    drift          Determine drift between current environment and project parameters [aliases: dri, dr]
     environment    Shows the environments with parameter overrides [aliases: environ, env]
     export         Export selected parameters to a known output format. Exported parameters are limited to
                    alphanumeric and underscore  in key names. Formats available are: dotenv, docker, and shell.
@@ -1020,6 +1021,22 @@ OPTIONS:
     -p, --property <properties>...    List of the properties to compare. [default: value]  [possible values: value,
                                       type, environment, fqn, jmes-path, raw, rule-count, secret, created-at, modified-
                                       at]
+========================================
+cloudtruth-parameters-drift 
+Determine drift between current environment and project parameters
+
+USAGE:
+    cloudtruth parameters drift [FLAGS] [OPTIONS]
+
+FLAGS:
+    -h, --help       Prints help information
+    -s, --secrets    
+    -v, --values     
+    -V, --version    Prints version information
+
+OPTIONS:
+        --as-of <datetime|tag>    Date/time (or tag) of parameter value(s)
+    -f, --format <format>         Format for differences [default: table]  [possible values: table, csv, json, yaml]
 ========================================
 cloudtruth-parameters-environment 
 Shows the environments with parameter overrides

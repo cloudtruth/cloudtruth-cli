@@ -650,6 +650,15 @@ pub fn build_cli() -> App<'static, 'static> {
                         .about("Delete the parameter from the project")
                         .arg(confirm_flag())
                         .arg(key_arg().help("Name of parameter to delete")),
+                    SubCommand::with_name("drift")
+                        .visible_aliases(&["dri", "dr"])
+                        .about("Determine drift between current environment and project parameters")
+                        .args(&[
+                            table_format_options().help("Format for differences"),
+                            param_as_of_arg(),
+                            secrets_display_flag(),
+                            values_flag(),
+                        ]),
                     SubCommand::with_name("export")
                         .visible_aliases(&["expo", "exp", "ex"])
                         .about(concat!("Export selected parameters to a known output format. ",
