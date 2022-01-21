@@ -1,10 +1,10 @@
 use crate::cli::AS_OF_ARG;
 use crate::database::{OpenApiConfig, Parameters, ResolvedDetails};
-use crate::subprocess::{EnvSettings, Inheritance, SubProcess};
-use crate::{
+use crate::lib::{
     format_param_error, parse_datetime, parse_tag, warn_missing_subcommand, warn_unresolved_params,
     warn_user,
 };
+use crate::subprocess::{EnvSettings, Inheritance, SubProcess};
 use clap::ArgMatches;
 use color_eyre::eyre::Result;
 use std::process;

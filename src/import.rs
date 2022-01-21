@@ -1,7 +1,7 @@
 use crate::cli::{FORMAT_OPT, SECRETS_FLAG, SHOW_TIMES_FLAG};
 use crate::database::{Imports, OpenApiConfig};
+use crate::lib::{warn_missing_subcommand, FILE_READ_ERR};
 use crate::table::Table;
-use crate::{warn_missing_subcommand, FILE_READ_ERR};
 use clap::ArgMatches;
 use color_eyre::eyre::Result;
 use std::fs;

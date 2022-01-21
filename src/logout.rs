@@ -1,7 +1,6 @@
 use crate::cli::CONFIRM_FLAG;
 use crate::config::Config;
-use crate::SEPARATOR;
-use crate::{get_api_access_url, user_confirm, warning_message, API_KEY_PAGE};
+use crate::lib::{get_api_access_url, user_confirm, warning_message, API_KEY_PAGE, SEPARATOR};
 use clap::ArgMatches;
 use color_eyre::eyre::Result;
 use indoc::printdoc;
