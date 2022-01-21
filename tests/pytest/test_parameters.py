@@ -2803,3 +2803,119 @@ Name,Value,Project
 
         # cleanup
         self.delete_project(cmd_env, proj_name)
+
+    def test_parameter_drift(self):
+        cmd_env = self.get_cmd_env()
+        base_cmd = self.get_cli_base_cmd()
+
+        PROP_SHELL = "Shell"
+        PROP_SERVER = "CloudTruth"
+        PROP_CHANGE = "Difference"
+
+        # add a project with some variables
+        proj_name = self.make_name("test-param-drift")
+        param1 = "param1"
+        value1 = "my-param-value"
+        param2 = "param2"
+        value2 = "ssssshhhhh"
+        param3 = "param3"
+        value3 = "another-param-value"
+        env3 = "different in shell"
+        param4 = "param4"
+        value4 = "be vewwwwy qwiet"
+        env4 = "im hunting wabbits"
+        param5 = "param5"
+        value5 = "vanilla"
+        param6 = "param6"
+        value6 = "ssssshhhhhh"
+        param7 = "param7"
+        env7 = "env-value"
+        empty = ""
+        self.create_project(cmd_env, proj_name)
+        self.set_param(cmd_env, proj_name, param1, value=value1)
+        self.set_param(cmd_env, proj_name, param2, value=value2, secret=True)
+        self.set_param(cmd_env, proj_name, param3, value=value3)
+        self.set_param(cmd_env, proj_name, param4, value=value4, secret=True)
+        self.set_param(cmd_env, proj_name, param5, value=value5)
+        self.set_param(cmd_env, proj_name, param6, value=value6, secret=True)
+
+        # setup parameters in the shell environment
+        cmd_env["CLOUDTRUTH_PROJECT"] = proj_name
+        cmd_env[param1] = value1
+        cmd_env[param2] = value2
+        cmd_env[param3] = env3
+        cmd_env[param4] = env4
+        cmd_env[param7] = env7
+
+        drift_cmd = base_cmd + "param drift "
+
+        # just the names
+        result = self.run_cli(cmd_env, drift_cmd)
+        self.assertResultSuccess(result)
+        self.assertNotIn(param1, result.stdout)
+        self.assertNotIn(param2, result.stdout)
+        self.assertIn(param3, result.stdout)
+        self.assertIn(param4, result.stdout)
+        self.assertIn(param5, result.stdout)
+        self.assertIn(param6, result.stdout)
+        self.assertIn(param7, result.stdout)
+        # skip some standard names
+        self.assertNotIn("HOME", result.stdout)
+        self.assertNotIn("PWD", result.stdout)
+        self.assertNotIn("CLOUDTRUTH_PROFILE", result.stdout)
+        self.assertNotIn("CLOUDTRUTH_PROJECT", result.stdout)
+        self.assertNotIn("CLOUDTRUTH_ENVIRONMENT", result.stdout)
+        self.assertNotIn("CLOUDTRUTH_API_KEY", result.stdout)
+
+        # values without secrets shown
+        entries = self.get_cli_entries(cmd_env, drift_cmd + "-f json", "parameter-drift")
+        self.assertEqual(len(find_by_prop(entries, PROP_NAME, param1)), 0)
+        self.assertEqual(len(find_by_prop(entries, PROP_NAME, param2)), 0)
+        entry = find_by_prop(entries, PROP_NAME, param3)[0]
+        self.assertEqual(entry.get(PROP_CHANGE), "changed")
+        self.assertEqual(entry.get(PROP_SHELL), env3)
+        self.assertEqual(entry.get(PROP_SERVER), value3)
+        entry = find_by_prop(entries, PROP_NAME, param4)[0]
+        self.assertEqual(entry.get(PROP_CHANGE), "changed")
+        self.assertEqual(entry.get(PROP_SHELL), REDACTED)
+        self.assertEqual(entry.get(PROP_SERVER), REDACTED)
+        entry = find_by_prop(entries, PROP_NAME, param5)[0]
+        self.assertEqual(entry.get(PROP_CHANGE), "removed")
+        self.assertEqual(entry.get(PROP_SHELL), empty)
+        self.assertEqual(entry.get(PROP_SERVER), value5)
+        entry = find_by_prop(entries, PROP_NAME, param6)[0]
+        self.assertEqual(entry.get(PROP_CHANGE), "removed")
+        self.assertEqual(entry.get(PROP_SHELL), empty)
+        self.assertEqual(entry.get(PROP_SERVER), REDACTED)
+        entry = find_by_prop(entries, PROP_NAME, param7)[0]
+        self.assertEqual(entry.get(PROP_CHANGE), "added")
+        self.assertEqual(entry.get(PROP_SHELL), env7)
+        self.assertEqual(entry.get(PROP_SERVER), empty)
+
+        # values with secrets shown
+        entries = self.get_cli_entries(cmd_env, drift_cmd + "-sf json", "parameter-drift")
+        self.assertEqual(len(find_by_prop(entries, PROP_NAME, param1)), 0)
+        self.assertEqual(len(find_by_prop(entries, PROP_NAME, param2)), 0)
+        entry = find_by_prop(entries, PROP_NAME, param3)[0]
+        self.assertEqual(entry.get(PROP_CHANGE), "changed")
+        self.assertEqual(entry.get(PROP_SHELL), env3)
+        self.assertEqual(entry.get(PROP_SERVER), value3)
+        entry = find_by_prop(entries, PROP_NAME, param4)[0]
+        self.assertEqual(entry.get(PROP_CHANGE), "changed")
+        self.assertEqual(entry.get(PROP_SHELL), env4)
+        self.assertEqual(entry.get(PROP_SERVER), value4)
+        entry = find_by_prop(entries, PROP_NAME, param5)[0]
+        self.assertEqual(entry.get(PROP_CHANGE), "removed")
+        self.assertEqual(entry.get(PROP_SHELL), empty)
+        self.assertEqual(entry.get(PROP_SERVER), value5)
+        entry = find_by_prop(entries, PROP_NAME, param6)[0]
+        self.assertEqual(entry.get(PROP_CHANGE), "removed")
+        self.assertEqual(entry.get(PROP_SHELL), empty)
+        self.assertEqual(entry.get(PROP_SERVER), value6)
+        entry = find_by_prop(entries, PROP_NAME, param7)[0]
+        self.assertEqual(entry.get(PROP_CHANGE), "added")
+        self.assertEqual(entry.get(PROP_SHELL), env7)
+        self.assertEqual(entry.get(PROP_SERVER), empty)
+
+        # cleanup
+        self.delete_project(cmd_env, proj_name)

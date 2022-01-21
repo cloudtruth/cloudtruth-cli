@@ -11,16 +11,19 @@ use crate::database::{
     ParamRuleType, ParameterDetails, ParameterError, Parameters, Projects, ResolvedDetails,
     TaskStepDetails,
 };
+use crate::subprocess::EnvSettings;
 use crate::table::Table;
 use crate::{
     error_message, format_param_error, help_message, parse_datetime, parse_tag, user_confirm,
     warn_missing_subcommand, warn_unresolved_params, warning_message, DEL_CONFIRM, FILE_READ_ERR,
+    REDACTED,
 };
 use clap::ArgMatches;
 use color_eyre::eyre::Result;
 use color_eyre::Report;
 use indoc::printdoc;
 use rpassword::read_password;
+use std::env;
 use std::fs;
 use std::process;
 use std::str::FromStr;
@@ -1114,6 +1117,142 @@ fn proc_param_push(
     Ok(())
 }
 
+#[derive(Debug)]
+pub struct DriftDetails {
+    pub name: String,
+    pub action: String,
+    pub current_value: String,
+    pub parameter_value: String,
+    pub secret: bool,
+}
+
+impl DriftDetails {
+    pub fn get_property(&self, property_name: &str) -> String {
+        match property_name {
+            "name" => self.name.clone(),
+            "action" => self.action.clone(),
+            "current" => self.current_value.clone(),
+            "server" => self.parameter_value.clone(),
+            "secret" => self.secret.to_string(),
+            _ => format!("Unhandled property name '{}'", property_name),
+        }
+    }
+
+    pub fn get_properties(&self, fields: &[&str]) -> Vec<String> {
+        fields.iter().map(|p| self.get_property(p)).collect()
+    }
+}
+
+fn maybe_redact(curr_value: &str, is_shown: bool) -> String {
+    if is_shown {
+        curr_value.to_string()
+    } else {
+        REDACTED.to_string()
+    }
+}
+
+fn proc_param_drift(
+    subcmd_args: &ArgMatches,
+    rest_cfg: &OpenApiConfig,
+    parameters: &Parameters,
+    resolved: &ResolvedDetails,
+) -> Result<()> {
+    let proj_id = resolved.project_id();
+    let env_id = resolved.environment_id();
+    let as_of = parse_datetime(subcmd_args.value_of(AS_OF_ARG));
+    let tag = parse_tag(subcmd_args.value_of(AS_OF_ARG));
+    let show_secrets = subcmd_args.is_present(SECRETS_FLAG);
+    let show_values = show_values(subcmd_args);
+    let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
+    let param_map =
+        parameters.get_parameter_detail_map(rest_cfg, proj_id, env_id, false, as_of, tag)?;
+    let excludes = vec![
+        "PATH",
+        "HOME",
+        "TERM",
+        "PWD",
+        "OLDPWD",
+        "PS1",
+        "USER",
+        "_",
+        // skip all the CLOUDTRUTH_ environment variables for the CLI execution
+        "CLOUDTRUTH_API_KEY",
+        "CLOUDTRUTH_PROFILE",
+        "CLOUDTRUTH_PROJECT",
+        "CLOUDTRUTH_ENVIRONMENT",
+        "CLOUDTRUTH_SERVER_URL",
+        "CLOUDTRUTH_REQUEST_TIMEOUT",
+        "CLOUDTRUTH_REST_DEBUG",
+        "CLOUDTRUTH_REST_SUCCESS",
+        "CLOUDTRUTH_REST_PAGE_SIZE",
+    ];
+    let env_vars: EnvSettings = env::vars()
+        .filter(|(ref k, _)| !excludes.contains(&k.as_str()))
+        .collect();
+
+    let mut deltas: Vec<DriftDetails> = vec![];
+
+    // loop through the cloudtruth parameters and add missing/changed
+    for (k, details) in &param_map {
+        let show_this = show_secrets || !details.secret;
+        if !env_vars.contains_key(k) {
+            deltas.push(DriftDetails {
+                name: k.clone(),
+                action: "removed".to_string(),
+                current_value: "".to_string(),
+                parameter_value: maybe_redact(&details.value, show_this),
+                secret: details.secret,
+            });
+            continue;
+        }
+        let env_value = env_vars.get(k).unwrap();
+        if env_value != &details.value {
+            deltas.push(DriftDetails {
+                name: k.clone(),
+                action: "changed".to_string(),
+                current_value: maybe_redact(env_value, show_this),
+                parameter_value: maybe_redact(&details.value, show_this),
+                secret: details.secret,
+            })
+        }
+    }
+
+    // loop through environment variables just looking for missing
+    for (k, v) in &env_vars {
+        if !param_map.contains_key(k) {
+            deltas.push(DriftDetails {
+                name: k.clone(),
+                action: "added".to_string(),
+                current_value: v.clone(),
+                parameter_value: "".to_string(),
+                secret: false,
+            })
+        }
+    }
+
+    deltas.sort_by_key(|d| d.name.to_lowercase());
+
+    if deltas.is_empty() {
+        println!("No drift found.");
+    } else if !show_values {
+        let list = deltas
+            .iter()
+            .map(|v| v.name.clone())
+            .collect::<Vec<String>>();
+        println!("{}", list.join("\n"));
+    } else {
+        let hdr = vec!["Name", "Difference", "CloudTruth", "Shell"];
+        let props = vec!["name", "action", "server", "current"];
+        let mut table = Table::new("parameter-drift");
+        table.set_header(&hdr);
+        for entry in deltas {
+            table.add_row(entry.get_properties(&props));
+        }
+        table.render(fmt)?;
+    }
+    Ok(())
+}
+
 /// Process the 'parameters' sub-command
 pub fn process_parameters_command(
     subcmd_args: &ArgMatches,
@@ -1139,6 +1278,8 @@ pub fn process_parameters_command(
         proc_param_env(subcmd_args, rest_cfg, &parameters, resolved)?;
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(PUSH_SUBCMD) {
         proc_param_push(subcmd_args, rest_cfg, &parameters, resolved)?;
+    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("drift") {
+        proc_param_drift(subcmd_args, rest_cfg, &parameters, resolved)?;
     } else {
         warn_missing_subcommand("parameters");
     }
