@@ -80,9 +80,9 @@ def find_by_prop(entries: List[Dict], prop_name: str, prop_value: str) -> List[D
 
 @dataclasses.dataclass
 class Result:
-    return_value: int = 0,
-    stdout: List = dataclasses.field(default_factory=list),
-    stderr: List = dataclasses.field(default_factory=list),
+    return_value: int = 0
+    stdout: List = dataclasses.field(default_factory=list)
+    stderr: List = dataclasses.field(default_factory=list)
     timediff: timedelta = timedelta(0)
     command: Optional[str] = None
 
