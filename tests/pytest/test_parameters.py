@@ -2814,21 +2814,21 @@ Name,Value,Project
 
         # add a project with some variables
         proj_name = self.make_name("test-param-drift")
-        param1 = "param1"
+        param1 = "PARAM1"
         value1 = "my-param-value"
-        param2 = "param2"
+        param2 = "PARAM2"
         value2 = "ssssshhhhh"
-        param3 = "param3"
+        param3 = "PARAM3"
         value3 = "another-param-value"
         env3 = "different in shell"
-        param4 = "param4"
+        param4 = "PARAM4"
         value4 = "be vewwwwy qwiet"
         env4 = "im hunting wabbits"
-        param5 = "param5"
+        param5 = "PARAM5"
         value5 = "vanilla"
-        param6 = "param6"
+        param6 = "PARAM6"
         value6 = "ssssshhhhhh"
-        param7 = "param7"
+        param7 = "PARAM7"
         env7 = "env-value"
         empty = ""
         self.create_project(cmd_env, proj_name)

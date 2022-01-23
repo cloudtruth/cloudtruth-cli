@@ -9,11 +9,11 @@ on:
 jobs:
   test:
     name: Test
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     env:
       # TODO: modify this filter to focus testing
-      CLOUDTRUTH_TEST_FILTER: action_complete
+      CLOUDTRUTH_TEST_FILTER: parameter_drift
 
       # these show the commands and the output from the commands
       CLOUDTRUTH_TEST_EXTRA_ARGS: --log-command --log-output
