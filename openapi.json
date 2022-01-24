@@ -5799,6 +5799,13 @@
                     },
                     {
                         "in": "query",
+                        "name": "description__icontains",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
                         "name": "environment",
                         "schema": {
                             "type": "string"
@@ -5816,6 +5823,20 @@
                     },
                     {
                         "in": "query",
+                        "name": "id__in",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "format": "uuid"
+                            }
+                        },
+                        "description": "Multiple values may be separated by commas.",
+                        "explode": false,
+                        "style": "form"
+                    },
+                    {
+                        "in": "query",
                         "name": "mask_secrets",
                         "schema": {
                             "type": "boolean",
@@ -5826,6 +5847,41 @@
                     {
                         "in": "query",
                         "name": "name",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "name__contains",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "name__icontains",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "name__iexact",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "name__istartswith",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "name__startswith",
                         "schema": {
                             "type": "string"
                         }
@@ -9860,10 +9916,6 @@
                         "format": "date-time",
                         "readOnly": true
                     },
-                    "dry_run": {
-                        "type": "boolean",
-                        "description": "When set to dry-run mode an action will report the changes that it would have made in task steps, however those changes are not actually performed."
-                    },
                     "create_environments": {
                         "type": "boolean",
                         "description": "Allow the pull to create environments.  Any automatically created environments will be children of the `default` environment.  If an environment needs to be created but the action does not allow it, a task step will be added with a null operation, and success_detail will indicate the action did not allow it."
@@ -9871,6 +9923,10 @@
                     "create_projects": {
                         "type": "boolean",
                         "description": "Allow the pull to create projects.  If a project needs to be created but the action does not allow it, a task step will be added with a null operation, and success_detail will indicate the action did not allow it."
+                    },
+                    "dry_run": {
+                        "type": "boolean",
+                        "description": "When set to dry-run mode an action will report the changes that it would have made in task steps, however those changes are not actually performed."
                     },
                     "mapped_values": {
                         "type": "array",
@@ -10178,6 +10234,26 @@
                         "format": "date-time",
                         "readOnly": true
                     },
+                    "coerce_parameters": {
+                        "type": "boolean",
+                        "description": "This setting allows parameters (non-secrets) to be pushed to a destination that only supports storing secrets.  This may increase your overall cost from the cloud provider as some cloud providers charge a premium for secrets-only storage."
+                    },
+                    "include_parameters": {
+                        "type": "boolean",
+                        "description": "Include parameters (non-secrets) in the values being pushed.  This setting requires the destination to support parameters or for the `coerce_parameters` flag to be enabled, otherwise the push will fail."
+                    },
+                    "include_secrets": {
+                        "type": "boolean",
+                        "description": "Include secrets in the values being pushed.  This setting requires the destination to support secrets, otherwise the push will fail."
+                    },
+                    "dry_run": {
+                        "type": "boolean",
+                        "description": "When set to dry-run mode an action will report the changes that it would have made in task steps, however those changes are not actually performed."
+                    },
+                    "force": {
+                        "type": "boolean",
+                        "description": "Normally, push will check to see if it originated the values in the destination before making changes to them.  Forcing a push disables the ownership check."
+                    },
                     "projects": {
                         "type": "array",
                         "items": {
@@ -10473,6 +10549,26 @@
                         "nullable": true,
                         "description": "Defines a path through the integration to the location where values will be pushed.\n\nThe following mustache-style substitutions can be used in the string:\n\n  - ``{{ environment }}`` to insert the environment name\n  - ``{{ parameter }}`` to insert the parameter name\n  - ``{{ project }}`` to insert the project name\n  - ``{{ push }}`` to insert the push name\n  - ``{{ tag }}`` to insert the tag name\n\nWe recommend that you use project, environment, and parameter at a minimum to disambiguate your pushed resource identifiers.\n\nIf you include multiple projects in the push, the `project` substitution is required.  If you include multiple tags from different environments in the push, the `environment` substitution is required.  If you include multiple tags from the same environment in the push, the `tag` substitution is required.  In all cases, the `parameter` substitution is always required.",
                         "maxLength": 1024
+                    },
+                    "dry_run": {
+                        "type": "boolean",
+                        "description": "When set to dry-run mode an action will report the changes that it would have made in task steps, however those changes are not actually performed."
+                    },
+                    "force": {
+                        "type": "boolean",
+                        "description": "Normally, push will check to see if it originated the values in the destination before making changes to them.  Forcing a push disables the ownership check."
+                    },
+                    "coerce_parameters": {
+                        "type": "boolean",
+                        "description": "This setting allows parameters (non-secrets) to be pushed to a destination that only supports storing secrets.  This may increase your overall cost from the cloud provider as some cloud providers charge a premium for secrets-only storage."
+                    },
+                    "include_parameters": {
+                        "type": "boolean",
+                        "description": "Include parameters (non-secrets) in the values being pushed.  This setting requires the destination to support parameters or for the `coerce_parameters` flag to be enabled, otherwise the push will fail."
+                    },
+                    "include_secrets": {
+                        "type": "boolean",
+                        "description": "Include secrets in the values being pushed.  This setting requires the destination to support secrets, otherwise the push will fail."
                     }
                 },
                 "required": [
@@ -11022,10 +11118,6 @@
                         "format": "date-time",
                         "readOnly": true
                     },
-                    "dry_run": {
-                        "type": "boolean",
-                        "description": "When set to dry-run mode an action will report the changes that it would have made in task steps, however those changes are not actually performed."
-                    },
                     "create_environments": {
                         "type": "boolean",
                         "description": "Allow the pull to create environments.  Any automatically created environments will be children of the `default` environment.  If an environment needs to be created but the action does not allow it, a task step will be added with a null operation, and success_detail will indicate the action did not allow it."
@@ -11033,6 +11125,10 @@
                     "create_projects": {
                         "type": "boolean",
                         "description": "Allow the pull to create projects.  If a project needs to be created but the action does not allow it, a task step will be added with a null operation, and success_detail will indicate the action did not allow it."
+                    },
+                    "dry_run": {
+                        "type": "boolean",
+                        "description": "When set to dry-run mode an action will report the changes that it would have made in task steps, however those changes are not actually performed."
                     },
                     "mapped_values": {
                         "type": "array",
@@ -13193,10 +13289,6 @@
                         "format": "date-time",
                         "readOnly": true
                     },
-                    "dry_run": {
-                        "type": "boolean",
-                        "description": "When set to dry-run mode an action will report the changes that it would have made in task steps, however those changes are not actually performed."
-                    },
                     "create_environments": {
                         "type": "boolean",
                         "description": "Allow the pull to create environments.  Any automatically created environments will be children of the `default` environment.  If an environment needs to be created but the action does not allow it, a task step will be added with a null operation, and success_detail will indicate the action did not allow it."
@@ -13204,6 +13296,10 @@
                     "create_projects": {
                         "type": "boolean",
                         "description": "Allow the pull to create projects.  If a project needs to be created but the action does not allow it, a task step will be added with a null operation, and success_detail will indicate the action did not allow it."
+                    },
+                    "dry_run": {
+                        "type": "boolean",
+                        "description": "When set to dry-run mode an action will report the changes that it would have made in task steps, however those changes are not actually performed."
                     },
                     "mapped_values": {
                         "type": "array",
@@ -13280,6 +13376,26 @@
                         "nullable": true,
                         "description": "Defines a path through the integration to the location where values will be pushed.\n\nThe following mustache-style substitutions can be used in the string:\n\n  - ``{{ environment }}`` to insert the environment name\n  - ``{{ parameter }}`` to insert the parameter name\n  - ``{{ project }}`` to insert the project name\n  - ``{{ push }}`` to insert the push name\n  - ``{{ tag }}`` to insert the tag name\n\nWe recommend that you use project, environment, and parameter at a minimum to disambiguate your pushed resource identifiers.\n\nIf you include multiple projects in the push, the `project` substitution is required.  If you include multiple tags from different environments in the push, the `environment` substitution is required.  If you include multiple tags from the same environment in the push, the `tag` substitution is required.  In all cases, the `parameter` substitution is always required.",
                         "maxLength": 1024
+                    },
+                    "dry_run": {
+                        "type": "boolean",
+                        "description": "When set to dry-run mode an action will report the changes that it would have made in task steps, however those changes are not actually performed."
+                    },
+                    "force": {
+                        "type": "boolean",
+                        "description": "Normally, push will check to see if it originated the values in the destination before making changes to them.  Forcing a push disables the ownership check."
+                    },
+                    "coerce_parameters": {
+                        "type": "boolean",
+                        "description": "This setting allows parameters (non-secrets) to be pushed to a destination that only supports storing secrets.  This may increase your overall cost from the cloud provider as some cloud providers charge a premium for secrets-only storage."
+                    },
+                    "include_parameters": {
+                        "type": "boolean",
+                        "description": "Include parameters (non-secrets) in the values being pushed.  This setting requires the destination to support parameters or for the `coerce_parameters` flag to be enabled, otherwise the push will fail."
+                    },
+                    "include_secrets": {
+                        "type": "boolean",
+                        "description": "Include secrets in the values being pushed.  This setting requires the destination to support secrets, otherwise the push will fail."
                     }
                 }
             },
@@ -13377,10 +13493,6 @@
                         "format": "date-time",
                         "readOnly": true
                     },
-                    "dry_run": {
-                        "type": "boolean",
-                        "description": "When set to dry-run mode an action will report the changes that it would have made in task steps, however those changes are not actually performed."
-                    },
                     "create_environments": {
                         "type": "boolean",
                         "description": "Allow the pull to create environments.  Any automatically created environments will be children of the `default` environment.  If an environment needs to be created but the action does not allow it, a task step will be added with a null operation, and success_detail will indicate the action did not allow it."
@@ -13388,6 +13500,10 @@
                     "create_projects": {
                         "type": "boolean",
                         "description": "Allow the pull to create projects.  If a project needs to be created but the action does not allow it, a task step will be added with a null operation, and success_detail will indicate the action did not allow it."
+                    },
+                    "dry_run": {
+                        "type": "boolean",
+                        "description": "When set to dry-run mode an action will report the changes that it would have made in task steps, however those changes are not actually performed."
                     },
                     "mapped_values": {
                         "type": "array",

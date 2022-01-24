@@ -30,6 +30,21 @@ pub struct AwsPush {
     pub created_at: String,
     #[serde(rename = "modified_at")]
     pub modified_at: String,
+    /// This setting allows parameters (non-secrets) to be pushed to a destination that only supports storing secrets.  This may increase your overall cost from the cloud provider as some cloud providers charge a premium for secrets-only storage.
+    #[serde(rename = "coerce_parameters", skip_serializing_if = "Option::is_none")]
+    pub coerce_parameters: Option<bool>,
+    /// Include parameters (non-secrets) in the values being pushed.  This setting requires the destination to support parameters or for the `coerce_parameters` flag to be enabled, otherwise the push will fail.
+    #[serde(rename = "include_parameters", skip_serializing_if = "Option::is_none")]
+    pub include_parameters: Option<bool>,
+    /// Include secrets in the values being pushed.  This setting requires the destination to support secrets, otherwise the push will fail.
+    #[serde(rename = "include_secrets", skip_serializing_if = "Option::is_none")]
+    pub include_secrets: Option<bool>,
+    /// When set to dry-run mode an action will report the changes that it would have made in task steps, however those changes are not actually performed.
+    #[serde(rename = "dry_run", skip_serializing_if = "Option::is_none")]
+    pub dry_run: Option<bool>,
+    /// Normally, push will check to see if it originated the values in the destination before making changes to them.  Forcing a push disables the ownership check.
+    #[serde(rename = "force", skip_serializing_if = "Option::is_none")]
+    pub force: Option<bool>,
     /// Projects that are included in the push.
     #[serde(rename = "projects")]
     pub projects: Vec<String>,
@@ -70,6 +85,11 @@ impl AwsPush {
             latest_task: latest_task.map(Box::new),
             created_at,
             modified_at,
+            coerce_parameters: None,
+            include_parameters: None,
+            include_secrets: None,
+            dry_run: None,
+            force: None,
             projects,
             tags,
             region: region.map(Box::new),

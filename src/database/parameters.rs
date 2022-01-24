@@ -18,6 +18,13 @@ const VALUES_FALSE: Option<bool> = Some(false);
 const VALUES_TRUE: Option<bool> = Some(true);
 const NO_ORDERING: Option<&str> = None;
 const ONLY_SECRETS: Option<bool> = None;
+const NO_DESC_ICONTAINS: Option<&str> = None;
+const NO_ID_IN: Option<Vec<String>> = None;
+const NO_NAME_CONTAINS: Option<&str> = None;
+const NO_NAME_ICONTAINS: Option<&str> = None;
+const NO_NAME_IEXACT: Option<&str> = None;
+const NO_NAME_ISTARTS: Option<&str> = None;
+const NO_NAME_STARTS: Option<&str> = None;
 
 const WRAP_ALGORITHM: CryptoAlgorithm = CryptoAlgorithm::AesGcm;
 
@@ -222,10 +229,17 @@ impl Parameters {
             rest_cfg,
             proj_id,
             as_of,
+            NO_DESC_ICONTAINS,
             env_arg,
             Some(evaluate),
+            NO_ID_IN,
             mask_secrets_arg(mask_secrets),
             Some(key_name),
+            NO_NAME_CONTAINS,
+            NO_NAME_ICONTAINS,
+            NO_NAME_IEXACT,
+            NO_NAME_ISTARTS,
+            NO_NAME_STARTS,
             NO_ORDERING,
             NO_PAGE_COUNT,
             NO_PAGE_SIZE,
@@ -317,10 +331,17 @@ impl Parameters {
                 rest_cfg,
                 proj_id,
                 as_of.clone(),
+                NO_DESC_ICONTAINS,
                 env_arg,
                 eval_arg,
+                NO_ID_IN,
                 mask_secrets_arg(mask_secrets),
                 None,
+                NO_NAME_CONTAINS,
+                NO_NAME_ICONTAINS,
+                NO_NAME_IEXACT,
+                NO_NAME_ISTARTS,
+                NO_NAME_STARTS,
                 NO_ORDERING,
                 Some(page_count),
                 page_size(rest_cfg),
@@ -396,10 +417,17 @@ impl Parameters {
                 rest_cfg,
                 proj_id,
                 as_of.clone(),
+                NO_DESC_ICONTAINS,
                 None, // cannot give an environment, or it will only get for that environment
                 eval_arg,
+                NO_ID_IN,
                 mask_secrets_arg(mask_secrets),
                 Some(param_name),
+                NO_NAME_CONTAINS,
+                NO_NAME_ICONTAINS,
+                NO_NAME_IEXACT,
+                NO_NAME_ISTARTS,
+                NO_NAME_STARTS,
                 NO_ORDERING,
                 Some(page_count),
                 page_size(rest_cfg),
