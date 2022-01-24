@@ -30,9 +30,6 @@ pub struct PatchedAwsPull {
     pub created_at: Option<String>,
     #[serde(rename = "modified_at", skip_serializing_if = "Option::is_none")]
     pub modified_at: Option<String>,
-    /// When set to dry-run mode an action will report the changes that it would have made in task steps, however those changes are not actually performed.
-    #[serde(rename = "dry_run", skip_serializing_if = "Option::is_none")]
-    pub dry_run: Option<bool>,
     /// Allow the pull to create environments.  Any automatically created environments will be children of the `default` environment.  If an environment needs to be created but the action does not allow it, a task step will be added with a null operation, and success_detail will indicate the action did not allow it.
     #[serde(
         rename = "create_environments",
@@ -42,6 +39,9 @@ pub struct PatchedAwsPull {
     /// Allow the pull to create projects.  If a project needs to be created but the action does not allow it, a task step will be added with a null operation, and success_detail will indicate the action did not allow it.
     #[serde(rename = "create_projects", skip_serializing_if = "Option::is_none")]
     pub create_projects: Option<bool>,
+    /// When set to dry-run mode an action will report the changes that it would have made in task steps, however those changes are not actually performed.
+    #[serde(rename = "dry_run", skip_serializing_if = "Option::is_none")]
+    pub dry_run: Option<bool>,
     /// Values being managed by a mapped pull.
     #[serde(rename = "mapped_values", skip_serializing_if = "Option::is_none")]
     pub mapped_values: Option<Vec<crate::models::Value>>,
@@ -70,9 +70,9 @@ impl PatchedAwsPull {
             latest_task: None,
             created_at: None,
             modified_at: None,
-            dry_run: None,
             create_environments: None,
             create_projects: None,
+            dry_run: None,
             mapped_values: None,
             mode: None,
             region: None,

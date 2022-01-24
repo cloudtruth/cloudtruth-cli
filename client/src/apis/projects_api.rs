@@ -825,10 +825,17 @@ pub fn projects_parameters_list(
     configuration: &configuration::Configuration,
     project_pk: &str,
     as_of: Option<String>,
+    description__icontains: Option<&str>,
     environment: Option<&str>,
     evaluate: Option<bool>,
+    id__in: Option<Vec<String>>,
     mask_secrets: Option<bool>,
     name: Option<&str>,
+    name__contains: Option<&str>,
+    name__icontains: Option<&str>,
+    name__iexact: Option<&str>,
+    name__istartswith: Option<&str>,
+    name__startswith: Option<&str>,
     ordering: Option<&str>,
     page: Option<i32>,
     page_size: Option<i32>,
@@ -853,6 +860,10 @@ pub fn projects_parameters_list(
         local_var_req_builder =
             local_var_req_builder.query(&[("as_of", &local_var_str.to_string())]);
     }
+    if let Some(ref local_var_str) = description__icontains {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("description__icontains", &local_var_str.to_string())]);
+    }
     if let Some(ref local_var_str) = environment {
         local_var_req_builder =
             local_var_req_builder.query(&[("environment", &local_var_str.to_string())]);
@@ -861,6 +872,17 @@ pub fn projects_parameters_list(
         local_var_req_builder =
             local_var_req_builder.query(&[("evaluate", &local_var_str.to_string())]);
     }
+    if let Some(ref local_var_str) = id__in {
+        local_var_req_builder = local_var_req_builder.query(&[(
+            "id__in",
+            &local_var_str
+                .into_iter()
+                .map(|p| p.to_string())
+                .collect::<Vec<String>>()
+                .join(",")
+                .to_string(),
+        )]);
+    }
     if let Some(ref local_var_str) = mask_secrets {
         local_var_req_builder =
             local_var_req_builder.query(&[("mask_secrets", &local_var_str.to_string())]);
@@ -868,6 +890,26 @@ pub fn projects_parameters_list(
     if let Some(ref local_var_str) = name {
         local_var_req_builder =
             local_var_req_builder.query(&[("name", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = name__contains {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("name__contains", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = name__icontains {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("name__icontains", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = name__iexact {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("name__iexact", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = name__istartswith {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("name__istartswith", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = name__startswith {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("name__startswith", &local_var_str.to_string())]);
     }
     if let Some(ref local_var_str) = ordering {
         local_var_req_builder =

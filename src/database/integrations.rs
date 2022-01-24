@@ -690,6 +690,11 @@ impl Integrations {
             latest_task: None,
             created_at: "".to_string(),
             modified_at: "".to_string(),
+            coerce_parameters: None,
+            include_parameters: None,
+            include_secrets: None,
+            dry_run: None,
+            force: None,
         };
         let response = integrations_aws_pushes_create(rest_cfg, integration_id, push_create);
         match response {
@@ -745,6 +750,11 @@ impl Integrations {
             projects,
             tags,
             resource: Some(resource.to_string()),
+            dry_run: None,
+            force: None,
+            coerce_parameters: None,
+            include_parameters: None,
+            include_secrets: None,
         };
         let response =
             integrations_aws_pushes_update(rest_cfg, integration_id, push_id, push_update);
@@ -807,6 +817,11 @@ impl Integrations {
             latest_task: None,
             created_at: "".to_string(),
             modified_at: "".to_string(),
+            coerce_parameters: None,
+            include_parameters: None,
+            include_secrets: None,
+            dry_run: None,
+            force: None,
         };
         let response = integrations_aws_pushes_sync_create(
             rest_cfg,
