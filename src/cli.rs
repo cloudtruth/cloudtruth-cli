@@ -7,7 +7,6 @@ pub const API_KEY_OPT: &str = "api_key";
 pub const AS_OF_ARG: &str = "datetime|tag";
 pub const CONFIRM_FLAG: &str = "confirm";
 pub const DESCRIPTION_OPT: &str = "description";
-pub const DRY_RUN_FLAG: &str = "dry-run";
 pub const ENV_NAME_ARG: &str = "env-name";
 pub const FORMAT_OPT: &str = "format";
 pub const INTEGRATION_NAME_ARG: &str = "integration-name";
@@ -104,6 +103,16 @@ pub fn true_false_option(input: Option<&str>) -> Option<bool> {
         Some("true") => Some(true),
         Some("false") => Some(false),
         _ => None,
+    }
+}
+
+pub fn opposing_flags(args: &ArgMatches, true_flag: &str, false_flag: &str) -> Option<bool> {
+    if args.is_present(true_flag) {
+        Some(true)
+    } else if args.is_present(false_flag) {
+        Some(false)
+    } else {
+        None
     }
 }
 
@@ -389,8 +398,64 @@ fn rule_no_regex_arg() -> Arg<'static, 'static> {
         .help("Remove the parameter rule regex value")
 }
 
-fn dry_run_opt() -> Arg<'static, 'static> {
-    Arg::with_name(DRY_RUN_FLAG).long("dry-run")
+fn push_dry_run_arg() -> Arg<'static, 'static> {
+    Arg::with_name("DRY_RUN")
+        .long("dry-run")
+        .help("Dry-run the push without changing any data")
+}
+
+fn push_no_dry_run_arg() -> Arg<'static, 'static> {
+    Arg::with_name("NO_DRY_RUN")
+        .long("no-dry-run")
+        .help("Create the push without being a dry-run")
+}
+
+fn push_check_owner_arg() -> Arg<'static, 'static> {
+    Arg::with_name("CHECK_OWNER")
+        .long("check-owner")
+        .help("Make sure CloudTruth is the owner")
+}
+
+fn push_no_check_owner_arg() -> Arg<'static, 'static> {
+    Arg::with_name("NO_CHECK_OWNER")
+        .long("no-check-owner")
+        .help("Allow the push even if CloudTruth did not originate the destination")
+}
+
+fn push_coerce_params_arg() -> Arg<'static, 'static> {
+    Arg::with_name("COERCE_PARAMS")
+        .long("coerce-params")
+        .help("Include non-secret CloudTruth parameters, even in a secret store destination")
+}
+
+fn push_no_coerce_params_arg() -> Arg<'static, 'static> {
+    Arg::with_name("NO_COERCE_PARAMS")
+        .long("no-coerce-params")
+        .help("Do not include non-secret CloudTruth parameters in a secret store destination")
+}
+
+fn push_include_params_arg() -> Arg<'static, 'static> {
+    Arg::with_name("INCLUDE_PARAMS")
+        .long("include-parameters")
+        .help("Include non-secret CloudTruth parameters in the values being pushed")
+}
+
+fn push_no_include_params_arg() -> Arg<'static, 'static> {
+    Arg::with_name("NO_INCLUDE_PARAMS")
+        .long("no-include-parameters")
+        .help("Do not include secret CloudTruth parameters in the values being pushed")
+}
+
+fn push_include_secrets_arg() -> Arg<'static, 'static> {
+    Arg::with_name("INCLUDE_SECRETS")
+        .long("include-secrets")
+        .help("Include non-secret CloudTruth parameters in the values being pushed")
+}
+
+fn push_no_include_secrets_arg() -> Arg<'static, 'static> {
+    Arg::with_name("NO_INCLUDE_SECRETS")
+        .long("no-include-secrets")
+        .help("Do not include secret CloudTruth parameters in the values being pushed")
 }
 
 pub fn build_cli() -> App<'static, 'static> {
@@ -1043,7 +1108,16 @@ pub fn build_cli() -> App<'static, 'static> {
                                 .multiple(true)
                                 .long("no-tag")
                                 .help("Tag name(s) to be subtracted"))
-                            .arg(dry_run_opt().help("Dry-run the push without changing any data"))
+                            .arg(push_dry_run_arg())
+                            .arg(push_no_dry_run_arg())
+                            .arg(push_check_owner_arg())
+                            .arg(push_no_check_owner_arg())
+                            .arg(push_coerce_params_arg())
+                            .arg(push_no_coerce_params_arg())
+                            .arg(push_include_params_arg())
+                            .arg(push_no_include_params_arg())
+                            .arg(push_include_secrets_arg())
+                            .arg(push_no_include_secrets_arg())
                             .arg(Arg::with_name("region")
                                 .long("region")
                                 .takes_value(true)
@@ -1061,8 +1135,17 @@ pub fn build_cli() -> App<'static, 'static> {
                             .visible_aliases(SYNC_ALIASES)
                             .about("Manually initiate action on existing push")
                             .arg(integration_name_opt())
-                            .arg(dry_run_opt().help("Dry-run the push without changing any data"))
-                            .arg(push_name_arg()),
+                            .arg(push_name_arg())
+                            .arg(push_dry_run_arg())
+                            .arg(push_no_dry_run_arg())
+                            .arg(push_check_owner_arg())
+                            .arg(push_no_check_owner_arg())
+                            .arg(push_coerce_params_arg())
+                            .arg(push_no_coerce_params_arg())
+                            .arg(push_include_params_arg())
+                            .arg(push_no_include_params_arg())
+                            .arg(push_include_secrets_arg())
+                            .arg(push_no_include_secrets_arg()),
                         SubCommand::with_name(TASK_STEPS_SUBCMD)
                             .visible_aliases(TASK_STEPS_ALIASES)
                             .about("List task steps for the specified CloudTruth push")
@@ -1108,7 +1191,8 @@ pub fn build_cli() -> App<'static, 'static> {
                             .arg(integration_name_opt().help("Integration name (required on create)"))
                             .arg(rename_option().help("New import name"))
                             .arg(description_option().help("Description for the import"))
-                            .arg(dry_run_opt().help("Check that the import will work without doing it."))
+                            .arg(Arg::with_name("dry-run")
+                                .long("dry-run").help("Check that the import will work without doing it."))
                             .arg(Arg::with_name("resource")
                                 .long("resource")
                                 .takes_value(true)

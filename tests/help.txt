@@ -276,9 +276,18 @@ USAGE:
     cloudtruth actions pushes set [FLAGS] [OPTIONS] <push-name>
 
 FLAGS:
-        --dry-run    Dry-run the push without changing any data
-    -h, --help       Prints help information
-    -V, --version    Prints version information
+        --check-owner              Make sure CloudTruth is the owner
+        --coerce-params            Include non-secret CloudTruth parameters, even in a secret store destination
+        --dry-run                  Dry-run the push without changing any data
+        --include-parameters       Include non-secret CloudTruth parameters in the values being pushed
+        --include-secrets          Include non-secret CloudTruth parameters in the values being pushed
+        --no-check-owner           Allow the push even if CloudTruth did not originate the destination
+        --no-coerce-params         Do not include non-secret CloudTruth parameters in a secret store destination
+        --no-dry-run               Create the push without being a dry-run
+        --no-include-parameters    Do not include secret CloudTruth parameters in the values being pushed
+        --no-include-secrets       Do not include secret CloudTruth parameters in the values being pushed
+    -h, --help                     Prints help information
+    -V, --version                  Prints version information
 
 OPTIONS:
     -d, --desc <description>             Description for the push
@@ -304,9 +313,18 @@ USAGE:
     cloudtruth actions pushes sync [FLAGS] [OPTIONS] <push-name>
 
 FLAGS:
-        --dry-run    Dry-run the push without changing any data
-    -h, --help       Prints help information
-    -V, --version    Prints version information
+        --check-owner              Make sure CloudTruth is the owner
+        --coerce-params            Include non-secret CloudTruth parameters, even in a secret store destination
+        --dry-run                  Dry-run the push without changing any data
+        --include-parameters       Include non-secret CloudTruth parameters in the values being pushed
+        --include-secrets          Include non-secret CloudTruth parameters in the values being pushed
+        --no-check-owner           Allow the push even if CloudTruth did not originate the destination
+        --no-coerce-params         Do not include non-secret CloudTruth parameters in a secret store destination
+        --no-dry-run               Create the push without being a dry-run
+        --no-include-parameters    Do not include secret CloudTruth parameters in the values being pushed
+        --no-include-secrets       Do not include secret CloudTruth parameters in the values being pushed
+    -h, --help                     Prints help information
+    -V, --version                  Prints version information
 
 OPTIONS:
     -i, --integration <name>    Integration name

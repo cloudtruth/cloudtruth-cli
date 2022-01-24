@@ -1,5 +1,5 @@
 use crate::cli::{
-    show_values, CONFIRM_FLAG, DELETE_SUBCMD, DESCRIPTION_OPT, DRY_RUN_FLAG, FORMAT_OPT,
+    opposing_flags, show_values, CONFIRM_FLAG, DELETE_SUBCMD, DESCRIPTION_OPT, FORMAT_OPT,
     GET_SUBCMD, IMPORT_SUBCMD, INTEGRATION_NAME_ARG, LIST_SUBCMD, PULL_NAME_ARG, PUSH_NAME_ARG,
     PUSH_SUBCMD, RENAME_OPT, SET_SUBCMD, SHOW_TIMES_FLAG, SYNC_SUBCMD, TASKS_SUBCMD,
     TASK_STEPS_SUBCMD,
@@ -436,12 +436,11 @@ fn proc_action_push_set(
     let resource = subcmd_args.value_of("resource");
     let region = subcmd_args.value_of("region").unwrap();
     let service = subcmd_args.value_of("service").unwrap();
-    let dry_run = if subcmd_args.is_present(DRY_RUN_FLAG) {
-        Some(true)
-    } else {
-        None
-    };
-    let force = None;
+    let dry_run = opposing_flags(subcmd_args, "DRY_RUN", "NO_DRY_RUN");
+    let check_owner = opposing_flags(subcmd_args, "NO_CHECK_OWNER", "CHECK_OWNER"); // opposite polarity
+    let include_params = opposing_flags(subcmd_args, "INCLUDE_PARAMS", "NO_INCLUDE_PARAMS");
+    let include_secrets = opposing_flags(subcmd_args, "INCLUDE_SECRETS", "NO_INCLUDE_SECRETS");
+    let coerce_params = opposing_flags(subcmd_args, "COERCE_PARAMS", "NO_COERCE_PARAMS");
     let proj_to_add: Vec<&str> = subcmd_args
         .values_of("project-add")
         .unwrap_or_default()
@@ -512,6 +511,11 @@ fn proc_action_push_set(
             description,
             project_ids,
             tag_ids,
+            dry_run,
+            check_owner,
+            include_params,
+            include_secrets,
+            coerce_params,
         )?;
         println!(
             "Updated push '{}' in integration '{}'",
@@ -531,7 +535,10 @@ fn proc_action_push_set(
                 proj_add_ids.iter().map(String::from).collect(),
                 tag_add_ids.iter().map(String::from).collect(),
                 dry_run,
-                force,
+                check_owner,
+                include_params,
+                include_secrets,
+                coerce_params,
             )?;
             println!(
                 "Created push '{}' in integration '{}'",
@@ -556,15 +563,22 @@ fn proc_action_push_sync(
     let integ_name = subcmd_args.value_of(INTEGRATION_NAME_ARG);
     let push_name = subcmd_args.value_of(PUSH_NAME_ARG).unwrap();
     let resolved = resolve_push_details(rest_cfg, integrations, integ_name, push_name)?;
-    let dry_run = if subcmd_args.is_present(DRY_RUN_FLAG) {
-        Some(true)
-    } else {
-        None
-    };
-    let force = None;
+    let dry_run = opposing_flags(subcmd_args, "DRY_RUN", "NO_DRY_RUN");
+    let check_owner = opposing_flags(subcmd_args, "NO_CHECK_OWNER", "CHECK_OWNER"); // opposite polarity
+    let include_params = opposing_flags(subcmd_args, "INCLUDE_PARAMS", "NO_INCLUDE_PARAMS");
+    let include_secrets = opposing_flags(subcmd_args, "INCLUDE_SECRETS", "NO_INCLUDE_SECRETS");
+    let coerce_params = opposing_flags(subcmd_args, "COERCE_PARAMS", "NO_COERCE_PARAMS");
 
     if let Some(details) = resolved {
-        integrations.sync_push(rest_cfg, &details, dry_run, force)?;
+        integrations.sync_push(
+            rest_cfg,
+            &details,
+            dry_run,
+            check_owner,
+            include_params,
+            include_secrets,
+            coerce_params,
+        )?;
         println!(
             "Synchronized push '{}' for integration '{}'",
             push_name, details.integration_name
