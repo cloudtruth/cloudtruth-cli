@@ -413,13 +413,13 @@ fn push_no_dry_run_arg() -> Arg<'static, 'static> {
 fn push_check_owner_arg() -> Arg<'static, 'static> {
     Arg::with_name("CHECK_OWNER")
         .long("check-owner")
-        .help("Make sure CloudTruth is the owner")
+        .help("Make sure CloudTruth is the destination owner ")
 }
 
 fn push_no_check_owner_arg() -> Arg<'static, 'static> {
     Arg::with_name("NO_CHECK_OWNER")
         .long("no-check-owner")
-        .help("Allow the push even if CloudTruth did not originate the destination")
+        .help("Allow the push even if CloudTruth is not the destination owner")
 }
 
 fn push_coerce_params_arg() -> Arg<'static, 'static> {
@@ -443,13 +443,13 @@ fn push_include_params_arg() -> Arg<'static, 'static> {
 fn push_no_include_params_arg() -> Arg<'static, 'static> {
     Arg::with_name("NO_INCLUDE_PARAMS")
         .long("no-include-parameters")
-        .help("Do not include secret CloudTruth parameters in the values being pushed")
+        .help("Do not include non-secret CloudTruth parameters in the values being pushed")
 }
 
 fn push_include_secrets_arg() -> Arg<'static, 'static> {
     Arg::with_name("INCLUDE_SECRETS")
         .long("include-secrets")
-        .help("Include non-secret CloudTruth parameters in the values being pushed")
+        .help("Include secret CloudTruth parameters in the values being pushed")
 }
 
 fn push_no_include_secrets_arg() -> Arg<'static, 'static> {
