@@ -697,8 +697,6 @@ impl Integrations {
             coerce_parameters: None,
             include_parameters: None,
             include_secrets: None,
-            dry_run: None,
-            force: None,
         };
         let response = integrations_aws_pushes_create(rest_cfg, integration_id, push_create);
         match response {
@@ -832,8 +830,6 @@ impl Integrations {
             coerce_parameters: None,
             include_parameters: None,
             include_secrets: None,
-            dry_run: None,
-            force: None,
         };
         let response = integrations_aws_pushes_sync_create(
             rest_cfg,
