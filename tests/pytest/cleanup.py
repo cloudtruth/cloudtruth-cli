@@ -26,7 +26,7 @@ def parse_args(*args) -> argparse.Namespace:
     parser.add_argument(
         dest="needles",
         nargs="*",
-        default=["Windows", "Linux", "macOS"],
+        default=["Windows", "Linux", "macOS", "ci-cli"],
         help="Search strings to look for",
     )
     parser.add_argument(
