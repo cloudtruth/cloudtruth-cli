@@ -1,6 +1,7 @@
 # Build Artifacts
 /target
 /client/docs
+generator.log
 
 # Installing Python libraries
 /tests/pytest/__pycache__

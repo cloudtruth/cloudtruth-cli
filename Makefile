@@ -62,7 +62,8 @@ client: openapi.yml patch_client.py
 		-i /local/openapi.yml \
 		-g rust \
 		-o /local/client \
-		--additional-properties=packageName=cloudtruth-restapi,supportAsync=false,enumUnknownDefaultCase=true
+		--additional-properties=packageName=cloudtruth-restapi,supportAsync=false,enumUnknownDefaultCase=true \
+		> generator.log
 	python3 patch_client.py
 	cd client && cargo fmt && cargo build
 
