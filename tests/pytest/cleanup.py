@@ -82,6 +82,8 @@ def cloudtruth_cleanup(*args):
         CleanupItem(name="users", list_cmd="user ls", del_cmd="user del -y"),
         CleanupItem(name="invitations", list_cmd="user invite ls", del_cmd="user invite del -y"),
         CleanupItem(name="types", list_cmd="types tree", del_cmd="types del -y"),
+        CleanupItem(name="pushes", list_cmd="action push ls", del_cmd="action push del -y"),
+        CleanupItem(name="imports", list_cmd="action import ls", del_cmd="action import del -y")
     ]
 
     for elem in elements:
