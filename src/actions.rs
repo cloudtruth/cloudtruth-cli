@@ -281,6 +281,7 @@ fn print_push_details(push: &ActionDetails) {
         Service: {}
         Region: {}
         Resource: {}
+        Flags: {}
         Description: {}
         Projects: {}
         Tags: {}
@@ -305,6 +306,7 @@ fn print_push_details(push: &ActionDetails) {
         push.service,
         push.region,
         push.resource,
+        push.flags.join(", "),
         push.description,
         push.project_names.join(", "),
         push.tag_names.join(", "),
@@ -385,6 +387,7 @@ fn proc_action_push_list(
     } else {
         let mut hdr = vec![
             "Name",
+            "Flags",
             "Projects",
             "Tags",
             "Service",
@@ -393,6 +396,7 @@ fn proc_action_push_list(
         ];
         let mut properties = vec![
             "name",
+            "flags",
             "project-names",
             "tag-names",
             "service",
@@ -842,6 +846,10 @@ fn print_pull_details(pull: &ActionDetails) {
     } else {
         "".to_string()
     };
+    let dry_run = match pull.dry_run {
+        None => "none".to_string(),
+        Some(b) => b.to_string(),
+    };
 
     printdoc!(
         r#"
@@ -873,7 +881,7 @@ fn print_pull_details(pull: &ActionDetails) {
         pull.region,
         pull.resource,
         pull.description,
-        pull.dry_run,
+        dry_run,
         pull.id,
         pull.url,
         pull.created_at,

@@ -12,15 +12,14 @@ pub struct ActionDetails {
     pub provider: String,
     pub action_type: String,
     pub resource: String,
+    pub dry_run: Option<bool>,
+    pub flags: Vec<String>,
 
     // these are push specific
     pub project_urls: Vec<String>,
     pub project_names: Vec<String>,
     pub tag_urls: Vec<String>,
     pub tag_names: Vec<String>,
-
-    // these are pull specific
-    pub dry_run: bool,
 
     pub last_task: TaskDetail,
 
@@ -42,7 +41,17 @@ impl ActionDetails {
             "description" => self.description.clone(),
             "provider" => self.provider.clone(),
             "action" => self.action_type.clone(),
-            "dry-run" => self.dry_run.to_string(),
+            "dry-run" => match self.dry_run {
+                None => "none".to_string(),
+                Some(b) => b.to_string(),
+            },
+            "flags" => {
+                if self.flags.is_empty() {
+                    "none".to_string()
+                } else {
+                    self.flags.join(", ")
+                }
+            }
             "resource" => self.resource.clone(),
             "project-urls" => self.project_urls.join(", "),
             "project-names" => self.project_names.join(", "),
@@ -71,6 +80,33 @@ impl From<&AwsPush> for ActionDetails {
         } else {
             TaskDetail::default()
         };
+        let mut flags: Vec<String> = vec![];
+        if let Some(dry_run) = api.dry_run {
+            if dry_run {
+                flags.push("dry-run".to_string());
+            }
+        }
+        if let Some(params) = api.include_parameters {
+            if params {
+                let mut flag_name = "parameters".to_string();
+                if let Some(coerced) = api.coerce_parameters {
+                    if coerced {
+                        flag_name = "parameters-coerced".to_string();
+                    }
+                }
+                flags.push(flag_name);
+            }
+        }
+        if let Some(secrets) = api.include_secrets {
+            if secrets {
+                flags.push("secrets".to_string());
+            }
+        }
+        if let Some(force_owner) = api.force {
+            if force_owner {
+                flags.push("no-check-owner".to_string());
+            }
+        }
 
         Self {
             id: api.id.clone(),
@@ -85,7 +121,8 @@ impl From<&AwsPush> for ActionDetails {
             project_names: vec![], // filled in later
             tag_urls: api.tags.clone(),
             tag_names: vec![], // filled in later
-            dry_run: false,
+            dry_run: api.dry_run,
+            flags,
             last_task: task_detail,
             region: match &api.region {
                 Some(r) => r.to_string(),
@@ -108,6 +145,12 @@ impl From<&AwsPull> for ActionDetails {
         } else {
             TaskDetail::default()
         };
+        let mut flags: Vec<String> = vec![];
+        if let Some(dry_run) = api.dry_run {
+            if dry_run {
+                flags.push("dry-run".to_string());
+            }
+        }
 
         Self {
             id: api.id.clone(),
@@ -117,7 +160,8 @@ impl From<&AwsPull> for ActionDetails {
             description: api.description.clone().unwrap_or_default(),
             provider: "aws".to_string(),
             action_type: "pull".to_string(),
-            dry_run: api.dry_run.unwrap_or(false),
+            dry_run: api.dry_run,
+            flags,
             resource: api.resource.clone().unwrap_or_default(),
             project_urls: vec![],
             project_names: vec![], // filled in later
