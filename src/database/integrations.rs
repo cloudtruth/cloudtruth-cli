@@ -674,6 +674,11 @@ impl Integrations {
         description: Option<&str>,
         projects: Vec<String>,
         tags: Vec<String>,
+        dry_run: Option<bool>,
+        force: Option<bool>,
+        include_params: Option<bool>,
+        include_secrets: Option<bool>,
+        coerce_params: Option<bool>,
     ) -> Result<ActionDetails, IntegrationError> {
         let reg_enum = aws_region_from_str(region);
         let ser_enum = aws_service_from_str(service);
@@ -688,13 +693,13 @@ impl Integrations {
             service: ser_enum.map(Box::new),
             resource: Some(resource.to_string()),
             latest_task: None,
+            dry_run,
+            force,
+            include_parameters: include_params,
+            include_secrets,
+            coerce_parameters: coerce_params,
             created_at: "".to_string(),
             modified_at: "".to_string(),
-            coerce_parameters: None,
-            include_parameters: None,
-            include_secrets: None,
-            dry_run: None,
-            force: None,
         };
         let response = integrations_aws_pushes_create(rest_cfg, integration_id, push_create);
         match response {
@@ -718,6 +723,11 @@ impl Integrations {
         description: Option<&str>,
         projects: Vec<String>,
         tags: Vec<String>,
+        dry_run: Option<bool>,
+        force: Option<bool>,
+        include_params: Option<bool>,
+        include_secrets: Option<bool>,
+        coerce_params: Option<bool>,
     ) -> Result<ActionDetails, IntegrationError> {
         self.create_aws_push(
             rest_cfg,
@@ -729,6 +739,11 @@ impl Integrations {
             description,
             projects,
             tags,
+            dry_run,
+            force,
+            include_params,
+            include_secrets,
+            coerce_params,
         )
     }
 
@@ -743,6 +758,11 @@ impl Integrations {
         description: Option<&str>,
         projects: Vec<String>,
         tags: Vec<String>,
+        dry_run: Option<bool>,
+        force: Option<bool>,
+        include_params: Option<bool>,
+        include_secrets: Option<bool>,
+        coerce_params: Option<bool>,
     ) -> Result<(), IntegrationError> {
         let push_update = AwsPushUpdate {
             name: push_name.to_string(),
@@ -750,11 +770,11 @@ impl Integrations {
             projects,
             tags,
             resource: Some(resource.to_string()),
-            dry_run: None,
-            force: None,
-            coerce_parameters: None,
-            include_parameters: None,
-            include_secrets: None,
+            dry_run,
+            force,
+            coerce_parameters: coerce_params,
+            include_parameters: include_params,
+            include_secrets,
         };
         let response =
             integrations_aws_pushes_update(rest_cfg, integration_id, push_id, push_update);
@@ -778,6 +798,11 @@ impl Integrations {
         description: Option<&str>,
         projects: Vec<String>,
         tags: Vec<String>,
+        dry_run: Option<bool>,
+        force: Option<bool>,
+        include_params: Option<bool>,
+        include_secrets: Option<bool>,
+        coerce_params: Option<bool>,
     ) -> Result<(), IntegrationError> {
         self.update_aws_push(
             rest_cfg,
@@ -788,13 +813,24 @@ impl Integrations {
             description,
             projects,
             tags,
+            dry_run,
+            force,
+            include_params,
+            include_secrets,
+            coerce_params,
         )
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn sync_aws_push(
         &self,
         rest_cfg: &OpenApiConfig,
         push_details: &ActionDetails,
+        dry_run: Option<bool>,
+        force: Option<bool>,
+        include_params: Option<bool>,
+        include_secrets: Option<bool>,
+        coerce_params: Option<bool>,
     ) -> Result<(), IntegrationError> {
         let description = if push_details.description.is_empty() {
             None
@@ -815,13 +851,13 @@ impl Integrations {
             service: srv_enum.map(Box::new),
             resource: Some(push_details.resource.clone()),
             latest_task: None,
+            dry_run,
+            force,
+            include_parameters: include_params,
+            include_secrets,
+            coerce_parameters: coerce_params,
             created_at: "".to_string(),
             modified_at: "".to_string(),
-            coerce_parameters: None,
-            include_parameters: None,
-            include_secrets: None,
-            dry_run: None,
-            force: None,
         };
         let response = integrations_aws_pushes_sync_create(
             rest_cfg,
@@ -838,12 +874,26 @@ impl Integrations {
         }
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn sync_push(
         &self,
         rest_cfg: &OpenApiConfig,
         push_details: &ActionDetails,
+        dry_run: Option<bool>,
+        force: Option<bool>,
+        include_params: Option<bool>,
+        include_secrets: Option<bool>,
+        coerce_params: Option<bool>,
     ) -> Result<(), IntegrationError> {
-        self.sync_aws_push(rest_cfg, push_details)
+        self.sync_aws_push(
+            rest_cfg,
+            push_details,
+            dry_run,
+            force,
+            include_params,
+            include_secrets,
+            coerce_params,
+        )
     }
 
     ///==========================================
