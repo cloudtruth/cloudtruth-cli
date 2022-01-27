@@ -1,4 +1,4 @@
-use cloudtruth_restapi::models::{AwsPullTaskStep, AwsPushTaskStep, TaskStep};
+use cloudtruth_restapi::models::{AwsPullTaskStep, AwsPushTaskStep, GitHubPullTaskStep, TaskStep};
 
 pub struct TaskStepDetails {
     pub url: String,
@@ -71,6 +71,30 @@ impl From<&AwsPushTaskStep> for TaskStepDetails {
 
 impl From<&AwsPullTaskStep> for TaskStepDetails {
     fn from(api: &AwsPullTaskStep) -> Self {
+        let detail = if api.success {
+            api.success_detail.clone().unwrap_or_default()
+        } else {
+            api.error_detail.clone().unwrap_or_default()
+        };
+        Self {
+            url: api.url.clone(),
+            id: api.id.clone(),
+            provider: "aws".to_string(),
+            success: api.success,
+            detail,
+            task_name: "".to_string(), // to be filled in later
+            project_name: api.project_name.clone().unwrap_or_default(),
+            environment_name: api.environment_name.clone().unwrap_or_default(),
+            parameter_name: api.parameter_name.clone().unwrap_or_default(),
+            venue_name: api.venue_name.clone().unwrap_or_default(),
+            created_at: api.created_at.clone(),
+            modified_at: api.modified_at.clone(),
+        }
+    }
+}
+
+impl From<&GitHubPullTaskStep> for TaskStepDetails {
+    fn from(api: &GitHubPullTaskStep) -> Self {
         let detail = if api.success {
             api.success_detail.clone().unwrap_or_default()
         } else {

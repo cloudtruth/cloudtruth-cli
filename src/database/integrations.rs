@@ -5,7 +5,9 @@ use crate::database::{
 };
 use cloudtruth_restapi::apis::integrations_api::*;
 use cloudtruth_restapi::apis::Error::ResponseError;
-use cloudtruth_restapi::models::{AwsPull, AwsPush, AwsPushUpdate, AwsRegionEnum, AwsServiceEnum};
+use cloudtruth_restapi::models::{
+    AwsPull, AwsPush, AwsPushUpdate, AwsRegionEnum, AwsServiceEnum, GitHubPull,
+};
 
 const NO_ORDERING: Option<&str> = None;
 
@@ -306,7 +308,7 @@ impl Integrations {
         }
     }
 
-    fn get_gitub_details_by_name(
+    fn get_github_details_by_name(
         &self,
         rest_cfg: &OpenApiConfig,
         integration_name: &str,
@@ -326,7 +328,7 @@ impl Integrations {
         rest_cfg: &OpenApiConfig,
         integration_name: &str,
     ) -> Result<Option<IntegrationDetails>, IntegrationError> {
-        match self.get_gitub_details_by_name(rest_cfg, integration_name)? {
+        match self.get_github_details_by_name(rest_cfg, integration_name)? {
             Some(github_details) => Ok(Some(github_details)),
             _ => match self.get_aws_details_by_name(rest_cfg, integration_name)? {
                 Some(aws_details) => Ok(Some(aws_details)),
@@ -941,12 +943,59 @@ impl Integrations {
         Ok(result)
     }
 
+    fn get_github_pull_list(
+        &self,
+        rest_cfg: &OpenApiConfig,
+        integration_id: &str,
+        name: Option<&str>,
+    ) -> Result<Vec<ActionDetails>, IntegrationError> {
+        let mut result: Vec<ActionDetails> = Vec::new();
+        let mut page_count = 1;
+        loop {
+            let response = integrations_github_pulls_list(
+                rest_cfg,
+                integration_id,
+                None,
+                name,
+                None,
+                NO_ORDERING,
+                Some(page_count),
+                page_size(rest_cfg),
+            );
+            match response {
+                Ok(data) => {
+                    if let Some(list) = data.results {
+                        for api in list {
+                            result.push(ActionDetails::from(&api));
+                        }
+                        page_count += 1;
+                    } else {
+                        break;
+                    }
+                    if data.next.is_none() {
+                        break;
+                    }
+                }
+                Err(ResponseError(ref content)) => {
+                    return Err(response_error(&content.status, &content.content))
+                }
+                Err(e) => return Err(IntegrationError::UnhandledError(e.to_string())),
+            }
+        }
+        Ok(result)
+    }
+
     pub fn get_pull_list(
         &self,
         rest_cfg: &OpenApiConfig,
         integration_id: &str,
     ) -> Result<Vec<ActionDetails>, IntegrationError> {
-        self.get_aws_pull_list(rest_cfg, integration_id, None)
+        let mut aws = self.get_aws_pull_list(rest_cfg, integration_id, None)?;
+        let mut github = self.get_github_pull_list(rest_cfg, integration_id, None)?;
+        let mut total: Vec<ActionDetails> = vec![];
+        total.append(&mut aws);
+        total.append(&mut github);
+        Ok(total)
     }
 
     fn get_all_aws_pulls(
@@ -966,11 +1015,33 @@ impl Integrations {
         Ok(total)
     }
 
+    fn get_all_github_pulls(
+        &self,
+        rest_cfg: &OpenApiConfig,
+        name: Option<&str>,
+    ) -> Result<Vec<ActionDetails>, IntegrationError> {
+        let int_details = self.get_github_integration_details(rest_cfg)?;
+        let mut total: Vec<ActionDetails> = vec![];
+        for entry in int_details {
+            let mut pulls = self.get_github_pull_list(rest_cfg, &entry.id, name)?;
+            for p in &mut pulls {
+                p.integration_name = entry.name.clone();
+            }
+            total.append(&mut pulls);
+        }
+        Ok(total)
+    }
+
     pub fn get_all_pulls(
         &self,
         rest_cfg: &OpenApiConfig,
     ) -> Result<Vec<ActionDetails>, IntegrationError> {
-        self.get_all_aws_pulls(rest_cfg, None)
+        let mut aws = self.get_all_aws_pulls(rest_cfg, None)?;
+        let mut github = self.get_all_github_pulls(rest_cfg, None)?;
+        let mut total: Vec<ActionDetails> = vec![];
+        total.append(&mut aws);
+        total.append(&mut github);
+        Ok(total)
     }
 
     pub fn get_all_pulls_by_name(
@@ -978,7 +1049,12 @@ impl Integrations {
         rest_cfg: &OpenApiConfig,
         name: &str,
     ) -> Result<Vec<ActionDetails>, IntegrationError> {
-        self.get_all_aws_pulls(rest_cfg, Some(name))
+        let mut aws = self.get_all_aws_pulls(rest_cfg, Some(name))?;
+        let mut github = self.get_all_github_pulls(rest_cfg, Some(name))?;
+        let mut total: Vec<ActionDetails> = vec![];
+        total.append(&mut aws);
+        total.append(&mut github);
+        Ok(total)
     }
 
     fn get_aws_pull_by_name(
@@ -1012,13 +1088,50 @@ impl Integrations {
         }
     }
 
+    fn get_github_pull_by_name(
+        &self,
+        rest_cfg: &OpenApiConfig,
+        integration_id: &str,
+        pull_name: &str,
+    ) -> Result<Option<ActionDetails>, IntegrationError> {
+        let response = integrations_github_pulls_list(
+            rest_cfg,
+            integration_id,
+            None,
+            Some(pull_name),
+            None,
+            NO_ORDERING,
+            NO_PAGE_COUNT,
+            NO_PAGE_SIZE,
+        );
+        match response {
+            Ok(data) => match data.results {
+                Some(list) => match list.is_empty() {
+                    true => Ok(None),
+                    _ => Ok(Some(ActionDetails::from(&list[0]))),
+                },
+                _ => Ok(None),
+            },
+            Err(ResponseError(ref content)) => {
+                Err(response_error(&content.status, &content.content))
+            }
+            Err(e) => Err(IntegrationError::UnhandledError(e.to_string())),
+        }
+    }
+
     pub fn get_pull_by_name(
         &self,
         rest_cfg: &OpenApiConfig,
         integration_id: &str,
         pull_name: &str,
     ) -> Result<Option<ActionDetails>, IntegrationError> {
-        self.get_aws_pull_by_name(rest_cfg, integration_id, pull_name)
+        if let Some(aws) = self.get_aws_pull_by_name(rest_cfg, integration_id, pull_name)? {
+            return Ok(Some(aws));
+        }
+        if let Some(github) = self.get_github_pull_by_name(rest_cfg, integration_id, pull_name)? {
+            return Ok(Some(github));
+        }
+        Ok(None)
     }
 
     fn get_aws_pull_tasks(
@@ -1065,6 +1178,50 @@ impl Integrations {
         Ok(result)
     }
 
+    fn get_github_pull_tasks(
+        &self,
+        rest_cfg: &OpenApiConfig,
+        integration_id: &str,
+        pull_id: &str,
+    ) -> Result<Vec<TaskDetail>, IntegrationError> {
+        let mut result: Vec<TaskDetail> = Vec::new();
+        let mut page_count = 1;
+        loop {
+            let response = integrations_github_pulls_tasks_list(
+                rest_cfg,
+                integration_id,
+                pull_id,
+                None,
+                None,
+                None,
+                NO_ORDERING,
+                Some(page_count),
+                page_size(rest_cfg),
+                None,
+            );
+            match response {
+                Ok(data) => {
+                    if let Some(list) = data.results {
+                        for api in list {
+                            result.push(TaskDetail::from(&api));
+                        }
+                        page_count += 1;
+                    } else {
+                        break;
+                    }
+                    if data.next.is_none() {
+                        break;
+                    }
+                }
+                Err(ResponseError(ref content)) => {
+                    return Err(response_error(&content.status, &content.content))
+                }
+                Err(e) => return Err(IntegrationError::UnhandledError(e.to_string())),
+            }
+        }
+        Ok(result)
+    }
+
     pub fn get_pull_tasks(
         &self,
         rest_cfg: &OpenApiConfig,
@@ -1073,7 +1230,9 @@ impl Integrations {
     ) -> Result<Vec<TaskDetail>, IntegrationError> {
         let mut total: Vec<TaskDetail> = vec![];
         let mut aws_tasks = self.get_aws_pull_tasks(rest_cfg, integration_id, pull_id)?;
+        let mut github_tasks = self.get_github_pull_tasks(rest_cfg, integration_id, pull_id)?;
         total.append(&mut aws_tasks);
+        total.append(&mut github_tasks);
         Ok(total)
     }
 
@@ -1148,13 +1307,89 @@ impl Integrations {
         Ok(total)
     }
 
+    fn get_github_pull_task_steps(
+        &self,
+        rest_cfg: &OpenApiConfig,
+        integration_id: &str,
+        pull_id: &str,
+        task_id: &str,
+    ) -> Result<Vec<TaskStepDetails>, IntegrationError> {
+        let mut result: Vec<TaskStepDetails> = Vec::new();
+        let mut page_count = 1;
+        loop {
+            let response = integrations_github_pulls_tasks_steps_list(
+                rest_cfg,
+                integration_id,
+                pull_id,
+                task_id,
+                None,
+                None,
+                None,
+                None,
+                None,
+                NO_ORDERING,
+                Some(page_count),
+                page_size(rest_cfg),
+                None,
+                None,
+                None,
+                None,
+                None,
+            );
+            match response {
+                Ok(data) => {
+                    if let Some(list) = data.results {
+                        for api in list {
+                            result.push(TaskStepDetails::from(&api));
+                        }
+                        page_count += 1;
+                    } else {
+                        break;
+                    }
+                    if data.next.is_none() {
+                        break;
+                    }
+                }
+                Err(ResponseError(ref content)) => {
+                    return Err(response_error(&content.status, &content.content))
+                }
+                Err(e) => return Err(IntegrationError::UnhandledError(e.to_string())),
+            }
+        }
+        Ok(result)
+    }
+
+    fn get_github_pull_all_task_steps(
+        &self,
+        rest_cfg: &OpenApiConfig,
+        integration_id: &str,
+        pull_id: &str,
+    ) -> Result<Vec<TaskStepDetails>, IntegrationError> {
+        let task_details = self.get_github_pull_tasks(rest_cfg, integration_id, pull_id)?;
+        let mut total: Vec<TaskStepDetails> = Vec::new();
+        for task_entry in task_details {
+            let mut task_steps =
+                self.get_github_pull_task_steps(rest_cfg, integration_id, pull_id, &task_entry.id)?;
+            for step in &mut task_steps {
+                step.task_name = task_entry.reason.clone();
+            }
+            total.append(&mut task_steps)
+        }
+        Ok(total)
+    }
+
     pub fn get_pull_all_task_steps(
         &self,
         rest_cfg: &OpenApiConfig,
         integration_id: &str,
         pull_id: &str,
     ) -> Result<Vec<TaskStepDetails>, IntegrationError> {
-        self.get_aws_pull_all_task_steps(rest_cfg, integration_id, pull_id)
+        let mut aws = self.get_aws_pull_all_task_steps(rest_cfg, integration_id, pull_id)?;
+        let mut github = self.get_github_pull_all_task_steps(rest_cfg, integration_id, pull_id)?;
+        let mut total: Vec<TaskStepDetails> = vec![];
+        total.append(&mut aws);
+        total.append(&mut github);
+        Ok(total)
     }
 
     fn delete_aws_pull(
@@ -1179,6 +1414,7 @@ impl Integrations {
         integration_id: &str,
         pull_id: &str,
     ) -> Result<Option<String>, IntegrationError> {
+        // NOTE: no method to create/delete Github pulls is exposed
         self.delete_aws_pull(rest_cfg, integration_id, pull_id)
     }
 
@@ -1235,6 +1471,7 @@ impl Integrations {
         description: Option<&str>,
         dry_run: Option<bool>,
     ) -> Result<ActionDetails, IntegrationError> {
+        // NOTE: no method to create/delete Github pulls is exposed
         self.create_aws_pull(
             rest_cfg,
             integration_id,
@@ -1298,6 +1535,7 @@ impl Integrations {
         description: Option<&str>,
         dry_run: Option<bool>,
     ) -> Result<(), IntegrationError> {
+        // NOTE: no method to create/delete Github pulls is exposed
         self.update_aws_pull(
             rest_cfg,
             integration_id,
@@ -1354,11 +1592,53 @@ impl Integrations {
         }
     }
 
+    fn sync_github_pull(
+        &self,
+        rest_cfg: &OpenApiConfig,
+        pull_details: &ActionDetails,
+    ) -> Result<(), IntegrationError> {
+        let description = if pull_details.description.is_empty() {
+            None
+        } else {
+            Some(pull_details.description.clone())
+        };
+        let integration_id = parent_id_from_url(&pull_details.url, "pulls/");
+        let sync_body = GitHubPull {
+            url: pull_details.url.clone(),
+            id: pull_details.id.clone(),
+            name: pull_details.name.clone(),
+            description,
+            latest_task: None,
+            created_at: "".to_string(),
+            modified_at: "".to_string(),
+            dry_run: None,
+            mode: None,
+            mapped_values: vec![],
+            create_environments: None,
+            create_projects: None,
+        };
+        let response = integrations_github_pulls_sync_create(
+            rest_cfg,
+            integration_id,
+            &pull_details.id,
+            sync_body,
+        );
+        match response {
+            Ok(_) => Ok(()),
+            Err(ResponseError(ref content)) => {
+                Err(response_error(&content.status, &content.content))
+            }
+            Err(e) => Err(IntegrationError::UnhandledError(e.to_string())),
+        }
+    }
+
     pub fn sync_pull(
         &self,
         rest_cfg: &OpenApiConfig,
         pull_details: &ActionDetails,
     ) -> Result<(), IntegrationError> {
-        self.sync_aws_pull(rest_cfg, pull_details)
+        self.sync_aws_pull(rest_cfg, pull_details)?;
+        self.sync_github_pull(rest_cfg, pull_details)?;
+        Ok(())
     }
 }
