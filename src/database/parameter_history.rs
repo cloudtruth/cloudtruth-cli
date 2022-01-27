@@ -1,9 +1,11 @@
 use crate::database::HistoryAction;
-use cloudtruth_restapi::models::{ParameterTimelineEntry, ParameterTimelineEntryEnvironment};
+use cloudtruth_restapi::models::{
+    ParameterTimelineEntry, ParameterTimelineEntryEnvironment, ParameterTimelineEntryParameter,
+};
 use once_cell::sync::OnceCell;
-use std::ops::Deref;
 
 static DEFAULT_ENV_HISTORY: OnceCell<ParameterTimelineEntryEnvironment> = OnceCell::new();
+static DEFAULT_PARAM_HISTORY: OnceCell<ParameterTimelineEntryParameter> = OnceCell::new();
 
 #[derive(Clone, Debug)]
 pub struct ParameterHistory {
@@ -21,11 +23,12 @@ pub struct ParameterHistory {
 
 /// Gets the singleton default History
 fn default_environment_history() -> &'static ParameterTimelineEntryEnvironment {
-    DEFAULT_ENV_HISTORY.get_or_init(|| ParameterTimelineEntryEnvironment {
-        id: "".to_string(),
-        name: "".to_string(),
-        _override: false,
-    })
+    DEFAULT_ENV_HISTORY.get_or_init(ParameterTimelineEntryEnvironment::default)
+}
+
+/// Gets the singleton default History
+fn default_parameter_history() -> &'static ParameterTimelineEntryParameter {
+    DEFAULT_PARAM_HISTORY.get_or_init(ParameterTimelineEntryParameter::default)
 }
 
 impl From<&ParameterTimelineEntry> for ParameterHistory {
@@ -35,15 +38,19 @@ impl From<&ParameterTimelineEntry> for ParameterHistory {
             Some(v) => v,
             _ => default_environment_history(),
         };
+        let param_hist = match &api.history_parameter {
+            Some(p) => &*p,
+            _ => default_parameter_history(),
+        };
 
         Self {
-            id: api.history_parameter.id.clone(),
-            name: api.history_parameter.name.clone(),
+            id: param_hist.id.clone(),
+            name: param_hist.name.clone(),
 
             env_name: env_hist.name.clone(),
 
             date: api.history_date.clone(),
-            change_type: HistoryAction::from(*api.history_type.deref()),
+            change_type: HistoryAction::from(*api.history_type.clone().unwrap_or_default()),
             user: api.history_user.clone().unwrap_or_default(),
         }
     }

@@ -2,8 +2,8 @@ use crate::database::openapi::key_from_config;
 use crate::database::{
     extract_details, extract_from_json, page_size, response_message, secret_encode_wrap,
     secret_unwrap_decode, CryptoAlgorithm, OpenApiConfig, ParamExportOptions, ParamRuleType,
-    ParamType, ParameterDetails, ParameterError, ParameterHistory, TaskStep, TaskStepDetails,
-    NO_PAGE_COUNT, NO_PAGE_SIZE, WRAP_SECRETS,
+    ParameterDetails, ParameterError, ParameterHistory, TaskStepDetails, NO_PAGE_COUNT,
+    NO_PAGE_SIZE, WRAP_SECRETS,
 };
 use cloudtruth_restapi::apis::projects_api::*;
 use cloudtruth_restapi::apis::utils_api::utils_generate_password_create;

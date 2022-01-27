@@ -1,9 +1,15 @@
-use crate::cli::{binary_name, show_values, true_false_option, AS_OF_ARG, CONFIRM_FLAG, DELETE_SUBCMD, DESCRIPTION_OPT, DIFF_SUBCMD, FORMAT_OPT, GET_SUBCMD, JMES_PATH_ARG, KEY_ARG, LIST_SUBCMD, PUSH_SUBCMD, RENAME_OPT, RULE_MAX_ARG, RULE_MAX_LEN_ARG, RULE_MIN_ARG, RULE_MIN_LEN_ARG, RULE_NO_MAX_ARG, RULE_NO_MAX_LEN_ARG, RULE_NO_MIN_ARG, RULE_NO_MIN_LEN_ARG, RULE_NO_REGEX_ARG, RULE_REGEX_ARG, SECRETS_FLAG, SET_SUBCMD, SHOW_TIMES_FLAG, HISTORY_SUBCMD};
+use crate::cli::{
+    binary_name, show_values, true_false_option, AS_OF_ARG, CONFIRM_FLAG, DELETE_SUBCMD,
+    DESCRIPTION_OPT, DIFF_SUBCMD, FORMAT_OPT, GET_SUBCMD, HISTORY_SUBCMD, JMES_PATH_ARG, KEY_ARG,
+    LIST_SUBCMD, PUSH_SUBCMD, RENAME_OPT, RULE_MAX_ARG, RULE_MAX_LEN_ARG, RULE_MIN_ARG,
+    RULE_MIN_LEN_ARG, RULE_NO_MAX_ARG, RULE_NO_MAX_LEN_ARG, RULE_NO_MIN_ARG, RULE_NO_MIN_LEN_ARG,
+    RULE_NO_REGEX_ARG, RULE_REGEX_ARG, SECRETS_FLAG, SET_SUBCMD, SHOW_TIMES_FLAG,
+};
 use crate::config::DEFAULT_ENV_NAME;
 use crate::database::{
     EnvironmentDetails, Environments, HistoryAction, OpenApiConfig, ParamExportFormat,
-    ParamExportOptions, ParamRuleType, ParamType, ParameterDetails, ParameterError,
-    ParameterHistory, Parameters, Projects, ResolvedDetails, TaskStepDetails,
+    ParamExportOptions, ParamRuleType, ParameterDetails, ParameterError, ParameterHistory,
+    Parameters, Projects, ResolvedDetails, TaskStepDetails,
 };
 use crate::lib::{
     error_message, format_param_error, help_message, parse_datetime, parse_tag, user_confirm,
@@ -1159,6 +1165,10 @@ fn proc_param_drift(
     let show_secrets = subcmd_args.is_present(SECRETS_FLAG);
     let show_values = show_values(subcmd_args);
     let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
+    let proj_id = resolved.project_id();
+    let env_id = resolved.environment_id();
+    let as_of = parse_datetime(subcmd_args.value_of(AS_OF_ARG));
+    let tag = parse_tag(subcmd_args.value_of(AS_OF_ARG));
     let param_map =
         parameters.get_parameter_detail_map(rest_cfg, proj_id, env_id, false, as_of, tag)?;
     let excludes = vec![

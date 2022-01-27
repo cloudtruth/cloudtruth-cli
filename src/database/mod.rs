@@ -89,7 +89,6 @@ pub use parameter_error::ParameterError;
 pub use parameter_export::{ParamExportFormat, ParamExportOptions};
 pub use parameter_history::ParameterHistory;
 pub use parameter_rules::{ParamRuleType, ParameterRuleDetail};
-pub use parameter_types::ParamType;
 pub use parameters::{ParameterDetailMap, Parameters};
 pub use project_details::ProjectDetails;
 pub use project_error::ProjectError;
