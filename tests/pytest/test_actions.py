@@ -415,7 +415,7 @@ class TestActions(TestCase):
         imports = self.get_cli_entries(cmd_env, list_cmd + "-f json", "action-import")
         entry = find_by_prop(imports, PROP_NAME, import_name1)[0]
         self.assertEqual(entry.get("Service"), default_service)
-        self.assertEqual(entry.get("Dry Run"), "false")
+        self.assertNotIn("dry-run", entry.get("Flags"))
         self.assertIsNone(entry.get("Integration"))
 
         # check the right values were set
@@ -428,6 +428,7 @@ class TestActions(TestCase):
         self.assertIn(f"Service: {default_service}", result.out())
         self.assertIn(f"Integration: {integ_name}", result.out())
         self.assertIn("Dry Run: false", result.out())
+        self.assertIn("Flags: none", result.out())
 
         # rename import, change resource, add another project, and another tag
         import_name2 = self.make_name("updated-test-imp")
@@ -490,6 +491,7 @@ class TestActions(TestCase):
         self.assertIn(f"Resource: {resource2}", result.out())
         self.assertIn(f"Description: {desc2}", result.out())
         self.assertIn("Dry Run: true", result.out())
+        self.assertIn("Flags: dry-run", result.out())
 
         ########################
         # task list
@@ -559,6 +561,7 @@ class TestActions(TestCase):
         self.assertIn(f"Region: {region}", result.out())
         self.assertIn(f"Service: {service}", result.out())
         self.assertIn("Dry Run: true", result.out())
+        self.assertIn("Flags: dry-run", result.out())
 
         # delete this import
         result = self.run_cli(cmd_env, base_cmd + f"act import del -i '{integ_name}' '{import_name1}' -y")
