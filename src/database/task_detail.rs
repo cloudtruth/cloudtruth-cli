@@ -1,4 +1,4 @@
-use cloudtruth_restapi::models::{AwsPullTask, AwsPushTask};
+use cloudtruth_restapi::models::{AwsPullTask, AwsPushTask, GitHubPullTask};
 
 #[derive(Clone, Debug)]
 pub struct TaskDetail {
@@ -110,6 +110,27 @@ impl From<&AwsPushTask> for TaskDetail {
 
 impl From<&AwsPullTask> for TaskDetail {
     fn from(api: &AwsPullTask) -> Self {
+        let state = if let Some(state_enum) = api.state.clone() {
+            state_enum.to_string().to_lowercase()
+        } else {
+            "".to_string()
+        };
+
+        Self {
+            id: api.id.clone(),
+            url: api.url.clone(),
+            reason: api.reason.clone().unwrap_or_default(),
+            state,
+            error_code: api.error_code.clone().unwrap_or_default(),
+            error_detail: api.error_detail.clone().unwrap_or_default(),
+            created_at: api.created_at.clone(),
+            modified_at: api.modified_at.clone(),
+        }
+    }
+}
+
+impl From<&GitHubPullTask> for TaskDetail {
+    fn from(api: &GitHubPullTask) -> Self {
         let state = if let Some(state_enum) = api.state.clone() {
             state_enum.to_string().to_lowercase()
         } else {

@@ -850,6 +850,10 @@ fn print_pull_details(pull: &ActionDetails) {
         None => "none".to_string(),
         Some(b) => b.to_string(),
     };
+    let flags = match pull.flags.is_empty() {
+        true => "none".to_string(),
+        _ => pull.flags.join(", "),
+    };
 
     printdoc!(
         r#"
@@ -861,6 +865,7 @@ fn print_pull_details(pull: &ActionDetails) {
         Resource: {}
         Description: {}
         Dry Run: {}
+        Flags: {}
         ID: {}
         URL: {}
         Created At: {}
@@ -882,6 +887,7 @@ fn print_pull_details(pull: &ActionDetails) {
         pull.resource,
         pull.description,
         dry_run,
+        flags,
         pull.id,
         pull.url,
         pull.created_at,
@@ -951,8 +957,8 @@ fn proc_action_pull_list(
             .collect::<Vec<String>>();
         println!("{}", list.join("\n"))
     } else {
-        let mut hdr = vec!["Name", "Service", "Dry Run", "Status", "Last Import Time"];
-        let mut properties = vec!["name", "service", "dry-run", "task-state", "task-time"];
+        let mut hdr = vec!["Name", "Service", "Flags", "Status", "Last Import Time"];
+        let mut properties = vec!["name", "service", "flags", "task-state", "task-time"];
 
         if show_integration {
             hdr.insert(1, "Integration");

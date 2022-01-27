@@ -1,5 +1,5 @@
 use crate::database::task_detail::TaskDetail;
-use cloudtruth_restapi::models::{AwsPull, AwsPush};
+use cloudtruth_restapi::models::{AwsPull, AwsPush, GitHubPull};
 
 #[derive(Clone, Debug)]
 pub struct ActionDetails {
@@ -176,6 +176,53 @@ impl From<&AwsPull> for ActionDetails {
                 Some(s) => s.to_string(),
                 _ => "".to_string(),
             },
+            created_at: api.created_at.clone(),
+            modified_at: api.modified_at.clone(),
+        }
+    }
+}
+
+impl From<&GitHubPull> for ActionDetails {
+    fn from(api: &GitHubPull) -> Self {
+        let mut flags = vec![];
+        if let Some(dry_run) = api.dry_run {
+            if dry_run {
+                flags.push("dry-run".to_string());
+            }
+        }
+        if let Some(create_projects) = api.create_projects {
+            if create_projects {
+                flags.push("projects".to_string());
+            }
+        }
+        if let Some(create_environments) = api.create_environments {
+            if create_environments {
+                flags.push("environments".to_string());
+            }
+        }
+        if let Some(mode) = &api.mode {
+            flags.push(mode.to_string());
+        }
+        // TODO: add mapped values to resource? (never displayed due to length)
+
+        Self {
+            id: api.id.clone(),
+            url: api.url.clone(),
+            name: api.name.clone(),
+            integration_name: "".to_string(), // filled in later
+            description: api.description.clone().unwrap_or_default(),
+            provider: "github".to_string(),
+            action_type: "pull".to_string(),
+            resource: "".to_string(), // meaningless to github pull
+            dry_run: api.dry_run,
+            flags,
+            project_urls: vec![],
+            project_names: vec![],
+            tag_urls: vec![],
+            tag_names: vec![],
+            last_task: Default::default(),
+            region: "".to_string(),
+            service: "".to_string(),
             created_at: api.created_at.clone(),
             modified_at: api.modified_at.clone(),
         }
