@@ -115,9 +115,7 @@ class TestActions(TestCase):
         ########################
         # check it was created
         list_cmd = base_cmd + f"action push list -i '{integ_name}' "
-        result = self.run_cli(cmd_env, list_cmd + "-f json")
-        self.assertResultSuccess(result)
-        pushes = eval(result.out()).get("action-push")
+        pushes = self.get_cli_entries(cmd_env, list_cmd + "-f json", "action-push")
         entry = find_by_prop(pushes, PROP_NAME, push_name1)[0]
         self.assertEqual(entry.get("Projects"), proj_name1)
         self.assertEqual(entry.get("Tags"), f"{tag1}")
@@ -149,9 +147,7 @@ class TestActions(TestCase):
         self.assertIn("Updated", result.out())
 
         # check we have one entry with updated values
-        result = self.run_cli(cmd_env, list_cmd + "-f json")
-        self.assertResultSuccess(result)
-        pushes = eval(result.out()).get("action-push")
+        pushes = self.get_cli_entries(cmd_env, list_cmd + "-f json", "action-push")
         # original name does not exist
         self.assertEqual(0, len(find_by_prop(pushes, PROP_NAME, push_name1)))
         # check the updated entry
@@ -173,9 +169,8 @@ class TestActions(TestCase):
         self.assertIn(f"Integration: {integ_name}", result.out())
 
         # list without specifying the integration...
-        result = self.run_cli(cmd_env, base_cmd + "act push ls --format json")
-        self.assertResultSuccess(result)
-        pushes = eval(result.out()).get("action-push")
+        cmd = base_cmd + "act push ls --format json"
+        pushes = self.get_cli_entries(cmd_env, cmd, "action-push")
         entry = find_by_prop(pushes, PROP_NAME, push_name2)[0]
         self.assertEqual(entry.get("Integration"), integ_name)
         self.assertIsNone(entry.get(PROP_CREATED))
@@ -186,9 +181,8 @@ class TestActions(TestCase):
         self.assertResultSuccess(result)
         self.assertIn(f"Synchronized push '{push_name2}'", result.out())
 
-        result = self.run_cli(cmd_env, base_cmd + f"act push ls -i '{integ_name}' --format json --show-times")
-        self.assertResultSuccess(result)
-        pushes = eval(result.out()).get("action-push")
+        cmd = base_cmd + f"act push ls -i '{integ_name}' --format json --show-times"
+        pushes = self.get_cli_entries(cmd_env, cmd, "action-push")
         entry = find_by_prop(pushes, PROP_NAME, push_name2)[0]
         self.assertIsNone(entry.get("Integration"))
         self.assertIsNotNone(entry.get(PROP_CREATED))
@@ -224,9 +218,7 @@ class TestActions(TestCase):
         self.assertIn(f"Projects: {proj_name2}", result.out())
 
         # check the tags in more detail
-        result = self.run_cli(cmd_env, list_cmd + "-f json")
-        self.assertResultSuccess(result)
-        pushes = eval(result.out()).get("action-push")
+        pushes = self.get_cli_entries(cmd_env, list_cmd + "-f json", "action-push")
         entry = find_by_prop(pushes, PROP_NAME, push_name2)[0]
         entry_tags = entry.get("Tags")
         self.assertNotIn(tag1, entry_tags)
@@ -237,9 +229,8 @@ class TestActions(TestCase):
 
         ########################
         # task list
-        result = self.run_cli(cmd_env, base_cmd + f"act push tasks '{push_name2}' -f json")
-        self.assertResultSuccess(result)
-        tasks = eval(result.out()).get("action-push-task")
+        cmd = base_cmd + f"act push tasks '{push_name2}' -f json"
+        tasks = self.get_cli_entries(cmd_env, cmd, "action-push-task")
         self.assertGreaterEqual(len(tasks), 1)
         self.assertEqual(1, len(find_by_prop(tasks, "Reason", "push created")))
         entry = tasks[0]
@@ -250,11 +241,11 @@ class TestActions(TestCase):
 
         ########################
         # task step list
-        result = self.run_cli(cmd_env, base_cmd + f"act push steps '{push_name2}' -f json --show-times")
-        self.assertResultSuccess(result)
+        cmd = base_cmd + f"act push steps '{push_name2}' -f json --show-times"
+        steps = self.get_cli_entries(cmd_env, cmd, "action-push-task-step")
         # TODO: why no steps???
+        self.assertIsNotNone(steps)
         """
-        steps = eval(result.out()).get("action-push-task-step")
         self.assertGreaterEqual(len(steps), 1)
         entry = steps[0]
         self.assertEqual(entry.get("Task"), task_name)
@@ -421,9 +412,7 @@ class TestActions(TestCase):
         ########################
         # check it was created
         list_cmd = base_cmd + f"action imports list -i '{integ_name}' "
-        result = self.run_cli(cmd_env, list_cmd + "-f json")
-        self.assertResultSuccess(result)
-        imports = eval(result.out()).get("action-import")
+        imports = self.get_cli_entries(cmd_env, list_cmd + "-f json", "action-import")
         entry = find_by_prop(imports, PROP_NAME, import_name1)[0]
         self.assertEqual(entry.get("Service"), default_service)
         self.assertEqual(entry.get("Dry Run"), "false")
@@ -450,9 +439,7 @@ class TestActions(TestCase):
         self.assertIn("Updated", result.out())
 
         # check we have one entry with updated values
-        result = self.run_cli(cmd_env, list_cmd + "-f json")
-        self.assertResultSuccess(result)
-        imports = eval(result.out()).get("action-import")
+        imports = self.get_cli_entries(cmd_env, list_cmd + "-f json", "action-import")
         # original name does not exist
         self.assertEqual(0, len(find_by_prop(imports, PROP_NAME, import_name1)))
         # check the updated entry
@@ -469,9 +456,8 @@ class TestActions(TestCase):
         self.assertIn(f"Integration: {integ_name}", result.out())
 
         # list without specifying the integration...
-        result = self.run_cli(cmd_env, base_cmd + "act import ls --format json")
-        self.assertResultSuccess(result)
-        imports = eval(result.out()).get("action-import")
+        cmd = base_cmd + "act import ls --format json"
+        imports = self.get_cli_entries(cmd_env, cmd, "action-import")
         entry = find_by_prop(imports, PROP_NAME, import_name2)[0]
         self.assertEqual(entry.get("Integration"), integ_name)
         self.assertIsNone(entry.get(PROP_CREATED))
@@ -482,9 +468,8 @@ class TestActions(TestCase):
         self.assertResultSuccess(result)
         self.assertIn(f"Synchronized import '{import_name2}'", result.out())
 
-        result = self.run_cli(cmd_env, base_cmd + f"act import ls -i '{integ_name}' --format json --show-times")
-        self.assertResultSuccess(result)
-        imports = eval(result.out()).get("action-import")
+        cmd = base_cmd + f"act import ls -i '{integ_name}' --format json --show-times"
+        imports = self.get_cli_entries(cmd_env, cmd, "action-import")
         entry = find_by_prop(imports, PROP_NAME, import_name2)[0]
         self.assertIsNone(entry.get("Integration"))
         self.assertIsNotNone(entry.get(PROP_CREATED))
@@ -507,9 +492,8 @@ class TestActions(TestCase):
 
         ########################
         # task list
-        result = self.run_cli(cmd_env, base_cmd + f"act import tasks '{import_name2}' -f json")
-        self.assertResultSuccess(result)
-        tasks = eval(result.out()).get("action-import-task")
+        cmd = base_cmd + f"act import tasks '{import_name2}' -f json"
+        tasks = self.get_cli_entries(cmd_env, cmd, "action-import-task")
         self.assertGreaterEqual(len(tasks), 1)
         self.assertEqual(1, len(find_by_prop(tasks, "Reason", "pull created")))
         entry = tasks[0]
@@ -520,11 +504,11 @@ class TestActions(TestCase):
 
         ########################
         # task step list
-        result = self.run_cli(cmd_env, base_cmd + f"act import steps '{import_name2}' -f json --show-times")
-        self.assertResultSuccess(result)
+        cmd = base_cmd + f"act import steps '{import_name2}' -f json --show-times"
+        steps = self.get_cli_entries(cmd_env, cmd, "action-import-task-step")
         # TODO: why no steps???
+        self.assertIsNotNone(steps)
         """
-        steps = eval(result.out()).get("action-import-task-step")
         self.assertGreaterEqual(len(steps), 1)
         entry = steps[0]
         self.assertEqual(entry.get("Task"), task_name)
@@ -656,11 +640,7 @@ class TestActions(TestCase):
         if param_name:
             push_list_cmd += f"'{param_name}' "
         push_list_cmd += "-f json --show-times"
-        result = self.run_cli(cmd_env, push_list_cmd)
-        self.assertResultSuccess(result)
-        if "No pushes found" in result.out():
-            return []
-        return eval(result.out()).get("parameter-push-task-step")
+        return self.get_cli_entries(cmd_env, push_list_cmd, "parameter-push-task-step")
 
     def success_with(self, cmd_env, command: str, expected: str) -> bool:
         result = self.run_cli(cmd_env, command)
