@@ -13,9 +13,7 @@ PROP_TYPE = "Type"
 
 class TestUsers(TestCase):
     def _get_user_entry(self, cmd_env, user_name: str) -> Dict:
-        result = self.run_cli(cmd_env, self._base_cmd + "users ls -v -f json")
-        self.assertResultSuccess(result)
-        entries = eval(result.out()).get("user")
+        entries = self.get_cli_entries(cmd_env, self._base_cmd + "users ls -v -f json", "user")
         return find_by_prop(entries, PROP_NAME, user_name)[0]
 
     def test_user_basic(self):
@@ -176,9 +174,7 @@ class TestUsers(TestCase):
             self.assertResultSuccess(result)
 
     def _get_invite_entry(self, cmd_env, email: str) -> Dict:
-        result = self.run_cli(cmd_env, self._base_cmd + "users invite ls -v -f json")
-        self.assertResultSuccess(result)
-        entries = eval(result.out()).get("invitation")
+        entries = self.get_cli_entries(cmd_env, self._base_cmd + "users invite ls -v -f json", "invitation")
         matches = find_by_prop(entries, "Email", email)
         if len(matches) >= 1:
             return matches[0]

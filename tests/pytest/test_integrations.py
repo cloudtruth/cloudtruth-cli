@@ -458,9 +458,7 @@ PARAMETER_2 = PARAM2
         integ_name = os.environ.get(CT_BASIC_INTEG_NAME)
         bad_int_name = os.environ.get(CT_BASIC_BAD_INT_NAME)
 
-        result = self.run_cli(cmd_env, base_cmd + "integrations list -f json")
-        self.assertResultSuccess(result)
-        entries = eval(result.out()).get("integration")
+        entries = self.get_cli_entries(cmd_env, base_cmd + "integrations list -f json", "integration")
         entry = find_by_prop(entries, PROP_NAME, integ_name)
         self.assertIsNotNone(entry)
 

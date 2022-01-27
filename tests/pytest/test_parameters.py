@@ -1366,11 +1366,9 @@ Parameter,{env_a},{env_b}
 
         # check that we get back timestamp properties
         diff_json_cmd = sub_cmd + f"diff -e '{env_a}' -e '{env_b}' -f json "
-        result = self.run_cli(cmd_env, diff_json_cmd + "-p created-at --property modified-at")
-        self.assertResultSuccess(result)
-        output = eval(result.out())
+        params = self.get_cli_entries(cmd_env, diff_json_cmd + "-p created-at --property modified-at", "parameter")
 
-        p1_entry = output["parameter"][0]
+        p1_entry = params[0]
         self.assertEqual(p1_entry["Parameter"], param1)
         (created_a, modified_a) = split_time_strings(p1_entry[env_a])
         self.assertIsNotNone(datetime.datetime.fromisoformat(created_a))
@@ -1379,7 +1377,7 @@ Parameter,{env_a},{env_b}
         self.assertIsNotNone(datetime.datetime.fromisoformat(created_b))
         self.assertIsNotNone(datetime.datetime.fromisoformat(modified_b))
 
-        p2_entry = output["parameter"][1]
+        p2_entry = params[1]
         self.assertEqual(p2_entry["Parameter"], param2)
         (created_a, modified_a) = split_time_strings(p2_entry[env_a])
         self.assertIsNotNone(datetime.datetime.fromisoformat(created_a))
@@ -1567,20 +1565,16 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
 
         param_cmd = base_cmd + f"--project '{proj_name}' param "
         env_cmd = param_cmd + f"env '{param1}' --show-times --format json "
-        result = self.run_cli(cmd_env, env_cmd)
-        self.assertResultSuccess(result)
-        data = eval(result.out())
-        for item in data["parameter"]:
+        params = self.get_cli_entries(cmd_env, env_cmd, "parameter")
+        for item in params:
             if item.get("Environment") == env_a:
                 self.assertTrue(equal_properties(item, details_a2))
             if item.get("Environment") == env_b:
                 self.assertTrue(equal_properties(item, details_b2))
 
         env_cmd += f"--as-of {modified_at}"
-        result = self.run_cli(cmd_env, env_cmd)
-        self.assertResultSuccess(result)
-        data = eval(result.out())
-        for item in data["parameter"]:
+        params = self.get_cli_entries(cmd_env, env_cmd, "parameter")
+        for item in params:
             if item.get("Environment") == env_a:
                 self.assertTrue(equal_properties(item, details_a1))
             if item.get("Environment") == env_b:

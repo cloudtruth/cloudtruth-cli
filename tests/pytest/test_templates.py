@@ -273,9 +273,8 @@ references = PARAM
         result = self.run_cli(cmd_env, temp_cmd + f"set '{temp_name}' -b {filename}")
         self.assertResultSuccess(result)
 
-        result = self.run_cli(cmd_env, temp_cmd + "list --show-times -f json")
-        self.assertResultSuccess(result)
-        item = eval(result.out()).get("template")[0]
+        templates = self.get_cli_entries(cmd_env, temp_cmd + "list --show-times -f json", "template")
+        item = templates[0]
         modified_at = item.get(PROP_MODIFIED)
 
         #################
@@ -481,10 +480,8 @@ this.is.a.template.value=PARAM1
         self.assertResultSuccess(result)
 
         # get the modified time -- before making changes
-        result = self.run_cli(cmd_env, temp_cmd + "list --show-times -f json")
-        self.assertResultSuccess(result)
-        temp_info = eval(result.out())
-        modified_at = temp_info.get("template")[1].get("Modified At")
+        templates = self.get_cli_entries(cmd_env, temp_cmd + "list --show-times -f json", "template")
+        modified_at = templates[1].get("Modified At")
 
         tag_name = "stable"
         result = self.run_cli(cmd_env, base_cmd + f"env tag set {env_name} {tag_name}")
@@ -716,9 +713,8 @@ PARAMETER=PARAM1
         self.assertEqual(result.out(), "")
 
         # get the original modified date
-        result = self.run_cli(cmd_env, proj_cmd + "temp ls --show-times -f json")
-        self.assertResultSuccess(result)
-        item = eval(result.out()).get("template")[0]
+        templates = self.get_cli_entries(cmd_env, proj_cmd + "temp ls --show-times -f json", "template")
+        item = templates[0]
         modified_at = item.get(PROP_MODIFIED)
 
         #####################
