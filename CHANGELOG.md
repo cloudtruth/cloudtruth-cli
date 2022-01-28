@@ -1,3 +1,10 @@
+# 1.1.6 - 2022-01-28
+
+* Add several flags to `action push set` and `action push sync`
+  * Flags control dry-run, ownership check, and other parameter controls
+* Update `action import list` and `action push list` displays to show flags
+* Show GitHub items in `action import list`
+
 # 1.1.5 - 2022-01-21
 
 * Add `parameter drift` command to compare current shell environment to project/environment.
