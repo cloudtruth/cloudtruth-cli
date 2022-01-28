@@ -58,10 +58,10 @@ pub enum ProjectsParametersDestroyError {
     UnknownValue(serde_json::Value),
 }
 
-/// struct for typed errors of method [`projects_parameters_duality_retrieve`]
+/// struct for typed errors of method [`projects_parameters_duality_list`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
-pub enum ProjectsParametersDualityRetrieveError {
+pub enum ProjectsParametersDualityListError {
     UnknownValue(serde_json::Value),
 }
 
@@ -828,20 +828,31 @@ pub fn projects_parameters_destroy(
     }
 }
 
-/// Retrieve parameters at dual timepoints for differencing with a paginated result.  Specify at least one time point (t1) in history; if t2 is not specified then it is assumed to be \"now\".
-pub fn projects_parameters_duality_retrieve(
+/// Retrieve parameters at dual timepoints for differencing.  Results are aligned by parameter name.  This means if a parameter is created, then deleted, then created again with the same name the two records with different parameter IDs will show up in the same result entry.  If t1 is not specified then it will point to a time in the past where nothing existed.  If t2 is not specified then it is assumed to be \"now\".
+pub fn projects_parameters_duality_list(
     configuration: &configuration::Configuration,
     project_pk: &str,
     environment: Option<&str>,
     evaluate: Option<bool>,
     mask_secrets: Option<bool>,
+    name: Option<&str>,
+    name__contains: Option<&str>,
+    name__icontains: Option<&str>,
+    name__iexact: Option<&str>,
+    name__istartswith: Option<&str>,
+    name__startswith: Option<&str>,
+    ordering: Option<&str>,
+    page: Option<i32>,
+    page_size: Option<i32>,
+    secret: Option<bool>,
     t1_as_of: Option<String>,
     t1_tag: Option<&str>,
     t2_as_of: Option<String>,
     t2_tag: Option<&str>,
     values: Option<bool>,
     wrap: Option<bool>,
-) -> Result<crate::models::ParameterDuality, Error<ProjectsParametersDualityRetrieveError>> {
+) -> Result<crate::models::PaginatedParameterDualityList, Error<ProjectsParametersDualityListError>>
+{
     let local_var_configuration = configuration;
 
     let local_var_client = &local_var_configuration.client;
@@ -865,6 +876,46 @@ pub fn projects_parameters_duality_retrieve(
     if let Some(ref local_var_str) = mask_secrets {
         local_var_req_builder =
             local_var_req_builder.query(&[("mask_secrets", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = name {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("name", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = name__contains {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("name__contains", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = name__icontains {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("name__icontains", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = name__iexact {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("name__iexact", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = name__istartswith {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("name__istartswith", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = name__startswith {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("name__startswith", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = ordering {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("ordering", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = page {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("page", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = page_size {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("page_size", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = secret {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("secret", &local_var_str.to_string())]);
     }
     if let Some(ref local_var_str) = t1_as_of {
         local_var_req_builder =
@@ -932,7 +983,7 @@ pub fn projects_parameters_duality_retrieve(
         serde_json::from_str(&local_var_content)
             .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
-        let local_var_entity: Option<ProjectsParametersDualityRetrieveError> =
+        let local_var_entity: Option<ProjectsParametersDualityListError> =
             serde_json::from_str(&local_var_content).ok();
         let local_var_error = ResponseContent {
             status: local_var_status,

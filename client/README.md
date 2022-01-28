@@ -112,7 +112,7 @@ Class | Method | HTTP request | Description
 *ProjectsApi* | [**projects_parameter_export_list**](docs/ProjectsApi.md#projects_parameter_export_list) | **GET** /api/v1/projects/{project_pk}/parameter-export/ | 
 *ProjectsApi* | [**projects_parameters_create**](docs/ProjectsApi.md#projects_parameters_create) | **POST** /api/v1/projects/{project_pk}/parameters/ | 
 *ProjectsApi* | [**projects_parameters_destroy**](docs/ProjectsApi.md#projects_parameters_destroy) | **DELETE** /api/v1/projects/{project_pk}/parameters/{id}/ | 
-*ProjectsApi* | [**projects_parameters_duality_retrieve**](docs/ProjectsApi.md#projects_parameters_duality_retrieve) | **GET** /api/v1/projects/{project_pk}/parameters/duality/ | 
+*ProjectsApi* | [**projects_parameters_duality_list**](docs/ProjectsApi.md#projects_parameters_duality_list) | **GET** /api/v1/projects/{project_pk}/parameters/duality/ | 
 *ProjectsApi* | [**projects_parameters_list**](docs/ProjectsApi.md#projects_parameters_list) | **GET** /api/v1/projects/{project_pk}/parameters/ | 
 *ProjectsApi* | [**projects_parameters_partial_update**](docs/ProjectsApi.md#projects_parameters_partial_update) | **PATCH** /api/v1/projects/{project_pk}/parameters/{id}/ | 
 *ProjectsApi* | [**projects_parameters_pushes_list**](docs/ProjectsApi.md#projects_parameters_pushes_list) | **GET** /api/v1/projects/{project_pk}/parameters/{parameter_pk}/pushes/ | List push operations.
@@ -234,6 +234,7 @@ Class | Method | HTTP request | Description
  - [PaginatedInvitationList](docs/PaginatedInvitationList.md)
  - [PaginatedMembershipList](docs/PaginatedMembershipList.md)
  - [PaginatedOrganizationList](docs/PaginatedOrganizationList.md)
+ - [PaginatedParameterDualityList](docs/PaginatedParameterDualityList.md)
  - [PaginatedParameterList](docs/PaginatedParameterList.md)
  - [PaginatedParameterRuleList](docs/PaginatedParameterRuleList.md)
  - [PaginatedParameterTypeList](docs/PaginatedParameterTypeList.md)
