@@ -949,7 +949,7 @@ pub fn build_cli() -> App<'static, 'static> {
                     .arg(show_times_arg())
                     .about("List CloudTruth templates"),
                 SubCommand::with_name("preview")
-                    .about("Evaluate the provided template without storing")
+                    .about("Evaluate the provided local template file without storing")
                     .visible_aliases(&["prev", "pre"])
                     .arg(template_body().required(true).index(1))
                     .arg(param_as_of_arg())

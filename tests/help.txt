@@ -1378,7 +1378,7 @@ SUBCOMMANDS:
     help           Prints this message or the help of the given subcommand(s)
     history        Display template history [aliases: hist, h]
     list           List CloudTruth templates [aliases: ls, l]
-    preview        Evaluate the provided template without storing [aliases: prev, pre]
+    preview        Evaluate the provided local template file without storing [aliases: prev, pre]
     set            Set the CloudTruth template [aliases: s]
     validate       Validate a CloudTruth template [aliases: valid, val, v]
 ========================================
@@ -1481,7 +1481,7 @@ OPTIONS:
     -f, --format <format>    Format for template values data [default: table]  [possible values: table, csv, json, yaml]
 ========================================
 cloudtruth-templates-preview 
-Evaluate the provided template without storing
+Evaluate the provided local template file without storing
 
 USAGE:
     cloudtruth templates preview [FLAGS] [OPTIONS] <FILE>
