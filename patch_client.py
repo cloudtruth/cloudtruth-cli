@@ -446,8 +446,12 @@ def optional_enums(srcdir: str) -> None:
     """
     filelist = glob.glob(f"{srcdir}/models/*.rs")
     regex = re.compile(r"Box::new\((.*)\)")
+    excludes = [f"{srcdir}/models/parameter_duality.rs"]
 
     for filename in filelist:
+        if filename in excludes:
+            continue
+
         orig = file_read_content(filename)
         updated = regex.sub(r"\1.map(Box::new)", orig)
         if orig != updated:

@@ -150,6 +150,8 @@ pub mod parameter;
 pub use self::parameter::Parameter;
 pub mod parameter_create;
 pub use self::parameter_create::ParameterCreate;
+pub mod parameter_duality;
+pub use self::parameter_duality::ParameterDuality;
 pub mod parameter_export;
 pub use self::parameter_export::ParameterExport;
 pub mod parameter_rule;

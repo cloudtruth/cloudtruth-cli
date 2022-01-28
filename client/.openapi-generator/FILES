@@ -87,6 +87,7 @@ docs/PaginatedUserList.md
 docs/PaginatedValueList.md
 docs/Parameter.md
 docs/ParameterCreate.md
+docs/ParameterDuality.md
 docs/ParameterExport.md
 docs/ParameterRule.md
 docs/ParameterRuleCreate.md
@@ -240,6 +241,7 @@ src/models/paginated_user_list.rs
 src/models/paginated_value_list.rs
 src/models/parameter.rs
 src/models/parameter_create.rs
+src/models/parameter_duality.rs
 src/models/parameter_export.rs
 src/models/parameter_rule.rs
 src/models/parameter_rule_create.rs
