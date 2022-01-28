@@ -67,12 +67,12 @@ fn process_completion_command(subcmd_args: &ArgMatches) {
     );
 }
 
-/// Insures the configuration is valid.
+/// Insures the basic configuration is valid (e.g. API key and server-url exist)
 ///
 /// If there are errors, it will print the error/help and exit.
 /// If only warnings happen, it will print the warning and keep going.
-fn check_config() -> Result<()> {
-    if let Some(issues) = Config::global().validate() {
+fn validate_config(config: &Config) -> Result<()> {
+    if let Some(issues) = config.validate() {
         // print the warnings first, so the user sees them (even when errors are present)
         let warnings = issues.warnings;
         if !warnings.is_empty() {
@@ -93,6 +93,12 @@ fn check_config() -> Result<()> {
     Ok(())
 }
 
+/// This checks for newer CLI releases based on config and state
+///
+/// The Updates structure comes from the configuration file. If there is no configuration
+/// file, there is no update checking. The update checking can be turned off in the config
+/// file (if desired), but defaults to true.  The frequency of the checks and the action to
+/// take on finding a newer version are also controlled in the config file.
 fn check_updates(updates: &Updates) -> Result<()> {
     // NOTE: the next_update() returns None if the check is disabled...
     if let Some(next_update) = updates.next_update() {
@@ -150,6 +156,8 @@ fn main() -> Result<()> {
     let env_name = matches.value_of("env");
     let proj_name = matches.value_of("project");
 
+    //====================================================
+    // This section requires no configuration to be present
     if let Some(matches) = matches.subcommand_matches("completions") {
         process_completion_command(matches);
         process::exit(0)
@@ -170,8 +178,9 @@ fn main() -> Result<()> {
         check_updates(&updates)?;
     }
 
-    // wait until after processing the config command to load the config -- if we fail to load the
-    // config, we would not be able to edit!
+    //====================================================
+    // Check basic configuration stuff (e.g. server_url, and api_key), since these
+    // commands will talk to the server
     let cfg_result = Config::load_config(api_key, profile_name, env_name, proj_name);
     if let Err(error) = cfg_result {
         let profile_info = if profile_name.is_some() {
@@ -188,16 +197,16 @@ fn main() -> Result<()> {
         ));
         process::exit(26);
     }
-    Config::init_global(cfg_result.unwrap());
-    let rest_cfg = OpenApiConfig::from(Config::global());
+    let config = Config::init_global(cfg_result.unwrap());
+    let rest_cfg = OpenApiConfig::from(config);
 
     if let Some(matches) = matches.subcommand_matches("login") {
-        process_login_command(matches, Config::global())?;
+        process_login_command(matches, config)?;
         process::exit(0);
     }
 
     if let Some(matches) = matches.subcommand_matches("logout") {
-        process_logout_command(matches, Config::global())?;
+        process_logout_command(matches, config)?;
         process::exit(0);
     }
 
@@ -207,7 +216,7 @@ fn main() -> Result<()> {
     }
 
     // Check the basic config (api-key, server-url) -- don't worry about valid env/proj, yet
-    check_config()?;
+    validate_config(config)?;
 
     if let Some(matches) = matches.subcommand_matches("users") {
         process_users_command(matches, &rest_cfg)?;
@@ -259,9 +268,9 @@ fn main() -> Result<()> {
         process::exit(0);
     }
 
+    //====================================================
     // Everything below here requires resolved environment/project values
     let resolver = Resolver::new();
-    let config = Config::global();
     let env_name = config.environment.as_deref().unwrap_or(DEFAULT_ENV_NAME);
     let proj_name = config.project.as_deref().unwrap_or_default();
     let resolved = resolver.resolve_ids(&rest_cfg, proj_name, env_name)?;

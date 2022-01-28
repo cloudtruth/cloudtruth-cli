@@ -189,12 +189,9 @@ impl Config {
         Ok(())
     }
 
-    pub fn global() -> &'static Self {
-        INSTANCE.get().expect("configuration is not initialized")
-    }
-
-    pub fn init_global(config: Self) {
-        INSTANCE.set(config).unwrap()
+    pub fn init_global(config: Self) -> &'static Self {
+        INSTANCE.set(config).unwrap();
+        INSTANCE.get().unwrap()
     }
 
     fn read_config(config_file: &Path) -> Result<String> {
