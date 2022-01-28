@@ -109,7 +109,7 @@ def file_write_content(filename: str, content: str) -> None:
     f.close()
 
 
-def allow_snake(srcdir: str) -> None:
+def allow_snake(srcdir: str, verbose: bool) -> None:
     """
     The generated code produces a `parent__name` variable that causes warnings. This stops the
     compiler from complaining about that sort of issue. The notation is added at the top of lib.rs
@@ -119,11 +119,12 @@ def allow_snake(srcdir: str) -> None:
     temp = file_read_content(filename)
 
     if ALLOW_SNAKE_TEXT not in temp:
-        print(f"Updating {filename} to allow snake-case")
+        if verbose:
+            print(f"Updating {filename} to allow snake-case")
         file_write_content(filename, ALLOW_SNAKE_TEXT + temp)
 
 
-def support_api_key(srcdir: str) -> None:
+def support_api_key(srcdir: str, verbose: bool) -> None:
     """
     The generated code incorrectly adds 2 authorization headers if `api_key` is populated and
     never uses the `bearer_access_token`.
@@ -139,12 +140,13 @@ def support_api_key(srcdir: str) -> None:
         if double not in temp:
             continue
 
-        print(f"Updating {filename} with Bearer/Api-Key text")
+        if verbose:
+            print(f"Updating {filename} with Bearer/Api-Key text")
         temp = temp.replace(double, BEARER_TEXT + API_KEY_TEXT)
         file_write_content(filename, temp)
 
 
-def update_gitpush(client_dir: str) -> None:
+def update_gitpush(client_dir: str, verbose: bool) -> None:
     """
     Avoid upsetting shellcheck.
     """
@@ -162,11 +164,12 @@ def update_gitpush(client_dir: str) -> None:
     temp = temp.replace(orig_need_quotes, update_need_quotes)
 
     if temp != orig:
-        print(f"Updating {filename} with shell fixes")
+        if verbose:
+            print(f"Updating {filename} with shell fixes")
         file_write_content(filename, temp)
 
 
-def optional_values(srcdir: str) -> None:
+def optional_values(srcdir: str, verbose: bool) -> None:
     """
     Makes the Parameter.values optional.
 
@@ -179,11 +182,12 @@ def optional_values(srcdir: str) -> None:
         orig = file_read_content(filename)
         temp = orig.replace(required_value, optional_value)
         if temp != orig:
-            print(f"Updating {filename} with Option<Value>")
+            if verbose:
+                print(f"Updating {filename} with Option<Value>")
             file_write_content(filename, temp)
 
 
-def update_rest_config(srcdir: str) -> None:
+def update_rest_config(srcdir: str, verbose: bool) -> None:
     """
     Add stuff to the Configuration.
 
@@ -218,11 +222,12 @@ def update_rest_config(srcdir: str) -> None:
         temp = temp.replace(config_impl, config_impl + DEBUG_SUCCESS_FUNCTION)
         assert rest_debug_param in temp, "Did not add rest_debug param"
 
-        print(f"Updating {filename} with rest_debug parameter")
+        if verbose:
+            print(f"Updating {filename} with rest_debug parameter")
         file_write_content(filename, temp)
 
 
-def add_debug_profiling(srcdir: str) -> None:
+def add_debug_profiling(srcdir: str, verbose: bool) -> None:
     """
     Prints the URL info and timing information for each query.
     """
@@ -242,11 +247,12 @@ def add_debug_profiling(srcdir: str) -> None:
         temp = temp.replace(old_use, old_use + "\n" + new_use)
         temp = temp.replace(execute, REST_DEBUG_PROFILING)
 
-        print(f"Updating {filename} with debug profiling")
+        if verbose:
+            print(f"Updating {filename} with debug profiling")
         file_write_content(filename, temp)
 
 
-def add_debug_errors(srcdir: str) -> None:
+def add_debug_errors(srcdir: str, verbose: bool) -> None:
     """
     Prints the error response content when debugging is configured.
     """
@@ -264,11 +270,12 @@ def add_debug_errors(srcdir: str) -> None:
 
         temp = orig.replace(raise_err, REST_DEBUG_ERRORS)
 
-        print(f"Updating {filename} with debug error printing")
+        if verbose:
+            print(f"Updating {filename} with debug error printing")
         file_write_content(filename, temp)
 
 
-def fix_optional(filelist: List[str], var_name: str, var_type: str = "String") -> None:
+def fix_optional(filelist: List[str], var_name: str, var_type: str = "String", verbose: bool = False) -> None:
     """
     Utility to update a field optional in the model.
     """
@@ -289,11 +296,13 @@ def fix_optional(filelist: List[str], var_name: str, var_type: str = "String") -
             orig_box_use = f"{var_name}: Box::new({var_name})"
             updated_box_use = f"{var_name}: Some(Box::new({var_name}))"
             updated = updated.replace(orig_box_use, updated_box_use)
-        print(f"Updating {filename} with optional {var_name} fix")
+
+        if verbose:
+            print(f"Updating {filename} with optional {var_name} fix")
         file_write_content(filename, updated)
 
 
-def fix_service_account_user(srcdir: str) -> None:
+def fix_service_account_user(srcdir: str, verbose: bool) -> None:
     """
     Make the ServiceAccount.user optional.
 
@@ -301,10 +310,10 @@ def fix_service_account_user(srcdir: str) -> None:
     This works around the issue, so the CLI does not crash when no User is returned.
     """
     filelist = glob.glob(f"{srcdir}/models/service_account*.rs")
-    fix_optional(filelist, var_name="user", var_type="Box<crate::models::User>")
+    fix_optional(filelist, var_name="user", var_type="Box<crate::models::User>", verbose=verbose)
 
 
-def schema_returns_string(srcdir: str) -> None:
+def schema_returns_string(srcdir: str, verbose: bool) -> None:
     """
     Modifies the schema call to return a string (instead of some sort of hash map).
 
@@ -322,11 +331,12 @@ def schema_returns_string(srcdir: str) -> None:
         return
 
     updated = orig.replace(orig_return, updated_return).replace(orig_parse, updated_parse)
-    print(f"Updating {filename} with schema string return")
+    if verbose:
+        print(f"Updating {filename} with schema string return")
     file_write_content(filename, updated)
 
 
-def add_serde_error_handling_to_mod(srcdir: str) -> None:
+def add_serde_error_handling_to_mod(srcdir: str, verbose: bool) -> None:
     """
     Adds the serdes error handler to the module.
     """
@@ -337,11 +347,12 @@ def add_serde_error_handling_to_mod(srcdir: str) -> None:
     if added_use in orig:
         return
 
-    print(f"Updating {filename} with serde error handling")
+    if verbose:
+        print(f"Updating {filename} with serde error handling")
     file_write_content(filename, added_use + orig + SERDES_ERROR_FUNC)
 
 
-def add_func_macro_to_mod(srcdir: str) -> None:
+def add_func_macro_to_mod(srcdir: str, verbose: bool) -> None:
     """
     Adds macro::function! to the module.
 
@@ -355,11 +366,12 @@ def add_func_macro_to_mod(srcdir: str) -> None:
     if macro_def in orig:
         return
 
-    print(f"Updating {filename} with function macro")
+    if verbose:
+        print(f"Updating {filename} with function macro")
     file_write_content(filename, orig + FUNCTION_MACRO)
 
 
-def serdes_error_handling_calls(srcdir: str) -> None:
+def serdes_error_handling_calls(srcdir: str, verbose: bool) -> None:
     """
     This improves the information we receive on a serdes parsing error.
 
@@ -385,11 +397,12 @@ def serdes_error_handling_calls(srcdir: str) -> None:
             continue
 
         updated = orig.replace(orig_use, updated_use).replace(orig_serde_err, updated_serde_err)
-        print(f"Updating {filename} with improved serde error handling")
+        if verbose:
+            print(f"Updating {filename} with improved serde error handling")
         file_write_content(filename, updated)
 
 
-def add_debug_success_calls(srcdir: str) -> None:
+def add_debug_success_calls(srcdir: str, verbose: bool) -> None:
     """
     Allows for printing the received content on success.
 
@@ -406,11 +419,12 @@ def add_debug_success_calls(srcdir: str) -> None:
             continue
 
         updated = orig.replace(orig_check, orig_check + DEBUG_SUCCESS_CALL)
-        print(f"Updating {filename} with success check")
+        if verbose:
+            print(f"Updating {filename} with success check")
         file_write_content(filename, updated)
 
 
-def object_type_string(srcdir: str) -> None:
+def object_type_string(srcdir: str, verbose: bool) -> None:
     """
     Turns the `AuditTrail.object_type` into a `String` (from a `ObjectTypeEnum`).
 
@@ -433,11 +447,12 @@ def object_type_string(srcdir: str) -> None:
     updated = orig.replace(orig_type, new_type)
     updated = updated.replace(orig_new_arg, new_new_arg)
     updated = updated.replace(orig_create_arg, new_create_arg)
-    print(f"Updating {filename} with object type string")
+    if verbose:
+        print(f"Updating {filename} with object type string")
     file_write_content(filename, updated)
 
 
-def optional_enums(srcdir: str) -> None:
+def optional_enums(srcdir: str, verbose: bool) -> None:
     """
     When updating to v5.3.1, all the enums became optional in the models and broke the generated code!
     This scans the models makes changes like:
@@ -455,11 +470,12 @@ def optional_enums(srcdir: str) -> None:
         orig = file_read_content(filename)
         updated = regex.sub(r"\1.map(Box::new)", orig)
         if orig != updated:
-            print(f"Updating {filename} with optional enums")
+            if verbose:
+                print(f"Updating {filename} with optional enums")
             file_write_content(filename, updated)
 
 
-def default_enums(srcdir: str) -> None:
+def default_enums(srcdir: str, verbose: bool) -> None:
     """
     The generator additional-properties including enumUnknownDefaultCase=true adds
     a 'unknown_default_open_api' variant to the enums. However, this change is
@@ -478,26 +494,28 @@ def default_enums(srcdir: str) -> None:
             continue
 
         updated = orig.replace(default_value, default_variant)
-        print(f"Updating {filename} with default variant")
+        if verbose:
+            print(f"Updating {filename} with default variant")
         file_write_content(filename, updated)
 
 
 if __name__ == "__main__":
     client_dir = os.getcwd() + "/client"
     srcdir = client_dir + "/src"
-    allow_snake(srcdir)
-    support_api_key(srcdir)
-    update_gitpush(client_dir)
-    optional_values(srcdir)
-    update_rest_config(srcdir)
-    add_debug_profiling(srcdir)
-    add_debug_errors(srcdir)
-    add_debug_success_calls(srcdir)
-    fix_service_account_user(srcdir)
-    schema_returns_string(srcdir)
-    add_serde_error_handling_to_mod(srcdir)
-    add_func_macro_to_mod(srcdir)
-    serdes_error_handling_calls(srcdir)
-    object_type_string(srcdir)
-    optional_enums(srcdir)
-    default_enums(srcdir)
+    verbose = False
+    allow_snake(srcdir, verbose)
+    support_api_key(srcdir, verbose)
+    update_gitpush(client_dir, verbose)
+    optional_values(srcdir, verbose)
+    update_rest_config(srcdir, verbose)
+    add_debug_profiling(srcdir, verbose)
+    add_debug_errors(srcdir, verbose)
+    add_debug_success_calls(srcdir, verbose)
+    fix_service_account_user(srcdir, verbose)
+    schema_returns_string(srcdir, verbose)
+    add_serde_error_handling_to_mod(srcdir, verbose)
+    add_func_macro_to_mod(srcdir, verbose)
+    serdes_error_handling_calls(srcdir, verbose)
+    object_type_string(srcdir, verbose)
+    optional_enums(srcdir, verbose)
+    default_enums(srcdir, verbose)
