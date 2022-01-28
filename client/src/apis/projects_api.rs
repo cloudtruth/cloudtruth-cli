@@ -58,6 +58,13 @@ pub enum ProjectsParametersDestroyError {
     UnknownValue(serde_json::Value),
 }
 
+/// struct for typed errors of method [`projects_parameters_duality_retrieve`]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum ProjectsParametersDualityRetrieveError {
+    UnknownValue(serde_json::Value),
+}
+
 /// struct for typed errors of method [`projects_parameters_list`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
@@ -805,6 +812,127 @@ pub fn projects_parameters_destroy(
         Ok(())
     } else {
         let local_var_entity: Option<ProjectsParametersDestroyError> =
+            serde_json::from_str(&local_var_content).ok();
+        let local_var_error = ResponseContent {
+            status: local_var_status,
+            content: local_var_content,
+            entity: local_var_entity,
+        };
+        if local_var_configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
+        Err(Error::ResponseError(local_var_error))
+    }
+}
+
+/// Retrieve parameters at dual timepoints for differencing with a paginated result.  Specify at least one time point (t1) in history; if t2 is not specified then it is assumed to be \"now\".
+pub fn projects_parameters_duality_retrieve(
+    configuration: &configuration::Configuration,
+    project_pk: &str,
+    environment: Option<&str>,
+    evaluate: Option<bool>,
+    mask_secrets: Option<bool>,
+    t1_as_of: Option<String>,
+    t1_tag: Option<&str>,
+    t2_as_of: Option<String>,
+    t2_tag: Option<&str>,
+    values: Option<bool>,
+    wrap: Option<bool>,
+) -> Result<crate::models::ParameterDuality, Error<ProjectsParametersDualityRetrieveError>> {
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
+
+    let local_var_uri_str = format!(
+        "{}/api/v1/projects/{project_pk}/parameters/duality/",
+        local_var_configuration.base_path,
+        project_pk = crate::apis::urlencode(project_pk)
+    );
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
+
+    if let Some(ref local_var_str) = environment {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("environment", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = evaluate {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("evaluate", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = mask_secrets {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("mask_secrets", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = t1_as_of {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("t1_as_of", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = t1_tag {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("t1_tag", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = t2_as_of {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("t2_as_of", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = t2_tag {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("t2_tag", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = values {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("values", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = wrap {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("wrap", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
+    }
+
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
+        let local_var_key = local_var_apikey.key.clone();
+        let local_var_value = match local_var_apikey.prefix {
+            Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
+            None => local_var_key,
+        };
+        local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
+    };
+
+    let local_var_req = local_var_req_builder.build()?;
+    let method = local_var_req.method().clone();
+    let start = Instant::now();
+    let mut local_var_resp = local_var_client.execute(local_var_req)?;
+    if local_var_configuration.rest_debug {
+        let duration = start.elapsed();
+        println!(
+            "URL {} {} elapsed: {:?}",
+            method,
+            &local_var_resp.url(),
+            duration
+        );
+    }
+
+    let local_var_status = local_var_resp.status();
+    let local_var_content = local_var_resp.text()?;
+
+    if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if local_var_configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
+    } else {
+        let local_var_entity: Option<ProjectsParametersDualityRetrieveError> =
             serde_json::from_str(&local_var_content).ok();
         let local_var_error = ResponseContent {
             status: local_var_status,

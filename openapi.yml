@@ -3597,8 +3597,8 @@ paths:
         name: tag
         schema:
           type: string
-        description: Specify a tag to retrieve configuration from.  Cannot be specified
-          with `as_of`.
+        description: Specify a tag to retrieve configuration from. Cannot be specified
+          with `as_of`. Requires `environment`.
       - in: query
         name: wrap
         schema:
@@ -3725,8 +3725,8 @@ paths:
         name: tag
         schema:
           type: string
-        description: Specify a tag to retrieve configuration from.  Cannot be specified
-          with `as_of`.
+        description: Specify a tag to retrieve configuration from. Cannot be specified
+          with `as_of`. Requires `environment`.
       - in: query
         name: values
         schema:
@@ -3833,8 +3833,8 @@ paths:
         name: tag
         schema:
           type: string
-        description: Specify a tag to retrieve configuration from.  Cannot be specified
-          with `as_of`.
+        description: Specify a tag to retrieve configuration from. Cannot be specified
+          with `as_of`. Requires `environment`.
       tags:
       - projects
       security:
@@ -4189,8 +4189,8 @@ paths:
         name: tag
         schema:
           type: string
-        description: Specify a tag to retrieve configuration from.  Cannot be specified
-          with `as_of`.
+        description: Specify a tag to retrieve configuration from. Cannot be specified
+          with `as_of`. Requires `environment`.
       - in: query
         name: wrap
         schema:
@@ -4330,8 +4330,8 @@ paths:
         name: tag
         schema:
           type: string
-        description: Specify a tag to retrieve configuration from.  Cannot be specified
-          with `as_of`.
+        description: Specify a tag to retrieve configuration from. Cannot be specified
+          with `as_of`. Requires `environment`.
       - in: query
         name: wrap
         schema:
@@ -4568,8 +4568,8 @@ paths:
         name: tag
         schema:
           type: string
-        description: Specify a tag to retrieve configuration from.  Cannot be specified
-          with `as_of`.
+        description: Specify a tag to retrieve configuration from. Cannot be specified
+          with `as_of`. Requires `environment`.
       - in: query
         name: values
         schema:
@@ -4766,8 +4766,8 @@ paths:
         name: tag
         schema:
           type: string
-        description: Specify a tag to retrieve configuration from.  Cannot be specified
-          with `as_of`.
+        description: Specify a tag to retrieve configuration from. Cannot be specified
+          with `as_of`. Requires `environment`.
       tags:
       - projects
       security:
@@ -4779,6 +4779,93 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ParameterTimeline'
+          description: ''
+  /api/v1/projects/{project_pk}/parameters/duality/:
+    get:
+      operationId: projects_parameters_duality_retrieve
+      description: |-
+        Retrieve parameters at dual timepoints for differencing with a paginated result.
+
+        Specify at least one time point (t1) in history; if t2 is not specified then it
+        is assumed to be "now".
+      parameters:
+      - in: query
+        name: environment
+        schema:
+          type: string
+        description: Name or id (uuid) of the environment to get parameter values
+          for.  Cannot be used with `values`.
+      - in: query
+        name: evaluate
+        schema:
+          type: boolean
+          default: true
+        description: |-
+          If `true`, runs template evaluation on this parameter's values.  If `false`, returns the value's template.
+          No effect on values that are not interpolated.
+      - in: query
+        name: mask_secrets
+        schema:
+          type: boolean
+          default: false
+        description: If true, masks all secrets.
+      - in: path
+        name: project_pk
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: query
+        name: t1_as_of
+        schema:
+          type: string
+          format: date-time
+        description: Specify a point in time to retrieve configuration from. Cannot
+          be specified with `t1_tag`.
+      - in: query
+        name: t1_tag
+        schema:
+          type: string
+        description: Specify a tag to retrieve configuration from. Cannot be specified
+          with `t1_as_of`. Requires `environment`.
+      - in: query
+        name: t2_as_of
+        schema:
+          type: string
+          format: date-time
+        description: Specify a point in time to retrieve configuration from. Cannot
+          be specified with `t2_tag`.
+      - in: query
+        name: t2_tag
+        schema:
+          type: string
+        description: Specify a tag to retrieve configuration from. Cannot be specified
+          with `t2_as_of`. Requires `environment`.
+      - in: query
+        name: values
+        schema:
+          type: boolean
+          default: true
+        description: 'If false, values are not returned: the `values` array will have
+          no entries. This speeds up retrieval if value content is not needed.  Cannot
+          be used with `environment`.'
+      - in: query
+        name: wrap
+        schema:
+          type: boolean
+          default: false
+        description: If true, wraps all secrets - see documentation for more details.
+      tags:
+      - projects
+      security:
+      - JWTAuth: []
+      - ApiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParameterDuality'
           description: ''
   /api/v1/projects/{project_pk}/parameters/timelines/:
     get:
@@ -4806,8 +4893,8 @@ paths:
         name: tag
         schema:
           type: string
-        description: Specify a tag to retrieve configuration from.  Cannot be specified
-          with `as_of`.
+        description: Specify a tag to retrieve configuration from. Cannot be specified
+          with `as_of`. Requires `environment`.
       tags:
       - projects
       security:
@@ -4855,8 +4942,8 @@ paths:
         name: tag
         schema:
           type: string
-        description: Specify a tag to retrieve configuration from.  Cannot be specified
-          with `as_of`.
+        description: Specify a tag to retrieve configuration from. Cannot be specified
+          with `as_of`. Requires `environment`.
       - in: query
         name: template
         schema:
@@ -4955,8 +5042,8 @@ paths:
         name: tag
         schema:
           type: string
-        description: Specify a tag to retrieve configuration from.  Cannot be specified
-          with `as_of`.
+        description: Specify a tag to retrieve configuration from. Cannot be specified
+          with `as_of`. Requires `environment`.
       tags:
       - projects
       security:
@@ -5061,8 +5148,8 @@ paths:
         name: tag
         schema:
           type: string
-        description: Specify a tag to retrieve configuration from.  Cannot be specified
-          with `as_of`.
+        description: Specify a tag to retrieve configuration from. Cannot be specified
+          with `as_of`. Requires `environment`.
       tags:
       - projects
       security:
@@ -5238,8 +5325,8 @@ paths:
         name: tag
         schema:
           type: string
-        description: Specify a tag to retrieve configuration from.  Cannot be specified
-          with `as_of`.
+        description: Specify a tag to retrieve configuration from. Cannot be specified
+          with `as_of`. Requires `environment`.
       tags:
       - projects
       security:
@@ -5284,8 +5371,8 @@ paths:
         name: tag
         schema:
           type: string
-        description: Specify a tag to retrieve configuration from.  Cannot be specified
-          with `as_of`.
+        description: Specify a tag to retrieve configuration from. Cannot be specified
+          with `as_of`. Requires `environment`.
       tags:
       - projects
       security:
@@ -8684,6 +8771,17 @@ components:
           description: The type of this Parameter.
       required:
       - name
+    ParameterDuality:
+      type: object
+      description: Details about a parameter at two timepoints.
+      properties:
+        t1:
+          $ref: '#/components/schemas/Parameter'
+        t2:
+          $ref: '#/components/schemas/Parameter'
+      required:
+      - t1
+      - t2
     ParameterExport:
       type: object
       properties:
