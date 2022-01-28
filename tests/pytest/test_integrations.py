@@ -1,13 +1,12 @@
 import os
 import unittest
 
-from typing import List
-
 from testcase import TestCase
 from testcase import PROP_NAME
 from testcase import PROP_TYPE
 from testcase import PROP_VALUE
 from testcase import find_by_prop
+from testcase import missing_any
 from urllib.parse import urlparse
 
 CT_BROKEN_PROJ = "CLOUDTRUTH_TEST_BROKEN_PROJECT"
@@ -68,10 +67,6 @@ CT_BASIC_RUN = [
     CT_BASIC_INTEG_NAME,
     CT_BASIC_BAD_INT_NAME,
 ]
-
-
-def missing_any(env_var_names: List[str]) -> bool:
-    return not all([os.environ.get(x) for x in env_var_names])
 
 
 class TestIntegrations(TestCase):

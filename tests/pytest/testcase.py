@@ -78,6 +78,10 @@ def find_by_prop(entries: List[Dict], prop_name: str, prop_value: str) -> List[D
     return [e for e in entries if e.get(prop_name, None) == prop_value]
 
 
+def missing_any(env_var_names: List[str]) -> bool:
+    return not all([os.environ.get(x) for x in env_var_names])
+
+
 @dataclasses.dataclass
 class Result:
     return_value: int = 0

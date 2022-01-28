@@ -13,6 +13,7 @@ from testcase import PROP_NAME
 from testcase import PROP_MODIFIED
 from testcase import PROP_VALUE
 from testcase import find_by_prop
+from testcase import missing_any
 
 CT_PUSH_INTEG_NAME = "CLOUDTRUTH_TEST_PUSH_INTEGRATION_NAME"
 CT_PUSH_BAD_INT_NAME = "CLOUDTRUTH_TEST_PUSH_BAD_INTEGRATION_NAME"
@@ -32,10 +33,6 @@ CT_COMP_INTEG_NAME = "CLOUDTRUTH_TEST_COMPLETE_INTEGRATION_NAME"
 CT_COMP_RUN = [
     CT_COMP_INTEG_NAME,
 ]
-
-
-def missing_any(env_var_names: List[str]) -> bool:
-    return not all([os.environ.get(x) for x in env_var_names])
 
 
 class TestActions(TestCase):
