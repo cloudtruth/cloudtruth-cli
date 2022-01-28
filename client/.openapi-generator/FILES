@@ -74,6 +74,7 @@ docs/PaginatedIntegrationExplorerList.md
 docs/PaginatedInvitationList.md
 docs/PaginatedMembershipList.md
 docs/PaginatedOrganizationList.md
+docs/PaginatedParameterDualityList.md
 docs/PaginatedParameterList.md
 docs/PaginatedParameterRuleList.md
 docs/PaginatedParameterTypeList.md
@@ -228,6 +229,7 @@ src/models/paginated_integration_explorer_list.rs
 src/models/paginated_invitation_list.rs
 src/models/paginated_membership_list.rs
 src/models/paginated_organization_list.rs
+src/models/paginated_parameter_duality_list.rs
 src/models/paginated_parameter_list.rs
 src/models/paginated_parameter_rule_list.rs
 src/models/paginated_parameter_type_list.rs

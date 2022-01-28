@@ -7540,8 +7540,8 @@
         },
         "/api/v1/projects/{project_pk}/parameters/duality/": {
             "get": {
-                "operationId": "projects_parameters_duality_retrieve",
-                "description": "Retrieve parameters at dual timepoints for differencing with a paginated result.\n\nSpecify at least one time point (t1) in history; if t2 is not specified then it\nis assumed to be \"now\".",
+                "operationId": "projects_parameters_duality_list",
+                "description": "Retrieve parameters at dual timepoints for differencing.\n\nResults are aligned by parameter name.  This means if a parameter is\ncreated, then deleted, then created again with the same name the two\nrecords with different parameter IDs will show up in the same result\nentry.\n\nIf t1 is not specified then it will point to a time in the past where\nnothing existed.  If t2 is not specified then it is assumed to be \"now\".",
                 "parameters": [
                     {
                         "in": "query",
@@ -7570,6 +7570,75 @@
                         "description": "If true, masks all secrets."
                     },
                     {
+                        "in": "query",
+                        "name": "name",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "name__contains",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "name__icontains",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "name__iexact",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "name__istartswith",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "name__startswith",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "ordering",
+                        "required": false,
+                        "in": "query",
+                        "description": "Which field to use when ordering the results.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "required": false,
+                        "in": "query",
+                        "description": "A page number within the paginated result set.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "page_size",
+                        "required": false,
+                        "in": "query",
+                        "description": "Number of results to return per page.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
                         "in": "path",
                         "name": "project_pk",
                         "schema": {
@@ -7577,6 +7646,13 @@
                             "format": "uuid"
                         },
                         "required": true
+                    },
+                    {
+                        "in": "query",
+                        "name": "secret",
+                        "schema": {
+                            "type": "boolean"
+                        }
                     },
                     {
                         "in": "query",
@@ -7647,7 +7723,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ParameterDuality"
+                                    "$ref": "#/components/schemas/PaginatedParameterDualityList"
                                 }
                             }
                         },
@@ -12455,6 +12531,33 @@
                     }
                 }
             },
+            "PaginatedParameterDualityList": {
+                "type": "object",
+                "properties": {
+                    "count": {
+                        "type": "integer",
+                        "example": 123
+                    },
+                    "next": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?page=4"
+                    },
+                    "previous": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?page=2"
+                    },
+                    "results": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ParameterDuality"
+                        }
+                    }
+                }
+            },
             "PaginatedParameterList": {
                 "type": "object",
                 "properties": {
@@ -12895,13 +12998,23 @@
             },
             "ParameterDuality": {
                 "type": "object",
-                "description": "Details about a parameter at two timepoints.",
+                "description": "Details about a parameter at two timepoints.\n\nIf t1 or t2 is null then the parameter did not exist at that\ntimepoint.",
                 "properties": {
                     "t1": {
-                        "$ref": "#/components/schemas/Parameter"
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/Parameter"
+                            }
+                        ],
+                        "nullable": true
                     },
                     "t2": {
-                        "$ref": "#/components/schemas/Parameter"
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/Parameter"
+                            }
+                        ],
+                        "nullable": true
                     }
                 },
                 "required": [

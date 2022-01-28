@@ -4782,12 +4782,17 @@ paths:
           description: ''
   /api/v1/projects/{project_pk}/parameters/duality/:
     get:
-      operationId: projects_parameters_duality_retrieve
+      operationId: projects_parameters_duality_list
       description: |-
-        Retrieve parameters at dual timepoints for differencing with a paginated result.
+        Retrieve parameters at dual timepoints for differencing.
 
-        Specify at least one time point (t1) in history; if t2 is not specified then it
-        is assumed to be "now".
+        Results are aligned by parameter name.  This means if a parameter is
+        created, then deleted, then created again with the same name the two
+        records with different parameter IDs will show up in the same result
+        entry.
+
+        If t1 is not specified then it will point to a time in the past where
+        nothing existed.  If t2 is not specified then it is assumed to be "now".
       parameters:
       - in: query
         name: environment
@@ -4809,12 +4814,58 @@ paths:
           type: boolean
           default: false
         description: If true, masks all secrets.
+      - in: query
+        name: name
+        schema:
+          type: string
+      - in: query
+        name: name__contains
+        schema:
+          type: string
+      - in: query
+        name: name__icontains
+        schema:
+          type: string
+      - in: query
+        name: name__iexact
+        schema:
+          type: string
+      - in: query
+        name: name__istartswith
+        schema:
+          type: string
+      - in: query
+        name: name__startswith
+        schema:
+          type: string
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
       - in: path
         name: project_pk
         schema:
           type: string
           format: uuid
         required: true
+      - in: query
+        name: secret
+        schema:
+          type: boolean
       - in: query
         name: t1_as_of
         schema:
@@ -4865,7 +4916,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ParameterDuality'
+                $ref: '#/components/schemas/PaginatedParameterDualityList'
           description: ''
   /api/v1/projects/{project_pk}/parameters/timelines/:
     get:
@@ -8402,6 +8453,26 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Organization'
+    PaginatedParameterDualityList:
+      type: object
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ParameterDuality'
     PaginatedParameterList:
       type: object
       properties:
@@ -8773,12 +8844,20 @@ components:
       - name
     ParameterDuality:
       type: object
-      description: Details about a parameter at two timepoints.
+      description: |-
+        Details about a parameter at two timepoints.
+
+        If t1 or t2 is null then the parameter did not exist at that
+        timepoint.
       properties:
         t1:
-          $ref: '#/components/schemas/Parameter'
+          allOf:
+          - $ref: '#/components/schemas/Parameter'
+          nullable: true
         t2:
-          $ref: '#/components/schemas/Parameter'
+          allOf:
+          - $ref: '#/components/schemas/Parameter'
+          nullable: true
       required:
       - t1
       - t2

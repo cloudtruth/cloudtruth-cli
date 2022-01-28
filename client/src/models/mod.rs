@@ -124,6 +124,8 @@ pub mod paginated_membership_list;
 pub use self::paginated_membership_list::PaginatedMembershipList;
 pub mod paginated_organization_list;
 pub use self::paginated_organization_list::PaginatedOrganizationList;
+pub mod paginated_parameter_duality_list;
+pub use self::paginated_parameter_duality_list::PaginatedParameterDualityList;
 pub mod paginated_parameter_list;
 pub use self::paginated_parameter_list::PaginatedParameterList;
 pub mod paginated_parameter_rule_list;
