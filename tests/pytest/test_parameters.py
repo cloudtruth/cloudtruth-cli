@@ -1703,8 +1703,8 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
         missing_cmd = param_a_cmd + f"set '{param3}' --value '{{{{ {bad_param} }}}}'"
         result = self.run_cli(cmd_env, missing_cmd)
         self.assertResultError(result, "Evaluation error")
-        self.assertIn("is not a valid parameter reference", result.err())
-        self.assertIn(bad_param, result.err())
+        self.assertIn("references parameter(s) that do not exist", result.err())
+        self.assertIn("unknown", result.err())
 
         result = self.list_params(cmd_env, proj_name, env=env_name_a, fmt="csv")
         self.assertResultSuccess(result)
