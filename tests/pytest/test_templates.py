@@ -254,7 +254,7 @@ ANOTHER_PARAM=PARAM2
         value1b = "value second"
         self.set_param(cmd_env, proj_name, param1, value1a)
 
-        param2 = "another-param"
+        param2 = "another_param"
         value2a = "devops"
         value2b = "sre"
         self.set_param(cmd_env, proj_name, param2, value2a)
@@ -355,7 +355,7 @@ this.is.a.template.value=PARAM1
         value1b = "value second"
         self.set_param(cmd_env, proj_name, param1, value1a, env=env_name)
 
-        param2 = "another-param"
+        param2 = "another_param"
         value2a = "devops"
         value2b = "sre"
         self.set_param(cmd_env, proj_name, param2, value2a, env=env_name)
@@ -895,7 +895,7 @@ PARAMETER={{{{{param1}}}}}
     def test_template_ref_by_param(self):
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
-        temp_name = "param-template"  # templates are scoped to a project, so no need to "randomize"
+        temp_name = "param_template"  # templates are scoped to a project, so no need to "randomize"
 
         filename = self.make_name("ref-body") + ".txt"
         body1 = "nothing to evaluate here"
@@ -909,7 +909,7 @@ PARAMETER={{{{{param1}}}}}
         result = self.run_cli(cmd_env, sub_cmd + f"set {temp_name} --body '{filename}'")
         self.assertResultSuccess(result)
 
-        param1 = "my-parameter"
+        param1 = "my_parameter"
         value1 = f"{{{{ cloudtruth.template.{temp_name} }}}}"
         self.set_param(cmd_env, proj_name, param1, value1, evaluate=True)
 

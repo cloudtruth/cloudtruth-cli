@@ -18,9 +18,9 @@ class TestProjects(TestCase):
         proj2 = self.make_name("test-back-proj2")
         p2_max_len = "100"
         p2_min_len = "10"
-        temp1 = "my-temp"
-        param1 = "my-param"
-        param2 = "another-param"
+        temp1 = "my_temp"
+        param1 = "my_param"
+        param2 = "another_param"
         value1a = "1234"
         value1b = "-42"
         value2a = "sssssshhhhhh"
