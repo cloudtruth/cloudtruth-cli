@@ -4,14 +4,30 @@ CloudTruth CLI
 The CloudTruth CLI tool is used for interacting with the [CloudTruth configuration management service](https://cloudtruth.com).
 In order to use this utility you must have an active CloudTruth account and generate a personal access token for authenticating with the API.
 
-Prerequisites
--------------
+You can create a free account here [[Try Free](https://app.cloudtruth.io/signup)] and then create an API token [here](https://app.cloudtruth.io/organization/api)
 
-The CloudTruth service is secured using SSL certificates issued by Amazon's CA service.
-Amazon's CA is trusted by recent operating systems and browsers out of the box, but may require installation of an updated CA certificate package for older operating system releases.
-E.g., Debian-based systems may require the installation of the _ca-certificates_ package.
-If you install our Debian package, the necessary certificates package will be installed automatically.
-For other systems, you may have to see your operating system vendor or distribution provides if you see any SSL-related errors when running the `cloudtruth` application.
+Install
+-------
+### Homebrew (MacOS or Linux)
+
+Use homebrew
+
+```shell
+brew install cloudtruth/formulae/cloudtruth-cli
+```
+
+See also [homebrew-formulae](https://github.com/cloudtruth/homebrew-formulae/blob/main/README.md)
+
+### PowerShell (Windows)
+<!-- (I did not find cloudtruth available via Windows package manager https://community.chocolatey.org/packages?q=cloudtruth) -->
+
+See [install.ps1](install.ps1)
+
+Run the following command to verify successfull installation and see the version.
+```shell
+cloudtruth --version
+```
+
 
 Configuration
 -------------
@@ -73,7 +89,7 @@ The available configuration options are:
 * `$CLOUDTRUTH_ENVIRONMENT` -> Your "default" CloudTruth environment
 
 
-### Argument-base Configuration
+### Argument-based Configuration
 
 The CloudTruth CLI utility is able to be configured by supplying command-line arguments for the necessary settings.
 As with the other configuration options available to you, care should be taken to ensure secret values are not exposed to other users on your system.
@@ -118,3 +134,12 @@ To change the target environment, you can supply the global `--env` flag:
 
 `cloudtruth --env production parameters get my_param`
 
+
+### CLI-API TLS
+
+The CloudTruth service is secured using SSL certificates issued by Amazon's CA service.
+Amazon's CA is trusted by recent operating systems and browsers out of the box, but may require installation of an updated CA certificate package for older operating system releases.
+
+For example, Debian-based systems may require the installation of the _ca-certificates_ package.
+If you install our Debian package, the necessary certificates package will be installed automatically.
+For other systems, you may have to see your operating system vendor or distribution provides if you see any SSL-related errors when running the `cloudtruth` application.
