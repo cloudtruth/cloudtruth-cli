@@ -283,6 +283,8 @@ impl Projects {
             pushes: None,
             depends_on: parent_url.map(String::from),
             dependents: None,
+            access_controlled: None,
+            role: None,
         };
         let response = projects_partial_update(rest_cfg, project_id, Some(proj));
         match response {

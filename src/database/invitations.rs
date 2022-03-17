@@ -165,6 +165,7 @@ impl Invitations {
             state: None,
             state_detail: None,
             membership: None,
+            organization: None,
         };
         let response = invitations_partial_update(rest_cfg, invite_id, Some(invite_update));
         match response {

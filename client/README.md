@@ -43,6 +43,21 @@ Class | Method | HTTP request | Description
 *EnvironmentsApi* | [**environments_tags_retrieve**](docs/EnvironmentsApi.md#environments_tags_retrieve) | **GET** /api/v1/environments/{environment_pk}/tags/{id}/ | 
 *EnvironmentsApi* | [**environments_tags_update**](docs/EnvironmentsApi.md#environments_tags_update) | **PUT** /api/v1/environments/{environment_pk}/tags/{id}/ | 
 *EnvironmentsApi* | [**environments_update**](docs/EnvironmentsApi.md#environments_update) | **PUT** /api/v1/environments/{id}/ | 
+*GrantsApi* | [**grants_create**](docs/GrantsApi.md#grants_create) | **POST** /api/v1/grants/ | 
+*GrantsApi* | [**grants_destroy**](docs/GrantsApi.md#grants_destroy) | **DELETE** /api/v1/grants/{id}/ | 
+*GrantsApi* | [**grants_list**](docs/GrantsApi.md#grants_list) | **GET** /api/v1/grants/ | 
+*GrantsApi* | [**grants_multi_destroy**](docs/GrantsApi.md#grants_multi_destroy) | **DELETE** /api/v1/grants/multi/ | 
+*GrantsApi* | [**grants_partial_update**](docs/GrantsApi.md#grants_partial_update) | **PATCH** /api/v1/grants/{id}/ | 
+*GrantsApi* | [**grants_retrieve**](docs/GrantsApi.md#grants_retrieve) | **GET** /api/v1/grants/{id}/ | 
+*GrantsApi* | [**grants_update**](docs/GrantsApi.md#grants_update) | **PUT** /api/v1/grants/{id}/ | 
+*GroupsApi* | [**groups_add_create**](docs/GroupsApi.md#groups_add_create) | **POST** /api/v1/groups/{id}/add/ | 
+*GroupsApi* | [**groups_create**](docs/GroupsApi.md#groups_create) | **POST** /api/v1/groups/ | 
+*GroupsApi* | [**groups_destroy**](docs/GroupsApi.md#groups_destroy) | **DELETE** /api/v1/groups/{id}/ | 
+*GroupsApi* | [**groups_list**](docs/GroupsApi.md#groups_list) | **GET** /api/v1/groups/ | 
+*GroupsApi* | [**groups_partial_update**](docs/GroupsApi.md#groups_partial_update) | **PATCH** /api/v1/groups/{id}/ | 
+*GroupsApi* | [**groups_remove_create**](docs/GroupsApi.md#groups_remove_create) | **POST** /api/v1/groups/{id}/remove/ | 
+*GroupsApi* | [**groups_retrieve**](docs/GroupsApi.md#groups_retrieve) | **GET** /api/v1/groups/{id}/ | 
+*GroupsApi* | [**groups_update**](docs/GroupsApi.md#groups_update) | **PUT** /api/v1/groups/{id}/ | 
 *ImportApi* | [**import_create**](docs/ImportApi.md#import_create) | **POST** /api/v1/import/ | 
 *IntegrationsApi* | [**integrations_aws_create**](docs/IntegrationsApi.md#integrations_aws_create) | **POST** /api/v1/integrations/aws/ | Establishes an AWS Integration.
 *IntegrationsApi* | [**integrations_aws_destroy**](docs/IntegrationsApi.md#integrations_aws_destroy) | **DELETE** /api/v1/integrations/aws/{id}/ | Delete an AWS integration.
@@ -71,6 +86,7 @@ Class | Method | HTTP request | Description
 *IntegrationsApi* | [**integrations_aws_pushes_tasks_steps_retrieve**](docs/IntegrationsApi.md#integrations_aws_pushes_tasks_steps_retrieve) | **GET** /api/v1/integrations/aws/{awsintegration_pk}/pushes/{awspush_pk}/tasks/{awspushtask_pk}/steps/{id}/ | 
 *IntegrationsApi* | [**integrations_aws_pushes_update**](docs/IntegrationsApi.md#integrations_aws_pushes_update) | **PUT** /api/v1/integrations/aws/{awsintegration_pk}/pushes/{id}/ | 
 *IntegrationsApi* | [**integrations_aws_retrieve**](docs/IntegrationsApi.md#integrations_aws_retrieve) | **GET** /api/v1/integrations/aws/{id}/ | Get details of an AWS Integration.
+*IntegrationsApi* | [**integrations_aws_scan_create**](docs/IntegrationsApi.md#integrations_aws_scan_create) | **POST** /api/v1/integrations/aws/{id}/scan/ | Evaluate a potential pull pattern and understand what it will match.
 *IntegrationsApi* | [**integrations_aws_update**](docs/IntegrationsApi.md#integrations_aws_update) | **PUT** /api/v1/integrations/aws/{id}/ | 
 *IntegrationsApi* | [**integrations_explore_list**](docs/IntegrationsApi.md#integrations_explore_list) | **GET** /api/v1/integrations/explore/ | Retrieve third-party integration data for the specified FQN.
 *IntegrationsApi* | [**integrations_github_create**](docs/IntegrationsApi.md#integrations_github_create) | **POST** /api/v1/integrations/github/ | Establishes a GitHub Integration.
@@ -175,7 +191,9 @@ Class | Method | HTTP request | Description
  - [AuditTrailSummary](docs/AuditTrailSummary.md)
  - [AwsIntegration](docs/AwsIntegration.md)
  - [AwsIntegrationCreate](docs/AwsIntegrationCreate.md)
+ - [AwsIntegrationScan](docs/AwsIntegrationScan.md)
  - [AwsPull](docs/AwsPull.md)
+ - [AwsPullSyncActionRequest](docs/AwsPullSyncActionRequest.md)
  - [AwsPullTask](docs/AwsPullTask.md)
  - [AwsPullTaskStep](docs/AwsPullTaskStep.md)
  - [AwsPush](docs/AwsPush.md)
@@ -193,6 +211,8 @@ Class | Method | HTTP request | Description
  - [BackupParameterValue](docs/BackupParameterValue.md)
  - [BackupProject](docs/BackupProject.md)
  - [BackupTemplate](docs/BackupTemplate.md)
+ - [DiscoveredContent](docs/DiscoveredContent.md)
+ - [DiscoveryResult](docs/DiscoveryResult.md)
  - [Environment](docs/Environment.md)
  - [EnvironmentCreate](docs/EnvironmentCreate.md)
  - [GeneratedPasswordResponse](docs/GeneratedPasswordResponse.md)
@@ -201,12 +221,14 @@ Class | Method | HTTP request | Description
  - [GitHubPull](docs/GitHubPull.md)
  - [GitHubPullTask](docs/GitHubPullTask.md)
  - [GitHubPullTaskStep](docs/GitHubPullTaskStep.md)
+ - [Grant](docs/Grant.md)
+ - [Group](docs/Group.md)
  - [HistoryModelEnum](docs/HistoryModelEnum.md)
  - [HistoryTypeEnum](docs/HistoryTypeEnum.md)
  - [ImportCreateRequest](docs/ImportCreateRequest.md)
  - [ImportCreateResponse](docs/ImportCreateResponse.md)
  - [ImportParameter](docs/ImportParameter.md)
- - [IntegrationExplorer](docs/IntegrationExplorer.md)
+ - [IntegrationNode](docs/IntegrationNode.md)
  - [Invitation](docs/Invitation.md)
  - [InvitationCreate](docs/InvitationCreate.md)
  - [Membership](docs/Membership.md)
@@ -230,7 +252,9 @@ Class | Method | HTTP request | Description
  - [PaginatedGitHubPullList](docs/PaginatedGitHubPullList.md)
  - [PaginatedGitHubPullTaskList](docs/PaginatedGitHubPullTaskList.md)
  - [PaginatedGitHubPullTaskStepList](docs/PaginatedGitHubPullTaskStepList.md)
- - [PaginatedIntegrationExplorerList](docs/PaginatedIntegrationExplorerList.md)
+ - [PaginatedGrantList](docs/PaginatedGrantList.md)
+ - [PaginatedGroupList](docs/PaginatedGroupList.md)
+ - [PaginatedIntegrationNodeList](docs/PaginatedIntegrationNodeList.md)
  - [PaginatedInvitationList](docs/PaginatedInvitationList.md)
  - [PaginatedMembershipList](docs/PaginatedMembershipList.md)
  - [PaginatedOrganizationList](docs/PaginatedOrganizationList.md)
@@ -266,6 +290,8 @@ Class | Method | HTTP request | Description
  - [PatchedAwsPushUpdate](docs/PatchedAwsPushUpdate.md)
  - [PatchedEnvironment](docs/PatchedEnvironment.md)
  - [PatchedGitHubPull](docs/PatchedGitHubPull.md)
+ - [PatchedGrant](docs/PatchedGrant.md)
+ - [PatchedGroup](docs/PatchedGroup.md)
  - [PatchedInvitation](docs/PatchedInvitation.md)
  - [PatchedMembership](docs/PatchedMembership.md)
  - [PatchedOrganization](docs/PatchedOrganization.md)

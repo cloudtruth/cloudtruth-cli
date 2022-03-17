@@ -274,6 +274,7 @@ impl Templates {
     ) -> Result<String, TemplateError> {
         let preview = TemplatePreview {
             body: body.to_string(),
+            has_secret: false,
         };
         let response = projects_template_preview_create(
             rest_cfg,

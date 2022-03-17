@@ -10,12 +10,16 @@
 
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct ParameterExport {
+    /// The exported parameter body.
     #[serde(rename = "body")]
     pub body: String,
+    /// If True, the exported parameters include one or more secrets.
+    #[serde(rename = "has_secret")]
+    pub has_secret: bool,
 }
 
 impl ParameterExport {
-    pub fn new(body: String) -> ParameterExport {
-        ParameterExport { body }
+    pub fn new(body: String, has_secret: bool) -> ParameterExport {
+        ParameterExport { body, has_secret }
     }
 }

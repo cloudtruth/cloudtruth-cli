@@ -162,7 +162,7 @@ impl From<&AwsPull> for ActionDetails {
             action_type: "pull".to_string(),
             dry_run: api.dry_run,
             flags,
-            resource: api.resource.clone().unwrap_or_default(),
+            resource: api.resource.clone(),
             project_urls: vec![],
             project_names: vec![], // filled in later
             tag_urls: vec![],

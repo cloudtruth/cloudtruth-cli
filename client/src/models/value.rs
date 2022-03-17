@@ -56,7 +56,7 @@ pub struct Value {
     /// If true, the `value` field has undergone template evaluation.
     #[serde(rename = "evaluated")]
     pub evaluated: bool,
-    /// Indicates the value content is a secret.  Normally this is `true` when the parameter is a secret, however it is possible for a parameter to be a secret with a external value that is not a secret.  It is not possible to convert a parameter from a secret to a non-secret if any of the values are external and a secret.  Clients can check this condition by leveraging this field.
+    /// Indicates the value content is a secret.  Normally this is `true` when the parameter is a secret. It is possible for a parameter to be a secret with a external value that is not a secret.  It is not possible to convert a parameter from a secret to a non-secret if any of the values are external and a secret.  Clients can check this condition by leveraging this field.  It is also possible for a parameter to not be a secret but for this value to be dynamic and reference a Parameter that is a secret.  In this case, we indicate the value is a secret.
     #[serde(rename = "secret")]
     pub secret: Option<bool>,
     /// The parameters this value references, if interpolated.

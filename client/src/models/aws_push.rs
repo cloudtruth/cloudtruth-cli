@@ -45,6 +45,9 @@ pub struct AwsPush {
     /// Normally, push will check to see if it originated the values in the destination before making changes to them.  Forcing a push disables the ownership check.
     #[serde(rename = "force", skip_serializing_if = "Option::is_none")]
     pub force: Option<bool>,
+    /// Normally, push will process all parameters including those that flow in from project dependencies.  Declaring a push as `local` will cause it to only process the parameters defined in the selected projects.
+    #[serde(rename = "local", skip_serializing_if = "Option::is_none")]
+    pub local: Option<bool>,
     /// Projects that are included in the push.
     #[serde(rename = "projects")]
     pub projects: Vec<String>,
@@ -90,6 +93,7 @@ impl AwsPush {
             include_secrets: None,
             dry_run: None,
             force: None,
+            local: None,
             projects,
             tags,
             region: region.map(Box::new),

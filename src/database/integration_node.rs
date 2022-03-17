@@ -1,5 +1,5 @@
 use crate::database::last_from_url;
-use cloudtruth_restapi::models::IntegrationExplorer;
+use cloudtruth_restapi::models::IntegrationNode as IntegrationExplorer;
 
 #[derive(Debug)]
 pub struct IntegrationNode {

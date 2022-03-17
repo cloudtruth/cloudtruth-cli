@@ -6,7 +6,8 @@ use crate::database::{
 use cloudtruth_restapi::apis::integrations_api::*;
 use cloudtruth_restapi::apis::Error::ResponseError;
 use cloudtruth_restapi::models::{
-    AwsPull, AwsPush, AwsPushUpdate, AwsRegionEnum, AwsServiceEnum, GitHubPull,
+    AwsPull, AwsPullSyncActionRequest, AwsPush, AwsPushUpdate, AwsRegionEnum, AwsServiceEnum,
+    GitHubPull,
 };
 
 const NO_ORDERING: Option<&str> = None;
@@ -700,6 +701,7 @@ impl Integrations {
             include_parameters: include_params,
             include_secrets,
             coerce_parameters: coerce_params,
+            local: Some(false),
             created_at: "".to_string(),
             modified_at: "".to_string(),
         };
@@ -774,6 +776,7 @@ impl Integrations {
             resource: Some(resource.to_string()),
             dry_run,
             force,
+            local: Some(false),
             coerce_parameters: coerce_params,
             include_parameters: include_params,
             include_secrets,
@@ -855,6 +858,7 @@ impl Integrations {
             latest_task: None,
             dry_run,
             force,
+            local: Some(false),
             include_parameters: include_params,
             include_secrets,
             coerce_parameters: coerce_params,
@@ -1439,7 +1443,7 @@ impl Integrations {
             description: description.map(String::from),
             region: reg_enum.map(Box::new),
             service: ser_enum.map(Box::new),
-            resource: Some(resource.to_string()),
+            resource: resource.to_string(),
             latest_task: None,
             created_at: "".to_string(),
             modified_at: "".to_string(),
@@ -1511,7 +1515,7 @@ impl Integrations {
             create_projects: None,
             region: Some(Box::new(AwsRegionEnum::AfSouth1)),
             service: Some(Box::new(AwsServiceEnum::S3)),
-            resource: Some(resource.to_string()),
+            resource: resource.to_string(),
         };
         let response =
             integrations_aws_pulls_update(rest_cfg, integration_id, pull_id, pull_update);
@@ -1552,36 +1556,13 @@ impl Integrations {
         rest_cfg: &OpenApiConfig,
         pull_details: &ActionDetails,
     ) -> Result<(), IntegrationError> {
-        let description = if pull_details.description.is_empty() {
-            None
-        } else {
-            Some(pull_details.description.clone())
-        };
-        let reg_enum = aws_region_from_str(&pull_details.region);
-        let srv_enum = aws_service_from_str(&pull_details.service);
         let integration_id = parent_id_from_url(&pull_details.url, "pulls/");
-        let sync_body = AwsPull {
-            url: pull_details.url.clone(),
-            id: pull_details.id.clone(),
-            name: pull_details.name.clone(),
-            description,
-            region: reg_enum.map(Box::new),
-            service: srv_enum.map(Box::new),
-            resource: Some(pull_details.resource.clone()),
-            latest_task: None,
-            created_at: "".to_string(),
-            modified_at: "".to_string(),
-            dry_run: None,
-            mode: None,
-            mapped_values: vec![],
-            create_environments: None,
-            create_projects: None,
-        };
+        let sync_body = AwsPullSyncActionRequest { dry_run: None };
         let response = integrations_aws_pulls_sync_create(
             rest_cfg,
             integration_id,
             &pull_details.id,
-            sync_body,
+            Some(sync_body),
         );
         match response {
             Ok(_) => Ok(()),

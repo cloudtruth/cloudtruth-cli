@@ -21,11 +21,19 @@ pub struct PatchedOrganization {
     /// Indicates if this Organization is the one currently targeted by the Bearer token used by the client to authorize.
     #[serde(rename = "current", skip_serializing_if = "Option::is_none")]
     pub current: Option<bool>,
+    /// Your role in the organization.
+    #[serde(rename = "role", skip_serializing_if = "Option::is_none")]
+    pub role: Option<Box<crate::models::RoleEnum>>,
     #[serde(
         rename = "subscription_expires_at",
         skip_serializing_if = "Option::is_none"
     )]
     pub subscription_expires_at: Option<String>,
+    #[serde(
+        rename = "subscription_features",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub subscription_features: Option<Vec<String>>,
     #[serde(rename = "subscription_id", skip_serializing_if = "Option::is_none")]
     pub subscription_id: Option<String>,
     #[serde(
@@ -51,7 +59,9 @@ impl PatchedOrganization {
             id: None,
             name: None,
             current: None,
+            role: None,
             subscription_expires_at: None,
+            subscription_features: None,
             subscription_id: None,
             subscription_plan_id: None,
             subscription_plan_name: None,

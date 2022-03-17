@@ -828,10 +828,11 @@ pub fn projects_parameters_destroy(
     }
 }
 
-/// Retrieve parameters at dual timepoints for differencing.  Results are aligned by parameter name.  This means if a parameter is created, then deleted, then created again with the same name the two records with different parameter IDs will show up in the same result entry.  If t1 is not specified then it will point to a time in the past where nothing existed.  If t2 is not specified then it is assumed to be \"now\".
+/// Retrieve parameters at dual timepoints for comparison.  Results are aligned by parameter name.  This means if a parameter is created, then deleted, then created again with the same name the two records with different parameter IDs will show up in the same result entry.  If t1 is not specified then it will point to a time in the past where nothing existed.  If t2 is not specified then it is assumed to be \"now\".
 pub fn projects_parameters_duality_list(
     configuration: &configuration::Configuration,
     project_pk: &str,
+    difference: Option<bool>,
     environment: Option<&str>,
     evaluate: Option<bool>,
     mask_secrets: Option<bool>,
@@ -865,6 +866,10 @@ pub fn projects_parameters_duality_list(
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
 
+    if let Some(ref local_var_str) = difference {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("difference", &local_var_str.to_string())]);
+    }
     if let Some(ref local_var_str) = environment {
         local_var_req_builder =
             local_var_req_builder.query(&[("environment", &local_var_str.to_string())]);
@@ -1005,6 +1010,7 @@ pub fn projects_parameters_list(
     project_pk: &str,
     as_of: Option<String>,
     description__icontains: Option<&str>,
+    difference: Option<&str>,
     environment: Option<&str>,
     evaluate: Option<bool>,
     id__in: Option<Vec<String>>,
@@ -1042,6 +1048,10 @@ pub fn projects_parameters_list(
     if let Some(ref local_var_str) = description__icontains {
         local_var_req_builder =
             local_var_req_builder.query(&[("description__icontains", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = difference {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("difference", &local_var_str.to_string())]);
     }
     if let Some(ref local_var_str) = environment {
         local_var_req_builder =

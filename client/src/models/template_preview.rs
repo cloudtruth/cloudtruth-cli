@@ -10,12 +10,16 @@
 
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct TemplatePreview {
+    /// The template body to instantiate on request, instantiated on response.
     #[serde(rename = "body")]
     pub body: String,
+    /// If True, the instantiated template contains secrets.
+    #[serde(rename = "has_secret")]
+    pub has_secret: bool,
 }
 
 impl TemplatePreview {
-    pub fn new(body: String) -> TemplatePreview {
-        TemplatePreview { body }
+    pub fn new(body: String, has_secret: bool) -> TemplatePreview {
+        TemplatePreview { body, has_secret }
     }
 }

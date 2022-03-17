@@ -27,6 +27,12 @@ pub struct PatchedEnvironment {
     /// This is the opposite of `parent`, see that field for more details.
     #[serde(rename = "children", skip_serializing_if = "Option::is_none")]
     pub children: Option<Vec<String>>,
+    /// Indicates if access control is being enforced through grants.
+    #[serde(rename = "access_controlled", skip_serializing_if = "Option::is_none")]
+    pub access_controlled: Option<bool>,
+    /// Your role in the environment, if the environment is access-controlled.
+    #[serde(rename = "role", skip_serializing_if = "Option::is_none")]
+    pub role: Option<Box<crate::models::RoleEnum>>,
     #[serde(rename = "created_at", skip_serializing_if = "Option::is_none")]
     pub created_at: Option<String>,
     #[serde(rename = "modified_at", skip_serializing_if = "Option::is_none")]
@@ -42,6 +48,8 @@ impl PatchedEnvironment {
             description: None,
             parent: None,
             children: None,
+            access_controlled: None,
+            role: None,
             created_at: None,
             modified_at: None,
         }
