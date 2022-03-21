@@ -4299,6 +4299,30 @@ paths:
           description: Number of results to return per page.
           schema:
             type: integer
+        - in: query
+          name: project__name
+          schema:
+            type: string
+        - in: query
+          name: project__name__contains
+          schema:
+            type: string
+        - in: query
+          name: project__name__icontains
+          schema:
+            type: string
+        - in: query
+          name: project__name__iexact
+          schema:
+            type: string
+        - in: query
+          name: project__name__istartswith
+          schema:
+            type: string
+        - in: query
+          name: project__name__startswith
+          schema:
+            type: string
         - in: path
           name: project_pk
           schema:
@@ -7062,6 +7086,7 @@ components:
             integration.
         resource:
           type: string
+          nullable: true
           description: |-
             Defines a pattern matching string that contains either mustache or regular expression syntax (with named capture groups) that locate the environment, project, and parameter name of the content you are looking for.
 
@@ -7159,6 +7184,7 @@ components:
             integration.
         resource:
           type: string
+          nullable: true
           description: |-
             Defines a pattern matching string that contains either mustache or regular expression syntax (with named capture groups) that locate the environment, project, and parameter name of the content you are looking for.
 
@@ -10185,6 +10211,7 @@ components:
             integration.
         resource:
           type: string
+          nullable: true
           description: |-
             Defines a pattern matching string that contains either mustache or regular expression syntax (with named capture groups) that locate the environment, project, and parameter name of the content you are looking for.
 

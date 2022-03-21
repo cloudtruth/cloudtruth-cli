@@ -6812,6 +6812,48 @@
                         }
                     },
                     {
+                        "in": "query",
+                        "name": "project__name",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "project__name__contains",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "project__name__icontains",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "project__name__iexact",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "project__name__istartswith",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "project__name__startswith",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
                         "in": "path",
                         "name": "project_pk",
                         "schema": {
@@ -10995,6 +11037,7 @@
                     },
                     "resource": {
                         "type": "string",
+                        "nullable": true,
                         "description": "Defines a pattern matching string that contains either mustache or regular expression syntax (with named capture groups) that locate the environment, project, and parameter name of the content you are looking for.\n\nIf you are using mustache pattern matching, use:\n\n  - ``{{ environment }}`` to identify the environment name\n  - ``{{ parameter }}`` to identify the parameter name\n  - ``{{ project }}`` to identify the project name\n\nIf you are using a regular expression, use Python syntax with named capture groups that locate the `environment`, `project`, and `parameter`.",
                         "maxLength": 1024
                     }
@@ -11096,6 +11139,7 @@
                     },
                     "resource": {
                         "type": "string",
+                        "nullable": true,
                         "description": "Defines a pattern matching string that contains either mustache or regular expression syntax (with named capture groups) that locate the environment, project, and parameter name of the content you are looking for.\n\nIf you are using mustache pattern matching, use:\n\n  - ``{{ environment }}`` to identify the environment name\n  - ``{{ parameter }}`` to identify the parameter name\n  - ``{{ project }}`` to identify the project name\n\nIf you are using a regular expression, use Python syntax with named capture groups that locate the `environment`, `project`, and `parameter`.",
                         "maxLength": 1024
                     }
@@ -14794,6 +14838,7 @@
                     },
                     "resource": {
                         "type": "string",
+                        "nullable": true,
                         "description": "Defines a pattern matching string that contains either mustache or regular expression syntax (with named capture groups) that locate the environment, project, and parameter name of the content you are looking for.\n\nIf you are using mustache pattern matching, use:\n\n  - ``{{ environment }}`` to identify the environment name\n  - ``{{ parameter }}`` to identify the parameter name\n  - ``{{ project }}`` to identify the project name\n\nIf you are using a regular expression, use Python syntax with named capture groups that locate the `environment`, `project`, and `parameter`.",
                         "maxLength": 1024
                     }

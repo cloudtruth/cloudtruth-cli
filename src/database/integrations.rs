@@ -1443,7 +1443,7 @@ impl Integrations {
             description: description.map(String::from),
             region: reg_enum.map(Box::new),
             service: ser_enum.map(Box::new),
-            resource: resource.to_string(),
+            resource: Some(resource.to_string()),
             latest_task: None,
             created_at: "".to_string(),
             modified_at: "".to_string(),
@@ -1515,7 +1515,7 @@ impl Integrations {
             create_projects: None,
             region: Some(Box::new(AwsRegionEnum::AfSouth1)),
             service: Some(Box::new(AwsServiceEnum::S3)),
-            resource: resource.to_string(),
+            resource: Some(resource.to_string()),
         };
         let response =
             integrations_aws_pulls_update(rest_cfg, integration_id, pull_id, pull_update);

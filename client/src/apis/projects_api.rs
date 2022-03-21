@@ -1024,6 +1024,12 @@ pub fn projects_parameters_list(
     ordering: Option<&str>,
     page: Option<i32>,
     page_size: Option<i32>,
+    project__name: Option<&str>,
+    project__name__contains: Option<&str>,
+    project__name__icontains: Option<&str>,
+    project__name__iexact: Option<&str>,
+    project__name__istartswith: Option<&str>,
+    project__name__startswith: Option<&str>,
     secret: Option<bool>,
     tag: Option<&str>,
     values: Option<bool>,
@@ -1111,6 +1117,30 @@ pub fn projects_parameters_list(
     if let Some(ref local_var_str) = page_size {
         local_var_req_builder =
             local_var_req_builder.query(&[("page_size", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = project__name {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("project__name", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = project__name__contains {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("project__name__contains", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = project__name__icontains {
+        local_var_req_builder = local_var_req_builder
+            .query(&[("project__name__icontains", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = project__name__iexact {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("project__name__iexact", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = project__name__istartswith {
+        local_var_req_builder = local_var_req_builder
+            .query(&[("project__name__istartswith", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = project__name__startswith {
+        local_var_req_builder = local_var_req_builder
+            .query(&[("project__name__startswith", &local_var_str.to_string())]);
     }
     if let Some(ref local_var_str) = secret {
         local_var_req_builder =

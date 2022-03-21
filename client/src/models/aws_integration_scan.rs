@@ -18,14 +18,14 @@ pub struct AwsIntegrationScan {
     pub service: Option<Box<crate::models::AwsServiceEnum>>,
     /// Defines a pattern matching string that contains either mustache or regular expression syntax (with named capture groups) that locate the environment, project, and parameter name of the content you are looking for.  If you are using mustache pattern matching, use:    - ``{{ environment }}`` to identify the environment name   - ``{{ parameter }}`` to identify the parameter name   - ``{{ project }}`` to identify the project name  If you are using a regular expression, use Python syntax with named capture groups that locate the `environment`, `project`, and `parameter`.
     #[serde(rename = "resource")]
-    pub resource: String,
+    pub resource: Option<String>,
 }
 
 impl AwsIntegrationScan {
     pub fn new(
         region: Option<crate::models::AwsRegionEnum>,
         service: Option<crate::models::AwsServiceEnum>,
-        resource: String,
+        resource: Option<String>,
     ) -> AwsIntegrationScan {
         AwsIntegrationScan {
             region: region.map(Box::new),
