@@ -910,7 +910,7 @@ PARAMETER={{{{{param1}}}}}
         self.assertResultSuccess(result)
 
         param1 = "my_parameter"
-        value1 = f"{{{{ cloudtruth.template.{temp_name} }}}}"
+        value1 = f"{{{{ cloudtruth.templates.{temp_name} }}}}"
         self.set_param(cmd_env, proj_name, param1, value1, evaluate=True)
 
         # see that we get the template back as the parameter value
