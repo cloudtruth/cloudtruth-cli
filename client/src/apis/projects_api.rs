@@ -3009,7 +3009,7 @@ pub fn projects_retrieve(
 pub fn projects_template_preview_create(
     configuration: &configuration::Configuration,
     project_pk: &str,
-    template_preview: crate::models::TemplatePreview,
+    template_preview_create_request: crate::models::TemplatePreviewCreateRequest,
     as_of: Option<String>,
     environment: Option<&str>,
     mask_secrets: Option<bool>,
@@ -3063,7 +3063,7 @@ pub fn projects_template_preview_create(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
-    local_var_req_builder = local_var_req_builder.json(&template_preview);
+    local_var_req_builder = local_var_req_builder.json(&template_preview_create_request);
 
     let local_var_req = local_var_req_builder.build()?;
     let method = local_var_req.method().clone();

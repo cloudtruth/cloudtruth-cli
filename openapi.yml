@@ -5625,13 +5625,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TemplatePreview'
+              $ref: '#/components/schemas/TemplatePreviewCreateRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/TemplatePreview'
+              $ref: '#/components/schemas/TemplatePreviewCreateRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/TemplatePreview'
+              $ref: '#/components/schemas/TemplatePreviewCreateRequest'
         required: true
       security:
         - JWTAuth: []
@@ -11778,6 +11778,15 @@ components:
       required:
         - body
         - has_secret
+    TemplatePreviewCreateRequest:
+      type: object
+      properties:
+        body:
+          type: string
+          description: The template body to instantiate on request, instantiated on
+            response.
+      required:
+        - body
     TemplateTimeline:
       type: object
       properties:

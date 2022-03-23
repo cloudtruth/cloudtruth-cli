@@ -268,6 +268,8 @@ pub mod template_lookup_error_entry;
 pub use self::template_lookup_error_entry::TemplateLookupErrorEntry;
 pub mod template_preview;
 pub use self::template_preview::TemplatePreview;
+pub mod template_preview_create_request;
+pub use self::template_preview_create_request::TemplatePreviewCreateRequest;
 pub mod template_timeline;
 pub use self::template_timeline::TemplateTimeline;
 pub mod template_timeline_entry;

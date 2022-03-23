@@ -322,6 +322,7 @@ Class | Method | HTTP request | Description
  - [TemplateLookupError](docs/TemplateLookupError.md)
  - [TemplateLookupErrorEntry](docs/TemplateLookupErrorEntry.md)
  - [TemplatePreview](docs/TemplatePreview.md)
+ - [TemplatePreviewCreateRequest](docs/TemplatePreviewCreateRequest.md)
  - [TemplateTimeline](docs/TemplateTimeline.md)
  - [TemplateTimelineEntry](docs/TemplateTimelineEntry.md)
  - [TemplateTimelineEntryTemplate](docs/TemplateTimelineEntryTemplate.md)

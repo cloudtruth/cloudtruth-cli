@@ -150,6 +150,7 @@ docs/TemplateCreate.md
 docs/TemplateLookupError.md
 docs/TemplateLookupErrorEntry.md
 docs/TemplatePreview.md
+docs/TemplatePreviewCreateRequest.md
 docs/TemplateTimeline.md
 docs/TemplateTimelineEntry.md
 docs/TemplateTimelineEntryTemplate.md
@@ -315,6 +316,7 @@ src/models/template_create.rs
 src/models/template_lookup_error.rs
 src/models/template_lookup_error_entry.rs
 src/models/template_preview.rs
+src/models/template_preview_create_request.rs
 src/models/template_timeline.rs
 src/models/template_timeline_entry.rs
 src/models/template_timeline_entry_template.rs
