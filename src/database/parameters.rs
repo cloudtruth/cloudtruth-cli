@@ -25,6 +25,12 @@ const NO_NAME_ICONTAINS: Option<&str> = None;
 const NO_NAME_IEXACT: Option<&str> = None;
 const NO_NAME_ISTARTS: Option<&str> = None;
 const NO_NAME_STARTS: Option<&str> = None;
+const PROJECT: Option<&str> = None;
+const PROJECT_CONTAINS: Option<&str> = None;
+const PROJECT_ICONTAINS: Option<&str> = None;
+const PROJECT_IEXACT: Option<&str> = None;
+const PROJECT_ISTARTS: Option<&str> = None;
+const PROJECT_STARTS: Option<&str> = None;
 
 const WRAP_ALGORITHM: CryptoAlgorithm = CryptoAlgorithm::AesGcm;
 
@@ -230,6 +236,7 @@ impl Parameters {
             proj_id,
             as_of,
             NO_DESC_ICONTAINS,
+            None,
             env_arg,
             Some(evaluate),
             NO_ID_IN,
@@ -243,6 +250,12 @@ impl Parameters {
             NO_ORDERING,
             NO_PAGE_COUNT,
             NO_PAGE_SIZE,
+            PROJECT,
+            PROJECT_CONTAINS,
+            PROJECT_ICONTAINS,
+            PROJECT_IEXACT,
+            PROJECT_ISTARTS,
+            PROJECT_STARTS,
             ONLY_SECRETS,
             tag.as_deref(),
             None,
@@ -332,6 +345,7 @@ impl Parameters {
                 proj_id,
                 as_of.clone(),
                 NO_DESC_ICONTAINS,
+                None,
                 env_arg,
                 eval_arg,
                 NO_ID_IN,
@@ -345,6 +359,12 @@ impl Parameters {
                 NO_ORDERING,
                 Some(page_count),
                 page_size(rest_cfg),
+                PROJECT,
+                PROJECT_CONTAINS,
+                PROJECT_ICONTAINS,
+                PROJECT_IEXACT,
+                PROJECT_ISTARTS,
+                PROJECT_STARTS,
                 ONLY_SECRETS,
                 tag.as_deref(),
                 value_arg,
@@ -418,6 +438,7 @@ impl Parameters {
                 proj_id,
                 as_of.clone(),
                 NO_DESC_ICONTAINS,
+                None,
                 None, // cannot give an environment, or it will only get for that environment
                 eval_arg,
                 NO_ID_IN,
@@ -431,6 +452,12 @@ impl Parameters {
                 NO_ORDERING,
                 Some(page_count),
                 page_size(rest_cfg),
+                PROJECT,
+                PROJECT_CONTAINS,
+                PROJECT_ICONTAINS,
+                PROJECT_IEXACT,
+                PROJECT_ISTARTS,
+                PROJECT_STARTS,
                 ONLY_SECRETS,
                 None, // cannot use a tag without an environment
                 VALUES_TRUE,

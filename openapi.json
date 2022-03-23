@@ -1199,6 +1199,836 @@
                 }
             }
         },
+        "/api/v1/grants/": {
+            "get": {
+                "operationId": "grants_list",
+                "description": "Grants allow you to enable access control on Environments and Projects.\n\nGrants are part of the role-based access control feature set, so\nif your subscription does not have support for it, these paths\nwill return a 403 Forbidden error.",
+                "parameters": [
+                    {
+                        "name": "ordering",
+                        "required": false,
+                        "in": "query",
+                        "description": "Which field to use when ordering the results.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "required": false,
+                        "in": "query",
+                        "description": "A page number within the paginated result set.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "page_size",
+                        "required": false,
+                        "in": "query",
+                        "description": "Number of results to return per page.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "principal",
+                        "schema": {
+                            "type": "string",
+                            "format": "uri"
+                        },
+                        "description": "Filter by principal (User, Group). Returns direct grant assignments, not indirect (user via group)."
+                    },
+                    {
+                        "in": "query",
+                        "name": "role",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "ADMIN",
+                                "CONTRIB",
+                                "OWNER",
+                                "VIEWER"
+                            ]
+                        },
+                        "description": "Filter by role."
+                    },
+                    {
+                        "in": "query",
+                        "name": "scope",
+                        "schema": {
+                            "type": "string",
+                            "format": "uri"
+                        },
+                        "description": "Filter by grant scope (Environment, Project)."
+                    }
+                ],
+                "tags": [
+                    "grants"
+                ],
+                "security": [
+                    {
+                        "JWTAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PaginatedGrantList"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "description": "Forbidden: see response for further details."
+                    }
+                }
+            },
+            "post": {
+                "operationId": "grants_create",
+                "description": "Grants allow you to enable access control on Environments and Projects.\n\nGrants are part of the role-based access control feature set, so\nif your subscription does not have support for it, these paths\nwill return a 403 Forbidden error.",
+                "tags": [
+                    "grants"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Grant"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Grant"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Grant"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "JWTAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Grant"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "description": "Forbidden: see response for further details."
+                    }
+                }
+            }
+        },
+        "/api/v1/grants/{id}/": {
+            "get": {
+                "operationId": "grants_retrieve",
+                "description": "Grants allow you to enable access control on Environments and Projects.\n\nGrants are part of the role-based access control feature set, so\nif your subscription does not have support for it, these paths\nwill return a 403 Forbidden error.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "description": "A unique identifier for the grant."
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "grants"
+                ],
+                "security": [
+                    {
+                        "JWTAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Grant"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "description": "Forbidden: see response for further details."
+                    }
+                }
+            },
+            "put": {
+                "operationId": "grants_update",
+                "description": "Grants allow you to enable access control on Environments and Projects.\n\nGrants are part of the role-based access control feature set, so\nif your subscription does not have support for it, these paths\nwill return a 403 Forbidden error.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "description": "A unique identifier for the grant."
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "grants"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Grant"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Grant"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Grant"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "JWTAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Grant"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "description": "Forbidden: see response for further details."
+                    }
+                }
+            },
+            "patch": {
+                "operationId": "grants_partial_update",
+                "description": "Grants allow you to enable access control on Environments and Projects.\n\nGrants are part of the role-based access control feature set, so\nif your subscription does not have support for it, these paths\nwill return a 403 Forbidden error.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "description": "A unique identifier for the grant."
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "grants"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedGrant"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedGrant"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedGrant"
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "JWTAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Grant"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "description": "Forbidden: see response for further details."
+                    }
+                }
+            },
+            "delete": {
+                "operationId": "grants_destroy",
+                "description": "Grants allow you to enable access control on Environments and Projects.\n\nGrants are part of the role-based access control feature set, so\nif your subscription does not have support for it, these paths\nwill return a 403 Forbidden error.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "description": "A unique identifier for the grant."
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "grants"
+                ],
+                "security": [
+                    {
+                        "JWTAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Deleted."
+                    },
+                    "403": {
+                        "description": "Forbidden: see response for further details."
+                    }
+                }
+            }
+        },
+        "/api/v1/grants/multi/": {
+            "delete": {
+                "operationId": "grants_multi_destroy",
+                "description": "Removes grants matching the query parameters atomically.\n\nUse this technique to disable access control on a scope,\nor remove all grants for a user.",
+                "tags": [
+                    "grants"
+                ],
+                "security": [
+                    {
+                        "JWTAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Grant"
+                                }
+                            }
+                        },
+                        "description": ""
+                    },
+                    "403": {
+                        "description": "Forbidden: see response for further details."
+                    }
+                }
+            }
+        },
+        "/api/v1/groups/": {
+            "get": {
+                "operationId": "groups_list",
+                "description": "Groups allow you to aggregate users for purposes of assigning\ngrants more easily.",
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "name",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "ordering",
+                        "required": false,
+                        "in": "query",
+                        "description": "Which field to use when ordering the results.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "required": false,
+                        "in": "query",
+                        "description": "A page number within the paginated result set.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "page_size",
+                        "required": false,
+                        "in": "query",
+                        "description": "Number of results to return per page.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "user",
+                        "schema": {
+                            "type": "string",
+                            "format": "uri"
+                        },
+                        "description": "Filter by user."
+                    }
+                ],
+                "tags": [
+                    "groups"
+                ],
+                "security": [
+                    {
+                        "JWTAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PaginatedGroupList"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "post": {
+                "operationId": "groups_create",
+                "description": "Groups allow you to aggregate users for purposes of assigning\ngrants more easily.",
+                "tags": [
+                    "groups"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Group"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Group"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Group"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "JWTAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Group"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/groups/{id}/": {
+            "get": {
+                "operationId": "groups_retrieve",
+                "description": "Groups allow you to aggregate users for purposes of assigning\ngrants more easily.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "description": "The unique identifier of a group."
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "groups"
+                ],
+                "security": [
+                    {
+                        "JWTAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Group"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "put": {
+                "operationId": "groups_update",
+                "description": "Groups allow you to aggregate users for purposes of assigning\ngrants more easily.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "description": "The unique identifier of a group."
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "groups"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Group"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Group"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Group"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "JWTAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Group"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "patch": {
+                "operationId": "groups_partial_update",
+                "description": "Groups allow you to aggregate users for purposes of assigning\ngrants more easily.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "description": "The unique identifier of a group."
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "groups"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedGroup"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedGroup"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedGroup"
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "JWTAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Group"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "delete": {
+                "operationId": "groups_destroy",
+                "description": "Groups allow you to aggregate users for purposes of assigning\ngrants more easily.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "description": "The unique identifier of a group."
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "groups"
+                ],
+                "security": [
+                    {
+                        "JWTAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No response body"
+                    }
+                }
+            }
+        },
+        "/api/v1/groups/{id}/add/": {
+            "post": {
+                "operationId": "groups_add_create",
+                "description": "Add a user to the group.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "description": "The unique identifier of a group."
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "query",
+                        "name": "user",
+                        "schema": {
+                            "type": "string",
+                            "format": "uri",
+                            "minLength": 1
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "groups"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Group"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Group"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Group"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "JWTAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Group"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/groups/{id}/remove/": {
+            "post": {
+                "operationId": "groups_remove_create",
+                "description": "Remove a user from the group.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "description": "The unique identifier of a group."
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "query",
+                        "name": "user",
+                        "schema": {
+                            "type": "string",
+                            "format": "uri",
+                            "minLength": 1
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "groups"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Group"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Group"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Group"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "JWTAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Group"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
         "/api/v1/import/": {
             "post": {
                 "operationId": "import_create",
@@ -2189,21 +3019,20 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/AwsPull"
+                                "$ref": "#/components/schemas/AwsPullSyncActionRequest"
                             }
                         },
                         "application/x-www-form-urlencoded": {
                             "schema": {
-                                "$ref": "#/components/schemas/AwsPull"
+                                "$ref": "#/components/schemas/AwsPullSyncActionRequest"
                             }
                         },
                         "multipart/form-data": {
                             "schema": {
-                                "$ref": "#/components/schemas/AwsPull"
+                                "$ref": "#/components/schemas/AwsPullSyncActionRequest"
                             }
                         }
-                    },
-                    "required": true
+                    }
                 },
                 "security": [
                     {
@@ -3265,6 +4094,67 @@
                 }
             }
         },
+        "/api/v1/integrations/aws/{id}/scan/": {
+            "post": {
+                "operationId": "integrations_aws_scan_create",
+                "description": "Probe a region and service using a pattern matching string that can be used in pull actions.  This allows the pattern match to be checked for correctness and preview what will match during creation of the string.",
+                "summary": "Evaluate a potential pull pattern and understand what it will match.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "integrations"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AwsIntegrationScan"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AwsIntegrationScan"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AwsIntegrationScan"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "JWTAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/DiscoveryResult"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
         "/api/v1/integrations/explore/": {
             "get": {
                 "operationId": "integrations_explore_list",
@@ -3333,7 +4223,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/PaginatedIntegrationExplorerList"
+                                    "$ref": "#/components/schemas/PaginatedIntegrationNodeList"
                                 }
                             }
                         },
@@ -5806,11 +6696,19 @@
                     },
                     {
                         "in": "query",
+                        "name": "difference",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "Specify a list of comma-separated environment names or ids (uuid) to compare values. Only returns a parameter if there is a difference. Cannot be used with `environment`, `wrap` or `values`. If used with `mask_secrets` then no secret parameters will be included in the result."
+                    },
+                    {
+                        "in": "query",
                         "name": "environment",
                         "schema": {
                             "type": "string"
                         },
-                        "description": "Name or id (uuid) of the environment to get parameter values for.  Cannot be used with `values`."
+                        "description": "Name or id (uuid) of the environment to get parameter values for. Cannot be used with `values`."
                     },
                     {
                         "in": "query",
@@ -5819,7 +6717,7 @@
                             "type": "boolean",
                             "default": true
                         },
-                        "description": "If `true`, runs template evaluation on this parameter's values.  If `false`, returns the value's template.\nNo effect on values that are not interpolated."
+                        "description": "If `true`, runs template evaluation on this parameter's values.  If `false`, returns the value's template.\nHas no effect on values that are not interpolated."
                     },
                     {
                         "in": "query",
@@ -5842,7 +6740,7 @@
                             "type": "boolean",
                             "default": false
                         },
-                        "description": "If true, masks all secrets."
+                        "description": "If true, replaces all secrets with `*****`."
                     },
                     {
                         "in": "query",
@@ -5914,6 +6812,48 @@
                         }
                     },
                     {
+                        "in": "query",
+                        "name": "project__name",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "project__name__contains",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "project__name__icontains",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "project__name__iexact",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "project__name__istartswith",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "project__name__startswith",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
                         "in": "path",
                         "name": "project_pk",
                         "schema": {
@@ -5944,7 +6884,7 @@
                             "type": "boolean",
                             "default": true
                         },
-                        "description": "If false, values are not returned: the `values` array will have no entries. This speeds up retrieval if value content is not needed.  Cannot be used with `environment`."
+                        "description": "If false, values are not returned: the `values` array will have no entries. This speeds up retrieval if value content is not needed. Cannot be used with `environment`."
                     },
                     {
                         "in": "query",
@@ -5953,7 +6893,7 @@
                             "type": "boolean",
                             "default": false
                         },
-                        "description": "If true, wraps all secrets - see documentation for more details."
+                        "description": "Wrap secrets."
                     }
                 ],
                 "tags": [
@@ -7177,7 +8117,7 @@
                         "schema": {
                             "type": "string"
                         },
-                        "description": "Name or id (uuid) of the environment to get parameter values for.  Cannot be used with `values`."
+                        "description": "Name or id (uuid) of the environment to get parameter values for. Cannot be used with `values`."
                     },
                     {
                         "in": "query",
@@ -7186,7 +8126,7 @@
                             "type": "boolean",
                             "default": true
                         },
-                        "description": "If `true`, runs template evaluation on this parameter's values.  If `false`, returns the value's template.\nNo effect on values that are not interpolated."
+                        "description": "If `true`, runs template evaluation on this parameter's values.  If `false`, returns the value's template.\nHas no effect on values that are not interpolated."
                     },
                     {
                         "in": "path",
@@ -7205,7 +8145,7 @@
                             "type": "boolean",
                             "default": false
                         },
-                        "description": "If true, masks all secrets."
+                        "description": "If true, replaces all secrets with `*****`."
                     },
                     {
                         "in": "path",
@@ -7231,7 +8171,7 @@
                             "type": "boolean",
                             "default": true
                         },
-                        "description": "If false, values are not returned: the `values` array will have no entries. This speeds up retrieval if value content is not needed.  Cannot be used with `environment`."
+                        "description": "If false, values are not returned: the `values` array will have no entries. This speeds up retrieval if value content is not needed. Cannot be used with `environment`."
                     },
                     {
                         "in": "query",
@@ -7240,7 +8180,7 @@
                             "type": "boolean",
                             "default": false
                         },
-                        "description": "If true, wraps all secrets - see documentation for more details."
+                        "description": "Wrap secrets."
                     }
                 ],
                 "tags": [
@@ -7541,15 +8481,23 @@
         "/api/v1/projects/{project_pk}/parameters/duality/": {
             "get": {
                 "operationId": "projects_parameters_duality_list",
-                "description": "Retrieve parameters at dual timepoints for differencing.\n\nResults are aligned by parameter name.  This means if a parameter is\ncreated, then deleted, then created again with the same name the two\nrecords with different parameter IDs will show up in the same result\nentry.\n\nIf t1 is not specified then it will point to a time in the past where\nnothing existed.  If t2 is not specified then it is assumed to be \"now\".",
+                "description": "Retrieve parameters at dual timepoints for comparison.\n\nResults are aligned by parameter name.  This means if a parameter is\ncreated, then deleted, then created again with the same name the two\nrecords with different parameter IDs will show up in the same result\nentry.\n\nIf t1 is not specified then it will point to a time in the past where\nnothing existed.  If t2 is not specified then it is assumed to be \"now\".",
                 "parameters": [
+                    {
+                        "in": "query",
+                        "name": "difference",
+                        "schema": {
+                            "type": "boolean"
+                        },
+                        "description": "Compare the values at `t1` and `t2` and if they are the same, omit the parameter from the result."
+                    },
                     {
                         "in": "query",
                         "name": "environment",
                         "schema": {
                             "type": "string"
                         },
-                        "description": "Name or id (uuid) of the environment to get parameter values for.  Cannot be used with `values`."
+                        "description": "Name or id (uuid) of the environment to get parameter values for. Cannot be used with `values`."
                     },
                     {
                         "in": "query",
@@ -7558,7 +8506,7 @@
                             "type": "boolean",
                             "default": true
                         },
-                        "description": "If `true`, runs template evaluation on this parameter's values.  If `false`, returns the value's template.\nNo effect on values that are not interpolated."
+                        "description": "If `true`, runs template evaluation on this parameter's values.  If `false`, returns the value's template.\nHas no effect on values that are not interpolated."
                     },
                     {
                         "in": "query",
@@ -7567,7 +8515,7 @@
                             "type": "boolean",
                             "default": false
                         },
-                        "description": "If true, masks all secrets."
+                        "description": "If true, replaces all secrets with `*****`."
                     },
                     {
                         "in": "query",
@@ -7695,7 +8643,7 @@
                             "type": "boolean",
                             "default": true
                         },
-                        "description": "If false, values are not returned: the `values` array will have no entries. This speeds up retrieval if value content is not needed.  Cannot be used with `environment`."
+                        "description": "If false, values are not returned: the `values` array will have no entries. This speeds up retrieval if value content is not needed. Cannot be used with `environment`."
                     },
                     {
                         "in": "query",
@@ -7704,7 +8652,7 @@
                             "type": "boolean",
                             "default": false
                         },
-                        "description": "If true, wraps all secrets - see documentation for more details."
+                        "description": "Wrap secrets."
                     }
                 ],
                 "tags": [
@@ -7853,17 +8801,17 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/TemplatePreview"
+                                "$ref": "#/components/schemas/TemplatePreviewCreateRequest"
                             }
                         },
                         "application/x-www-form-urlencoded": {
                             "schema": {
-                                "$ref": "#/components/schemas/TemplatePreview"
+                                "$ref": "#/components/schemas/TemplatePreviewCreateRequest"
                             }
                         },
                         "multipart/form-data": {
                             "schema": {
-                                "$ref": "#/components/schemas/TemplatePreview"
+                                "$ref": "#/components/schemas/TemplatePreviewCreateRequest"
                             }
                         }
                     },
@@ -9985,7 +10933,8 @@
                         "type": "string",
                         "description": "The role that CloudTruth will assume when interacting with your AWS Account through this integration.  The role is configured by your AWS Account Administrator.  If your AWS Administrator provided you with a value use it, otherwise make your own role name and give it to your AWS Administrator.",
                         "pattern": "^[\\w+=,.@\\-]+$",
-                        "maxLength": 64
+                        "maxLength": 64,
+                        "minLength": 2
                     }
                 },
                 "required": [
@@ -10056,7 +11005,8 @@
                         "type": "string",
                         "description": "The role that CloudTruth will assume when interacting with your AWS Account through this integration.  The role is configured by your AWS Account Administrator.  If your AWS Administrator provided you with a value use it, otherwise make your own role name and give it to your AWS Administrator.",
                         "pattern": "^[\\w+=,.@\\-]+$",
-                        "maxLength": 64
+                        "maxLength": 64,
+                        "minLength": 2
                     }
                 },
                 "required": [
@@ -10064,6 +11014,38 @@
                     "aws_enabled_regions",
                     "aws_enabled_services",
                     "aws_role_name"
+                ]
+            },
+            "AwsIntegrationScan": {
+                "type": "object",
+                "properties": {
+                    "region": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/AwsRegionEnum"
+                            }
+                        ],
+                        "description": "The AWS region to use.  This region must be enabled in the integration."
+                    },
+                    "service": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/AwsServiceEnum"
+                            }
+                        ],
+                        "description": "The AWS service to use.  This service must be enabled in the integration."
+                    },
+                    "resource": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "Defines a pattern matching string that contains either mustache or regular expression syntax (with named capture groups) that locate the environment, project, and parameter name of the content you are looking for.\n\nIf you are using mustache pattern matching, use:\n\n  - ``{{ environment }}`` to identify the environment name\n  - ``{{ parameter }}`` to identify the parameter name\n  - ``{{ project }}`` to identify the project name\n\nIf you are using a regular expression, use Python syntax with named capture groups that locate the `environment`, `project`, and `parameter`.",
+                        "maxLength": 1024
+                    }
+                },
+                "required": [
+                    "region",
+                    "resource",
+                    "service"
                 ]
             },
             "AwsPull": {
@@ -10137,7 +11119,7 @@
                             }
                         ],
                         "readOnly": true,
-                        "description": "The pull mode used.\n\nA pattern pull uses a pattern-matching resource string with mustache-style markers to identify the project, parameter, and environment names.\n\nA mapped pull uses a specific resource and JMESpath expression to deliver a value to a specific project, parameter, and environment.  This leverages external value linkages made in the value editor, and there is one mapped pull per integration provided by the system so that you can trigger external value pull synchronizations."
+                        "description": "The pull mode used.\n\nA pattern pull uses a pattern-matching resource string with mustache-style markers to identify the project, parameter, and environment names, or with a Python regular expression that uses named capture groups that define the same three concepts.\n\nA mapped pull uses a specific resource and JMESpath expression to deliver a value to a specific project, parameter, and environment.  This leverages external value linkages made in the value editor, and there is one mapped pull per integration provided by the system so that you can trigger external value pull synchronizations."
                     },
                     "region": {
                         "allOf": [
@@ -10145,7 +11127,7 @@
                                 "$ref": "#/components/schemas/AwsRegionEnum"
                             }
                         ],
-                        "description": "The AWS region this pull uses.  This region must be enabled in the integration."
+                        "description": "The AWS region to use.  This region must be enabled in the integration."
                     },
                     "service": {
                         "allOf": [
@@ -10153,12 +11135,12 @@
                                 "$ref": "#/components/schemas/AwsServiceEnum"
                             }
                         ],
-                        "description": "The AWS service this pull uses.  This service must be enabled in the integration."
+                        "description": "The AWS service to use.  This service must be enabled in the integration."
                     },
                     "resource": {
                         "type": "string",
                         "nullable": true,
-                        "description": "Defines a path through the integration to the location where values will be pulled.\n\nThe following mustache-style substitutions must be used in the resource locator string:\n\n  - ``{{ environment }}`` to identify the environment name\n  - ``{{ parameter }}`` to identify the parameter name\n  - ``{{ project }}`` to identify the project name",
+                        "description": "Defines a pattern matching string that contains either mustache or regular expression syntax (with named capture groups) that locate the environment, project, and parameter name of the content you are looking for.\n\nIf you are using mustache pattern matching, use:\n\n  - ``{{ environment }}`` to identify the environment name\n  - ``{{ parameter }}`` to identify the parameter name\n  - ``{{ project }}`` to identify the project name\n\nIf you are using a regular expression, use Python syntax with named capture groups that locate the `environment`, `project`, and `parameter`.",
                         "maxLength": 1024
                     }
                 },
@@ -10175,6 +11157,16 @@
                     "service",
                     "url"
                 ]
+            },
+            "AwsPullSyncActionRequest": {
+                "type": "object",
+                "properties": {
+                    "dry_run": {
+                        "type": "boolean",
+                        "writeOnly": true,
+                        "description": "Allows you to set the dry_run flag on the pull action before triggering a sync."
+                    }
+                }
             },
             "AwsPullTask": {
                 "type": "object",
@@ -10447,6 +11439,10 @@
                     "force": {
                         "type": "boolean",
                         "description": "Normally, push will check to see if it originated the values in the destination before making changes to them.  Forcing a push disables the ownership check."
+                    },
+                    "local": {
+                        "type": "boolean",
+                        "description": "Normally, push will process all parameters including those that flow in from project dependencies.  Declaring a push as `local` will cause it to only process the parameters defined in the selected projects."
                     },
                     "projects": {
                         "type": "array",
@@ -10751,6 +11747,10 @@
                     "force": {
                         "type": "boolean",
                         "description": "Normally, push will check to see if it originated the values in the destination before making changes to them.  Forcing a push disables the ownership check."
+                    },
+                    "local": {
+                        "type": "boolean",
+                        "description": "Normally, push will process all parameters including those that flow in from project dependencies.  Declaring a push as `local` will cause it to only process the parameters defined in the selected projects."
                     },
                     "coerce_parameters": {
                         "type": "boolean",
@@ -11064,6 +12064,54 @@
                     "text"
                 ]
             },
+            "DiscoveredContent": {
+                "type": "object",
+                "properties": {
+                    "venue_id": {
+                        "type": "string"
+                    },
+                    "venue_name": {
+                        "type": "string"
+                    },
+                    "environment_name": {
+                        "type": "string"
+                    },
+                    "project_name": {
+                        "type": "string"
+                    },
+                    "parameter_name": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "environment_name",
+                    "parameter_name",
+                    "project_name",
+                    "venue_id",
+                    "venue_name"
+                ]
+            },
+            "DiscoveryResult": {
+                "type": "object",
+                "properties": {
+                    "matched": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "$ref": "#/components/schemas/DiscoveredContent"
+                        }
+                    },
+                    "skipped": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "required": [
+                    "matched",
+                    "skipped"
+                ]
+            },
             "Environment": {
                 "type": "object",
                 "properties": {
@@ -11102,6 +12150,20 @@
                         "readOnly": true,
                         "description": "This is the opposite of `parent`, see that field for more details."
                     },
+                    "access_controlled": {
+                        "type": "boolean",
+                        "description": "Indicates if access control is being enforced through grants."
+                    },
+                    "role": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/RoleEnum"
+                            }
+                        ],
+                        "nullable": true,
+                        "readOnly": true,
+                        "description": "Your role in the environment, if the environment is access-controlled."
+                    },
                     "created_at": {
                         "type": "string",
                         "format": "date-time",
@@ -11119,6 +12181,7 @@
                     "id",
                     "modified_at",
                     "name",
+                    "role",
                     "url"
                 ]
             },
@@ -11339,7 +12402,7 @@
                             }
                         ],
                         "readOnly": true,
-                        "description": "The pull mode used.\n\nA pattern pull uses a pattern-matching resource string with mustache-style markers to identify the project, parameter, and environment names.\n\nA mapped pull uses a specific resource and JMESpath expression to deliver a value to a specific project, parameter, and environment.  This leverages external value linkages made in the value editor, and there is one mapped pull per integration provided by the system so that you can trigger external value pull synchronizations."
+                        "description": "The pull mode used.\n\nA pattern pull uses a pattern-matching resource string with mustache-style markers to identify the project, parameter, and environment names, or with a Python regular expression that uses named capture groups that define the same three concepts.\n\nA mapped pull uses a specific resource and JMESpath expression to deliver a value to a specific project, parameter, and environment.  This leverages external value linkages made in the value editor, and there is one mapped pull per integration provided by the system so that you can trigger external value pull synchronizations."
                     }
                 },
                 "required": [
@@ -11561,6 +12624,109 @@
                     "url"
                 ]
             },
+            "Grant": {
+                "type": "object",
+                "properties": {
+                    "url": {
+                        "type": "string",
+                        "format": "uri",
+                        "readOnly": true
+                    },
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "readOnly": true,
+                        "description": "A unique identifier for the grant."
+                    },
+                    "principal": {
+                        "type": "string",
+                        "format": "uri",
+                        "description": "The URI of a principal for the grant; this must reference a user or group."
+                    },
+                    "scope": {
+                        "type": "string",
+                        "format": "uri",
+                        "description": "The URI of a scope for the grant; this must reference a project or environment."
+                    },
+                    "role": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/RoleEnum"
+                            }
+                        ],
+                        "description": "The role that the principal has in the given scope."
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    },
+                    "modified_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    }
+                },
+                "required": [
+                    "created_at",
+                    "id",
+                    "modified_at",
+                    "principal",
+                    "role",
+                    "scope",
+                    "url"
+                ]
+            },
+            "Group": {
+                "type": "object",
+                "properties": {
+                    "url": {
+                        "type": "string",
+                        "format": "uri",
+                        "readOnly": true
+                    },
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "readOnly": true,
+                        "description": "The unique identifier of a group."
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "The group name.",
+                        "maxLength": 150
+                    },
+                    "description": {
+                        "type": "string",
+                        "description": "A description of the group.  You may find it helpful to document how this group is used to assist others when they need to maintain this organization."
+                    },
+                    "users": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "format": "uri"
+                        }
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    },
+                    "modified_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    }
+                },
+                "required": [
+                    "created_at",
+                    "id",
+                    "modified_at",
+                    "name",
+                    "url",
+                    "users"
+                ]
+            },
             "HistoryModelEnum": {
                 "enum": [
                     "Parameter",
@@ -11728,7 +12894,7 @@
                     "value"
                 ]
             },
-            "IntegrationExplorer": {
+            "IntegrationNode": {
                 "type": "object",
                 "description": "Describes the content available at a given location.",
                 "properties": {
@@ -11832,6 +12998,12 @@
                         "readOnly": true,
                         "nullable": true,
                         "description": "The resulting membership, should the user accept."
+                    },
+                    "organization": {
+                        "type": "string",
+                        "format": "uri",
+                        "readOnly": true,
+                        "description": "The organization that the user will become a member of, should the user accept."
                     }
                 },
                 "required": [
@@ -11840,6 +13012,7 @@
                     "inviter",
                     "inviter_name",
                     "membership",
+                    "organization",
                     "role",
                     "state",
                     "state_detail",
@@ -11964,6 +13137,7 @@
                     "AwsIntegration",
                     "Environment",
                     "GitHubIntegration",
+                    "Grant",
                     "Invitation",
                     "Membership",
                     "Organization",
@@ -12014,10 +13188,26 @@
                         "readOnly": true,
                         "description": "Indicates if this Organization is the one currently targeted by the Bearer token used by the client to authorize."
                     },
+                    "role": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/RoleEnum"
+                            }
+                        ],
+                        "readOnly": true,
+                        "description": "Your role in the organization."
+                    },
                     "subscription_expires_at": {
                         "type": "string",
                         "format": "date-time",
                         "nullable": true,
+                        "readOnly": true
+                    },
+                    "subscription_features": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
                         "readOnly": true
                     },
                     "subscription_id": {
@@ -12052,7 +13242,9 @@
                     "id",
                     "modified_at",
                     "name",
+                    "role",
                     "subscription_expires_at",
+                    "subscription_features",
                     "subscription_id",
                     "subscription_plan_id",
                     "subscription_plan_name",
@@ -12423,7 +13615,7 @@
                     }
                 }
             },
-            "PaginatedIntegrationExplorerList": {
+            "PaginatedGrantList": {
                 "type": "object",
                 "properties": {
                     "count": {
@@ -12445,7 +13637,61 @@
                     "results": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/IntegrationExplorer"
+                            "$ref": "#/components/schemas/Grant"
+                        }
+                    }
+                }
+            },
+            "PaginatedGroupList": {
+                "type": "object",
+                "properties": {
+                    "count": {
+                        "type": "integer",
+                        "example": 123
+                    },
+                    "next": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?page=4"
+                    },
+                    "previous": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?page=2"
+                    },
+                    "results": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Group"
+                        }
+                    }
+                }
+            },
+            "PaginatedIntegrationNodeList": {
+                "type": "object",
+                "properties": {
+                    "count": {
+                        "type": "integer",
+                        "example": 123
+                    },
+                    "next": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?page=4"
+                    },
+                    "previous": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?page=2"
+                    },
+                    "results": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/IntegrationNode"
                         }
                     }
                 }
@@ -13026,11 +14272,19 @@
                 "type": "object",
                 "properties": {
                     "body": {
-                        "type": "string"
+                        "type": "string",
+                        "readOnly": true,
+                        "description": "The exported parameter body."
+                    },
+                    "has_secret": {
+                        "type": "boolean",
+                        "readOnly": true,
+                        "description": "If True, the exported parameters include one or more secrets."
                     }
                 },
                 "required": [
-                    "body"
+                    "body",
+                    "has_secret"
                 ]
             },
             "ParameterRule": {
@@ -13488,7 +14742,8 @@
                         "type": "string",
                         "description": "The role that CloudTruth will assume when interacting with your AWS Account through this integration.  The role is configured by your AWS Account Administrator.  If your AWS Administrator provided you with a value use it, otherwise make your own role name and give it to your AWS Administrator.",
                         "pattern": "^[\\w+=,.@\\-]+$",
-                        "maxLength": 64
+                        "maxLength": 64,
+                        "minLength": 2
                     }
                 }
             },
@@ -13563,7 +14818,7 @@
                             }
                         ],
                         "readOnly": true,
-                        "description": "The pull mode used.\n\nA pattern pull uses a pattern-matching resource string with mustache-style markers to identify the project, parameter, and environment names.\n\nA mapped pull uses a specific resource and JMESpath expression to deliver a value to a specific project, parameter, and environment.  This leverages external value linkages made in the value editor, and there is one mapped pull per integration provided by the system so that you can trigger external value pull synchronizations."
+                        "description": "The pull mode used.\n\nA pattern pull uses a pattern-matching resource string with mustache-style markers to identify the project, parameter, and environment names, or with a Python regular expression that uses named capture groups that define the same three concepts.\n\nA mapped pull uses a specific resource and JMESpath expression to deliver a value to a specific project, parameter, and environment.  This leverages external value linkages made in the value editor, and there is one mapped pull per integration provided by the system so that you can trigger external value pull synchronizations."
                     },
                     "region": {
                         "allOf": [
@@ -13571,7 +14826,7 @@
                                 "$ref": "#/components/schemas/AwsRegionEnum"
                             }
                         ],
-                        "description": "The AWS region this pull uses.  This region must be enabled in the integration."
+                        "description": "The AWS region to use.  This region must be enabled in the integration."
                     },
                     "service": {
                         "allOf": [
@@ -13579,12 +14834,12 @@
                                 "$ref": "#/components/schemas/AwsServiceEnum"
                             }
                         ],
-                        "description": "The AWS service this pull uses.  This service must be enabled in the integration."
+                        "description": "The AWS service to use.  This service must be enabled in the integration."
                     },
                     "resource": {
                         "type": "string",
                         "nullable": true,
-                        "description": "Defines a path through the integration to the location where values will be pulled.\n\nThe following mustache-style substitutions must be used in the resource locator string:\n\n  - ``{{ environment }}`` to identify the environment name\n  - ``{{ parameter }}`` to identify the parameter name\n  - ``{{ project }}`` to identify the project name",
+                        "description": "Defines a pattern matching string that contains either mustache or regular expression syntax (with named capture groups) that locate the environment, project, and parameter name of the content you are looking for.\n\nIf you are using mustache pattern matching, use:\n\n  - ``{{ environment }}`` to identify the environment name\n  - ``{{ parameter }}`` to identify the parameter name\n  - ``{{ project }}`` to identify the project name\n\nIf you are using a regular expression, use Python syntax with named capture groups that locate the `environment`, `project`, and `parameter`.",
                         "maxLength": 1024
                     }
                 }
@@ -13631,6 +14886,10 @@
                     "force": {
                         "type": "boolean",
                         "description": "Normally, push will check to see if it originated the values in the destination before making changes to them.  Forcing a push disables the ownership check."
+                    },
+                    "local": {
+                        "type": "boolean",
+                        "description": "Normally, push will process all parameters including those that flow in from project dependencies.  Declaring a push as `local` will cause it to only process the parameters defined in the selected projects."
                     },
                     "coerce_parameters": {
                         "type": "boolean",
@@ -13683,6 +14942,20 @@
                         },
                         "readOnly": true,
                         "description": "This is the opposite of `parent`, see that field for more details."
+                    },
+                    "access_controlled": {
+                        "type": "boolean",
+                        "description": "Indicates if access control is being enforced through grants."
+                    },
+                    "role": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/RoleEnum"
+                            }
+                        ],
+                        "nullable": true,
+                        "readOnly": true,
+                        "description": "Your role in the environment, if the environment is access-controlled."
                     },
                     "created_at": {
                         "type": "string",
@@ -13767,7 +15040,93 @@
                             }
                         ],
                         "readOnly": true,
-                        "description": "The pull mode used.\n\nA pattern pull uses a pattern-matching resource string with mustache-style markers to identify the project, parameter, and environment names.\n\nA mapped pull uses a specific resource and JMESpath expression to deliver a value to a specific project, parameter, and environment.  This leverages external value linkages made in the value editor, and there is one mapped pull per integration provided by the system so that you can trigger external value pull synchronizations."
+                        "description": "The pull mode used.\n\nA pattern pull uses a pattern-matching resource string with mustache-style markers to identify the project, parameter, and environment names, or with a Python regular expression that uses named capture groups that define the same three concepts.\n\nA mapped pull uses a specific resource and JMESpath expression to deliver a value to a specific project, parameter, and environment.  This leverages external value linkages made in the value editor, and there is one mapped pull per integration provided by the system so that you can trigger external value pull synchronizations."
+                    }
+                }
+            },
+            "PatchedGrant": {
+                "type": "object",
+                "properties": {
+                    "url": {
+                        "type": "string",
+                        "format": "uri",
+                        "readOnly": true
+                    },
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "readOnly": true,
+                        "description": "A unique identifier for the grant."
+                    },
+                    "principal": {
+                        "type": "string",
+                        "format": "uri",
+                        "description": "The URI of a principal for the grant; this must reference a user or group."
+                    },
+                    "scope": {
+                        "type": "string",
+                        "format": "uri",
+                        "description": "The URI of a scope for the grant; this must reference a project or environment."
+                    },
+                    "role": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/RoleEnum"
+                            }
+                        ],
+                        "description": "The role that the principal has in the given scope."
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    },
+                    "modified_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    }
+                }
+            },
+            "PatchedGroup": {
+                "type": "object",
+                "properties": {
+                    "url": {
+                        "type": "string",
+                        "format": "uri",
+                        "readOnly": true
+                    },
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "readOnly": true,
+                        "description": "The unique identifier of a group."
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "The group name.",
+                        "maxLength": 150
+                    },
+                    "description": {
+                        "type": "string",
+                        "description": "A description of the group.  You may find it helpful to document how this group is used to assist others when they need to maintain this organization."
+                    },
+                    "users": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "format": "uri"
+                        }
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    },
+                    "modified_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
                     }
                 }
             },
@@ -13826,6 +15185,12 @@
                         "readOnly": true,
                         "nullable": true,
                         "description": "The resulting membership, should the user accept."
+                    },
+                    "organization": {
+                        "type": "string",
+                        "format": "uri",
+                        "readOnly": true,
+                        "description": "The organization that the user will become a member of, should the user accept."
                     }
                 }
             },
@@ -13896,10 +15261,26 @@
                         "readOnly": true,
                         "description": "Indicates if this Organization is the one currently targeted by the Bearer token used by the client to authorize."
                     },
+                    "role": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/RoleEnum"
+                            }
+                        ],
+                        "readOnly": true,
+                        "description": "Your role in the organization."
+                    },
                     "subscription_expires_at": {
                         "type": "string",
                         "format": "date-time",
                         "nullable": true,
+                        "readOnly": true
+                    },
+                    "subscription_features": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
                         "readOnly": true
                     },
                     "subscription_id": {
@@ -14200,6 +15581,20 @@
                         "nullable": true,
                         "description": "Project dependencies allow projects to be used for shared configuration, for example a database used by many applications needs to advertise its port number.\n\nProjects can depend on another project which will add the parameters from the parent project into the current project.  All of the parameter names between the two projects must be unique.  When retrieving values or rendering templates, all of the parameters from the parent project will also be available in the current project."
                     },
+                    "access_controlled": {
+                        "type": "boolean",
+                        "description": "Indicates if access control is being enforced through grants."
+                    },
+                    "role": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/RoleEnum"
+                            }
+                        ],
+                        "nullable": true,
+                        "readOnly": true,
+                        "description": "Your role in the project, if the project is access-controlled."
+                    },
                     "pushes": {
                         "type": "array",
                         "items": {
@@ -14359,6 +15754,7 @@
                     "has_secret": {
                         "type": "boolean",
                         "readOnly": true,
+                        "default": false,
                         "description": "If True, this template contains secrets."
                     },
                     "created_at": {
@@ -14466,7 +15862,7 @@
                         "type": "boolean",
                         "nullable": true,
                         "readOnly": true,
-                        "description": "Indicates the value content is a secret.  Normally this is `true` when the parameter is a secret, however it is possible for a parameter to be a secret with a external value that is not a secret.  It is not possible to convert a parameter from a secret to a non-secret if any of the values are external and a secret.  Clients can check this condition by leveraging this field."
+                        "description": "Indicates the value content is a secret.  Normally this is `true` when the parameter is a secret. It is possible for a parameter to be a secret with a external value that is not a secret.  It is not possible to convert a parameter from a secret to a non-secret if any of the values are external and a secret.  Clients can check this condition by leveraging this field.  It is also possible for a parameter to not be a secret but for this value to be dynamic and reference a Parameter that is a secret.  In this case, we indicate the value is a secret."
                     },
                     "referenced_parameters": {
                         "type": "array",
@@ -14536,6 +15932,20 @@
                         "nullable": true,
                         "description": "Project dependencies allow projects to be used for shared configuration, for example a database used by many applications needs to advertise its port number.\n\nProjects can depend on another project which will add the parameters from the parent project into the current project.  All of the parameter names between the two projects must be unique.  When retrieving values or rendering templates, all of the parameters from the parent project will also be available in the current project."
                     },
+                    "access_controlled": {
+                        "type": "boolean",
+                        "description": "Indicates if access control is being enforced through grants."
+                    },
+                    "role": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/RoleEnum"
+                            }
+                        ],
+                        "nullable": true,
+                        "readOnly": true,
+                        "description": "Your role in the project, if the project is access-controlled."
+                    },
                     "pushes": {
                         "type": "array",
                         "items": {
@@ -14561,6 +15971,7 @@
                     "modified_at",
                     "name",
                     "pushes",
+                    "role",
                     "url"
                 ]
             },
@@ -15096,6 +16507,7 @@
                     "has_secret": {
                         "type": "boolean",
                         "readOnly": true,
+                        "default": false,
                         "description": "If True, this template contains secrets."
                     },
                     "created_at": {
@@ -15192,7 +16604,26 @@
                 "type": "object",
                 "properties": {
                     "body": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "The template body to instantiate on request, instantiated on response."
+                    },
+                    "has_secret": {
+                        "type": "boolean",
+                        "readOnly": true,
+                        "description": "If True, the instantiated template contains secrets."
+                    }
+                },
+                "required": [
+                    "body",
+                    "has_secret"
+                ]
+            },
+            "TemplatePreviewCreateRequest": {
+                "type": "object",
+                "properties": {
+                    "body": {
+                        "type": "string",
+                        "description": "The template body to instantiate on request, instantiated on response."
                     }
                 },
                 "required": [
@@ -15457,7 +16888,7 @@
                         "type": "boolean",
                         "nullable": true,
                         "readOnly": true,
-                        "description": "Indicates the value content is a secret.  Normally this is `true` when the parameter is a secret, however it is possible for a parameter to be a secret with a external value that is not a secret.  It is not possible to convert a parameter from a secret to a non-secret if any of the values are external and a secret.  Clients can check this condition by leveraging this field."
+                        "description": "Indicates the value content is a secret.  Normally this is `true` when the parameter is a secret. It is possible for a parameter to be a secret with a external value that is not a secret.  It is not possible to convert a parameter from a secret to a non-secret if any of the values are external and a secret.  Clients can check this condition by leveraging this field.  It is also possible for a parameter to not be a secret but for this value to be dynamic and reference a Parameter that is a secret.  In this case, we indicate the value is a secret."
                     },
                     "referenced_parameters": {
                         "type": "array",

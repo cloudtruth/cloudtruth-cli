@@ -17,6 +17,8 @@ pub enum ObjectTypeEnum {
     Environment,
     #[serde(rename = "GitHubIntegration")]
     GitHubIntegration,
+    #[serde(rename = "Grant")]
+    Grant,
     #[serde(rename = "Invitation")]
     Invitation,
     #[serde(rename = "Membership")]
@@ -57,6 +59,7 @@ impl ToString for ObjectTypeEnum {
             Self::AwsIntegration => String::from("AwsIntegration"),
             Self::Environment => String::from("Environment"),
             Self::GitHubIntegration => String::from("GitHubIntegration"),
+            Self::Grant => String::from("Grant"),
             Self::Invitation => String::from("Invitation"),
             Self::Membership => String::from("Membership"),
             Self::Organization => String::from("Organization"),

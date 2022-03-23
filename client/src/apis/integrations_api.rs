@@ -205,6 +205,13 @@ pub enum IntegrationsAwsRetrieveError {
     UnknownValue(serde_json::Value),
 }
 
+/// struct for typed errors of method [`integrations_aws_scan_create`]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum IntegrationsAwsScanCreateError {
+    UnknownValue(serde_json::Value),
+}
+
 /// struct for typed errors of method [`integrations_aws_update`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
@@ -1064,7 +1071,7 @@ pub fn integrations_aws_pulls_sync_create(
     configuration: &configuration::Configuration,
     awsintegration_pk: &str,
     id: &str,
-    aws_pull: crate::models::AwsPull,
+    aws_pull_sync_action_request: Option<crate::models::AwsPullSyncActionRequest>,
 ) -> Result<(), Error<IntegrationsAwsPullsSyncCreateError>> {
     let local_var_configuration = configuration;
 
@@ -1095,7 +1102,7 @@ pub fn integrations_aws_pulls_sync_create(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
-    local_var_req_builder = local_var_req_builder.json(&aws_pull);
+    local_var_req_builder = local_var_req_builder.json(&aws_pull_sync_action_request);
 
     let local_var_req = local_var_req_builder.build()?;
     let method = local_var_req.method().clone();
@@ -2679,6 +2686,84 @@ pub fn integrations_aws_retrieve(
     }
 }
 
+/// Probe a region and service using a pattern matching string that can be used in pull actions.  This allows the pattern match to be checked for correctness and preview what will match during creation of the string.
+pub fn integrations_aws_scan_create(
+    configuration: &configuration::Configuration,
+    id: &str,
+    aws_integration_scan: crate::models::AwsIntegrationScan,
+) -> Result<crate::models::DiscoveryResult, Error<IntegrationsAwsScanCreateError>> {
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
+
+    let local_var_uri_str = format!(
+        "{}/api/v1/integrations/aws/{id}/scan/",
+        local_var_configuration.base_path,
+        id = crate::apis::urlencode(id)
+    );
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
+
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
+    }
+
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
+        let local_var_key = local_var_apikey.key.clone();
+        let local_var_value = match local_var_apikey.prefix {
+            Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
+            None => local_var_key,
+        };
+        local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
+    };
+    local_var_req_builder = local_var_req_builder.json(&aws_integration_scan);
+
+    let local_var_req = local_var_req_builder.build()?;
+    let method = local_var_req.method().clone();
+    let start = Instant::now();
+    let mut local_var_resp = local_var_client.execute(local_var_req)?;
+    if local_var_configuration.rest_debug {
+        let duration = start.elapsed();
+        println!(
+            "URL {} {} elapsed: {:?}",
+            method,
+            &local_var_resp.url(),
+            duration
+        );
+    }
+
+    let local_var_status = local_var_resp.status();
+    let local_var_content = local_var_resp.text()?;
+
+    if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if local_var_configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
+    } else {
+        let local_var_entity: Option<IntegrationsAwsScanCreateError> =
+            serde_json::from_str(&local_var_content).ok();
+        let local_var_error = ResponseContent {
+            status: local_var_status,
+            content: local_var_content,
+            entity: local_var_entity,
+        };
+        if local_var_configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
+        Err(Error::ResponseError(local_var_error))
+    }
+}
+
 pub fn integrations_aws_update(
     configuration: &configuration::Configuration,
     id: &str,
@@ -2764,7 +2849,7 @@ pub fn integrations_explore_list(
     ordering: Option<&str>,
     page: Option<i32>,
     page_size: Option<i32>,
-) -> Result<crate::models::PaginatedIntegrationExplorerList, Error<IntegrationsExploreListError>> {
+) -> Result<crate::models::PaginatedIntegrationNodeList, Error<IntegrationsExploreListError>> {
     let local_var_configuration = configuration;
 
     let local_var_client = &local_var_configuration.client;

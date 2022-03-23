@@ -21,8 +21,13 @@ pub struct Organization {
     /// Indicates if this Organization is the one currently targeted by the Bearer token used by the client to authorize.
     #[serde(rename = "current")]
     pub current: bool,
+    /// Your role in the organization.
+    #[serde(rename = "role")]
+    pub role: Option<Box<crate::models::RoleEnum>>,
     #[serde(rename = "subscription_expires_at")]
     pub subscription_expires_at: Option<String>,
+    #[serde(rename = "subscription_features")]
+    pub subscription_features: Vec<String>,
     #[serde(rename = "subscription_id")]
     pub subscription_id: Option<String>,
     #[serde(rename = "subscription_plan_id")]
@@ -41,7 +46,9 @@ impl Organization {
         id: String,
         name: String,
         current: bool,
+        role: Option<crate::models::RoleEnum>,
         subscription_expires_at: Option<String>,
+        subscription_features: Vec<String>,
         subscription_id: Option<String>,
         subscription_plan_id: Option<String>,
         subscription_plan_name: Option<String>,
@@ -53,7 +60,9 @@ impl Organization {
             id,
             name,
             current,
+            role: role.map(Box::new),
             subscription_expires_at,
+            subscription_features,
             subscription_id,
             subscription_plan_id,
             subscription_plan_name,

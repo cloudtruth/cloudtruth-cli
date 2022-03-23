@@ -270,6 +270,8 @@ impl Environments {
             description: description.map(String::from),
             parent: None,
             children: None,
+            access_controlled: None,
+            role: None,
             created_at: None,
             modified_at: None,
         };

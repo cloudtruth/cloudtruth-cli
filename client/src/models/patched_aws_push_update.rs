@@ -33,6 +33,9 @@ pub struct PatchedAwsPushUpdate {
     /// Normally, push will check to see if it originated the values in the destination before making changes to them.  Forcing a push disables the ownership check.
     #[serde(rename = "force", skip_serializing_if = "Option::is_none")]
     pub force: Option<bool>,
+    /// Normally, push will process all parameters including those that flow in from project dependencies.  Declaring a push as `local` will cause it to only process the parameters defined in the selected projects.
+    #[serde(rename = "local", skip_serializing_if = "Option::is_none")]
+    pub local: Option<bool>,
     /// This setting allows parameters (non-secrets) to be pushed to a destination that only supports storing secrets.  This may increase your overall cost from the cloud provider as some cloud providers charge a premium for secrets-only storage.
     #[serde(rename = "coerce_parameters", skip_serializing_if = "Option::is_none")]
     pub coerce_parameters: Option<bool>,
@@ -55,6 +58,7 @@ impl PatchedAwsPushUpdate {
             resource: None,
             dry_run: None,
             force: None,
+            local: None,
             coerce_parameters: None,
             include_parameters: None,
             include_secrets: None,

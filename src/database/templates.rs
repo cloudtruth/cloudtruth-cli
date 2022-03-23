@@ -4,7 +4,7 @@ use crate::database::{
 };
 use cloudtruth_restapi::apis::projects_api::*;
 use cloudtruth_restapi::apis::Error::ResponseError;
-use cloudtruth_restapi::models::{PatchedTemplate, TemplateCreate, TemplatePreview};
+use cloudtruth_restapi::models::{PatchedTemplate, TemplateCreate, TemplatePreviewCreateRequest};
 use std::result::Result;
 
 const NO_ORDERING: Option<&str> = None;
@@ -272,7 +272,7 @@ impl Templates {
         as_of: Option<String>,
         tag: Option<String>,
     ) -> Result<String, TemplateError> {
-        let preview = TemplatePreview {
+        let preview = TemplatePreviewCreateRequest {
             body: body.to_string(),
         };
         let response = projects_template_preview_create(

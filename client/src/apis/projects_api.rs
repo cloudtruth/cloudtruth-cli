@@ -828,10 +828,11 @@ pub fn projects_parameters_destroy(
     }
 }
 
-/// Retrieve parameters at dual timepoints for differencing.  Results are aligned by parameter name.  This means if a parameter is created, then deleted, then created again with the same name the two records with different parameter IDs will show up in the same result entry.  If t1 is not specified then it will point to a time in the past where nothing existed.  If t2 is not specified then it is assumed to be \"now\".
+/// Retrieve parameters at dual timepoints for comparison.  Results are aligned by parameter name.  This means if a parameter is created, then deleted, then created again with the same name the two records with different parameter IDs will show up in the same result entry.  If t1 is not specified then it will point to a time in the past where nothing existed.  If t2 is not specified then it is assumed to be \"now\".
 pub fn projects_parameters_duality_list(
     configuration: &configuration::Configuration,
     project_pk: &str,
+    difference: Option<bool>,
     environment: Option<&str>,
     evaluate: Option<bool>,
     mask_secrets: Option<bool>,
@@ -865,6 +866,10 @@ pub fn projects_parameters_duality_list(
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
 
+    if let Some(ref local_var_str) = difference {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("difference", &local_var_str.to_string())]);
+    }
     if let Some(ref local_var_str) = environment {
         local_var_req_builder =
             local_var_req_builder.query(&[("environment", &local_var_str.to_string())]);
@@ -1005,6 +1010,7 @@ pub fn projects_parameters_list(
     project_pk: &str,
     as_of: Option<String>,
     description__icontains: Option<&str>,
+    difference: Option<&str>,
     environment: Option<&str>,
     evaluate: Option<bool>,
     id__in: Option<Vec<String>>,
@@ -1018,6 +1024,12 @@ pub fn projects_parameters_list(
     ordering: Option<&str>,
     page: Option<i32>,
     page_size: Option<i32>,
+    project__name: Option<&str>,
+    project__name__contains: Option<&str>,
+    project__name__icontains: Option<&str>,
+    project__name__iexact: Option<&str>,
+    project__name__istartswith: Option<&str>,
+    project__name__startswith: Option<&str>,
     secret: Option<bool>,
     tag: Option<&str>,
     values: Option<bool>,
@@ -1042,6 +1054,10 @@ pub fn projects_parameters_list(
     if let Some(ref local_var_str) = description__icontains {
         local_var_req_builder =
             local_var_req_builder.query(&[("description__icontains", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = difference {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("difference", &local_var_str.to_string())]);
     }
     if let Some(ref local_var_str) = environment {
         local_var_req_builder =
@@ -1101,6 +1117,30 @@ pub fn projects_parameters_list(
     if let Some(ref local_var_str) = page_size {
         local_var_req_builder =
             local_var_req_builder.query(&[("page_size", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = project__name {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("project__name", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = project__name__contains {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("project__name__contains", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = project__name__icontains {
+        local_var_req_builder = local_var_req_builder
+            .query(&[("project__name__icontains", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = project__name__iexact {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("project__name__iexact", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = project__name__istartswith {
+        local_var_req_builder = local_var_req_builder
+            .query(&[("project__name__istartswith", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = project__name__startswith {
+        local_var_req_builder = local_var_req_builder
+            .query(&[("project__name__startswith", &local_var_str.to_string())]);
     }
     if let Some(ref local_var_str) = secret {
         local_var_req_builder =
@@ -2969,7 +3009,7 @@ pub fn projects_retrieve(
 pub fn projects_template_preview_create(
     configuration: &configuration::Configuration,
     project_pk: &str,
-    template_preview: crate::models::TemplatePreview,
+    template_preview_create_request: crate::models::TemplatePreviewCreateRequest,
     as_of: Option<String>,
     environment: Option<&str>,
     mask_secrets: Option<bool>,
@@ -3023,7 +3063,7 @@ pub fn projects_template_preview_create(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
-    local_var_req_builder = local_var_req_builder.json(&template_preview);
+    local_var_req_builder = local_var_req_builder.json(&template_preview_create_request);
 
     let local_var_req = local_var_req_builder.build()?;
     let method = local_var_req.method().clone();

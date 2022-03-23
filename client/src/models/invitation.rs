@@ -36,6 +36,9 @@ pub struct Invitation {
     /// The resulting membership, should the user accept.
     #[serde(rename = "membership")]
     pub membership: Option<String>,
+    /// The organization that the user will become a member of, should the user accept.
+    #[serde(rename = "organization")]
+    pub organization: String,
 }
 
 impl Invitation {
@@ -49,6 +52,7 @@ impl Invitation {
         state: String,
         state_detail: String,
         membership: Option<String>,
+        organization: String,
     ) -> Invitation {
         Invitation {
             url,
@@ -60,6 +64,7 @@ impl Invitation {
             state,
             state_detail,
             membership,
+            organization,
         }
     }
 }

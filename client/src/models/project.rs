@@ -27,6 +27,12 @@ pub struct Project {
     /// Project dependencies allow projects to be used for shared configuration, for example a database used by many applications needs to advertise its port number.  Projects can depend on another project which will add the parameters from the parent project into the current project.  All of the parameter names between the two projects must be unique.  When retrieving values or rendering templates, all of the parameters from the parent project will also be available in the current project.
     #[serde(rename = "depends_on", skip_serializing_if = "Option::is_none")]
     pub depends_on: Option<String>,
+    /// Indicates if access control is being enforced through grants.
+    #[serde(rename = "access_controlled", skip_serializing_if = "Option::is_none")]
+    pub access_controlled: Option<bool>,
+    /// Your role in the project, if the project is access-controlled.
+    #[serde(rename = "role")]
+    pub role: Option<Box<crate::models::RoleEnum>>,
     #[serde(rename = "pushes")]
     pub pushes: Vec<crate::models::AwsPush>,
     #[serde(rename = "created_at")]
@@ -41,6 +47,7 @@ impl Project {
         id: String,
         name: String,
         dependents: Vec<String>,
+        role: Option<crate::models::RoleEnum>,
         pushes: Vec<crate::models::AwsPush>,
         created_at: String,
         modified_at: String,
@@ -52,6 +59,8 @@ impl Project {
             description: None,
             dependents,
             depends_on: None,
+            access_controlled: None,
+            role: role.map(Box::new),
             pushes,
             created_at,
             modified_at,

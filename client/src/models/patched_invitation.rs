@@ -36,6 +36,9 @@ pub struct PatchedInvitation {
     /// The resulting membership, should the user accept.
     #[serde(rename = "membership", skip_serializing_if = "Option::is_none")]
     pub membership: Option<String>,
+    /// The organization that the user will become a member of, should the user accept.
+    #[serde(rename = "organization", skip_serializing_if = "Option::is_none")]
+    pub organization: Option<String>,
 }
 
 impl PatchedInvitation {
@@ -50,6 +53,7 @@ impl PatchedInvitation {
             state: None,
             state_detail: None,
             membership: None,
+            organization: None,
         }
     }
 }

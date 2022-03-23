@@ -45,16 +45,16 @@ pub struct AwsPull {
     /// Values being managed by a mapped pull.
     #[serde(rename = "mapped_values")]
     pub mapped_values: Vec<crate::models::Value>,
-    /// The pull mode used.  A pattern pull uses a pattern-matching resource string with mustache-style markers to identify the project, parameter, and environment names.  A mapped pull uses a specific resource and JMESpath expression to deliver a value to a specific project, parameter, and environment.  This leverages external value linkages made in the value editor, and there is one mapped pull per integration provided by the system so that you can trigger external value pull synchronizations.
+    /// The pull mode used.  A pattern pull uses a pattern-matching resource string with mustache-style markers to identify the project, parameter, and environment names, or with a Python regular expression that uses named capture groups that define the same three concepts.  A mapped pull uses a specific resource and JMESpath expression to deliver a value to a specific project, parameter, and environment.  This leverages external value linkages made in the value editor, and there is one mapped pull per integration provided by the system so that you can trigger external value pull synchronizations.
     #[serde(rename = "mode")]
     pub mode: Option<Box<crate::models::ModeEnum>>,
-    /// The AWS region this pull uses.  This region must be enabled in the integration.
+    /// The AWS region to use.  This region must be enabled in the integration.
     #[serde(rename = "region")]
     pub region: Option<Box<crate::models::AwsRegionEnum>>,
-    /// The AWS service this pull uses.  This service must be enabled in the integration.
+    /// The AWS service to use.  This service must be enabled in the integration.
     #[serde(rename = "service")]
     pub service: Option<Box<crate::models::AwsServiceEnum>>,
-    /// Defines a path through the integration to the location where values will be pulled.  The following mustache-style substitutions must be used in the resource locator string:    - ``{{ environment }}`` to identify the environment name   - ``{{ parameter }}`` to identify the parameter name   - ``{{ project }}`` to identify the project name
+    /// Defines a pattern matching string that contains either mustache or regular expression syntax (with named capture groups) that locate the environment, project, and parameter name of the content you are looking for.  If you are using mustache pattern matching, use:    - ``{{ environment }}`` to identify the environment name   - ``{{ parameter }}`` to identify the parameter name   - ``{{ project }}`` to identify the project name  If you are using a regular expression, use Python syntax with named capture groups that locate the `environment`, `project`, and `parameter`.
     #[serde(rename = "resource")]
     pub resource: Option<String>,
 }
