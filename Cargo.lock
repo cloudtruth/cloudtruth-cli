@@ -316,7 +316,7 @@ dependencies = [
 
 [[package]]
 name = "cloudtruth"
-version = "1.1.6"
+version = "1.1.7"
 dependencies = [
  "aes-gcm",
  "assert_cmd",
