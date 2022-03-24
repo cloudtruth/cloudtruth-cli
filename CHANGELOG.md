@@ -1,5 +1,6 @@
 # 1.1.7 - 2022-03-23
 
+* Use Rocky instead of CentOS for Linux testing
 * Add support for macOS (arm64)
 * Adjust help text for template preview
 * Pick up latest API changes

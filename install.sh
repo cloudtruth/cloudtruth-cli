@@ -127,7 +127,7 @@ prerequisites() {
             fi
             ;;
         (rpm)
-            # centos, rhel
+            # rockylinux, centos, rhel
             if [ ${CT_DRY_RUN} -ne 0 ]; then
                 CT_PREREQ_DRY_RUN="--setopt tsflags=test"
             fi
