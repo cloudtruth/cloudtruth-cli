@@ -1,3 +1,10 @@
+# 1.1.7 - 2022-03-23
+
+* Add support for macOS (arm64)
+* Adjust help text for template preview
+* Pick up latest API changes
+* Internal changes to improve testing
+
 # 1.1.6 - 2022-01-28
 
 * Add several flags to `action push set` and `action push sync`
