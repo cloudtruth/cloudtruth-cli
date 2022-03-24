@@ -5,7 +5,7 @@ jobs:
     versions:
       - "3.13"
       - "3.12"
-  centos:
+  rockylinux:
     docker: true
     versions:
       - "8"
