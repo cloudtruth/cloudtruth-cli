@@ -151,3 +151,29 @@ class TestRun(TestCase):
 
         # cleanup
         self.delete_project(cmd_env, proj_name)
+
+    def test_run_strict(self):
+        base_cmd = self.get_cli_base_cmd()
+        cmd_env = self.get_cmd_env()
+        proj_name = self.make_name("run-strict")
+        printenv = self.get_display_env_command()
+        param_name = "SOME_PARAM_NAME"
+        param_value = "some-value"
+
+        param_cmd = base_cmd + f"--project {proj_name} parameters set {param_name}"
+        self.create_project(cmd_env, proj_name)
+        self.run_cli(cmd_env, param_cmd)
+
+        # assert failure when a cloudtruth parameter has no value
+        cmd = base_cmd + f"--project {proj_name} run --strict -- {printenv}"
+        result = self.run_cli(cmd_env, cmd)
+        self.assertIn("parameter found without a value", result.err())
+
+        # assert success when all cloudtruth parameters have values
+        value_cmd = param_cmd + f" --value {param_value}"
+        self.run_cli(cmd_env, value_cmd)
+        result = self.run_cli(cmd_env, cmd)
+        self.assertIn(param_name, result.out())
+
+        # cleanup
+        self.delete_project(cmd_env, proj_name)

@@ -1011,6 +1011,9 @@ pub fn build_cli() -> App<'static, 'static> {
                         .long("permissive")
                         .short("p")
                         .help("Allow CloudTruth application variables through"),
+                    Arg::with_name("strict")
+                        .long("strict")
+                        .help("Fail when any parameters are unset"),
                     param_as_of_arg(),
                 ])
         )
