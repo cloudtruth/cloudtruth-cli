@@ -48,6 +48,7 @@ pub enum SubProcessError {
     EnvironmentCollisions(Vec<String>),
     ProcessRunError(PopenError),
     ProcessOutputError(ErrReport),
+    StrictRunError(String),
 }
 
 impl error::Error for SubProcessError {}
@@ -67,6 +68,13 @@ impl fmt::Display for SubProcessError {
             }
             SubProcessError::ProcessOutputError(e) => {
                 write!(f, "Problem writing output: {}", e.to_string())
+            }
+            SubProcessError::StrictRunError(e) => {
+                write!(
+                    f,
+                    "Running in strict mode. CloudTruth parameter found without a value: {}",
+                    e
+                )
             }
         }
     }
@@ -130,6 +138,7 @@ impl SubProcess {
         inherit: Inheritance,
         overrides: &[String],
         removals: &[String],
+        strict: bool,
     ) -> SubProcessResult<()> {
         self.env_vars = if inherit == Inheritance::None {
             EnvSettings::new()
@@ -153,6 +162,9 @@ impl SubProcess {
         for (k, v) in &self.ct_vars {
             let key = k.clone();
             let value = v.clone();
+            if strict && value == "-" {
+                return Err(SubProcessError::StrictRunError(key));
+            }
             if !self.env_vars.contains_key(&key) {
                 // when not already, insert it
                 self.env_vars.entry(key).or_insert(value);

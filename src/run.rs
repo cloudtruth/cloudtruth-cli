@@ -70,7 +70,8 @@ pub fn process_run_command(
     let overrides = subcmd_args.values_of_lossy("set").unwrap_or_default();
     let removals = subcmd_args.values_of_lossy("remove").unwrap_or_default();
     let permissive = subcmd_args.is_present("permissive");
-    sub_proc.set_environment(resolved, inherit, &overrides, &removals)?;
+    let strict = subcmd_args.is_present("strict");
+    sub_proc.set_environment(resolved, inherit, &overrides, &removals, strict)?;
     if !permissive {
         sub_proc.remove_ct_app_vars();
     }
