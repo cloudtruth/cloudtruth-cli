@@ -18,7 +18,7 @@ impl fmt::Display for ConfigFileError {
     fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
         match self {
             ConfigFileError::MalformedConfigFile(source_error) => {
-                write!(f, "YAML error: {}", source_error.to_string())
+                write!(f, "YAML error: {}", source_error)
             }
             ConfigFileError::ProfileNameNotFound(profile_name) => write!(
                 f,

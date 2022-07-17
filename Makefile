@@ -4,7 +4,7 @@
 
 os_name := $(shell uname -s)
 rustup_exists := $(shell which rustup)
-rust_intended := 1.57.0
+rust_intended := 1.62.0
 rust_installed := $(shell rustc -V | cut -d' ' -f2)
 rust_bad_version := $(shell grep "RUST_VERSION:" .github/workflows/*.yml | grep -v "$(rust_intended)")
 unchecked_results := $(shell grep -nA 1 "self\.run_cli" tests/pytest/*.py | grep -v run_cli | grep -v "\-\-" | grep -v assertResult)

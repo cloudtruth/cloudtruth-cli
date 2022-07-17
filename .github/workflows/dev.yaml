@@ -22,7 +22,7 @@ jobs:
       CLOUDTRUTH_SERVER_URL: https://api.staging.cloudtruth.io
       CLOUDTRUTH_API_KEY: ${{ secrets.CI_ACCT_STAGING_CONTRIBUTOR }}
       RUST_BACKTRACE: 1
-      RUST_VERSION: 1.57.0
+      RUST_VERSION: 1.62.0
 
       # These are based on pre-configured integrations in the CLI CI account.
       CLOUDTRUTH_TEST_BROKEN_PROJECT: proj-int-broken

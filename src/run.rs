@@ -51,7 +51,7 @@ pub fn process_run_command(
         if command.contains(' ') {
             warn_user("command contains spaces, and may fail.".to_string());
             let mut reformed = format!("{} {}", command, arguments.join(" "));
-            reformed = reformed.replace("$", "\\$");
+            reformed = reformed.replace('$', "\\$");
             println!(
                 "Try using 'cloudtruth run --command \"{}\"'",
                 reformed.trim()

@@ -289,12 +289,11 @@ impl Config {
 
     pub fn delete_profile(profile_name: &str) -> Result<()> {
         if let Some(filename) = Self::config_file() {
-            let content: String;
-            if filename.exists() {
-                content = Self::read_config(filename.as_path())?;
+            let content = if filename.exists() {
+                Self::read_config(filename.as_path())?
             } else {
-                content = ConfigFile::config_file_template().to_string();
-            }
+                ConfigFile::config_file_template().to_string()
+            };
             let updated = ConfigFile::remove_profile(&content, profile_name)?;
             fs::write(filename.as_path(), updated)?;
         }
@@ -374,7 +373,6 @@ impl Config {
         env_name: Option<&str>,
     ) -> Result<Vec<ConfigValue>> {
         let mut results: Vec<ConfigValue> = Vec::new();
-        let resolve_profile: String;
 
         // NOTE: do profile_name first, so we can include that
         let mut value = DEFAULT_PROF_NAME.to_string();
@@ -386,7 +384,7 @@ impl Config {
             value = env_value;
             source = SRC_ENV.to_string();
         }
-        resolve_profile = value.clone();
+        let resolve_profile: String = value.clone();
         results.push(ConfigValue {
             name: PARAM_PROFILE.to_string(),
             value,

@@ -17,7 +17,7 @@ impl fmt::Display for ApiError {
         match self {
             ApiError::Authentication(msg) => write!(f, "Not Authenticated: {}", msg),
             ApiError::MalformedApiFile(e) => {
-                write!(f, "Invalid API specification: {}", e.to_string())
+                write!(f, "Invalid API specification: {}", e)
             }
             ApiError::ResponseError(msg) => write!(f, "{}", msg),
             ApiError::UnsupportedFormat(format) => write!(f, "Invalid format: {}", format),
