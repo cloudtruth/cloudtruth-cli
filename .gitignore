@@ -12,3 +12,6 @@ generator.log
 
 # PyCharm stuff
 .idea/
+
+# VSCode stuff
+.vscode/
