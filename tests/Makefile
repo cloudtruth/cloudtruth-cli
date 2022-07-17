@@ -28,7 +28,7 @@ prerequisites:
 
 lint:
 	python3 -m pip install --user --upgrade flake8
-	python3 -m flake8
+	flake8
 
 workflow-draft:
 	python3 gen.py -w draft
