@@ -70,7 +70,6 @@ rusty-hook = "0.11"
 serial_test = "0.5"
 
 [features]
-default = ["shell_completions"]
 shell_completions = [
     "bash",
     "elvish",
