@@ -89,7 +89,7 @@ ifeq ($(rustup_exists),'')
 endif
 ifneq ($(rust_intended),$(rust_installed))
 	rustup install $(rust_intended)
-	rustup override set ${rust_intended}
+	rustup override set $(rust_intended)
 else
 	@echo "Already running rustc version: $(rust_intended)"
 endif
