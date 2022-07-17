@@ -1,4 +1,4 @@
-cloudtruth 1.1.6
+cloudtruth 1.1.7
 CloudTruth <support@cloudtruth.com>
 A command-line interface to the CloudTruth configuration management service.
 
@@ -1292,6 +1292,7 @@ USAGE:
 FLAGS:
     -h, --help          Prints help information
     -p, --permissive    Allow CloudTruth application variables through
+        --strict        Fail when any parameters are unset
     -V, --version       Prints version information
 
 OPTIONS:
