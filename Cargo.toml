@@ -68,3 +68,18 @@ assert_matches = "1.4"
 predicates = "1.0"
 rusty-hook = "0.11"
 serial_test = "0.5"
+
+[features]
+default = ["shell_completions"]
+shell_completions = [
+    "bash",
+    "elvish",
+    "fish",
+    "powershell",
+    "zsh"
+]
+bash = []
+elvish = []
+fish = []
+powershell = []
+zsh = []
