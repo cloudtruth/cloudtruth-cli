@@ -7,7 +7,6 @@ rustup_exists := $(shell which rustup)
 rust_intended := 1.57.0
 rust_installed := $(shell rustc -V | cut -d' ' -f2)
 rust_bad_version := $(shell grep "RUST_VERSION:" .github/workflows/*.yml | grep -v "$(rust_intended)")
-unchecked_results := $(shell grep -nA 1 "self\.run_cli" tests/pytest/*.py | grep -v run_cli | grep -v "\-\-" | grep -v assertResult)
 openapi_gen_version := v5.3.1
 
 .DEFAULT = all
@@ -67,16 +66,13 @@ client: openapi.yml patch_client.py
 	python3 patch_client.py
 	cd client && cargo fmt && cargo build
 
-lint:
+lint: lint_test
 	cargo fmt --all -- --check
 	cargo clippy --all-features -- -D warnings
 	shellcheck install.sh
-	flake8
-ifneq ("$(unchecked_results)","")
-	$(error "Unchecked CLI results: $(unchecked_results)")
-else
-	@echo "CLI test results are checked"
-endif
+
+lint_test:
+	make -C tests lint
 
 precommit: version_check cargo precommit_test lint
 
@@ -105,7 +101,7 @@ test_prerequisites:
 
 precommit_test:
 	cargo test
-	make -C tests $@
+	make -C tests precommit
 
 test: precommit_test
 	make -C tests
@@ -135,6 +131,7 @@ targets:
 	@echo "image          - make the cloudtruth/cli docker container for development"
 	@echo "integration    - runs the integration test against the live server"
 	@echo "lint           - checks for formatting issues"
+	@echo "lint_test      - checks tests for formatting issues"
 	@echo "precommit      - build rust targets, tests, and lints the files"
 	@echo "precommit_test - runs the cargo tests"
 	@echo "prerequisites  - install prerequisites"
