@@ -88,7 +88,8 @@ ifeq ($(rustup_exists),'')
 	$(error "You need to add ~/.cargo/bin to your PATH")
 endif
 ifneq ($(rust_intended),$(rust_installed))
-	rustup upgrade $(rust_intended)
+	rustup install $(rust_intended)
+	rustup override set ${rust_intended}
 else
 	@echo "Already running rustc version: $(rust_intended)"
 endif
