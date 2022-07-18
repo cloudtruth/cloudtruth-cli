@@ -777,6 +777,12 @@ pub fn build_cli() -> App<'static, 'static> {
                             .long("details")
                             .help("Show all parameter details"))
                         .arg(key_arg().help("Name of parameter to get")),
+                    SubCommand::with_name(HISTORY_SUBCMD)
+                        .visible_aliases(HISTORY_ALIASES)
+                        .arg(key_arg().help("Parameter name (optional)").required(false))
+                        .arg(as_of_arg().help("Date/time (or tag) for parameter history"))
+                        .arg(table_format_options().help("Format for parameter history output"))
+                        .about("View parameter history"),
                     SubCommand::with_name(LIST_SUBCMD)
                         .visible_aliases(LIST_ALIASES)
                         .about("List CloudTruth parameters")

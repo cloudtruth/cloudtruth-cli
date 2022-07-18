@@ -1,15 +1,15 @@
 use crate::cli::{
     binary_name, show_values, true_false_option, AS_OF_ARG, CONFIRM_FLAG, DELETE_SUBCMD,
-    DESCRIPTION_OPT, DIFF_SUBCMD, FORMAT_OPT, GET_SUBCMD, JMES_PATH_ARG, KEY_ARG, LIST_SUBCMD,
-    PUSH_SUBCMD, RENAME_OPT, RULE_MAX_ARG, RULE_MAX_LEN_ARG, RULE_MIN_ARG, RULE_MIN_LEN_ARG,
-    RULE_NO_MAX_ARG, RULE_NO_MAX_LEN_ARG, RULE_NO_MIN_ARG, RULE_NO_MIN_LEN_ARG, RULE_NO_REGEX_ARG,
-    RULE_REGEX_ARG, SECRETS_FLAG, SET_SUBCMD, SHOW_TIMES_FLAG,
+    DESCRIPTION_OPT, DIFF_SUBCMD, FORMAT_OPT, GET_SUBCMD, HISTORY_SUBCMD, JMES_PATH_ARG, KEY_ARG,
+    LIST_SUBCMD, PUSH_SUBCMD, RENAME_OPT, RULE_MAX_ARG, RULE_MAX_LEN_ARG, RULE_MIN_ARG,
+    RULE_MIN_LEN_ARG, RULE_NO_MAX_ARG, RULE_NO_MAX_LEN_ARG, RULE_NO_MIN_ARG, RULE_NO_MIN_LEN_ARG,
+    RULE_NO_REGEX_ARG, RULE_REGEX_ARG, SECRETS_FLAG, SET_SUBCMD, SHOW_TIMES_FLAG,
 };
 use crate::config::DEFAULT_ENV_NAME;
 use crate::database::{
-    EnvironmentDetails, Environments, OpenApiConfig, ParamExportFormat, ParamExportOptions,
-    ParamRuleType, ParameterDetails, ParameterError, Parameters, Projects, ResolvedDetails,
-    TaskStepDetails,
+    EnvironmentDetails, Environments, HistoryAction, OpenApiConfig, ParamExportFormat,
+    ParamExportOptions, ParamRuleType, ParameterDetails, ParameterError, ParameterHistory,
+    Parameters, Projects, ResolvedDetails, TaskStepDetails,
 };
 use crate::lib::{
     error_message, format_param_error, help_message, parse_datetime, parse_tag, user_confirm,
@@ -27,6 +27,11 @@ use std::env;
 use std::fs;
 use std::process;
 use std::str::FromStr;
+
+const PARAMETER_HISTORY_PROPERTIES: &[&str] = &[
+    "name",
+    "environment", // "value", "description", "fqn", "jmes-path"
+];
 
 fn proc_param_delete(
     subcmd_args: &ArgMatches,
@@ -1157,13 +1162,13 @@ fn proc_param_drift(
     parameters: &Parameters,
     resolved: &ResolvedDetails,
 ) -> Result<()> {
+    let show_secrets = subcmd_args.is_present(SECRETS_FLAG);
+    let show_values = show_values(subcmd_args);
+    let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
     let proj_id = resolved.project_id();
     let env_id = resolved.environment_id();
     let as_of = parse_datetime(subcmd_args.value_of(AS_OF_ARG));
     let tag = parse_tag(subcmd_args.value_of(AS_OF_ARG));
-    let show_secrets = subcmd_args.is_present(SECRETS_FLAG);
-    let show_values = show_values(subcmd_args);
-    let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
     let param_map =
         parameters.get_parameter_detail_map(rest_cfg, proj_id, env_id, false, as_of, tag)?;
     let excludes = vec![
@@ -1253,6 +1258,120 @@ fn proc_param_drift(
     Ok(())
 }
 
+pub fn get_changes(
+    current: &ParameterHistory,
+    previous: Option<ParameterHistory>,
+    properties: &[&str],
+) -> Vec<String> {
+    let mut changes = vec![];
+    if let Some(prev) = previous {
+        if current.get_action() != HistoryAction::Delete {
+            for prop in properties {
+                let curr_value = current.get_property(prop);
+                if prev.get_property(prop) != curr_value {
+                    changes.push(format!("{}: {}", prop, curr_value))
+                }
+            }
+        }
+    } else {
+        // NOTE: print this info even on a delete, if there's nothing earlier
+        for prop in properties {
+            let curr_value = current.get_property(prop);
+            if !curr_value.is_empty() {
+                changes.push(format!("{}: {}", prop, curr_value))
+            }
+        }
+    }
+    changes
+}
+
+pub fn find_previous(
+    history: &[ParameterHistory],
+    current: &ParameterHistory,
+) -> Option<ParameterHistory> {
+    let mut found = None;
+    let curr_id = current.get_id();
+    let curr_date = current.get_date();
+    for entry in history {
+        if entry.get_id() == curr_id && entry.get_date() < curr_date {
+            found = Some(entry.clone())
+        }
+    }
+    found
+}
+
+fn proc_param_history(
+    subcmd_args: &ArgMatches,
+    rest_cfg: &OpenApiConfig,
+    parameters: &Parameters,
+    resolved: &ResolvedDetails,
+) -> Result<()> {
+    let proj_name = resolved.project_display_name();
+    let proj_id = resolved.project_id();
+    let env_id = resolved.environment_id();
+    let as_of = parse_datetime(subcmd_args.value_of(AS_OF_ARG));
+    let tag = parse_tag(subcmd_args.value_of(AS_OF_ARG));
+    let key_name = subcmd_args.value_of(KEY_ARG);
+    let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
+    let modifier;
+    let add_name;
+    let history: Vec<ParameterHistory>;
+
+    if let Some(param_name) = key_name {
+        let param_id;
+        modifier = format!("for '{}' ", param_name);
+        add_name = false;
+        if let Some(details) = parameters.get_details_by_name(
+            rest_cfg, proj_id, env_id, param_name, false, true, None, None,
+        )? {
+            param_id = details.id;
+        } else {
+            error_message(format!(
+                "Did not find parameter '{}' in project '{}'",
+                param_name, proj_name
+            ));
+            process::exit(13);
+        }
+        history = parameters.get_history_for(rest_cfg, proj_id, &param_id, as_of, tag)?;
+    } else {
+        modifier = "".to_string();
+        add_name = true;
+        history = parameters.get_histories(rest_cfg, proj_id, as_of, tag)?;
+    };
+
+    if history.is_empty() {
+        println!(
+            "No parameter history {}in project '{}'.",
+            modifier, proj_name
+        );
+    } else {
+        let name_index = 2;
+        let mut table = Table::new("parameter-history");
+        let mut hdr: Vec<&str> = vec!["Date", "Action", "Changes"];
+        if add_name {
+            hdr.insert(name_index, "Name");
+        }
+        table.set_header(&hdr);
+
+        let orig_list = history.clone();
+        for ref entry in history {
+            let prev = find_previous(&orig_list, entry);
+            let changes = get_changes(entry, prev, PARAMETER_HISTORY_PROPERTIES);
+            let mut row = vec![
+                entry.date.clone(),
+                entry.change_type.to_string(),
+                changes.join("\n"),
+            ];
+            if add_name {
+                row.insert(name_index, entry.name.clone())
+            }
+            table.add_row(row);
+        }
+        table.render(fmt)?;
+    }
+    Ok(())
+}
+
 /// Process the 'parameters' sub-command
 pub fn process_parameters_command(
     subcmd_args: &ArgMatches,
@@ -1280,6 +1399,8 @@ pub fn process_parameters_command(
         proc_param_push(subcmd_args, rest_cfg, &parameters, resolved)?;
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("drift") {
         proc_param_drift(subcmd_args, rest_cfg, &parameters, resolved)?;
+    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(HISTORY_SUBCMD) {
+        proc_param_history(subcmd_args, rest_cfg, &parameters, resolved)?;
     } else {
         warn_missing_subcommand("parameters");
     }
