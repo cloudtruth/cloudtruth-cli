@@ -8,8 +8,9 @@
 .PHONY += cli-gen
 .PHONY += help
 .PHONY += integration
+.PHONY += lint
 .PHONY += prerequisites
-.PHONY += precommit_test
+.PHONY += precommit
 .PHONY += regen
 .PHONY += targets
 .PHONY += workflow-draft
@@ -25,6 +26,10 @@ prerequisites:
 	python3 -m pip install --user --upgrade -r requirements.txt
 	# curl https://raw.githubusercontent.com/nektos/act/master/install.sh | sudo bash
 
+lint:
+	python3 -m pip install --user --upgrade flake8
+	python3 -m flake8
+
 workflow-draft:
 	python3 gen.py -w draft
 
@@ -34,7 +39,7 @@ workflow-prerelease:
 integration:
 	python3 pytest/live_test.py
 
-precommit_test: cli-check
+precommit: cli-check
 
 cli-check:
 	python3 cli_walk.py check
@@ -52,7 +57,7 @@ targets:
 	@echo "cli-check      - makes sure help from latest build is unchanged"
 	@echo "cli-gen        - generates the cli help.txt"
 	@echo "integration    - run tests against live service"
-	@echo "precommit_test - makes sure cli parameters have not changed"
+	@echo "precommit      - makes sure cli parameters have not changed"
 	@echo "prerequisites  - install prerequisites"
 	@echo "regen          - regenerates the help.txt, GH action files, and docker files"
 	@echo "workflow-*     - build workflow files and docker files from templates"
