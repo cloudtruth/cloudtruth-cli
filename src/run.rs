@@ -28,6 +28,7 @@ pub fn process_run_command(
         resolved.project_id(),
         resolved.environment_id(),
         false,
+        false,
         true,
         as_of,
         tag,

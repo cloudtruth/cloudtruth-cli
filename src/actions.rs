@@ -443,6 +443,8 @@ fn proc_action_push_set(
     let dry_run = opposing_flags(subcmd_args, "DRY_RUN", "NO_DRY_RUN");
     let check_owner = opposing_flags(subcmd_args, "NO_CHECK_OWNER", "CHECK_OWNER"); // opposite polarity
     let include_params = opposing_flags(subcmd_args, "INCLUDE_PARAMS", "NO_INCLUDE_PARAMS");
+    let include_templates =
+        opposing_flags(subcmd_args, "INCLUDE_TEMPLATES", "NO_INCLUDE_TEMPLATES");
     let include_secrets = opposing_flags(subcmd_args, "INCLUDE_SECRETS", "NO_INCLUDE_SECRETS");
     let coerce_params = opposing_flags(subcmd_args, "COERCE_PARAMS", "NO_COERCE_PARAMS");
     let proj_to_add: Vec<&str> = subcmd_args
@@ -519,6 +521,7 @@ fn proc_action_push_set(
             check_owner,
             include_params,
             include_secrets,
+            include_templates,
             coerce_params,
         )?;
         println!(
@@ -542,6 +545,7 @@ fn proc_action_push_set(
                 check_owner,
                 include_params,
                 include_secrets,
+                include_templates,
                 coerce_params,
             )?;
             println!(
@@ -571,6 +575,8 @@ fn proc_action_push_sync(
     let check_owner = opposing_flags(subcmd_args, "NO_CHECK_OWNER", "CHECK_OWNER"); // opposite polarity
     let include_params = opposing_flags(subcmd_args, "INCLUDE_PARAMS", "NO_INCLUDE_PARAMS");
     let include_secrets = opposing_flags(subcmd_args, "INCLUDE_SECRETS", "NO_INCLUDE_SECRETS");
+    let include_templates =
+        opposing_flags(subcmd_args, "INCLUDE_TEMPLATES", "NO_INCLUDE_TEMPLATES");
     let coerce_params = opposing_flags(subcmd_args, "COERCE_PARAMS", "NO_COERCE_PARAMS");
 
     if let Some(details) = resolved {
@@ -581,6 +587,7 @@ fn proc_action_push_sync(
             check_owner,
             include_params,
             include_secrets,
+            include_templates,
             coerce_params,
         )?;
         println!(

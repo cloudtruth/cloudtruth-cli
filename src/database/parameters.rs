@@ -82,6 +82,13 @@ fn rule_error(action: String, content: &str) -> ParameterError {
     ParameterError::RuleError(action, extract_details(content))
 }
 
+fn immediate_parameters_arg(immediate_parameters: bool) -> Option<bool> {
+    match immediate_parameters {
+        true => Some(true),
+        false => None,
+    }
+}
+
 fn mask_secrets_arg(mask_secrets: bool) -> Option<bool> {
     match mask_secrets {
         true => Some(true),
@@ -130,6 +137,7 @@ impl Parameters {
     ) -> Result<Option<String>, ParameterError> {
         // The only delete mechanism is by parameter ID, so start by querying the parameter info.
         let evaluate = false; // no need to evaluate things
+        let immediate_parameters = true;
         let mask_secrets = true; // no need to fetch secrets
         let response = self.get_details_by_name(
             rest_cfg,
@@ -137,6 +145,7 @@ impl Parameters {
             env_id,
             key_name,
             evaluate,
+            immediate_parameters,
             mask_secrets,
             None,
             None,
@@ -222,6 +231,7 @@ impl Parameters {
         env_id: &str,
         key_name: &str,
         evaluate: bool,
+        immediate_parameters: bool,
         mask_secrets: bool,
         as_of: Option<String>,
         tag: Option<String>,
@@ -240,6 +250,7 @@ impl Parameters {
             env_arg,
             Some(evaluate),
             NO_ID_IN,
+            immediate_parameters_arg(immediate_parameters),
             mask_secrets_arg(mask_secrets),
             Some(key_name),
             NO_NAME_CONTAINS,
@@ -296,6 +307,7 @@ impl Parameters {
         proj_id: &str,
         env_id: &str,
         mask_secrets: bool,
+        immediate_parameters: bool,
         include_values: bool,
         as_of: Option<String>,
         tag: Option<String>,
@@ -304,6 +316,7 @@ impl Parameters {
             rest_cfg,
             proj_id,
             env_id,
+            immediate_parameters,
             mask_secrets,
             include_values,
             as_of,
@@ -328,6 +341,7 @@ impl Parameters {
         rest_cfg: &OpenApiConfig,
         proj_id: &str,
         env_id: &str,
+        immediate_parameters: bool,
         mask_secrets: bool,
         include_values: bool,
         as_of: Option<String>,
@@ -349,6 +363,7 @@ impl Parameters {
                 env_arg,
                 eval_arg,
                 NO_ID_IN,
+                immediate_parameters_arg(immediate_parameters),
                 mask_secrets_arg(mask_secrets),
                 None,
                 NO_NAME_CONTAINS,
@@ -402,17 +417,27 @@ impl Parameters {
     }
 
     /// Gets a map of parameter names to `ParameterDetails` in the specified environment.
+    #[allow(clippy::too_many_arguments)]
     pub fn get_parameter_detail_map(
         &self,
         rest_cfg: &OpenApiConfig,
         proj_id: &str,
         env_id: &str,
+        immediate_parameters: bool,
         mask_secrets: bool,
         as_of: Option<String>,
         tag: Option<String>,
     ) -> Result<ParameterDetailMap, ParameterError> {
-        let details =
-            self.get_parameter_details(rest_cfg, proj_id, env_id, mask_secrets, true, as_of, tag)?;
+        let details = self.get_parameter_details(
+            rest_cfg,
+            proj_id,
+            env_id,
+            immediate_parameters,
+            mask_secrets,
+            true,
+            as_of,
+            tag,
+        )?;
         let mut result = ParameterDetailMap::new();
         for entry in details {
             result.insert(entry.key.clone(), entry);
@@ -426,6 +451,7 @@ impl Parameters {
         rest_cfg: &OpenApiConfig,
         proj_id: &str,
         param_name: &str,
+        immediate_parameters: bool,
         mask_secrets: bool,
         as_of: Option<String>,
     ) -> Result<ParameterDetailMap, ParameterError> {
@@ -442,6 +468,7 @@ impl Parameters {
                 None, // cannot give an environment, or it will only get for that environment
                 eval_arg,
                 NO_ID_IN,
+                immediate_parameters_arg(immediate_parameters),
                 mask_secrets_arg(mask_secrets),
                 Some(param_name),
                 NO_NAME_CONTAINS,
@@ -668,6 +695,7 @@ impl Parameters {
             interpolated: evaluated,
             evaluated: None,
             external_status: None,
+            referenced_projects: None,
             referenced_parameters: None,
             referenced_templates: None,
         };
@@ -813,7 +841,8 @@ impl Parameters {
         env_id: &str,
     ) -> Result<Vec<TaskStepDetails>, ParameterError> {
         // need the parameter id for getting task steps, so get list of parameters
-        let params = self.get_parameter_details(rest_cfg, proj_id, "", true, false, None, None)?;
+        let params =
+            self.get_parameter_details(rest_cfg, proj_id, "", false, false, false, None, None)?;
         let mut total = vec![];
         for p in params {
             let mut tasks = self.get_task_steps(rest_cfg, proj_id, env_id, &p.id)?;

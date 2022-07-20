@@ -241,6 +241,7 @@ impl Templates {
             has_secret: None,
             referenced_parameters: None,
             referenced_templates: None,
+            referenced_projects: None,
             referencing_templates: None,
             referencing_values: None,
             created_at: None,

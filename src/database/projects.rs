@@ -281,6 +281,7 @@ impl Projects {
             created_at: None,
             modified_at: None,
             pushes: None,
+            push_urls: None,
             depends_on: parent_url.map(String::from),
             dependents: None,
             access_controlled: None,
