@@ -69,7 +69,7 @@ client: openapi.yml patch_client.py
 lint: lint_test
 	cargo fmt --all -- --check
 	cargo clippy --all-features -- -D warnings
-	shellcheck install.sh
+	shellcheck install.sh scripts/*
 
 lint_test:
 	make -C tests lint
