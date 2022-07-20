@@ -387,7 +387,10 @@ impl Integrations {
         &self,
         rest_cfg: &OpenApiConfig,
         integration_id: &str,
+        environment: Option<&str>,
         name: Option<&str>,
+        project: Option<&str>,
+        tag: Option<&str>,
     ) -> Result<Vec<ActionDetails>, IntegrationError> {
         let mut result: Vec<ActionDetails> = Vec::new();
         let page_count = 1;
@@ -396,11 +399,14 @@ impl Integrations {
                 rest_cfg,
                 integration_id,
                 None,
+                environment,
                 name,
                 None,
                 NO_ORDERING,
                 Some(page_count),
                 page_size(rest_cfg),
+                project,
+                tag,
             );
             match response {
                 Ok(data) => {
@@ -429,7 +435,7 @@ impl Integrations {
         rest_cfg: &OpenApiConfig,
         integration_id: &str,
     ) -> Result<Vec<ActionDetails>, IntegrationError> {
-        self.get_aws_push_list(rest_cfg, integration_id, None)
+        self.get_aws_push_list(rest_cfg, integration_id, None, None, None, None)
     }
 
     fn get_all_aws_pushes(
@@ -440,7 +446,7 @@ impl Integrations {
         let int_details = self.get_aws_integration_details(rest_cfg)?;
         let mut total: Vec<ActionDetails> = vec![];
         for entry in int_details {
-            let mut pushes = self.get_aws_push_list(rest_cfg, &entry.id, name)?;
+            let mut pushes = self.get_aws_push_list(rest_cfg, &entry.id, None, name, None, None)?;
             for p in &mut pushes {
                 p.integration_name = entry.name.clone();
             }
@@ -474,11 +480,14 @@ impl Integrations {
             rest_cfg,
             integration_id,
             None,
+            None,
             Some(push_name),
             None,
             NO_ORDERING,
             NO_PAGE_COUNT,
             NO_PAGE_SIZE,
+            None,
+            None,
         );
         match response {
             Ok(data) => match data.results {
@@ -681,6 +690,7 @@ impl Integrations {
         force: Option<bool>,
         include_params: Option<bool>,
         include_secrets: Option<bool>,
+        include_templates: Option<bool>,
         coerce_params: Option<bool>,
     ) -> Result<ActionDetails, IntegrationError> {
         let reg_enum = aws_region_from_str(region);
@@ -700,6 +710,7 @@ impl Integrations {
             force,
             include_parameters: include_params,
             include_secrets,
+            include_templates,
             coerce_parameters: coerce_params,
             local: Some(false),
             created_at: "".to_string(),
@@ -731,6 +742,7 @@ impl Integrations {
         force: Option<bool>,
         include_params: Option<bool>,
         include_secrets: Option<bool>,
+        include_templates: Option<bool>,
         coerce_params: Option<bool>,
     ) -> Result<ActionDetails, IntegrationError> {
         self.create_aws_push(
@@ -747,6 +759,7 @@ impl Integrations {
             force,
             include_params,
             include_secrets,
+            include_templates,
             coerce_params,
         )
     }
@@ -766,6 +779,7 @@ impl Integrations {
         force: Option<bool>,
         include_params: Option<bool>,
         include_secrets: Option<bool>,
+        include_templates: Option<bool>,
         coerce_params: Option<bool>,
     ) -> Result<(), IntegrationError> {
         let push_update = AwsPushUpdate {
@@ -780,6 +794,7 @@ impl Integrations {
             coerce_parameters: coerce_params,
             include_parameters: include_params,
             include_secrets,
+            include_templates,
         };
         let response =
             integrations_aws_pushes_update(rest_cfg, integration_id, push_id, push_update);
@@ -807,6 +822,7 @@ impl Integrations {
         force: Option<bool>,
         include_params: Option<bool>,
         include_secrets: Option<bool>,
+        include_templates: Option<bool>,
         coerce_params: Option<bool>,
     ) -> Result<(), IntegrationError> {
         self.update_aws_push(
@@ -822,6 +838,7 @@ impl Integrations {
             force,
             include_params,
             include_secrets,
+            include_templates,
             coerce_params,
         )
     }
@@ -835,6 +852,7 @@ impl Integrations {
         force: Option<bool>,
         include_params: Option<bool>,
         include_secrets: Option<bool>,
+        include_templates: Option<bool>,
         coerce_params: Option<bool>,
     ) -> Result<(), IntegrationError> {
         let description = if push_details.description.is_empty() {
@@ -861,6 +879,7 @@ impl Integrations {
             local: Some(false),
             include_parameters: include_params,
             include_secrets,
+            include_templates,
             coerce_parameters: coerce_params,
             created_at: "".to_string(),
             modified_at: "".to_string(),
@@ -889,6 +908,7 @@ impl Integrations {
         force: Option<bool>,
         include_params: Option<bool>,
         include_secrets: Option<bool>,
+        include_templates: Option<bool>,
         coerce_params: Option<bool>,
     ) -> Result<(), IntegrationError> {
         self.sync_aws_push(
@@ -898,6 +918,7 @@ impl Integrations {
             force,
             include_params,
             include_secrets,
+            include_templates,
             coerce_params,
         )
     }

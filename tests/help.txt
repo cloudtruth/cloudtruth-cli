@@ -281,11 +281,13 @@ FLAGS:
         --dry-run                  Dry-run the push without changing any data
         --include-parameters       Include non-secret CloudTruth parameters in the values being pushed
         --include-secrets          Include secret CloudTruth parameters in the values being pushed
+        --include-templates        Include templates in the values being pushed.
         --no-check-owner           Allow the push even if CloudTruth is not the destination owner
         --no-coerce-params         Do not include non-secret CloudTruth parameters in a secret store destination
         --no-dry-run               Create the push without being a dry-run
         --no-include-parameters    Do not include non-secret CloudTruth parameters in the values being pushed
         --no-include-secrets       Do not include secret CloudTruth parameters in the values being pushed
+        --no-include-templates     Do not include templates in the values being pushed.
     -h, --help                     Prints help information
     -V, --version                  Prints version information
 
@@ -318,11 +320,13 @@ FLAGS:
         --dry-run                  Dry-run the push without changing any data
         --include-parameters       Include non-secret CloudTruth parameters in the values being pushed
         --include-secrets          Include secret CloudTruth parameters in the values being pushed
+        --include-templates        Include templates in the values being pushed.
         --no-check-owner           Allow the push even if CloudTruth is not the destination owner
         --no-coerce-params         Do not include non-secret CloudTruth parameters in a secret store destination
         --no-dry-run               Create the push without being a dry-run
         --no-include-parameters    Do not include non-secret CloudTruth parameters in the values being pushed
         --no-include-secrets       Do not include secret CloudTruth parameters in the values being pushed
+        --no-include-templates     Do not include templates in the values being pushed.
     -h, --help                     Prints help information
     -V, --version                  Prints version information
 
@@ -1029,9 +1033,10 @@ USAGE:
     cloudtruth parameters differences [FLAGS] [OPTIONS]
 
 FLAGS:
-    -h, --help       Prints help information
-    -s, --secrets    Show secret values
-    -V, --version    Prints version information
+    -h, --help                    Prints help information
+    -i, --immediate_parameters    Show only immediate parameters (no inherited parameters)
+    -s, --secrets                 Show secret values
+    -V, --version                 Prints version information
 
 OPTIONS:
     -e, --env <ENV>...                Up to two environment(s) to be compared.
@@ -1125,16 +1130,17 @@ USAGE:
     cloudtruth parameters list [FLAGS] [OPTIONS]
 
 FLAGS:
-        --children      Display the parameters defined in a child project
-        --evaluated     Display the evaluated values
-        --external      Display the external values and FQN/JMES path.
-    -h, --help          Prints help information
-        --parents       Display the parameters defined in a parent project
-        --rules         Display the parameter rules.
-    -s, --secrets       Display the secret parameter values
-        --show-times    Show create and modified times.
-    -v, --values        Display parameter information/values
-    -V, --version       Prints version information
+        --children                Display the parameters defined in a child project
+        --evaluated               Display the evaluated values
+        --external                Display the external values and FQN/JMES path.
+    -h, --help                    Prints help information
+    -i, --immediate_parameters    Show only immediate parameters (no inherited parameters)
+        --parents                 Display the parameters defined in a parent project
+        --rules                   Display the parameter rules.
+    -s, --secrets                 Display the secret parameter values
+        --show-times              Show create and modified times.
+    -v, --values                  Display parameter information/values
+    -V, --version                 Prints version information
 
 OPTIONS:
         --as-of <datetime|tag>    Date/time (or tag) of parameter value(s)

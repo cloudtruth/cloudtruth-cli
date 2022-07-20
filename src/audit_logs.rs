@@ -118,6 +118,7 @@ fn proc_audit_list(
                 &environment_id,
                 param_name,
                 false,
+                false,
                 true,
                 None,
                 None,
