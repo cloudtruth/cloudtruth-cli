@@ -2,7 +2,7 @@
     "openapi": "3.0.3",
     "info": {
         "title": "CloudTruth Management API",
-        "version": "",
+        "version": "v1",
         "description": "CloudTruth centralizes your configuration parameters and secrets making them easier to manage and use as a team.",
         "contact": {
             "name": "CloudTruth Support",
@@ -3071,6 +3071,15 @@
                     },
                     {
                         "in": "query",
+                        "name": "environment",
+                        "schema": {
+                            "type": "string",
+                            "format": "uri"
+                        },
+                        "description": "Filter results to pushes that operate on a tag in the given environment."
+                    },
+                    {
+                        "in": "query",
                         "name": "name",
                         "schema": {
                             "type": "string"
@@ -3109,6 +3118,24 @@
                         "schema": {
                             "type": "integer"
                         }
+                    },
+                    {
+                        "in": "query",
+                        "name": "project",
+                        "schema": {
+                            "type": "string",
+                            "format": "uri"
+                        },
+                        "description": "Filter results to pushes that operate on the given project."
+                    },
+                    {
+                        "in": "query",
+                        "name": "tag",
+                        "schema": {
+                            "type": "string",
+                            "format": "uri"
+                        },
+                        "description": "Filter results to pushes that operate on the given tag."
                     }
                 ],
                 "tags": [
@@ -4128,6 +4155,2090 @@
                         "multipart/form-data": {
                             "schema": {
                                 "$ref": "#/components/schemas/AwsIntegrationScan"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "JWTAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/DiscoveryResult"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/integrations/azure/key_vault/": {
+            "get": {
+                "operationId": "integrations_azure_key_vault_list",
+                "parameters": [
+                    {
+                        "name": "ordering",
+                        "required": false,
+                        "in": "query",
+                        "description": "Which field to use when ordering the results.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "required": false,
+                        "in": "query",
+                        "description": "A page number within the paginated result set.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "page_size",
+                        "required": false,
+                        "in": "query",
+                        "description": "Number of results to return per page.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "tenant_id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "vault_name",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "tags": [
+                    "integrations"
+                ],
+                "security": [
+                    {
+                        "JWTAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PaginatedAzureKeyVaultIntegrationList"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "post": {
+                "operationId": "integrations_azure_key_vault_create",
+                "description": "### Description ###\n\nEstablishes an Azure Key Vault Integration for your CloudTruth organization.\n\n### Pre-Conditions ###\n\n- An OAuth2 request to install the CloudTruth application in your Azure Tenant must acquire your consent.  The resulting JWT access key will contain a `tid` claim that is your Tenant ID.  Use this Tenant ID to set up your integration.\n\n### Post-Conditions ###\n\n- You must then grant the CloudTruth service principal rights to access the key  vault as a Secrets Manager role (read and write access - purge is not required).",
+                "summary": "Establishes an Azure Key Vault Integration.",
+                "tags": [
+                    "integrations"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AzureKeyVaultIntegrationCreate"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AzureKeyVaultIntegrationCreate"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AzureKeyVaultIntegrationCreate"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "JWTAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AzureKeyVaultIntegration"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/integrations/azure/key_vault/{akvintegration_pk}/pulls/": {
+            "get": {
+                "operationId": "integrations_azure_key_vault_pulls_list",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "akvintegration_pk",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "query",
+                        "name": "description__icontains",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "name",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "name__icontains",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "ordering",
+                        "required": false,
+                        "in": "query",
+                        "description": "Which field to use when ordering the results.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "required": false,
+                        "in": "query",
+                        "description": "A page number within the paginated result set.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "page_size",
+                        "required": false,
+                        "in": "query",
+                        "description": "Number of results to return per page.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "tags": [
+                    "integrations"
+                ],
+                "security": [
+                    {
+                        "JWTAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PaginatedAzureKeyVaultPullList"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "post": {
+                "operationId": "integrations_azure_key_vault_pulls_create",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "akvintegration_pk",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "integrations"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AzureKeyVaultPull"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AzureKeyVaultPull"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AzureKeyVaultPull"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "JWTAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AzureKeyVaultPull"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/integrations/azure/key_vault/{akvintegration_pk}/pulls/{akvpull_pk}/tasks/": {
+            "get": {
+                "operationId": "integrations_azure_key_vault_pulls_tasks_list",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "akvintegration_pk",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "path",
+                        "name": "akvpull_pk",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "query",
+                        "name": "modified_at",
+                        "schema": {
+                            "type": "string",
+                            "format": "date-time"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "modified_at__gte",
+                        "schema": {
+                            "type": "string",
+                            "format": "date-time"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "modified_at__lte",
+                        "schema": {
+                            "type": "string",
+                            "format": "date-time"
+                        }
+                    },
+                    {
+                        "name": "ordering",
+                        "required": false,
+                        "in": "query",
+                        "description": "Which field to use when ordering the results.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "required": false,
+                        "in": "query",
+                        "description": "A page number within the paginated result set.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "page_size",
+                        "required": false,
+                        "in": "query",
+                        "description": "Number of results to return per page.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "state",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "failure",
+                                "queued",
+                                "running",
+                                "skipped",
+                                "success"
+                            ]
+                        },
+                        "description": "The current state of this task."
+                    }
+                ],
+                "tags": [
+                    "integrations"
+                ],
+                "security": [
+                    {
+                        "JWTAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PaginatedAzureKeyVaultPullTaskList"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/integrations/azure/key_vault/{akvintegration_pk}/pulls/{akvpull_pk}/tasks/{akvpulltask_pk}/steps/": {
+            "get": {
+                "operationId": "integrations_azure_key_vault_pulls_tasks_steps_list",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "akvintegration_pk",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "path",
+                        "name": "akvpull_pk",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "path",
+                        "name": "akvpulltask_pk",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "query",
+                        "name": "fqn",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "modified_at",
+                        "schema": {
+                            "type": "string",
+                            "format": "date-time"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "modified_at__gte",
+                        "schema": {
+                            "type": "string",
+                            "format": "date-time"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "modified_at__lte",
+                        "schema": {
+                            "type": "string",
+                            "format": "date-time"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "operation",
+                        "schema": {
+                            "type": "string",
+                            "nullable": true,
+                            "enum": [
+                                "create",
+                                "delete",
+                                "read",
+                                "update"
+                            ]
+                        },
+                        "description": "The operation performed, if any.\n\nWhen the operation is an update, there may be additional details in the success_detail field to describe the change.\n\nWhen the project is filled in but the environment and parameterare not, the operation is on the project.  When the environmentis filled in but the project and parameter are not, the operationis on the environment.  When the project and parameter are filledin but the environment is not, the operation is on the parameter.When all three are filled in, the operation is on the value ofthe parameter of the project in the specified environment."
+                    },
+                    {
+                        "name": "ordering",
+                        "required": false,
+                        "in": "query",
+                        "description": "Which field to use when ordering the results.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "required": false,
+                        "in": "query",
+                        "description": "A page number within the paginated result set.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "page_size",
+                        "required": false,
+                        "in": "query",
+                        "description": "Number of results to return per page.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "success",
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "venue_id",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "venue_id__icontains",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "venue_name",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "venue_name__icontains",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "tags": [
+                    "integrations"
+                ],
+                "security": [
+                    {
+                        "JWTAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PaginatedAzureKeyVaultPullTaskStepList"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/integrations/azure/key_vault/{akvintegration_pk}/pulls/{akvpull_pk}/tasks/{akvpulltask_pk}/steps/{id}/": {
+            "get": {
+                "operationId": "integrations_azure_key_vault_pulls_tasks_steps_retrieve",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "akvintegration_pk",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "path",
+                        "name": "akvpull_pk",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "path",
+                        "name": "akvpulltask_pk",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "description": "Unique identifier for a task step."
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "integrations"
+                ],
+                "security": [
+                    {
+                        "JWTAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AzureKeyVaultPullTaskStep"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/integrations/azure/key_vault/{akvintegration_pk}/pulls/{akvpull_pk}/tasks/{id}/": {
+            "get": {
+                "operationId": "integrations_azure_key_vault_pulls_tasks_retrieve",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "akvintegration_pk",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "path",
+                        "name": "akvpull_pk",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "description": "The unique identifier for the task."
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "integrations"
+                ],
+                "security": [
+                    {
+                        "JWTAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AzureKeyVaultPullTask"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/integrations/azure/key_vault/{akvintegration_pk}/pulls/{id}/": {
+            "get": {
+                "operationId": "integrations_azure_key_vault_pulls_retrieve",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "akvintegration_pk",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "description": "Unique identifier for the action."
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "integrations"
+                ],
+                "security": [
+                    {
+                        "JWTAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AzureKeyVaultPull"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "put": {
+                "operationId": "integrations_azure_key_vault_pulls_update",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "akvintegration_pk",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "description": "Unique identifier for the action."
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "integrations"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AzureKeyVaultPull"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AzureKeyVaultPull"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AzureKeyVaultPull"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "JWTAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AzureKeyVaultPull"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "patch": {
+                "operationId": "integrations_azure_key_vault_pulls_partial_update",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "akvintegration_pk",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "description": "Unique identifier for the action."
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "integrations"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedAzureKeyVaultPull"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedAzureKeyVaultPull"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedAzureKeyVaultPull"
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "JWTAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AzureKeyVaultPull"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "delete": {
+                "operationId": "integrations_azure_key_vault_pulls_destroy",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "akvintegration_pk",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "description": "Unique identifier for the action."
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "integrations"
+                ],
+                "security": [
+                    {
+                        "JWTAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "responses": {
+                    "403": {
+                        "description": "Cannot destroy innate mapped pull of a data integration."
+                    }
+                }
+            }
+        },
+        "/api/v1/integrations/azure/key_vault/{akvintegration_pk}/pulls/{id}/sync/": {
+            "post": {
+                "operationId": "integrations_azure_key_vault_pulls_sync_create",
+                "description": "Enqueue a pull synchronization task for mapped external values accessible with this integration.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "akvintegration_pk",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "description": "Unique identifier for the action."
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "integrations"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AzureKeyVaultPullSyncActionRequest"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AzureKeyVaultPullSyncActionRequest"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AzureKeyVaultPullSyncActionRequest"
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "JWTAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": "Synchronization task enqueued."
+                    }
+                }
+            }
+        },
+        "/api/v1/integrations/azure/key_vault/{akvintegration_pk}/pushes/": {
+            "get": {
+                "operationId": "integrations_azure_key_vault_pushes_list",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "akvintegration_pk",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "query",
+                        "name": "description__icontains",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "environment",
+                        "schema": {
+                            "type": "string",
+                            "format": "uri"
+                        },
+                        "description": "Filter results to pushes that operate on a tag in the given environment."
+                    },
+                    {
+                        "in": "query",
+                        "name": "name",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "name__icontains",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "ordering",
+                        "required": false,
+                        "in": "query",
+                        "description": "Which field to use when ordering the results.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "required": false,
+                        "in": "query",
+                        "description": "A page number within the paginated result set.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "page_size",
+                        "required": false,
+                        "in": "query",
+                        "description": "Number of results to return per page.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "project",
+                        "schema": {
+                            "type": "string",
+                            "format": "uri"
+                        },
+                        "description": "Filter results to pushes that operate on the given project."
+                    },
+                    {
+                        "in": "query",
+                        "name": "tag",
+                        "schema": {
+                            "type": "string",
+                            "format": "uri"
+                        },
+                        "description": "Filter results to pushes that operate on the given tag."
+                    }
+                ],
+                "tags": [
+                    "integrations"
+                ],
+                "security": [
+                    {
+                        "JWTAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PaginatedAzureKeyVaultPushList"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "post": {
+                "operationId": "integrations_azure_key_vault_pushes_create",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "akvintegration_pk",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "integrations"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AzureKeyVaultPush"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AzureKeyVaultPush"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AzureKeyVaultPush"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "JWTAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AzureKeyVaultPush"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/integrations/azure/key_vault/{akvintegration_pk}/pushes/{akvpush_pk}/tasks/": {
+            "get": {
+                "operationId": "integrations_azure_key_vault_pushes_tasks_list",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "akvintegration_pk",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "path",
+                        "name": "akvpush_pk",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "query",
+                        "name": "modified_at",
+                        "schema": {
+                            "type": "string",
+                            "format": "date-time"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "modified_at__gte",
+                        "schema": {
+                            "type": "string",
+                            "format": "date-time"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "modified_at__lte",
+                        "schema": {
+                            "type": "string",
+                            "format": "date-time"
+                        }
+                    },
+                    {
+                        "name": "ordering",
+                        "required": false,
+                        "in": "query",
+                        "description": "Which field to use when ordering the results.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "required": false,
+                        "in": "query",
+                        "description": "A page number within the paginated result set.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "page_size",
+                        "required": false,
+                        "in": "query",
+                        "description": "Number of results to return per page.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "state",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "failure",
+                                "queued",
+                                "running",
+                                "skipped",
+                                "success"
+                            ]
+                        },
+                        "description": "The current state of this task."
+                    }
+                ],
+                "tags": [
+                    "integrations"
+                ],
+                "security": [
+                    {
+                        "JWTAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PaginatedAzureKeyVaultPushTaskList"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/integrations/azure/key_vault/{akvintegration_pk}/pushes/{akvpush_pk}/tasks/{akvpushtask_pk}/steps/": {
+            "get": {
+                "operationId": "integrations_azure_key_vault_pushes_tasks_steps_list",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "akvintegration_pk",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "path",
+                        "name": "akvpush_pk",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "path",
+                        "name": "akvpushtask_pk",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "query",
+                        "name": "fqn",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "modified_at",
+                        "schema": {
+                            "type": "string",
+                            "format": "date-time"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "modified_at__gte",
+                        "schema": {
+                            "type": "string",
+                            "format": "date-time"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "modified_at__lte",
+                        "schema": {
+                            "type": "string",
+                            "format": "date-time"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "operation",
+                        "schema": {
+                            "type": "string",
+                            "nullable": true,
+                            "enum": [
+                                "create",
+                                "delete",
+                                "read",
+                                "update"
+                            ]
+                        },
+                        "description": "The operation performed, if any.\n\nWhen the operation is an update, there may be additional details in the success_detail field to describe the change.\n\nWhen the project is filled in but the environment and parameterare not, the operation is on the project.  When the environmentis filled in but the project and parameter are not, the operationis on the environment.  When the project and parameter are filledin but the environment is not, the operation is on the parameter.When all three are filled in, the operation is on the value ofthe parameter of the project in the specified environment."
+                    },
+                    {
+                        "name": "ordering",
+                        "required": false,
+                        "in": "query",
+                        "description": "Which field to use when ordering the results.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "required": false,
+                        "in": "query",
+                        "description": "A page number within the paginated result set.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "page_size",
+                        "required": false,
+                        "in": "query",
+                        "description": "Number of results to return per page.",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "success",
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "venue_id",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "venue_id__icontains",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "venue_name",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "venue_name__icontains",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "tags": [
+                    "integrations"
+                ],
+                "security": [
+                    {
+                        "JWTAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PaginatedAzureKeyVaultPushTaskStepList"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/integrations/azure/key_vault/{akvintegration_pk}/pushes/{akvpush_pk}/tasks/{akvpushtask_pk}/steps/{id}/": {
+            "get": {
+                "operationId": "integrations_azure_key_vault_pushes_tasks_steps_retrieve",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "akvintegration_pk",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "path",
+                        "name": "akvpush_pk",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "path",
+                        "name": "akvpushtask_pk",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "description": "Unique identifier for a task step."
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "integrations"
+                ],
+                "security": [
+                    {
+                        "JWTAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AzureKeyVaultPushTaskStep"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/integrations/azure/key_vault/{akvintegration_pk}/pushes/{akvpush_pk}/tasks/{id}/": {
+            "get": {
+                "operationId": "integrations_azure_key_vault_pushes_tasks_retrieve",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "akvintegration_pk",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "path",
+                        "name": "akvpush_pk",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "description": "The unique identifier for the task."
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "integrations"
+                ],
+                "security": [
+                    {
+                        "JWTAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AzureKeyVaultPushTask"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/api/v1/integrations/azure/key_vault/{akvintegration_pk}/pushes/{id}/": {
+            "get": {
+                "operationId": "integrations_azure_key_vault_pushes_retrieve",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "akvintegration_pk",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "description": "Unique identifier for the action."
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "integrations"
+                ],
+                "security": [
+                    {
+                        "JWTAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AzureKeyVaultPush"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "put": {
+                "operationId": "integrations_azure_key_vault_pushes_update",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "akvintegration_pk",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "description": "Unique identifier for the action."
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "integrations"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AzureKeyVaultPushUpdate"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AzureKeyVaultPushUpdate"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AzureKeyVaultPushUpdate"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "JWTAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AzureKeyVaultPushUpdate"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "patch": {
+                "operationId": "integrations_azure_key_vault_pushes_partial_update",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "akvintegration_pk",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "description": "Unique identifier for the action."
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "integrations"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedAzureKeyVaultPushUpdate"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedAzureKeyVaultPushUpdate"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedAzureKeyVaultPushUpdate"
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "JWTAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AzureKeyVaultPushUpdate"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "delete": {
+                "operationId": "integrations_azure_key_vault_pushes_destroy",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "akvintegration_pk",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "description": "Unique identifier for the action."
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "integrations"
+                ],
+                "security": [
+                    {
+                        "JWTAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No response body"
+                    }
+                }
+            }
+        },
+        "/api/v1/integrations/azure/key_vault/{akvintegration_pk}/pushes/{id}/sync/": {
+            "post": {
+                "operationId": "integrations_azure_key_vault_pushes_sync_create",
+                "description": "Enqueue a push synchronization task.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "akvintegration_pk",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "description": "Unique identifier for the action."
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "integrations"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AzureKeyVaultPush"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AzureKeyVaultPush"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AzureKeyVaultPush"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "JWTAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": "Synchronization task enqueued."
+                    }
+                }
+            }
+        },
+        "/api/v1/integrations/azure/key_vault/{id}/": {
+            "get": {
+                "operationId": "integrations_azure_key_vault_retrieve",
+                "summary": "Get details of an Azure Key Vault Integration.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "description": "The unique identifier for the integration."
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "query",
+                        "name": "refresh_status",
+                        "schema": {
+                            "type": "boolean"
+                        },
+                        "description": "Trigger a refresh of the integration status before returning the details."
+                    }
+                ],
+                "tags": [
+                    "integrations"
+                ],
+                "security": [
+                    {
+                        "JWTAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AzureKeyVaultIntegration"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "put": {
+                "operationId": "integrations_azure_key_vault_update",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "description": "The unique identifier for the integration."
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "integrations"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AzureKeyVaultIntegration"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AzureKeyVaultIntegration"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AzureKeyVaultIntegration"
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "JWTAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AzureKeyVaultIntegration"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "patch": {
+                "operationId": "integrations_azure_key_vault_partial_update",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "description": "The unique identifier for the integration."
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "integrations"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedAzureKeyVaultIntegration"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedAzureKeyVaultIntegration"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PatchedAzureKeyVaultIntegration"
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "JWTAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AzureKeyVaultIntegration"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            },
+            "delete": {
+                "operationId": "integrations_azure_key_vault_destroy",
+                "summary": "Delete an AWS integration.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "description": "The unique identifier for the integration."
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "query",
+                        "name": "in_use",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "fail",
+                                "leave",
+                                "remove"
+                            ]
+                        },
+                        "description": "(Optional) Desired behavior if the integration has in-use values.\n\n- `fail` will return HTTP error 409 if there are any values using the integration.\n- `leave` (default) will leave values in place and future queries may fail; you can control future value query behavior with the `lookup_error` query parameter on those requests.\n- `remove` will remove the all values using the integration when the integration is removed."
+                    }
+                ],
+                "tags": [
+                    "integrations"
+                ],
+                "security": [
+                    {
+                        "JWTAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Integration removed."
+                    },
+                    "409": {
+                        "description": "The integration is used by one (or more) Value(s) and cannot be removed."
+                    }
+                }
+            }
+        },
+        "/api/v1/integrations/azure/key_vault/{id}/scan/": {
+            "post": {
+                "operationId": "integrations_azure_key_vault_scan_create",
+                "description": "Probe a region and service using a pattern matching string that can be used in pull actions.  This allows the pattern match to be checked for correctness and preview what will match during creation of the string.",
+                "summary": "Evaluate a potential pull pattern and understand what it will match.",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "integrations"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AzureKeyVaultIntegrationScan"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AzureKeyVaultIntegrationScan"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AzureKeyVaultIntegrationScan"
                             }
                         }
                     },
@@ -6708,7 +8819,7 @@
                         "schema": {
                             "type": "string"
                         },
-                        "description": "Name or id (uuid) of the environment to get parameter values for. Cannot be used with `values`."
+                        "description": "Name or id (uuid) of the environment(s) to get parameter values for. Cannot be used with `values`."
                     },
                     {
                         "in": "query",
@@ -6732,6 +8843,15 @@
                         "description": "Multiple values may be separated by commas.",
                         "explode": false,
                         "style": "form"
+                    },
+                    {
+                        "in": "query",
+                        "name": "immediate_parameters",
+                        "schema": {
+                            "type": "boolean",
+                            "default": false
+                        },
+                        "description": "If true, filter by current project parameters only. Otherwise, include both of the inherited and current project parameters."
                     },
                     {
                         "in": "query",
@@ -6893,7 +9013,7 @@
                             "type": "boolean",
                             "default": false
                         },
-                        "description": "Wrap secrets."
+                        "description": "Wrap secrets. For more information on secret wrapping, see the documentation."
                     }
                 ],
                 "tags": [
@@ -7514,14 +9634,6 @@
                     },
                     {
                         "in": "query",
-                        "name": "environment",
-                        "schema": {
-                            "type": "string"
-                        },
-                        "description": "Name or id of the environment to limit the result to. If this is not specified then the result will contain a value for any environment in which it is set. You cannot use this option to retrieve the _effective_ value of a parameter in an environment for which is is not explicitly set. To see _effective_ values use the Parameters API (see the `values` field)."
-                    },
-                    {
-                        "in": "query",
                         "name": "evaluate",
                         "schema": {
                             "type": "boolean",
@@ -8117,7 +10229,7 @@
                         "schema": {
                             "type": "string"
                         },
-                        "description": "Name or id (uuid) of the environment to get parameter values for. Cannot be used with `values`."
+                        "description": "Name or id (uuid) of the environment(s) to get parameter values for. Cannot be used with `values`."
                     },
                     {
                         "in": "query",
@@ -8137,6 +10249,15 @@
                             "description": "A unique identifier for the parameter."
                         },
                         "required": true
+                    },
+                    {
+                        "in": "query",
+                        "name": "immediate_parameters",
+                        "schema": {
+                            "type": "boolean",
+                            "default": false
+                        },
+                        "description": "If true, filter by current project parameters only. Otherwise, include both of the inherited and current project parameters."
                     },
                     {
                         "in": "query",
@@ -8180,7 +10301,7 @@
                             "type": "boolean",
                             "default": false
                         },
-                        "description": "Wrap secrets."
+                        "description": "Wrap secrets. For more information on secret wrapping, see the documentation."
                     }
                 ],
                 "tags": [
@@ -8497,7 +10618,7 @@
                         "schema": {
                             "type": "string"
                         },
-                        "description": "Name or id (uuid) of the environment to get parameter values for. Cannot be used with `values`."
+                        "description": "Name or id (uuid) of the environment(s) to get parameter values for. Cannot be used with `values`."
                     },
                     {
                         "in": "query",
@@ -8507,6 +10628,15 @@
                             "default": true
                         },
                         "description": "If `true`, runs template evaluation on this parameter's values.  If `false`, returns the value's template.\nHas no effect on values that are not interpolated."
+                    },
+                    {
+                        "in": "query",
+                        "name": "immediate_parameters",
+                        "schema": {
+                            "type": "boolean",
+                            "default": false
+                        },
+                        "description": "If true, filter by current project parameters only. Otherwise, include both of the inherited and current project parameters."
                     },
                     {
                         "in": "query",
@@ -8652,7 +10782,7 @@
                             "type": "boolean",
                             "default": false
                         },
-                        "description": "Wrap secrets."
+                        "description": "Wrap secrets. For more information on secret wrapping, see the documentation."
                     }
                 ],
                 "tags": [
@@ -11432,6 +13562,10 @@
                         "type": "boolean",
                         "description": "Include secrets in the values being pushed.  This setting requires the destination to support secrets, otherwise the push will fail."
                     },
+                    "include_templates": {
+                        "type": "boolean",
+                        "description": "Include templates in the values being pushed."
+                    },
                     "dry_run": {
                         "type": "boolean",
                         "description": "When set to dry-run mode an action will report the changes that it would have made in task steps, however those changes are not actually performed."
@@ -11763,6 +13897,10 @@
                     "include_secrets": {
                         "type": "boolean",
                         "description": "Include secrets in the values being pushed.  This setting requires the destination to support secrets, otherwise the push will fail."
+                    },
+                    "include_templates": {
+                        "type": "boolean",
+                        "description": "Include templates in the values being pushed."
                     }
                 },
                 "required": [
@@ -11807,6 +13945,831 @@
                     "ssm"
                 ],
                 "type": "string"
+            },
+            "AzureKeyVaultIntegration": {
+                "type": "object",
+                "properties": {
+                    "url": {
+                        "type": "string",
+                        "format": "uri",
+                        "readOnly": true
+                    },
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "readOnly": true,
+                        "description": "The unique identifier for the integration."
+                    },
+                    "name": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "description": {
+                        "type": "string",
+                        "description": "An optional description for the integration."
+                    },
+                    "status": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/StatusEnum"
+                            }
+                        ],
+                        "readOnly": true,
+                        "description": "The status of the integration connection with the third-party provider as of the `status_last_checked_at` field.  The status is updated automatically by the server when the integration is modified."
+                    },
+                    "status_detail": {
+                        "type": "string",
+                        "readOnly": true,
+                        "description": "If an error occurs, more details will be available in this field."
+                    },
+                    "status_last_checked_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true,
+                        "description": "The last time the status was evaluated."
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    },
+                    "modified_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    },
+                    "fqn": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "type": {
+                        "type": "string",
+                        "readOnly": true,
+                        "description": "The type of integration."
+                    },
+                    "writable": {
+                        "type": "boolean",
+                        "description": "Allow actions to write to the integration."
+                    },
+                    "vault_name": {
+                        "type": "string",
+                        "readOnly": true,
+                        "description": "The Azure Key Vault name."
+                    },
+                    "tenant_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "readOnly": true,
+                        "description": "The Azure Tenant ID."
+                    }
+                },
+                "required": [
+                    "created_at",
+                    "fqn",
+                    "id",
+                    "modified_at",
+                    "name",
+                    "status",
+                    "status_detail",
+                    "status_last_checked_at",
+                    "tenant_id",
+                    "type",
+                    "url",
+                    "vault_name"
+                ]
+            },
+            "AzureKeyVaultIntegrationCreate": {
+                "type": "object",
+                "properties": {
+                    "description": {
+                        "type": "string",
+                        "description": "An optional description for the integration."
+                    },
+                    "writable": {
+                        "type": "boolean",
+                        "description": "Allow actions to write to the integration."
+                    },
+                    "vault_name": {
+                        "type": "string",
+                        "description": "The Azure Key Vault name.",
+                        "maxLength": 24
+                    },
+                    "tenant_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "The Azure Tenant ID."
+                    }
+                },
+                "required": [
+                    "tenant_id",
+                    "vault_name"
+                ]
+            },
+            "AzureKeyVaultIntegrationScan": {
+                "type": "object",
+                "properties": {
+                    "resource": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "Defines a pattern matching string that contains either mustache or regular expression syntax (with named capture groups) that locate the environment, project, and parameter name of the content you are looking for.\n\nIf you are using mustache pattern matching, use:\n\n  - ``{{ environment }}`` to identify the environment name\n  - ``{{ parameter }}`` to identify the parameter name\n  - ``{{ project }}`` to identify the project name\n\nIf you are using a regular expression, use Python syntax with named capture groups that locate the `environment`, `project`, and `parameter`.",
+                        "maxLength": 1024
+                    }
+                },
+                "required": [
+                    "resource"
+                ]
+            },
+            "AzureKeyVaultPull": {
+                "type": "object",
+                "description": "Pull actions can be configured to get configuration and secrets from\nintegrations on demand.",
+                "properties": {
+                    "url": {
+                        "type": "string",
+                        "format": "uri",
+                        "readOnly": true
+                    },
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "readOnly": true,
+                        "description": "Unique identifier for the action."
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "The action name.",
+                        "maxLength": 256
+                    },
+                    "description": {
+                        "type": "string",
+                        "description": "The optional description for the action."
+                    },
+                    "latest_task": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/AzureKeyVaultPullTask"
+                            }
+                        ],
+                        "readOnly": true,
+                        "nullable": true,
+                        "description": "The most recent task run for this action."
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    },
+                    "modified_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    },
+                    "create_environments": {
+                        "type": "boolean",
+                        "description": "Allow the pull to create environments.  Any automatically created environments will be children of the `default` environment.  If an environment needs to be created but the action does not allow it, a task step will be added with a null operation, and success_detail will indicate the action did not allow it."
+                    },
+                    "create_projects": {
+                        "type": "boolean",
+                        "description": "Allow the pull to create projects.  If a project needs to be created but the action does not allow it, a task step will be added with a null operation, and success_detail will indicate the action did not allow it."
+                    },
+                    "dry_run": {
+                        "type": "boolean",
+                        "description": "When set to dry-run mode an action will report the changes that it would have made in task steps, however those changes are not actually performed."
+                    },
+                    "mapped_values": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Value"
+                        },
+                        "readOnly": true,
+                        "description": "Values being managed by a mapped pull."
+                    },
+                    "mode": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/ModeEnum"
+                            }
+                        ],
+                        "readOnly": true,
+                        "description": "The pull mode used.\n\nA pattern pull uses a pattern-matching resource string with mustache-style markers to identify the project, parameter, and environment names, or with a Python regular expression that uses named capture groups that define the same three concepts.\n\nA mapped pull uses a specific resource and JMESpath expression to deliver a value to a specific project, parameter, and environment.  This leverages external value linkages made in the value editor, and there is one mapped pull per integration provided by the system so that you can trigger external value pull synchronizations."
+                    },
+                    "resource": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "Defines a pattern matching string that contains either mustache or regular expression syntax (with named capture groups) that locate the environment, project, and parameter name of the content you are looking for.\n\nIf you are using mustache pattern matching, use:\n\n  - ``{{ environment }}`` to identify the environment name\n  - ``{{ parameter }}`` to identify the parameter name\n  - ``{{ project }}`` to identify the project name\n\nIf you are using a regular expression, use Python syntax with named capture groups that locate the `environment`, `project`, and `parameter`.",
+                        "maxLength": 1024
+                    }
+                },
+                "required": [
+                    "created_at",
+                    "id",
+                    "latest_task",
+                    "mapped_values",
+                    "mode",
+                    "modified_at",
+                    "name",
+                    "resource",
+                    "url"
+                ]
+            },
+            "AzureKeyVaultPullSyncActionRequest": {
+                "type": "object",
+                "properties": {
+                    "dry_run": {
+                        "type": "boolean",
+                        "writeOnly": true,
+                        "description": "Allows you to set the dry_run flag on the pull action before triggering a sync."
+                    }
+                }
+            },
+            "AzureKeyVaultPullTask": {
+                "type": "object",
+                "description": "Pull task for an Azure Key Vault integration.",
+                "properties": {
+                    "url": {
+                        "type": "string",
+                        "format": "uri",
+                        "readOnly": true
+                    },
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "readOnly": true,
+                        "description": "The unique identifier for the task."
+                    },
+                    "reason": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "The reason why this task was triggered.",
+                        "maxLength": 256
+                    },
+                    "dry_run": {
+                        "type": "boolean",
+                        "description": "Indicates task steps were only simulated, not actually performed."
+                    },
+                    "state": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/StateEnum"
+                            }
+                        ],
+                        "description": "The current state of this task."
+                    },
+                    "error_code": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "If an error occurs early during processing, before attempting to process values, this code may be helpful in determining the problem.",
+                        "maxLength": 256
+                    },
+                    "error_detail": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "If an error occurs early during processing, before attempting to process values, this detail may be helpful in determining the problem."
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    },
+                    "modified_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    }
+                },
+                "required": [
+                    "created_at",
+                    "id",
+                    "modified_at",
+                    "url"
+                ]
+            },
+            "AzureKeyVaultPullTaskStep": {
+                "type": "object",
+                "description": "Pull task step for an Azure Key Vault integration.",
+                "properties": {
+                    "url": {
+                        "type": "string",
+                        "format": "uri",
+                        "readOnly": true
+                    },
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "readOnly": true,
+                        "description": "Unique identifier for a task step."
+                    },
+                    "operation": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/OperationEnum"
+                            }
+                        ],
+                        "nullable": true,
+                        "description": "The operation performed, if any.\n\nWhen the operation is an update, there may be additional details in the success_detail field to describe the change.\n\nWhen the project is filled in but the environment and parameterare not, the operation is on the project.  When the environmentis filled in but the project and parameter are not, the operationis on the environment.  When the project and parameter are filledin but the environment is not, the operation is on the parameter.When all three are filled in, the operation is on the value ofthe parameter of the project in the specified environment."
+                    },
+                    "success": {
+                        "type": "boolean",
+                        "description": "Indicates if the operation was successful."
+                    },
+                    "success_detail": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "Additional details about the successful operation, if any."
+                    },
+                    "fqn": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "The fully-qualified name (FQN) this of the value that was changed.",
+                        "maxLength": 1024
+                    },
+                    "environment": {
+                        "type": "string",
+                        "format": "uri",
+                        "readOnly": true,
+                        "nullable": true,
+                        "description": "The environment affected by this step."
+                    },
+                    "environment_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "nullable": true,
+                        "description": "The environment id involved in the operation."
+                    },
+                    "environment_name": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "The environment name involved in the operation.",
+                        "maxLength": 256
+                    },
+                    "project": {
+                        "type": "string",
+                        "format": "uri",
+                        "readOnly": true,
+                        "nullable": true,
+                        "description": "The project affected by this step."
+                    },
+                    "project_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "nullable": true,
+                        "description": "The project id involved in the operation."
+                    },
+                    "project_name": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "The project name involved in the operation.",
+                        "maxLength": 256
+                    },
+                    "parameter": {
+                        "type": "string",
+                        "format": "uri",
+                        "readOnly": true,
+                        "nullable": true,
+                        "description": "The parameter affected by this step."
+                    },
+                    "parameter_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "nullable": true,
+                        "description": "The parameter id involved in the operation."
+                    },
+                    "parameter_name": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "The parameter name involved in the operation.",
+                        "maxLength": 256
+                    },
+                    "venue_id": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "The integration-native id for the resource.",
+                        "maxLength": 2048
+                    },
+                    "venue_name": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "The name of the item or resource as known by the integration.",
+                        "maxLength": 1024
+                    },
+                    "summary": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "The summary of this step (what it was trying to do)."
+                    },
+                    "error_code": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "An error code, if not successful.",
+                        "maxLength": 256
+                    },
+                    "error_detail": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "Details on the error that occurred during processing."
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    },
+                    "modified_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    }
+                },
+                "required": [
+                    "created_at",
+                    "environment",
+                    "id",
+                    "modified_at",
+                    "parameter",
+                    "project",
+                    "success",
+                    "url"
+                ]
+            },
+            "AzureKeyVaultPush": {
+                "type": "object",
+                "description": "Push actions can be configured to send configuration and secrets to\nintegrations when tags are updated.",
+                "properties": {
+                    "url": {
+                        "type": "string",
+                        "format": "uri",
+                        "readOnly": true
+                    },
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "readOnly": true,
+                        "description": "Unique identifier for the action."
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "The action name.",
+                        "maxLength": 256
+                    },
+                    "description": {
+                        "type": "string",
+                        "description": "The optional description for the action."
+                    },
+                    "latest_task": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/AzureKeyVaultPushTask"
+                            }
+                        ],
+                        "readOnly": true,
+                        "nullable": true,
+                        "description": "The most recent task run for this action."
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    },
+                    "modified_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    },
+                    "coerce_parameters": {
+                        "type": "boolean",
+                        "description": "This setting allows parameters (non-secrets) to be pushed to a destination that only supports storing secrets.  This may increase your overall cost from the cloud provider as some cloud providers charge a premium for secrets-only storage."
+                    },
+                    "include_parameters": {
+                        "type": "boolean",
+                        "description": "Include parameters (non-secrets) in the values being pushed.  This setting requires the destination to support parameters or for the `coerce_parameters` flag to be enabled, otherwise the push will fail."
+                    },
+                    "include_secrets": {
+                        "type": "boolean",
+                        "description": "Include secrets in the values being pushed.  This setting requires the destination to support secrets, otherwise the push will fail."
+                    },
+                    "include_templates": {
+                        "type": "boolean",
+                        "description": "Include templates in the values being pushed."
+                    },
+                    "dry_run": {
+                        "type": "boolean",
+                        "description": "When set to dry-run mode an action will report the changes that it would have made in task steps, however those changes are not actually performed."
+                    },
+                    "force": {
+                        "type": "boolean",
+                        "description": "Normally, push will check to see if it originated the values in the destination before making changes to them.  Forcing a push disables the ownership check."
+                    },
+                    "local": {
+                        "type": "boolean",
+                        "description": "Normally, push will process all parameters including those that flow in from project dependencies.  Declaring a push as `local` will cause it to only process the parameters defined in the selected projects."
+                    },
+                    "projects": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "format": "uri"
+                        },
+                        "description": "Projects that are included in the push."
+                    },
+                    "tags": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "format": "uri"
+                        },
+                        "description": "Tags are used to select parameters by environment from the projects included in the push.  You cannot have two tags from the same environment in the same push."
+                    },
+                    "resource": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "Defines a path through the integration to the location where values will be pushed.\n\nThe following mustache-style substitutions can be used in the string:\n\n  - ``{{ environment }}`` to insert the environment name\n  - ``{{ parameter }}`` to insert the parameter name\n  - ``{{ project }}`` to insert the project name\n  - ``{{ push }}`` to insert the push name\n  - ``{{ tag }}`` to insert the tag name\n\nWe recommend that you use project, environment, and parameter at a minimum to disambiguate your pushed resource identifiers.\n\nIf you include multiple projects in the push, the `project` substitution is required.  If you include multiple tags from different environments in the push, the `environment` substitution is required.  If you include multiple tags from the same environment in the push, the `tag` substitution is required.  In all cases, the `parameter` substitution is always required.",
+                        "maxLength": 1024
+                    }
+                },
+                "required": [
+                    "created_at",
+                    "id",
+                    "latest_task",
+                    "modified_at",
+                    "name",
+                    "projects",
+                    "resource",
+                    "tags",
+                    "url"
+                ]
+            },
+            "AzureKeyVaultPushTask": {
+                "type": "object",
+                "description": "Push task for an Azure Key Vault integration.",
+                "properties": {
+                    "url": {
+                        "type": "string",
+                        "format": "uri",
+                        "readOnly": true
+                    },
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "readOnly": true,
+                        "description": "The unique identifier for the task."
+                    },
+                    "reason": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "The reason why this task was triggered.",
+                        "maxLength": 256
+                    },
+                    "dry_run": {
+                        "type": "boolean",
+                        "description": "Indicates task steps were only simulated, not actually performed."
+                    },
+                    "state": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/StateEnum"
+                            }
+                        ],
+                        "description": "The current state of this task."
+                    },
+                    "error_code": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "If an error occurs early during processing, before attempting to process values, this code may be helpful in determining the problem.",
+                        "maxLength": 256
+                    },
+                    "error_detail": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "If an error occurs early during processing, before attempting to process values, this detail may be helpful in determining the problem."
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    },
+                    "modified_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    }
+                },
+                "required": [
+                    "created_at",
+                    "id",
+                    "modified_at",
+                    "url"
+                ]
+            },
+            "AzureKeyVaultPushTaskStep": {
+                "type": "object",
+                "description": "Push task step for an Azure Key Vault integration.",
+                "properties": {
+                    "url": {
+                        "type": "string",
+                        "format": "uri",
+                        "readOnly": true
+                    },
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "readOnly": true,
+                        "description": "Unique identifier for a task step."
+                    },
+                    "operation": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/OperationEnum"
+                            }
+                        ],
+                        "nullable": true,
+                        "description": "The operation performed, if any.\n\nWhen the operation is an update, there may be additional details in the success_detail field to describe the change.\n\nWhen the project is filled in but the environment and parameterare not, the operation is on the project.  When the environmentis filled in but the project and parameter are not, the operationis on the environment.  When the project and parameter are filledin but the environment is not, the operation is on the parameter.When all three are filled in, the operation is on the value ofthe parameter of the project in the specified environment."
+                    },
+                    "success": {
+                        "type": "boolean",
+                        "description": "Indicates if the operation was successful."
+                    },
+                    "success_detail": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "Additional details about the successful operation, if any."
+                    },
+                    "fqn": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "The fully-qualified name (FQN) this of the value that was changed.",
+                        "maxLength": 1024
+                    },
+                    "environment": {
+                        "type": "string",
+                        "format": "uri",
+                        "readOnly": true,
+                        "nullable": true,
+                        "description": "The environment affected by this step."
+                    },
+                    "environment_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "nullable": true,
+                        "description": "The environment id involved in the operation."
+                    },
+                    "environment_name": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "The environment name involved in the operation.",
+                        "maxLength": 256
+                    },
+                    "project": {
+                        "type": "string",
+                        "format": "uri",
+                        "readOnly": true,
+                        "nullable": true,
+                        "description": "The project affected by this step."
+                    },
+                    "project_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "nullable": true,
+                        "description": "The project id involved in the operation."
+                    },
+                    "project_name": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "The project name involved in the operation.",
+                        "maxLength": 256
+                    },
+                    "parameter": {
+                        "type": "string",
+                        "format": "uri",
+                        "readOnly": true,
+                        "nullable": true,
+                        "description": "The parameter affected by this step."
+                    },
+                    "parameter_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "nullable": true,
+                        "description": "The parameter id involved in the operation."
+                    },
+                    "parameter_name": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "The parameter name involved in the operation.",
+                        "maxLength": 256
+                    },
+                    "venue_id": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "The integration-native id for the resource.",
+                        "maxLength": 2048
+                    },
+                    "venue_name": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "The name of the item or resource as known by the integration.",
+                        "maxLength": 1024
+                    },
+                    "summary": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "The summary of this step (what it was trying to do)."
+                    },
+                    "error_code": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "An error code, if not successful.",
+                        "maxLength": 256
+                    },
+                    "error_detail": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "Details on the error that occurred during processing."
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    },
+                    "modified_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    }
+                },
+                "required": [
+                    "created_at",
+                    "environment",
+                    "id",
+                    "modified_at",
+                    "parameter",
+                    "project",
+                    "success",
+                    "url"
+                ]
+            },
+            "AzureKeyVaultPushUpdate": {
+                "type": "object",
+                "description": "Update a push.",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "The action name.",
+                        "maxLength": 256
+                    },
+                    "description": {
+                        "type": "string",
+                        "description": "The optional description for the action."
+                    },
+                    "projects": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "format": "uri"
+                        },
+                        "description": "Projects that are included in the push."
+                    },
+                    "tags": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "format": "uri"
+                        },
+                        "description": "Tags are used to select parameters by environment from the projects included in the push.  You cannot have two tags from the same environment in the same push."
+                    },
+                    "resource": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "Defines a path through the integration to the location where values will be pushed.\n\nThe following mustache-style substitutions can be used in the string:\n\n  - ``{{ environment }}`` to insert the environment name\n  - ``{{ parameter }}`` to insert the parameter name\n  - ``{{ project }}`` to insert the project name\n  - ``{{ push }}`` to insert the push name\n  - ``{{ tag }}`` to insert the tag name\n\nWe recommend that you use project, environment, and parameter at a minimum to disambiguate your pushed resource identifiers.\n\nIf you include multiple projects in the push, the `project` substitution is required.  If you include multiple tags from different environments in the push, the `environment` substitution is required.  If you include multiple tags from the same environment in the push, the `tag` substitution is required.  In all cases, the `parameter` substitution is always required.",
+                        "maxLength": 1024
+                    },
+                    "dry_run": {
+                        "type": "boolean",
+                        "description": "When set to dry-run mode an action will report the changes that it would have made in task steps, however those changes are not actually performed."
+                    },
+                    "force": {
+                        "type": "boolean",
+                        "description": "Normally, push will check to see if it originated the values in the destination before making changes to them.  Forcing a push disables the ownership check."
+                    },
+                    "local": {
+                        "type": "boolean",
+                        "description": "Normally, push will process all parameters including those that flow in from project dependencies.  Declaring a push as `local` will cause it to only process the parameters defined in the selected projects."
+                    },
+                    "coerce_parameters": {
+                        "type": "boolean",
+                        "description": "This setting allows parameters (non-secrets) to be pushed to a destination that only supports storing secrets.  This may increase your overall cost from the cloud provider as some cloud providers charge a premium for secrets-only storage."
+                    },
+                    "include_parameters": {
+                        "type": "boolean",
+                        "description": "Include parameters (non-secrets) in the values being pushed.  This setting requires the destination to support parameters or for the `coerce_parameters` flag to be enabled, otherwise the push will fail."
+                    },
+                    "include_secrets": {
+                        "type": "boolean",
+                        "description": "Include secrets in the values being pushed.  This setting requires the destination to support secrets, otherwise the push will fail."
+                    }
+                },
+                "required": [
+                    "name",
+                    "projects",
+                    "resource",
+                    "tags"
+                ]
             },
             "BackupDataSnapshot": {
                 "type": "object",
@@ -13480,6 +16443,195 @@
                     }
                 }
             },
+            "PaginatedAzureKeyVaultIntegrationList": {
+                "type": "object",
+                "properties": {
+                    "count": {
+                        "type": "integer",
+                        "example": 123
+                    },
+                    "next": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?page=4"
+                    },
+                    "previous": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?page=2"
+                    },
+                    "results": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/AzureKeyVaultIntegration"
+                        }
+                    }
+                }
+            },
+            "PaginatedAzureKeyVaultPullList": {
+                "type": "object",
+                "properties": {
+                    "count": {
+                        "type": "integer",
+                        "example": 123
+                    },
+                    "next": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?page=4"
+                    },
+                    "previous": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?page=2"
+                    },
+                    "results": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/AzureKeyVaultPull"
+                        }
+                    }
+                }
+            },
+            "PaginatedAzureKeyVaultPullTaskList": {
+                "type": "object",
+                "properties": {
+                    "count": {
+                        "type": "integer",
+                        "example": 123
+                    },
+                    "next": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?page=4"
+                    },
+                    "previous": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?page=2"
+                    },
+                    "results": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/AzureKeyVaultPullTask"
+                        }
+                    }
+                }
+            },
+            "PaginatedAzureKeyVaultPullTaskStepList": {
+                "type": "object",
+                "properties": {
+                    "count": {
+                        "type": "integer",
+                        "example": 123
+                    },
+                    "next": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?page=4"
+                    },
+                    "previous": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?page=2"
+                    },
+                    "results": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/AzureKeyVaultPullTaskStep"
+                        }
+                    }
+                }
+            },
+            "PaginatedAzureKeyVaultPushList": {
+                "type": "object",
+                "properties": {
+                    "count": {
+                        "type": "integer",
+                        "example": 123
+                    },
+                    "next": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?page=4"
+                    },
+                    "previous": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?page=2"
+                    },
+                    "results": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/AzureKeyVaultPush"
+                        }
+                    }
+                }
+            },
+            "PaginatedAzureKeyVaultPushTaskList": {
+                "type": "object",
+                "properties": {
+                    "count": {
+                        "type": "integer",
+                        "example": 123
+                    },
+                    "next": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?page=4"
+                    },
+                    "previous": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?page=2"
+                    },
+                    "results": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/AzureKeyVaultPushTask"
+                        }
+                    }
+                }
+            },
+            "PaginatedAzureKeyVaultPushTaskStepList": {
+                "type": "object",
+                "properties": {
+                    "count": {
+                        "type": "integer",
+                        "example": 123
+                    },
+                    "next": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?page=4"
+                    },
+                    "previous": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri",
+                        "example": "http://api.example.org/accounts/?page=2"
+                    },
+                    "results": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/AzureKeyVaultPushTaskStep"
+                        }
+                    }
+                }
+            },
             "PaginatedEnvironmentList": {
                 "type": "object",
                 "properties": {
@@ -14127,7 +17279,7 @@
                     },
                     "secret": {
                         "type": "boolean",
-                        "description": "Indicates if this content is secret or not.  When a parameter is considered to be a secret, any internal values are stored in a dedicated vault for your organization for maximum security.  External values are inspected on-demand to ensure they align with the parameter's secret setting and if they do not, those external values are not allowed to be used."
+                        "description": "Indicates if this content is secret or not.  External values are inspected on-demand to ensure they align with the parameter's secret setting and if they do not, those external values are not allowed to be used."
                     },
                     "type": {
                         "type": "string",
@@ -14230,7 +17382,7 @@
                     },
                     "secret": {
                         "type": "boolean",
-                        "description": "Indicates if this content is secret or not.  When a parameter is considered to be a secret, any internal values are stored in a dedicated vault for your organization for maximum security.  External values are inspected on-demand to ensure they align with the parameter's secret setting and if they do not, those external values are not allowed to be used."
+                        "description": "Indicates if this content is secret or not.  External values are inspected on-demand to ensure they align with the parameter's secret setting and if they do not, those external values are not allowed to be used."
                     },
                     "type": {
                         "type": "string",
@@ -14902,6 +18054,230 @@
                     "include_secrets": {
                         "type": "boolean",
                         "description": "Include secrets in the values being pushed.  This setting requires the destination to support secrets, otherwise the push will fail."
+                    },
+                    "include_templates": {
+                        "type": "boolean",
+                        "description": "Include templates in the values being pushed."
+                    }
+                }
+            },
+            "PatchedAzureKeyVaultIntegration": {
+                "type": "object",
+                "properties": {
+                    "url": {
+                        "type": "string",
+                        "format": "uri",
+                        "readOnly": true
+                    },
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "readOnly": true,
+                        "description": "The unique identifier for the integration."
+                    },
+                    "name": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "description": {
+                        "type": "string",
+                        "description": "An optional description for the integration."
+                    },
+                    "status": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/StatusEnum"
+                            }
+                        ],
+                        "readOnly": true,
+                        "description": "The status of the integration connection with the third-party provider as of the `status_last_checked_at` field.  The status is updated automatically by the server when the integration is modified."
+                    },
+                    "status_detail": {
+                        "type": "string",
+                        "readOnly": true,
+                        "description": "If an error occurs, more details will be available in this field."
+                    },
+                    "status_last_checked_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true,
+                        "description": "The last time the status was evaluated."
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    },
+                    "modified_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    },
+                    "fqn": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "type": {
+                        "type": "string",
+                        "readOnly": true,
+                        "description": "The type of integration."
+                    },
+                    "writable": {
+                        "type": "boolean",
+                        "description": "Allow actions to write to the integration."
+                    },
+                    "vault_name": {
+                        "type": "string",
+                        "readOnly": true,
+                        "description": "The Azure Key Vault name."
+                    },
+                    "tenant_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "readOnly": true,
+                        "description": "The Azure Tenant ID."
+                    }
+                }
+            },
+            "PatchedAzureKeyVaultPull": {
+                "type": "object",
+                "description": "Pull actions can be configured to get configuration and secrets from\nintegrations on demand.",
+                "properties": {
+                    "url": {
+                        "type": "string",
+                        "format": "uri",
+                        "readOnly": true
+                    },
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "readOnly": true,
+                        "description": "Unique identifier for the action."
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "The action name.",
+                        "maxLength": 256
+                    },
+                    "description": {
+                        "type": "string",
+                        "description": "The optional description for the action."
+                    },
+                    "latest_task": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/AzureKeyVaultPullTask"
+                            }
+                        ],
+                        "readOnly": true,
+                        "nullable": true,
+                        "description": "The most recent task run for this action."
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    },
+                    "modified_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    },
+                    "create_environments": {
+                        "type": "boolean",
+                        "description": "Allow the pull to create environments.  Any automatically created environments will be children of the `default` environment.  If an environment needs to be created but the action does not allow it, a task step will be added with a null operation, and success_detail will indicate the action did not allow it."
+                    },
+                    "create_projects": {
+                        "type": "boolean",
+                        "description": "Allow the pull to create projects.  If a project needs to be created but the action does not allow it, a task step will be added with a null operation, and success_detail will indicate the action did not allow it."
+                    },
+                    "dry_run": {
+                        "type": "boolean",
+                        "description": "When set to dry-run mode an action will report the changes that it would have made in task steps, however those changes are not actually performed."
+                    },
+                    "mapped_values": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Value"
+                        },
+                        "readOnly": true,
+                        "description": "Values being managed by a mapped pull."
+                    },
+                    "mode": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/ModeEnum"
+                            }
+                        ],
+                        "readOnly": true,
+                        "description": "The pull mode used.\n\nA pattern pull uses a pattern-matching resource string with mustache-style markers to identify the project, parameter, and environment names, or with a Python regular expression that uses named capture groups that define the same three concepts.\n\nA mapped pull uses a specific resource and JMESpath expression to deliver a value to a specific project, parameter, and environment.  This leverages external value linkages made in the value editor, and there is one mapped pull per integration provided by the system so that you can trigger external value pull synchronizations."
+                    },
+                    "resource": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "Defines a pattern matching string that contains either mustache or regular expression syntax (with named capture groups) that locate the environment, project, and parameter name of the content you are looking for.\n\nIf you are using mustache pattern matching, use:\n\n  - ``{{ environment }}`` to identify the environment name\n  - ``{{ parameter }}`` to identify the parameter name\n  - ``{{ project }}`` to identify the project name\n\nIf you are using a regular expression, use Python syntax with named capture groups that locate the `environment`, `project`, and `parameter`.",
+                        "maxLength": 1024
+                    }
+                }
+            },
+            "PatchedAzureKeyVaultPushUpdate": {
+                "type": "object",
+                "description": "Update a push.",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "The action name.",
+                        "maxLength": 256
+                    },
+                    "description": {
+                        "type": "string",
+                        "description": "The optional description for the action."
+                    },
+                    "projects": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "format": "uri"
+                        },
+                        "description": "Projects that are included in the push."
+                    },
+                    "tags": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "format": "uri"
+                        },
+                        "description": "Tags are used to select parameters by environment from the projects included in the push.  You cannot have two tags from the same environment in the same push."
+                    },
+                    "resource": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "Defines a path through the integration to the location where values will be pushed.\n\nThe following mustache-style substitutions can be used in the string:\n\n  - ``{{ environment }}`` to insert the environment name\n  - ``{{ parameter }}`` to insert the parameter name\n  - ``{{ project }}`` to insert the project name\n  - ``{{ push }}`` to insert the push name\n  - ``{{ tag }}`` to insert the tag name\n\nWe recommend that you use project, environment, and parameter at a minimum to disambiguate your pushed resource identifiers.\n\nIf you include multiple projects in the push, the `project` substitution is required.  If you include multiple tags from different environments in the push, the `environment` substitution is required.  If you include multiple tags from the same environment in the push, the `tag` substitution is required.  In all cases, the `parameter` substitution is always required.",
+                        "maxLength": 1024
+                    },
+                    "dry_run": {
+                        "type": "boolean",
+                        "description": "When set to dry-run mode an action will report the changes that it would have made in task steps, however those changes are not actually performed."
+                    },
+                    "force": {
+                        "type": "boolean",
+                        "description": "Normally, push will check to see if it originated the values in the destination before making changes to them.  Forcing a push disables the ownership check."
+                    },
+                    "local": {
+                        "type": "boolean",
+                        "description": "Normally, push will process all parameters including those that flow in from project dependencies.  Declaring a push as `local` will cause it to only process the parameters defined in the selected projects."
+                    },
+                    "coerce_parameters": {
+                        "type": "boolean",
+                        "description": "This setting allows parameters (non-secrets) to be pushed to a destination that only supports storing secrets.  This may increase your overall cost from the cloud provider as some cloud providers charge a premium for secrets-only storage."
+                    },
+                    "include_parameters": {
+                        "type": "boolean",
+                        "description": "Include parameters (non-secrets) in the values being pushed.  This setting requires the destination to support parameters or for the `coerce_parameters` flag to be enabled, otherwise the push will fail."
+                    },
+                    "include_secrets": {
+                        "type": "boolean",
+                        "description": "Include secrets in the values being pushed.  This setting requires the destination to support secrets, otherwise the push will fail."
                     }
                 }
             },
@@ -15336,7 +18712,7 @@
                     },
                     "secret": {
                         "type": "boolean",
-                        "description": "Indicates if this content is secret or not.  When a parameter is considered to be a secret, any internal values are stored in a dedicated vault for your organization for maximum security.  External values are inspected on-demand to ensure they align with the parameter's secret setting and if they do not, those external values are not allowed to be used."
+                        "description": "Indicates if this content is secret or not.  External values are inspected on-demand to ensure they align with the parameter's secret setting and if they do not, those external values are not allowed to be used."
                     },
                     "type": {
                         "type": "string",
@@ -15600,7 +18976,17 @@
                         "items": {
                             "$ref": "#/components/schemas/AwsPush"
                         },
-                        "readOnly": true
+                        "readOnly": true,
+                        "description": "Deprecated. Only shows pushes for aws integrations in /api/v1/."
+                    },
+                    "push_urls": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "format": "uri"
+                        },
+                        "readOnly": true,
+                        "description": "Push actions associated with the project."
                     },
                     "created_at": {
                         "type": "string",
@@ -15718,6 +19104,14 @@
                     "body": {
                         "type": "string",
                         "description": "The content of the template.  Use mustache-style templating delimiters of `{{` and `}}` to reference parameter values by name for substitution into the template result."
+                    },
+                    "referenced_projects": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "readOnly": true,
+                        "description": "Projects (other than this template's project) that this template referenced"
                     },
                     "referenced_parameters": {
                         "type": "array",
@@ -15840,8 +19234,8 @@
                     "internal_value": {
                         "type": "string",
                         "nullable": true,
-                        "description": "This is the content to use when resolving the Value for an internal non-secret, or when storing a secret.  When storing a secret, this content is stored in your organization's dedicated vault and this field is cleared.  This field is required if the value is being created or updated and is `internal`.  This field cannot be specified when creating or updating an `external` value.",
-                        "maxLength": 16384
+                        "description": "This is the content to use when resolving the Value for an internal non-secret, or when storing a secret.  This field cannot be specified when creating or updating an `external` value.",
+                        "maxLength": 65536
                     },
                     "interpolated": {
                         "type": "boolean",
@@ -15863,6 +19257,14 @@
                         "nullable": true,
                         "readOnly": true,
                         "description": "Indicates the value content is a secret.  Normally this is `true` when the parameter is a secret. It is possible for a parameter to be a secret with a external value that is not a secret.  It is not possible to convert a parameter from a secret to a non-secret if any of the values are external and a secret.  Clients can check this condition by leveraging this field.  It is also possible for a parameter to not be a secret but for this value to be dynamic and reference a Parameter that is a secret.  In this case, we indicate the value is a secret."
+                    },
+                    "referenced_projects": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "format": "uri"
+                        },
+                        "readOnly": true
                     },
                     "referenced_parameters": {
                         "type": "array",
@@ -15951,7 +19353,17 @@
                         "items": {
                             "$ref": "#/components/schemas/AwsPush"
                         },
-                        "readOnly": true
+                        "readOnly": true,
+                        "description": "Deprecated. Only shows pushes for aws integrations in /api/v1/."
+                    },
+                    "push_urls": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "format": "uri"
+                        },
+                        "readOnly": true,
+                        "description": "Push actions associated with the project."
                     },
                     "created_at": {
                         "type": "string",
@@ -15970,6 +19382,7 @@
                     "id",
                     "modified_at",
                     "name",
+                    "push_urls",
                     "pushes",
                     "role",
                     "url"
@@ -16188,7 +19601,17 @@
                         "items": {
                             "$ref": "#/components/schemas/AwsPush"
                         },
-                        "readOnly": true
+                        "readOnly": true,
+                        "description": "Deprecated. Only shows pushes for aws integrations in /api/v1/."
+                    },
+                    "push_urls": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "format": "uri"
+                        },
+                        "readOnly": true,
+                        "description": "Push actions associated with the tag."
                     },
                     "usage": {
                         "allOf": [
@@ -16202,6 +19625,7 @@
                 "required": [
                     "id",
                     "name",
+                    "push_urls",
                     "pushes",
                     "timestamp",
                     "url",
@@ -16472,6 +19896,14 @@
                         "type": "string",
                         "description": "The content of the template.  Use mustache-style templating delimiters of `{{` and `}}` to reference parameter values by name for substitution into the template result."
                     },
+                    "referenced_projects": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "readOnly": true,
+                        "description": "Projects (other than this template's project) that this template referenced"
+                    },
                     "referenced_parameters": {
                         "type": "array",
                         "items": {
@@ -16529,6 +19961,7 @@
                     "modified_at",
                     "name",
                     "referenced_parameters",
+                    "referenced_projects",
                     "referenced_templates",
                     "referencing_templates",
                     "referencing_values",
@@ -16866,8 +20299,8 @@
                     "internal_value": {
                         "type": "string",
                         "nullable": true,
-                        "description": "This is the content to use when resolving the Value for an internal non-secret, or when storing a secret.  When storing a secret, this content is stored in your organization's dedicated vault and this field is cleared.  This field is required if the value is being created or updated and is `internal`.  This field cannot be specified when creating or updating an `external` value.",
-                        "maxLength": 16384
+                        "description": "This is the content to use when resolving the Value for an internal non-secret, or when storing a secret.  This field cannot be specified when creating or updating an `external` value.",
+                        "maxLength": 65536
                     },
                     "interpolated": {
                         "type": "boolean",
@@ -16889,6 +20322,14 @@
                         "nullable": true,
                         "readOnly": true,
                         "description": "Indicates the value content is a secret.  Normally this is `true` when the parameter is a secret. It is possible for a parameter to be a secret with a external value that is not a secret.  It is not possible to convert a parameter from a secret to a non-secret if any of the values are external and a secret.  Clients can check this condition by leveraging this field.  It is also possible for a parameter to not be a secret but for this value to be dynamic and reference a Parameter that is a secret.  In this case, we indicate the value is a secret."
+                    },
+                    "referenced_projects": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "format": "uri"
+                        },
+                        "readOnly": true
                     },
                     "referenced_parameters": {
                         "type": "array",
@@ -16931,6 +20372,7 @@
                     "modified_at",
                     "parameter",
                     "referenced_parameters",
+                    "referenced_projects",
                     "referenced_templates",
                     "secret",
                     "url",
@@ -16963,8 +20405,8 @@
                     "internal_value": {
                         "type": "string",
                         "nullable": true,
-                        "description": "This is the content to use when resolving the Value for an internal non-secret, or when storing a secret.  When storing a secret, this content is stored in your organization's dedicated vault and this field is cleared.  This field is required if the value is being created or updated and is `internal`.  This field cannot be specified when creating or updating an `external` value.",
-                        "maxLength": 16384
+                        "description": "This is the content to use when resolving the Value for an internal non-secret, or when storing a secret.  This field cannot be specified when creating or updating an `external` value.",
+                        "maxLength": 65536
                     },
                     "interpolated": {
                         "type": "boolean",

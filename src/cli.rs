@@ -32,6 +32,7 @@ pub const RULE_NO_MIN_LEN_ARG: &str = "NO-MIN-LEN";
 pub const RULE_NO_REGEX_ARG: &str = "NO-REGEX";
 pub const SHOW_TIMES_FLAG: &str = "show-time";
 pub const SECRETS_FLAG: &str = "secrets";
+pub const IMMEDIATE_PARAMETERS_FLAG: &str = "immediate-parameters";
 pub const TAG_NAME_ARG: &str = "tag-name";
 pub const TEMPLATE_FILE_OPT: &str = "FILE";
 pub const VALUES_FLAG: &str = "values";
@@ -142,6 +143,13 @@ fn values_flag() -> Arg<'static, 'static> {
 
 fn secrets_display_flag() -> Arg<'static, 'static> {
     Arg::with_name(SECRETS_FLAG).short("s").long(SECRETS_FLAG)
+}
+
+fn immediate_parameters_flag() -> Arg<'static, 'static> {
+    Arg::with_name(IMMEDIATE_PARAMETERS_FLAG)
+        .short("i")
+        .long("immediate_parameters")
+        .help("Show only immediate parameters (no inherited parameters)")
 }
 
 fn confirm_flag() -> Arg<'static, 'static> {
@@ -456,6 +464,18 @@ fn push_no_include_secrets_arg() -> Arg<'static, 'static> {
     Arg::with_name("NO_INCLUDE_SECRETS")
         .long("no-include-secrets")
         .help("Do not include secret CloudTruth parameters in the values being pushed")
+}
+
+fn push_include_templates_arg() -> Arg<'static, 'static> {
+    Arg::with_name("INCLUDE_TEMPLATES")
+        .long("include-templates")
+        .help("Include templates in the values being pushed.")
+}
+
+fn push_no_include_templates_arg() -> Arg<'static, 'static> {
+    Arg::with_name("NO_INCLUDE_TEMPLATES")
+        .long("no-include-templates")
+        .help("Do not include templates in the values being pushed.")
 }
 
 pub fn build_cli() -> App<'static, 'static> {
@@ -800,7 +820,8 @@ pub fn build_cli() -> App<'static, 'static> {
                         .arg(param_as_of_arg())
                         .arg(show_times_arg())
                         .arg(table_format_options().help("Format for parameter values data"))
-                        .arg(secrets_display_flag().help("Display the secret parameter values")),
+                        .arg(secrets_display_flag().help("Display the secret parameter values"))
+                        .arg(immediate_parameters_flag()),
                     SubCommand::with_name(SET_SUBCMD)
                         .visible_aliases(SET_ALIASES)
                         .about(concat!("Set a value in the selected project/environment for ",
@@ -893,7 +914,8 @@ pub fn build_cli() -> App<'static, 'static> {
                             .multiple(true)
                             .help("Up to two times to be compared"))
                         .arg(table_format_options().help("Display difference format"))
-                        .arg(secrets_display_flag().help("Show secret values")),
+                        .arg(secrets_display_flag().help("Show secret values"))
+                        .arg(immediate_parameters_flag()),
                     SubCommand::with_name(PUSH_SUBCMD)
                         .visible_aliases(PUSH_ALIASES)
                         .about("Show push task steps for parameters")
@@ -1121,6 +1143,8 @@ pub fn build_cli() -> App<'static, 'static> {
                             .arg(push_no_include_params_arg())
                             .arg(push_include_secrets_arg())
                             .arg(push_no_include_secrets_arg())
+                            .arg(push_include_templates_arg())
+                            .arg(push_no_include_templates_arg())
                             .arg(Arg::with_name("region")
                                 .long("region")
                                 .takes_value(true)
@@ -1148,7 +1172,9 @@ pub fn build_cli() -> App<'static, 'static> {
                             .arg(push_include_params_arg())
                             .arg(push_no_include_params_arg())
                             .arg(push_include_secrets_arg())
-                            .arg(push_no_include_secrets_arg()),
+                            .arg(push_no_include_secrets_arg())
+                            .arg(push_include_templates_arg())
+                            .arg(push_no_include_templates_arg()),
                         SubCommand::with_name(TASK_STEPS_SUBCMD)
                             .visible_aliases(TASK_STEPS_ALIASES)
                             .about("List task steps for the specified CloudTruth push")

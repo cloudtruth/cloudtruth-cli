@@ -1,9 +1,9 @@
 use crate::cli::{
     binary_name, show_values, true_false_option, AS_OF_ARG, CONFIRM_FLAG, DELETE_SUBCMD,
-    DESCRIPTION_OPT, DIFF_SUBCMD, FORMAT_OPT, GET_SUBCMD, JMES_PATH_ARG, KEY_ARG, LIST_SUBCMD,
-    PUSH_SUBCMD, RENAME_OPT, RULE_MAX_ARG, RULE_MAX_LEN_ARG, RULE_MIN_ARG, RULE_MIN_LEN_ARG,
-    RULE_NO_MAX_ARG, RULE_NO_MAX_LEN_ARG, RULE_NO_MIN_ARG, RULE_NO_MIN_LEN_ARG, RULE_NO_REGEX_ARG,
-    RULE_REGEX_ARG, SECRETS_FLAG, SET_SUBCMD, SHOW_TIMES_FLAG,
+    DESCRIPTION_OPT, DIFF_SUBCMD, FORMAT_OPT, GET_SUBCMD, IMMEDIATE_PARAMETERS_FLAG, JMES_PATH_ARG,
+    KEY_ARG, LIST_SUBCMD, PUSH_SUBCMD, RENAME_OPT, RULE_MAX_ARG, RULE_MAX_LEN_ARG, RULE_MIN_ARG,
+    RULE_MIN_LEN_ARG, RULE_NO_MAX_ARG, RULE_NO_MAX_LEN_ARG, RULE_NO_MIN_ARG, RULE_NO_MIN_LEN_ARG,
+    RULE_NO_REGEX_ARG, RULE_REGEX_ARG, SECRETS_FLAG, SET_SUBCMD, SHOW_TIMES_FLAG,
 };
 use crate::config::DEFAULT_ENV_NAME;
 use crate::database::{
@@ -41,6 +41,7 @@ fn proc_param_delete(
     let env_id = resolved.environment_id();
     let mut param_id = None;
     let mask_secrets = true; // no need to fetch secrets
+    let immediate_parameters = false;
     let evaluate = false;
     let response = parameters.get_details_by_name(
         rest_cfg,
@@ -48,6 +49,7 @@ fn proc_param_delete(
         env_id,
         key_name,
         evaluate,
+        immediate_parameters,
         mask_secrets,
         None,
         None,
@@ -121,6 +123,7 @@ fn proc_param_diff(
     resolved: &ResolvedDetails,
 ) -> Result<()> {
     let show_secrets = subcmd_args.is_present(SECRETS_FLAG);
+    let immediate_parameters = subcmd_args.is_present(IMMEDIATE_PARAMETERS_FLAG);
     let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
     let properties: Vec<&str> = subcmd_args.values_of("properties").unwrap().collect();
     let as_list: Vec<&str> = subcmd_args
@@ -213,6 +216,7 @@ fn proc_param_diff(
         rest_cfg,
         proj_id,
         &env1_id,
+        immediate_parameters,
         !show_secrets,
         as_of1,
         tag1,
@@ -221,6 +225,7 @@ fn proc_param_diff(
         rest_cfg,
         proj_id,
         &env2_id,
+        immediate_parameters,
         !show_secrets,
         as_of2,
         tag2,
@@ -306,6 +311,7 @@ fn proc_param_env(
     let mut as_of = parse_datetime(subcmd_args.value_of(AS_OF_ARG));
     let tag = parse_tag(subcmd_args.value_of(AS_OF_ARG));
     let show_secrets = subcmd_args.is_present(SECRETS_FLAG);
+    let immediate_parameters = false;
     let show_times = subcmd_args.is_present(SHOW_TIMES_FLAG);
     let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
     let all_envs = subcmd_args.is_present("all");
@@ -330,6 +336,7 @@ fn proc_param_env(
         rest_cfg,
         proj_id,
         param_name,
+        immediate_parameters,
         !show_secrets,
         as_of,
     )?;
@@ -441,12 +448,14 @@ fn proc_param_get(
     let env_id = resolved.environment_id();
     let evaluate = true; // evaluate the inline content (if applicable)
     let mask_secrets = false; // get the secrets
+    let immediate_parameters = subcmd_args.is_present(IMMEDIATE_PARAMETERS_FLAG);
     let parameter = parameters.get_details_by_name(
         rest_cfg,
         proj_id,
         env_id,
         key,
         evaluate,
+        immediate_parameters,
         mask_secrets,
         as_of,
         tag,
@@ -526,6 +535,7 @@ fn proc_param_list(
     let as_of = parse_datetime(subcmd_args.value_of(AS_OF_ARG));
     let tag = parse_tag(subcmd_args.value_of(AS_OF_ARG));
     let show_secrets = subcmd_args.is_present(SECRETS_FLAG);
+    let immediate_parameters = subcmd_args.is_present(IMMEDIATE_PARAMETERS_FLAG);
     let show_times = subcmd_args.is_present(SHOW_TIMES_FLAG);
     let show_values = show_values(subcmd_args);
     let show_rules = subcmd_args.is_present("rules");
@@ -539,6 +549,7 @@ fn proc_param_list(
         rest_cfg,
         proj_id,
         env_id,
+        immediate_parameters,
         !show_secrets,
         include_values,
         as_of.clone(),
@@ -574,6 +585,7 @@ fn proc_param_list(
                 rest_cfg,
                 &prj.id,
                 env_id,
+                immediate_parameters,
                 !show_secrets,
                 include_values,
                 as_of.clone(),
@@ -773,6 +785,7 @@ fn proc_param_set(
     let evaluated: Option<bool> = true_false_option(subcmd_args.value_of("evaluate"));
     let evaluate = false; // no need to evaluate
     let mask_secrets = true; // do not fetch secrets
+    let immediate_parameters = false;
     let param_type = subcmd_args.value_of("param-type");
     let create_child = subcmd_args.is_present("create-child");
 
@@ -823,6 +836,7 @@ fn proc_param_set(
         env_id,
         key_name,
         evaluate,
+        immediate_parameters,
         mask_secrets,
         None,
         None,
@@ -1066,9 +1080,9 @@ fn proc_param_push(
     let qualifier: String;
     let include_param_name: bool;
     if let Some(param_name) = key_name {
-        if let Some(details) = parameters
-            .get_details_by_name(rest_cfg, proj_id, "", param_name, false, true, None, None)?
-        {
+        if let Some(details) = parameters.get_details_by_name(
+            rest_cfg, proj_id, "", param_name, false, false, true, None, None,
+        )? {
             steps = parameters.get_task_steps(rest_cfg, proj_id, env_id, &details.id)?;
             qualifier = format!(" for parameter '{}'", param_name);
             include_param_name = false;
@@ -1162,10 +1176,18 @@ fn proc_param_drift(
     let as_of = parse_datetime(subcmd_args.value_of(AS_OF_ARG));
     let tag = parse_tag(subcmd_args.value_of(AS_OF_ARG));
     let show_secrets = subcmd_args.is_present(SECRETS_FLAG);
+    let immediate_parameters = subcmd_args.is_present(IMMEDIATE_PARAMETERS_FLAG);
     let show_values = show_values(subcmd_args);
     let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
-    let param_map =
-        parameters.get_parameter_detail_map(rest_cfg, proj_id, env_id, false, as_of, tag)?;
+    let param_map = parameters.get_parameter_detail_map(
+        rest_cfg,
+        proj_id,
+        env_id,
+        immediate_parameters,
+        false,
+        as_of,
+        tag,
+    )?;
     let excludes = vec![
         "PATH",
         "HOME",
