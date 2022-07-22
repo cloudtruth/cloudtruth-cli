@@ -16,7 +16,7 @@ The integration test uses Python unittest infrastructure to discover and run tes
 All the tests derive from the `testcase.py.TestCase` to provide a common set of interacting with 
 the CLI.
 
-There is an assumption that the user account exits, and has read/write access.  
+There is an assumption that the user account exits, and has read/write access.
 
 No tests should rely on any projects or environments existing ahead of the test.  When looking at 
 project and environment lists, the code needs to be robust to not concern itself with other projects
@@ -25,7 +25,7 @@ created during the testcase -- they will be automatically deleted (assuming that
 with the `run_cli()` function).
 
 The intention is to allow multiple instances of each test to be running simultaneously in the CI 
-environment. To do this, a `--job-id <name>` is provided as a `live_test.py` argument.  
+environment. To do this, a `--job-id <name>` is provided as a `live_test.py` argument.
 Internally, the test cases should use `make_name()` to append the job-id to the end of project and
 environment names.
 
@@ -58,7 +58,7 @@ described above.
 The full integration suite may take several minutes to run. However, a `--filter <pattern>` argument
 can be used to filter the test cases based on the name -- this is very useful when working on a new
 test (so only that test gets run).  There is also a `--file <filename>` argument that can be used to
-limit the number of test cases run.  
+limit the number of test cases run.
 
 Logging
 -------
