@@ -81,33 +81,28 @@ impl From<&AwsPush> for ActionDetails {
             TaskDetail::default()
         };
         let mut flags: Vec<String> = vec![];
-        if let Some(dry_run) = api.dry_run {
-            if dry_run {
-                flags.push("dry-run".to_string());
-            }
+        if api.dry_run.unwrap_or(false) {
+            flags.push("dry-run".to_string());
         }
-        if let Some(params) = api.include_parameters {
-            if params {
-                let mut flag_name = "parameters".to_string();
-                if let Some(coerced) = api.coerce_parameters {
-                    if coerced {
-                        flag_name = "parameters-coerced".to_string();
-                    }
-                }
-                flags.push(flag_name);
-            }
+        if api.include_parameters.unwrap_or(false) {
+            flags.push(if api.coerce_parameters.unwrap_or(false) {
+                "parameters-coerced".to_string()
+            } else {
+                "parameters".to_string()
+            });
         }
-        if let Some(secrets) = api.include_secrets {
-            if secrets {
-                flags.push("secrets".to_string());
-            }
+        if api.include_secrets.unwrap_or(false) {
+            flags.push("secrets".to_string());
         }
-        if let Some(force_owner) = api.force {
-            if force_owner {
-                flags.push("no-check-owner".to_string());
-            }
+        if api.include_templates.unwrap_or(false) {
+            flags.push("templates".to_string());
         }
-
+        if api.force.unwrap_or(false) {
+            flags.push("force".to_string());
+        }
+        if api.local.unwrap_or(false) {
+            flags.push("local".to_string());
+        }
         Self {
             id: api.id.clone(),
             url: api.url.clone(),

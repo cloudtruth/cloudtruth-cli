@@ -8,13 +8,16 @@ pub const AS_OF_ARG: &str = "datetime|tag";
 pub const CONFIRM_FLAG: &str = "confirm";
 pub const DESCRIPTION_OPT: &str = "description";
 pub const ENV_NAME_ARG: &str = "env-name";
+pub const ENV_NAME_OPT: &str = "env";
 pub const FORMAT_OPT: &str = "format";
+pub const IMMEDIATE_PARAMETERS_FLAG: &str = "immediate-parameters";
 pub const INTEGRATION_NAME_ARG: &str = "integration-name";
 pub const INVITE_NAME_ARG: &str = "e-mail";
 pub const JMES_PATH_ARG: &str = "JMES";
 pub const KEY_ARG: &str = "KEY";
 pub const NAME_ARG: &str = "NAME";
 pub const PARENT_ARG: &str = "parent";
+pub const PROJECT_NAME_OPT: &str = "project";
 pub const PULL_NAME_ARG: &str = "import-name";
 pub const PUSH_NAME_ARG: &str = "push-name";
 pub const RAW_FLAG: &str = "raw";
@@ -32,7 +35,7 @@ pub const RULE_NO_MIN_LEN_ARG: &str = "NO-MIN-LEN";
 pub const RULE_NO_REGEX_ARG: &str = "NO-REGEX";
 pub const SHOW_TIMES_FLAG: &str = "show-time";
 pub const SECRETS_FLAG: &str = "secrets";
-pub const IMMEDIATE_PARAMETERS_FLAG: &str = "immediate-parameters";
+pub const TAG_NAME_OPT: &str = "tag";
 pub const TAG_NAME_ARG: &str = "tag-name";
 pub const TEMPLATE_FILE_OPT: &str = "FILE";
 pub const VALUES_FLAG: &str = "values";
@@ -209,6 +212,14 @@ fn env_name_arg() -> Arg<'static, 'static> {
         .help("Environment name")
 }
 
+fn env_name_opt() -> Arg<'static, 'static> {
+    Arg::with_name(ENV_NAME_OPT)
+        .takes_value(true)
+        .long("env")
+        .short("e")
+        .help("Filter by environment name")
+}
+
 fn multi_env_name_arg() -> Arg<'static, 'static> {
     Arg::with_name("ENV")
         .short("e")
@@ -224,6 +235,22 @@ fn tag_name_arg() -> Arg<'static, 'static> {
         .required(true)
         .index(2)
         .help("Tag name")
+}
+
+fn tag_name_opt() -> Arg<'static, 'static> {
+    Arg::with_name(TAG_NAME_OPT)
+        .takes_value(true)
+        .long("tag")
+        .short("t")
+        .help("Filter by tag name")
+}
+
+fn project_name_opt() -> Arg<'static, 'static> {
+    Arg::with_name(PROJECT_NAME_OPT)
+        .long("project")
+        .takes_value(true)
+        .short("p")
+        .help("Filter by project name")
 }
 
 fn api_key_arg() -> Arg<'static, 'static> {
@@ -420,14 +447,28 @@ fn push_no_dry_run_arg() -> Arg<'static, 'static> {
 
 fn push_check_owner_arg() -> Arg<'static, 'static> {
     Arg::with_name("CHECK_OWNER")
-        .long("check-owner")
+        .long("no-force")
+        .visible_alias("check-owner")
         .help("Make sure CloudTruth is the destination owner ")
 }
 
 fn push_no_check_owner_arg() -> Arg<'static, 'static> {
     Arg::with_name("NO_CHECK_OWNER")
-        .long("no-check-owner")
+        .long("force")
+        .visible_alias("no-check-owner")
         .help("Allow the push even if CloudTruth is not the destination owner")
+}
+
+fn push_local_arg() -> Arg<'static, 'static> {
+    Arg::with_name("LOCAL")
+        .long("local")
+        .help("Push only parameters defined in the selected project(s)")
+}
+
+fn push_no_local_arg() -> Arg<'static, 'static> {
+    Arg::with_name("NO_LOCAL")
+        .long("no-local")
+        .help("Push all parameters (default)")
 }
 
 fn push_coerce_params_arg() -> Arg<'static, 'static> {
@@ -1091,7 +1132,10 @@ pub fn build_cli() -> App<'static, 'static> {
                             .arg(integration_name_opt())
                             .arg(values_flag().help("Show push info values"))
                             .arg(show_times_arg())
-                            .arg(table_format_options().help("Push info output format")),
+                            .arg(table_format_options().help("Push info output format"))
+                            .arg(tag_name_opt())
+                            .arg(env_name_opt())
+                            .arg(project_name_opt()),
                         SubCommand::with_name(SET_SUBCMD)
                             .visible_aliases(SET_ALIASES)
                             .about("Create/modify CloudTruth integration push")
@@ -1137,6 +1181,8 @@ pub fn build_cli() -> App<'static, 'static> {
                             .arg(push_no_dry_run_arg())
                             .arg(push_check_owner_arg())
                             .arg(push_no_check_owner_arg())
+                            .arg(push_local_arg())
+                            .arg(push_no_local_arg())
                             .arg(push_coerce_params_arg())
                             .arg(push_no_coerce_params_arg())
                             .arg(push_include_params_arg())

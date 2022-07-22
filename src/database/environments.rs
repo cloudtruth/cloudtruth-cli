@@ -213,6 +213,17 @@ impl Environments {
         Ok(env_info)
     }
 
+    pub fn get_environment_url_by_name(
+        &self,
+        rest_cfg: &OpenApiConfig,
+        env_name: &str,
+    ) -> Result<String, EnvironmentError> {
+        let env_details = self
+            .get_details_by_name(rest_cfg, env_name)?
+            .ok_or_else(|| EnvironmentError::NotFound(env_name.to_string()))?;
+        Ok::<String, EnvironmentError>(env_details.url)
+    }
+
     pub fn create_environment(
         &self,
         rest_cfg: &OpenApiConfig,
