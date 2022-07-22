@@ -368,14 +368,14 @@ fn proc_action_push_list(
     let project_url = project
         .map(|project| {
             let proj_details = Projects::new().get_project_details(rest_cfg)?;
-            let proj_list = project_names_to_urls(&[project], &proj_details);
-            Ok::<String, ProjectError>(proj_list[0].to_owned())
+            let mut proj_list = project_names_to_urls(&[project], &proj_details);
+            Ok::<String, ProjectError>(proj_list.swap_remove(0))
         })
         .transpose()?;
     let tag_url = tag.map(|tag| {
         let tag_map = get_tag_name_to_url_map(rest_cfg, &[tag]);
-        let tag_list = tag_names_to_urls(&[tag], &tag_map);
-        tag_list[0].to_owned()
+        let mut tag_list = tag_names_to_urls(&[tag], &tag_map);
+        tag_list.swap_remove(0)
     });
     let env_url = environment
         .map(|env| Environments::new().get_environment_url_by_name(rest_cfg, env))
