@@ -100,7 +100,7 @@ def cloudtruth_cleanup(*args):
     if not(any([x for x in elements if x.items])):
         types = [x.name for x in elements]
         type_list = ", ".join(types[:-1])
-        type_list.append(f", or {types[-1]}")
+        type_list += f", or {types[-1]}"
         search_list = ", ".join(args.needles)
         print(f"No {type_list} items found matching: {search_list}")
         return 0
