@@ -665,13 +665,7 @@ SNA=fu
         docker_cmd = base_cmd + f"--project {proj_name} param export docker "
         result = self.run_cli(cmd_env, docker_cmd)
         self.assertResultSuccess(result)
-        self.assertEqual(result.out(), f"""\
-FIRST_PARAM=posix_compliant_value
-FIRST_PARAM_SECRET={REDACTED}
-SECOND_PARAM=a value with spaces
-SECOND_SECRET={REDACTED}
-
-""")
+        self.assertEqual(result.out(), f"{REDACTED}\n")
 
         result = self.run_cli(cmd_env, docker_cmd + "--secrets")
         self.assertResultSuccess(result)
@@ -694,11 +688,7 @@ SECOND_SECRET=sensitive value with spaces
         # use uppercase key without secrets
         result = self.run_cli(cmd_env, docker_cmd + "--starts-with FIRST")
         self.assertResultSuccess(result)
-        self.assertEqual(result.out(), f"""\
-FIRST_PARAM=posix_compliant_value
-FIRST_PARAM_SECRET={REDACTED}
-
-""")
+        self.assertEqual(result.out(), f"{REDACTED}\n")
 
         # use uppercase key with secrets
         result = self.run_cli(cmd_env, docker_cmd + "--starts-with FIRST -s")
@@ -731,13 +721,7 @@ SECOND_PARAM=a value with spaces
         dotenv_cmd = base_cmd + f"--project {proj_name} param export dotenv "
         result = self.run_cli(cmd_env, dotenv_cmd)
         self.assertResultSuccess(result)
-        self.assertEqual(result.out(), f"""\
-FIRST_PARAM="posix_compliant_value"
-FIRST_PARAM_SECRET="{REDACTED}"
-SECOND_PARAM="a value with spaces"
-SECOND_SECRET="{REDACTED}"
-
-""")
+        self.assertEqual(result.out(), f"{REDACTED}\n")
 
         dotenv_cmd = base_cmd + f"--project {proj_name} param export dotenv -s"
         result = self.run_cli(cmd_env, dotenv_cmd)
@@ -754,13 +738,7 @@ SECOND_SECRET="sensitive value with spaces"
         shell_cmd = base_cmd + f"--project {proj_name} param export shell "
         result = self.run_cli(cmd_env, shell_cmd)
         self.assertResultSuccess(result)
-        self.assertEqual(result.out(), f"""\
-FIRST_PARAM=posix_compliant_value
-FIRST_PARAM_SECRET='{REDACTED}'
-SECOND_PARAM='a value with spaces'
-SECOND_SECRET='{REDACTED}'
-
-""")
+        self.assertEqual(result.out(), f"{REDACTED}\n")
 
         shell_cmd = base_cmd + f"--project {proj_name} param export shell -s"
         result = self.run_cli(cmd_env, shell_cmd)
@@ -1281,9 +1259,9 @@ parameter:
         self.create_project(cmd_env, proj_name)
 
         # add a couple environments
-        env_a = self.make_name("left")
+        env_a = self.make_name("test-param-left")
         self.create_environment(cmd_env, env_a)
-        env_b = self.make_name("right")
+        env_b = self.make_name("test-param-right")
         self.create_environment(cmd_env, env_b)
 
         # check that there are no parameters
@@ -1350,6 +1328,8 @@ Parameter,{env_a},{env_b}
         self.set_param(cmd_env, proj_name, param1, same, env=env_a)
         self.set_param(cmd_env, proj_name, param1, same, env=env_b)
         self.set_param(cmd_env, proj_name, param2, value2b, env=env_b)
+        # repeat the previous command to update the modification time of param2 without making any changes
+        self.set_param(cmd_env, proj_name, param2, value2b, env=env_b)
 
         # without the --all flag, only the deltas are shown
         result = self.run_cli(cmd_env, diff_cmd + "-s")
@@ -1370,21 +1350,21 @@ Parameter,{env_a},{env_b}
 
         p1_entry = params[0]
         self.assertEqual(p1_entry["Parameter"], param1)
-        (created_a, modified_a) = split_time_strings(p1_entry[env_a])
-        self.assertIsNotNone(datetime.datetime.fromisoformat(created_a))
-        self.assertIsNotNone(datetime.datetime.fromisoformat(modified_a))
-        (created_b, modified_b) = split_time_strings(p1_entry[env_b])
-        self.assertIsNotNone(datetime.datetime.fromisoformat(created_b))
-        self.assertIsNotNone(datetime.datetime.fromisoformat(modified_b))
+        (created_p1_a, modified_p1_a) = split_time_strings(p1_entry[env_a])
+        self.assertIsNotNone(datetime.datetime.fromisoformat(created_p1_a))
+        self.assertIsNotNone(datetime.datetime.fromisoformat(modified_p1_a))
+        (created_p1_b, modified_p1_b) = split_time_strings(p1_entry[env_b])
+        self.assertIsNotNone(datetime.datetime.fromisoformat(created_p1_b))
+        self.assertIsNotNone(datetime.datetime.fromisoformat(modified_p1_b))
 
         p2_entry = params[1]
         self.assertEqual(p2_entry["Parameter"], param2)
-        (created_a, modified_a) = split_time_strings(p2_entry[env_a])
-        self.assertIsNotNone(datetime.datetime.fromisoformat(created_a))
-        self.assertIsNotNone(datetime.datetime.fromisoformat(modified_a))
-        (created_b, modified_b) = split_time_strings(p2_entry[env_b])
-        self.assertIsNotNone(datetime.datetime.fromisoformat(created_b))
-        self.assertIsNotNone(datetime.datetime.fromisoformat(modified_b))
+        (created_p2_a, modified_p2_a) = split_time_strings(p2_entry[env_a])
+        self.assertIsNotNone(datetime.datetime.fromisoformat(created_p2_a))
+        self.assertIsNotNone(datetime.datetime.fromisoformat(modified_p2_a))
+        (created_p2_b, modified_p2_b) = split_time_strings(p2_entry[env_b])
+        self.assertIsNotNone(datetime.datetime.fromisoformat(created_p2_b))
+        self.assertIsNotNone(datetime.datetime.fromisoformat(modified_p2_b))
 
         # when specifying properties where there are no diffs, we get nothing
         result = self.run_cli(cmd_env, diff_cmd + "-s --property fqn")
@@ -1396,25 +1376,24 @@ Parameter,{env_a},{env_b}
         diff_csv = sub_cmd + "diff -f csv "
 
         # test single time
-        result = self.run_cli(cmd_env, diff_csv + f"--as-of '{modified_a}'")
+        result = self.run_cli(cmd_env, diff_csv + f"--as-of '{modified_p2_a}'")
         self.assertResultSuccess(result)
         self.assertEqual(result.out(), f"""\
-Parameter,Current,{modified_a}
+Parameter,Current,{modified_p2_a}
 {param1},{value1d},-
 {param2},{REDACTED},-
 """)
-
         # compare 2 points in time (with secrets)
-        result = self.run_cli(cmd_env, diff_csv + f"-s --as-of '{modified_a}' --as-of  '{modified_b}'")
+        result = self.run_cli(cmd_env, diff_csv + f"-s --as-of '{modified_p2_a}' --as-of  '{modified_p2_b}'")
         self.assertResultSuccess(result)
         self.assertEqual(result.out(), f"""\
-Parameter,{modified_a},{modified_b}
+Parameter,{modified_p2_a},{modified_p2_b}
 {param1},-,{value1d}
 {param2},-,{value2d}
 """)
 
         # compare 2 points in time where there are no differences
-        result = self.run_cli(cmd_env, diff_csv + f"--as-of '{created_a}' --as-of '{modified_a}'")
+        result = self.run_cli(cmd_env, diff_csv + f"--as-of '{created_p2_b}' --as-of '{modified_p2_b}'")
         self.assertResultSuccess(result)
         self.assertIn("No parameters or differences in compared properties found", result.out())
 
@@ -1422,19 +1401,19 @@ Parameter,{modified_a},{modified_b}
         # Combination environment/time diff
 
         # if just one env/time, it applies to the right hand side
-        result = self.run_cli(cmd_env, diff_csv + f"-e '{env_a}' --as-of '{modified_a}'")
+        result = self.run_cli(cmd_env, diff_csv + f"-e '{env_a}' --as-of '{modified_p2_a}'")
         self.assertResultSuccess(result)
         self.assertEqual(result.out(), f"""\
-Parameter,default,{env_a} ({modified_a})
+Parameter,default,{env_a} ({modified_p2_a})
 {param1},{value1d},{value1a}
 """)
 
         # the full set of environments/times (with secrets)
-        cmd = diff_csv + f"-e '{env_a}' --as-of '{modified_a}' -e '{env_b}' --as-of '{modified_b}' -s"
+        cmd = diff_csv + f"-e '{env_a}' --as-of '{modified_p2_a}' -e '{env_b}' --as-of '{modified_p2_b}' -s"
         result = self.run_cli(cmd_env, cmd)
         self.assertResultSuccess(result)
         self.assertEqual(result.out(), f"""\
-Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
+Parameter,{env_a} ({modified_p2_a}),{env_b} ({modified_p2_b})
 {param1},{value1a},{same}
 {param2},{value2a},{value2b}
 """)
@@ -1703,7 +1682,7 @@ Parameter,{env_a} ({modified_a}),{env_b} ({modified_b})
         missing_cmd = param_a_cmd + f"set '{param3}' --value '{{{{ {bad_param} }}}}'"
         result = self.run_cli(cmd_env, missing_cmd)
         self.assertResultError(result, "Evaluation error")
-        self.assertIn("references parameter(s) that do not exist", result.err())
+        self.assertIn("contains references that do not exist", result.err())
         self.assertIn("unknown", result.err())
 
         result = self.list_params(cmd_env, proj_name, env=env_name_a, fmt="csv")

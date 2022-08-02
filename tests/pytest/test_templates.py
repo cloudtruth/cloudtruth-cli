@@ -155,8 +155,8 @@ simple.param=PARAM1
 ANOTHER_PARAM=PARAM2
 """
         body = base.replace("PARAM1", f"{{{{{param1}}}}}").replace("PARAM2", f"{{{{{param2}}}}}")
-        eval_a = base.replace("PARAM1", value1a).replace("PARAM2", REDACTED)
-        eval_b = base.replace("PARAM1", value1b).replace("PARAM2", REDACTED)
+        eval_a = base.replace("PARAM1", value1a).replace("PARAM2", f"{value2a}")
+        eval_b = base.replace("PARAM1", value1b).replace("PARAM2", f"{value2b}")
         self.write_file(filename, body)
 
         sub_cmd = base_cmd + f"--project {proj_name} template "
@@ -167,7 +167,13 @@ ANOTHER_PARAM=PARAM2
         # Check environment A
         cmd_env[CT_ENV] = env_a
 
+        # evaluated template is redacted when secret params are referenced
         result = self.run_cli(cmd_env, sub_cmd + f"get {temp_name}")
+        self.assertResultSuccess(result)
+        self.assertIn(REDACTED, result.out())
+
+        # check evaluation with secrets shown
+        result = self.run_cli(cmd_env, sub_cmd + f"get {temp_name} -s")
         self.assertResultSuccess(result)
         self.assertIn(eval_a, result.out())
 
@@ -176,17 +182,12 @@ ANOTHER_PARAM=PARAM2
         self.assertResultSuccess(result)
         self.assertIn(body, result.out())
 
-        # check preview, too
+        # check preview (with secrets hidden)
         result = self.run_cli(cmd_env, sub_cmd + f"preview {filename}")
         self.assertResultSuccess(result)
-        self.assertIn(eval_a, result.out())
+        self.assertIn(REDACTED, result.out())
 
-        # now, display the secrets
-        eval_a = eval_a.replace(REDACTED, f"{value2a}")
-        result = self.run_cli(cmd_env, sub_cmd + f"get {temp_name} -s")
-        self.assertResultSuccess(result)
-        self.assertIn(eval_a, result.out())
-
+        # check preview (with secrets shown)
         result = self.run_cli(cmd_env, sub_cmd + f"preview {filename} --secrets")
         self.assertResultSuccess(result)
         self.assertIn(eval_a, result.out())
@@ -195,7 +196,13 @@ ANOTHER_PARAM=PARAM2
         # Check environment B
         cmd_env[CT_ENV] = env_b
 
+        # without secrets shown
         result = self.run_cli(cmd_env, sub_cmd + f"get {temp_name}")
+        self.assertResultSuccess(result)
+        self.assertIn(REDACTED, result.out())
+
+        # with secrets shown
+        result = self.run_cli(cmd_env, sub_cmd + f"get {temp_name} -s")
         self.assertResultSuccess(result)
         self.assertIn(eval_b, result.out())
 
@@ -204,18 +211,13 @@ ANOTHER_PARAM=PARAM2
         self.assertResultSuccess(result)
         self.assertIn(body, result.out())
 
-        # check preview, too
+        # check preview (with secrets hidden)
         result = self.run_cli(cmd_env, sub_cmd + f"preview {filename}")
         self.assertResultSuccess(result)
-        self.assertIn(eval_b, result.out())
+        self.assertIn(REDACTED, result.out())
 
-        # now, display the secrets
-        eval_b = eval_b.replace(REDACTED, f"{value2b}")
-        result = self.run_cli(cmd_env, sub_cmd + f"get {temp_name} -s")
-        self.assertResultSuccess(result)
-        self.assertIn(eval_b, result.out())
-
-        result = self.run_cli(cmd_env, sub_cmd + f"preview {filename} --secrets")
+        # check preview (with secrets shown)
+        result = self.run_cli(cmd_env, sub_cmd + f"preview {filename} -s")
         self.assertResultSuccess(result)
         self.assertIn(eval_b, result.out())
 
@@ -230,7 +232,7 @@ ANOTHER_PARAM=PARAM2
         body = base.replace("PARAM1", f"{{{{{no_param}}}}}").replace("PARAM2", f"{{{{{param2}}}}}")
         self.write_file(filename, body)
         result = self.run_cli(cmd_env, sub_cmd + f"preview {filename} --secrets")
-        self.assertResultError(result, "references parameter(s) that do not exist")
+        self.assertResultError(result, "Template contains references that do not exist")
         self.assertIn(no_param, result.err())
 
         # cleanup
@@ -617,26 +619,10 @@ PARAMETER=PARAM1
 
         # first set of comparisons
         diff_cmd = sub_cmd + f"diff '{temp_name}' "
-        result = self.run_cli(cmd_env, diff_cmd + f"-e '{env_a}' --env '{env_b}' ")
+        result = self.run_cli(cmd_env, diff_cmd + f"-e '{env_a}' --env '{env_b}'")
         self.assertResultSuccess(result)
-        self.assertEqual(result.out(), f"""\
---- {temp_name} ({env_a} at current)
-+++ {temp_name} ({env_b} at current)
-@@ -1,5 +1,5 @@
- # This us a comment common to all environments/times
--SECRET={REDACTED}
-+SECRET=
- {fake_flake8}
- # this is a longer comment to
- # demonstrated that text
-@@ -14,5 +14,5 @@
- # too
- # many
- # lines
--PARAMETER={value1a}
-+PARAMETER=
- {fake_flake8}
-""")
+        # both templates are redacted because of referenced secrets, so no diff
+        self.assertEqual(result.out(), "")
 
         # set some stuff in the current default environment
         def_env = self.get_current_config(cmd_env, "Environment")
@@ -703,12 +689,12 @@ PARAMETER=PARAM1
 """)
 
         # raw: no differences between environments
-        result = self.run_cli(cmd_env, diff_cmd + f"-e '{env_a}' -e '{env_b}' --raw")
+        result = self.run_cli(cmd_env, diff_cmd + f"-e '{env_a}' -e '{env_b}' --raw -s")
         self.assertResultSuccess(result)
         self.assertEqual(result.out(), "")
 
         # raw: no differences between environments, even with lots of context
-        result = self.run_cli(cmd_env, diff_cmd + f"-e '{env_a}' -e '{env_b}' -r -c 100")
+        result = self.run_cli(cmd_env, diff_cmd + f"-e '{env_a}' -e '{env_b}' -r -c 100 -s")
         self.assertResultSuccess(result)
         self.assertEqual(result.out(), "")
 
@@ -792,21 +778,22 @@ PARAMETER={{{{{param1}}}}}
         self.assertResultSuccess(result)
 
         # compare a tag in one environment
-        result = self.run_cli(cmd_env, diff_cmd + f"-e {env_b} --as-of {tag_name}")
+        result = self.run_cli(cmd_env, diff_cmd + f"-e {env_b} --as-of {tag_name} -s")
         self.assertResultSuccess(result)
         self.assertEqual(result.out(), f"""\
 --- {temp_name} ({env_b} at {tag_name})
 +++ {temp_name} ({def_env} at current)
 @@ -1,4 +1,4 @@
  # This us a comment common to all environments/times
- SECRET={REDACTED}
+-SECRET={value2b}
 -PARAMETER={same}
++SECRET={value2d}
 +PARAMETER={value1d}
  {fake_flake8}
 """)
 
         # see no differences between tag now in env_b
-        result = self.run_cli(cmd_env, diff_cmd + f"-e {env_b} --as-of {tag_name} -e {env_b}")
+        result = self.run_cli(cmd_env, diff_cmd + f"-e {env_b} --as-of {tag_name} -e {env_b} -s")
         self.assertResultSuccess(result)
         self.assertEqual(result.out(), "")
 
