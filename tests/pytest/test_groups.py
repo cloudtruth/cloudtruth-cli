@@ -103,3 +103,54 @@ class TestGroups(TestCase):
         for name in group_names:
             result = self.run_cli(cmd_env, group_cmd + f"del -y {name}")
             self.assertResultSuccess(result)
+
+    def test_group_users(self):
+        base_cmd = self.get_cli_base_cmd()
+        cmd_env = self.get_cmd_env()
+        group_name = self.make_name("test-group-name")
+        group_cmd = base_cmd + "groups "
+        user_cmd = base_cmd + "users "
+
+        user_count = 3
+        user_names = []
+        for idx in range(user_count):
+            name = f"ci-user+{idx}"
+            user_names.append(self.make_name(name))
+
+        # create group
+        result = self.run_cli(cmd_env, group_cmd + f"set {group_name}")
+        self.assertResultSuccess(result)
+
+        # create users
+        for user_name in user_names:
+            result = self.run_cli(cmd_env, user_cmd + f"set {user_name}")
+            self.assertResultSuccess(result)
+
+        # add users to group
+        for user_name in user_names:
+            result = self.run_cli(cmd_env, group_cmd + f"set {group_name} --add-user {user_name}")
+            self.assertResultSuccess(result)
+
+        # remove users from group
+        for user_name in user_names:
+            result = self.run_cli(cmd_env, group_cmd + f"set {group_name} --remove-user {user_name}")
+            self.assertResultSuccess(result)
+
+        # add all users with one command
+        add_all_users_cmd = group_cmd + f"set {group_name} "
+        add_all_users_cmd += " ".join(f"--add-user {user_name}" for user_name in user_names)
+        result = self.run_cli(cmd_env, add_all_users_cmd)
+        self.assertResultSuccess(result)
+
+    # remove all users with one command
+        rm_all_users_cmd = group_cmd + f"set {group_name} "
+        rm_all_users_cmd += " ".join(f"--remove-user {user_name}" for user_name in user_names)
+        result = self.run_cli(cmd_env, rm_all_users_cmd)
+        self.assertResultSuccess(result)
+
+        # cleanup
+        for user_name in user_names:
+            result = self.run_cli(cmd_env, user_cmd + f"delete {user_name} --confirm")
+            self.assertResultSuccess(result)
+        self.run_cli(cmd_env, group_cmd + f"delete {group_name} --confirm")
+        self.assertResultSuccess(result)

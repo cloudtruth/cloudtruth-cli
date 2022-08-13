@@ -59,6 +59,7 @@ similar = "2.0.0"
 subprocess = "0.1"
 tempfile = "3.2.0"
 termcolor = "1.1"
+urlencoding = "2.1.0"
 version-compare = "0.1.0"
 webbrowser = "0.5.5"
 

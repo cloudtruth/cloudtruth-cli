@@ -5,9 +5,7 @@ use cloudtruth_restapi::apis::groups_api::{
 use cloudtruth_restapi::apis::Error::ResponseError;
 use cloudtruth_restapi::models::{Group, PatchedGroup};
 
-use crate::database::{
-    auth_details, page_size, response_message, GroupDetails, GroupError, OpenApiConfig,
-};
+use crate::database::{auth_details, page_size, response_message, GroupError, OpenApiConfig};
 
 const NO_ORDERING: Option<&str> = None;
 
@@ -30,12 +28,9 @@ impl Groups {
         Self {}
     }
 
-    pub fn get_group_details(
-        &self,
-        rest_cfg: &OpenApiConfig,
-    ) -> Result<Vec<GroupDetails>, GroupError> {
+    pub fn get_group_details(&self, rest_cfg: &OpenApiConfig) -> Result<Vec<Group>, GroupError> {
         let mut page_count = 1;
-        let mut result: Vec<GroupDetails> = Vec::new();
+        let mut result: Vec<Group> = Vec::new();
         loop {
             let response = groups_list(
                 rest_cfg,
@@ -49,7 +44,7 @@ impl Groups {
                 Ok(paginated_group_list) => {
                     if let Some(groups) = paginated_group_list.results {
                         for group in groups {
-                            result.push(GroupDetails::from(&group));
+                            result.push(group);
                         }
                         page_count += 1;
                     } else {
@@ -72,7 +67,7 @@ impl Groups {
         &self,
         rest_cfg: &OpenApiConfig,
         group_name: &str,
-    ) -> Result<Option<GroupDetails>, GroupError> {
+    ) -> Result<Option<Group>, GroupError> {
         let page_count = 1;
         let response = groups_list(
             rest_cfg,
@@ -82,15 +77,12 @@ impl Groups {
             page_size(rest_cfg),
             None,
         );
-        println!("{:?}", response);
         match response {
             Ok(paginated_group_list) => {
-                let group_details = paginated_group_list
+                let group = paginated_group_list
                     .results
-                    .as_ref()
-                    .and_then(|groups| groups.get(0))
-                    .map(GroupDetails::from);
-                Ok(group_details)
+                    .and_then(|mut groups| groups.pop());
+                Ok(group)
             }
             Err(ResponseError(ref content)) => {
                 Err(response_error(&content.status, &content.content))
@@ -125,7 +117,7 @@ impl Groups {
         rest_cfg: &OpenApiConfig,
         group_name: &str,
         description: Option<&str>,
-    ) -> Result<GroupDetails, GroupError> {
+    ) -> Result<Group, GroupError> {
         let response = groups_create(
             rest_cfg,
             Group {
@@ -139,7 +131,7 @@ impl Groups {
             },
         );
         match response {
-            Ok(group) => Ok(GroupDetails::from(&group)),
+            Ok(group) => Ok(group),
             Err(ResponseError(ref content)) => {
                 Err(response_error(&content.status, &content.content))
             }
@@ -173,10 +165,53 @@ impl Groups {
         }
     }
 
-    pub fn add_user_to_group(&self, rest_cfg: &OpenApiConfig, group_id: &str, user_url: &str) {
-        // let response = groups_add_create(rest_cfg, group_id, user_url, Group::new())?;
+    pub fn add_user_to_group(
+        &self,
+        rest_cfg: &OpenApiConfig,
+        group: &Group,
+        user_url: &str,
+    ) -> Result<(), GroupError> {
+        /* Need to decode urlencoding from the user URL to avoid double-encoding in the REST client */
+        let user_url_decoded = urlencoding::decode(user_url).unwrap();
+        let response = groups_add_create(rest_cfg, &group.id, &user_url_decoded, group.clone());
+        match response {
+            Ok(_) => Ok(()),
+            Err(ResponseError(ref content)) => {
+                Err(response_error(&content.status, &content.content))
+            }
+            Err(e) => Err(GroupError::UnhandledError(e.to_string())),
+        }
     }
-    pub fn remove_user_from_group(&self, rest_cfg: &OpenApiConfig, group_id: &str, user_url: &str) {
-        // let response = groups_remove_create(rest_cfg, group_id, user_url, Group::new())?;
+    pub fn remove_user_from_group(
+        &self,
+        rest_cfg: &OpenApiConfig,
+        group: &Group,
+        user_url: &str,
+    ) -> Result<(), GroupError> {
+        /* Need to decode urlencoding from the user URL to avoid double-encoding in the REST client */
+        let user_url_decoded = urlencoding::decode(user_url).unwrap();
+        let response = groups_remove_create(rest_cfg, &group.id, &user_url_decoded, group.clone());
+        match response {
+            Ok(_) => Ok(()),
+            Err(ResponseError(ref content)) => {
+                Err(response_error(&content.status, &content.content))
+            }
+            Err(e) => Err(GroupError::UnhandledError(e.to_string())),
+        }
+    }
+
+    pub fn get_property(&self, group: &Group, property_name: &str) -> String {
+        match property_name {
+            "name" => group.name.clone(),
+            "description" => group.description.clone().unwrap_or_default(),
+            "users" => group.users.join(", "),
+            "created-at" => group.created_at.clone(),
+            "modified-at" => group.modified_at.clone(),
+            _ => format!("Unhandled property name '{}'", property_name),
+        }
+    }
+
+    pub fn get_properties(&self, group: &Group, fields: &[&str]) -> Vec<String> {
+        fields.iter().map(|p| self.get_property(group, p)).collect()
     }
 }

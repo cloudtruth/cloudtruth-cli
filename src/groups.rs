@@ -3,18 +3,19 @@ use crate::cli::{
     GET_SUBCMD, LIST_SUBCMD, NAME_ARG, RENAME_OPT, RM_USER_OPT, SET_SUBCMD, SHOW_TIMES_FLAG,
     SHOW_USERS_FLAG,
 };
-use crate::database::{GroupDetails, Groups, OpenApiConfig, UserError, Users};
+use crate::database::{Groups, OpenApiConfig, UserError, Users};
 
 use crate::lib::{
     error_message, user_confirm, warn_missing_subcommand, warning_message, DEL_CONFIRM,
 };
 use crate::table::Table;
 use clap::ArgMatches;
+use cloudtruth_restapi::models::Group;
 use color_eyre::eyre::Result;
 use indoc::printdoc;
 use std::process;
 
-fn print_group(details: &GroupDetails) {
+fn print_group(details: &Group) {
     printdoc!(
         r#"
             Name: {}
@@ -26,7 +27,7 @@ fn print_group(details: &GroupDetails) {
             Users: {}
         "#,
         details.name,
-        details.description,
+        details.description.as_deref().unwrap_or_default(),
         details.id,
         details.url,
         details.created_at,
@@ -89,7 +90,7 @@ fn proc_groups_list(
         let mut table = Table::new("group");
         table.set_header(&hdr);
         for entry in group_list {
-            let row = entry.get_properties(&properties);
+            let row = groups.get_properties(&entry, &properties);
             table.add_row(row);
         }
         table.render(fmt)?;
@@ -135,14 +136,13 @@ fn proc_groups_set(
     /* Look for existing group */
     let found_group = groups.get_group_details_by_name(rest_cfg, group_name)?;
     /* Update existing group or create new group if not found */
-    let group_id = if let Some(group) = found_group {
+    let group = if let Some(group) = found_group {
         if description.is_some() || rename.is_some() {
             groups.update_group(rest_cfg, &group.id, rename, description)?;
         }
-        group.id
+        group
     } else {
-        let new_group = groups.create_group(rest_cfg, group_name, description)?;
-        new_group.id
+        groups.create_group(rest_cfg, group_name, description)?
     };
     /* Convert the provided user names into URLs  */
     let user_name_to_url = |name| {
@@ -162,10 +162,10 @@ fn proc_groups_set(
         .map(user_name_to_url)
         .collect::<Result<Vec<String>>>()?;
     for user_url in add_user_urls {
-        // groups.add_user_to_group(rest_cfg, group_id, user_url)?;
+        groups.add_user_to_group(rest_cfg, &group, &user_url)?;
     }
     for user_url in rm_user_urls {
-        // groups.remove_user_from_group(rest_cfg, group_id, user_url)?;
+        groups.remove_user_from_group(rest_cfg, &group, &user_url)?;
     }
 
     Ok(())
