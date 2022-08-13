@@ -36,6 +36,7 @@ pub const RULE_NO_MAX_LEN_ARG: &str = "NO-MAX-LEN";
 pub const RULE_NO_MIN_LEN_ARG: &str = "NO-MIN-LEN";
 pub const RULE_NO_REGEX_ARG: &str = "NO-REGEX";
 pub const SHOW_TIMES_FLAG: &str = "show-time";
+pub const SHOW_USERS_FLAG: &str = "show-users";
 pub const SECRETS_FLAG: &str = "secrets";
 pub const TAG_NAME_OPT: &str = "tag";
 pub const TAG_NAME_ARG: &str = "tag-name";
@@ -204,6 +205,13 @@ fn show_times_arg() -> Arg<'static, 'static> {
         .long("show-times")
         .takes_value(false)
         .help("Show create and modified times.")
+}
+
+fn show_users_arg() -> Arg<'static, 'static> {
+    Arg::with_name(SHOW_USERS_FLAG)
+        .long("show-users")
+        .takes_value(false)
+        .help("Show list of users")
 }
 
 fn env_name_arg() -> Arg<'static, 'static> {
