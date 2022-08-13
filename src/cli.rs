@@ -3,6 +3,7 @@ use clap::{
     Arg, ArgMatches, Shell, SubCommand,
 };
 
+pub const ADD_USER_OPT: &str = "username-to-add";
 pub const API_KEY_OPT: &str = "api_key";
 pub const AS_OF_ARG: &str = "datetime|tag";
 pub const CONFIRM_FLAG: &str = "confirm";
@@ -22,6 +23,7 @@ pub const PULL_NAME_ARG: &str = "import-name";
 pub const PUSH_NAME_ARG: &str = "push-name";
 pub const RAW_FLAG: &str = "raw";
 pub const RENAME_OPT: &str = "new-name";
+pub const RM_USER_OPT: &str = "username-to-remove";
 pub const ROLE_ARG: &str = "role";
 pub const RULE_MAX_ARG: &str = "MAX";
 pub const RULE_MIN_ARG: &str = "MIN";
@@ -34,6 +36,7 @@ pub const RULE_NO_MAX_LEN_ARG: &str = "NO-MAX-LEN";
 pub const RULE_NO_MIN_LEN_ARG: &str = "NO-MIN-LEN";
 pub const RULE_NO_REGEX_ARG: &str = "NO-REGEX";
 pub const SHOW_TIMES_FLAG: &str = "show-time";
+pub const SHOW_USERS_FLAG: &str = "show-users";
 pub const SECRETS_FLAG: &str = "secrets";
 pub const TAG_NAME_OPT: &str = "tag";
 pub const TAG_NAME_ARG: &str = "tag-name";
@@ -202,6 +205,13 @@ fn show_times_arg() -> Arg<'static, 'static> {
         .long("show-times")
         .takes_value(false)
         .help("Show create and modified times.")
+}
+
+fn show_users_arg() -> Arg<'static, 'static> {
+    Arg::with_name(SHOW_USERS_FLAG)
+        .long("show-users")
+        .takes_value(false)
+        .help("Show list of users")
 }
 
 fn env_name_arg() -> Arg<'static, 'static> {
@@ -517,6 +527,24 @@ fn push_no_include_templates_arg() -> Arg<'static, 'static> {
     Arg::with_name("NO_INCLUDE_TEMPLATES")
         .long("no-include-templates")
         .help("Do not include templates in the values being pushed.")
+}
+
+fn add_user_option() -> Arg<'static, 'static> {
+    Arg::with_name(ADD_USER_OPT)
+        .long("add-user")
+        .visible_aliases(&["add", "user"])
+        .multiple(true)
+        .takes_value(true)
+        .help("Add user(s) to the group by name")
+}
+
+fn remove_user_option() -> Arg<'static, 'static> {
+    Arg::with_name(RM_USER_OPT)
+        .long("remove-user")
+        .visible_aliases(&["remove", "rm", "rm-user"])
+        .multiple(true)
+        .takes_value(true)
+        .help("Remove user(s) from the group by name")
 }
 
 pub fn build_cli() -> App<'static, 'static> {
@@ -1364,6 +1392,35 @@ pub fn build_cli() -> App<'static, 'static> {
                             .arg(invitation_name_arg())
                             .arg(role_arg().help("Role for invited user [default: viewer (on create)]")),
                     ])
+            ])
+        )
+        .subcommand(SubCommand::with_name("groups")
+            .visible_aliases(&["group", "grp", "gr", "g"])
+            .about("Manage CloudTruth user groups ")
+            .subcommands(vec![
+                SubCommand::with_name(DELETE_SUBCMD)
+                    .visible_aliases(DELETE_ALIASES)
+                    .about("Delete specified CloudTruth user group")
+                    .arg(name_arg().help("Group name"))
+                    .arg(confirm_flag()),
+                SubCommand::with_name(GET_SUBCMD)
+                    .about("Get detailed CloudTruth user group information")
+                    .arg(name_arg().help("Group name")),
+                SubCommand::with_name(LIST_SUBCMD)
+                    .visible_aliases(LIST_ALIASES)
+                    .about("List CloudTruth user groups")
+                    .arg(show_times_arg())
+                    .arg(show_users_arg())
+                    .arg(values_flag().help("Display group information/values"))
+                    .arg(table_format_options().help("Format for group values data")),
+                SubCommand::with_name(SET_SUBCMD)
+                    .visible_aliases(SET_ALIASES)
+                    .about("Create/update a CloudTruth user group")
+                    .arg(name_arg().help("Group name"))
+                    .arg(description_option().help("Group description"))
+                    .arg(rename_option().help("Rename the group"))
+                    .arg(add_user_option())
+                    .arg(remove_user_option())
             ])
         )
         .subcommand(SubCommand::with_name("schema")

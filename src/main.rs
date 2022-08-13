@@ -9,6 +9,7 @@ mod configuration;
 mod database;
 mod environments;
 mod generate;
+mod groups;
 mod import;
 mod installation;
 mod integrations;
@@ -35,6 +36,7 @@ use crate::configuration::process_config_command;
 use crate::database::{OpenApiConfig, Resolver};
 use crate::environments::process_environment_command;
 use crate::generate::process_generate_command;
+use crate::groups::process_groups_command;
 use crate::import::process_import_command;
 use crate::installation::{binary_version, get_latest_version, install_latest_version};
 use crate::integrations::process_integrations_command;
@@ -219,6 +221,11 @@ fn main() -> Result<()> {
     if let Some(matches) = matches.subcommand_matches("users") {
         process_users_command(matches, &rest_cfg)?;
         process::exit(0)
+    }
+
+    if let Some(matches) = matches.subcommand_matches("groups") {
+        process_groups_command(matches, &rest_cfg)?;
+        process::exit(0);
     }
 
     if let Some(matches) = matches.subcommand_matches("environments") {
