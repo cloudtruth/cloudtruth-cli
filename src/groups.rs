@@ -2,18 +2,19 @@ use crate::cli::{
     show_values, ADD_USER_OPT, CONFIRM_FLAG, DELETE_SUBCMD, DESCRIPTION_OPT, FORMAT_OPT,
     GET_SUBCMD, LIST_SUBCMD, NAME_ARG, RENAME_OPT, RM_USER_OPT, SET_SUBCMD, SHOW_TIMES_FLAG,
 };
-use crate::database::{GroupDetails, Groups, OpenApiConfig, UserError, Users};
+use crate::database::{Groups, OpenApiConfig, UserError, Users};
 
 use crate::lib::{
     error_message, user_confirm, warn_missing_subcommand, warning_message, DEL_CONFIRM,
 };
 use crate::table::Table;
 use clap::ArgMatches;
+use cloudtruth_restapi::models::Group;
 use color_eyre::eyre::Result;
 use indoc::printdoc;
 use std::process;
 
-fn print_group(details: &GroupDetails) {
+fn print_group(details: &Group) {
     printdoc!(
         r#"
             Name: {}
@@ -25,7 +26,7 @@ fn print_group(details: &GroupDetails) {
             Users: {}
         "#,
         details.name,
-        details.description,
+        details.description.as_deref().unwrap_or_default(),
         details.id,
         details.url,
         details.created_at,
@@ -85,7 +86,7 @@ fn proc_groups_list(
         let mut table = Table::new("group");
         table.set_header(&hdr);
         for entry in group_list {
-            let row = entry.get_properties(&properties);
+            let row = groups.get_properties(&entry, &properties);
             table.add_row(row);
         }
         table.render(fmt)?;
