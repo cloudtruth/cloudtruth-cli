@@ -27,7 +27,7 @@ pub struct Table {
     rows: Vec<Row>,
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum TableError {
     UnhandledFormat(String),
     CsvError(String),

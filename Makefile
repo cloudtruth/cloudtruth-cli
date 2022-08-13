@@ -4,7 +4,7 @@
 
 os_name := $(shell uname -s)
 rustup_exists := $(shell which rustup)
-rust_intended := 1.57.0
+rust_intended := 1.63.0
 rust_installed := $(shell rustc -V | cut -d' ' -f2)
 rust_bad_version := $(shell grep "RUST_VERSION:" .github/workflows/*.yml | grep -v "$(rust_intended)")
 openapi_gen_version := v5.3.1

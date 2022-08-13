@@ -36,7 +36,7 @@ fn proc_config_edit() -> Result<()> {
 
         warning_message(format!(
             "The provided content is not valid due to:\n{}",
-            validation.unwrap_err().to_string()
+            validation.unwrap_err()
         ));
 
         let continue_editing = "Do you want to continue editing".to_string();

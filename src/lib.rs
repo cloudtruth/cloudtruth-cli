@@ -179,20 +179,20 @@ pub fn parse_datetime(input: Option<&str>) -> Option<String> {
                 now.year(),
                 now.month(),
                 now.day(),
-                time_only.to_string()
+                time_only
             );
             let dt = NaiveDateTime::parse_from_str(&new_str, ISO8601).unwrap();
             Some(dt.format(ISO8601).to_string())
         } else if let Ok(full_date) = NaiveDate::parse_from_str(orig, "%Y-%m-%d") {
-            let new_str = format!("{}T00:00:00Z", full_date.to_string());
+            let new_str = format!("{}T00:00:00Z", full_date);
             let dt = NaiveDateTime::parse_from_str(&new_str, ISO8601).unwrap();
             Some(dt.format(ISO8601).to_string())
         } else if let Ok(us_date) = NaiveDate::parse_from_str(orig, "%m-%d-%Y") {
-            let new_str = format!("{}T00:00:00Z", us_date.to_string());
+            let new_str = format!("{}T00:00:00Z", us_date);
             let dt = NaiveDateTime::parse_from_str(&new_str, ISO8601).unwrap();
             Some(dt.format(ISO8601).to_string())
         } else if let Ok(us_date) = NaiveDate::parse_from_str(orig, "%m/%d/%Y") {
-            let new_str = format!("{}T00:00:00Z", us_date.to_string());
+            let new_str = format!("{}T00:00:00Z", us_date);
             let dt = NaiveDateTime::parse_from_str(&new_str, ISO8601).unwrap();
             Some(dt.format(ISO8601).to_string())
         } else {

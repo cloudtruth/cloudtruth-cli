@@ -32,7 +32,7 @@ fn encode(algorithm: CryptoAlgorithm, nonce: &str, ciphertext: &str, tag: &str) 
 /// Decodes the "encoded blob" into components.
 fn decode(encoded: &str) -> Result<SecretWrapper, CryptoError> {
     let parts = encoded.split(':').collect::<Vec<&str>>();
-    let prefix = parts.get(0).unwrap();
+    let prefix = parts.first().unwrap();
 
     if parts.len() != ENCODED_PART_COUNT {
         Err(CryptoError::InvalidEncoding(parts.len()))

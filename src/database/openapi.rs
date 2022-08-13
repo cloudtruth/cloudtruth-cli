@@ -94,13 +94,9 @@ pub fn parent_id_from_url<'a>(url: &'a str, child: &'a str) -> &'a str {
 fn user_agent_name() -> String {
     format!(
         "{}/{}/{}",
-        option_env!("CARGO_PKG_NAME")
-            .unwrap_or("cloudtruth")
-            .to_string(),
+        option_env!("CARGO_PKG_NAME").unwrap_or("cloudtruth"),
         // TODO: should this be the OpenApi version? or is the CLI version correct?
-        option_env!("CARGO_PKG_VERSION")
-            .unwrap_or("99.99.99")
-            .to_string(),
+        option_env!("CARGO_PKG_VERSION").unwrap_or("99.99.99"),
         env::consts::OS,
     )
 }

@@ -97,7 +97,7 @@ def cloudtruth_cleanup(*args):
             if any([needle for needle in args.needles if needle in item]):
                 elem.items.append(line.strip())
 
-    if not(any([x for x in elements if x.items])):
+    if not (any([x for x in elements if x.items])):
         types = [x.name for x in elements]
         type_list = ", ".join(types[:-1])
         type_list += f", or {types[-1]}"

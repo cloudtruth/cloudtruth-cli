@@ -284,7 +284,7 @@ fn proc_env_tag_set(
                     timestamp
                 };
                 let name = rename.unwrap_or(tag_name);
-                let _ = environments.update_env_tag(
+                environments.update_env_tag(
                     rest_cfg,
                     &env_id,
                     &tag_id,

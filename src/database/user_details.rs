@@ -101,7 +101,7 @@ impl From<&ServiceAccount> for UserDetails {
     fn from(api: &ServiceAccount) -> Self {
         let user: &User;
         if let Some(ref uref) = api.user {
-            user = &*uref;
+            user = uref;
         } else {
             user = default_user();
         };
@@ -128,7 +128,7 @@ impl From<&ServiceAccountCreateResponse> for UserDetails {
     fn from(api: &ServiceAccountCreateResponse) -> Self {
         let user: &User;
         if let Some(ref uref) = api.user {
-            user = &*uref;
+            user = uref;
         } else {
             user = default_user();
         };

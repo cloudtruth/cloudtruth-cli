@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Deserialize, Debug, PartialEq, Serialize, Default)]
+#[derive(Clone, Deserialize, Debug, PartialEq, Eq, Serialize, Default)]
 #[serde(default)]
 pub struct Profile {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -26,7 +26,7 @@ pub struct Profile {
 }
 
 // TODO: Rick Porter 4/21, fix this so don't have to udpate when Profile is updated
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ProfileDetails {
     pub api_key: Option<String>,
     pub description: Option<String>,

@@ -323,17 +323,16 @@ impl ConfigFile {
     }
 
     pub fn set_updates(config: &str, updates: &Updates) -> ConfigFileResult<String> {
-        let result: String;
         let current = ConfigFile::get_update_text(config);
         let mut next = serde_yaml::to_string(&updates)?;
         let replacement = format!("{}{}", "\n", " ".repeat(2));
         let header = format!("{}:", HDR_UPDATES);
-        next = next.replace("\n", &replacement).replace("---", &header);
-        if current.is_empty() {
-            result = format!("{}\n{}", config, next);
+        next = next.replace('\n', &replacement).replace("---", &header);
+        let result = if current.is_empty() {
+            format!("{}\n{}", config, next)
         } else {
-            result = config.replace(&current, &next);
-        }
+            config.replace(&current, &next)
+        };
         Ok(result)
     }
 }
