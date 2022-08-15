@@ -1,12 +1,12 @@
 use crate::cli::{
-    opposing_flags, show_values, CONFIRM_FLAG, DELETE_SUBCMD, DESCRIPTION_OPT, FORMAT_OPT,
-    GET_SUBCMD, IMPORT_SUBCMD, INTEGRATION_NAME_ARG, LIST_SUBCMD, PULL_NAME_ARG, PUSH_NAME_ARG,
-    PUSH_SUBCMD, RENAME_OPT, SET_SUBCMD, SHOW_TIMES_FLAG, SYNC_SUBCMD, TASKS_SUBCMD,
-    TASK_STEPS_SUBCMD,
+    opposing_flags, show_values, CONFIRM_FLAG, DELETE_SUBCMD, DESCRIPTION_OPT, ENV_NAME_OPT,
+    FORMAT_OPT, GET_SUBCMD, IMPORT_SUBCMD, INTEGRATION_NAME_ARG, LIST_SUBCMD, PROJECT_NAME_OPT,
+    PULL_NAME_ARG, PUSH_NAME_ARG, PUSH_SUBCMD, RENAME_OPT, SET_SUBCMD, SHOW_TIMES_FLAG,
+    SYNC_SUBCMD, TAG_NAME_OPT, TASKS_SUBCMD, TASK_STEPS_SUBCMD,
 };
 use crate::database::{
     last_from_url, parent_id_from_url, ActionDetails, Environments, IntegrationError, Integrations,
-    OpenApiConfig, ProjectDetails, Projects,
+    OpenApiConfig, ProjectDetails, ProjectError, Projects,
 };
 use crate::integrations::integration_not_found_message;
 use crate::lib::{
@@ -355,17 +355,47 @@ fn proc_action_push_list(
 ) -> Result<()> {
     let integ_name = subcmd_args.value_of(INTEGRATION_NAME_ARG);
     let show_times = subcmd_args.is_present(SHOW_TIMES_FLAG);
+    let project = subcmd_args.value_of(PROJECT_NAME_OPT);
+    let tag = subcmd_args.value_of(TAG_NAME_OPT);
+    let environment = subcmd_args.value_of(ENV_NAME_OPT);
     let show_values = show_values(subcmd_args);
     let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
     let qualifier: String;
     let show_integration: bool;
     let mut pushes: Vec<ActionDetails>;
 
+    /* Resolve project, tag, and environment names to URLs */
+    let project_url = project
+        .map(|project| {
+            let proj_details = Projects::new().get_project_details(rest_cfg)?;
+            let mut proj_list = project_names_to_urls(&[project], &proj_details);
+            Ok::<String, ProjectError>(proj_list.swap_remove(0))
+        })
+        .transpose()?;
+    let tag_url = tag.map(|tag| {
+        let tag_map = get_tag_name_to_url_map(rest_cfg, &[tag]);
+        let mut tag_list = tag_names_to_urls(&[tag], &tag_map);
+        tag_list.swap_remove(0)
+    });
+    let env_url = environment
+        .map(|env| Environments::new().get_environment_url_by_name(rest_cfg, env))
+        .transpose()
+        .unwrap_or_else(|err| {
+            error_message(err.to_string());
+            process::exit(49)
+        });
     if let Some(integ_name) = integ_name {
         qualifier = format!(" for integration '{}'", integ_name);
         show_integration = false;
         if let Some(integ_id) = integrations.get_id(rest_cfg, integ_name)? {
-            pushes = integrations.get_push_list(rest_cfg, &integ_id)?;
+            pushes = integrations.get_push_list(
+                rest_cfg,
+                &integ_id,
+                None,
+                env_url.as_deref(),
+                project_url.as_deref(),
+                tag_url.as_deref(),
+            )?;
         } else {
             error_message(integration_not_found_message(integ_name));
             process::exit(30);
@@ -373,7 +403,12 @@ fn proc_action_push_list(
     } else {
         qualifier = "".to_string();
         show_integration = true;
-        pushes = integrations.get_all_pushes(rest_cfg)?;
+        pushes = integrations.get_all_pushes(
+            rest_cfg,
+            env_url.as_deref(),
+            project_url.as_deref(),
+            tag_url.as_deref(),
+        )?;
     }
 
     if pushes.is_empty() {
@@ -442,6 +477,7 @@ fn proc_action_push_set(
     let service = subcmd_args.value_of("service").unwrap();
     let dry_run = opposing_flags(subcmd_args, "DRY_RUN", "NO_DRY_RUN");
     let check_owner = opposing_flags(subcmd_args, "NO_CHECK_OWNER", "CHECK_OWNER"); // opposite polarity
+    let local = opposing_flags(subcmd_args, "LOCAL", "NO_LOCAL");
     let include_params = opposing_flags(subcmd_args, "INCLUDE_PARAMS", "NO_INCLUDE_PARAMS");
     let include_templates =
         opposing_flags(subcmd_args, "INCLUDE_TEMPLATES", "NO_INCLUDE_TEMPLATES");
@@ -519,6 +555,7 @@ fn proc_action_push_set(
             tag_ids,
             dry_run,
             check_owner,
+            local,
             include_params,
             include_secrets,
             include_templates,
@@ -543,6 +580,7 @@ fn proc_action_push_set(
                 tag_add_ids.iter().map(String::from).collect(),
                 dry_run,
                 check_owner,
+                local,
                 include_params,
                 include_secrets,
                 include_templates,
@@ -573,6 +611,7 @@ fn proc_action_push_sync(
     let resolved = resolve_push_details(rest_cfg, integrations, integ_name, push_name)?;
     let dry_run = opposing_flags(subcmd_args, "DRY_RUN", "NO_DRY_RUN");
     let check_owner = opposing_flags(subcmd_args, "NO_CHECK_OWNER", "CHECK_OWNER"); // opposite polarity
+    let local = opposing_flags(subcmd_args, "LOCAL", "NO_LOCAL");
     let include_params = opposing_flags(subcmd_args, "INCLUDE_PARAMS", "NO_INCLUDE_PARAMS");
     let include_secrets = opposing_flags(subcmd_args, "INCLUDE_SECRETS", "NO_INCLUDE_SECRETS");
     let include_templates =
@@ -585,6 +624,7 @@ fn proc_action_push_sync(
             &details,
             dry_run,
             check_owner,
+            local,
             include_params,
             include_secrets,
             include_templates,

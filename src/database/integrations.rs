@@ -434,19 +434,27 @@ impl Integrations {
         &self,
         rest_cfg: &OpenApiConfig,
         integration_id: &str,
+        name: Option<&str>,
+        environment: Option<&str>,
+        project: Option<&str>,
+        tag: Option<&str>,
     ) -> Result<Vec<ActionDetails>, IntegrationError> {
-        self.get_aws_push_list(rest_cfg, integration_id, None, None, None, None)
+        self.get_aws_push_list(rest_cfg, integration_id, environment, name, project, tag)
     }
 
     fn get_all_aws_pushes(
         &self,
         rest_cfg: &OpenApiConfig,
         name: Option<&str>,
+        environment: Option<&str>,
+        project: Option<&str>,
+        tag: Option<&str>,
     ) -> Result<Vec<ActionDetails>, IntegrationError> {
         let int_details = self.get_aws_integration_details(rest_cfg)?;
         let mut total: Vec<ActionDetails> = vec![];
         for entry in int_details {
-            let mut pushes = self.get_aws_push_list(rest_cfg, &entry.id, None, name, None, None)?;
+            let mut pushes =
+                self.get_aws_push_list(rest_cfg, &entry.id, environment, name, project, tag)?;
             for p in &mut pushes {
                 p.integration_name = entry.name.clone();
             }
@@ -458,8 +466,11 @@ impl Integrations {
     pub fn get_all_pushes(
         &self,
         rest_cfg: &OpenApiConfig,
+        environment: Option<&str>,
+        project: Option<&str>,
+        tag: Option<&str>,
     ) -> Result<Vec<ActionDetails>, IntegrationError> {
-        self.get_all_aws_pushes(rest_cfg, None)
+        self.get_all_aws_pushes(rest_cfg, None, environment, project, tag)
     }
 
     pub fn get_all_pushes_by_name(
@@ -467,7 +478,7 @@ impl Integrations {
         rest_cfg: &OpenApiConfig,
         push_name: &str,
     ) -> Result<Vec<ActionDetails>, IntegrationError> {
-        self.get_all_aws_pushes(rest_cfg, Some(push_name))
+        self.get_all_aws_pushes(rest_cfg, Some(push_name), None, None, None)
     }
 
     fn get_aws_push_by_name(
@@ -688,6 +699,7 @@ impl Integrations {
         tags: Vec<String>,
         dry_run: Option<bool>,
         force: Option<bool>,
+        local: Option<bool>,
         include_params: Option<bool>,
         include_secrets: Option<bool>,
         include_templates: Option<bool>,
@@ -712,7 +724,7 @@ impl Integrations {
             include_secrets,
             include_templates,
             coerce_parameters: coerce_params,
-            local: Some(false),
+            local,
             created_at: "".to_string(),
             modified_at: "".to_string(),
         };
@@ -740,6 +752,7 @@ impl Integrations {
         tags: Vec<String>,
         dry_run: Option<bool>,
         force: Option<bool>,
+        local: Option<bool>,
         include_params: Option<bool>,
         include_secrets: Option<bool>,
         include_templates: Option<bool>,
@@ -757,6 +770,7 @@ impl Integrations {
             tags,
             dry_run,
             force,
+            local,
             include_params,
             include_secrets,
             include_templates,
@@ -777,6 +791,7 @@ impl Integrations {
         tags: Vec<String>,
         dry_run: Option<bool>,
         force: Option<bool>,
+        local: Option<bool>,
         include_params: Option<bool>,
         include_secrets: Option<bool>,
         include_templates: Option<bool>,
@@ -790,7 +805,7 @@ impl Integrations {
             resource: Some(resource.to_string()),
             dry_run,
             force,
-            local: Some(false),
+            local,
             coerce_parameters: coerce_params,
             include_parameters: include_params,
             include_secrets,
@@ -820,6 +835,7 @@ impl Integrations {
         tags: Vec<String>,
         dry_run: Option<bool>,
         force: Option<bool>,
+        local: Option<bool>,
         include_params: Option<bool>,
         include_secrets: Option<bool>,
         include_templates: Option<bool>,
@@ -836,6 +852,7 @@ impl Integrations {
             tags,
             dry_run,
             force,
+            local,
             include_params,
             include_secrets,
             include_templates,
@@ -850,6 +867,7 @@ impl Integrations {
         push_details: &ActionDetails,
         dry_run: Option<bool>,
         force: Option<bool>,
+        local: Option<bool>,
         include_params: Option<bool>,
         include_secrets: Option<bool>,
         include_templates: Option<bool>,
@@ -876,7 +894,7 @@ impl Integrations {
             latest_task: None,
             dry_run,
             force,
-            local: Some(false),
+            local,
             include_parameters: include_params,
             include_secrets,
             include_templates,
@@ -906,6 +924,7 @@ impl Integrations {
         push_details: &ActionDetails,
         dry_run: Option<bool>,
         force: Option<bool>,
+        local: Option<bool>,
         include_params: Option<bool>,
         include_secrets: Option<bool>,
         include_templates: Option<bool>,
@@ -916,6 +935,7 @@ impl Integrations {
             push_details,
             dry_run,
             force,
+            local,
             include_params,
             include_secrets,
             include_templates,
