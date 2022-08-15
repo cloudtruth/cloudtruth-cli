@@ -66,6 +66,9 @@ pub const CT_REST_SUCCESS: &str = "CLOUDTRUTH_REST_SUCCESS";
 /// Environment variable name used to set the REST page size.
 pub const CT_REST_PAGE_SIZE: &str = "CLOUDTRUTH_REST_PAGE_SIZE";
 
+/// Environment variable name used to trust any certificate from the server
+pub const CT_ACCEPT_INVALID_CERTS: &str = "CLOUDTRUTH_ACCEPT_INVALID_CERTS";
+
 /// List of variables to remove to make a clean environment.
 #[allow(dead_code)]
 pub const CT_APP_REMOVABLE_VARS: &[&str] = &[CT_SERVER_URL, CT_API_KEY];
@@ -95,6 +98,7 @@ pub struct Config {
     pub rest_debug: bool,
     pub rest_page_size: Option<i32>,
     pub rest_success: Vec<String>,
+    pub accept_invalid_certs: Option<bool>
 }
 
 pub struct ValidationError {
@@ -126,6 +130,7 @@ fn profile_into_config(prof_name: &str, profile: &Profile) -> Config {
         rest_debug: profile.rest_debug.unwrap_or(false),
         rest_success: profile.rest_success.clone(),
         rest_page_size: profile.rest_page_size,
+        accept_invalid_certs: profile.accept_invalid_certs
     }
 }
 
@@ -142,6 +147,7 @@ pub const PARAM_ENVIRONMENT: &str = "Environment";
 pub const PARAM_SERVER_URL: &str = "Server URL";
 pub const PARAM_REQUEST_TIMEOUT: &str = "Request timeout";
 pub const PARAM_REST_DEBUG: &str = "REST debug";
+pub const PARAM_ACCEPT_INVALID_CERTS: &str = "Accept Invalid Certs";
 pub const PARAM_REST_SUCCESS: &str = "REST success";
 pub const PARAM_REST_PAGE_SIZE: &str = "REST page size";
 pub const PARAM_CLI_VERSION: &str = "CLI version";
@@ -266,7 +272,7 @@ impl Config {
         description: Option<&str>,
         environment: Option<&str>,
         project: Option<&str>,
-        source: Option<&str>,
+        source: Option<&str>
     ) -> Result<()> {
         if let Some(filename) = Self::config_file() {
             if !filename.exists() {
@@ -638,6 +644,30 @@ impl Config {
             source,
             secret: false,
             extension: true,
+        });
+
+        //////////////////
+        // Accept Invalid Certs
+        let mut value = "false".to_string();
+        let mut source = SRC_DEFAULT.to_string();
+        if let Some(env_value) = ConfigEnv::get_accept_invalid_certs() {
+            value = env_value.to_string();
+            source = SRC_ENV.to_string();
+        } else {
+            for profile in &profiles {
+                if let Some(ref prof_value) = profile.accept_invalid_certs {
+                    value = prof_value.to_string();
+                    source = format!("{} ({})", SRC_PROFILE, profile.name);
+                    break;
+                }
+            }
+        }
+        results.push(ConfigValue {
+            name: PARAM_ACCEPT_INVALID_CERTS.to_string(),
+            value,
+            source,
+            secret: false,
+            extension: true
         });
 
         Ok(results)
