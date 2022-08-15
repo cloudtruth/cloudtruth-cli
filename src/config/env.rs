@@ -1,7 +1,7 @@
 use crate::config::profiles::Profile;
 use crate::config::{
-    CT_API_KEY, CT_ENVIRONMENT, CT_PROJECT, CT_REQ_TIMEOUT, CT_REST_DEBUG, CT_REST_PAGE_SIZE,
-    CT_REST_SUCCESS, CT_SERVER_URL, CT_ACCEPT_INVALID_CERTS
+    CT_ACCEPT_INVALID_CERTS, CT_API_KEY, CT_ENVIRONMENT, CT_PROJECT, CT_REQ_TIMEOUT, CT_REST_DEBUG,
+    CT_REST_PAGE_SIZE, CT_REST_SUCCESS, CT_SERVER_URL,
 };
 use std::env;
 
@@ -20,7 +20,7 @@ impl ConfigEnv {
             rest_page_size: Self::get_rest_page_size(),
             server_url: Self::get_override(CT_SERVER_URL),
             source_profile: None,
-            accept_invalid_certs: Self::get_accept_invalid_certs()
+            accept_invalid_certs: Self::get_accept_invalid_certs(),
         }
     }
 

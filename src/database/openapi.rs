@@ -156,7 +156,7 @@ mod tests {
             rest_debug: true,
             rest_success: vec!["abc".to_string(), "def".to_string()],
             rest_page_size: Some(2300),
-            accept_invalid_certs: None
+            accept_invalid_certs: None,
         };
         let openapi_cfg = OpenApiConfig::from(&ct_cfg);
         // check that the trailing slash removed from the URL

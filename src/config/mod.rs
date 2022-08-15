@@ -98,7 +98,7 @@ pub struct Config {
     pub rest_debug: bool,
     pub rest_page_size: Option<i32>,
     pub rest_success: Vec<String>,
-    pub accept_invalid_certs: Option<bool>
+    pub accept_invalid_certs: Option<bool>,
 }
 
 pub struct ValidationError {
@@ -130,7 +130,7 @@ fn profile_into_config(prof_name: &str, profile: &Profile) -> Config {
         rest_debug: profile.rest_debug.unwrap_or(false),
         rest_success: profile.rest_success.clone(),
         rest_page_size: profile.rest_page_size,
-        accept_invalid_certs: profile.accept_invalid_certs
+        accept_invalid_certs: profile.accept_invalid_certs,
     }
 }
 
@@ -272,7 +272,7 @@ impl Config {
         description: Option<&str>,
         environment: Option<&str>,
         project: Option<&str>,
-        source: Option<&str>
+        source: Option<&str>,
     ) -> Result<()> {
         if let Some(filename) = Self::config_file() {
             if !filename.exists() {
@@ -667,7 +667,7 @@ impl Config {
             value,
             source,
             secret: false,
-            extension: true
+            extension: true,
         });
 
         Ok(results)
