@@ -45,7 +45,7 @@ impl fmt::Display for ParameterError {
                 )
             }
             ParameterError::CryptoError(e) => {
-                write!(f, "{}", e.to_string())
+                write!(f, "{}", e)
             }
         }
     }

@@ -2,14 +2,14 @@ use crate::config::config_date::naive_date_serde;
 use chrono::{Duration, NaiveDate};
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Debug, Copy, Clone, PartialOrd, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, Copy, Clone, PartialOrd, PartialEq, Eq)]
 pub enum Frequency {
     Daily,
     Weekly,
     Monthly,
 }
 
-#[derive(Serialize, Deserialize, Debug, Copy, Clone, PartialOrd, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, Copy, Clone, PartialOrd, PartialEq, Eq)]
 pub enum Action {
     Warn,
     Error,

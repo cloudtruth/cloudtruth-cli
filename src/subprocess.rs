@@ -64,10 +64,10 @@ impl fmt::Display for SubProcessError {
                 )
             }
             SubProcessError::ProcessRunError(e) => {
-                write!(f, "Process run error: {}", e.to_string())
+                write!(f, "Process run error: {}", e)
             }
             SubProcessError::ProcessOutputError(e) => {
-                write!(f, "Problem writing output: {}", e.to_string())
+                write!(f, "Problem writing output: {}", e)
             }
             SubProcessError::StrictRunError(e) => {
                 write!(

@@ -150,9 +150,7 @@ fn main() -> Result<()> {
 
     let api_key = matches.value_of("api_key");
     let profile_arg = matches.value_of("profile");
-    let profile_name = matches
-        .value_of("profile")
-        .or_else(|| profile_env.as_deref());
+    let profile_name = matches.value_of("profile").or(profile_env.as_deref());
     let env_name = matches.value_of("env");
     let proj_name = matches.value_of("project");
 
@@ -193,7 +191,7 @@ fn main() -> Result<()> {
             "The configuration ({}) can be edited with '{} config edit'.\nError details:\n{}",
             Config::filename(),
             cli::binary_name(),
-            error.to_string()
+            error
         ));
         process::exit(26);
     }
