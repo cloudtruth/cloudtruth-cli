@@ -23,6 +23,8 @@ pub struct Profile {
     pub server_url: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub source_profile: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub accept_invalid_certs: Option<bool>,
 }
 
 // TODO: Rick Porter 4/21, fix this so don't have to udpate when Profile is updated
@@ -39,6 +41,7 @@ pub struct ProfileDetails {
     pub rest_debug: Option<bool>,
     pub rest_success: Vec<String>,
     pub rest_page_size: Option<i32>,
+    pub accept_invalid_certs: Option<bool>,
 }
 
 fn empty_to_none(value: &Option<String>) -> Option<String> {
@@ -75,6 +78,10 @@ impl Profile {
             rest_page_size: other.rest_page_size.or(self.rest_page_size),
             server_url: other.server_url.clone().or_else(|| self.server_url.clone()),
             source_profile: self.source_profile.clone(),
+            accept_invalid_certs: other
+                .accept_invalid_certs
+                .or(self.accept_invalid_certs)
+                .clone(),
         }
     }
 
@@ -91,6 +98,7 @@ impl Profile {
             rest_page_size: self.rest_page_size,
             server_url: empty_to_none(&self.server_url),
             source_profile: empty_to_none(&self.source_profile),
+            accept_invalid_certs: self.accept_invalid_certs,
         }
     }
 
@@ -104,6 +112,7 @@ impl Profile {
             && self.rest_page_size.is_none()
             && self.server_url.is_none()
             && self.source_profile.is_none()
+            && self.accept_invalid_certs.is_none()
     }
 }
 
@@ -125,6 +134,7 @@ mod tests {
             project: Some("skunkworks".to_string()),
             request_timeout: Some(100),
             rest_debug: Some(true),
+            accept_invalid_certs: Some(true),
             rest_success: vec!["proj".to_string(), "env".to_string()],
             server_url: Some("http://localhost:7001/graphql".to_string()),
             ..Profile::default()
@@ -142,6 +152,7 @@ mod tests {
             project: Some("skunkworks".to_string()),
             request_timeout: Some(23),
             rest_debug: Some(false),
+            accept_invalid_certs: Some(true),
             rest_success: vec!["proj".to_string(), "env".to_string()],
             rest_page_size: Some(500),
             server_url: Some("http://localhost:7001/graphql".to_string()),
@@ -222,6 +233,7 @@ mod tests {
             rest_page_size: None,
             server_url: Some("".to_string()),
             source_profile: Some("".to_string()),
+            accept_invalid_certs: None,
         };
 
         let prof2 = prof.remove_empty();
@@ -239,6 +251,7 @@ mod tests {
             rest_page_size: None,
             server_url: Some("url".to_string()),
             source_profile: Some("src-prof".to_string()),
+            accept_invalid_certs: None,
         };
         let prof2 = prof.remove_empty();
         assert_eq!(prof, prof2);

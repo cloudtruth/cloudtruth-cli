@@ -118,6 +118,7 @@ impl From<&CloudTruthConfig> for OpenApiConfig {
             client: reqwest::Client::builder()
                 .timeout(ct_cfg.request_timeout.unwrap())
                 .cookie_store(true)
+                .danger_accept_invalid_certs(ct_cfg.accept_invalid_certs.unwrap_or(false))
                 .build()
                 .unwrap(),
             basic_auth: None,
@@ -155,6 +156,7 @@ mod tests {
             rest_debug: true,
             rest_success: vec!["abc".to_string(), "def".to_string()],
             rest_page_size: Some(2300),
+            accept_invalid_certs: None,
         };
         let openapi_cfg = OpenApiConfig::from(&ct_cfg);
         // check that the trailing slash removed from the URL

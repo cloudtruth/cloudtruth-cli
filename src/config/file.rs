@@ -134,6 +134,7 @@ impl ConfigFile {
             rest_page_size: None,
             server_url: None,
             source_profile: source.map(String::from),
+            accept_invalid_certs: None,
         };
 
         let profiles = config_file.profiles.borrow_mut();
@@ -187,6 +188,7 @@ impl ConfigFile {
             rest_debug: profile.rest_debug,
             rest_success: profile.rest_success.clone(),
             rest_page_size: profile.rest_page_size,
+            accept_invalid_certs: profile.accept_invalid_certs,
         }
     }
 
@@ -731,6 +733,7 @@ mod tests {
                 rest_success: vec![],
                 rest_page_size: None,
                 request_timeout: None,
+                accept_invalid_certs: None
             },
         );
     }

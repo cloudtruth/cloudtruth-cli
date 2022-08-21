@@ -1,7 +1,7 @@
 use crate::config::profiles::Profile;
 use crate::config::{
-    CT_API_KEY, CT_ENVIRONMENT, CT_PROJECT, CT_REQ_TIMEOUT, CT_REST_DEBUG, CT_REST_PAGE_SIZE,
-    CT_REST_SUCCESS, CT_SERVER_URL,
+    CT_ACCEPT_INVALID_CERTS, CT_API_KEY, CT_ENVIRONMENT, CT_PROJECT, CT_REQ_TIMEOUT, CT_REST_DEBUG,
+    CT_REST_PAGE_SIZE, CT_REST_SUCCESS, CT_SERVER_URL,
 };
 use std::env;
 
@@ -20,6 +20,7 @@ impl ConfigEnv {
             rest_page_size: Self::get_rest_page_size(),
             server_url: Self::get_override(CT_SERVER_URL),
             source_profile: None,
+            accept_invalid_certs: Self::get_accept_invalid_certs(),
         }
     }
 
@@ -45,6 +46,11 @@ impl ConfigEnv {
 
     pub fn get_rest_debug() -> Option<bool> {
         Self::get_override(CT_REST_DEBUG)
+            .map(|e| matches!(e.to_lowercase().as_str(), "true" | "1" | "yes"))
+    }
+
+    pub fn get_accept_invalid_certs() -> Option<bool> {
+        Self::get_override(CT_ACCEPT_INVALID_CERTS)
             .map(|e| matches!(e.to_lowercase().as_str(), "true" | "1" | "yes"))
     }
 
@@ -84,6 +90,7 @@ mod tests {
         env::remove_var(CT_REST_DEBUG);
         env::remove_var(CT_REST_SUCCESS);
         env::remove_var(CT_REST_PAGE_SIZE);
+        env::remove_var(CT_ACCEPT_INVALID_CERTS);
     }
 
     #[test]
@@ -109,6 +116,7 @@ mod tests {
         env::set_var(CT_SERVER_URL, "http://localhost:7001/graphql");
         env::set_var(CT_REST_DEBUG, "true");
         env::set_var(CT_REST_SUCCESS, "sna,foo,bar");
+        env::set_var(CT_ACCEPT_INVALID_CERTS, "1");
 
         assert_eq!(
             Profile {
@@ -121,7 +129,8 @@ mod tests {
                 rest_success: vec!["sna".to_string(), "foo".to_string(), "bar".to_string()],
                 rest_page_size: None,
                 server_url: Some("http://localhost:7001/graphql".to_string()),
-                source_profile: None
+                source_profile: None,
+                accept_invalid_certs: Some(true)
             },
             ConfigEnv::load_profile()
         );

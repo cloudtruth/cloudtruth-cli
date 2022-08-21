@@ -208,7 +208,7 @@ class TestConfiguration(TestCase):
         extended = [
             "Profile", "API key", "Organization", "User", "Role", "Project", "Environment",
             "CLI version", "Server URL", "Request timeout", "REST debug", "REST success",
-            "REST page size",
+            "REST page size", "Accept Invalid Certs"
         ]
         self.assertEqual(param_names, extended)
 
