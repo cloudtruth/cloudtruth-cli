@@ -159,7 +159,7 @@ mod test {
     fn service_account_null_user() {
         let data = r#"{"count":1,"next":null,"previous":null,"results":[{"url":"https://api.staging.cloudtruth.io/api/v1/serviceaccounts/auth0%7C61949e0bc0d28400705bc3cf/","id":"auth0|61949e0bc0d28400705bc3cf","user":null,"description":"Updated description","created_at":"2021-11-17T06:15:41.676634Z","modified_at":"2021-11-17T06:16:00.758835Z","last_used_at":"2021-11-17T06:16:17.334174Z"}]}"#;
         let result: serde_json::Result<PaginatedServiceAccountList> = serde_json::from_str(data);
-        assert_eq!(false, result.is_err());
+        assert!(result.is_ok());
         let list = result.unwrap();
         assert_eq!(1, list.count.unwrap_or(-1));
         let items = list.results.unwrap();
@@ -183,7 +183,7 @@ mod test {
     fn service_account_null_last_used_by() {
         let data = r#"{"count":1,"next":null,"previous":null,"results":[{"url":"https://api.staging.cloudtruth.io/api/v1/serviceaccounts/auth0%7C61949e36c0baff006a6d1aea/","id":"auth0|61949e36c0baff006a6d1aea","user":{"url":"https://api.staging.cloudtruth.io/api/v1/users/auth0%7C61949e36c0baff006a6d1aea/","id":"auth0|61949e36c0baff006a6d1aea","type":"service","name":"test-user-name-Linux-37","email":"serviceaccount+ajwflw8wzpc1quhp@cloudtruth.com","picture_url":null,"created_at":"2021-11-17T06:16:24.082794Z","modified_at":"2021-11-17T06:16:24.548713Z"},"description":"Description on create","created_at":"2021-11-17T06:16:24.558748Z","modified_at":"2021-11-17T06:16:24.558748Z","last_used_at":null}]}"#;
         let result: serde_json::Result<PaginatedServiceAccountList> = serde_json::from_str(data);
-        assert_eq!(false, result.is_err());
+        assert!(result.is_ok());
         let list = result.unwrap();
         assert_eq!(1, list.count.unwrap_or(-1));
         let items = list.results.unwrap();

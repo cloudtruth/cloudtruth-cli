@@ -1,21 +1,19 @@
 use crate::cli::{
     show_values, ADD_USER_OPT, CONFIRM_FLAG, DELETE_SUBCMD, DESCRIPTION_OPT, FORMAT_OPT,
     GET_SUBCMD, LIST_SUBCMD, NAME_ARG, RENAME_OPT, RM_USER_OPT, SET_SUBCMD, SHOW_TIMES_FLAG,
-    SHOW_USERS_FLAG,
 };
-use crate::database::{Groups, OpenApiConfig, UserError, Users};
+use crate::database::{GroupDetails, Groups, OpenApiConfig, UserError, Users};
 
 use crate::lib::{
     error_message, user_confirm, warn_missing_subcommand, warning_message, DEL_CONFIRM,
 };
 use crate::table::Table;
 use clap::ArgMatches;
-use cloudtruth_restapi::models::Group;
 use color_eyre::eyre::Result;
 use indoc::printdoc;
 use std::process;
 
-fn print_group(details: &Group) {
+fn print_group(details: &GroupDetails) {
     printdoc!(
         r#"
             Name: {}
@@ -27,7 +25,7 @@ fn print_group(details: &Group) {
             Users: {}
         "#,
         details.name,
-        details.description.as_deref().unwrap_or_default(),
+        details.description,
         details.id,
         details.url,
         details.created_at,
@@ -44,8 +42,8 @@ fn proc_groups_get(
     let group_name = subcmd_args.value_of(NAME_ARG).unwrap();
     let response = groups.get_group_details_by_name(rest_cfg, group_name)?;
 
-    if let Some(details) = response {
-        print_group(&details);
+    if let Some(group) = response {
+        print_group(&group);
     } else {
         error_message(format!("The group '{}' could not be found", group_name));
         process::exit(51);
@@ -61,8 +59,7 @@ fn proc_groups_list(
     let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
     let show_values = show_values(subcmd_args);
     let show_times = subcmd_args.is_present(SHOW_TIMES_FLAG);
-    let show_users = subcmd_args.is_present(SHOW_USERS_FLAG);
-    let group_list = groups.get_group_details(rest_cfg)?;
+    let group_list = groups.get_group_details_list(rest_cfg)?;
     if group_list.is_empty() {
         println!("No groups found!");
     } else if !show_values {
@@ -83,14 +80,12 @@ fn proc_groups_list(
             properties.push("created-at");
             properties.push("modified-at");
         }
-        if show_users {
-            hdr.push("Users");
-            properties.push("users");
-        }
+        hdr.push("Users");
+        properties.push("users");
         let mut table = Table::new("group");
         table.set_header(&hdr);
         for entry in group_list {
-            let row = groups.get_properties(&entry, &properties);
+            let row = entry.get_properties(&properties);
             table.add_row(row);
         }
         table.render(fmt)?;
@@ -134,7 +129,7 @@ fn proc_groups_set(
     let rename = subcmd_args.value_of(RENAME_OPT);
 
     /* Look for existing group */
-    let found_group = groups.get_group_details_by_name(rest_cfg, group_name)?;
+    let found_group = groups.get_group_by_name(rest_cfg, group_name)?;
     /* Update existing group or create new group if not found */
     let group = if let Some(group) = found_group {
         if description.is_some() || rename.is_some() {

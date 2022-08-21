@@ -370,8 +370,8 @@ mod tests {
 
         let profile = ConfigFile::load_profile(config, "read-only").unwrap();
         assert_eq!(Some("read_only_key".to_string()), profile.api_key);
-        let result = ConfigFile::validate_content(&config);
-        assert_eq!(result.is_ok(), true);
+        let result = ConfigFile::validate_content(config);
+        assert!(result.is_ok());
     }
 
     #[test]
@@ -389,8 +389,8 @@ mod tests {
             Some("http://localhost:7001/graphql".to_string()),
             profile.server_url
         );
-        let result = ConfigFile::validate_content(&config);
-        assert_eq!(result.is_ok(), true);
+        let result = ConfigFile::validate_content(config);
+        assert!(result.is_ok());
     }
 
     #[test]
@@ -405,8 +405,8 @@ mod tests {
 
         let profile = ConfigFile::load_profile(config, "default").unwrap();
         assert_eq!(Some(50), profile.request_timeout);
-        let result = ConfigFile::validate_content(&config);
-        assert_eq!(result.is_ok(), true);
+        let result = ConfigFile::validate_content(config);
+        assert!(result.is_ok());
     }
 
     #[test]
@@ -423,7 +423,7 @@ mod tests {
         let err_msg = format!("{}", error);
         assert!(err_msg.contains("profiles.default.request_timeout: invalid type"));
 
-        let error = ConfigFile::validate_content(&config).unwrap_err();
+        let error = ConfigFile::validate_content(config).unwrap_err();
         let err_msg = format!("{}", error);
         assert!(err_msg.contains("profiles.default.request_timeout: invalid type"));
     }
@@ -531,7 +531,7 @@ mod tests {
         );
 
         let result = ConfigFile::validate_content(config);
-        assert_eq!(result.is_ok(), true);
+        assert!(result.is_ok());
     }
 
     #[test]
@@ -559,12 +559,9 @@ mod tests {
 
         // NOTE: due to order loading, we cannot guarantee vector order or profile name
         let error = ConfigFile::validate_content(config).unwrap_err();
-        let err_msg = format!("{}", error.to_string());
-        assert_eq!(
-            true,
-            err_msg
-                .contains("Your configuration file has a cycle source_profile cycle for profile")
-        );
+        let err_msg = format!("{}", error);
+        assert!(err_msg
+            .contains("Your configuration file has a cycle source_profile cycle for profile"));
     }
 
     #[test]
@@ -587,11 +584,8 @@ mod tests {
         let result = ConfigFile::get_profile_details(config);
         assert!(result.is_ok());
         let profile_names: Vec<String> = result.unwrap().iter().map(|v| v.name.clone()).collect();
-        for value in vec!["default", "read-only", "invalid_url"] {
-            assert!(profile_names
-                .iter()
-                .find(|&s| *s == value.to_string())
-                .is_some())
+        for value in ["default", "read-only", "invalid_url"] {
+            assert!(profile_names.iter().any(|s| s == value))
         }
     }
 
@@ -630,7 +624,7 @@ mod tests {
         let result = ConfigFile::get_profile_details(config);
         assert!(result.is_ok());
         let list = result.unwrap();
-        for value in vec![
+        for value in [
             "my-profile",
             "parent-profile",
             "grandparent-profile",

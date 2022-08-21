@@ -819,7 +819,6 @@ USAGE:
 FLAGS:
     -h, --help          Prints help information
         --show-times    Show create and modified times.
-        --show-users    Show list of users
     -v, --values        Display group information/values
     -V, --version       Prints version information
 

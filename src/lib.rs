@@ -290,19 +290,19 @@ mod test {
         // ISO8601 - missing trailing Z
         let input = Some("2021-07-27T18:34:23.270824");
         let output = parse_datetime(input);
-        assert_eq!(true, output.unwrap().contains(input.unwrap()));
+        assert!(output.unwrap().contains(input.unwrap()));
         assert_eq!(parse_tag(input), None);
 
         // time only, without milliseconds
         let input = Some("02:04:08");
         let output = parse_datetime(input).unwrap();
-        assert_eq!(true, output.contains("02:04:08"));
+        assert!(output.contains("02:04:08"));
         assert_eq!(parse_tag(input), None);
 
         // time only, with milliseconds
         let input = Some("03:05:12.345");
         let output = parse_datetime(input).unwrap();
-        assert_eq!(true, output.contains("T03:05:12.345Z"));
+        assert!(output.contains("T03:05:12.345Z"));
         assert_eq!(parse_tag(input), None);
 
         // full date (no time)

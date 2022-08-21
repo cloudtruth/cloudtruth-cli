@@ -100,7 +100,7 @@ mod tests {
     #[test]
     fn default_updates() {
         let default = Updates::default();
-        assert_eq!(default.check, true);
+        assert!(default.check);
         assert_eq!(default.last_checked, None);
         assert_eq!(default.action, None);
         assert_eq!(default.frequency, None);
@@ -167,8 +167,8 @@ mod tests {
         check: false
         "#
         );
-        let update: Updates = serde_yaml::from_str(&content).unwrap();
-        assert_eq!(update.check, false);
+        let update: Updates = serde_yaml::from_str(content).unwrap();
+        assert!(!update.check);
         assert_eq!(update.action, None);
         assert_eq!(update.frequency, None);
         assert_eq!(update.last_checked, None);
@@ -180,8 +180,8 @@ mod tests {
         frequency: Monthly
         "#
         );
-        let update: Updates = serde_yaml::from_str(&content).unwrap();
-        assert_eq!(update.check, true);
+        let update: Updates = serde_yaml::from_str(content).unwrap();
+        assert!(update.check);
         assert_eq!(update.action.unwrap(), Action::Error);
         assert_eq!(update.frequency.unwrap(), Frequency::Monthly);
         assert_eq!(update.last_checked, None);
@@ -195,8 +195,8 @@ mod tests {
         "#
         );
         //dbg!(serde_yaml::from_str::<Updates>(&content).unwrap_err());
-        let update: Updates = serde_yaml::from_str(&content).unwrap();
-        assert_eq!(update.check, true);
+        let update: Updates = serde_yaml::from_str(content).unwrap();
+        assert!(update.check);
         assert_eq!(update.action.unwrap(), Action::Update);
         assert_eq!(update.frequency.unwrap(), Frequency::Daily);
         assert_eq!(
@@ -213,8 +213,8 @@ mod tests {
         "#
         );
         //dbg!(serde_yaml::from_str::<Updates>(&content).unwrap_err());
-        let update: Updates = serde_yaml::from_str(&content).unwrap();
-        assert_eq!(update.check, true);
+        let update: Updates = serde_yaml::from_str(content).unwrap();
+        assert!(update.check);
         assert_eq!(update.action.unwrap(), Action::Warn);
         assert_eq!(update.frequency.unwrap(), Frequency::Weekly);
         assert_eq!(
@@ -237,10 +237,10 @@ mod tests {
             assert_eq!(update.last_checked.unwrap(), expected);
         }
 
-        let result = serde_yaml::from_str::<Updates>(&content);
-        assert_eq!(result.is_err(), true);
+        let result = serde_yaml::from_str::<Updates>(content);
+        assert!(result.is_err());
 
         let result = serde_yaml::from_str::<Updates>(&content.replace("DATE", "2020-20-20"));
-        assert_eq!(result.is_err(), true);
+        assert!(result.is_err());
     }
 }

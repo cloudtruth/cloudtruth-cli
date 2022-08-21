@@ -7,6 +7,8 @@ use cloudtruth_restapi::models::{Group, PatchedGroup};
 
 use crate::database::{auth_details, page_size, response_message, GroupError, OpenApiConfig};
 
+use super::{GroupDetails, Users};
+
 const NO_ORDERING: Option<&str> = None;
 
 pub struct Groups {}
@@ -28,7 +30,7 @@ impl Groups {
         Self {}
     }
 
-    pub fn get_group_details(&self, rest_cfg: &OpenApiConfig) -> Result<Vec<Group>, GroupError> {
+    pub fn get_groups_list(&self, rest_cfg: &OpenApiConfig) -> Result<Vec<Group>, GroupError> {
         let mut page_count = 1;
         let mut result: Vec<Group> = Vec::new();
         loop {
@@ -63,7 +65,35 @@ impl Groups {
         Ok(result)
     }
 
+    pub fn get_group_details_list(
+        &self,
+        rest_cfg: &OpenApiConfig,
+    ) -> Result<Vec<GroupDetails>, GroupError> {
+        let groups_list = self.get_groups_list(rest_cfg)?;
+        let users = Users::new();
+        let user_map = users
+            .get_user_url_to_name_map(rest_cfg)
+            .map_err(GroupError::from)?;
+        Ok(groups_list
+            .iter()
+            .map(|group| GroupDetails::new(group, &user_map))
+            .collect::<Vec<GroupDetails>>())
+    }
+
     pub fn get_group_details_by_name(
+        &self,
+        rest_cfg: &OpenApiConfig,
+        group_name: &str,
+    ) -> Result<Option<GroupDetails>, GroupError> {
+        let group = self.get_group_by_name(rest_cfg, group_name)?;
+        let users = Users::new();
+        let user_map = users
+            .get_user_url_to_name_map(rest_cfg)
+            .map_err(GroupError::from)?;
+        Ok(group.map(|g| GroupDetails::new(&g, &user_map)))
+    }
+
+    pub fn get_group_by_name(
         &self,
         rest_cfg: &OpenApiConfig,
         group_name: &str,
@@ -96,9 +126,7 @@ impl Groups {
         rest_cfg: &OpenApiConfig,
         group_name: &str,
     ) -> Result<Option<String>, GroupError> {
-        Ok(self
-            .get_group_details_by_name(rest_cfg, group_name)?
-            .map(|g| g.id))
+        Ok(self.get_group_by_name(rest_cfg, group_name)?.map(|g| g.id))
     }
 
     pub fn delete_group(&self, rest_cfg: &OpenApiConfig, group_id: &str) -> Result<(), GroupError> {
@@ -145,7 +173,7 @@ impl Groups {
         group_id: &str,
         group_name: Option<&str>,
         description: Option<&str>,
-    ) -> Result<(), GroupError> {
+    ) -> Result<Group, GroupError> {
         let group_update = PatchedGroup {
             name: group_name.map(str::to_string),
             description: description.map(str::to_string),
@@ -157,7 +185,7 @@ impl Groups {
         };
         let response = groups_partial_update(rest_cfg, group_id, Some(group_update));
         match response {
-            Ok(_) => Ok(()),
+            Ok(group) => Ok(group),
             Err(ResponseError(ref content)) => {
                 Err(response_error(&content.status, &content.content))
             }
@@ -170,12 +198,12 @@ impl Groups {
         rest_cfg: &OpenApiConfig,
         group: &Group,
         user_url: &str,
-    ) -> Result<(), GroupError> {
+    ) -> Result<Group, GroupError> {
         /* Need to decode urlencoding from the user URL to avoid double-encoding in the REST client */
         let user_url_decoded = urlencoding::decode(user_url).unwrap();
         let response = groups_add_create(rest_cfg, &group.id, &user_url_decoded, group.clone());
         match response {
-            Ok(_) => Ok(()),
+            Ok(group) => Ok(group),
             Err(ResponseError(ref content)) => {
                 Err(response_error(&content.status, &content.content))
             }
@@ -187,31 +215,16 @@ impl Groups {
         rest_cfg: &OpenApiConfig,
         group: &Group,
         user_url: &str,
-    ) -> Result<(), GroupError> {
+    ) -> Result<Group, GroupError> {
         /* Need to decode urlencoding from the user URL to avoid double-encoding in the REST client */
         let user_url_decoded = urlencoding::decode(user_url).unwrap();
         let response = groups_remove_create(rest_cfg, &group.id, &user_url_decoded, group.clone());
         match response {
-            Ok(_) => Ok(()),
+            Ok(group) => Ok(group),
             Err(ResponseError(ref content)) => {
                 Err(response_error(&content.status, &content.content))
             }
             Err(e) => Err(GroupError::UnhandledError(e.to_string())),
         }
-    }
-
-    pub fn get_property(&self, group: &Group, property_name: &str) -> String {
-        match property_name {
-            "name" => group.name.clone(),
-            "description" => group.description.clone().unwrap_or_default(),
-            "users" => group.users.join(", "),
-            "created-at" => group.created_at.clone(),
-            "modified-at" => group.modified_at.clone(),
-            _ => format!("Unhandled property name '{}'", property_name),
-        }
-    }
-
-    pub fn get_properties(&self, group: &Group, fields: &[&str]) -> Vec<String> {
-        fields.iter().map(|p| self.get_property(group, p)).collect()
     }
 }
