@@ -8,6 +8,7 @@ use crate::table::Table;
 use clap::ArgMatches;
 use color_eyre::eyre::Result;
 use indoc::printdoc;
+use itertools::Itertools;
 use std::process;
 
 pub fn integration_not_found_message(integ_name: &str) -> String {
@@ -138,11 +139,8 @@ fn proc_integ_list(
     if details.is_empty() {
         println!("No integrations found");
     } else if !show_values {
-        let list = details
-            .iter()
-            .map(|d| d.name.clone())
-            .collect::<Vec<String>>();
-        println!("{}", list.join("\n"))
+        let list = details.iter().map(|d| d.name.clone()).join("\n");
+        println!("{}", list)
     } else {
         let mut hdr = vec!["Name", "FQN", "Status", "Updated", "Description"];
         let mut properties = vec!["name", "fqn", "status", "status-time", "description"];

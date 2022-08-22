@@ -22,6 +22,7 @@ use clap::ArgMatches;
 use color_eyre::eyre::Result;
 use color_eyre::Report;
 use indoc::printdoc;
+use itertools::Itertools;
 use rpassword::read_password;
 use std::env;
 use std::fs;
@@ -613,11 +614,8 @@ fn proc_param_list(
     } else if details.is_empty() {
         println!("No {} found in project {}", description, proj_name,);
     } else if !show_values {
-        let list = details
-            .iter()
-            .map(|d| d.key.clone())
-            .collect::<Vec<String>>();
-        println!("{}", list.join("\n"))
+        let list = details.iter().map(|d| d.key.clone()).join("\n");
+        println!("{}", list)
     } else if show_rules {
         // NOTE: do NOT worry about errors, since we're only concerned with params (not values)
         let mut table = Table::new("parameter");
@@ -1102,11 +1100,8 @@ fn proc_param_push(
     if steps.is_empty() {
         println!("No pushes found in project '{}'{}.", proj_name, qualifier);
     } else if !show_values {
-        let list = steps
-            .iter()
-            .map(|s| s.venue_name.clone())
-            .collect::<Vec<String>>();
-        println!("{}", list.join("\n"))
+        let list = steps.iter().map(|s| s.venue_name.clone()).join("\n");
+        println!("{}", list)
     } else {
         let mut hdr = vec!["Venue", "Environment", "Result"];
         let mut props = vec!["venue-name", "environment", "result"];
@@ -1257,11 +1252,8 @@ fn proc_param_drift(
     if deltas.is_empty() {
         println!("No drift found.");
     } else if !show_values {
-        let list = deltas
-            .iter()
-            .map(|v| v.name.clone())
-            .collect::<Vec<String>>();
-        println!("{}", list.join("\n"));
+        let list = deltas.iter().map(|v| v.name.clone()).join("\n");
+        println!("{}", list);
     } else {
         let hdr = vec!["Name", "Difference", "CloudTruth", "Shell"];
         let props = vec!["name", "action", "server", "current"];

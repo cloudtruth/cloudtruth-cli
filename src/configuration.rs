@@ -12,6 +12,7 @@ use crate::lib::{
 use crate::table::Table;
 use clap::ArgMatches;
 use color_eyre::eyre::Result;
+use itertools::Itertools;
 use std::process;
 
 fn proc_config_edit() -> Result<()> {
@@ -66,8 +67,8 @@ fn proc_config_prof_list(subcmd_args: &ArgMatches) -> Result<()> {
     if details.is_empty() {
         println!("No profiles exist in config.");
     } else if !show_values {
-        let profile_names: Vec<String> = details.iter().map(|v| v.name.clone()).collect();
-        println!("{}", profile_names.join("\n"));
+        let profile_names = details.iter().map(|v| v.name.clone()).join("\n");
+        println!("{}", profile_names);
     } else {
         let mut table = Table::new("profile");
         table.set_header(&["Name", "API", "Environment", "Project", "Description"]);

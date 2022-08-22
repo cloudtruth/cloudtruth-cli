@@ -11,6 +11,7 @@ use crate::table::Table;
 use clap::ArgMatches;
 use color_eyre::eyre::Result;
 use indoc::printdoc;
+use itertools::Itertools;
 use std::process;
 
 fn print_group(details: &GroupDetails) {
@@ -63,14 +64,7 @@ fn proc_groups_list(
     if group_list.is_empty() {
         println!("No groups found!");
     } else if !show_values {
-        println!(
-            "{}",
-            group_list
-                .iter()
-                .map(|g| g.name.clone())
-                .collect::<Vec<String>>()
-                .join("\n")
-        );
+        println!("{}", group_list.iter().map(|g| g.name.clone()).join("\n"));
     } else {
         let mut hdr = vec!["Name", "Description"];
         let mut properties = vec!["name", "description"];

@@ -11,6 +11,7 @@ use crate::lib::{
 use crate::table::Table;
 use clap::ArgMatches;
 use color_eyre::eyre::Result;
+use itertools::Itertools;
 use similar::TextDiff;
 use std::fs;
 use std::io;
@@ -117,11 +118,8 @@ fn proc_template_list(
     if details.is_empty() {
         println!("No templates in project '{}'.", proj_name);
     } else if !show_values {
-        let list = details
-            .iter()
-            .map(|n| n.name.clone())
-            .collect::<Vec<String>>();
-        println!("{}", list.join("\n"))
+        let list = details.iter().map(|n| n.name.clone()).join("\n");
+        println!("{}", list)
     } else {
         let mut table = Table::new("template");
         let mut hdr = vec!["Name", "Description"];

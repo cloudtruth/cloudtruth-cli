@@ -12,6 +12,7 @@ use crate::lib::{
 use crate::table::Table;
 use clap::ArgMatches;
 use color_eyre::eyre::Result;
+use itertools::Itertools;
 use std::process;
 
 fn proc_env_delete(
@@ -53,11 +54,8 @@ fn proc_env_list(
 
     // NOTE: should always have at least the default environment
     if !show_values {
-        let list = details
-            .iter()
-            .map(|v| v.name.clone())
-            .collect::<Vec<String>>();
-        println!("{}", list.join("\n"));
+        let list = details.iter().map(|v| v.name.clone()).join("\n");
+        println!("{}", list);
     } else {
         let mut table = Table::new("environment");
         let mut hdr = vec!["Name", "Parent", "Description"];
@@ -215,8 +213,8 @@ fn proc_env_tag_list(
         if tags.is_empty() {
             println!("No tags found in environment {}", env_name,);
         } else if !show_values {
-            let list = tags.iter().map(|t| t.name.clone()).collect::<Vec<String>>();
-            println!("{}", list.join("\n"))
+            let list = tags.iter().map(|t| t.name.clone()).join("\n");
+            println!("{}", list)
         } else {
             let mut table = Table::new("environment-tags");
             let mut hdr = vec!["Name", "Timestamp", "Description"];

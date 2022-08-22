@@ -10,6 +10,7 @@ use crate::table::Table;
 use clap::ArgMatches;
 use color_eyre::eyre::Result;
 use indoc::printdoc;
+use itertools::Itertools;
 use std::process;
 
 fn print_user(details: &UserDetails) {
@@ -102,11 +103,8 @@ fn proc_users_list(
     if details.is_empty() {
         println!("No users found!");
     } else if !show_values {
-        let list = details
-            .iter()
-            .map(|n| n.name.clone())
-            .collect::<Vec<String>>();
-        println!("{}", list.join("\n"))
+        let list = details.iter().map(|n| n.name.clone()).join("\n");
+        println!("{}", list)
     } else {
         let mut hdr = vec!["Name", "Type", "Role", "Email", "Description"];
         let mut properties = vec!["name", "type", "role", "email", "description"];
@@ -194,11 +192,8 @@ fn proc_invite_list(
     if details.is_empty() {
         println!("No invitations found!");
     } else if !show_values {
-        let list = details
-            .iter()
-            .map(|n| n.email.clone())
-            .collect::<Vec<String>>();
-        println!("{}", list.join("\n"))
+        let list = details.iter().map(|n| n.email.clone()).join("\n");
+        println!("{}", list)
     } else {
         let hdr = vec!["Email", "Role", "Inviter", "State"];
         let properties = vec!["email", "role", "inviter-name", "state"];

@@ -17,6 +17,7 @@ use crate::table::Table;
 use clap::ArgMatches;
 use color_eyre::eyre::Result;
 use indoc::printdoc;
+use itertools::Itertools;
 use std::collections::{HashMap, HashSet};
 use std::process;
 
@@ -210,14 +211,13 @@ fn resolve_push_details(
             0 => Ok(None),
             1 => Ok(Some(named_details[0].clone())),
             _ => {
-                let integration_names: Vec<String> = named_details
+                let integration_names = named_details
                     .iter()
                     .map(|d| d.integration_name.clone())
-                    .collect();
+                    .join(", ");
                 error_message(format!(
                     "Found '{}' in integrations: {}",
-                    push_name,
-                    integration_names.join(", ")
+                    push_name, integration_names
                 ));
                 help_message(
                     "Use the --integration option to specify a specific integration.".to_string(),
@@ -414,11 +414,8 @@ fn proc_action_push_list(
     if pushes.is_empty() {
         println!("No pushes found{}", qualifier);
     } else if !show_values {
-        let list = pushes
-            .iter()
-            .map(|d| d.name.clone())
-            .collect::<Vec<String>>();
-        println!("{}", list.join("\n"))
+        let list = pushes.iter().map(|d| d.name.clone()).join("\n");
+        println!("{}", list)
     } else {
         let mut hdr = vec![
             "Name",
@@ -670,11 +667,8 @@ fn proc_action_push_task_steps(
             push_name, integ_name
         );
     } else if !show_values {
-        let list = steps
-            .iter()
-            .map(|d| d.venue_name.clone())
-            .collect::<Vec<String>>();
-        println!("{}", list.join("\n"))
+        let list = steps.iter().map(|d| d.venue_name.clone()).join("\n");
+        println!("{}", list)
     } else {
         let mut hdr = vec![
             "Task",
@@ -737,11 +731,8 @@ fn proc_action_push_tasks(
             push_name, integ_name
         );
     } else if !show_values {
-        let list = tasks
-            .iter()
-            .map(|d| d.reason.clone())
-            .collect::<Vec<String>>();
-        println!("{}", list.join("\n"))
+        let list = tasks.iter().map(|d| d.reason.clone()).join("\n");
+        println!("{}", list)
     } else {
         let mut hdr = vec!["Reason", "State", "Status Info"];
         let mut properties = vec!["reason", "state", "errors"];
@@ -832,14 +823,13 @@ fn resolve_pull_details(
             0 => Ok(None),
             1 => Ok(Some(named_details[0].clone())),
             _ => {
-                let integration_names: Vec<String> = named_details
+                let integration_names = named_details
                     .iter()
                     .map(|d| d.integration_name.clone())
-                    .collect();
+                    .join(", ");
                 error_message(format!(
                     "Found '{}' in integrations: {}",
-                    pull_name,
-                    integration_names.join(", ")
+                    pull_name, integration_names
                 ));
                 help_message(
                     "Use the --integration option to specify a specific integration.".to_string(),
@@ -998,11 +988,8 @@ fn proc_action_pull_list(
     if pulls.is_empty() {
         println!("No imports found{}", qualifier);
     } else if !show_values {
-        let list = pulls
-            .iter()
-            .map(|d| d.name.clone())
-            .collect::<Vec<String>>();
-        println!("{}", list.join("\n"))
+        let list = pulls.iter().map(|d| d.name.clone()).join("\n");
+        println!("{}", list)
     } else {
         let mut hdr = vec!["Name", "Service", "Flags", "Status", "Last Import Time"];
         let mut properties = vec!["name", "service", "flags", "task-state", "task-time"];
@@ -1151,11 +1138,8 @@ fn proc_action_pull_task_steps(
             pull_name, integ_name
         );
     } else if !show_values {
-        let list = steps
-            .iter()
-            .map(|d| d.venue_name.clone())
-            .collect::<Vec<String>>();
-        println!("{}", list.join("\n"))
+        let list = steps.iter().map(|d| d.venue_name.clone()).join("\n");
+        println!("{}", list)
     } else {
         let mut hdr = vec![
             "Task",
@@ -1218,11 +1202,8 @@ fn proc_action_pull_tasks(
             pull_name, integ_name
         );
     } else if !show_values {
-        let list = tasks
-            .iter()
-            .map(|d| d.reason.clone())
-            .collect::<Vec<String>>();
-        println!("{}", list.join("\n"))
+        let list = tasks.iter().map(|d| d.reason.clone()).join("\n");
+        println!("{}", list)
     } else {
         let mut hdr = vec!["Reason", "State", "Status Info"];
         let mut properties = vec!["reason", "state", "errors"];

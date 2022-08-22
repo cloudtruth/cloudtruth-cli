@@ -11,6 +11,7 @@ use crate::lib::{
 use crate::table::Table;
 use clap::ArgMatches;
 use color_eyre::eyre::Result;
+use itertools::Itertools;
 use std::process;
 
 fn proc_param_type_delete(
@@ -63,11 +64,8 @@ fn proc_param_type_list(
     if details.is_empty() {
         println!("No {} found.", description);
     } else if !show_values {
-        let list = details
-            .iter()
-            .map(|v| v.name.clone())
-            .collect::<Vec<String>>();
-        println!("{}", list.join("\n"));
+        let list = details.iter().map(|v| v.name.clone()).join("\n");
+        println!("{}", list);
     } else if show_rules {
         let mut hdr = vec!["Name", "Parent", "Rule Type", "Constraint"];
         if show_times {

@@ -9,6 +9,7 @@ use crate::lib::{
 use crate::table::Table;
 use clap::ArgMatches;
 use color_eyre::eyre::Result;
+use itertools::Itertools;
 use std::process;
 
 fn proc_proj_delete(
@@ -51,11 +52,8 @@ fn proc_proj_list(
     if details.is_empty() {
         println!("No projects found.");
     } else if !show_values {
-        let list = details
-            .iter()
-            .map(|v| v.name.clone())
-            .collect::<Vec<String>>();
-        println!("{}", list.join("\n"));
+        let list = details.iter().map(|v| v.name.clone()).join("\n");
+        println!("{}", list);
     } else {
         let mut table = Table::new("project");
         let mut hdr = vec!["Name", "Parent", "Description"];
