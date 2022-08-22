@@ -5,7 +5,6 @@ use serde_yaml::Error as YamlError;
 use std::fmt;
 use std::fmt::Formatter;
 use std::io::Error as IoError;
-use std::io::Write;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum OutputFormatterError {

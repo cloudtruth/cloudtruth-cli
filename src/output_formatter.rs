@@ -14,9 +14,9 @@ use crate::output_formatter_error::OutputFormatterError;
 #[derive(Clone, Debug, PartialEq, Eq, Copy)]
 pub enum OutputFormatType {
     Table,
-    CSV,
-    JSON,
-    YAML,
+    Csv,
+    Json,
+    Yaml,
 }
 
 impl Default for OutputFormatType {
@@ -30,9 +30,9 @@ impl TryFrom<&str> for OutputFormatType {
     fn try_from(value: &str) -> Result<Self, Self::Error> {
         match value {
             "table" => Ok(Self::Table),
-            "csv" => Ok(Self::CSV),
-            "json" => Ok(Self::JSON),
-            "yaml" => Ok(Self::YAML),
+            "csv" => Ok(Self::Csv),
+            "json" => Ok(Self::Json),
+            "yaml" => Ok(Self::Yaml),
             _ => Err(Self::Error::UnhandledFormat(value.to_string())),
         }
     }
@@ -137,9 +137,9 @@ impl OutputFormatter {
     pub fn render(&self) -> Result<(), OutputFormatterError> {
         match self.format_type {
             OutputFormatType::Table => self.render_table(),
-            OutputFormatType::CSV => self.render_csv(),
-            OutputFormatType::JSON => self.render_json(),
-            OutputFormatType::YAML => self.render_yaml(),
+            OutputFormatType::Csv => self.render_csv(),
+            OutputFormatType::Json => self.render_json(),
+            OutputFormatType::Yaml => self.render_yaml(),
         }
     }
 
