@@ -16,6 +16,8 @@ mod integrations;
 mod lib;
 mod login;
 mod logout;
+mod output_formatter;
+mod output_formatter_error;
 mod parameters;
 mod projects;
 mod run;
