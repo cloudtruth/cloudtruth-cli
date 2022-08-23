@@ -78,10 +78,7 @@ impl Profile {
             rest_page_size: other.rest_page_size.or(self.rest_page_size),
             server_url: other.server_url.clone().or_else(|| self.server_url.clone()),
             source_profile: self.source_profile.clone(),
-            accept_invalid_certs: other
-                .accept_invalid_certs
-                .or(self.accept_invalid_certs)
-                .clone(),
+            accept_invalid_certs: other.accept_invalid_certs.or(self.accept_invalid_certs),
         }
     }
 
