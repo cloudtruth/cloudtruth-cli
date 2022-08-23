@@ -42,21 +42,27 @@ pub trait HasOutputProperties {
     fn get_property(&self, property_name: &str) -> Value;
 }
 
-pub struct OutputFormatterBuilder<'a> {
-    output_name: &'a str,
+pub struct OutputFormatterBuilder {
+    output_name: Option<String>,
     format_type: OutputFormatType,
     properties: Vec<String>,
     show_headers: bool,
 }
 
-impl<'a> OutputFormatterBuilder<'a> {
-    pub fn new(output_name: &'a str) -> Self {
+impl OutputFormatterBuilder {
+    pub fn new() -> Self {
         OutputFormatterBuilder {
-            output_name,
+            output_name: None,
             format_type: OutputFormatType::default(),
             properties: Vec::new(),
             show_headers: true,
         }
+    }
+
+    /* If specified, will wrap the output list in a top-level structure (for JSON and YAML only)  */
+    pub fn output_name(&mut self, name: &str) -> &mut Self {
+        self.output_name = Some(name.to_string());
+        self
     }
 
     /* Whether or not to include headers in tabular output formats (Table, CSV). Default is true. */
@@ -76,32 +82,32 @@ impl<'a> OutputFormatterBuilder<'a> {
     pub fn build(self) -> OutputFormatter {
         OutputFormatter {
             format_type: self.format_type,
-            output_name: self.output_name.to_string(),
+            output_name: self.output_name,
             show_headers: self.show_headers,
             properties: self.properties,
-            objects: Vec::new(),
+            records: Vec::new(),
         }
     }
 }
 
 pub struct OutputFormatter {
-    output_name: String,
+    output_name: Option<String>,
     format_type: OutputFormatType,
     show_headers: bool,
     properties: Vec<String>,
-    objects: Vec<IndexMap<String, Value>>,
+    records: Vec<IndexMap<String, Value>>,
 }
 
 impl OutputFormatter {
-    pub fn add_object<O>(&mut self, object: &O) -> &mut Self
+    pub fn add_record<O>(&mut self, record: &O) -> &mut Self
     where
         O: HasOutputProperties,
     {
         let mut map = IndexMap::new();
         self.properties.iter().for_each(|prop| {
-            map.insert(prop.clone(), object.get_property(prop));
+            map.insert(prop.clone(), record.get_property(prop));
         });
-        self.objects.push(map);
+        self.records.push(map);
         self
     }
 
@@ -121,7 +127,7 @@ impl OutputFormatter {
                     .collect::<Vec<Cell>>(),
             ));
         }
-        for obj in &self.objects {
+        for obj in &self.records {
             table.add_row(PrettyRow::new(
                 self.properties
                     .iter()
@@ -159,10 +165,14 @@ impl OutputFormatter {
 
     /// Writes the bulk of the JSON data to the provided output buffer.
     fn render_json_out<T: Write + ?Sized>(&self, out: &mut T) -> Result<(), OutputFormatterError> {
-        let data = indexmap! {
-            self.output_name.to_string() => &self.objects
-        };
-        serde_json::to_writer_pretty(out, &data)?;
+        if let Some(name) = &self.output_name {
+            let data = indexmap!(
+                name => &self.records
+            );
+            serde_json::to_writer_pretty(out, &data)?
+        } else {
+            serde_json::to_writer_pretty(out, &self.records)?
+        }
         Ok(())
     }
 
@@ -175,10 +185,14 @@ impl OutputFormatter {
 
     /// Writes the bulk of the YAML data to the provided output buffer.
     fn render_yaml_out<T: Write>(&self, out: &mut T) -> Result<(), OutputFormatterError> {
-        let data = indexmap! {
-            self.output_name.to_string() => &self.objects
-        };
-        serde_yaml::to_writer(out, &data)?;
+        if let Some(name) = &self.output_name {
+            let data = indexmap!(
+                name => &self.records
+            );
+            serde_yaml::to_writer(out, &data)?
+        } else {
+            serde_yaml::to_writer(out, &self.records)?
+        }
         Ok(())
     }
 
@@ -192,11 +206,12 @@ impl OutputFormatter {
 fn value_to_table_string(val: &Value) -> String {
     match val {
         Value::String(str) => str.clone(),
-        Value::Array(vec) => vec.iter().map(value_to_table_string).join(", "),
+        Value::Array(vec) => vec.iter().map(value_to_table_string).join(","),
         Value::Object(map) => map
             .iter()
             .map(|(key, val)| format!("({}={})", key, value_to_table_string(val)))
             .join(","),
+        Value::Null => String::default(),
         other => other.to_string(),
     }
 }
