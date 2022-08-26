@@ -46,10 +46,10 @@ mod tests {
         assert_eq!(HistoryTypeEnum::Create, result.unwrap());
 
         // checks that we fall back to the "unknown" value
-        for item in vec!["foo", "bar"] {
+        for item in &["foo", "bar"] {
             let value = format!("\"{}\"", item);
             let result: serde_json::Result<HistoryTypeEnum> = serde_json::from_str(&value);
-            assert_eq!(false, result.is_err());
+            assert!(result.is_ok());
             assert_eq!(HistoryTypeEnum::UnknownDefaultOpenApi, result.unwrap());
         }
     }

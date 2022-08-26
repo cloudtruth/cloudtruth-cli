@@ -78,10 +78,7 @@ impl Profile {
             rest_page_size: other.rest_page_size.or(self.rest_page_size),
             server_url: other.server_url.clone().or_else(|| self.server_url.clone()),
             source_profile: self.source_profile.clone(),
-            accept_invalid_certs: other
-                .accept_invalid_certs
-                .or(self.accept_invalid_certs)
-                .clone(),
+            accept_invalid_certs: other.accept_invalid_certs.or(self.accept_invalid_certs),
         }
     }
 
@@ -175,49 +172,49 @@ mod tests {
             rest_debug: Some(false),
             ..Profile::default()
         };
-        assert_eq!(prof.is_empty(), false);
+        assert!(!prof.is_empty());
 
         let prof = Profile {
             request_timeout: Some(1024),
             ..Profile::default()
         };
-        assert_eq!(prof.is_empty(), false);
+        assert!(!prof.is_empty());
 
         let prof = Profile {
             api_key: Some("abc123".to_string()),
             ..Profile::default()
         };
-        assert_eq!(prof.is_empty(), false);
+        assert!(!prof.is_empty());
 
         let prof = Profile {
             description: Some("my description".to_string()),
             ..Profile::default()
         };
-        assert_eq!(prof.is_empty(), false);
+        assert!(!prof.is_empty());
 
         let prof = Profile {
             environment: Some("ename".to_string()),
             ..Profile::default()
         };
-        assert_eq!(prof.is_empty(), false);
+        assert!(!prof.is_empty());
 
         let prof = Profile {
             project: Some("proj".to_string()),
             ..Profile::default()
         };
-        assert_eq!(prof.is_empty(), false);
+        assert!(!prof.is_empty());
 
         let prof = Profile {
             server_url: Some("url".to_string()),
             ..Profile::default()
         };
-        assert_eq!(prof.is_empty(), false);
+        assert!(!prof.is_empty());
 
         let prof = Profile {
             source_profile: Some("source-profile".to_string()),
             ..Profile::default()
         };
-        assert_eq!(prof.is_empty(), false);
+        assert!(!prof.is_empty());
     }
 
     #[test]
@@ -237,8 +234,8 @@ mod tests {
         };
 
         let prof2 = prof.remove_empty();
-        assert_eq!(prof.is_empty(), false);
-        assert_eq!(prof2.is_empty(), true);
+        assert!(!prof.is_empty());
+        assert!(prof2.is_empty());
 
         let prof = Profile {
             api_key: Some("api-key".to_string()),

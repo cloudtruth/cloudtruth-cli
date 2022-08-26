@@ -260,13 +260,13 @@ mod test {
         let tag = "tag_value_goes_here";
         let algo_str = CryptoAlgorithm::AesGcm.to_string();
         let encoded_string = format!("smaash:{}:{}:{}:{}", algo_str, nonce, ciphertext, tag);
-        let result = encode(CryptoAlgorithm::AesGcm, &nonce, &ciphertext, tag);
+        let result = encode(CryptoAlgorithm::AesGcm, nonce, ciphertext, tag);
         assert_eq!(result, encoded_string);
 
         // repeat with different crypto algorithm
         let algo_str = CryptoAlgorithm::ChaCha20.to_string();
         let encoded_string = format!("smaash:{}:{}:{}:{}", algo_str, nonce, ciphertext, tag);
-        let result = encode(CryptoAlgorithm::ChaCha20, &nonce, &ciphertext, &tag);
+        let result = encode(CryptoAlgorithm::ChaCha20, nonce, ciphertext, tag);
         assert_eq!(result, encoded_string);
     }
 
@@ -287,7 +287,7 @@ mod test {
                 tag: tag.clone(),
             }
         );
-        assert_eq!(true, valid_encoding(&encoded_string));
+        assert!(valid_encoding(&encoded_string));
 
         let algo_str = CryptoAlgorithm::ChaCha20.to_string();
         let encoded_string = format!("smaash:{}:{}:{}:{}", algo_str, nonce, ciphertext, tag);
@@ -301,7 +301,7 @@ mod test {
                 tag: tag.clone(),
             }
         );
-        assert_eq!(true, valid_encoding(&encoded_string));
+        assert!(valid_encoding(&encoded_string));
 
         let algo_str = CryptoAlgorithm::Unknown.to_string();
         let encoded_string = format!("smaash:{}:{}:{}:{}", algo_str, nonce, ciphertext, tag);
@@ -310,12 +310,12 @@ mod test {
             result,
             SecretWrapper {
                 algorithm: CryptoAlgorithm::Unknown,
-                nonce: nonce.clone(),
-                cipher_text: ciphertext.clone(),
-                tag: tag.clone(),
+                nonce,
+                cipher_text: ciphertext,
+                tag
             }
         );
-        assert_eq!(true, valid_encoding(&encoded_string));
+        assert!(valid_encoding(&encoded_string));
     }
 
     #[test]
@@ -327,19 +327,19 @@ mod test {
         let encoded_string = format!("smaash:{}:{}:{}:{}", algo_str, nonce, ciphertext, tag);
         let result = decode(encoded_string.as_str()).unwrap_err();
         assert_eq!(result, CryptoError::InvalidAlgorithm(algo_str));
-        assert_eq!(false, valid_encoding(&encoded_string));
+        assert!(!valid_encoding(&encoded_string));
 
         let algo_str = "chacha21".to_string();
         let encoded_string = format!("smaash:{}:{}:{}:{}", algo_str, nonce, ciphertext, tag);
         let result = decode(encoded_string.as_str()).unwrap_err();
         assert_eq!(result, CryptoError::InvalidAlgorithm(algo_str));
-        assert_eq!(false, valid_encoding(&encoded_string));
+        assert!(!valid_encoding(&encoded_string));
 
         let algo_str = "".to_string();
         let encoded_string = format!("smaash:{}:{}:{}:{}", algo_str, nonce, ciphertext, tag);
         let result = decode(encoded_string.as_str()).unwrap_err();
         assert_eq!(result, CryptoError::InvalidAlgorithm(algo_str));
-        assert_eq!(false, valid_encoding(&encoded_string));
+        assert!(!valid_encoding(&encoded_string));
     }
 
     #[test]
@@ -351,13 +351,13 @@ mod test {
         let encoded_string = format!("smash:{}:{}:{}:{}", algo_str, nonce, ciphertext, tag);
         let result = decode(encoded_string.as_str()).unwrap_err();
         assert_eq!(result, CryptoError::InvalidPrefix("smash".to_string()));
-        assert_eq!(false, valid_encoding(&encoded_string));
+        assert!(!valid_encoding(&encoded_string));
 
         // too few parts
         let encoded_string = format!("smaash:{}:{}:{}", algo_str, nonce, ciphertext);
         let result = decode(encoded_string.as_str()).unwrap_err();
         assert_eq!(result, CryptoError::InvalidEncoding(4));
-        assert_eq!(false, valid_encoding(&encoded_string));
+        assert!(!valid_encoding(&encoded_string));
 
         // too many parts
         let encoded_string = format!(
@@ -366,7 +366,7 @@ mod test {
         );
         let result = decode(encoded_string.as_str()).unwrap_err();
         assert_eq!(result, CryptoError::InvalidEncoding(6));
-        assert_eq!(false, valid_encoding(&encoded_string));
+        assert!(!valid_encoding(&encoded_string));
     }
 
     #[test]
@@ -434,7 +434,7 @@ mod test {
         let result = secret_unwrap_decode(token, encoded_string.as_str()).unwrap_err();
         assert_eq!(result, CryptoError::UnsupportedAlgorithm(algo_str));
         // the encoding is valid, but we cannot decrypt with it
-        assert_eq!(true, valid_encoding(&encoded_string));
+        assert!(valid_encoding(&encoded_string));
     }
 
     #[test]

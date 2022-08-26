@@ -23,6 +23,7 @@ SUBCOMMANDS:
     configuration      Configuration options for this application [aliases: config, conf, con, co, c]
     environments       Work with CloudTruth environments [aliases: environment, envs, env, e]
     generate           Generate items using CloudTruth service [aliases: gen, ge]
+    groups             Manage CloudTruth user groups  [aliases: group, grp, gr, g]
     help               Prints this message or the help of the given subcommand(s)
     import             Perform imports into the CloudTruth environment [aliases: imp, im]
     integrations       Work with CloudTruth integrations [aliases: integration, integrate, integ, int, in]
@@ -764,6 +765,84 @@ FLAGS:
 
 OPTIONS:
         --length <length>    Number of characters [default: 15]
+============================================================
+cloudtruth-groups 
+Manage CloudTruth user groups 
+
+USAGE:
+    cloudtruth groups [SUBCOMMAND]
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+SUBCOMMANDS:
+    delete    Delete specified CloudTruth user group [aliases: del, d]
+    get       Get detailed CloudTruth user group information
+    help      Prints this message or the help of the given subcommand(s)
+    list      List CloudTruth user groups [aliases: ls, l]
+    set       Create/update a CloudTruth user group [aliases: s]
+========================================
+cloudtruth-groups-delete 
+Delete specified CloudTruth user group
+
+USAGE:
+    cloudtruth groups delete [FLAGS] <NAME>
+
+FLAGS:
+    -y, --yes        Avoid confirmation prompt(s)
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+ARGS:
+    <NAME>    Group name
+========================================
+cloudtruth-groups-get 
+Get detailed CloudTruth user group information
+
+USAGE:
+    cloudtruth groups get <NAME>
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+ARGS:
+    <NAME>    Group name
+========================================
+cloudtruth-groups-list 
+List CloudTruth user groups
+
+USAGE:
+    cloudtruth groups list [FLAGS] [OPTIONS]
+
+FLAGS:
+    -h, --help          Prints help information
+        --show-times    Show create and modified times.
+    -v, --values        Display group information/values
+    -V, --version       Prints version information
+
+OPTIONS:
+    -f, --format <format>    Format for group values data [default: table]  [possible values: table, csv, json, yaml]
+========================================
+cloudtruth-groups-set 
+Create/update a CloudTruth user group
+
+USAGE:
+    cloudtruth groups set [OPTIONS] <NAME>
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+OPTIONS:
+    -d, --desc <description>                     Group description
+    -r, --rename <new-name>                      Rename the group
+        --add-user <username-to-add>...          Add user(s) to the group by name [aliases: add, user]
+        --remove-user <username-to-remove>...    Remove user(s) from the group by name [aliases: remove, rm, rm-user]
+
+ARGS:
+    <NAME>    Group name
 ============================================================
 cloudtruth-import 
 Perform imports into the CloudTruth environment

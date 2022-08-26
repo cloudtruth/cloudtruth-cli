@@ -167,7 +167,7 @@ mod tests {
         assert_eq!(openapi_cfg.api_key.unwrap().key, api_key.to_string());
         assert_eq!(openapi_cfg.user_agent.unwrap(), user_agent_name());
         assert_eq!(openapi_cfg.bearer_access_token, None);
-        assert_eq!(openapi_cfg.rest_debug, true);
+        assert!(openapi_cfg.rest_debug);
         assert_eq!(
             openapi_cfg.rest_success,
             vec!["abc".to_string(), "def".to_string()]
@@ -180,30 +180,30 @@ mod tests {
     fn openapi_debug_success() {
         let mut cfg = OpenApiConfig::new();
 
-        assert_eq!(cfg.debug_success("foo"), false);
+        assert!(!cfg.debug_success("foo"));
 
         cfg.rest_debug = true;
-        assert_eq!(cfg.debug_success("foo"), false);
+        assert!(!cfg.debug_success("foo"));
 
         cfg.rest_success.push("foo".to_string());
-        assert_eq!(cfg.debug_success("foo"), true);
-        assert_eq!(cfg.debug_success("sna"), false);
+        assert!(cfg.debug_success("foo"));
+        assert!(!cfg.debug_success("sna"));
 
         cfg.rest_success.push("sna".to_string());
-        assert_eq!(cfg.debug_success("foo"), true);
-        assert_eq!(cfg.debug_success("sna"), true);
+        assert!(cfg.debug_success("foo"));
+        assert!(cfg.debug_success("sna"));
 
         cfg.rest_success.clear();
-        assert_eq!(cfg.debug_success("foo"), false);
-        assert_eq!(cfg.debug_success("sna"), false);
+        assert!(!cfg.debug_success("foo"));
+        assert!(!cfg.debug_success("sna"));
 
         cfg.rest_success.push("all".to_string());
-        assert_eq!(cfg.debug_success("foo"), true);
-        assert_eq!(cfg.debug_success("sna"), true);
+        assert!(cfg.debug_success("foo"));
+        assert!(cfg.debug_success("sna"));
 
         cfg.rest_debug = false;
-        assert_eq!(cfg.debug_success("foo"), false);
-        assert_eq!(cfg.debug_success("sna"), false);
+        assert!(!cfg.debug_success("foo"));
+        assert!(!cfg.debug_success("sna"));
     }
 
     #[test]

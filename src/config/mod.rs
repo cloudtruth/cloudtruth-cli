@@ -714,7 +714,7 @@ mod tests {
     ) -> Option<&'a ConfigValue> {
         let mut result: Option<&ConfigValue> = None;
         for item in config_values {
-            if &item.name == param_name {
+            if item.name == param_name {
                 result = Some(item);
             }
         }
@@ -724,7 +724,7 @@ mod tests {
     fn sync_env(name: &str, expected: &str) {
         loop {
             if let Ok(curr) = env::var(name) {
-                if expected == &curr {
+                if expected == curr {
                     break;
                 }
             }
@@ -743,8 +743,8 @@ mod tests {
         let param = get_param(PARAM_API_KEY, &config_values).unwrap();
         assert_eq!(param.value, "new_key");
         assert_eq!(param.source, SRC_ENV);
-        assert_eq!(param.secret, true);
-        assert_eq!(param.extension, false);
+        assert!(param.secret);
+        assert!(!param.extension);
 
         env::remove_var(CT_API_KEY);
     }
@@ -753,10 +753,10 @@ mod tests {
     fn get_version() {
         let config_values = Config::get_sources(None, None, None, None).unwrap();
         let param = get_param(PARAM_CLI_VERSION, &config_values).unwrap();
-        assert_eq!(param.value, option_env!("CARGO_PKG_VERSION").unwrap());
+        assert_eq!(param.value, env!("CARGO_PKG_VERSION"));
         assert_eq!(param.source, SRC_BINARY);
-        assert_eq!(param.secret, false);
-        assert_eq!(param.extension, true);
+        assert!(!param.secret);
+        assert!(param.extension);
     }
 
     #[test]
@@ -775,8 +775,8 @@ mod tests {
         let param = get_param(PARAM_API_KEY, &config_values).unwrap();
         assert_eq!(param.value, "key_from_args");
         assert_eq!(param.source, SRC_ARG);
-        assert_eq!(param.secret, true);
-        assert_eq!(param.extension, false);
+        assert!(param.secret);
+        assert!(!param.extension);
 
         env::remove_var(CT_API_KEY)
     }
@@ -793,8 +793,8 @@ mod tests {
         let param = get_param(PARAM_SERVER_URL, &config_values).unwrap();
         assert_eq!(param.value, "http://localhost:7001/graphql");
         assert_eq!(param.source, SRC_ENV);
-        assert_eq!(param.secret, false);
-        assert_eq!(param.extension, true);
+        assert!(!param.secret);
+        assert!(param.extension);
 
         env::remove_var(CT_SERVER_URL);
     }
@@ -811,8 +811,8 @@ mod tests {
         let param = get_param(PARAM_REQUEST_TIMEOUT, &config_values).unwrap();
         assert_eq!(param.value, "123");
         assert_eq!(param.source, SRC_ENV);
-        assert_eq!(param.secret, false);
-        assert_eq!(param.extension, true);
+        assert!(!param.secret);
+        assert!(param.extension);
 
         env::remove_var(CT_REQ_TIMEOUT);
     }
@@ -889,22 +889,22 @@ mod tests {
         let api_key = get_param(PARAM_API_KEY, &config_values).unwrap();
         assert_eq!(api_key.value, "my_arg_key");
         assert_eq!(api_key.source, SRC_ARG);
-        assert_eq!(api_key.secret, true);
+        assert!(api_key.secret);
 
         let proj = get_param(PARAM_PROJECT, &config_values).unwrap();
         assert_eq!(proj.value, "proj_name");
         assert_eq!(proj.source, SRC_ARG);
-        assert_eq!(proj.secret, false);
+        assert!(!proj.secret);
 
         let prof = get_param(PARAM_PROFILE, &config_values).unwrap();
         assert_eq!(prof.value, DEFAULT_PROF_NAME);
         assert_eq!(prof.source, SRC_ARG);
-        assert_eq!(prof.secret, false);
+        assert!(!prof.secret);
 
         let env = get_param(PARAM_ENVIRONMENT, &config_values).unwrap();
         assert_eq!(env.value, "env_name");
         assert_eq!(prof.source, SRC_ARG);
-        assert_eq!(prof.secret, false);
+        assert!(!prof.secret);
 
         env::remove_var(CT_PROJECT);
         env::remove_var(CT_API_KEY);
