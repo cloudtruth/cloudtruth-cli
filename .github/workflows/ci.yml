@@ -104,6 +104,7 @@ jobs:
 
     strategy:
       fail-fast: false
+      max-parallel: 1
       matrix:
         os:
           - macos-latest
