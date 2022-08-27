@@ -16,6 +16,7 @@ env:
   RUST_VERSION: 1.63.0
 
   # These are based on pre-configured integrations in the CLI CI account.
+  # this test currently does not work. need to recreate the test data
   # CLOUDTRUTH_TEST_BROKEN_PROJECT: proj-int-broken
   # CLOUDTRUTH_TEST_BROKEN_TEMPLATE: temp-int-broken
   # CLOUDTRUTH_TEST_BROKEN_PARAM1: param1

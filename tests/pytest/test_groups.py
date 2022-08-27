@@ -142,7 +142,7 @@ class TestGroups(TestCase):
         result = self.run_cli(cmd_env, add_all_users_cmd)
         self.assertResultSuccess(result)
 
-    # remove all users with one command
+        # remove all users from group with one command
         rm_all_users_cmd = group_cmd + f"set {group_name} "
         rm_all_users_cmd += " ".join(f"--remove-user {user_name}" for user_name in user_names)
         result = self.run_cli(cmd_env, rm_all_users_cmd)
