@@ -7,13 +7,19 @@ import traceback
 import unittest
 
 from testcase import get_cli_base_cmd
-from testcase import CT_API_KEY, CT_URL
+from testcase import CT_API_KEY, CT_URL, CT_PROFILE
 from testcase import CT_TEST_JOB_ID, CT_TEST_LOG_COMMANDS, CT_TEST_LOG_OUTPUT
 
 
 def parse_args(*args) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Run the CloudTruth CLI tests"
+    )
+    parser.add_argument(
+        "-p",
+        "--profile",
+        type=str,
+        help="CLI profile to use for tests"
     )
     parser.add_argument(
         "-k",
@@ -185,6 +191,8 @@ def live_test(*args):
         env[CT_URL] = args.url
     if args.api_key:
         env[CT_API_KEY] = args.api_key
+    if args.profile:
+        env[CT_PROFILE] = args.profile
     env[CT_TEST_LOG_COMMANDS] = str(int(args.log_commands))
     env[CT_TEST_LOG_OUTPUT] = str(int(args.log_output))
     if args.job_id:
