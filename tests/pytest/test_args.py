@@ -12,8 +12,8 @@ class TestTopLevelArgs(TestCase):
         cmd_env = self.get_cmd_env()
         printenv = f" run -i none -- {self.get_display_env_command()}"
         cfg_cmd = " config current -f csv"
-        proj1 = self.make_name("test-arg-project-1")
-        proj2 = self.make_name("test-arg-proj2")
+        proj1 = self.make_name("arg-project-1")
+        proj2 = self.make_name("arg-proj2")
         env1 = self.make_name("dev a")
         env2 = self.make_name("dev B")
 
@@ -147,8 +147,8 @@ class TestTopLevelArgs(TestCase):
     def test_arg_resolution(self):
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
-        proj_name = self.make_name("test-unknown-proj")
-        env_name = self.make_name("test-env-unknown")
+        proj_name = self.make_name("unknown-proj")
+        env_name = self.make_name("env-unknown")
         checked_commands = [
             "param ls -v",
             "templates ls -v",

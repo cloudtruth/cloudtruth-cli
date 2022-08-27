@@ -24,7 +24,7 @@ class TestParameters(TestCase):
         cmd_env = self.get_cmd_env()
 
         # add a new project
-        proj_name = self.make_name("test-param-basic")
+        proj_name = self.make_name("param-basic")
         empty_msg = self._empty_message(proj_name)
         self.create_project(cmd_env, proj_name)
 
@@ -207,7 +207,7 @@ my_param,cRaZy value,default,string,0,internal,false,this is just a test descrip
         cmd_env = self.get_cmd_env()
 
         # add a new project
-        proj_name = self.make_name("test-param-secret")
+        proj_name = self.make_name("param-secret")
         empty_msg = self._empty_message(proj_name)
         self.create_project(cmd_env, proj_name)
 
@@ -446,9 +446,9 @@ SNA=fu
         self.create_project(cmd_env, proj_name)
 
         env_name1 = DEFAULT_ENV_NAME  # no job-id variation
-        env_name2 = self.make_name("test-mets")
+        env_name2 = self.make_name("mets")
         self.create_environment(cmd_env, env_name2)
-        env_name3 = self.make_name("test-redsox")
+        env_name3 = self.make_name("redsox")
         self.create_environment(cmd_env, env_name3, parent=env_name2)
 
         var1_name = "base"
@@ -624,7 +624,7 @@ SNA=fu
         cmd_env = self.get_cmd_env()
 
         # add a new project
-        proj_name = self.make_name("test-param-export")
+        proj_name = self.make_name("param-export")
         empty_msg = self._empty_message(proj_name)
         self.create_project(cmd_env, proj_name)
 
@@ -759,7 +759,7 @@ SECOND_SECRET='sensitive value with spaces'
         cmd_env = self.get_cmd_env()
 
         # add a new project
-        proj_name = self.make_name("test-secret-switch")
+        proj_name = self.make_name("secret-switch")
         empty_msg = self._empty_message(proj_name)
         self.create_project(cmd_env, proj_name)
 
@@ -841,7 +841,7 @@ SECOND_SECRET='sensitive value with spaces'
         self.write_file(filename, value1)
 
         # add a new project
-        proj_name = self.make_name("test-local-file")
+        proj_name = self.make_name("local-file")
         empty_msg = self._empty_message(proj_name)
         self.create_project(cmd_env, proj_name)
 
@@ -910,7 +910,7 @@ SECOND_SECRET='sensitive value with spaces'
         cmd_env = self.get_cmd_env()
 
         # add a new project
-        proj_name = self.make_name("test-param-int-err")
+        proj_name = self.make_name("param-int-err")
         empty_msg = self._empty_message(proj_name)
         self.create_project(cmd_env, proj_name)
 
@@ -1028,7 +1028,7 @@ SECOND_SECRET='sensitive value with spaces'
         cmd_env = self.get_cmd_env()
 
         # add a new project
-        proj_name = self.make_name("test-param-tables")
+        proj_name = self.make_name("param-tables")
         empty_msg = self._empty_message(proj_name)
         self.create_project(cmd_env, proj_name)
 
@@ -1209,7 +1209,7 @@ parameter:
         cmd_env = self.get_cmd_env()
 
         # add a new project
-        proj_name = self.make_name("test-param-names")
+        proj_name = self.make_name("param-names")
         empty_msg = self._empty_message(proj_name)
         self.create_project(cmd_env, proj_name)
 
@@ -1254,14 +1254,14 @@ parameter:
         cmd_env = self.get_cmd_env()
 
         # add a new project
-        proj_name = self.make_name("test-param-cmp")
+        proj_name = self.make_name("param-cmp")
         empty_msg = self._empty_message(proj_name)
         self.create_project(cmd_env, proj_name)
 
         # add a couple environments
-        env_a = self.make_name("test-param-left")
+        env_a = self.make_name("param-left")
         self.create_environment(cmd_env, env_a)
-        env_b = self.make_name("test-param-right")
+        env_b = self.make_name("param-right")
         self.create_environment(cmd_env, env_b)
 
         # check that there are no parameters
@@ -1461,7 +1461,7 @@ Parameter,{env_a} ({modified_p2_a}),{env_b} ({modified_p2_b})
         cmd_env = self.get_cmd_env()
 
         # add a new project
-        proj_name = self.make_name("test-param-times")
+        proj_name = self.make_name("param-times")
         self.create_project(cmd_env, proj_name)
 
         # add a couple environments
@@ -1599,11 +1599,11 @@ Parameter,{env_a} ({modified_p2_a}),{env_b} ({modified_p2_b})
         cmd_env = self.get_cmd_env()
 
         # add a new project, and a couple environments
-        proj_name = self.make_name("test-evaluated")
+        proj_name = self.make_name("evaluated")
         self.create_project(cmd_env, proj_name)
-        env_name_a = self.make_name("test-eval-a")
+        env_name_a = self.make_name("eval-a")
         self.create_environment(cmd_env, env_name_a)
-        env_name_b = self.make_name("test-eval-b")
+        env_name_b = self.make_name("eval-b")
         self.create_environment(cmd_env, env_name_b)
 
         # create an internal parameter
@@ -1758,7 +1758,7 @@ Parameter,{env_a} ({modified_p2_a}),{env_b} ({modified_p2_b})
         cmd_env = self.get_cmd_env()
 
         # add a new project
-        proj_name = self.make_name("test-basic-types")
+        proj_name = self.make_name("basic-types")
         self.create_project(cmd_env, proj_name)
         param_cmd = base_cmd + f"--project {proj_name} param "
         list_cmd = param_cmd + "ls -v -f csv"
@@ -1870,7 +1870,7 @@ Parameter,{env_a} ({modified_p2_a}),{env_b} ({modified_p2_b})
         cmd_env = self.get_cmd_env()
 
         # add a new project
-        proj_name = self.make_name("test-string-rules")
+        proj_name = self.make_name("string-rules")
         self.create_project(cmd_env, proj_name)
         env_name = self.make_name("string-env")
         self.create_environment(cmd_env, env_name)
@@ -2101,7 +2101,7 @@ Parameter,{env_a} ({modified_p2_a}),{env_b} ({modified_p2_b})
         cmd_env = self.get_cmd_env()
 
         # add a new project
-        proj_name = self.make_name("test-integer-rules")
+        proj_name = self.make_name("integer-rules")
         self.create_project(cmd_env, proj_name)
         env_name = self.make_name("int-env")
         self.create_environment(cmd_env, env_name)
@@ -2305,7 +2305,7 @@ Parameter,{env_a} ({modified_p2_a}),{env_b} ({modified_p2_b})
         cmd_env = self.get_cmd_env()
 
         # add a new project
-        proj_name = self.make_name("test-boolean-rules")
+        proj_name = self.make_name("boolean-rules")
         self.create_project(cmd_env, proj_name)
         env_name = self.make_name("bool-env")
         self.create_environment(cmd_env, env_name)
@@ -2369,7 +2369,7 @@ Parameter,{env_a} ({modified_p2_a}),{env_b} ({modified_p2_b})
         cmd_env = self.get_cmd_env()
 
         # add a new project
-        proj_name = self.make_name("test-param-tags")
+        proj_name = self.make_name("param-tags")
         self.create_project(cmd_env, proj_name)
         env_name = self.make_name("ptag-env")
         self.create_environment(cmd_env, env_name)
@@ -2458,9 +2458,9 @@ Parameter,{env_a} ({modified_p2_a}),{env_b} ({modified_p2_b})
         base_cmd = self.get_cli_base_cmd()
 
         # add a set of projects
-        parent_name = self.make_name("test-param-proj-parent")
-        child1_name = self.make_name("test-param-proj-child1")
-        child2_name = self.make_name("test-param-proj-child2")
+        parent_name = self.make_name("param-proj-parent")
+        child1_name = self.make_name("param-proj-child1")
+        child2_name = self.make_name("param-proj-child2")
 
         self.create_project(cmd_env, parent_name)
         self.create_project(cmd_env, child1_name, parent=parent_name)
@@ -2563,7 +2563,7 @@ Name,Value,Project
 
         #########################
         # another level on project inheritance
-        grandchild_name = self.make_name("test-param-proj-grand")
+        grandchild_name = self.make_name("param-proj-grand")
         self.create_project(cmd_env, grandchild_name, parent=child1_name)
         result = self.list_params(cmd_env, child1_name, show_parents=True, fmt="csv", secrets=True)
         self.assertEqual(expected, result.out())
@@ -2642,7 +2642,7 @@ Name,Value,Project
         base_cmd = self.get_cli_base_cmd()
 
         # add a project
-        proj_name = self.make_name("test-param-pagination")
+        proj_name = self.make_name("param-pagination")
         self.create_project(cmd_env, proj_name)
 
         param_base = "param"
@@ -2667,7 +2667,7 @@ Name,Value,Project
         base_cmd = self.get_cli_base_cmd()
 
         # add a project
-        proj_name = self.make_name("test-param-overdone")
+        proj_name = self.make_name("param-overdone")
         self.create_project(cmd_env, proj_name)
 
         filename = self.make_name("cooked")
@@ -2699,7 +2699,7 @@ Name,Value,Project
         default_len = 12
 
         # add a project
-        proj_name = self.make_name("test-param-overdone")
+        proj_name = self.make_name("param-overdone")
         self.create_project(cmd_env, proj_name)
 
         param_cmd = base_cmd + f"--project {proj_name} param "
@@ -2786,7 +2786,7 @@ Name,Value,Project
         PROP_CHANGE = "Difference"
 
         # add a project with some variables
-        proj_name = self.make_name("test-param-drift")
+        proj_name = self.make_name("param-drift")
         param1 = "PARAM1"
         value1 = "my-param-value"
         param2 = "PARAM2"

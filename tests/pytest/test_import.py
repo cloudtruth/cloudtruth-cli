@@ -53,7 +53,7 @@ class ImportTestCase(TestCase):
     def test_import_basic(self):
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
-        proj_name = self.make_name("test-import")
+        proj_name = self.make_name("import")
         env1_name = self.make_name("imp-env")
         env2_name = self.make_name("imp-child")
         imp_base = base_cmd + "import param "

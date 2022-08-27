@@ -8,8 +8,8 @@ class TestEnvironments(TestCase):
         # verify `env_name` does not yet exist
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
-        env_name = self.make_name("test-env-name")
-        rename_name = self.make_name("test-env-rename")
+        env_name = self.make_name("env-name")
+        rename_name = self.make_name("env-rename")
         sub_cmd = base_cmd + "environments "
         result = self.run_cli(cmd_env, sub_cmd + "ls -v -f json")
         self.assertResultSuccess(result)
@@ -77,7 +77,7 @@ class TestEnvironments(TestCase):
     def test_environment_cannot_delete_default(self):
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
-        proj_name = self.make_name("default-env-del-test")
+        proj_name = self.make_name("default-env-del")
         self.create_project(cmd_env, proj_name)
 
         # set the proj/env to 'default', and do not expose secrets
@@ -178,14 +178,14 @@ class TestEnvironments(TestCase):
         env_count = page_size + 1
 
         for idx in range(env_count):
-            env_name = self.make_name(f"test-pag-{idx}")
+            env_name = self.make_name(f"pag-{idx}")
             self.create_environment(cmd_env, env_name)
 
         self.assertPaginated(cmd_env, base_cmd + "env ls", "/environments/?")
 
         # cleanup
         for idx in range(env_count):
-            env_name = self.make_name(f"test-pag-{idx}")
+            env_name = self.make_name(f"pag-{idx}")
             self.delete_environment(cmd_env, env_name)
 
     def test_environment_tagging(self):
@@ -194,7 +194,7 @@ class TestEnvironments(TestCase):
 
         proj_name = self.make_name("proj-env-tag")
         self.create_project(cmd_env, proj_name)
-        env_name = self.make_name("test-env-tag")
+        env_name = self.make_name("env-tag")
         self.create_environment(cmd_env, env_name)
 
         # set a parameter
@@ -334,7 +334,7 @@ class TestEnvironments(TestCase):
     def test_environment_tag_pagination(self):
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
-        env_name = self.make_name("test-env-pag-tag")
+        env_name = self.make_name("env-pag-tag")
         self.create_environment(cmd_env, env_name)
 
         page_size = TEST_PAGE_SIZE

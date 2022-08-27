@@ -16,7 +16,7 @@ class TestGroups(TestCase):
     def test_group_basic(self):
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
-        group_name = self.make_name("test-group-name")
+        group_name = self.make_name("group-name")
         sub_cmd = base_cmd + "groups "
         result = self.run_cli(cmd_env, sub_cmd + "ls -v -f csv")
         self.assertResultSuccess(result)
@@ -107,7 +107,7 @@ class TestGroups(TestCase):
     def test_group_users(self):
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
-        group_name = self.make_name("test-group-name")
+        group_name = self.make_name("group-name")
         group_cmd = base_cmd + "groups "
         user_cmd = base_cmd + "users "
 
