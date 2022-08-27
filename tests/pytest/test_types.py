@@ -16,7 +16,7 @@ class TestParameterTypes(TestCase):
         # verify `type_name` does not yet exist
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
-        type_name = self.make_name("test-type-name")
+        type_name = self.make_name("type-name")
         sub_cmd = base_cmd + "types "
         result = self.run_cli(cmd_env, sub_cmd + "ls -v")
         self.assertResultSuccess(result)
@@ -45,7 +45,7 @@ class TestParameterTypes(TestCase):
 
         # rename
         orig_name = type_name
-        type_name = self.make_name("test-type-rename")
+        type_name = self.make_name("type-rename")
         result = self.run_cli(cmd_env, sub_cmd + f"set {orig_name} --rename \"{type_name}\"")
         self.assertResultSuccess(result)
         self.assertIn(f"Updated parameter type '{type_name}'", result.out())
@@ -149,14 +149,14 @@ class TestParameterTypes(TestCase):
         type_count = page_size + 1
 
         for idx in range(type_count):
-            type_name = self.make_name(f"test-pag-{idx}")
+            type_name = self.make_name(f"pag-{idx}")
             self.create_type(cmd_env, type_name)
 
         self.assertPaginated(cmd_env, base_cmd + "type ls", "/types/?")
 
         # cleanup
         for idx in range(type_count):
-            type_name = self.make_name(f"test-pag-{idx}")
+            type_name = self.make_name(f"pag-{idx}")
             self.delete_type(cmd_env, type_name)
 
     def test_type_integers(self):
@@ -174,7 +174,7 @@ class TestParameterTypes(TestCase):
         ###################
         # create project/parameters to use
         invalid_type_err = "Rule violation: Value is not of type"
-        proj_name = self.make_name("type-int-test")
+        proj_name = self.make_name("type-int")
         self.create_project(cmd_env, proj_name)
         param1 = "param1"
         param2 = "param2"
@@ -362,7 +362,7 @@ class TestParameterTypes(TestCase):
         ###################
         # create project/parameters to use
         invalid_type_err = "Rule violation: Value is not of type"
-        proj_name = self.make_name("type-bool-test")
+        proj_name = self.make_name("type-bool")
         self.create_project(cmd_env, proj_name)
         param1 = "param1"
         param2 = "param2"
@@ -456,7 +456,7 @@ class TestParameterTypes(TestCase):
 
         ###################
         # create project/parameters to use
-        proj_name = self.make_name("type-str-test")
+        proj_name = self.make_name("type-str")
         self.create_project(cmd_env, proj_name)
         param1 = "param1"
         param2 = "param2"

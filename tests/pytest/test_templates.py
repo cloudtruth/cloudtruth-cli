@@ -18,7 +18,7 @@ class TestTemplates(TestCase):
     def test_template_basic(self) -> None:
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
-        proj_name = self.make_name("test-template-proj")
+        proj_name = self.make_name("template-proj")
         temp_name = "orig-template"  # templates are scoped to a project, so no need to "randomize"
         filename = self.make_name("basic-body") + ".txt"
         body = "Text with no params\n"
@@ -127,7 +127,7 @@ class TestTemplates(TestCase):
     def test_template_evaluate_environments(self) -> None:
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
-        proj_name = self.make_name("test-temp-eval")
+        proj_name = self.make_name("temp-eval")
         temp_name = "my_template"  # templates are scoped to a project, so no need to "randomize"
         env_a = self.make_name("env_eval_a")
         env_b = self.make_name("env_eval_b")
@@ -246,7 +246,7 @@ ANOTHER_PARAM=PARAM2
         cmd_env = self.get_cmd_env()
 
         # add a new project
-        proj_name = self.make_name("test-temp-times")
+        proj_name = self.make_name("temp-times")
         self.create_project(cmd_env, proj_name)
 
         ##################
@@ -265,7 +265,7 @@ ANOTHER_PARAM=PARAM2
         # create a template
         temp_name = "my-test-template"
         temp_cmd = base_cmd + f"--project '{proj_name}' template "
-        filename = self.make_name("test-temp-times") + ".txt"
+        filename = self.make_name("temp-times") + ".txt"
 
         body = """\
 # just a different template
@@ -343,11 +343,11 @@ this.is.a.template.value=PARAM1
         cmd_env = self.get_cmd_env()
 
         # add a new project
-        proj_name = self.make_name("test-temp-tag")
+        proj_name = self.make_name("temp-tag")
         self.create_project(cmd_env, proj_name)
 
         # add an environment (needed for tagging)
-        env_name = self.make_name("test-tag-temp")
+        env_name = self.make_name("tag-temp")
         self.create_environment(cmd_env, env_name)
 
         ##################
@@ -366,7 +366,7 @@ this.is.a.template.value=PARAM1
         # create a template
         temp_name = "my-test-template"
         temp_cmd = base_cmd + f"--project '{proj_name}' --env '{env_name}' template "
-        filename = self.make_name("test-temp-tag") + ".txt"
+        filename = self.make_name("temp-tag") + ".txt"
 
         body = """\
 # just a different template
@@ -450,7 +450,7 @@ this.is.a.template.value=PARAM1
         cmd_env = self.get_cmd_env()
 
         # add a new project
-        proj_name = self.make_name("test-temp-hist")
+        proj_name = self.make_name("temp-hist")
         self.create_project(cmd_env, proj_name)
 
         env_name = self.make_name("env-temp-hist")
@@ -568,7 +568,7 @@ this.is.a.template.value=PARAM1
         cmd_env = self.get_cmd_env()
 
         # add a new project
-        proj_name = self.make_name("test-template-diff")
+        proj_name = self.make_name("template-diff")
         self.create_project(cmd_env, proj_name)
 
         # add a couple environments
@@ -888,7 +888,7 @@ PARAMETER={{{{{param1}}}}}
         body1 = "nothing to evaluate here"
         self.write_file(filename, body1)
 
-        proj_name = self.make_name("test-temp-ref-param")
+        proj_name = self.make_name("temp-ref-param")
         self.create_project(cmd_env, proj_name)
 
         # create a simple template with nothing to be evaluated
@@ -958,7 +958,7 @@ PARAMETER={{{{{param1}}}}}
         body1 = "nothing to evaluate here"
         self.write_file(filename, body1)
 
-        proj_name = self.make_name("test-temp-paged")
+        proj_name = self.make_name("temp-paged")
         self.create_project(cmd_env, proj_name)
 
         sub_cmd = base_cmd + f"--project '{proj_name}' template "

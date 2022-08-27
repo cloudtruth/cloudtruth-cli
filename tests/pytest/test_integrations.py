@@ -76,7 +76,7 @@ class TestIntegrations(TestCase):
         cmd_env = self.get_cmd_env()
 
         # add a new project
-        proj_name = self.make_name("test-int-explore-errors")
+        proj_name = self.make_name("int-explore-errors")
         self.create_project(cmd_env, proj_name)
 
         # check that we get notification about no provider
@@ -155,7 +155,7 @@ class TestIntegrations(TestCase):
     def test_integration_parameters(self):
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
-        proj_name = self.make_name("test-int-params")
+        proj_name = self.make_name("int-params")
         empty_msg = f"No parameters found in project {proj_name}"
         param_cmd = base_cmd + f"--project '{proj_name}' param "
         show_cmd = param_cmd + "list -vsf csv"
@@ -404,7 +404,7 @@ PARAMETER_2 = PARAM2
         cmd_env = self.get_cmd_env()
 
         # add a new project
-        proj_name = self.make_name("test-int-ext-temp")
+        proj_name = self.make_name("int-ext-temp")
         self.create_project(cmd_env, proj_name)
         proj_cmd = base_cmd + f"--project '{proj_name}' "
 

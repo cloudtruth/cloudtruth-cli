@@ -70,9 +70,9 @@ class TestActions(TestCase):
 
         ########################
         # create a couple projects
-        proj_name1 = self.make_name("test-push-proj1")
+        proj_name1 = self.make_name("push-proj1")
         self.create_project(cmd_env, proj_name1)
-        proj_name2 = self.make_name("test-push-proj2")
+        proj_name2 = self.make_name("push-proj2")
         self.create_project(cmd_env, proj_name2)
 
         ########################
@@ -96,7 +96,7 @@ class TestActions(TestCase):
         default_resource = "/{{ environment }}/{{ project }}/{{ parameter }}"
         default_service = "ssm"
         default_region = "us-east-1"
-        push_name1 = self.make_name("my-test-push")
+        push_name1 = self.make_name("mypush")
         desc1 = "original comment"
         resource1 = "/{{ environment }}/{{ project }}/{{ parameter }}"
         self._pushes.append((integ_name, push_name1))
@@ -131,7 +131,7 @@ class TestActions(TestCase):
         self.assertIn(f"Integration: {integ_name}", result.out())
 
         # rename push, change resource, add another project, and another tag
-        push_name2 = self.make_name("updated-test-push")
+        push_name2 = self.make_name("updatedpush")
         resource2 = "/{{ project }}/{{ parameter }}/{{ environment }}"
         self._pushes.append((integ_name, push_name2))
         tag2 = f"{env_name2}:{env2_tag1}"
@@ -394,7 +394,7 @@ class TestActions(TestCase):
         # create the import -- use a bogus resource string the would not exist
         default_service = "ssm"
         default_region = "us-east-1"
-        import_name1 = self.make_name("my-test-import")
+        import_name1 = self.make_name("myimport")
         desc1 = "original comment"
         resource1 = "/bogus_resource_path/{{ project }}/{{ environment }}/{{ parameter }}"
         self._pulls.append((integ_name, import_name1))
@@ -428,7 +428,7 @@ class TestActions(TestCase):
         self.assertIn("Flags: none", result.out())
 
         # rename import, change resource, add another project, and another tag
-        import_name2 = self.make_name("updated-test-imp")
+        import_name2 = self.make_name("updatedimp")
         resource2 = "/another_path_should_not_exist/{{ project }}/{{ parameter }}/{{ environment }}"
         self._pulls.append((integ_name, import_name2))
         cmd = set_cmd + f"'{import_name1}' --resource '{resource2}' -r '{import_name2}'"
@@ -686,7 +686,7 @@ class TestActions(TestCase):
 
         ########################
         # define a couple projects, parameters, and values
-        proj_name1 = self.make_name("test-comp-army")
+        proj_name1 = self.make_name("comp-army")
         param11 = "soldier"
         value11a = "private"
         value11b = "infantryman"
@@ -694,7 +694,7 @@ class TestActions(TestCase):
         value21a = "captain"
         value21b = "engineer"
 
-        proj_name2 = self.make_name("test-comp-airforce")
+        proj_name2 = self.make_name("comp-airforce")
         param12 = "officer"
         value12a = "navigator"
         value12b = "major"
@@ -770,7 +770,7 @@ class TestActions(TestCase):
         # create the push of both projects -- the path includes a test-specific
         prefix = self.make_name("action-complete")
         resource = f"/{prefix}" + "/{{ environment }}/{{ project }}/{{ parameter }}"
-        push_name = self.make_name("test-comp-push")
+        push_name = self.make_name("comp-push")
         self._pushes.append((integ_name, push_name))
         create_push_cmd = (
             push_cmd + f"set {push_name} --integration '{integ_name}' "

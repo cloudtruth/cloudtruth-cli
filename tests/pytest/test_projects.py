@@ -8,7 +8,7 @@ class TestProjects(TestCase):
         # verify `proj_name` does not yet exist
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
-        proj_name = self.make_name("test-proj-name")
+        proj_name = self.make_name("proj-name")
         sub_cmd = base_cmd + "projects "
         result = self.run_cli(cmd_env, sub_cmd + "ls -v")
         self.assertResultSuccess(result)
@@ -36,7 +36,7 @@ class TestProjects(TestCase):
 
         # rename
         orig_name = proj_name
-        proj_name = self.make_name("test-proj-rename")
+        proj_name = self.make_name("proj-rename")
         result = self.run_cli(cmd_env, sub_cmd + f"set {orig_name} --rename \"{proj_name}\"")
         self.assertResultSuccess(result)
         self.assertIn(f"Updated project '{proj_name}'", result.out())
@@ -142,8 +142,8 @@ class TestProjects(TestCase):
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
 
-        proj_name1 = self.make_name("test-ppp-parent")
-        proj_name2 = self.make_name("test-ppp-child")
+        proj_name1 = self.make_name("ppp-parent")
+        proj_name2 = self.make_name("ppp-child")
         self.create_project(cmd_env, proj_name1)
         self.create_project(cmd_env, proj_name2)
         proj1_cmd = base_cmd + f"--project '{proj_name1}' param "
@@ -281,12 +281,12 @@ class TestProjects(TestCase):
         proj_count = page_size + 1
 
         for idx in range(proj_count):
-            proj_name = self.make_name(f"test-pag-{idx}")
+            proj_name = self.make_name(f"pag-{idx}")
             self.create_project(cmd_env, proj_name)
 
         self.assertPaginated(cmd_env, base_cmd + "proj ls", "/projects/?")
 
         # cleanup
         for idx in range(proj_count):
-            proj_name = self.make_name(f"test-pag-{idx}")
+            proj_name = self.make_name(f"pag-{idx}")
             self.delete_project(cmd_env, proj_name)

@@ -16,7 +16,7 @@ class TestGroups(TestCase):
     def test_group_basic(self):
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
-        group_name = self.make_name("test-group-name")
+        group_name = self.make_name("group-name")
         sub_cmd = base_cmd + "groups "
         result = self.run_cli(cmd_env, sub_cmd + "ls -v -f csv")
         self.assertResultSuccess(result)
@@ -107,7 +107,7 @@ class TestGroups(TestCase):
     def test_group_users(self):
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
-        group_name = self.make_name("test-group-name")
+        group_name = self.make_name("group-name")
         group_cmd = base_cmd + "groups "
         user_cmd = base_cmd + "users "
 
@@ -142,7 +142,7 @@ class TestGroups(TestCase):
         result = self.run_cli(cmd_env, add_all_users_cmd)
         self.assertResultSuccess(result)
 
-    # remove all users with one command
+        # remove all users from group with one command
         rm_all_users_cmd = group_cmd + f"set {group_name} "
         rm_all_users_cmd += " ".join(f"--remove-user {user_name}" for user_name in user_names)
         result = self.run_cli(cmd_env, rm_all_users_cmd)

@@ -117,7 +117,7 @@ class TestTiming(TestCase):
 
     def test_timing_secrets(self) -> None:
         cmd_env = self.get_cmd_env()
-        proj_name = self.make_name("test-timing-secrets")
+        proj_name = self.make_name("timing-secrets")
         self.create_project(cmd_env, proj_name)
 
         timing = self._parameter_create_timing(proj_name, self.param_count, True)
@@ -129,7 +129,7 @@ class TestTiming(TestCase):
 
     def test_timing_params(self) -> None:
         cmd_env = self.get_cmd_env()
-        proj_name = self.make_name("test-timing-params")
+        proj_name = self.make_name("timing-params")
         self.create_project(cmd_env, proj_name)
 
         timing = self._parameter_create_timing(proj_name, self.param_count, False)
@@ -142,7 +142,7 @@ class TestTiming(TestCase):
     def test_timing_template(self) -> None:
         cmd_env = self.get_cmd_env()
         base_cmd = self.get_cli_base_cmd()
-        proj_name = self.make_name("test-timing-template")
+        proj_name = self.make_name("timing-template")
         self.create_project(cmd_env, proj_name)
         env_name = self.make_name("template-timing-env")
         self.create_environment(cmd_env, env_name)

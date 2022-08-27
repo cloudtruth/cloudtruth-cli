@@ -8,14 +8,14 @@ class TestProjects(TestCase):
         backup_cmd = base_cmd + "backup "
         snap_cmd = backup_cmd + "snapshot -y "
 
-        type1 = self.make_name("test-back-int")
-        type2 = self.make_name("test-back-str")
+        type1 = self.make_name("back-int")
+        type2 = self.make_name("back-str")
         type1_max = "4096"
         type1_min = "-511"
-        env_a = self.make_name("test-back-env_a")
-        env_b = self.make_name("test-back-env_b")
-        proj1 = self.make_name("test-back-proj1")
-        proj2 = self.make_name("test-back-proj2")
+        env_a = self.make_name("back-env_a")
+        env_b = self.make_name("back-env_b")
+        proj1 = self.make_name("back-proj1")
+        proj2 = self.make_name("back-proj2")
         p2_max_len = "100"
         p2_min_len = "10"
         temp1 = "my_temp"

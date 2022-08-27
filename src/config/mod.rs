@@ -27,7 +27,7 @@ const CONFIG_FILE_NAME: &str = "cli.yml";
 pub const DEFAULT_SERVER_URL: &str = "https://api.cloudtruth.io";
 
 /// Default OpenApi server request timeout
-pub const DEFAULT_REQUEST_TIMEOUT: u64 = 30;
+pub const DEFAULT_REQUEST_TIMEOUT: u64 = 90;
 
 /// Default environment name.
 pub const DEFAULT_ENV_NAME: &str = "default";

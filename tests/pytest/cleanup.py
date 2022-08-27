@@ -80,6 +80,7 @@ def cloudtruth_cleanup(*args):
         CleanupItem(name="projects", list_cmd="proj tree", del_cmd="proj del -y"),
         CleanupItem(name="environments", list_cmd="env tree", del_cmd="env del -y"),
         CleanupItem(name="users", list_cmd="user ls", del_cmd="user del -y"),
+        CleanupItem(name="groups", list_cmd="group ls", del_cmd="group del -y"),
         CleanupItem(name="invitations", list_cmd="user invite ls", del_cmd="user invite del -y"),
         CleanupItem(name="types", list_cmd="types tree", del_cmd="types del -y"),
         CleanupItem(name="pushes", list_cmd="action push ls", del_cmd="action push del -y"),

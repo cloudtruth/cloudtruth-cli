@@ -19,7 +19,7 @@ class TestUsers(TestCase):
     def test_user_basic(self):
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
-        user_name = self.make_name("test-user-name")
+        user_name = self.make_name("user-name")
         sub_cmd = base_cmd + "users "
         result = self.run_cli(cmd_env, sub_cmd + "ls -v -f csv")
         self.assertResultSuccess(result)
@@ -97,7 +97,7 @@ class TestUsers(TestCase):
         self.assertResultSuccess(result)
 
         # try creating a new owner
-        user2_name = self.make_name("test-another")
+        user2_name = self.make_name("another")
         cmd = base_cmd + f"--api-key '{api_key}' user set '{user2_name}'"
         result = self.run_cli(cmd_env, cmd)
         self.assertResultError(result, permission_err)
@@ -149,10 +149,7 @@ class TestUsers(TestCase):
         user_count = page_size + 1
         user_names = []
         for idx in range(user_count):
-            name = f"ci-user+{idx}"
-            job_id = self.make_name("")
-            if job_id:
-                name += f"-{job_id}"
+            name = self.make_name(f"ci-user+{idx}")
             user_names.append(name)
 
         for name in user_names:
@@ -240,7 +237,7 @@ class TestUsers(TestCase):
 
         ################
         # user cannot invite above their paygrade
-        temp_user = self.make_name("test-invite-user")
+        temp_user = self.make_name("invite-user")
         api_key = self.add_user(cmd_env, temp_user, role="admin")
 
         # NOTE: must be admin or owner to create a user

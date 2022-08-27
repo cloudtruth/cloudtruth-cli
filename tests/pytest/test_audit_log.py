@@ -77,7 +77,7 @@ class TestAuditLogs(TestCase):
         orig_summary = result.out()
 
         # add some things
-        proj_name = self.make_name("test-audit")
+        proj_name = self.make_name("audit")
         self.create_project(cmd_env, proj_name)
         env_name = self.make_name("aud-env")
         self.create_environment(cmd_env, env_name)
