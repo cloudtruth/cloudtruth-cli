@@ -121,6 +121,7 @@ class TestCase(unittest.TestCase):
         self._invites = None
         self._types = None
         self._filenames = None
+        self._groups = None
         super().__init__(*args, **kwargs)
         self.maxDiff = None
 
@@ -132,6 +133,7 @@ class TestCase(unittest.TestCase):
         self._invites = list()
         self._types = list()
         self._filenames = set()
+        self._groups = list()
         super().setUp()
 
     def tearDown(self) -> None:
@@ -167,6 +169,11 @@ class TestCase(unittest.TestCase):
         for fname in self._filenames:
             os.remove(fname)
 
+        # remove any added groups
+        for groupname in self._groups:
+            cmd = self._base_cmd + f"group del \"{groupname}\" --confirm"
+            subprocess.run(cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
         super().tearDown()
 
     def write_file(self, filename: str, content: str) -> None:
@@ -185,8 +192,10 @@ class TestCase(unittest.TestCase):
 
     def make_name(self, name: str) -> str:
         """
-        Adds the JOB_ID to the name, so multiple tests can run simultaneously.
+        Prefixes names with "testcli" so that they can be easily cleaned up with scripts.
+        Also adds the JOB_ID to the name if present, so multiple tests can run simultaneously.
         """
+        name = "testcli-" + name
         if not self.job_id:
             return name
         return name + "-" + self.job_id
@@ -301,6 +310,10 @@ class TestCase(unittest.TestCase):
                 typename = _next_part(args, "set")
                 if typename and typename not in self._types:
                     self._types.append(typename)
+            elif set(args) & set(["group", "grp", "gr", "g"]):
+                groupname = _next_part(args, "set")
+                if groupname and groupname not in self._groups:
+                    self._groups.append(groupname)
 
         start = datetime.now()
         process = subprocess.run(
