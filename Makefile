@@ -46,7 +46,7 @@ shell:
 
 # the client must be generated before building the Rust program that uses it
 cargo cli: client
-	cargo build
+	cargo build -r
 
 clean:
 	rm -rf target/
@@ -64,7 +64,7 @@ client: openapi.yml patch_client.py
 		--additional-properties=packageName=cloudtruth-restapi,packageVersion=1.0.0,supportAsync=false,enumUnknownDefaultCase=true \
 		> generator.log
 	python3 patch_client.py
-	cd client && cargo fmt && cargo build
+	cd client && cargo fmt && cargo build -r
 
 lint: lint_test
 	cargo fmt --all -- --check
