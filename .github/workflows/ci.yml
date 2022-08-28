@@ -136,7 +136,7 @@ jobs:
         if: runner.os == 'macOs'
         run: |
           cd tests/pytest
-          python3 live_test.py --job-id "${OS}-${GITHUB_RUN_NUMBER}" --before ${{ env.PART_A_END }}
+          python3 live_test.py --job-id "${OS}-${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}" --before ${{ env.PART_A_END }}
 
       - name: Integration Test - Part B
         env:
@@ -144,7 +144,7 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           cd tests/pytest
-          python3 live_test.py --job-id "${OS}-${GITHUB_RUN_NUMBER}" --after ${{ env.PART_A_END }} --before ${{ env.PART_C_START }}
+          python3 live_test.py --job-id "${OS}-${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}" --after ${{ env.PART_A_END }} --before ${{ env.PART_C_START }}
 
       - name: Integration Test - Part C
         env:
@@ -152,4 +152,4 @@ jobs:
         if: runner.os == 'Windows'
         run: |
           cd tests\pytest
-          py live_test.py --job-id "$ENV:OS-$ENV:GITHUB_RUN_NUMBER" --after ${{ env.PART_C_START }}
+          py live_test.py --job-id "$ENV:OS-$ENV:GITHUB_RUN_NUMBER-$ENV:GITHUB_RUN_ATTEMPT" --after ${{ env.PART_C_START }}
