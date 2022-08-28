@@ -115,7 +115,7 @@ jobs:
         run: rustc --version --verbose
 
       - run: cargo build -r
-      - run: cargo test
+      - run: cargo test -r
       - run: make test_prerequisites
 
       - name: Integration Test - non-Windows
