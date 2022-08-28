@@ -126,8 +126,8 @@ jobs:
       - name: Show Rust version and platform details
         run: rustc --version --verbose
 
-      - run: cargo build
-      - run: cargo test
+      - run: cargo build -r
+      - run: cargo test -r
       - run: make test_prerequisites
 
       - name: Integration Test - Part A

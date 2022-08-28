@@ -35,7 +35,7 @@ jobs:
       - name: Show Rust version and platform details
         run: rustc --version --verbose
 
-      - run: cargo build
+      - run: cargo build -r
 
       - name: Integration Test
         run: |

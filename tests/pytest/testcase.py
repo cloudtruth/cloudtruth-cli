@@ -61,13 +61,17 @@ def get_cli_base_cmd() -> str:
     # walk back up looking for top of projects, and goto `target/debug/cloudtruth`
     curr = Path(__file__).absolute()
     exec_name = "cloudtruth.exe" if os.name == "nt" else "cloudtruth"
-    exec_path = Path("target") / "debug" / exec_name
+    exec_path_release = Path("target") / "release" / exec_name
+    exec_path_debug = Path("target") / "debug" / exec_name
 
     # leverage current structure... walk back up a maximum of 2 levels
     for _ in range(3):
-        possible = curr.parent / exec_path
-        if possible.exists():
-            return str(possible) + " "
+        possible_release = curr.parent / exec_path_release
+        if possible_release.exists():
+            return str(possible_release) + " "
+        possible_debug = curr.parent / exec_path_debug
+        if possible_debug.exists():
+            return str(possible_debug) + " "
         curr = curr.parent
 
     # we failed to find this, so just use the "default".
