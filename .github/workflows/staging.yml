@@ -40,4 +40,4 @@ jobs:
       - name: Integration Test
         run: |
           cd tests/pytest
-          python3 live_test.py --job-id "stage-${GITHUB_RUN_NUMBER}" --filter ${{ env.CLOUDTRUTH_TEST_FILTER }} --exclude backup
+          python3 live_test.py --job-id "stage-${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}" --filter ${{ env.CLOUDTRUTH_TEST_FILTER }} --exclude backup

@@ -124,7 +124,7 @@ jobs:
         if: runner.os != 'Windows'
         run: |
           cd tests/pytest
-          python3 live_test.py --job-id "${OS}-${GITHUB_RUN_NUMBER}" --exclude backup
+          python3 live_test.py --job-id "${OS}-${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}" --exclude backup
 
       - name: Integration Test - Windows
         env:
@@ -132,4 +132,4 @@ jobs:
         if: runner.os == 'Windows'
         run: |
           cd tests\pytest
-          py live_test.py --job-id "$ENV:OS-$ENV:GITHUB_RUN_NUMBER" --exclude backup
+          py live_test.py --job-id "$ENV:OS-$ENV:GITHUB_RUN_NUMBER-$ENV:GITHUB_RUN_ATTEMPT" --exclude backup
