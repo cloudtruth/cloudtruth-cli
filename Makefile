@@ -46,7 +46,7 @@ shell:
 
 # the client must be generated before building the Rust program that uses it
 cargo cli: client
-	cargo build -r
+	cargo build
 
 clean:
 	rm -rf target/
