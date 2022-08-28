@@ -1,3 +1,15 @@
+# 1.1.8 - 2022-08-28
+* Added the `groups` subcommand for group management
+* Updated `actions pushes` commands with new options
+  * `actions pushes list`
+    * Added data filtering options `--tag`, `--env`, and `--project`
+  * `actions pushes set` and `actions pushes sync`
+    * Added `--force` and `--no-force` (alias of the existing `--no-check-owner` and `--check-owner` options, respectively)
+    * Added `--local` and `--no-local` options
+* Added a configuration to accept invalid certs
+  * Environment variable: `CLOUDTRUTH_ACCEPT_INVALID_CERTS=1`
+  * YAML profile config: `accept-invalid-certs: true`
+  
 # 1.1.7 - 2022-03-23
 
 * Use Rocky instead of CentOS for Linux testing
