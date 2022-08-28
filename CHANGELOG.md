@@ -8,7 +8,7 @@
     * Added `--local` and `--no-local` options
 * Added a configuration to accept invalid certs
   * Environment variable: `CLOUDTRUTH_ACCEPT_INVALID_CERTS=1`
-  * YAML profile config: `accept-invalid-certs: true`
+  * YAML profile config: `accept_invalid_certs: true`
   
 # 1.1.7 - 2022-03-23
 
