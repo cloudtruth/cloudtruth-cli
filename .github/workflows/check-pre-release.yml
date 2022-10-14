@@ -16,7 +16,7 @@ jobs:
       CT_TEST_VALUE: Speicla
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 1
 
@@ -51,7 +51,7 @@ jobs:
       CT_TEST_VALUE: Speicla
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 1
 
@@ -78,7 +78,7 @@ jobs:
       CT_TEST_VALUE: Speicla
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 1
 
@@ -121,7 +121,7 @@ jobs:
       CT_TEST_VALUE: Speicla
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 1
 
@@ -145,7 +145,7 @@ jobs:
       CT_TEST_VALUE: Speicla
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 1
 
@@ -196,7 +196,7 @@ jobs:
       CT_TEST_VALUE: Speicla
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 1
 

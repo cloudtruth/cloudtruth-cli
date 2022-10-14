@@ -22,7 +22,7 @@ jobs:
       CLOUDTRUTH_TEST_BASIC_BAD_INTEGRATION_NAME: my-missing-integration
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Install Rust
         id: rust
