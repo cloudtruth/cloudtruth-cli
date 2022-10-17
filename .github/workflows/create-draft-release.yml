@@ -133,12 +133,12 @@ jobs:
           - { build: win-msvc      , os: windows-2019 , target: x86_64-pc-windows-msvc      , use-cross: false }
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 1
 
       - name: Get release download URL
-        uses: actions/download-artifact@v1
+        uses: actions/download-artifact@v3
         with:
           name: artifacts
           path: artifacts
@@ -373,7 +373,7 @@ jobs:
         with:
           fetch-depth: 1
 
-      - uses: actions/download-artifact@v1
+      - uses: actions/download-artifact@v3
         with:
           name: artifacts
           path: artifacts
@@ -420,7 +420,7 @@ jobs:
         with:
           fetch-depth: 1
 
-      - uses: actions/download-artifact@v1
+      - uses: actions/download-artifact@v3
         with:
           name: artifacts
           path: artifacts
@@ -451,7 +451,7 @@ jobs:
       CT_TEST_VALUE: Speicla
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 1
 
@@ -497,7 +497,7 @@ jobs:
           docker run -e CLOUDTRUTH_API_KEY --rm -v $(pwd):/truth -t cloudtruth:debian-jessie-slim cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
 
   test-macOS:
-    runs-on: macOS-latest
+    runs-on: macos-latest
     needs: [ 'build-release' ]
     env:
       # Need auth-token to download from draft release
@@ -510,7 +510,7 @@ jobs:
       CT_TEST_VALUE: Speicla
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 1
 
@@ -540,11 +540,11 @@ jobs:
       CT_TEST_VALUE: Speicla
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 1
 
-      - uses: actions/download-artifact@v1
+      - uses: actions/download-artifact@v3
         with:
           name: artifacts
           path: artifacts
@@ -611,11 +611,11 @@ jobs:
       CT_TEST_VALUE: Speicla
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 1
 
-      - uses: actions/download-artifact@v1
+      - uses: actions/download-artifact@v3
         with:
           name: artifacts
           path: artifacts
