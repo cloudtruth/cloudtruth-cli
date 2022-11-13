@@ -84,9 +84,9 @@ of the functions validated by the integration test:
 * Run inheritance validation
 * Argument project/environment resolution
 
-The integration test lives in `tests/pytest` and can be run using one of the following:
+The integration test lives in `integration-tests` and can be run using one of the following:
 ```
-python3 tests/pytest/live_test.py
+python3 integration-tests/live_test.py
 make test
 ```
 

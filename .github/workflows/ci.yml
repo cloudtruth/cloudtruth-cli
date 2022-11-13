@@ -135,7 +135,7 @@ jobs:
           OS: ${{ runner.os }}
         if: runner.os == 'macOs'
         run: |
-          cd tests/pytest
+          cd integration-tests
           python3 live_test.py --job-id "${OS}-${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}" --before ${{ env.PART_A_END }}
 
       - name: Integration Test - Part B
@@ -143,7 +143,7 @@ jobs:
           OS: ${{ runner.os }}
         if: runner.os == 'Linux'
         run: |
-          cd tests/pytest
+          cd integration-tests
           python3 live_test.py --job-id "${OS}-${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}" --after ${{ env.PART_A_END }} --before ${{ env.PART_C_START }}
 
       - name: Integration Test - Part C
@@ -151,5 +151,5 @@ jobs:
           OS: ${{ runner.os }}
         if: runner.os == 'Windows'
         run: |
-          cd tests\pytest
+          cd integration-tests
           py live_test.py --job-id "$ENV:OS-$ENV:GITHUB_RUN_NUMBER-$ENV:GITHUB_RUN_ATTEMPT" --after ${{ env.PART_C_START }}

@@ -81,5 +81,5 @@ jobs:
         env:
           OS: ${{ runner.os }}
         run: |
-          cd tests/pytest
+          cd integration-tests
           python3 live_test.py --job-id "dev-${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}" ${{ env.CLOUDTRUTH_TEST_EXTRA_ARGS }} --filter ${{ env.CLOUDTRUTH_TEST_FILTER }}
