@@ -119,7 +119,8 @@ else
 	@echo "Did not install shellcheck"
 endif
 
-test_prerequisistes:
+# This target is used by workflows before running integration tests
+test_prerequisites:
 	make -C $(test_dir) prerequisites
 
 test:
