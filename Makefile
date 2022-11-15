@@ -139,7 +139,7 @@ endif
 	@echo "Using rustc version: $(rust_intended)"
 
 regen: cargo
-	make -C tests $@
+	make -C $(build_dir) $@
 
 help: targets
 
