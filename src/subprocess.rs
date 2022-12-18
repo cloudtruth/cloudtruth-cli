@@ -1,6 +1,6 @@
 use crate::config::{CT_APP_REMOVABLE_VARS, CT_ENVIRONMENT, CT_PROJECT};
 use crate::database::ResolvedDetails;
-use crate::utils::warn_user;
+use crate::utils::{warn_user, default};
 use color_eyre::eyre::{ErrReport, Result};
 use color_eyre::Report;
 use std::collections::HashMap;
@@ -100,8 +100,8 @@ pub struct SubProcess {
 impl SubProcess {
     pub fn new() -> Self {
         Self {
-            ct_vars: Default::default(),
-            env_vars: Default::default(),
+            ct_vars: default(),
+            env_vars: default(),
         }
     }
 

@@ -32,7 +32,7 @@ subdirs += $(test_dir)
 .PHONY += test
 .PHONY += test_prerequisites
 
-all: precommit
+all: prerequisites version_check cli
 
 ### Commands for outside the container
 
@@ -118,7 +118,7 @@ test_prerequisites:
 	make -C $(test_dir) prerequisites
 
 test:
-	cargo test
+	RUST_BACKTRACE=1 cargo test
 
 integration: cargo
 	make -C $(test_dir) $@

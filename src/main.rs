@@ -54,6 +54,7 @@ use crate::versions::process_version_command;
 use chrono::{Datelike, NaiveDate, Utc};
 use clap::ArgMatches;
 use color_eyre::eyre::Result;
+use utils::default;
 use std::io;
 use std::process;
 use version_compare::Version;
@@ -183,11 +184,9 @@ fn main() -> Result<()> {
     // commands will talk to the server
     let cfg_result = Config::load_config(api_key, profile_name, env_name, proj_name);
     if let Err(error) = cfg_result {
-        let profile_info = if profile_name.is_some() {
-            format!(" from profile '{}'", profile_name.unwrap())
-        } else {
-            "".to_string()
-        };
+        let profile_info = profile_name.map_or(default(), |profile_name| {
+            format!(" from profile '{}'", profile_name)
+        });
         error_message(format!("Failed to load configuration{}.", profile_info,));
         help_message(format!(
             "The configuration ({}) can be edited with '{} config edit'.\nError details:\n{}",
