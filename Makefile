@@ -8,6 +8,11 @@ rust_intended := 1.63.0
 rust_installed := $(shell rustc -V | cut -d' ' -f2)
 rust_bad_version := $(shell grep "RUST_VERSION:" .github/workflows/*.yml | grep -v "$(rust_intended)")
 openapi_gen_version := v5.3.1
+build_dir := build
+test_dir := integration-tests
+# convenience for looping
+subdirs := $(build_dir)
+subdirs += $(test_dir)
 
 .DEFAULT = all
 .PHONY = all
@@ -18,10 +23,14 @@ openapi_gen_version := v5.3.1
 .PHONY += image
 .PHONY += integration
 .PHONY += lint
+.PHONY += lint_local
 .PHONY += precommit
-.PHONY += precommit_test
 .PHONY += prerequisites
 .PHONY += shell
+.PHONY += subdir_action
+.PHONY += subdir_lint
+.PHONY += subdir_precommit
+.PHONY += subdir_prereq
 .PHONY += targets
 .PHONY += test
 .PHONY += test_prerequisites
@@ -66,17 +75,30 @@ client: openapi.yml patch_client.py
 	python3 patch_client.py
 	cd client && cargo fmt && cargo build -r
 
-lint: lint_test
+lint_local:
 	cargo fmt --all -- --check
 	cargo clippy --all-features -- -D warnings
 	shellcheck install.sh scripts/*
 
-lint_test:
-	make -C tests lint
+lint: lint_local subdir_lint
 
-precommit: version_check cargo precommit_test lint
+subdir_action:
+	@for sd in $(subdirs) ; do \
+  		echo "Performing $(SUBDIR_ACTION) in $$sd directory" && make -C $$sd $(SUBDIR_ACTION) || exit 1; \
+  	done
 
-prerequisites: test_prerequisites
+subdir_lint:
+	make subdir_action SUBDIR_ACTION=lint
+
+subdir_precommit:
+	make subdir_action SUBDIR_ACTION=precommit
+
+subdir_prereq:
+	make subdir_action SUBDIR_ACTION=prerequisites
+
+precommit: version_check cargo test subdir_precommit
+
+prerequisites: subdir_prereq
 ifeq ($(rustup_exists),'')
 	curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 endif
@@ -97,18 +119,15 @@ else
 	@echo "Did not install shellcheck"
 endif
 
+# This target is used by workflows before running integration tests
 test_prerequisites:
-	make -C tests prerequisites
+	make -C $(test_dir) prerequisites
 
-precommit_test:
+test:
 	cargo test
-	make -C tests precommit
-
-test: precommit_test
-	make -C tests
 
 integration: cargo
-	make -C tests $@
+	make -C $(test_dir) $@
 
 version_check:
 ifneq ($(rust_intended),$(rust_installed))
@@ -120,7 +139,7 @@ endif
 	@echo "Using rustc version: $(rust_intended)"
 
 regen: cargo
-	make -C tests $@
+	make -C $(build_dir) $@
 
 help: targets
 
@@ -132,13 +151,11 @@ targets:
 	@echo "image          - make the cloudtruth/cli docker container for development"
 	@echo "integration    - runs the integration test against the live server"
 	@echo "lint           - checks for formatting issues"
-	@echo "lint_test      - checks tests for formatting issues"
 	@echo "precommit      - build rust targets, tests, and lints the files"
-	@echo "precommit_test - runs the cargo tests"
 	@echo "prerequisites  - install prerequisites"
 	@echo "regen          - regenerate non-build artifacts"
 	@echo "shell          - drop into the cloudtruth/cli docker container for development"
-	@echo "test           - runs precommit tests, as well as integration tests"
-	@echo "test_prerequisites - installs packages needed for testing"
+	@echo "test           - runs the cargo tests"
+	@echo "test_prerequisites - install prerequisites for running integration tests"
 	@echo "version_check  - checks rustc versions"
 	@echo ""

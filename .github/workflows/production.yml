@@ -28,5 +28,5 @@ jobs:
 
       - name: Integration Test
         run: |
-          cd tests/pytest
+          cd integration-tests
           python3 live_test.py --job-id "prod-${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}" --filter ${{ env.CLOUDTRUTH_TEST_FILTER }} --exclude backup
