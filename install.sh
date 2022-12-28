@@ -182,7 +182,7 @@ download_release() {
     package=$1
     base_url="https://github.com/cloudtruth/cloudtruth-cli/releases/download"
     download_url="${base_url}/${CT_CLI_VERSION}/${package}"
-    curl ${EXTRA_CURL_OPTIONS} -fsL -H "Accept: application/octet-stream" -o "${package}" "${download_url}"
+    curl "${EXTRA_CURL_OPTIONS}" -fsL -H "Accept: application/octet-stream" -o "${package}" "${download_url}"
 }
 
 # this is used to download a draft release during integration testing
@@ -191,7 +191,7 @@ download_draft() {
     assetfile="${CT_DRAFT_RELEASE_ID}.assets.json"
 
     # get all the assets for the release
-    curl ${EXTRA_CURL_OPTIONS} -fs -H "Authorization: token ${CT_DRAFT_AUTH_TOKEN}" -o "${assetfile}" \
+    curl "${EXTRA_CURL_OPTIONS}" -fs -H "Authorization: token ${CT_DRAFT_AUTH_TOKEN}" -o "${assetfile}" \
         "https://api.github.com/repos/cloudtruth/cloudtruth-cli/releases/${CT_DRAFT_RELEASE_ID}/assets"
 
     # find the asset id for the given package
@@ -199,7 +199,7 @@ download_draft() {
     rm "${assetfile}"
 
     download_url="https://api.github.com/repos/cloudtruth/cloudtruth-cli/releases/assets/${asset_id}"
-    curl ${EXTRA_CURL_OPTIONS} -fs --location-trusted -H "Authorization: token ${CT_DRAFT_AUTH_TOKEN}" -H "Accept: application/octet-stream" -o "${package}" "${download_url}"
+    curl "${EXTRA_CURL_OPTIONS}" -fs --location-trusted -H "Authorization: token ${CT_DRAFT_AUTH_TOKEN}" -H "Accept: application/octet-stream" -o "${package}" "${download_url}"
 }
 
 # alpine, macos - no package format yet, use generic binary
