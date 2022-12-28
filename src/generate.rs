@@ -1,5 +1,5 @@
 use crate::database::{OpenApiConfig, Parameters};
-use crate::lib::warn_missing_subcommand;
+use crate::utils::warn_missing_subcommand;
 use clap::ArgMatches;
 use color_eyre::eyre::Result;
 

@@ -11,13 +11,13 @@ use crate::database::{
     ParamRuleType, ParameterDetails, ParameterError, Parameters, Projects, ResolvedDetails,
     TaskStepDetails,
 };
-use crate::lib::{
+use crate::subprocess::EnvSettings;
+use crate::table::Table;
+use crate::utils::{
     error_message, format_param_error, help_message, parse_datetime, parse_tag, user_confirm,
     warn_missing_subcommand, warn_unresolved_params, warning_message, DEL_CONFIRM, FILE_READ_ERR,
     REDACTED,
 };
-use crate::subprocess::EnvSettings;
-use crate::table::Table;
 use clap::ArgMatches;
 use color_eyre::eyre::Result;
 use color_eyre::Report;

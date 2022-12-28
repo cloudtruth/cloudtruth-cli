@@ -4,11 +4,11 @@ use crate::cli::{
     SECRETS_FLAG, SET_SUBCMD, SHOW_TIMES_FLAG, TEMPLATE_FILE_OPT,
 };
 use crate::database::{HistoryAction, OpenApiConfig, ResolvedDetails, TemplateHistory, Templates};
-use crate::lib::{
+use crate::table::Table;
+use crate::utils::{
     error_message, parse_datetime, parse_tag, user_confirm, warn_missing_subcommand,
     warning_message, DEL_CONFIRM, FILE_READ_ERR,
 };
-use crate::table::Table;
 use clap::ArgMatches;
 use color_eyre::eyre::Result;
 use similar::TextDiff;

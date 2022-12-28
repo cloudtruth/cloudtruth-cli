@@ -244,7 +244,7 @@ impl Table {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::lib::StringWriter;
+    use crate::utils::StringWriter;
 
     fn create_basic_table() -> Table {
         let mut table = Table::new("my_table_type");

@@ -3,8 +3,8 @@ use crate::cli::{
     RAW_FLAG, SECRETS_FLAG, SHOW_TIMES_FLAG,
 };
 use crate::database::{Integrations, OpenApiConfig};
-use crate::lib::{error_message, warn_missing_subcommand, warning_message};
 use crate::table::Table;
+use crate::utils::{error_message, warn_missing_subcommand, warning_message};
 use clap::ArgMatches;
 use color_eyre::eyre::Result;
 use indoc::printdoc;

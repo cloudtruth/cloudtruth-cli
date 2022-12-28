@@ -5,11 +5,11 @@ use crate::cli::{
 };
 use crate::config::DEFAULT_ENV_NAME;
 use crate::database::{EnvironmentDetails, Environments, OpenApiConfig};
-use crate::lib::{
+use crate::table::Table;
+use crate::utils::{
     current_time, error_message, error_no_environment_message, parse_datetime, user_confirm,
     warn_missing_subcommand, warning_message, DEL_CONFIRM,
 };
-use crate::table::Table;
 use clap::ArgMatches;
 use color_eyre::eyre::Result;
 use std::process;
