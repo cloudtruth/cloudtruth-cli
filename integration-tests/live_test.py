@@ -147,7 +147,7 @@ def parse_args(*args) -> argparse.Namespace:
     )
     parser.add_argument(
         "-r",
-        "--report",
+        "--reports",
         dest="reports",
         action="store_true",
         help="Write summary report information"
