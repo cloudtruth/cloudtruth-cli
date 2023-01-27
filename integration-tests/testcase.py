@@ -118,7 +118,7 @@ class TestCase(unittest.TestCase):
         self._base_cmd = get_cli_base_cmd()
         self.log_commands = int(os.environ.get(CT_TEST_LOG_COMMANDS, "0"))
         self.log_output = int(os.environ.get(CT_TEST_LOG_OUTPUT, "0"))
-        self.job_id = os.environ.get(CT_TEST_JOB_ID, "")
+        self.job_id = os.environ.get(CT_TEST_JOB_ID, "testcli")
         self._projects = None
         self._environments = None
         self._users = None
@@ -196,10 +196,8 @@ class TestCase(unittest.TestCase):
 
     def make_name(self, name: str) -> str:
         """
-        Prefixes names with "testcli" so that they can be easily cleaned up with scripts.
-        Also adds the JOB_ID to the name if present, so multiple tests can run simultaneously.
+        Adds the JOB_ID to the name if present, so multiple tests can run simultaneously.
         """
-        name = "testcli-" + name
         if not self.job_id:
             return name
         return name + "-" + self.job_id

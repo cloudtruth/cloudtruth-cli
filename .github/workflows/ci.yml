@@ -15,6 +15,10 @@ env:
   # This needs to match the RUST_VERSION in create-draft-release.yml.
   RUST_VERSION: 1.63.0
 
+  # these are to run against staging
+  CLOUDTRUTH_SERVER_URL: https://api.staging.cloudtruth.io
+  CLOUDTRUTH_API_KEY: ${{ secrets.CI_ACCT_STAGING_CONTRIBUTOR }}
+
   # These are based on pre-configured integrations in the CLI CI account.
   # this test currently does not work. need to recreate the test data
   # CLOUDTRUTH_TEST_BROKEN_PROJECT: proj-int-broken
@@ -99,12 +103,7 @@ jobs:
   test:
     name: Test
     runs-on: ${{ matrix.os }}
-
-    env:
-      # these are to run against staging
-      CLOUDTRUTH_SERVER_URL: https://api.staging.cloudtruth.io
-      CLOUDTRUTH_API_KEY: ${{ secrets.CI_ACCT_STAGING_CONTRIBUTOR }}
-
+      
     strategy:
       fail-fast: false
       matrix:
@@ -138,7 +137,7 @@ jobs:
         if: runner.os == 'macOs'
         run: |
           cd integration-tests
-          python3 live_test.py --job-id "${OS}-${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}" --before ${{ env.PART_A_END }}
+          python3 live_test.py --job-id "${OS}-${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}-testcli" --before ${{ env.PART_A_END }}
 
       - name: Integration Test - Part B
         env:
@@ -146,7 +145,7 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           cd integration-tests
-          python3 live_test.py --job-id "${OS}-${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}" --after ${{ env.PART_A_END }} --before ${{ env.PART_C_START }}
+          python3 live_test.py --job-id "${OS}-${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}-testcli" --after ${{ env.PART_A_END }} --before ${{ env.PART_C_START }}
 
       - name: Integration Test - Part C
         env:
@@ -154,4 +153,17 @@ jobs:
         if: runner.os == 'Windows'
         run: |
           cd integration-tests
-          py live_test.py --job-id "$ENV:OS-$ENV:GITHUB_RUN_NUMBER-$ENV:GITHUB_RUN_ATTEMPT" --after ${{ env.PART_C_START }}
+          py live_test.py --job-id "$ENV:OS-$ENV:GITHUB_RUN_NUMBER-$ENV:GITHUB_RUN_ATTEMPT-testcli" --after ${{ env.PART_C_START }}
+  cleanup:
+    name: Cleanup
+    runs-on: ubuntu-latest
+
+    # wait for all test jobs to complete
+    needs: test
+    # run cleanup even when tests fail
+    if: ${{ always() }}
+
+    steps:
+      - run: |
+          cd integration-tests
+          python3 cleanup.py --confirm "${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}-testcli"

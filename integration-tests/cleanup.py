@@ -36,6 +36,13 @@ def parse_args(*args) -> argparse.Namespace:
         action='store_true',
         help="Do not show what the script is doing",
     )
+    parser.add_argument(
+        "--confirm",
+        "--yes",
+        dest="confirm",
+        action="store_true",
+        help="Skip confirmation prompt"
+    )
     return parser.parse_args(*args)
 
 
@@ -106,17 +113,18 @@ def cloudtruth_cleanup(*args):
         print(f"No {type_list} items found matching: {search_list}")
         return 0
 
-    print("\n\nFound matches: ")
-    for elem in elements:
-        if not elem.items:
-            print(f"  {elem.name}: None")
-        else:
-            print(f"  {elem.name}:")
-            for item in elem.items:
-                print(f"    {item}")
+    if not (args.confirm and args.quiet):
+        print("\n\nFound matches: ")
+        for elem in elements:
+            if not elem.items:
+                print(f"  {elem.name}: None")
+            else:
+                print(f"  {elem.name}:")
+                for item in elem.items:
+                    print(f"    {item}")
+        print("")
 
-    print("")
-    if not yes_or_no("Delete the above items"):
+    if not args.confirm and not yes_or_no("Delete the above items"):
         print("No items deleted")
         return 0
 
@@ -129,6 +137,7 @@ def cloudtruth_cleanup(*args):
             if result.return_value != 0:
                 all_deleted = False
                 print(f"Failed to delete {elem.name} {item}")
+                print(result.err())
 
     if all_deleted:
         print("Deleted all items")
