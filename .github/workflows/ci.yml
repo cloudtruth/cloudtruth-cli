@@ -82,13 +82,7 @@ jobs:
           override: true
           components: rustfmt, clippy
 
-      - uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            target
-          key: ${{ runner.os }}-cargo-${{ steps.rust.outputs.rustc_hash }}-${{ hashFiles('**/Cargo.lock') }}
+      - uses: Swatinem/rust-cache@v2
 
       - name: Show Rust version and platform details
         run: rustc --version --verbose
@@ -123,21 +117,14 @@ jobs:
           toolchain: ${{ env.RUST_VERSION }}
           profile: minimal
           override: true
-          components: rustfmt, clippy
 
-      - uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            target
-          key: ${{ runner.os }}-cargo-${{ steps.rust.outputs.rustc_hash }}-${{ hashFiles('**/Cargo.lock') }}
+      - uses: Swatinem/rust-cache@v2
 
       - name: Show Rust version and platform details
         run: rustc --version --verbose
 
-      - run: cargo build -r
-      - run: cargo test -r
+      - run: cargo build
+      - run: cargo test
       - run: make test_prerequisites
 
       - name: Integration Test - Part A
@@ -185,20 +172,13 @@ jobs:
           toolchain: ${{ env.RUST_VERSION }}
           profile: minimal
           override: true
-          components: rustfmt, clippy
 
-      - uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            target
-          key: ${{ runner.os }}-cargo-${{ steps.rust.outputs.rustc_hash }}-${{ hashFiles('**/Cargo.lock') }}
+      - uses: Swatinem/rust-cache@v2
 
       - name: Show Rust version and platform details
         run: rustc --version --verbose
 
-      - run: cargo build -r
+      - run: cargo build
       - run: |
           cd integration-tests
           python3 cleanup.py --confirm "${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}-testcli"
