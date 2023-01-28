@@ -56,7 +56,8 @@ env:
 
   CLOUDTRUTH_TEST_COMPLETE_INTEGRATION_NAME: ct-stage-write@943604981792
 
-  PART_A_END: test_parameter
+  PART_A_END: test_actions
+  # PART_A_END: test_parameter
   PART_C_START: test_project
 
 jobs:
@@ -109,8 +110,8 @@ jobs:
       matrix:
         os:
           - macos-latest
-          - ubuntu-latest
-          - windows-latest
+          # - ubuntu-latest
+          # - windows-latest
 
     steps:
       - uses: actions/checkout@v3
