@@ -71,7 +71,7 @@ impl Environments {
                     }
                     page_count += 1;
                 }
-                if data.next.is_none() {
+                if data.next.is_none() || data.next.as_ref().unwrap().is_empty() {
                     break;
                 }
             } else {
@@ -186,7 +186,7 @@ impl Environments {
                     } else {
                         break;
                     }
-                    if data.next.is_none() {
+                    if data.next.is_none() || data.next.as_ref().unwrap().is_empty() {
                         break;
                     }
                 }
@@ -340,7 +340,7 @@ impl Environments {
                     } else {
                         break;
                     }
-                    if data.next.is_none() {
+                    if data.next.is_none() || data.next.as_ref().unwrap().is_empty() {
                         break;
                     }
                 }
