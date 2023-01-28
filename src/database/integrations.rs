@@ -204,7 +204,7 @@ impl Integrations {
         jmes: Option<&str>,
     ) -> Result<Vec<IntegrationNode>, IntegrationError> {
         let mut results: Vec<IntegrationNode> = Vec::new();
-        let page_count = 1;
+        let mut page_count = 1;
         loop {
             let response = integrations_explore_list(
                 rest_cfg,
@@ -219,10 +219,11 @@ impl Integrations {
                     for item in list {
                         results.push(IntegrationNode::from(&item))
                     }
+                    page_count += 1;
                 } else {
                     break;
                 }
-                if data.next.is_none() {
+                if data.next.is_none() || data.next.unwrap().is_empty() {
                     break;
                 }
             } else if let Err(ResponseError(ref content)) = response {
