@@ -149,7 +149,7 @@ fi
 
 if [ -z "${CT_CLI_VERSION}" ]; then
     CT_VER_FILE_URL="https://api.github.com/repos/cloudtruth/cloudtruth-cli/releases/latest"
-    CT_CLI_VERSION=$(curl --silent "${CT_VER_FILE_URL}" | \
+    CT_CLI_VERSION=$(curl --silent --show-error "${CT_VER_FILE_URL}" | \
               grep "tag_name" | \
               sed -E 's/.*"([^"]+)".*/\1/')
     echo "[cloudtruth] found latest version: ${CT_CLI_VERSION}"
