@@ -26,7 +26,7 @@ def parse_args(*args) -> argparse.Namespace:
     parser.add_argument(
         dest="needles",
         nargs="*",
-        default=["Windows", "Linux", "macOS", "ci-cli"],
+        default=["Windows", "Linux", "macOS", "ci-cli", "testcli"],
         help="Search strings to look for",
     )
     parser.add_argument(
@@ -40,6 +40,7 @@ def parse_args(*args) -> argparse.Namespace:
         "-v",
         "--verbose",
         dest="verbose",
+        action="store_true",
         help="Detailed output"
     )
     parser.add_argument(
