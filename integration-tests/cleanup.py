@@ -37,6 +37,12 @@ def parse_args(*args) -> argparse.Namespace:
         help="Do not show what the script is doing",
     )
     parser.add_argument(
+        "-v",
+        "--verbose",
+        dest="verbose",
+        help="Detailed output"
+    )
+    parser.add_argument(
         "--confirm",
         "--yes",
         dest="confirm",
@@ -77,6 +83,10 @@ def cloudtruth_cleanup(*args):
     if not args.needles:
         print("No search strings provided")
         return -1
+    # reset verbosity flags if they conflict with each other
+    if args.quiet and args.verbose:
+        args.quiet = False
+        args.verbose = False
 
     result = cli("config curr -x")
     print(result.command)
@@ -134,10 +144,13 @@ def cloudtruth_cleanup(*args):
             continue
         for item in elem.items:
             result = cli(elem.del_cmd + f" '{item}'")
+            if args.verbose:
+                print(result.command)
             if result.return_value != 0:
                 all_deleted = False
                 print(f"Failed to delete {elem.name} {item}")
-                print(result.err())
+                if args.verbose:
+                    print(result.err())
 
     if all_deleted:
         print("Deleted all items")
