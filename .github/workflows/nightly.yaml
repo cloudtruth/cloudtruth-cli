@@ -75,13 +75,10 @@ jobs:
           override: true
           components: rustfmt, clippy
 
-      - uses: actions/cache@v3
+      - uses: Swatinem/rust-cache@v2
         with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            target
-          key: ${{ runner.os }}-cargo-${{ steps.rust.outputs.rustc_hash }}-${{ hashFiles('**/Cargo.lock') }}
+          shared-key: nightly
+          key: ${{ runner.os }}
 
       - name: Show Rust version and platform details
         run: rustc --version --verbose
@@ -110,11 +107,16 @@ jobs:
           override: true
           components: rustfmt, clippy
 
+      - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: nightly
+          key: ${{ runner.os }}
+
       - name: Show Rust version and platform details
         run: rustc --version --verbose
 
-      - run: cargo build -r
-      - run: cargo test -r
+      - run: cargo build
+      - run: cargo test
       - run: make test_prerequisites
 
       - name: Integration Test - non-Windows
@@ -123,7 +125,7 @@ jobs:
         if: runner.os != 'Windows'
         run: |
           cd integration-tests
-          python3 live_test.py --job-id "${OS}-${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}-testcli" --exclude backup --exclude integrations
+          python3 live_test.py --job-id "${OS}-${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}-cli-nightly" --exclude backup --exclude integrations
 
       - name: Integration Test - Windows
         env:
@@ -131,7 +133,7 @@ jobs:
         if: runner.os == 'Windows'
         run: |
           cd integration-tests
-          py live_test.py --job-id "$ENV:OS-$ENV:GITHUB_RUN_NUMBER-$ENV:GITHUB_RUN_ATTEMPT-testcli" --exclude backup --exclude integrations
+          py live_test.py --job-id "$ENV:OS-$ENV:GITHUB_RUN_NUMBER-$ENV:GITHUB_RUN_ATTEMPT-cli-nightly" --exclude backup --exclude integrations
   cleanup:
     name: Cleanup
     runs-on: ubuntu-latest
@@ -142,9 +144,28 @@ jobs:
     if: ${{ always() }}
 
     steps:
+      - uses: actions/checkout@v3
+
+      - name: Install Rust
+        id: rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
+          profile: minimal
+          override: true
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: nightly
+          key: ${{ runner.os }}
+
+      - name: Show Rust version and platform details
+        run: rustc --version --verbose
+
+      - run: cargo build
       - run: |
           cd integration-tests
-          python3 cleanup.py --confirm "${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}-testcli"
+          python3 cleanup.py --confirm "${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}-cli-ci"
       
 
 
