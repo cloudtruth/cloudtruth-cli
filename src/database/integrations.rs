@@ -182,6 +182,44 @@ impl Integrations {
         } // loop
         Ok(result)
     }
+    pub fn get_azure_integration_details(
+        &self,
+        rest_cfg: &OpenApiConfig
+    ) -> Result<Vec<IntegrationDetails>, IntegrationError> {
+        let mut result: Vec<IntegrationDetails> = Vec::new();
+        let mut page_count = 1;
+        loop {
+            let response = integrations_azure_key_vault_list(
+                rest_cfg,
+                None,
+                Some(page_count),
+                page_size(rest_cfg),
+                None,
+                None,
+                
+            );
+            match response {
+                Ok(data) => {
+                    if let Some(list) = data.results {
+                        for integration in list {
+                            result.push(IntegrationDetails::from(&integration));
+                        }
+                        page_count += 1;
+                    } else {
+                        break;
+                    }
+                    if data.next.is_none() {
+                        break;
+                    }
+                }
+                Err(ResponseError(ref content)) => {
+                    return Err(response_error(&content.status, &content.content));
+                }
+                Err(e) => return Err(IntegrationError::UnhandledError(e.to_string())),
+            }
+        } // loop
+        Ok(result)
+    }
 
     /// Gets a list of `IntegrationDetails` for all integration types.
     pub fn get_integration_details(
@@ -190,9 +228,11 @@ impl Integrations {
     ) -> Result<Vec<IntegrationDetails>, IntegrationError> {
         let mut github_details = self.get_github_integration_details(rest_cfg)?;
         let mut aws_details = self.get_aws_integration_details(rest_cfg)?;
+        let mut azure_details = self.get_azure_integration_details(rest_cfg)?;
         let mut total = vec![];
         total.append(&mut github_details);
         total.append(&mut aws_details);
+        total.append(&mut azure_details);
         Ok(total)
     }
 
@@ -281,6 +321,19 @@ impl Integrations {
         }
     }
 
+    fn get_azure_id(
+        &self,
+        rest_cfg: &OpenApiConfig,
+        integration_name: &str
+    ) -> Result<Option<String>, IntegrationError> {
+        let mut total = self.get_azure_integration_details(rest_cfg)?;
+        total.retain(|d| d.name == integration_name);
+        match total.len() {
+            0 => Ok(None),
+            _ => Ok(Some(total[0].id.clone())),
+        }
+    }
+
     pub fn get_id(
         &self,
         rest_cfg: &OpenApiConfig,
@@ -290,7 +343,10 @@ impl Integrations {
             Some(github_id) => Ok(Some(github_id)),
             _ => match self.get_aws_id(rest_cfg, integration_name)? {
                 Some(aws_id) => Ok(Some(aws_id)),
-                _ => Ok(None),
+                _ => match self.get_azure_id(rest_cfg, integration_name)? {
+                    Some(azure_id) => Ok(Some(azure_id)),
+                    _ => Ok(None)
+                }
             },
         }
     }
@@ -325,6 +381,21 @@ impl Integrations {
         }
     }
 
+    fn get_azure_details_by_name(
+        &self,
+        rest_cfg: &OpenApiConfig,
+        integration_name: &str,
+    ) -> Result<Option<IntegrationDetails>, IntegrationError> {
+        // unfortunately, there's no good way to filter by name on the server... so get the whole
+        // list and filter here
+        let mut total = self.get_azure_integration_details(rest_cfg)?;
+        total.retain(|d| d.name == integration_name);
+        match total.len() {
+            0 => Ok(None),
+            _ => Ok(Some(total[0].clone())),
+        }
+    }
+
     pub fn get_details_by_name(
         &self,
         rest_cfg: &OpenApiConfig,
@@ -334,7 +405,10 @@ impl Integrations {
             Some(github_details) => Ok(Some(github_details)),
             _ => match self.get_aws_details_by_name(rest_cfg, integration_name)? {
                 Some(aws_details) => Ok(Some(aws_details)),
-                _ => Ok(None),
+                _ => match self.get_azure_details_by_name(rest_cfg, integration_name)? {
+                    Some(azure_details) => Ok(Some(azure_details)),
+                    _ => Ok(None)
+                }
             },
         }
     }
@@ -371,6 +445,22 @@ impl Integrations {
         }
     }
 
+    fn refresh_azure_connection(
+        &self,
+        rest_cfg: &OpenApiConfig,
+        integration_id: &str,
+    ) -> Result<Option<String>, IntegrationError> {
+        let response = integrations_azure_key_vault_retrieve(rest_cfg, integration_id, Some(true));
+        match response {
+            Ok(api) => Ok(Some(api.id)),
+            Err(ResponseError(ref content)) => match content.status.as_u16() {
+                404 => Ok(None),
+                _ => Err(response_error(&content.status, &content.content)),
+            },
+            Err(e) => Err(IntegrationError::UnhandledError(e.to_string())),
+        }
+    }
+
     pub fn refresh_connection(
         &self,
         rest_cfg: &OpenApiConfig,
@@ -378,6 +468,7 @@ impl Integrations {
     ) -> Result<(), IntegrationError> {
         self.refresh_github_connection(rest_cfg, integration_id)?;
         self.refresh_aws_connection(rest_cfg, integration_id)?;
+        self.refresh_azure_connection(rest_cfg, integration_id)?;
         Ok(())
     }
 
