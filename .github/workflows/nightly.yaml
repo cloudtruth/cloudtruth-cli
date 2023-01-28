@@ -14,6 +14,13 @@ env:
   RUST_BACKTRACE: 1
   # This needs to match the RUST_VERSION in create-draft-release.yml.
   RUST_VERSION: 1.63.0
+  RUST_CACHE_KEY: v0-rust-nightly
+
+  # these are to run against staging
+  CLOUDTRUTH_SERVER_URL: https://api.staging.cloudtruth.io
+  CLOUDTRUTH_API_KEY: ${{ secrets.CI_ACCT_STAGING_CONTRIBUTOR }}
+  # below, lets us run against production
+  # CLOUDTRUTH_API_KEY: ${{ secrets.CI_ACCT_READWRITE_CT_API_KEY }}
 
   # These are based on pre-configured integrations in the CLI CI account.
   # this test currently does not work. need to recreate the test data
@@ -53,43 +60,9 @@ env:
   CLOUDTRUTH_TEST_COMPLETE_INTEGRATION_NAME: ct-stage-write@943604981792
 
 jobs:
-  lint:
-    name: Lint
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Install Rust
-        id: rust
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: ${{ env.RUST_VERSION }}
-          profile: minimal
-          override: true
-          components: rustfmt, clippy
-
-      - uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            target
-          key: ${{ runner.os }}-cargo-${{ steps.rust.outputs.rustc_hash }}-${{ hashFiles('**/Cargo.lock') }}
-
-      - name: Show Rust version and platform details
-        run: rustc --version --verbose
-
   test:
     name: Test
     runs-on: ${{ matrix.os }}
-
-    env:
-      # these are to run against staging
-      CLOUDTRUTH_SERVER_URL: https://api.staging.cloudtruth.io
-      CLOUDTRUTH_API_KEY: ${{ secrets.CI_ACCT_STAGING_CONTRIBUTOR }}
-      # below, lets us run against production
-      # CLOUDTRUTH_API_KEY: ${{ secrets.CI_ACCT_READWRITE_CT_API_KEY }}
 
     strategy:
       fail-fast: false
@@ -109,7 +82,11 @@ jobs:
           toolchain: ${{ env.RUST_VERSION }}
           profile: minimal
           override: true
-          components: rustfmt, clippy
+          
+      - uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: ${{ env.RUST_CACHE_KEY }}
+          shared-key: ${{ runner.os }}
 
       - name: Show Rust version and platform details
         run: rustc --version --verbose
@@ -124,7 +101,7 @@ jobs:
         if: runner.os != 'Windows'
         run: |
           cd integration-tests
-          python3 live_test.py --job-id "${OS}-${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}" --exclude backup --exclude integrations
+          python3 live_test.py --job-id "${OS}-${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}-cli-nightly" --exclude backup --exclude integration
 
       - name: Integration Test - Windows
         env:
@@ -132,4 +109,40 @@ jobs:
         if: runner.os == 'Windows'
         run: |
           cd integration-tests
-          py live_test.py --job-id "$ENV:OS-$ENV:GITHUB_RUN_NUMBER-$ENV:GITHUB_RUN_ATTEMPT" --exclude backup --exclude integrations
+          py live_test.py --job-id "$ENV:OS-$ENV:GITHUB_RUN_NUMBER-$ENV:GITHUB_RUN_ATTEMPT-cli-nightly" --exclude backup --exclude integration
+  cleanup:
+    name: Cleanup
+    runs-on: ubuntu-latest
+
+    # wait for all test jobs to complete
+    needs: test
+    # run cleanup even when tests fail
+    if: ${{ always() }}
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install Rust
+        id: rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
+          profile: minimal
+          override: true
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: ${{ env.RUST_CACHE_KEY }}
+          shared-key: ${{ runner.os }}
+
+      - name: Show Rust version and platform details
+        run: rustc --version --verbose
+
+      - run: cargo build -r
+      - run: |
+          cd integration-tests
+          python3 cleanup.py --confirm "${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}-cli-nightly"
+      
+
+
+

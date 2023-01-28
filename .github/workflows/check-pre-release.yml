@@ -112,7 +112,7 @@ jobs:
           docker run -e CLOUDTRUTH_API_KEY --rm -v $(pwd):/truth -t cloudtruth:debian-jessie-slim cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
 
   test-macOS:
-    runs-on: macOS-latest
+    runs-on: macos-latest
     env:
       # These values are used for running the CLI command
       CLOUDTRUTH_API_KEY: ${{ secrets.CI_ACCT_READONLY_CT_API_KEY }}

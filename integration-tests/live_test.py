@@ -83,7 +83,7 @@ def parse_args(*args) -> argparse.Namespace:
         "--job-id",
         type=str,
         dest="job_id",
-        help="Job Identifier to use as a suffix on project and environment names"
+        help="Job Identifier to use as a suffix on project and environment names (default: testcli)"
     )
     parser.add_argument(
         "--filter",

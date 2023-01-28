@@ -26,7 +26,7 @@ def parse_args(*args) -> argparse.Namespace:
     parser.add_argument(
         dest="needles",
         nargs="*",
-        default=["Windows", "Linux", "macOS", "ci-cli"],
+        default=["Windows", "Linux", "macOS", "ci-cli", "testcli"],
         help="Search strings to look for",
     )
     parser.add_argument(
@@ -35,6 +35,20 @@ def parse_args(*args) -> argparse.Namespace:
         dest="quiet",
         action='store_true',
         help="Do not show what the script is doing",
+    )
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        dest="verbose",
+        action="store_true",
+        help="Detailed output"
+    )
+    parser.add_argument(
+        "--confirm",
+        "--yes",
+        dest="confirm",
+        action="store_true",
+        help="Skip confirmation prompt"
     )
     return parser.parse_args(*args)
 
@@ -70,6 +84,10 @@ def cloudtruth_cleanup(*args):
     if not args.needles:
         print("No search strings provided")
         return -1
+    # reset verbosity flags if they conflict with each other
+    if args.quiet and args.verbose:
+        args.quiet = False
+        args.verbose = False
 
     result = cli("config curr -x")
     print(result.command)
@@ -106,17 +124,18 @@ def cloudtruth_cleanup(*args):
         print(f"No {type_list} items found matching: {search_list}")
         return 0
 
-    print("\n\nFound matches: ")
-    for elem in elements:
-        if not elem.items:
-            print(f"  {elem.name}: None")
-        else:
-            print(f"  {elem.name}:")
-            for item in elem.items:
-                print(f"    {item}")
+    if not (args.confirm and args.quiet):
+        print("\n\nFound matches: ")
+        for elem in elements:
+            if not elem.items:
+                print(f"  {elem.name}: None")
+            else:
+                print(f"  {elem.name}:")
+                for item in elem.items:
+                    print(f"    {item}")
+        print("")
 
-    print("")
-    if not yes_or_no("Delete the above items"):
+    if not args.confirm and not yes_or_no("Delete the above items"):
         print("No items deleted")
         return 0
 
@@ -126,9 +145,13 @@ def cloudtruth_cleanup(*args):
             continue
         for item in elem.items:
             result = cli(elem.del_cmd + f" '{item}'")
+            if args.verbose:
+                print(result.command)
             if result.return_value != 0:
                 all_deleted = False
                 print(f"Failed to delete {elem.name} {item}")
+                if args.verbose:
+                    print(result.err())
 
     if all_deleted:
         print("Deleted all items")
