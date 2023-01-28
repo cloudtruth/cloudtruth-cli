@@ -84,7 +84,7 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
         with:
-          prefix-key: ci
+          prefix-key: lint
           shared-key: ${{ runner.os }}
 
       - name: Show Rust version and platform details
