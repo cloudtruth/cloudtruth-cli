@@ -105,8 +105,7 @@ jobs:
           toolchain: ${{ env.RUST_VERSION }}
           profile: minimal
           override: true
-          components: rustfmt, clippy
-
+          
       - uses: Swatinem/rust-cache@v2
         with:
           prefix-key: nightly
@@ -165,7 +164,7 @@ jobs:
       - run: cargo build
       - run: |
           cd integration-tests
-          python3 cleanup.py --confirm "${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}-cli-ci"
+          python3 cleanup.py --confirm "${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}-cli-nightly"
       
 
 
