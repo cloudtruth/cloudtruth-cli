@@ -14,6 +14,7 @@ env:
   RUST_BACKTRACE: 1
   # This needs to match the RUST_VERSION in create-draft-release.yml.
   RUST_VERSION: 1.63.0
+  RUST_CACHE_KEY: v0-rust-ci
 
   # these are to run against staging
   CLOUDTRUTH_SERVER_URL: https://api.staging.cloudtruth.io
@@ -122,7 +123,7 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
         with:
-          prefix-key: ci
+          prefix-key: ${{ env.RUST_CACHE_KEY }}
           shared-key: ${{ runner.os }}
 
       - name: Show Rust version and platform details
@@ -177,7 +178,7 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
         with:
-          prefix-key: ci
+          prefix-key: ${{ env.RUST_CACHE_KEY }}
           shared-key: ${{ runner.os }}
 
       - name: Show Rust version and platform details
