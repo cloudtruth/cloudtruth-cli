@@ -109,8 +109,8 @@ jobs:
       fail-fast: false
       matrix:
         os:
-          - macos-latest
-          # - ubuntu-latest
+          # - macos-latest
+          - ubuntu-latest
           # - windows-latest
 
     steps:
@@ -124,6 +124,14 @@ jobs:
           profile: minimal
           override: true
           components: rustfmt, clippy
+
+      - uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ steps.rust.outputs.rustc_hash }}-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Show Rust version and platform details
         run: rustc --version --verbose
@@ -146,7 +154,10 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           cd integration-tests
-          python3 live_test.py --job-id "${OS}-${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}-testcli" --after ${{ env.PART_A_END }} --before ${{ env.PART_C_START }}
+          python3 live_test.py --job-id "${OS}-${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}-testcli" --before ${{ env.PART_A_END }}     
+        # run: |
+        #   cd integration-tests
+        #   python3 live_test.py --job-id "${OS}-${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}-testcli" --after ${{ env.PART_A_END }} --before ${{ env.PART_C_START }}
 
       - name: Integration Test - Part C
         env:
@@ -165,6 +176,29 @@ jobs:
     if: ${{ always() }}
 
     steps:
+      - uses: actions/checkout@v3
+
+      - name: Install Rust
+        id: rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
+          profile: minimal
+          override: true
+          components: rustfmt, clippy
+
+      - uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ steps.rust.outputs.rustc_hash }}-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Show Rust version and platform details
+        run: rustc --version --verbose
+
+      - run: cargo build -r
       - run: |
           cd integration-tests
           python3 cleanup.py --confirm "${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}-testcli"
