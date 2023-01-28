@@ -139,7 +139,7 @@ jobs:
         if: runner.os == 'macOs'
         run: |
           cd integration-tests
-          python3 live_test.py --job-id "${OS}-${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}-cli-ci" --before ${{ env.PART_A_END }} --exclude integration --exclude backup
+          python3 live_test.py --job-id "${OS}-${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}-cli-ci" --before ${{ env.PART_A_END }} --exclude backup
 
       - name: Integration Test - Part B
         env:
@@ -147,7 +147,7 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           cd integration-tests
-          python3 live_test.py --job-id "${OS}-${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}-cli-ci" --after ${{ env.PART_A_END }} --before ${{ env.PART_C_START }} --exclude integration --exclude backup
+          python3 live_test.py --job-id "${OS}-${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}-cli-ci" --after ${{ env.PART_A_END }} --before ${{ env.PART_C_START }} --exclude backup
 
       - name: Integration Test - Part C
         env:
@@ -155,7 +155,7 @@ jobs:
         if: runner.os == 'Windows'
         run: |
           cd integration-tests
-          py live_test.py --job-id "$ENV:OS-$ENV:GITHUB_RUN_NUMBER-$ENV:GITHUB_RUN_ATTEMPT-cli-ci" --after ${{ env.PART_C_START }} --exclude integration --exclude backup
+          py live_test.py --job-id "$ENV:OS-$ENV:GITHUB_RUN_NUMBER-$ENV:GITHUB_RUN_ATTEMPT-cli-ci" --after ${{ env.PART_C_START }} --exclude backup
   cleanup:
     name: Cleanup
     runs-on: ubuntu-latest
