@@ -84,8 +84,8 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
         with:
-          shared-key: ci
-          key: ${{ runner.os }}
+          prefix-key: ci
+          shared-key: ${{ runner.os }}
 
       - name: Show Rust version and platform details
         run: rustc --version --verbose
@@ -123,8 +123,8 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
         with:
-          shared-key: ci
-          key: ${{ runner.os }}
+          prefix-key: ci
+          shared-key: ${{ runner.os }}
 
       - name: Show Rust version and platform details
         run: rustc --version --verbose
@@ -181,8 +181,8 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
         with:
-          shared-key: ci
-          key: ${{ runner.os }}
+          prefix-key: ci
+          shared-key: ${{ runner.os }}
 
       - name: Show Rust version and platform details
         run: rustc --version --verbose
