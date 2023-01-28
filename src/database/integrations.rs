@@ -133,7 +133,7 @@ impl Integrations {
                     } else {
                         break;
                     }
-                    if data.next.is_none() {
+                    if data.next.is_none() || data.next.as_ref().unwrap().is_empty() {
                         break;
                     }
                 }
@@ -170,7 +170,7 @@ impl Integrations {
                     } else {
                         break;
                     }
-                    if data.next.is_none() {
+                    if data.next.is_none() || data.next.as_ref().unwrap().is_empty() {
                         break;
                     }
                 }
@@ -223,7 +223,7 @@ impl Integrations {
                 } else {
                     break;
                 }
-                if data.next.is_none() || data.next.unwrap().is_empty() {
+                if data.next.is_none() || data.next.as_ref().unwrap().is_empty() {
                     break;
                 }
             } else if let Err(ResponseError(ref content)) = response {
@@ -418,7 +418,7 @@ impl Integrations {
                     } else {
                         break;
                     }
-                    if data.next.is_none() {
+                    if data.next.is_none() || data.next.as_ref().unwrap().is_empty() {
                         break;
                     }
                 }
@@ -556,7 +556,7 @@ impl Integrations {
                     } else {
                         break;
                     }
-                    if data.next.is_none() {
+                    if data.next.is_none() || data.next.as_ref().unwrap().is_empty() {
                         break;
                     }
                 }
@@ -620,7 +620,7 @@ impl Integrations {
                     } else {
                         break;
                     }
-                    if data.next.is_none() {
+                    if data.next.is_none() || data.next.as_ref().unwrap().is_empty() {
                         break;
                     }
                 }
@@ -976,7 +976,7 @@ impl Integrations {
                     } else {
                         break;
                     }
-                    if data.next.is_none() {
+                    if data.next.is_none() || data.next.as_ref().unwrap().is_empty() {
                         break;
                     }
                 }
@@ -1018,7 +1018,7 @@ impl Integrations {
                     } else {
                         break;
                     }
-                    if data.next.is_none() {
+                    if data.next.is_none() || data.next.as_ref().unwrap().is_empty() {
                         break;
                     }
                 }
@@ -1211,7 +1211,7 @@ impl Integrations {
                     } else {
                         break;
                     }
-                    if data.next.is_none() {
+                    if data.next.is_none() || data.next.as_ref().unwrap().is_empty() {
                         break;
                     }
                 }
@@ -1255,7 +1255,7 @@ impl Integrations {
                     } else {
                         break;
                     }
-                    if data.next.is_none() {
+                    if data.next.is_none() || data.next.as_ref().unwrap().is_empty() {
                         break;
                     }
                 }
@@ -1321,7 +1321,7 @@ impl Integrations {
                     } else {
                         break;
                     }
-                    if data.next.is_none() {
+                    if data.next.is_none() || data.next.as_ref().unwrap().is_empty() {
                         break;
                     }
                 }
@@ -1392,7 +1392,7 @@ impl Integrations {
                     } else {
                         break;
                     }
-                    if data.next.is_none() {
+                    if data.next.is_none() || data.next.as_ref().unwrap().is_empty() {
                         break;
                     }
                 }

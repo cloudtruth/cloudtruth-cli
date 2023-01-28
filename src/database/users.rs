@@ -66,7 +66,7 @@ impl Users {
                     } else {
                         break;
                     }
-                    if data.next.is_none() {
+                    if data.next.is_none() || data.next.as_ref().unwrap().is_empty() {
                         break;
                     }
                 }
@@ -103,7 +103,7 @@ impl Users {
                     } else {
                         break;
                     }
-                    if data.next.is_none() {
+                    if data.next.is_none() || data.next.as_ref().unwrap().is_empty() {
                         break;
                     }
                 }
@@ -343,7 +343,7 @@ impl Users {
                     } else {
                         break;
                     }
-                    if data.next.is_none() {
+                    if data.next.is_none() || data.next.as_ref().unwrap().is_empty() {
                         break;
                     }
                 }
@@ -381,7 +381,7 @@ impl Users {
                     } else {
                         break;
                     }
-                    if data.next.is_none() {
+                    if data.next.is_none() || data.next.as_ref().unwrap().is_empty() {
                         break;
                     }
                 }

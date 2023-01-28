@@ -68,7 +68,7 @@ impl AuditLogs {
                             }
                             total_details.extend(current);
                             page_count += 1;
-                            if data.next.is_none() {
+                            if data.next.is_none() || data.next.as_ref().unwrap().is_empty() {
                                 break;
                             }
                             if max_entries != 0 && total_details.len() >= max_entries {

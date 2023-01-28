@@ -54,7 +54,7 @@ impl Projects {
                 } else {
                     break;
                 }
-                if data.next.is_none() {
+                if data.next.is_none() || data.next.as_ref().unwrap().is_empty() {
                     break;
                 }
             } else {
@@ -167,7 +167,7 @@ impl Projects {
                     } else {
                         break;
                     }
-                    if data.next.is_none() {
+                    if data.next.is_none() || data.next.as_ref().unwrap().is_empty() {
                         break;
                     }
                 }
