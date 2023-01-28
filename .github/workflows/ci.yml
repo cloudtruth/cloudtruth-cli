@@ -56,8 +56,7 @@ env:
 
   CLOUDTRUTH_TEST_COMPLETE_INTEGRATION_NAME: ct-stage-write@943604981792
 
-  PART_A_END: test_actions
-  # PART_A_END: test_parameter
+  PART_A_END: test_parameter
   PART_C_START: test_project
 
 jobs:
@@ -106,9 +105,9 @@ jobs:
       fail-fast: false
       matrix:
         os:
-          # - macos-latest
+          - macos-latest
           - ubuntu-latest
-          # - windows-latest
+          - windows-latest
 
     steps:
       - uses: actions/checkout@v3
@@ -147,10 +146,7 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           cd integration-tests
-          python3 live_test.py --job-id "${OS}-${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}-cli-ci" --before ${{ env.PART_A_END }}     
-        # run: |
-        #   cd integration-tests
-        #   python3 live_test.py --job-id "${OS}-${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}-cli-ci" --after ${{ env.PART_A_END }} --before ${{ env.PART_C_START }}
+          python3 live_test.py --job-id "${OS}-${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}-cli-ci" --after ${{ env.PART_A_END }} --before ${{ env.PART_C_START }}
 
       - name: Integration Test - Part C
         env:
