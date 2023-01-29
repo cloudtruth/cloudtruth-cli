@@ -17,7 +17,7 @@ clean:
 	rm -f __pycache__/
 
 prerequisites:
-	@echo "No current requirements"
+	python3 -m pip install --user --upgrade -r requirements.txt
 
 lint:
 	python3 -m pip install --user --upgrade flake8
