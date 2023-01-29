@@ -10,8 +10,6 @@
 
 /// ParameterTypeRuleCreate : A type of `ModelSerializer` that uses hyperlinked relationships with compound keys instead of primary key relationships.  Specifically:  * A 'url' field is included instead of the 'id' field. * Relationships to other instances are hyperlinks, instead of primary keys.  NOTE: this only works with DRF 3.1.0 and above.
 
-
-
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct ParameterTypeRuleCreate {
     #[serde(rename = "type")]
@@ -22,12 +20,10 @@ pub struct ParameterTypeRuleCreate {
 
 impl ParameterTypeRuleCreate {
     /// A type of `ModelSerializer` that uses hyperlinked relationships with compound keys instead of primary key relationships.  Specifically:  * A 'url' field is included instead of the 'id' field. * Relationships to other instances are hyperlinks, instead of primary keys.  NOTE: this only works with DRF 3.1.0 and above.
-    pub fn new(_type: crate::models::ParameterRuleTypeEnum, constraint: String) -> ParameterTypeRuleCreate {
-        ParameterTypeRuleCreate {
-            _type,
-            constraint,
-        }
+    pub fn new(
+        _type: crate::models::ParameterRuleTypeEnum,
+        constraint: String,
+    ) -> ParameterTypeRuleCreate {
+        ParameterTypeRuleCreate { _type, constraint }
     }
 }
-
-

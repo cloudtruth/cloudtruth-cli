@@ -10,8 +10,6 @@
 
 /// AzureKeyVaultPushUpdate : Update a push.
 
-
-
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct AzureKeyVaultPushUpdate {
     /// The action name.
@@ -51,7 +49,12 @@ pub struct AzureKeyVaultPushUpdate {
 
 impl AzureKeyVaultPushUpdate {
     /// Update a push.
-    pub fn new(name: String, projects: Vec<String>, tags: Vec<String>, resource: Option<String>) -> AzureKeyVaultPushUpdate {
+    pub fn new(
+        name: String,
+        projects: Vec<String>,
+        tags: Vec<String>,
+        resource: Option<String>,
+    ) -> AzureKeyVaultPushUpdate {
         AzureKeyVaultPushUpdate {
             name,
             description: None,
@@ -67,5 +70,3 @@ impl AzureKeyVaultPushUpdate {
         }
     }
 }
-
-

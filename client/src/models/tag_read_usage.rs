@@ -10,8 +10,6 @@
 
 /// TagReadUsage : The read usage details of a tag.
 
-
-
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct TagReadUsage {
     /// The last time a configuration was retrieved with this tag.
@@ -35,5 +33,3 @@ impl TagReadUsage {
         }
     }
 }
-
-

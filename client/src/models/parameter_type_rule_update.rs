@@ -10,8 +10,6 @@
 
 /// ParameterTypeRuleUpdate : A type of `ModelSerializer` that uses hyperlinked relationships with compound keys instead of primary key relationships.  Specifically:  * A 'url' field is included instead of the 'id' field. * Relationships to other instances are hyperlinks, instead of primary keys.  NOTE: this only works with DRF 3.1.0 and above.
 
-
-
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct ParameterTypeRuleUpdate {
     #[serde(rename = "id")]
@@ -31,7 +29,14 @@ pub struct ParameterTypeRuleUpdate {
 
 impl ParameterTypeRuleUpdate {
     /// A type of `ModelSerializer` that uses hyperlinked relationships with compound keys instead of primary key relationships.  Specifically:  * A 'url' field is included instead of the 'id' field. * Relationships to other instances are hyperlinks, instead of primary keys.  NOTE: this only works with DRF 3.1.0 and above.
-    pub fn new(id: String, parameter_type: String, _type: crate::models::ParameterRuleTypeEnum, constraint: String, created_at: String, modified_at: Option<String>) -> ParameterTypeRuleUpdate {
+    pub fn new(
+        id: String,
+        parameter_type: String,
+        _type: crate::models::ParameterRuleTypeEnum,
+        constraint: String,
+        created_at: String,
+        modified_at: Option<String>,
+    ) -> ParameterTypeRuleUpdate {
         ParameterTypeRuleUpdate {
             id,
             parameter_type,
@@ -42,5 +47,3 @@ impl ParameterTypeRuleUpdate {
         }
     }
 }
-
-

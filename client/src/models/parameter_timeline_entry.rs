@@ -10,8 +10,6 @@
 
 /// ParameterTimelineEntry : Details about a single change.
 
-
-
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct ParameterTimelineEntry {
     #[serde(rename = "history_type")]
@@ -29,14 +27,17 @@ pub struct ParameterTimelineEntry {
 
 impl ParameterTimelineEntry {
     /// Details about a single change.
-    pub fn new(history_type: Option<crate::models::HistoryTypeEnum>, history_environments: Vec<crate::models::ParameterTimelineEntryEnvironment>, history_model: Option<crate::models::HistoryModelEnum>, history_parameter: Option<crate::models::ParameterTimelineEntryParameter>) -> ParameterTimelineEntry {
+    pub fn new(
+        history_type: Option<crate::models::HistoryTypeEnum>,
+        history_environments: Vec<crate::models::ParameterTimelineEntryEnvironment>,
+        history_model: Option<crate::models::HistoryModelEnum>,
+        history_parameter: Option<crate::models::ParameterTimelineEntryParameter>,
+    ) -> ParameterTimelineEntry {
         ParameterTimelineEntry {
-            history_type: Box::new(history_type),
+            history_type: history_type.map(Box::new),
             history_environments,
-            history_model: Box::new(history_model),
-            history_parameter: Box::new(history_parameter),
+            history_model: history_model.map(Box::new),
+            history_parameter: history_parameter.map(Box::new),
         }
     }
 }
-
-

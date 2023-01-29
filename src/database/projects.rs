@@ -232,13 +232,13 @@ impl Projects {
         proj_name: &str,
         description: Option<&str>,
         parent_url: Option<&str>,
-        parameter_name_pattern: Option<&str>
+        parameter_name_pattern: Option<&str>,
     ) -> Result<Option<String>, ProjectError> {
         let proj = ProjectCreate {
             name: proj_name.to_string(),
             description: description.map(String::from),
             depends_on: parent_url.map(String::from),
-            parameter_name_pattern: parameter_name_pattern.map(String::from)
+            parameter_name_pattern: parameter_name_pattern.map(String::from),
         };
         let response = projects_create(rest_cfg, proj);
         match response {
@@ -275,7 +275,7 @@ impl Projects {
         project_id: &str,
         description: Option<&str>,
         parent_url: Option<&str>,
-        parameter_name_pattern: Option<&str>
+        parameter_name_pattern: Option<&str>,
     ) -> Result<Option<String>, ProjectError> {
         let proj = PatchedProjectUpdate {
             id: None,
@@ -286,7 +286,7 @@ impl Projects {
             depends_on: parent_url.map(String::from),
             access_controlled: None,
             role: None,
-            parameter_name_pattern: parameter_name_pattern.map(String::from)
+            parameter_name_pattern: parameter_name_pattern.map(String::from),
         };
         let response = projects_partial_update(rest_cfg, project_id, Some(proj));
         match response {

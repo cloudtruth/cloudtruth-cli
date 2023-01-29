@@ -10,8 +10,6 @@
 
 /// BackupParameter : Parameter, rule, and value data at a point in time.
 
-
-
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct BackupParameter {
     #[serde(rename = "rules")]
@@ -32,7 +30,14 @@ pub struct BackupParameter {
 
 impl BackupParameter {
     /// Parameter, rule, and value data at a point in time.
-    pub fn new(rules: ::std::collections::HashMap<String, crate::models::BackupParameterRule>, values: ::std::collections::HashMap<String, crate::models::BackupParameterValue>, name: String, param_type: String, project: String, secret: bool) -> BackupParameter {
+    pub fn new(
+        rules: ::std::collections::HashMap<String, crate::models::BackupParameterRule>,
+        values: ::std::collections::HashMap<String, crate::models::BackupParameterValue>,
+        name: String,
+        param_type: String,
+        project: String,
+        secret: bool,
+    ) -> BackupParameter {
         BackupParameter {
             rules,
             values,
@@ -44,5 +49,3 @@ impl BackupParameter {
         }
     }
 }
-
-

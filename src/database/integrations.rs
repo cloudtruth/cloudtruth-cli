@@ -252,7 +252,7 @@ impl Integrations {
                 NO_ORDERING,
                 Some(page_count),
                 page_size(rest_cfg),
-                None
+                None,
             );
             if let Ok(data) = response {
                 if let Some(list) = data.results {

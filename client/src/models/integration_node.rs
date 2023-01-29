@@ -10,8 +10,6 @@
 
 /// IntegrationNode : Describes the content available at a given location.
 
-
-
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct IntegrationNode {
     #[serde(rename = "fqn")]
@@ -53,5 +51,3 @@ impl IntegrationNode {
         }
     }
 }
-
-

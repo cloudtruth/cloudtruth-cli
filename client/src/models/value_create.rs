@@ -10,8 +10,6 @@
 
 /// ValueCreate : A value for a parameter in a given environment.
 
-
-
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct ValueCreate {
     /// The environment this value is set in.
@@ -47,5 +45,3 @@ impl ValueCreate {
         }
     }
 }
-
-

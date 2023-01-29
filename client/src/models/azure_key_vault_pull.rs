@@ -10,8 +10,6 @@
 
 /// AzureKeyVaultPull : Pull actions can be configured to get configuration and secrets from integrations on demand.
 
-
-
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct AzureKeyVaultPull {
     #[serde(rename = "url")]
@@ -33,7 +31,10 @@ pub struct AzureKeyVaultPull {
     #[serde(rename = "modified_at")]
     pub modified_at: Option<String>,
     /// Allow the pull to create environments.  Any automatically created environments will be children of the `default` environment.  If an environment needs to be created but the action does not allow it, a task step will be added with a null operation, and success_detail will indicate the action did not allow it.
-    #[serde(rename = "create_environments", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "create_environments",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub create_environments: Option<bool>,
     /// Allow the pull to create projects.  If a project needs to be created but the action does not allow it, a task step will be added with a null operation, and success_detail will indicate the action did not allow it.
     #[serde(rename = "create_projects", skip_serializing_if = "Option::is_none")]
@@ -54,23 +55,31 @@ pub struct AzureKeyVaultPull {
 
 impl AzureKeyVaultPull {
     /// Pull actions can be configured to get configuration and secrets from integrations on demand.
-    pub fn new(url: String, id: String, name: String, latest_task: Option<crate::models::AzureKeyVaultPullTask>, created_at: String, modified_at: Option<String>, mapped_values: Vec<crate::models::ValueCreate>, mode: Option<crate::models::ModeEnum>, resource: Option<String>) -> AzureKeyVaultPull {
+    pub fn new(
+        url: String,
+        id: String,
+        name: String,
+        latest_task: Option<crate::models::AzureKeyVaultPullTask>,
+        created_at: String,
+        modified_at: Option<String>,
+        mapped_values: Vec<crate::models::ValueCreate>,
+        mode: Option<crate::models::ModeEnum>,
+        resource: Option<String>,
+    ) -> AzureKeyVaultPull {
         AzureKeyVaultPull {
             url,
             id,
             name,
             description: None,
-            latest_task: Box::new(latest_task),
+            latest_task: latest_task.map(Box::new),
             created_at,
             modified_at,
             create_environments: None,
             create_projects: None,
             dry_run: None,
             mapped_values,
-            mode: Box::new(mode),
+            mode: mode.map(Box::new),
             resource,
         }
     }
 }
-
-

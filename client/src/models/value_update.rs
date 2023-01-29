@@ -10,8 +10,6 @@
 
 /// ValueUpdate : Unlike other UpdateSerializers, we do not inherit from the CreateSerializer here because `environment` is not a required field for updates.
 
-
-
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct ValueUpdate {
     #[serde(rename = "id")]
@@ -45,7 +43,13 @@ pub struct ValueUpdate {
 
 impl ValueUpdate {
     /// Unlike other UpdateSerializers, we do not inherit from the CreateSerializer here because `environment` is not a required field for updates.
-    pub fn new(id: String, secret: Option<bool>, value: Option<String>, created_at: String, modified_at: Option<String>) -> ValueUpdate {
+    pub fn new(
+        id: String,
+        secret: Option<bool>,
+        value: Option<String>,
+        created_at: String,
+        modified_at: Option<String>,
+    ) -> ValueUpdate {
         ValueUpdate {
             id,
             external: None,
@@ -60,5 +64,3 @@ impl ValueUpdate {
         }
     }
 }
-
-

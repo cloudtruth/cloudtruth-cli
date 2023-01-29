@@ -10,8 +10,6 @@
 
 /// AzureKeyVaultPullTaskStep : Pull task step for an Azure Key Vault integration.
 
-
-
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct AzureKeyVaultPullTaskStep {
     #[serde(rename = "url")]
@@ -81,7 +79,16 @@ pub struct AzureKeyVaultPullTaskStep {
 
 impl AzureKeyVaultPullTaskStep {
     /// Pull task step for an Azure Key Vault integration.
-    pub fn new(url: String, id: String, success: bool, environment: Option<String>, project: Option<String>, parameter: Option<String>, created_at: String, modified_at: Option<String>) -> AzureKeyVaultPullTaskStep {
+    pub fn new(
+        url: String,
+        id: String,
+        success: bool,
+        environment: Option<String>,
+        project: Option<String>,
+        parameter: Option<String>,
+        created_at: String,
+        modified_at: Option<String>,
+    ) -> AzureKeyVaultPullTaskStep {
         AzureKeyVaultPullTaskStep {
             url,
             id,
@@ -108,5 +115,3 @@ impl AzureKeyVaultPullTaskStep {
         }
     }
 }
-
-

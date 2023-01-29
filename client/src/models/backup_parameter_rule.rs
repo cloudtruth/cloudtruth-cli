@@ -10,8 +10,6 @@
 
 /// BackupParameterRule : Rule that is applied to a parameter or parameter-type at a point in time.
 
-
-
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct BackupParameterRule {
     #[serde(rename = "rule_type")]
@@ -29,5 +27,3 @@ impl BackupParameterRule {
         }
     }
 }
-
-

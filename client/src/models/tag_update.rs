@@ -10,8 +10,6 @@
 
 /// TagUpdate : Details for updating a tag.
 
-
-
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct TagUpdate {
     /// A unique identifier for the tag.
@@ -39,5 +37,3 @@ impl TagUpdate {
         }
     }
 }
-
-

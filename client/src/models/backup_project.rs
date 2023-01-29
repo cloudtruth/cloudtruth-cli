@@ -10,8 +10,6 @@
 
 /// BackupProject : Environment, parameter-type, and project (including parameters and values) data at a point in time.
 
-
-
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct BackupProject {
     #[serde(rename = "parameters")]
@@ -28,7 +26,11 @@ pub struct BackupProject {
 
 impl BackupProject {
     /// Environment, parameter-type, and project (including parameters and values) data at a point in time.
-    pub fn new(parameters: ::std::collections::HashMap<String, crate::models::BackupParameter>, templates: ::std::collections::HashMap<String, crate::models::BackupTemplate>, name: String) -> BackupProject {
+    pub fn new(
+        parameters: ::std::collections::HashMap<String, crate::models::BackupParameter>,
+        templates: ::std::collections::HashMap<String, crate::models::BackupTemplate>,
+        name: String,
+    ) -> BackupProject {
         BackupProject {
             parameters,
             templates,
@@ -38,5 +40,3 @@ impl BackupProject {
         }
     }
 }
-
-

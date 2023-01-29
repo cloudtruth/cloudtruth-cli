@@ -69,7 +69,7 @@ fn default_user() -> &'static User {
         email: None,
         picture_url: None,
         created_at: "".to_string(),
-        modified_at: None
+        modified_at: None,
     })
 }
 

@@ -175,15 +175,14 @@ fn proc_param_type_set(
     let type_added: bool;
 
     let parent_url = match parent_name {
-        Some(parent_name) => 
-            match types.get_details_by_name(rest_cfg, parent_name)? {
-                Some(parent) => Some(parent.url),
-                None => {
-                    error_message(format!("No parent parameter type '{}' found", parent_name));
-                    process::exit(46)
-                }
+        Some(parent_name) => match types.get_details_by_name(rest_cfg, parent_name)? {
+            Some(parent) => Some(parent.url),
+            None => {
+                error_message(format!("No parent parameter type '{}' found", parent_name));
+                process::exit(46)
             }
-        None => None
+        },
+        None => None,
     };
 
     if let Some(details) = details {
@@ -200,13 +199,17 @@ fn proc_param_type_set(
         if parent_url.is_none() {
             if let Some(parent_detail) = types.get_details_by_name(rest_cfg, "string")? {
                 parent_url = Some(parent_detail.url);
-            }
-            else {
+            } else {
                 error_message("No parent parameter type given");
                 process::exit(52)
             }
         }
-        updated = types.create_type(rest_cfg, type_name, description, parent_url.as_deref().unwrap())?;
+        updated = types.create_type(
+            rest_cfg,
+            type_name,
+            description,
+            parent_url.as_deref().unwrap(),
+        )?;
         type_added = true;
         action = "Created";
     }

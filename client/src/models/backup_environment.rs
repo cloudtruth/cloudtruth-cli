@@ -10,8 +10,6 @@
 
 /// BackupEnvironment : Basic environment data at a point in time.
 
-
-
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct BackupEnvironment {
     #[serde(rename = "name")]
@@ -32,5 +30,3 @@ impl BackupEnvironment {
         }
     }
 }
-
-

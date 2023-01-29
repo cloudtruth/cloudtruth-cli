@@ -10,8 +10,6 @@
 
 /// PatchedAzureKeyVaultPushUpdate : Update a push.
 
-
-
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct PatchedAzureKeyVaultPushUpdate {
     /// The action name.
@@ -67,5 +65,3 @@ impl PatchedAzureKeyVaultPushUpdate {
         }
     }
 }
-
-

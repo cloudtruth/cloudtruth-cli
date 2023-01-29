@@ -10,8 +10,6 @@
 
 /// PatchedAwsPushUpdate : Update a push.  The `region` and `service` cannot be changed on an existing push.
 
-
-
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct PatchedAwsPushUpdate {
     /// The action name.
@@ -71,5 +69,3 @@ impl PatchedAwsPushUpdate {
         }
     }
 }
-
-

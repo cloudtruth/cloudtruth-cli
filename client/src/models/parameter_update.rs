@@ -10,8 +10,6 @@
 
 /// ParameterUpdate : A single parameter inside of a project.
 
-
-
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct ParameterUpdate {
     #[serde(rename = "id")]
@@ -39,7 +37,13 @@ pub struct ParameterUpdate {
 
 impl ParameterUpdate {
     /// A single parameter inside of a project.
-    pub fn new(id: String, name: String, project: String, created_at: String, modified_at: Option<String>) -> ParameterUpdate {
+    pub fn new(
+        id: String,
+        name: String,
+        project: String,
+        created_at: String,
+        modified_at: Option<String>,
+    ) -> ParameterUpdate {
         ParameterUpdate {
             id,
             name,
@@ -52,5 +56,3 @@ impl ParameterUpdate {
         }
     }
 }
-
-

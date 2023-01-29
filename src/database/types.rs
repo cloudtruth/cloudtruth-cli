@@ -6,8 +6,8 @@ use crate::database::{
 use cloudtruth_restapi::apis::types_api::*;
 use cloudtruth_restapi::apis::Error::ResponseError;
 use cloudtruth_restapi::models::{
-    ParameterRuleTypeEnum, ParameterTypeCreate, ParameterTypeRuleCreate, PatchedParameterTypeUpdate,
-    PatchedParameterTypeRuleUpdate,
+    ParameterRuleTypeEnum, ParameterTypeCreate, ParameterTypeRuleCreate,
+    PatchedParameterTypeRuleUpdate, PatchedParameterTypeUpdate,
 };
 use std::result::Result;
 
@@ -43,7 +43,7 @@ impl Types {
             NO_NAME_CONTAINS,
             NO_ORDERING,
             NO_PAGE_COUNT,
-            NO_PAGE_SIZE
+            NO_PAGE_SIZE,
         );
 
         match response {
@@ -133,7 +133,7 @@ impl Types {
         let create_type = ParameterTypeCreate {
             name: type_name.to_string(),
             description: description.map(String::from),
-            parent: parent_url.to_string()
+            parent: parent_url.to_string(),
         };
         let response = types_create(rest_cfg, create_type);
         match response {

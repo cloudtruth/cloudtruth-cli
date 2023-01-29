@@ -10,8 +10,6 @@
 
 /// Tag : The details of a tag.
 
-
-
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct Tag {
     #[serde(rename = "url")]
@@ -40,7 +38,15 @@ pub struct Tag {
 
 impl Tag {
     /// The details of a tag.
-    pub fn new(url: String, id: String, name: String, timestamp: String, pushes: Vec<crate::models::AwsPush>, push_urls: Vec<String>, usage: Option<crate::models::TagReadUsage>) -> Tag {
+    pub fn new(
+        url: String,
+        id: String,
+        name: String,
+        timestamp: String,
+        pushes: Vec<crate::models::AwsPush>,
+        push_urls: Vec<String>,
+        usage: Option<crate::models::TagReadUsage>,
+    ) -> Tag {
         Tag {
             url,
             id,
@@ -49,9 +55,7 @@ impl Tag {
             timestamp,
             pushes,
             push_urls,
-            usage: Box::new(usage),
+            usage: usage.map(Box::new),
         }
     }
 }
-
-

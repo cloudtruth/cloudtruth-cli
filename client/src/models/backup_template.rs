@@ -10,8 +10,6 @@
 
 /// BackupTemplate : Template data at a given point in time.
 
-
-
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct BackupTemplate {
     #[serde(rename = "name")]
@@ -32,5 +30,3 @@ impl BackupTemplate {
         }
     }
 }
-
-

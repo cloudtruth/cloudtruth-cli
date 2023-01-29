@@ -10,8 +10,6 @@
 
 /// TemplateLookupError : Indicates errors occurred while retrieving values to substitute into the template.
 
-
-
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct TemplateLookupError {
     #[serde(rename = "detail")]
@@ -21,10 +19,6 @@ pub struct TemplateLookupError {
 impl TemplateLookupError {
     /// Indicates errors occurred while retrieving values to substitute into the template.
     pub fn new(detail: Vec<crate::models::TemplateLookupErrorEntry>) -> TemplateLookupError {
-        TemplateLookupError {
-            detail,
-        }
+        TemplateLookupError { detail }
     }
 }
-
-

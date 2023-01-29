@@ -10,8 +10,6 @@
 
 /// PatchedGitHubPull : Pull actions can be configured to get configuration and secrets from integrations on demand.
 
-
-
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct PatchedGitHubPull {
     #[serde(rename = "url", skip_serializing_if = "Option::is_none")]
@@ -33,7 +31,10 @@ pub struct PatchedGitHubPull {
     #[serde(rename = "modified_at", skip_serializing_if = "Option::is_none")]
     pub modified_at: Option<String>,
     /// Allow the pull to create environments.  Any automatically created environments will be children of the `default` environment.  If an environment needs to be created but the action does not allow it, a task step will be added with a null operation, and success_detail will indicate the action did not allow it.
-    #[serde(rename = "create_environments", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "create_environments",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub create_environments: Option<bool>,
     /// Allow the pull to create projects.  If a project needs to be created but the action does not allow it, a task step will be added with a null operation, and success_detail will indicate the action did not allow it.
     #[serde(rename = "create_projects", skip_serializing_if = "Option::is_none")]
@@ -68,5 +69,3 @@ impl PatchedGitHubPull {
         }
     }
 }
-
-

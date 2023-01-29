@@ -10,8 +10,6 @@
 
 /// AwsPushUpdate : Update a push.  The `region` and `service` cannot be changed on an existing push.
 
-
-
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct AwsPushUpdate {
     /// The action name.
@@ -54,7 +52,12 @@ pub struct AwsPushUpdate {
 
 impl AwsPushUpdate {
     /// Update a push.  The `region` and `service` cannot be changed on an existing push.
-    pub fn new(name: String, projects: Vec<String>, tags: Vec<String>, resource: Option<String>) -> AwsPushUpdate {
+    pub fn new(
+        name: String,
+        projects: Vec<String>,
+        tags: Vec<String>,
+        resource: Option<String>,
+    ) -> AwsPushUpdate {
         AwsPushUpdate {
             name,
             description: None,
@@ -71,5 +74,3 @@ impl AwsPushUpdate {
         }
     }
 }
-
-

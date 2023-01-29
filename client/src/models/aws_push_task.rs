@@ -10,8 +10,6 @@
 
 /// AwsPushTask : Push task for an AWS integration.
 
-
-
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct AwsPushTask {
     #[serde(rename = "url")]
@@ -42,7 +40,12 @@ pub struct AwsPushTask {
 
 impl AwsPushTask {
     /// Push task for an AWS integration.
-    pub fn new(url: String, id: String, created_at: String, modified_at: Option<String>) -> AwsPushTask {
+    pub fn new(
+        url: String,
+        id: String,
+        created_at: String,
+        modified_at: Option<String>,
+    ) -> AwsPushTask {
         AwsPushTask {
             url,
             id,
@@ -56,5 +59,3 @@ impl AwsPushTask {
         }
     }
 }
-
-

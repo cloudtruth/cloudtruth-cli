@@ -180,12 +180,12 @@ impl Users {
         rest_cfg: &OpenApiConfig,
         user_name: &str,
         description: Option<&str>,
-        role: Option<&str>
+        role: Option<&str>,
     ) -> Result<UserDetails, UserError> {
         let user_create = ServiceAccountCreateRequest {
             name: user_name.to_string(),
             description: description.map(String::from),
-            role: role.map(String::from)
+            role: role.map(String::from),
         };
         let response = serviceaccounts_create(rest_cfg, user_create);
         match response {

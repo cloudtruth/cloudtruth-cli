@@ -10,8 +10,6 @@
 
 /// AzureKeyVaultPullTask : Pull task for an Azure Key Vault integration.
 
-
-
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct AzureKeyVaultPullTask {
     #[serde(rename = "url")]
@@ -42,7 +40,12 @@ pub struct AzureKeyVaultPullTask {
 
 impl AzureKeyVaultPullTask {
     /// Pull task for an Azure Key Vault integration.
-    pub fn new(url: String, id: String, created_at: String, modified_at: Option<String>) -> AzureKeyVaultPullTask {
+    pub fn new(
+        url: String,
+        id: String,
+        created_at: String,
+        modified_at: Option<String>,
+    ) -> AzureKeyVaultPullTask {
         AzureKeyVaultPullTask {
             url,
             id,
@@ -56,5 +59,3 @@ impl AzureKeyVaultPullTask {
         }
     }
 }
-
-

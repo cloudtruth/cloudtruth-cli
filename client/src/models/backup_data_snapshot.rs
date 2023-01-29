@@ -10,8 +10,6 @@
 
 /// BackupDataSnapshot : Environment, parameter-type, and project (including parameters and values) data at a point in time.
 
-
-
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct BackupDataSnapshot {
     #[serde(rename = "environments")]
@@ -26,7 +24,12 @@ pub struct BackupDataSnapshot {
 
 impl BackupDataSnapshot {
     /// Environment, parameter-type, and project (including parameters and values) data at a point in time.
-    pub fn new(environments: ::std::collections::HashMap<String, crate::models::BackupEnvironment>, types: ::std::collections::HashMap<String, crate::models::BackupParameterType>, projects: ::std::collections::HashMap<String, crate::models::BackupProject>, timestamp: String) -> BackupDataSnapshot {
+    pub fn new(
+        environments: ::std::collections::HashMap<String, crate::models::BackupEnvironment>,
+        types: ::std::collections::HashMap<String, crate::models::BackupParameterType>,
+        projects: ::std::collections::HashMap<String, crate::models::BackupProject>,
+        timestamp: String,
+    ) -> BackupDataSnapshot {
         BackupDataSnapshot {
             environments,
             types,
@@ -35,5 +38,3 @@ impl BackupDataSnapshot {
         }
     }
 }
-
-

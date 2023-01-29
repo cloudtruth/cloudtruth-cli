@@ -8,8 +8,8 @@ use cloudtruth_restapi::apis::projects_api::*;
 use cloudtruth_restapi::apis::utils_api::utils_generate_password_create;
 use cloudtruth_restapi::apis::Error::ResponseError;
 use cloudtruth_restapi::models::{
-    ParameterCreate, ParameterRuleCreate, ParameterRuleTypeEnum, PatchedParameterUpdate,
-    PatchedParameterRuleUpdate, PatchedValueUpdate, ValueCreate,
+    ParameterCreate, ParameterRuleCreate, ParameterRuleTypeEnum, PatchedParameterRuleUpdate,
+    PatchedParameterUpdate, PatchedValueUpdate, ValueCreate,
 };
 use std::collections::HashMap;
 use std::result::Result;
@@ -359,7 +359,7 @@ impl Parameters {
                 page_size(rest_cfg),
                 ONLY_SECRETS,
                 tag.as_deref(),
-                value_arg
+                value_arg,
             );
             match response {
                 Ok(data) => {
@@ -443,7 +443,7 @@ impl Parameters {
                 None,
                 None, // cannot give an environment, or it will only get for that environment
                 eval_arg,
-                    immediate_parameters_arg(immediate_parameters),
+                immediate_parameters_arg(immediate_parameters),
                 mask_secrets_arg(mask_secrets),
                 Some(param_name),
                 NO_NAME_CONTAINS,
@@ -591,13 +591,8 @@ impl Parameters {
             external_filter: jmes_path.map(|v| v.to_string()),
             interpolated: evaluated,
         };
-        let response = projects_parameters_values_create(
-            rest_cfg,
-            param_id,
-            proj_id,
-            value_create,
-            None,
-        );
+        let response =
+            projects_parameters_values_create(rest_cfg, param_id, proj_id, value_create, None);
         match response {
             Ok(api_value) => Ok(api_value.id),
             Err(ResponseError(ref content)) => match content.status.as_u16() {

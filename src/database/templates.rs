@@ -4,7 +4,9 @@ use crate::database::{
 };
 use cloudtruth_restapi::apis::projects_api::*;
 use cloudtruth_restapi::apis::Error::ResponseError;
-use cloudtruth_restapi::models::{PatchedTemplateUpdate, TemplateCreate, TemplatePreviewCreateRequest};
+use cloudtruth_restapi::models::{
+    PatchedTemplateUpdate, TemplateCreate, TemplatePreviewCreateRequest,
+};
 use std::result::Result;
 
 const NO_ORDERING: Option<&str> = None;

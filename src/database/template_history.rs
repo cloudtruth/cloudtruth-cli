@@ -18,7 +18,7 @@ impl From<&TemplateTimelineEntry> for TemplateHistory {
             name: api_template.name.clone(),
             description: api_template.description.clone().unwrap_or_default(),
             body: api_template.body.clone().unwrap_or_default(),
-            change_type: HistoryAction::from(*api.history_type.clone().unwrap_or_default())
+            change_type: HistoryAction::from(*api.history_type.clone().unwrap_or_default()),
         }
     }
 }

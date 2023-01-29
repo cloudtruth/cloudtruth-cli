@@ -8,7 +8,7 @@ pub struct ProjectDetails {
     pub description: String,
     pub parent_name: String,
     pub parent_url: String,
-    pub parameter_name_pattern: String, 
+    pub parameter_name_pattern: String,
     pub created_at: String,
     pub modified_at: String,
 }

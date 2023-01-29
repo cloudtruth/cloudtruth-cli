@@ -10,8 +10,6 @@
 
 /// PatchedParameterRuleUpdate : A type of `ModelSerializer` that uses hyperlinked relationships with compound keys instead of primary key relationships.  Specifically:  * A 'url' field is included instead of the 'id' field. * Relationships to other instances are hyperlinks, instead of primary keys.  NOTE: this only works with DRF 3.1.0 and above.
 
-
-
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct PatchedParameterRuleUpdate {
     #[serde(rename = "id", skip_serializing_if = "Option::is_none")]
@@ -42,5 +40,3 @@ impl PatchedParameterRuleUpdate {
         }
     }
 }
-
-
