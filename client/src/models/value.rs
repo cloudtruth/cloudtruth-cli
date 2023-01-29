@@ -10,6 +10,8 @@
 
 /// Value : A value for a parameter in a given environment.
 
+
+
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct Value {
     /// The value url.
@@ -75,26 +77,7 @@ pub struct Value {
 
 impl Value {
     /// A value for a parameter in a given environment.
-    pub fn new(
-        url: String,
-        id: String,
-        ledger_id: String,
-        environment: String,
-        environment_id: String,
-        environment_name: String,
-        parameter: String,
-        parameter_id: String,
-        external_error: Option<String>,
-        external_status: Option<crate::models::TaskStep>,
-        value: Option<String>,
-        evaluated: bool,
-        secret: Option<bool>,
-        referenced_projects: Vec<String>,
-        referenced_parameters: Vec<String>,
-        referenced_templates: Vec<String>,
-        created_at: String,
-        modified_at: Option<String>,
-    ) -> Value {
+    pub fn new(url: String, id: String, ledger_id: String, environment: String, environment_id: String, environment_name: String, parameter: String, parameter_id: String, external_error: Option<String>, external_status: Option<crate::models::TaskStep>, value: Option<String>, evaluated: bool, secret: Option<bool>, referenced_projects: Vec<String>, referenced_parameters: Vec<String>, referenced_templates: Vec<String>, created_at: String, modified_at: Option<String>) -> Value {
         Value {
             url,
             id,
@@ -108,7 +91,7 @@ impl Value {
             external_fqn: None,
             external_filter: None,
             external_error,
-            external_status: external_status.map(Box::new),
+            external_status: Box::new(external_status),
             internal_value: None,
             interpolated: None,
             value,
@@ -122,3 +105,5 @@ impl Value {
         }
     }
 }
+
+

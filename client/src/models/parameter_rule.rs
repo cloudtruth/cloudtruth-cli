@@ -10,6 +10,8 @@
 
 /// ParameterRule : A type of `ModelSerializer` that uses hyperlinked relationships with compound keys instead of primary key relationships.  Specifically:  * A 'url' field is included instead of the 'id' field. * Relationships to other instances are hyperlinks, instead of primary keys.  NOTE: this only works with DRF 3.1.0 and above.
 
+
+
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct ParameterRule {
     /// The URL for the parameter rule.
@@ -34,16 +36,7 @@ pub struct ParameterRule {
 
 impl ParameterRule {
     /// A type of `ModelSerializer` that uses hyperlinked relationships with compound keys instead of primary key relationships.  Specifically:  * A 'url' field is included instead of the 'id' field. * Relationships to other instances are hyperlinks, instead of primary keys.  NOTE: this only works with DRF 3.1.0 and above.
-    pub fn new(
-        url: String,
-        id: String,
-        ledger_id: String,
-        parameter: String,
-        _type: crate::models::ParameterRuleTypeEnum,
-        constraint: String,
-        created_at: String,
-        modified_at: Option<String>,
-    ) -> ParameterRule {
+    pub fn new(url: String, id: String, ledger_id: String, parameter: String, _type: crate::models::ParameterRuleTypeEnum, constraint: String, created_at: String, modified_at: Option<String>) -> ParameterRule {
         ParameterRule {
             url,
             id,
@@ -56,3 +49,5 @@ impl ParameterRule {
         }
     }
 }
+
+

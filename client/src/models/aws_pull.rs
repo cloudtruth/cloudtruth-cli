@@ -10,6 +10,8 @@
 
 /// AwsPull : Pull actions can be configured to get configuration and secrets from integrations on demand.
 
+
+
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct AwsPull {
     #[serde(rename = "url")]
@@ -31,10 +33,7 @@ pub struct AwsPull {
     #[serde(rename = "modified_at")]
     pub modified_at: Option<String>,
     /// Allow the pull to create environments.  Any automatically created environments will be children of the `default` environment.  If an environment needs to be created but the action does not allow it, a task step will be added with a null operation, and success_detail will indicate the action did not allow it.
-    #[serde(
-        rename = "create_environments",
-        skip_serializing_if = "Option::is_none"
-    )]
+    #[serde(rename = "create_environments", skip_serializing_if = "Option::is_none")]
     pub create_environments: Option<bool>,
     /// Allow the pull to create projects.  If a project needs to be created but the action does not allow it, a task step will be added with a null operation, and success_detail will indicate the action did not allow it.
     #[serde(rename = "create_projects", skip_serializing_if = "Option::is_none")]
@@ -61,35 +60,25 @@ pub struct AwsPull {
 
 impl AwsPull {
     /// Pull actions can be configured to get configuration and secrets from integrations on demand.
-    pub fn new(
-        url: String,
-        id: String,
-        name: String,
-        latest_task: Option<crate::models::AwsPullTask>,
-        created_at: String,
-        modified_at: Option<String>,
-        mapped_values: Vec<crate::models::ValueCreate>,
-        mode: Option<crate::models::ModeEnum>,
-        region: Option<crate::models::AwsRegionEnum>,
-        service: Option<crate::models::AwsServiceEnum>,
-        resource: Option<String>,
-    ) -> AwsPull {
+    pub fn new(url: String, id: String, name: String, latest_task: Option<crate::models::AwsPullTask>, created_at: String, modified_at: Option<String>, mapped_values: Vec<crate::models::ValueCreate>, mode: Option<crate::models::ModeEnum>, region: Option<crate::models::AwsRegionEnum>, service: Option<crate::models::AwsServiceEnum>, resource: Option<String>) -> AwsPull {
         AwsPull {
             url,
             id,
             name,
             description: None,
-            latest_task: latest_task.map(Box::new),
+            latest_task: Box::new(latest_task),
             created_at,
             modified_at,
             create_environments: None,
             create_projects: None,
             dry_run: None,
             mapped_values,
-            mode: mode.map(Box::new),
-            region: region.map(Box::new),
-            service: service.map(Box::new),
+            mode: Box::new(mode),
+            region: Box::new(region),
+            service: Box::new(service),
             resource,
         }
     }
 }
+
+

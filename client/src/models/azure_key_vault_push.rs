@@ -10,6 +10,8 @@
 
 /// AzureKeyVaultPush : Push actions can be configured to send configuration and secrets to integrations when tags are updated.
 
+
+
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct AzureKeyVaultPush {
     #[serde(rename = "url")]
@@ -64,23 +66,13 @@ pub struct AzureKeyVaultPush {
 
 impl AzureKeyVaultPush {
     /// Push actions can be configured to send configuration and secrets to integrations when tags are updated.
-    pub fn new(
-        url: String,
-        id: String,
-        name: String,
-        latest_task: Option<crate::models::AzureKeyVaultPushTask>,
-        created_at: String,
-        modified_at: Option<String>,
-        projects: Vec<String>,
-        tags: Vec<String>,
-        resource: Option<String>,
-    ) -> AzureKeyVaultPush {
+    pub fn new(url: String, id: String, name: String, latest_task: Option<crate::models::AzureKeyVaultPushTask>, created_at: String, modified_at: Option<String>, projects: Vec<String>, tags: Vec<String>, resource: Option<String>) -> AzureKeyVaultPush {
         AzureKeyVaultPush {
             url,
             id,
             name,
             description: None,
-            latest_task: latest_task.map(Box::new),
+            latest_task: Box::new(latest_task),
             created_at,
             modified_at,
             coerce_parameters: None,
@@ -96,3 +88,5 @@ impl AzureKeyVaultPush {
         }
     }
 }
+
+

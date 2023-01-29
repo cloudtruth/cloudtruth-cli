@@ -10,6 +10,8 @@
 
 /// TemplateTimelineEntry : Details about a single change.
 
+
+
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct TemplateTimelineEntry {
     #[serde(rename = "history_type")]
@@ -21,13 +23,12 @@ pub struct TemplateTimelineEntry {
 
 impl TemplateTimelineEntry {
     /// Details about a single change.
-    pub fn new(
-        history_type: Option<crate::models::HistoryTypeEnum>,
-        history_template: Option<crate::models::TemplateTimelineEntryTemplate>,
-    ) -> TemplateTimelineEntry {
+    pub fn new(history_type: Option<crate::models::HistoryTypeEnum>, history_template: Option<crate::models::TemplateTimelineEntryTemplate>) -> TemplateTimelineEntry {
         TemplateTimelineEntry {
-            history_type: history_type.map(Box::new),
-            history_template: history_template.map(Box::new),
+            history_type: Box::new(history_type),
+            history_template: Box::new(history_template),
         }
     }
 }
+
+

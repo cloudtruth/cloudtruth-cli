@@ -10,6 +10,8 @@
 
 /// BackupExternalReference : External reference data at a point in time.
 
+
+
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct BackupExternalReference {
     #[serde(rename = "fqn")]
@@ -27,3 +29,5 @@ impl BackupExternalReference {
         }
     }
 }
+
+

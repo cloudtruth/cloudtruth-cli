@@ -10,6 +10,8 @@
 
 /// TemplateUpdate : A parameter template in a given project, optionally instantiated against an environment.
 
+
+
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct TemplateUpdate {
     #[serde(rename = "id")]
@@ -34,13 +36,7 @@ pub struct TemplateUpdate {
 
 impl TemplateUpdate {
     /// A parameter template in a given project, optionally instantiated against an environment.
-    pub fn new(
-        id: String,
-        name: String,
-        evaluated: bool,
-        created_at: String,
-        modified_at: Option<String>,
-    ) -> TemplateUpdate {
+    pub fn new(id: String, name: String, evaluated: bool, created_at: String, modified_at: Option<String>) -> TemplateUpdate {
         TemplateUpdate {
             id,
             name,
@@ -52,3 +48,5 @@ impl TemplateUpdate {
         }
     }
 }
+
+

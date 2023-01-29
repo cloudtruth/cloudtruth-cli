@@ -10,6 +10,8 @@
 
 /// ImportParameter : Describes an imported parameter.
 
+
+
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct ImportParameter {
     /// Project name
@@ -52,15 +54,7 @@ pub struct ImportParameter {
 
 impl ImportParameter {
     /// Describes an imported parameter.
-    pub fn new(
-        project_name: String,
-        environment_name: String,
-        parameter_name: String,
-        value: String,
-        created_at: Option<String>,
-        modified_at: Option<String>,
-        action: String,
-    ) -> ImportParameter {
+    pub fn new(project_name: String, environment_name: String, parameter_name: String, value: String, created_at: Option<String>, modified_at: Option<String>, action: String) -> ImportParameter {
         ImportParameter {
             project_name,
             project_id: None,
@@ -77,3 +71,5 @@ impl ImportParameter {
         }
     }
 }
+
+

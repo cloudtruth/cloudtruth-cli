@@ -10,6 +10,8 @@
 
 /// TemplateTimelineEntryTemplate : Helper methods for all views or serializers that expose template concepts.
 
+
+
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct TemplateTimelineEntryTemplate {
     #[serde(rename = "id")]
@@ -38,3 +40,5 @@ impl TemplateTimelineEntryTemplate {
         }
     }
 }
+
+

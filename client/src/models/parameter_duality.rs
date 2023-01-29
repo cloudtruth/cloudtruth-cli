@@ -10,6 +10,8 @@
 
 /// ParameterDuality : Details about a parameter at two timepoints.  If t1 or t2 is null then the parameter did not exist at that timepoint.
 
+
+
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct ParameterDuality {
     #[serde(rename = "t1")]
@@ -20,13 +22,12 @@ pub struct ParameterDuality {
 
 impl ParameterDuality {
     /// Details about a parameter at two timepoints.  If t1 or t2 is null then the parameter did not exist at that timepoint.
-    pub fn new(
-        t1: Option<crate::models::Parameter>,
-        t2: Option<crate::models::Parameter>,
-    ) -> ParameterDuality {
+    pub fn new(t1: Option<crate::models::Parameter>, t2: Option<crate::models::Parameter>) -> ParameterDuality {
         ParameterDuality {
-            t1: t1.map(Box::new),
-            t2: t2.map(Box::new),
+            t1: Box::new(t1),
+            t2: Box::new(t2),
         }
     }
 }
+
+

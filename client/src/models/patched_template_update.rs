@@ -10,6 +10,8 @@
 
 /// PatchedTemplateUpdate : A parameter template in a given project, optionally instantiated against an environment.
 
+
+
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct PatchedTemplateUpdate {
     #[serde(rename = "id", skip_serializing_if = "Option::is_none")]
@@ -46,3 +48,5 @@ impl PatchedTemplateUpdate {
         }
     }
 }
+
+

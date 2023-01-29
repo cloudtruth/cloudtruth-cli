@@ -10,6 +10,8 @@
 
 /// BackupParameterValue : Parameter value data at a point in time.
 
+
+
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct BackupParameterValue {
     #[serde(rename = "external")]
@@ -30,13 +32,9 @@ pub struct BackupParameterValue {
 
 impl BackupParameterValue {
     /// Parameter value data at a point in time.
-    pub fn new(
-        external: Option<crate::models::BackupExternalReference>,
-        environment: String,
-        evaluated: bool,
-    ) -> BackupParameterValue {
+    pub fn new(external: Option<crate::models::BackupExternalReference>, environment: String, evaluated: bool) -> BackupParameterValue {
         BackupParameterValue {
-            external: external.map(Box::new),
+            external: Box::new(external),
             environment,
             evaluated,
             source: None,
@@ -46,3 +44,5 @@ impl BackupParameterValue {
         }
     }
 }
+
+

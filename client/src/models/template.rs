@@ -10,6 +10,8 @@
 
 /// Template : A parameter template in a given project, optionally instantiated against an environment.
 
+
+
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct Template {
     /// The templates this value references, if interpolated.
@@ -57,21 +59,7 @@ pub struct Template {
 
 impl Template {
     /// A parameter template in a given project, optionally instantiated against an environment.
-    pub fn new(
-        url: String,
-        id: String,
-        ledger_id: String,
-        name: String,
-        evaluated: bool,
-        referenced_projects: Vec<String>,
-        referenced_parameters: Vec<String>,
-        referenced_templates: Vec<String>,
-        referencing_templates: Vec<String>,
-        referencing_values: Vec<String>,
-        has_secret: bool,
-        created_at: String,
-        modified_at: Option<String>,
-    ) -> Template {
+    pub fn new(url: String, id: String, ledger_id: String, name: String, evaluated: bool, referenced_projects: Vec<String>, referenced_parameters: Vec<String>, referenced_templates: Vec<String>, referencing_templates: Vec<String>, referencing_values: Vec<String>, has_secret: bool, created_at: String, modified_at: Option<String>) -> Template {
         Template {
             url,
             id,
@@ -91,3 +79,5 @@ impl Template {
         }
     }
 }
+
+

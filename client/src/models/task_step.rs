@@ -10,6 +10,8 @@
 
 /// TaskStep : Each task detail documents the synchronization of a single value through an integration.
 
+
+
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct TaskStep {
     #[serde(rename = "url")]
@@ -79,16 +81,7 @@ pub struct TaskStep {
 
 impl TaskStep {
     /// Each task detail documents the synchronization of a single value through an integration.
-    pub fn new(
-        url: String,
-        id: String,
-        success: bool,
-        environment: Option<String>,
-        project: Option<String>,
-        parameter: Option<String>,
-        created_at: String,
-        modified_at: Option<String>,
-    ) -> TaskStep {
+    pub fn new(url: String, id: String, success: bool, environment: Option<String>, project: Option<String>, parameter: Option<String>, created_at: String, modified_at: Option<String>) -> TaskStep {
         TaskStep {
             url,
             id,
@@ -115,3 +108,5 @@ impl TaskStep {
         }
     }
 }
+
+

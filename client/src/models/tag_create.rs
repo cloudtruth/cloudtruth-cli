@@ -10,6 +10,8 @@
 
 /// TagCreate : Details for creating a tag.
 
+
+
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct TagCreate {
     /// The tag name. Tag names may contain alphanumeric, hyphen, underscore, or period characters. Tag names are case sensitive. The name cannot be modified.
@@ -33,3 +35,5 @@ impl TagCreate {
         }
     }
 }
+
+

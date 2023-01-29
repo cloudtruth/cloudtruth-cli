@@ -10,6 +10,8 @@
 
 /// AwsPushTaskStep : Push task step for an AWS integration.
 
+
+
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct AwsPushTaskStep {
     #[serde(rename = "url")]
@@ -79,16 +81,7 @@ pub struct AwsPushTaskStep {
 
 impl AwsPushTaskStep {
     /// Push task step for an AWS integration.
-    pub fn new(
-        url: String,
-        id: String,
-        success: bool,
-        environment: Option<String>,
-        project: Option<String>,
-        parameter: Option<String>,
-        created_at: String,
-        modified_at: Option<String>,
-    ) -> AwsPushTaskStep {
+    pub fn new(url: String, id: String, success: bool, environment: Option<String>, project: Option<String>, parameter: Option<String>, created_at: String, modified_at: Option<String>) -> AwsPushTaskStep {
         AwsPushTaskStep {
             url,
             id,
@@ -115,3 +108,5 @@ impl AwsPushTaskStep {
         }
     }
 }
+
+

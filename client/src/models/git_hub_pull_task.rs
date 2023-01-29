@@ -10,6 +10,8 @@
 
 /// GitHubPullTask : Pull task for a GitHub integration.
 
+
+
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct GitHubPullTask {
     #[serde(rename = "url")]
@@ -40,12 +42,7 @@ pub struct GitHubPullTask {
 
 impl GitHubPullTask {
     /// Pull task for a GitHub integration.
-    pub fn new(
-        url: String,
-        id: String,
-        created_at: String,
-        modified_at: Option<String>,
-    ) -> GitHubPullTask {
+    pub fn new(url: String, id: String, created_at: String, modified_at: Option<String>) -> GitHubPullTask {
         GitHubPullTask {
             url,
             id,
@@ -59,3 +56,5 @@ impl GitHubPullTask {
         }
     }
 }
+
+

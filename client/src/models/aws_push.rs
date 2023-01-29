@@ -10,6 +10,8 @@
 
 /// AwsPush : Push actions can be configured to send configuration and secrets to integrations when tags are updated.
 
+
+
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct AwsPush {
     #[serde(rename = "url")]
@@ -70,25 +72,13 @@ pub struct AwsPush {
 
 impl AwsPush {
     /// Push actions can be configured to send configuration and secrets to integrations when tags are updated.
-    pub fn new(
-        url: String,
-        id: String,
-        name: String,
-        latest_task: Option<crate::models::AwsPushTask>,
-        created_at: String,
-        modified_at: Option<String>,
-        projects: Vec<String>,
-        tags: Vec<String>,
-        region: Option<crate::models::AwsRegionEnum>,
-        service: Option<crate::models::AwsServiceEnum>,
-        resource: Option<String>,
-    ) -> AwsPush {
+    pub fn new(url: String, id: String, name: String, latest_task: Option<crate::models::AwsPushTask>, created_at: String, modified_at: Option<String>, projects: Vec<String>, tags: Vec<String>, region: Option<crate::models::AwsRegionEnum>, service: Option<crate::models::AwsServiceEnum>, resource: Option<String>) -> AwsPush {
         AwsPush {
             url,
             id,
             name,
             description: None,
-            latest_task: latest_task.map(Box::new),
+            latest_task: Box::new(latest_task),
             created_at,
             modified_at,
             coerce_parameters: None,
@@ -100,9 +90,11 @@ impl AwsPush {
             local: None,
             projects,
             tags,
-            region: region.map(Box::new),
-            service: service.map(Box::new),
+            region: Box::new(region),
+            service: Box::new(service),
             resource,
         }
     }
 }
+
+
