@@ -3,10 +3,10 @@ use crate::cli::{
     INVITE_NAME_ARG, LIST_SUBCMD, NAME_ARG, ROLE_ARG, SET_SUBCMD, SHOW_TIMES_FLAG,
 };
 use crate::database::{Invitations, OpenApiConfig, UserDetails, Users};
-use crate::lib::{
+use crate::table::Table;
+use crate::utils::{
     error_message, user_confirm, warn_missing_subcommand, warning_message, DEL_CONFIRM,
 };
-use crate::table::Table;
 use clap::ArgMatches;
 use color_eyre::eyre::Result;
 use indoc::printdoc;

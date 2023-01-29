@@ -4,10 +4,10 @@ use crate::cli::{
 };
 use crate::database::{GroupDetails, Groups, OpenApiConfig, UserError, Users};
 
-use crate::lib::{
+use crate::table::Table;
+use crate::utils::{
     error_message, user_confirm, warn_missing_subcommand, warning_message, DEL_CONFIRM,
 };
-use crate::table::Table;
 use clap::ArgMatches;
 use color_eyre::eyre::Result;
 use indoc::printdoc;

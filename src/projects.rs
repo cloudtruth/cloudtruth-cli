@@ -3,10 +3,10 @@ use crate::cli::{
     PARENT_ARG, RENAME_OPT, SET_SUBCMD, SHOW_TIMES_FLAG, TREE_SUBCMD,
 };
 use crate::database::{OpenApiConfig, ProjectDetails, Projects};
-use crate::lib::{
+use crate::table::Table;
+use crate::utils::{
     error_message, user_confirm, warn_missing_subcommand, warning_message, DEL_CONFIRM,
 };
-use crate::table::Table;
 use clap::ArgMatches;
 use color_eyre::eyre::Result;
 use std::process;
