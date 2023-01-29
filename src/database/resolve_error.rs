@@ -18,10 +18,10 @@ impl fmt::Display for ResolveError {
                 write!(f, "Failed to resolve:{}{}", sep, strs.join(sep))
             }
             ResolveError::EnvironmentError(e) => {
-                write!(f, "Environment error: {}", e)
+                write!(f, "Environment error: {e}")
             }
             ResolveError::ProjectError(e) => {
-                write!(f, "Project error: {}", e)
+                write!(f, "Project error: {e}")
             }
         }
     }

@@ -33,30 +33,22 @@ fn proc_template_delete(
         let mut confirmed = subcmd_args.is_present(CONFIRM_FLAG);
         if !confirmed {
             confirmed = user_confirm(
-                format!(
-                    "Delete template '{}' in project '{}'",
-                    template_name, proj_name
-                ),
+                format!("Delete template '{template_name}' in project '{proj_name}'"),
                 DEL_CONFIRM,
             );
         }
 
         if !confirmed {
             warning_message(format!(
-                "Template '{}' in project '{}' not deleted!",
-                template_name, proj_name
+                "Template '{template_name}' in project '{proj_name}' not deleted!"
             ));
         } else {
             templates.delete_template(rest_cfg, proj_id, &template_id)?;
-            println!(
-                "Deleted template '{}' in project '{}'",
-                template_name, proj_name
-            );
+            println!("Deleted template '{template_name}' in project '{proj_name}'");
         }
     } else {
         warning_message(format!(
-            "Template '{}' does not exist for project '{}'!",
-            template_name, proj_name
+            "Template '{template_name}' does not exist for project '{proj_name}'!"
         ));
     }
     Ok(())
@@ -92,12 +84,9 @@ fn proc_template_edit(
             None,
             Some(&new_body),
         )?;
-        println!(
-            "Updated template '{}' in project '{}'",
-            template_name, proj_name
-        );
+        println!("Updated template '{template_name}' in project '{proj_name}'");
     } else {
-        println!("Nothing to update in template '{}'", template_name);
+        println!("Nothing to update in template '{template_name}'");
     }
     Ok(())
 }
@@ -115,7 +104,7 @@ fn proc_template_list(
     let show_values = show_values(subcmd_args);
     let details = templates.get_template_details(rest_cfg, proj_id)?;
     if details.is_empty() {
-        println!("No templates in project '{}'.", proj_name);
+        println!("No templates in project '{proj_name}'.");
     } else if !show_values {
         let list = details
             .iter()
@@ -198,16 +187,12 @@ fn proc_template_diff(
 
     if env_list.len() > max_len {
         warning_message(format!(
-            "Can specify a maximum of {} environment values.",
-            max_len
+            "Can specify a maximum of {max_len} environment values."
         ));
         return Ok(());
     }
     if as_list.len() > max_len {
-        warning_message(format!(
-            "Can specify a maximum of {} as-of values.",
-            max_len
-        ));
+        warning_message(format!("Can specify a maximum of {max_len} as-of values."));
         return Ok(());
     }
 
@@ -308,7 +293,7 @@ fn proc_template_preview(
     let tag = parse_tag(subcmd_args.value_of(AS_OF_ARG));
     let result =
         templates.preview_template(rest_cfg, proj_id, env_name, &body, show_secrets, as_of, tag)?;
-    println!("{}", result);
+    println!("{result}");
     Ok(())
 }
 
@@ -329,8 +314,7 @@ fn proc_template_set(
     if let Ok(template_id) = response {
         if description.is_none() && rename.is_none() && filename.is_none() {
             warning_message(format!(
-                "Template '{}' not updated: no updated parameters provided",
-                template_name
+                "Template '{template_name}' not updated: no updated parameters provided"
             ));
         } else {
             let name = rename.unwrap_or(template_name);
@@ -346,15 +330,12 @@ fn proc_template_set(
                 description,
                 body.as_deref(),
             )?;
-            println!("Updated template '{}' in project '{}'", name, proj_name);
+            println!("Updated template '{name}' in project '{proj_name}'");
         }
     } else if let Some(filename) = filename {
         let body = fs::read_to_string(filename).expect(FILE_READ_ERR);
         templates.create_template(rest_cfg, proj_id, template_name, &body, description)?;
-        println!(
-            "Created template '{}' in project '{}'",
-            template_name, proj_name
-        );
+        println!("Created template '{template_name}' in project '{proj_name}'");
     } else {
         error_message("Must provide a body for a new template".to_owned());
         process::exit(8);
@@ -390,7 +371,7 @@ fn get_changes(
             for property in properties {
                 let curr_value = current.get_property(property);
                 if prev.get_property(property) != curr_value {
-                    changes.push(format!("{}: {}", property, curr_value))
+                    changes.push(format!("{property}: {curr_value}"))
                 }
             }
         }
@@ -399,7 +380,7 @@ fn get_changes(
         for property in properties {
             let curr_value = current.get_property(property);
             if !curr_value.is_empty() {
-                changes.push(format!("{}: {}", property, curr_value))
+                changes.push(format!("{property}: {curr_value}"))
             }
         }
     }
@@ -425,7 +406,7 @@ fn proc_template_history(
 
     if let Some(temp_name) = template_name {
         let template_id = templates.get_id(rest_cfg, proj_name, proj_id, temp_name)?;
-        modifier = format!("for '{}' ", temp_name);
+        modifier = format!("for '{temp_name}' ");
         add_name = false;
         history = templates.get_history_for(rest_cfg, proj_id, &template_id, env_id, as_of, tag)?;
     } else {
@@ -435,10 +416,7 @@ fn proc_template_history(
     };
 
     if history.is_empty() {
-        println!(
-            "No template history {}in project '{}'.",
-            modifier, proj_name
-        );
+        println!("No template history {modifier}in project '{proj_name}'.");
     } else {
         let name_index = 3;
         let mut table = Table::new("template-history");

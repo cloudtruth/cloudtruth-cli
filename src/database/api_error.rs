@@ -15,13 +15,13 @@ pub enum ApiError {
 impl fmt::Display for ApiError {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
-            ApiError::Authentication(msg) => write!(f, "Not Authenticated: {}", msg),
+            ApiError::Authentication(msg) => write!(f, "Not Authenticated: {msg}"),
             ApiError::MalformedApiFile(e) => {
-                write!(f, "Invalid API specification: {}", e)
+                write!(f, "Invalid API specification: {e}")
             }
-            ApiError::ResponseError(msg) => write!(f, "{}", msg),
-            ApiError::UnsupportedFormat(format) => write!(f, "Invalid format: {}", format),
-            ApiError::UnhandledError(msg) => write!(f, "Unhandled error: {}", msg),
+            ApiError::ResponseError(msg) => write!(f, "{msg}"),
+            ApiError::UnsupportedFormat(format) => write!(f, "Invalid format: {format}"),
+            ApiError::UnhandledError(msg) => write!(f, "Unhandled error: {msg}"),
         }
     }
 }

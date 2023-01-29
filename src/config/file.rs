@@ -82,8 +82,8 @@ impl ConfigFile {
         let config_lines: Vec<&str> = content.split('\n').collect();
         let mut prof_lines: Vec<&str> = vec![];
         let indent = " ".repeat(2);
-        let indent_plus = format!("{} ", indent);
-        let needle = format!("{}{}:", indent, profile_name);
+        let indent_plus = format!("{indent} ");
+        let needle = format!("{indent}{profile_name}:");
         let mut start = false;
         let mut prof_start = false;
         for line in config_lines {
@@ -161,7 +161,7 @@ impl ConfigFile {
             if !new_text.ends_with('\n') {
                 new_text.push('\n')
             }
-            result = format!("{}\n{}", config, new_text);
+            result = format!("{config}\n{new_text}");
         } else {
             // no changes
             result = config.to_string();
@@ -184,7 +184,7 @@ impl ConfigFile {
             project: profile.project.clone(),
             parent: profile.source_profile.clone(),
             server_url: profile.server_url.clone(),
-            request_timeout: profile.request_timeout.map(|t| format!("{}", t)),
+            request_timeout: profile.request_timeout.map(|t| format!("{t}")),
             rest_debug: profile.rest_debug,
             rest_success: profile.rest_success.clone(),
             rest_page_size: profile.rest_page_size,
@@ -328,10 +328,10 @@ impl ConfigFile {
         let current = ConfigFile::get_update_text(config);
         let mut next = serde_yaml::to_string(&updates)?;
         let replacement = format!("{}{}", "\n", " ".repeat(2));
-        let header = format!("{}:", HDR_UPDATES);
+        let header = format!("{HDR_UPDATES}:");
         next = next.replace('\n', &replacement).replace("---", &header);
         let result = if current.is_empty() {
-            format!("{}\n{}", config, next)
+            format!("{config}\n{next}")
         } else {
             config.replace(&current, &next)
         };
@@ -420,11 +420,11 @@ mod tests {
         );
 
         let error = ConfigFile::load_profile(config, "default").unwrap_err();
-        let err_msg = format!("{}", error);
+        let err_msg = format!("{error}");
         assert!(err_msg.contains("profiles.default.request_timeout: invalid type"));
 
         let error = ConfigFile::validate_content(config).unwrap_err();
-        let err_msg = format!("{}", error);
+        let err_msg = format!("{error}");
         assert!(err_msg.contains("profiles.default.request_timeout: invalid type"));
     }
 
@@ -559,7 +559,7 @@ mod tests {
 
         // NOTE: due to order loading, we cannot guarantee vector order or profile name
         let error = ConfigFile::validate_content(config).unwrap_err();
-        let err_msg = format!("{}", error);
+        let err_msg = format!("{error}");
         assert!(err_msg
             .contains("Your configuration file has a cycle source_profile cycle for profile"));
     }
@@ -1069,7 +1069,7 @@ mod tests {
             last_checked: None,
             frequency: None,
         };
-        let expected = format!("{}\nupdates:\n  check: true\n  ", original);
+        let expected = format!("{original}\nupdates:\n  check: true\n  ");
         let result = ConfigFile::set_updates(original, &updates);
         assert!(result.is_ok());
         let result = result.unwrap();

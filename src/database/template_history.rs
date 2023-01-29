@@ -40,7 +40,7 @@ impl TemplateHistory {
             "description" => self.description.clone(),
             "user_id" => self.user_id.clone(),
             "user_name" => self.user_name.clone(),
-            x => format!("Unhandled property: {}", x),
+            x => format!("Unhandled property: {x}"),
         }
     }
 

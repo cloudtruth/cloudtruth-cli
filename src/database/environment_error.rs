@@ -16,27 +16,26 @@ impl fmt::Display for EnvironmentError {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
             EnvironmentError::Authentication(msg) => {
-                write!(f, "Not Authenticated: {}", msg)
+                write!(f, "Not Authenticated: {msg}")
             }
             EnvironmentError::DeleteNotAllowed(msg) => {
-                write!(f, "Delete not allowed: {}", msg)
+                write!(f, "Delete not allowed: {msg}")
             }
             EnvironmentError::NotFound(name) => {
-                write!(f, "Did not find environment '{}'", name)
+                write!(f, "Did not find environment '{name}'")
             }
             EnvironmentError::TagNotFound(env_name, tag_name) => {
                 // match the server error, including the yucky backticks
                 write!(
                     f,
-                    "Tag `{}` could not be found in environment `{}`",
-                    tag_name, env_name
+                    "Tag `{tag_name}` could not be found in environment `{env_name}`"
                 )
             }
             EnvironmentError::ResponseError(msg) => {
-                write!(f, "{}", msg)
+                write!(f, "{msg}")
             }
             EnvironmentError::UnhandledError(msg) => {
-                write!(f, "Unhandled error: {}", msg)
+                write!(f, "Unhandled error: {msg}")
             }
         }
     }

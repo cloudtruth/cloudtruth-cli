@@ -45,7 +45,7 @@ fn proc_groups_get(
     if let Some(group) = response {
         print_group(&group);
     } else {
-        error_message(format!("The group '{}' could not be found", group_name));
+        error_message(format!("The group '{group_name}' could not be found"));
         process::exit(51);
     }
     Ok(())
@@ -104,17 +104,17 @@ fn proc_groups_delete(
     if let Some(group_id) = group_id {
         let mut confirmed = subcmd_args.is_present(CONFIRM_FLAG);
         if !confirmed {
-            confirmed = user_confirm(format!("Delete group '{}'", group_name), DEL_CONFIRM);
+            confirmed = user_confirm(format!("Delete group '{group_name}'"), DEL_CONFIRM);
         }
 
         if !confirmed {
-            warning_message(format!("Group '{}' not deleted!", group_name));
+            warning_message(format!("Group '{group_name}' not deleted!"));
         } else {
             groups.delete_group(rest_cfg, &group_id)?;
-            println!("Deleted group '{}'", group_name);
+            println!("Deleted group '{group_name}'");
         }
     } else {
-        warning_message(format!("Group '{}' does not exist!", group_name));
+        warning_message(format!("Group '{group_name}' does not exist!"));
     }
     Ok(())
 }

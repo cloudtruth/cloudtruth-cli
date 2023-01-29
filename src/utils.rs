@@ -25,7 +25,7 @@ impl fmt::Display for ApplicationError {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
             ApplicationError::InvalidApiUrl(api_url) => {
-                write!(f, "No equivalent application URL for API: {}", api_url)
+                write!(f, "No equivalent application URL for API: {api_url}")
             }
         }
     }
@@ -40,7 +40,7 @@ pub fn stderr_message(message: String, color: Color) {
     color_spec.set_fg(Some(color));
 
     stderr.set_color(&color_spec).unwrap_or_default();
-    writeln!(&mut stderr, "{}", message).unwrap_or_default();
+    writeln!(&mut stderr, "{message}").unwrap_or_default();
     stderr.reset().unwrap_or_default();
 }
 
@@ -61,19 +61,18 @@ pub fn help_message(message: String) {
 
 pub fn error_no_environment_message(env_name: &str) {
     error_message(format!(
-        "The '{}' environment could not be found in your account.",
-        env_name,
+        "The '{env_name}' environment could not be found in your account.",
     ));
 }
 
 /// Add "WARN:" prefix to the message, and print it to stderr
 pub fn warn_user(message: String) {
-    warning_message(format!("WARN: {}", message));
+    warning_message(format!("WARN: {message}"));
 }
 
 /// Simple method for standardizing the message when no sub-command is executed.
 pub fn warn_missing_subcommand(command: &str) {
-    warn_user(format!("No '{}' sub-command executed.", command));
+    warn_user(format!("No '{command}' sub-command executed."));
 }
 
 /// Method for standardizing message about list of warnings.
@@ -88,7 +87,7 @@ pub fn warn_unresolved_params(errors: &[String]) {
 
 /// Format the strings in the list of errors
 pub fn format_param_error(param_name: &str, param_err: &str) -> String {
-    format!("   {}: {}", param_name, param_err)
+    format!("   {param_name}: {param_err}")
 }
 
 /// Prompts the user for 'y/n' output.
@@ -108,7 +107,7 @@ pub fn user_confirm(message: String, default: Option<bool>) -> bool {
 
     for _ in 0..max_tries {
         let mut input = String::new();
-        print!("{}? ({}) ", message, action);
+        print!("{message}? ({action}) ");
         stdout().flush().unwrap();
         let _ = stdin().read_line(&mut input);
         input = input.trim().to_string().to_lowercase();
@@ -138,7 +137,7 @@ pub fn get_api_access_url(api_url: &str) -> Result<String> {
     }
     let api_access_path = "organization/api";
     if api.starts_with("https://localhost:8000") {
-        return Ok(format!("https://localhost:7000/{}", api_access_path));
+        return Ok(format!("https://localhost:7000/{api_access_path}"));
     }
     if api.starts_with("https://api.") && api.ends_with("cloudtruth.io") {
         return Ok(format!(
@@ -184,15 +183,15 @@ pub fn parse_datetime(input: Option<&str>) -> Option<String> {
             let dt = NaiveDateTime::parse_from_str(&new_str, ISO8601).unwrap();
             Some(dt.format(ISO8601).to_string())
         } else if let Ok(full_date) = NaiveDate::parse_from_str(orig, "%Y-%m-%d") {
-            let new_str = format!("{}T00:00:00Z", full_date);
+            let new_str = format!("{full_date}T00:00:00Z");
             let dt = NaiveDateTime::parse_from_str(&new_str, ISO8601).unwrap();
             Some(dt.format(ISO8601).to_string())
         } else if let Ok(us_date) = NaiveDate::parse_from_str(orig, "%m-%d-%Y") {
-            let new_str = format!("{}T00:00:00Z", us_date);
+            let new_str = format!("{us_date}T00:00:00Z");
             let dt = NaiveDateTime::parse_from_str(&new_str, ISO8601).unwrap();
             Some(dt.format(ISO8601).to_string())
         } else if let Ok(us_date) = NaiveDate::parse_from_str(orig, "%m/%d/%Y") {
-            let new_str = format!("{}T00:00:00Z", us_date);
+            let new_str = format!("{us_date}T00:00:00Z");
             let dt = NaiveDateTime::parse_from_str(&new_str, ISO8601).unwrap();
             Some(dt.format(ISO8601).to_string())
         } else {
@@ -216,7 +215,7 @@ pub fn parse_tag(input: Option<&str>) -> Option<String> {
 ///
 /// The type to return is inferred from context; this is equivalent to
 /// `Default::default()` but shorter to type.
-/// 
+///
 /// See: https://github.com/rust-lang/rust/issues/73014
 #[inline]
 pub fn default<T: Default>() -> T {

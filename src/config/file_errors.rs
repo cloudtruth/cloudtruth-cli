@@ -18,12 +18,11 @@ impl fmt::Display for ConfigFileError {
     fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
         match self {
             ConfigFileError::MalformedConfigFile(source_error) => {
-                write!(f, "YAML error: {}", source_error)
+                write!(f, "YAML error: {source_error}")
             }
             ConfigFileError::ProfileNameNotFound(profile_name) => write!(
                 f,
-                "Profile '{}' does not exist in your configuration file",
-                profile_name
+                "Profile '{profile_name}' does not exist in your configuration file"
             ),
             ConfigFileError::SourceProfileCyclicError(profile_name, cycle) => write!(
                 f,
@@ -34,8 +33,7 @@ impl fmt::Display for ConfigFileError {
             ConfigFileError::SourceProfileNameNotFound(profile_name, source_profile_name) => {
                 write!(
                     f,
-                    "Profile '{}' references non-existant source profile '{}'",
-                    profile_name, source_profile_name
+                    "Profile '{profile_name}' references non-existant source profile '{source_profile_name}'"
                 )
             }
         }

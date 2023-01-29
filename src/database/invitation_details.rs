@@ -42,7 +42,7 @@ impl InvitationDetails {
             "inviter-name" => self.inviter_name.clone(),
             "state" => self.state.clone(),
             "state-detail" => self.state_detail.clone(),
-            _ => format!("Unhandled property name '{}'", property_name),
+            _ => format!("Unhandled property name '{property_name}'"),
         }
     }
 

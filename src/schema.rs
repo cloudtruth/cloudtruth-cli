@@ -34,10 +34,10 @@ fn proc_schema_local(subcmd_args: &ArgMatches, _rest_cfg: &OpenApiConfig, api: &
 
     if show_version {
         let version = api.get_local_schema_version()?;
-        println!("{}", version);
+        println!("{version}");
     } else {
         let schema = api.get_local_schema(fmt)?;
-        println!("{}", schema);
+        println!("{schema}");
     }
     Ok(())
 }
@@ -48,10 +48,10 @@ fn proc_schema_server(subcmd_args: &ArgMatches, rest_cfg: &OpenApiConfig, api: &
 
     if show_version {
         let version = api.get_schema_version(rest_cfg)?;
-        println!("{}", version);
+        println!("{version}");
     } else {
         let schema = api.get_schema(rest_cfg, fmt)?;
-        println!("{}", schema);
+        println!("{schema}");
     }
     Ok(())
 }

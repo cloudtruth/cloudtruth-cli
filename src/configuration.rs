@@ -30,7 +30,7 @@ fn proc_config_edit() -> Result<()> {
         let validation = Config::validate_content(&content);
         if validation.is_ok() {
             Config::update_config(&content)?;
-            println!("{} {}", action, filename);
+            println!("{action} {filename}");
             break;
         }
 
@@ -47,11 +47,11 @@ fn proc_config_edit() -> Result<()> {
         let save_invalid = "Do you want to save the invalid edits".to_string();
         if user_confirm(save_invalid, Some(false)) {
             Config::update_config(&content)?;
-            println!("Saving invalid edits to {}", filename);
+            println!("Saving invalid edits to {filename}");
             break;
         }
 
-        println!("Discarding the invalid edits to {}", filename);
+        println!("Discarding the invalid edits to {filename}");
         break;
     }
     Ok(())
@@ -169,17 +169,17 @@ fn proc_config_prof_delete(subcmd_args: &ArgMatches) -> Result<()> {
 
     if result.is_some() {
         if !confirmed {
-            confirmed = user_confirm(format!("Delete profile '{}'", prof_name), DEL_CONFIRM);
+            confirmed = user_confirm(format!("Delete profile '{prof_name}'"), DEL_CONFIRM);
         }
 
         if !confirmed {
-            warning_message(format!("Profile '{}' not deleted!", prof_name));
+            warning_message(format!("Profile '{prof_name}' not deleted!"));
         } else {
             Config::delete_profile(prof_name)?;
-            println!("Deleted profile '{}'", prof_name);
+            println!("Deleted profile '{prof_name}'");
         }
     } else {
-        warning_message(format!("Profile '{}' does not exist!", prof_name));
+        warning_message(format!("Profile '{prof_name}' does not exist!"));
     }
     Ok(())
 }
@@ -195,10 +195,7 @@ fn proc_config_prof_set(subcmd_args: &ArgMatches) -> Result<()> {
     // make sure there's a parent profile
     if let Some(source_profile) = source {
         if Config::get_profile_details_by_name(source_profile)?.is_none() {
-            error_message(format!(
-                "Source profile '{}' does not exist",
-                source_profile
-            ));
+            error_message(format!("Source profile '{source_profile}' does not exist"));
             process::exit(18);
         }
     }
@@ -209,7 +206,7 @@ fn proc_config_prof_set(subcmd_args: &ArgMatches) -> Result<()> {
         && environment.is_none()
         && source.is_none()
     {
-        warning_message(format!("Nothing to change for profile '{}'", prof_name));
+        warning_message(format!("Nothing to change for profile '{prof_name}'"));
     } else {
         let pre_exists = Config::get_profile_details_by_name(prof_name)?.is_some();
         Config::update_profile(

@@ -7,7 +7,7 @@ use indoc::printdoc;
 use std::io::{stdin, stdout, Write};
 
 fn warn_login_done(reason: &str) {
-    warning_message(format!("Login not performed: {}", reason));
+    warning_message(format!("Login not performed: {reason}"));
 }
 
 pub fn process_login_command(subcmd_args: &ArgMatches, config: &Config) -> Result<()> {
@@ -34,16 +34,13 @@ pub fn process_login_command(subcmd_args: &ArgMatches, config: &Config) -> Resul
                 profile_name,
                 bin_name,
             );
-            let msg = format!(
-                "Do you want to update the API key in profile '{}'",
-                profile_name
-            );
+            let msg = format!("Do you want to update the API key in profile '{profile_name}'");
             if !user_confirm(msg, Some(false)) {
                 warn_login_done("using existing API key");
                 return Ok(());
             }
         } else {
-            let msg = format!("Updating API key in profile '{}'.", profile_name);
+            let msg = format!("Updating API key in profile '{profile_name}'.");
             warning_message(msg);
         }
     }
@@ -63,13 +60,12 @@ pub fn process_login_command(subcmd_args: &ArgMatches, config: &Config) -> Resul
                 API_KEY_PAGE,
                 api_key_url,
             );
-            if !user_confirm(format!("Open the {} page", API_KEY_PAGE), Some(true)) {
+            if !user_confirm(format!("Open the {API_KEY_PAGE} page"), Some(true)) {
                 open_page = false;
             }
         } else {
             warning_message(format!(
-                "Opening {} page ({}) in browser.",
-                API_KEY_PAGE, api_key_url
+                "Opening {API_KEY_PAGE} page ({api_key_url}) in browser."
             ));
         }
 
@@ -100,7 +96,7 @@ pub fn process_login_command(subcmd_args: &ArgMatches, config: &Config) -> Resul
             API_KEY_PAGE,
         );
     } else {
-        warning_message(format!("Unable to determine {} page URL", API_KEY_PAGE));
+        warning_message(format!("Unable to determine {API_KEY_PAGE} page URL"));
     }
 
     // TODO: sanity checks?

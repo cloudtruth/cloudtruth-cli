@@ -11,7 +11,7 @@ pub fn process_logout_command(subcmd_args: &ArgMatches, config: &Config) -> Resu
     let profile_name = &config.profile_name;
 
     if config.api_key.is_empty() {
-        warning_message(format!("No API key is set for profile '{}'", profile_name));
+        warning_message(format!("No API key is set for profile '{profile_name}'"));
         return Ok(());
     }
 
@@ -27,12 +27,9 @@ pub fn process_logout_command(subcmd_args: &ArgMatches, config: &Config) -> Resu
             SEPARATOR,
             profile_name,
         );
-        let msg = format!(
-            "Do you want to remove the API key from profile '{}'",
-            profile_name
-        );
+        let msg = format!("Do you want to remove the API key from profile '{profile_name}'");
         if !user_confirm(msg, Some(false)) {
-            warning_message(format!("Leaving API key in profile '{}'", profile_name));
+            warning_message(format!("Leaving API key in profile '{profile_name}'"));
             return Ok(());
         }
     }
@@ -53,13 +50,12 @@ pub fn process_logout_command(subcmd_args: &ArgMatches, config: &Config) -> Resu
                 API_KEY_PAGE,
                 api_key_url,
             );
-            if !user_confirm(format!("Open the {} page", API_KEY_PAGE), Some(false)) {
+            if !user_confirm(format!("Open the {API_KEY_PAGE} page"), Some(false)) {
                 open_page = false;
             }
         } else {
             warning_message(format!(
-                "Opening {} page ({}) in browser",
-                API_KEY_PAGE, api_key_url
+                "Opening {API_KEY_PAGE} page ({api_key_url}) in browser"
             ));
         }
         if open_page {
@@ -79,7 +75,7 @@ pub fn process_logout_command(subcmd_args: &ArgMatches, config: &Config) -> Resu
             }
         }
     } else {
-        warning_message(format!("Unable to determine {} page URL", API_KEY_PAGE));
+        warning_message(format!("Unable to determine {API_KEY_PAGE} page URL"));
     }
 
     // NOTE: setting api_key to an empty string forces it to be removed.

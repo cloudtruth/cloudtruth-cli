@@ -30,7 +30,7 @@ const OBJECT_TYPE_VALUES: &[&str] = &[
 
 /// Print a consistent `error_message()`
 fn invalid_time_format(arg: &str) {
-    error_message(format!("Invalid '{}' value", arg));
+    error_message(format!("Invalid '{arg}' value"));
 }
 
 fn resolve_object_type(input: &str) -> String {
@@ -81,7 +81,7 @@ fn proc_audit_list(
         let users = Users::new();
         user_id = users.get_id(rest_cfg, uname)?;
         if user_id.is_none() {
-            error_message(format!("User '{}' not found.", uname));
+            error_message(format!("User '{uname}' not found."));
             process::exit(35);
         }
     }
@@ -91,7 +91,7 @@ fn proc_audit_list(
         let environments = Environments::new();
         env_id = environments.get_id(rest_cfg, env_name)?;
         if env_id.is_none() {
-            error_message(format!("Environment '{}' not found", env_name));
+            error_message(format!("Environment '{env_name}' not found"));
             process::exit(36);
         }
     }
@@ -101,7 +101,7 @@ fn proc_audit_list(
         let projects = Projects::new();
         proj_id = projects.get_id(rest_cfg, proj_name)?;
         if proj_id.is_none() {
-            error_message(format!("Project '{}' not found", proj_name));
+            error_message(format!("Project '{proj_name}' not found"));
             process::exit(37);
         }
     }
@@ -125,7 +125,7 @@ fn proc_audit_list(
             )? {
                 param_id = Some(param_details.id);
             } else {
-                error_message(format!("Parameter '{}' not found", param_name));
+                error_message(format!("Parameter '{param_name}' not found"));
                 process::exit(38)
             }
         } else {
@@ -151,7 +151,7 @@ fn proc_audit_list(
     if details.is_empty() {
         let mut constraints: Vec<String> = vec![];
         if let Some(o) = object_type {
-            constraints.push(format!("type=={}", o));
+            constraints.push(format!("type=={o}"));
             if !OBJECT_TYPE_VALUES.contains(&o.as_str()) {
                 help_message(format!(
                     "The specified --type is not one of the recognized values: {}",
@@ -160,10 +160,10 @@ fn proc_audit_list(
             }
         }
         if let Some(n) = name {
-            constraints.push(format!("name-contains '{}'", n));
+            constraints.push(format!("name-contains '{n}'"));
         }
         if let Some(a) = action {
-            constraints.push(format!("action=={}", a));
+            constraints.push(format!("action=={a}"));
         }
         if constraints.is_empty() {
             println!("No audit log entries found");

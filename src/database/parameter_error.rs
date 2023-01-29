@@ -20,22 +20,22 @@ impl fmt::Display for ParameterError {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
             ParameterError::InvalidFqnOrJmesPath(msg) => {
-                write!(f, "Invalid FQN or JMES path expression: {}", msg)
+                write!(f, "Invalid FQN or JMES path expression: {msg}")
             }
             ParameterError::RuleViolation(msg) => {
-                write!(f, "Rule violation: {}", msg)
+                write!(f, "Rule violation: {msg}")
             }
             ParameterError::RuleError(action, msg) => {
                 write!(f, "Rule {} error: {}", action, msg.replace("_len", "-len"))
             }
             ParameterError::UnhandledError(msg) => {
-                write!(f, "Unhandled error: {}", msg)
+                write!(f, "Unhandled error: {msg}")
             }
             ParameterError::ResponseError(msg) => {
-                write!(f, "{}", msg)
+                write!(f, "{msg}")
             }
             ParameterError::EvaluationError(msg) => {
-                write!(f, "Evaluation error: {}", msg)
+                write!(f, "Evaluation error: {msg}")
             }
             ParameterError::TemplateEvalError(tle) => {
                 write!(
@@ -45,7 +45,7 @@ impl fmt::Display for ParameterError {
                 )
             }
             ParameterError::CryptoError(e) => {
-                write!(f, "{}", e)
+                write!(f, "{e}")
             }
         }
     }

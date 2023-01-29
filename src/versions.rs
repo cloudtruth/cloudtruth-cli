@@ -16,18 +16,17 @@ fn proc_version_check(subcmd_args: &ArgMatches) -> Result<()> {
     if bin_ver < latest_ver {
         if !quiet {
             error_message(format!(
-                "Version {} is available, running {}",
-                latest_ver, bin_ver
+                "Version {latest_ver} is available, running {bin_ver}"
             ));
         }
         process::exit(45)
     } else if !quiet {
         let ver = if bin_ver > latest_ver {
-            format!("{} (future)", bin_ver)
+            format!("{bin_ver} (future)")
         } else {
             latest_ver.to_string()
         };
-        println!("Running latest {}", ver);
+        println!("Running latest {ver}");
     }
 
     Ok(())
@@ -51,8 +50,7 @@ fn proc_version_install(subcmd_args: &ArgMatches) -> Result<()> {
         println!("Installed the latest CLI.")
     } else {
         warning_message(format!(
-            "Already running latest version ({}). You can use --force to re-install.",
-            bin_str,
+            "Already running latest version ({bin_str}). You can use --force to re-install.",
         ))
     }
     Ok(())
@@ -62,10 +60,10 @@ fn proc_version_get(subcmd_args: &ArgMatches) -> Result<()> {
     let latest = subcmd_args.is_present("latest");
     if latest {
         let ver = get_latest_version();
-        println!("Latest CLI version {}", ver);
+        println!("Latest CLI version {ver}");
     } else {
         let ver = binary_version();
-        println!("Current CLI version {}", ver)
+        println!("Current CLI version {ver}")
     }
     Ok(())
 }

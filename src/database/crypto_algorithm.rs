@@ -17,9 +17,9 @@ pub enum CryptoAlgorithm {
 impl Display for CryptoAlgorithm {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         match self {
-            CryptoAlgorithm::AesGcm => write!(f, "{}", AES_GCM_STR),
-            CryptoAlgorithm::ChaCha20 => write!(f, "{}", CHA_CHA_20_STR),
-            CryptoAlgorithm::Unknown => write!(f, "{}", UNKNOWN_STR),
+            CryptoAlgorithm::AesGcm => write!(f, "{AES_GCM_STR}"),
+            CryptoAlgorithm::ChaCha20 => write!(f, "{CHA_CHA_20_STR}"),
+            CryptoAlgorithm::Unknown => write!(f, "{UNKNOWN_STR}"),
         }
     }
 }
@@ -50,7 +50,7 @@ mod test {
         map.insert(CryptoAlgorithm::ChaCha20, CHA_CHA_20_STR.to_string());
         map.insert(CryptoAlgorithm::Unknown, UNKNOWN_STR.to_string());
         for (iv, sv) in map {
-            assert_eq!(format!("{}", iv).to_string(), sv);
+            assert_eq!(format!("{iv}").to_string(), sv);
         }
     }
 

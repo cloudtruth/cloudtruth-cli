@@ -25,12 +25,9 @@ use std::process;
 ///===============================================================
 fn push_not_found_message(push_name: &str, integ_name: Option<&str>) -> String {
     if let Some(integ_name) = integ_name {
-        format!(
-            "Push action '{}' not found in integration '{}'",
-            push_name, integ_name
-        )
+        format!("Push action '{push_name}' not found in integration '{integ_name}'")
     } else {
-        format!("Push action '{}' not found", push_name)
+        format!("Push action '{push_name}' not found")
     }
 }
 
@@ -121,7 +118,7 @@ fn project_names_to_urls(proj_names: &[&str], proj_details: &[ProjectDetails]) -
             }
         }
         if !found {
-            error_message(format!("Project '{}' not found", name));
+            error_message(format!("Project '{name}' not found"));
             process::exit(36);
         }
     }
@@ -160,7 +157,7 @@ fn get_tag_name_to_url_map(
                 result.insert(full_name, t.url.clone());
             }
         } else {
-            error_message(format!("Environment '{}' not found", env_name));
+            error_message(format!("Environment '{env_name}' not found"));
             process::exit(37);
         }
     }
@@ -175,7 +172,7 @@ fn tag_names_to_urls(tag_names: &[&str], tag_map: &HashMap<String, String>) -> V
         if let Some(url) = map_value {
             result.push(url.clone());
         } else {
-            error_message(format!("Did not find tag for {}", full_tag));
+            error_message(format!("Did not find tag for {full_tag}"));
             process::exit(38);
         }
     }
@@ -244,15 +241,12 @@ fn proc_action_push_delete(
         let push_id = details.id.clone();
         let mut confirmed = subcmd_args.is_present(CONFIRM_FLAG);
         if !confirmed {
-            let msg = format!(
-                "Delete push '{}' from integration '{}'",
-                push_name, integ_name
-            );
+            let msg = format!("Delete push '{push_name}' from integration '{integ_name}'");
             confirmed = user_confirm(msg, DEL_CONFIRM);
         }
 
         if !confirmed {
-            warning_message(format!("Push '{}' not deleted from !", push_name));
+            warning_message(format!("Push '{push_name}' not deleted from !"));
         } else {
             integrations.delete_push(rest_cfg, &integ_id, &push_id)?;
             println!("Deleted push '{}' from '{}'", details.name, integ_name);
@@ -385,7 +379,7 @@ fn proc_action_push_list(
             process::exit(49)
         });
     if let Some(integ_name) = integ_name {
-        qualifier = format!(" for integration '{}'", integ_name);
+        qualifier = format!(" for integration '{integ_name}'");
         show_integration = false;
         if let Some(integ_id) = integrations.get_id(rest_cfg, integ_name)? {
             pushes = integrations.get_push_list(
@@ -412,7 +406,7 @@ fn proc_action_push_list(
     }
 
     if pushes.is_empty() {
-        println!("No pushes found{}", qualifier);
+        println!("No pushes found{qualifier}");
     } else if !show_values {
         let list = pushes
             .iter()
@@ -525,14 +519,12 @@ fn proc_action_push_set(
         // update code
         if subcmd_args.occurrences_of("region") > 0 {
             warning_message(format!(
-                "The --region is ignored for updates to '{}",
-                push_name
+                "The --region is ignored for updates to '{push_name}"
             ));
         }
         if subcmd_args.occurrences_of("service") > 0 {
             warning_message(format!(
-                "The --service is ignored for updates to '{}",
-                push_name
+                "The --service is ignored for updates to '{push_name}"
             ));
         }
 
@@ -586,10 +578,7 @@ fn proc_action_push_set(
                 include_templates,
                 coerce_params,
             )?;
-            println!(
-                "Created push '{}' in integration '{}'",
-                push_name, integ_name
-            );
+            println!("Created push '{push_name}' in integration '{integ_name}'");
         } else {
             error_message(integration_not_found_message(integ_name));
             process::exit(30);
@@ -666,8 +655,7 @@ fn proc_action_push_task_steps(
     let steps = integrations.get_push_all_task_steps(rest_cfg, &integ_id, &push_id)?;
     if steps.is_empty() {
         println!(
-            "No push task steps found for import '{}' for integration '{}'",
-            push_name, integ_name
+            "No push task steps found for import '{push_name}' for integration '{integ_name}'"
         );
     } else if !show_values {
         let list = steps
@@ -732,10 +720,7 @@ fn proc_action_push_tasks(
     let integ_name = details.integration_name;
     let tasks = integrations.get_push_tasks(rest_cfg, &integ_id, &push_id)?;
     if tasks.is_empty() {
-        println!(
-            "No push tasks found for push '{}' for integration '{}'",
-            push_name, integ_name
-        );
+        println!("No push tasks found for push '{push_name}' for integration '{integ_name}'");
     } else if !show_values {
         let list = tasks
             .iter()
@@ -792,12 +777,9 @@ fn proc_action_push_command(
 ///===============================================================
 fn pull_not_found_message(pull_name: &str, integ_name: Option<&str>) -> String {
     if let Some(integ_name) = integ_name {
-        format!(
-            "Import action '{}' not found in integration '{}'",
-            pull_name, integ_name
-        )
+        format!("Import action '{pull_name}' not found in integration '{integ_name}'")
     } else {
-        format!("Import action '{}' not found", pull_name)
+        format!("Import action '{pull_name}' not found")
     }
 }
 
@@ -865,18 +847,15 @@ fn proc_action_pull_delete(
         let integ_id = get_pull_integration_id(&details.url);
         let mut confirmed = subcmd_args.is_present(CONFIRM_FLAG);
         if !confirmed {
-            let msg = format!(
-                "Delete import '{}' from integration '{}'",
-                pull_name, integ_name
-            );
+            let msg = format!("Delete import '{pull_name}' from integration '{integ_name}'");
             confirmed = user_confirm(msg, DEL_CONFIRM);
         }
 
         if !confirmed {
-            warning_message(format!("Import '{}' not deleted from !", pull_name));
+            warning_message(format!("Import '{pull_name}' not deleted from !"));
         } else {
             integrations.delete_pull(rest_cfg, &integ_id, &pull_id)?;
-            println!("Deleted import '{}' from '{}'", pull_name, integ_name);
+            println!("Deleted import '{pull_name}' from '{integ_name}'");
         }
     } else {
         warning_message(pull_not_found_message(pull_name, integ_name));
@@ -981,7 +960,7 @@ fn proc_action_pull_list(
     let pulls: Vec<ActionDetails>;
 
     if let Some(integ_name) = integ_name {
-        qualifier = format!(" for integration '{}'", integ_name);
+        qualifier = format!(" for integration '{integ_name}'");
         show_integration = false;
         if let Some(integ_id) = integrations.get_id(rest_cfg, integ_name)? {
             pulls = integrations.get_pull_list(rest_cfg, &integ_id)?;
@@ -996,7 +975,7 @@ fn proc_action_pull_list(
     }
 
     if pulls.is_empty() {
-        println!("No imports found{}", qualifier);
+        println!("No imports found{qualifier}");
     } else if !show_values {
         let list = pulls
             .iter()
@@ -1047,14 +1026,12 @@ fn proc_action_pull_set(
         // update code
         if subcmd_args.occurrences_of("region") > 0 {
             warning_message(format!(
-                "The --region is ignored for updates to '{}",
-                pull_name
+                "The --region is ignored for updates to '{pull_name}"
             ));
         }
         if subcmd_args.occurrences_of("service") > 0 {
             warning_message(format!(
-                "The --service is ignored for updates to '{}",
-                pull_name
+                "The --service is ignored for updates to '{pull_name}"
             ));
         }
         let integ_id = get_pull_integration_id(&details.url);
@@ -1085,10 +1062,7 @@ fn proc_action_pull_set(
                 description,
                 Some(dry_run),
             )?;
-            println!(
-                "Created import '{}' in integration '{}'",
-                pull_name, integ_name
-            );
+            println!("Created import '{pull_name}' in integration '{integ_name}'");
         } else {
             error_message(integration_not_found_message(integ_name));
             process::exit(30);
@@ -1147,8 +1121,7 @@ fn proc_action_pull_task_steps(
     let steps = integrations.get_pull_all_task_steps(rest_cfg, &integ_id, &pull_id)?;
     if steps.is_empty() {
         println!(
-            "No import task steps found for import '{}' for integration '{}'",
-            pull_name, integ_name
+            "No import task steps found for import '{pull_name}' for integration '{integ_name}'"
         );
     } else if !show_values {
         let list = steps
@@ -1213,10 +1186,7 @@ fn proc_action_pull_tasks(
     let integ_id = get_pull_integration_id(&details.url);
     let tasks = integrations.get_pull_tasks(rest_cfg, &integ_id, &pull_id)?;
     if tasks.is_empty() {
-        println!(
-            "No import tasks found for import '{}' for integration '{}'",
-            pull_name, integ_name
-        );
+        println!("No import tasks found for import '{pull_name}' for integration '{integ_name}'");
     } else if !show_values {
         let list = tasks
             .iter()

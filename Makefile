@@ -32,7 +32,7 @@ subdirs += $(test_dir)
 .PHONY += test
 .PHONY += test_prerequisites
 
-all: prerequisites version_check cli
+all: prerequisites cli
 
 ### Commands for outside the container
 

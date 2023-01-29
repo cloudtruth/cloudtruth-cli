@@ -45,7 +45,7 @@ impl TypeDetails {
             "rule-count" => format!("{}", self.rules.len()),
             "created-at" => self.created_at.clone(),
             "modified-at" => self.modified_at.clone(),
-            _ => format!("Unhandled property name '{}'", property_name),
+            _ => format!("Unhandled property name '{property_name}'"),
         }
     }
 

@@ -23,17 +23,17 @@ fn proc_proj_delete(
         // NOTE: the server is responsible for checking if children exist
         let mut confirmed = subcmd_args.is_present(CONFIRM_FLAG);
         if !confirmed {
-            confirmed = user_confirm(format!("Delete project '{}'", proj_name), DEL_CONFIRM);
+            confirmed = user_confirm(format!("Delete project '{proj_name}'"), DEL_CONFIRM);
         }
 
         if !confirmed {
-            warning_message(format!("Project '{}' not deleted!", proj_name));
+            warning_message(format!("Project '{proj_name}' not deleted!"));
         } else {
             projects.delete_project(rest_cfg, &proj_id)?;
-            println!("Deleted project '{}'", proj_name);
+            println!("Deleted project '{proj_name}'");
         }
     } else {
-        warning_message(format!("Project '{}' does not exist!", proj_name));
+        warning_message(format!("Project '{proj_name}' does not exist!"));
     }
     Ok(())
 }
@@ -97,7 +97,7 @@ fn proc_proj_set(
         {
             parent_url = Some(parent_detail.url);
         } else {
-            error_message(format!("No parent project '{}' found", parent_name));
+            error_message(format!("No parent project '{parent_name}' found"));
             process::exit(19);
         }
     }
@@ -105,8 +105,7 @@ fn proc_proj_set(
     if let Some(details) = details {
         if description.is_none() && rename.is_none() && parent_name.is_none() {
             warning_message(format!(
-                "Project '{}' not updated: no updated parameters provided",
-                proj_name
+                "Project '{proj_name}' not updated: no updated parameters provided"
             ));
         } else {
             let name = rename.unwrap_or(proj_name);
@@ -117,11 +116,11 @@ fn proc_proj_set(
                 description,
                 parent_url.as_deref(),
             )?;
-            println!("Updated project '{}'", name);
+            println!("Updated project '{name}'");
         }
     } else {
         projects.create_project(rest_cfg, proj_name, description, parent_url.as_deref())?;
-        println!("Created project '{}'", proj_name);
+        println!("Created project '{proj_name}'");
     }
     Ok(())
 }

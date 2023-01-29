@@ -54,9 +54,9 @@ use crate::versions::process_version_command;
 use chrono::{Datelike, NaiveDate, Utc};
 use clap::ArgMatches;
 use color_eyre::eyre::Result;
-use utils::default;
 use std::io;
 use std::process;
+use utils::default;
 use version_compare::Version;
 
 /// Process the 'completion' sub-command
@@ -118,18 +118,16 @@ fn check_updates(updates: &Updates) -> Result<()> {
                 match updates.action.unwrap_or_default() {
                     Action::Warn => {
                         warning_message(format!(
-                            "Version {} is available, running {}",
-                            latest_ver, bin_ver
+                            "Version {latest_ver} is available, running {bin_ver}"
                         ));
                     }
                     Action::Update => {
-                        println!("Installing version {}", latest_ver);
+                        println!("Installing version {latest_ver}");
                         install_latest_version(false)?;
                     }
                     Action::Error => {
                         error_message(format!(
-                            "Version {} is available, running {}",
-                            latest_ver, bin_ver
+                            "Version {latest_ver} is available, running {bin_ver}"
                         ));
                         process::exit(50);
                     }
@@ -185,9 +183,9 @@ fn main() -> Result<()> {
     let cfg_result = Config::load_config(api_key, profile_name, env_name, proj_name);
     if let Err(error) = cfg_result {
         let profile_info = profile_name.map_or(default(), |profile_name| {
-            format!(" from profile '{}'", profile_name)
+            format!(" from profile '{profile_name}'")
         });
-        error_message(format!("Failed to load configuration{}.", profile_info,));
+        error_message(format!("Failed to load configuration{profile_info}.",));
         help_message(format!(
             "The configuration ({}) can be edited with '{} config edit'.\nError details:\n{}",
             Config::filename(),
@@ -342,13 +340,13 @@ mod main_test {
     #[test]
     fn completions_work_without_config() {
         let mut cmd = cmd();
-        cmd.args(&["completions", "bash"]).assert().success();
+        cmd.args(["completions", "bash"]).assert().success();
     }
 
     #[test]
     fn completions_error_with_bad_shell_name() {
         let mut cmd = cmd();
-        cmd.args(&["completions", "bad"])
+        cmd.args(["completions", "bad"])
             .assert()
             .failure()
             .stderr(contains("'bad' isn't a valid value"));
@@ -408,10 +406,8 @@ mod main_test {
         for cmd_args in commands {
             let prof_name = "no-prof-with-this-name";
             println!("missing_profile test: {}", cmd_args.join(" "));
-            let warn_msg = format!(
-                "Profile '{}' does not exist in your configuration file",
-                prof_name
-            );
+            let warn_msg =
+                format!("Profile '{prof_name}' does not exist in your configuration file");
             let mut cmd = cmd();
             cmd.args(cmd_args)
                 .env(CT_API_KEY, "dummy-key")

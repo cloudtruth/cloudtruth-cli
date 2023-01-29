@@ -15,9 +15,9 @@ pub enum GroupError {
 impl fmt::Display for GroupError {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
-            GroupError::Authentication(msg) => write!(f, "Not Authenticated: {}", msg),
-            GroupError::ResponseError(msg) => write!(f, "{}", msg),
-            GroupError::UnhandledError(msg) => write!(f, "Unhandled error: {}", msg),
+            GroupError::Authentication(msg) => write!(f, "Not Authenticated: {msg}"),
+            GroupError::ResponseError(msg) => write!(f, "{msg}"),
+            GroupError::UnhandledError(msg) => write!(f, "Unhandled error: {msg}"),
             GroupError::UserError(user_error) => user_error.fmt(f),
         }
     }

@@ -1,6 +1,6 @@
 use crate::config::{CT_APP_REMOVABLE_VARS, CT_ENVIRONMENT, CT_PROJECT};
 use crate::database::ResolvedDetails;
-use crate::utils::{warn_user, default};
+use crate::utils::{default, warn_user};
 use color_eyre::eyre::{ErrReport, Result};
 use color_eyre::Report;
 use std::collections::HashMap;
@@ -23,7 +23,7 @@ pub enum Inheritance {
 
 impl Display for Inheritance {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        write!(f, "{}", format!("{:?}", self).to_lowercase())
+        write!(f, "{}", format!("{self:?}").to_lowercase())
     }
 }
 
@@ -64,16 +64,15 @@ impl fmt::Display for SubProcessError {
                 )
             }
             SubProcessError::ProcessRunError(e) => {
-                write!(f, "Process run error: {}", e)
+                write!(f, "Process run error: {e}")
             }
             SubProcessError::ProcessOutputError(e) => {
-                write!(f, "Problem writing output: {}", e)
+                write!(f, "Problem writing output: {e}")
             }
             SubProcessError::StrictRunError(e) => {
                 write!(
                     f,
-                    "Running in strict mode. CloudTruth parameter found without a value: {}",
-                    e
+                    "Running in strict mode. CloudTruth parameter found without a value: {e}"
                 )
             }
         }
@@ -124,7 +123,7 @@ impl SubProcess {
         for arg_val in overrides {
             let temp: Vec<&str> = arg_val.splitn(2, '=').collect();
             if temp.len() != 2 {
-                warn_user(format!("Ignoring {} due to no '='", arg_val));
+                warn_user(format!("Ignoring {arg_val} due to no '='"));
                 continue;
             }
             over_vars.insert(temp[0].to_string(), temp[1].to_string());
@@ -244,7 +243,7 @@ mod test {
         map.insert(Inheritance::Overlay, "overlay".to_string());
         map.insert(Inheritance::Exclusive, "exclusive".to_string());
         for (iv, sv) in map {
-            assert_eq!(format!("{}", iv).to_string(), sv);
+            assert_eq!(format!("{iv}").to_string(), sv);
         }
     }
 

@@ -62,7 +62,7 @@ impl ParameterDetails {
             }
             "project-url" => self.project_url.clone(),
             "project-name" => self.project_name.clone(),
-            _ => format!("Unhandled property name '{}'", property_name),
+            _ => format!("Unhandled property name '{property_name}'"),
         }
     }
 
