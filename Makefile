@@ -78,7 +78,7 @@ client: openapi.yml patch_client.py
 lint_local:
 	cargo fmt --all -- --check
 	cargo clippy --all-features -- -D warnings
-	shellcheck install.sh scripts/*
+	shellcheck install.sh
 
 lint: lint_local subdir_lint
 

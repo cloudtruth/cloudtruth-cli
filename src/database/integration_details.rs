@@ -1,4 +1,4 @@
-use cloudtruth_restapi::models::{AwsIntegration, GitHubIntegration, AzureKeyVaultIntegration};
+use cloudtruth_restapi::models::{AwsIntegration, AzureKeyVaultIntegration, GitHubIntegration};
 
 #[derive(Clone, Debug)]
 pub struct IntegrationDetails {
@@ -78,7 +78,7 @@ impl From<&GitHubIntegration> for IntegrationDetails {
 
 impl From<&AzureKeyVaultIntegration> for IntegrationDetails {
     fn from(azure: &AzureKeyVaultIntegration) -> Self {
-        IntegrationDetails { 
+        IntegrationDetails {
             id: azure.id.clone(),
             name: azure.name.clone(),
             description: azure.description.clone().unwrap_or_default(),
@@ -91,7 +91,7 @@ impl From<&AzureKeyVaultIntegration> for IntegrationDetails {
             status_detail: azure.status_detail.clone(),
             status_time: azure.status_last_checked_at.clone(),
             created_at: azure.created_at.clone(),
-            modified_at: azure.modified_at.clone()
+            modified_at: azure.modified_at.clone(),
         }
     }
 }

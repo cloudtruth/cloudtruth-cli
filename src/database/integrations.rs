@@ -184,7 +184,7 @@ impl Integrations {
     }
     pub fn get_azure_integration_details(
         &self,
-        rest_cfg: &OpenApiConfig
+        rest_cfg: &OpenApiConfig,
     ) -> Result<Vec<IntegrationDetails>, IntegrationError> {
         let mut result: Vec<IntegrationDetails> = Vec::new();
         let mut page_count = 1;
@@ -196,7 +196,6 @@ impl Integrations {
                 page_size(rest_cfg),
                 None,
                 None,
-                
             );
             match response {
                 Ok(data) => {
@@ -324,7 +323,7 @@ impl Integrations {
     fn get_azure_id(
         &self,
         rest_cfg: &OpenApiConfig,
-        integration_name: &str
+        integration_name: &str,
     ) -> Result<Option<String>, IntegrationError> {
         let mut total = self.get_azure_integration_details(rest_cfg)?;
         total.retain(|d| d.name == integration_name);
@@ -345,8 +344,8 @@ impl Integrations {
                 Some(aws_id) => Ok(Some(aws_id)),
                 _ => match self.get_azure_id(rest_cfg, integration_name)? {
                     Some(azure_id) => Ok(Some(azure_id)),
-                    _ => Ok(None)
-                }
+                    _ => Ok(None),
+                },
             },
         }
     }
@@ -407,8 +406,8 @@ impl Integrations {
                 Some(aws_details) => Ok(Some(aws_details)),
                 _ => match self.get_azure_details_by_name(rest_cfg, integration_name)? {
                     Some(azure_details) => Ok(Some(azure_details)),
-                    _ => Ok(None)
-                }
+                    _ => Ok(None),
+                },
             },
         }
     }
