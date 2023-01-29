@@ -4,9 +4,6 @@
 
 os_name := $(shell uname -s)
 rustup_exists := $(shell which rustup)
-rust_intended := 1.63.0
-rust_installed := $(shell rustc -V | cut -d' ' -f2)
-rust_bad_version := $(shell grep "RUST_VERSION:" .github/workflows/*.yml | grep -v "$(rust_intended)")
 openapi_gen_version := v5.3.1
 build_dir := build
 test_dir := integration-tests
@@ -34,7 +31,6 @@ subdirs += $(test_dir)
 .PHONY += targets
 .PHONY += test
 .PHONY += test_prerequisites
-.PHONY += version_check
 
 all: precommit
 
@@ -96,7 +92,7 @@ subdir_precommit:
 subdir_prereq:
 	make subdir_action SUBDIR_ACTION=prerequisites
 
-precommit: version_check cargo test subdir_precommit
+precommit: cargo test subdir_precommit
 
 prerequisites: subdir_prereq
 ifeq ($(rustup_exists),'')
@@ -105,12 +101,10 @@ endif
 ifeq ($(rustup_exists),'')
 	$(error "You need to add ~/.cargo/bin to your PATH")
 endif
-ifneq ($(rust_intended),$(rust_installed))
-	rustup install $(rust_intended)
-	rustup override set $(rust_intended)
-else
-	@echo "Already running rustc version: $(rust_intended)"
-endif
+# update rust release channels and rustup itself
+	rustup update
+# autoinstalls rust toolchain specified by rust-toolchain.toml in repo
+	rustup show 
 ifeq ($(os_name),Darwin)
 	brew install shellcheck;
 else ifeq ($(os_name),Linux)
@@ -128,15 +122,6 @@ test:
 
 integration: cargo
 	make -C $(test_dir) $@
-
-version_check:
-ifneq ($(rust_intended),$(rust_installed))
-	$(error "Rustc compiler version expected $(rust_intended), got $(rust_installed)")
-endif
-ifneq ($(rust_bad_version),)
-	$(error "GitHub action uses bad rustc version: $(rust_bad_version)")
-endif
-	@echo "Using rustc version: $(rust_intended)"
 
 regen: cargo
 	make -C $(build_dir) $@
@@ -157,5 +142,4 @@ targets:
 	@echo "shell          - drop into the cloudtruth/cli docker container for development"
 	@echo "test           - runs the cargo tests"
 	@echo "test_prerequisites - install prerequisites for running integration tests"
-	@echo "version_check  - checks rustc versions"
 	@echo ""

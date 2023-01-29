@@ -12,8 +12,6 @@ on:
 env:
   CI: true
   RUST_BACKTRACE: 1
-  # This needs to match the RUST_VERSION in create-draft-release.yml.
-  RUST_VERSION: 1.63.0
   RUST_CACHE_KEY: v0-rust-ci
 
   # these are to run against staging
@@ -77,7 +75,6 @@ jobs:
         id: rust
         uses: actions-rs/toolchain@v1
         with:
-          toolchain: ${{ env.RUST_VERSION }}
           profile: minimal
           override: true
           components: rustfmt, clippy
@@ -117,7 +114,6 @@ jobs:
         id: rust
         uses: actions-rs/toolchain@v1
         with:
-          toolchain: ${{ env.RUST_VERSION }}
           profile: minimal
           override: true
 
@@ -172,7 +168,6 @@ jobs:
         id: rust
         uses: actions-rs/toolchain@v1
         with:
-          toolchain: ${{ env.RUST_VERSION }}
           profile: minimal
           override: true
 

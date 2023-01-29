@@ -56,8 +56,6 @@ env:
   CI: true
   PROJECT_NAME: cloudtruth
   RUST_BACKTRACE: 1
-  # This needs to match the RUST_VERSION in ci.yml.
-  RUST_VERSION: 1.63.0
 
 jobs:
   create-release:
@@ -199,7 +197,6 @@ jobs:
         id: rust
         uses: actions-rs/toolchain@v1
         with:
-          toolchain: ${{ env.RUST_VERSION }}
           profile: minimal
           override: true
           target: ${{ matrix.target }}
