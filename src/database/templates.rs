@@ -1,10 +1,10 @@
 use crate::database::{
     auth_details, page_size, response_message, OpenApiConfig, TemplateDetails, TemplateError,
-    TemplateHistory, Users, NO_PAGE_COUNT, NO_PAGE_SIZE,
+    TemplateHistory, NO_PAGE_COUNT, NO_PAGE_SIZE,
 };
 use cloudtruth_restapi::apis::projects_api::*;
 use cloudtruth_restapi::apis::Error::ResponseError;
-use cloudtruth_restapi::models::{PatchedTemplate, TemplateCreate, TemplatePreviewCreateRequest};
+use cloudtruth_restapi::models::{PatchedTemplateUpdate, TemplateCreate, TemplatePreviewCreateRequest};
 use std::result::Result;
 
 const NO_ORDERING: Option<&str> = None;
@@ -232,18 +232,11 @@ impl Templates {
         description: Option<&str>,
         body: Option<&str>,
     ) -> Result<Option<String>, TemplateError> {
-        let template = PatchedTemplate {
-            url: None,
+        let template = PatchedTemplateUpdate {
             id: None,
             name: Some(template_name.to_string()),
             description: description.map(String::from),
             body: body.map(String::from),
-            has_secret: None,
-            referenced_parameters: None,
-            referenced_templates: None,
-            referenced_projects: None,
-            referencing_templates: None,
-            referencing_values: None,
             created_at: None,
             modified_at: None,
             evaluated: None,
@@ -302,22 +295,6 @@ impl Templates {
         }
     }
 
-    fn resolve_user_ids(&self, rest_cfg: &OpenApiConfig, histories: &mut [TemplateHistory]) {
-        if !histories.is_empty() {
-            let users = Users::new();
-            let user_map = users.get_user_id_to_name_map(rest_cfg);
-            if let Ok(user_map) = user_map {
-                let default_username = "".to_string();
-                for entry in histories {
-                    entry.user_name = user_map
-                        .get(&entry.user_id)
-                        .unwrap_or(&default_username)
-                        .clone();
-                }
-            }
-        }
-    }
-
     /// Gets the template history for all templates in the project.
     pub fn get_histories(
         &self,
@@ -336,9 +313,8 @@ impl Templates {
         );
         match response {
             Ok(data) => {
-                let mut histories: Vec<TemplateHistory> =
+                let histories: Vec<TemplateHistory> =
                     data.results.iter().map(TemplateHistory::from).collect();
-                self.resolve_user_ids(rest_cfg, &mut histories);
                 Ok(histories)
             }
             Err(ResponseError(ref content)) => {
@@ -368,9 +344,8 @@ impl Templates {
         );
         match response {
             Ok(data) => {
-                let mut histories: Vec<TemplateHistory> =
+                let histories: Vec<TemplateHistory> =
                     data.results.iter().map(TemplateHistory::from).collect();
-                self.resolve_user_ids(rest_cfg, &mut histories);
                 Ok(histories)
             }
             Err(ResponseError(ref content)) => {

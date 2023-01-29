@@ -103,7 +103,7 @@ impl From<&AwsPushTask> for TaskDetail {
             error_code: api.error_code.clone().unwrap_or_default(),
             error_detail: api.error_detail.clone().unwrap_or_default(),
             created_at: api.created_at.clone(),
-            modified_at: api.modified_at.clone(),
+            modified_at: api.modified_at.clone().unwrap_or_default(),
         }
     }
 }
@@ -124,7 +124,7 @@ impl From<&AwsPullTask> for TaskDetail {
             error_code: api.error_code.clone().unwrap_or_default(),
             error_detail: api.error_detail.clone().unwrap_or_default(),
             created_at: api.created_at.clone(),
-            modified_at: api.modified_at.clone(),
+            modified_at: api.modified_at.clone().unwrap_or_default(),
         }
     }
 }
@@ -145,7 +145,7 @@ impl From<&GitHubPullTask> for TaskDetail {
             error_code: api.error_code.clone().unwrap_or_default(),
             error_detail: api.error_detail.clone().unwrap_or_default(),
             created_at: api.created_at.clone(),
-            modified_at: api.modified_at.clone(),
+            modified_at: api.modified_at.clone().unwrap_or_default(),
         }
     }
 }

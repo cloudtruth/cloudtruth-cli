@@ -27,7 +27,7 @@ impl GroupDetails {
                 .filter_map(|user_url| user_map.get(user_url).map(String::from))
                 .collect::<Vec<String>>(),
             created_at: group.created_at.clone(),
-            modified_at: group.modified_at.clone(),
+            modified_at: group.modified_at.clone().unwrap_or_default(),
         }
     }
     pub fn get_property(&self, property_name: &str) -> String {

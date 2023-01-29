@@ -28,11 +28,11 @@ pub struct GitHubIntegration {
     pub status_detail: String,
     /// The last time the status was evaluated.
     #[serde(rename = "status_last_checked_at")]
-    pub status_last_checked_at: String,
+    pub status_last_checked_at: Option<String>,
     #[serde(rename = "created_at")]
     pub created_at: String,
     #[serde(rename = "modified_at")]
-    pub modified_at: String,
+    pub modified_at: Option<String>,
     #[serde(rename = "fqn")]
     pub fqn: String,
     /// The type of integration.
@@ -54,9 +54,9 @@ impl GitHubIntegration {
         name: String,
         status: Option<crate::models::StatusEnum>,
         status_detail: String,
-        status_last_checked_at: String,
+        status_last_checked_at: Option<String>,
         created_at: String,
-        modified_at: String,
+        modified_at: Option<String>,
         fqn: String,
         _type: String,
         gh_installation_id: i32,

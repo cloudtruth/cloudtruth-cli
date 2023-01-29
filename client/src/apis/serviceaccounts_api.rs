@@ -88,6 +88,9 @@ pub fn serviceaccounts_create(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
     local_var_req_builder = local_var_req_builder.json(&service_account_create_request);
 
     let local_var_req = local_var_req_builder.build()?;
@@ -163,6 +166,9 @@ pub fn serviceaccounts_destroy(
             None => local_var_key,
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
+    };
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
 
     let local_var_req = local_var_req_builder.build()?;
@@ -251,6 +257,9 @@ pub fn serviceaccounts_list(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
 
     let local_var_req = local_var_req_builder.build()?;
     let method = local_var_req.method().clone();
@@ -326,6 +335,9 @@ pub fn serviceaccounts_partial_update(
             None => local_var_key,
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
+    };
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
     local_var_req_builder = local_var_req_builder.json(&patched_service_account);
 
@@ -403,6 +415,9 @@ pub fn serviceaccounts_retrieve(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
 
     let local_var_req = local_var_req_builder.build()?;
     let method = local_var_req.method().clone();
@@ -449,8 +464,8 @@ pub fn serviceaccounts_retrieve(
 pub fn serviceaccounts_update(
     configuration: &configuration::Configuration,
     id: &str,
-    service_account: Option<crate::models::ServiceAccount>,
-) -> Result<crate::models::ServiceAccount, Error<ServiceaccountsUpdateError>> {
+    service_account_update_request: Option<crate::models::ServiceAccountUpdateRequest>,
+) -> Result<crate::models::ServiceAccountUpdateRequest, Error<ServiceaccountsUpdateError>> {
     let local_var_configuration = configuration;
 
     let local_var_client = &local_var_configuration.client;
@@ -479,7 +494,10 @@ pub fn serviceaccounts_update(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
-    local_var_req_builder = local_var_req_builder.json(&service_account);
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
+    local_var_req_builder = local_var_req_builder.json(&service_account_update_request);
 
     let local_var_req = local_var_req_builder.build()?;
     let method = local_var_req.method().clone();

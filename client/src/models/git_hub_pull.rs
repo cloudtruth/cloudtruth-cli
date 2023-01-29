@@ -29,7 +29,7 @@ pub struct GitHubPull {
     #[serde(rename = "created_at")]
     pub created_at: String,
     #[serde(rename = "modified_at")]
-    pub modified_at: String,
+    pub modified_at: Option<String>,
     /// Allow the pull to create environments.  Any automatically created environments will be children of the `default` environment.  If an environment needs to be created but the action does not allow it, a task step will be added with a null operation, and success_detail will indicate the action did not allow it.
     #[serde(
         rename = "create_environments",
@@ -44,7 +44,7 @@ pub struct GitHubPull {
     pub dry_run: Option<bool>,
     /// Values being managed by a mapped pull.
     #[serde(rename = "mapped_values")]
-    pub mapped_values: Vec<crate::models::Value>,
+    pub mapped_values: Vec<crate::models::ValueCreate>,
     /// The pull mode used.  A pattern pull uses a pattern-matching resource string with mustache-style markers to identify the project, parameter, and environment names, or with a Python regular expression that uses named capture groups that define the same three concepts.  A mapped pull uses a specific resource and JMESpath expression to deliver a value to a specific project, parameter, and environment.  This leverages external value linkages made in the value editor, and there is one mapped pull per integration provided by the system so that you can trigger external value pull synchronizations.
     #[serde(rename = "mode")]
     pub mode: Option<Box<crate::models::ModeEnum>>,
@@ -58,8 +58,8 @@ impl GitHubPull {
         name: String,
         latest_task: Option<crate::models::GitHubPullTask>,
         created_at: String,
-        modified_at: String,
-        mapped_values: Vec<crate::models::Value>,
+        modified_at: Option<String>,
+        mapped_values: Vec<crate::models::ValueCreate>,
         mode: Option<crate::models::ModeEnum>,
     ) -> GitHubPull {
         GitHubPull {

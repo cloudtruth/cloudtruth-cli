@@ -157,7 +157,6 @@ fn proc_param_type_set(
     let type_name = subcmd_args.value_of(NAME_ARG).unwrap();
     let rename = subcmd_args.value_of(RENAME_OPT);
     let parent_name = subcmd_args.value_of(PARENT_ARG);
-    let mut parent_url: Option<String> = None;
     let description = subcmd_args.value_of(DESCRIPTION_OPT);
     let details = types.get_details_by_name(rest_cfg, type_name)?;
     let updated: TypeDetails;
@@ -175,14 +174,17 @@ fn proc_param_type_set(
     let delete_regex = subcmd_args.is_present(RULE_NO_REGEX_ARG);
     let type_added: bool;
 
-    if let Some(parent_name) = parent_name {
-        if let Some(parent_detail) = types.get_details_by_name(rest_cfg, parent_name)? {
-            parent_url = Some(parent_detail.url);
-        } else {
-            error_message(format!("No parent parameter type '{parent_name}' found"));
-            process::exit(46);
-        }
-    }
+    let parent_url = match parent_name {
+        Some(parent_name) => 
+            match types.get_details_by_name(rest_cfg, parent_name)? {
+                Some(parent) => Some(parent.url),
+                None => {
+                    error_message(format!("No parent parameter type '{}' found", parent_name));
+                    process::exit(46)
+                }
+            }
+        None => None
+    };
 
     if let Some(details) = details {
         updated = types.update_type(
@@ -199,8 +201,12 @@ fn proc_param_type_set(
             if let Some(parent_detail) = types.get_details_by_name(rest_cfg, "string")? {
                 parent_url = Some(parent_detail.url);
             }
+            else {
+                error_message("No parent parameter type given");
+                process::exit(52)
+            }
         }
-        updated = types.create_type(rest_cfg, type_name, description, parent_url.as_deref())?;
+        updated = types.create_type(rest_cfg, type_name, description, parent_url.as_deref().unwrap())?;
         type_added = true;
         action = "Created";
     }

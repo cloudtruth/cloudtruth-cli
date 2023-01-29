@@ -126,6 +126,9 @@ pub fn types_create(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
     local_var_req_builder = local_var_req_builder.json(&parameter_type_create);
 
     let local_var_req = local_var_req_builder.build()?;
@@ -202,6 +205,9 @@ pub fn types_destroy(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
 
     let local_var_req = local_var_req_builder.build()?;
     let method = local_var_req.method().clone();
@@ -252,8 +258,6 @@ pub fn types_list(
     ordering: Option<&str>,
     page: Option<i32>,
     page_size: Option<i32>,
-    parent__name__icontains: Option<&str>,
-    parent__name__iexact: Option<&str>,
 ) -> Result<crate::models::PaginatedParameterTypeList, Error<TypesListError>> {
     let local_var_configuration = configuration;
 
@@ -287,14 +291,6 @@ pub fn types_list(
         local_var_req_builder =
             local_var_req_builder.query(&[("page_size", &local_var_str.to_string())]);
     }
-    if let Some(ref local_var_str) = parent__name__icontains {
-        local_var_req_builder =
-            local_var_req_builder.query(&[("parent__name__icontains", &local_var_str.to_string())]);
-    }
-    if let Some(ref local_var_str) = parent__name__iexact {
-        local_var_req_builder =
-            local_var_req_builder.query(&[("parent__name__iexact", &local_var_str.to_string())]);
-    }
     if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
@@ -310,6 +306,9 @@ pub fn types_list(
             None => local_var_key,
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
+    };
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
 
     let local_var_req = local_var_req_builder.build()?;
@@ -357,8 +356,8 @@ pub fn types_list(
 pub fn types_partial_update(
     configuration: &configuration::Configuration,
     id: &str,
-    patched_parameter_type: Option<crate::models::PatchedParameterType>,
-) -> Result<crate::models::ParameterType, Error<TypesPartialUpdateError>> {
+    patched_parameter_type_update: Option<crate::models::PatchedParameterTypeUpdate>,
+) -> Result<crate::models::ParameterTypeUpdate, Error<TypesPartialUpdateError>> {
     let local_var_configuration = configuration;
 
     let local_var_client = &local_var_configuration.client;
@@ -387,7 +386,10 @@ pub fn types_partial_update(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
-    local_var_req_builder = local_var_req_builder.json(&patched_parameter_type);
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
+    local_var_req_builder = local_var_req_builder.json(&patched_parameter_type_update);
 
     let local_var_req = local_var_req_builder.build()?;
     let method = local_var_req.method().clone();
@@ -462,6 +464,9 @@ pub fn types_retrieve(
             None => local_var_key,
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
+    };
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
 
     let local_var_req = local_var_req_builder.build()?;
@@ -538,6 +543,9 @@ pub fn types_rules_create(
             None => local_var_key,
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
+    };
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
     local_var_req_builder = local_var_req_builder.json(&parameter_type_rule_create);
 
@@ -616,6 +624,9 @@ pub fn types_rules_destroy(
             None => local_var_key,
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
+    };
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
 
     let local_var_req = local_var_req_builder.build()?;
@@ -711,6 +722,9 @@ pub fn types_rules_list(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
 
     let local_var_req = local_var_req_builder.build()?;
     let method = local_var_req.method().clone();
@@ -758,8 +772,8 @@ pub fn types_rules_partial_update(
     configuration: &configuration::Configuration,
     id: &str,
     parametertype_pk: &str,
-    patched_parameter_type_rule: Option<crate::models::PatchedParameterTypeRule>,
-) -> Result<crate::models::ParameterTypeRule, Error<TypesRulesPartialUpdateError>> {
+    patched_parameter_type_rule_update: Option<crate::models::PatchedParameterTypeRuleUpdate>,
+) -> Result<crate::models::ParameterTypeRuleUpdate, Error<TypesRulesPartialUpdateError>> {
     let local_var_configuration = configuration;
 
     let local_var_client = &local_var_configuration.client;
@@ -789,7 +803,10 @@ pub fn types_rules_partial_update(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
-    local_var_req_builder = local_var_req_builder.json(&patched_parameter_type_rule);
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
+    local_var_req_builder = local_var_req_builder.json(&patched_parameter_type_rule_update);
 
     let local_var_req = local_var_req_builder.build()?;
     let method = local_var_req.method().clone();
@@ -867,6 +884,9 @@ pub fn types_rules_retrieve(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
 
     let local_var_req = local_var_req_builder.build()?;
     let method = local_var_req.method().clone();
@@ -914,8 +934,8 @@ pub fn types_rules_update(
     configuration: &configuration::Configuration,
     id: &str,
     parametertype_pk: &str,
-    parameter_type_rule: crate::models::ParameterTypeRule,
-) -> Result<crate::models::ParameterTypeRule, Error<TypesRulesUpdateError>> {
+    parameter_type_rule_update: crate::models::ParameterTypeRuleUpdate,
+) -> Result<crate::models::ParameterTypeRuleUpdate, Error<TypesRulesUpdateError>> {
     let local_var_configuration = configuration;
 
     let local_var_client = &local_var_configuration.client;
@@ -945,7 +965,10 @@ pub fn types_rules_update(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
-    local_var_req_builder = local_var_req_builder.json(&parameter_type_rule);
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
+    local_var_req_builder = local_var_req_builder.json(&parameter_type_rule_update);
 
     let local_var_req = local_var_req_builder.build()?;
     let method = local_var_req.method().clone();
@@ -992,8 +1015,8 @@ pub fn types_rules_update(
 pub fn types_update(
     configuration: &configuration::Configuration,
     id: &str,
-    parameter_type: crate::models::ParameterType,
-) -> Result<crate::models::ParameterType, Error<TypesUpdateError>> {
+    parameter_type_update: crate::models::ParameterTypeUpdate,
+) -> Result<crate::models::ParameterTypeUpdate, Error<TypesUpdateError>> {
     let local_var_configuration = configuration;
 
     let local_var_client = &local_var_configuration.client;
@@ -1022,7 +1045,10 @@ pub fn types_update(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
-    local_var_req_builder = local_var_req_builder.json(&parameter_type);
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
+    local_var_req_builder = local_var_req_builder.json(&parameter_type_update);
 
     let local_var_req = local_var_req_builder.build()?;
     let method = local_var_req.method().clone();

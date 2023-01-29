@@ -43,6 +43,7 @@ Class | Method | HTTP request | Description
 *EnvironmentsApi* | [**environments_tags_retrieve**](docs/EnvironmentsApi.md#environments_tags_retrieve) | **GET** /api/v1/environments/{environment_pk}/tags/{id}/ | 
 *EnvironmentsApi* | [**environments_tags_update**](docs/EnvironmentsApi.md#environments_tags_update) | **PUT** /api/v1/environments/{environment_pk}/tags/{id}/ | 
 *EnvironmentsApi* | [**environments_update**](docs/EnvironmentsApi.md#environments_update) | **PUT** /api/v1/environments/{id}/ | 
+*FeaturesApi* | [**features_retrieve**](docs/FeaturesApi.md#features_retrieve) | **GET** /api/v1/features/ | 
 *GrantsApi* | [**grants_create**](docs/GrantsApi.md#grants_create) | **POST** /api/v1/grants/ | 
 *GrantsApi* | [**grants_destroy**](docs/GrantsApi.md#grants_destroy) | **DELETE** /api/v1/grants/{id}/ | 
 *GrantsApi* | [**grants_list**](docs/GrantsApi.md#grants_list) | **GET** /api/v1/grants/ | 
@@ -151,6 +152,7 @@ Class | Method | HTTP request | Description
 *OrganizationsApi* | [**organizations_partial_update**](docs/OrganizationsApi.md#organizations_partial_update) | **PATCH** /api/v1/organizations/{id}/ | 
 *OrganizationsApi* | [**organizations_retrieve**](docs/OrganizationsApi.md#organizations_retrieve) | **GET** /api/v1/organizations/{id}/ | 
 *OrganizationsApi* | [**organizations_update**](docs/OrganizationsApi.md#organizations_update) | **PUT** /api/v1/organizations/{id}/ | 
+*ProjectsApi* | [**projects_copy_create**](docs/ProjectsApi.md#projects_copy_create) | **POST** /api/v1/projects/{id}/copy/ | 
 *ProjectsApi* | [**projects_create**](docs/ProjectsApi.md#projects_create) | **POST** /api/v1/projects/ | 
 *ProjectsApi* | [**projects_destroy**](docs/ProjectsApi.md#projects_destroy) | **DELETE** /api/v1/projects/{id}/ | 
 *ProjectsApi* | [**projects_list**](docs/ProjectsApi.md#projects_list) | **GET** /api/v1/projects/ | 
@@ -255,6 +257,8 @@ Class | Method | HTTP request | Description
  - [DiscoveryResult](docs/DiscoveryResult.md)
  - [Environment](docs/Environment.md)
  - [EnvironmentCreate](docs/EnvironmentCreate.md)
+ - [EnvironmentUpdate](docs/EnvironmentUpdate.md)
+ - [FeaturesResponse](docs/FeaturesResponse.md)
  - [GeneratedPasswordResponse](docs/GeneratedPasswordResponse.md)
  - [GitHubIntegration](docs/GitHubIntegration.md)
  - [GitHubIntegrationCreate](docs/GitHubIntegrationCreate.md)
@@ -324,6 +328,7 @@ Class | Method | HTTP request | Description
  - [ParameterRule](docs/ParameterRule.md)
  - [ParameterRuleCreate](docs/ParameterRuleCreate.md)
  - [ParameterRuleTypeEnum](docs/ParameterRuleTypeEnum.md)
+ - [ParameterRuleUpdate](docs/ParameterRuleUpdate.md)
  - [ParameterTimeline](docs/ParameterTimeline.md)
  - [ParameterTimelineEntry](docs/ParameterTimelineEntry.md)
  - [ParameterTimelineEntryEnvironment](docs/ParameterTimelineEntryEnvironment.md)
@@ -332,34 +337,39 @@ Class | Method | HTTP request | Description
  - [ParameterTypeCreate](docs/ParameterTypeCreate.md)
  - [ParameterTypeRule](docs/ParameterTypeRule.md)
  - [ParameterTypeRuleCreate](docs/ParameterTypeRuleCreate.md)
+ - [ParameterTypeRuleUpdate](docs/ParameterTypeRuleUpdate.md)
+ - [ParameterTypeUpdate](docs/ParameterTypeUpdate.md)
+ - [ParameterUpdate](docs/ParameterUpdate.md)
  - [PatchedAwsIntegration](docs/PatchedAwsIntegration.md)
  - [PatchedAwsPull](docs/PatchedAwsPull.md)
  - [PatchedAwsPushUpdate](docs/PatchedAwsPushUpdate.md)
  - [PatchedAzureKeyVaultIntegration](docs/PatchedAzureKeyVaultIntegration.md)
  - [PatchedAzureKeyVaultPull](docs/PatchedAzureKeyVaultPull.md)
  - [PatchedAzureKeyVaultPushUpdate](docs/PatchedAzureKeyVaultPushUpdate.md)
- - [PatchedEnvironment](docs/PatchedEnvironment.md)
+ - [PatchedEnvironmentUpdate](docs/PatchedEnvironmentUpdate.md)
  - [PatchedGitHubPull](docs/PatchedGitHubPull.md)
  - [PatchedGrant](docs/PatchedGrant.md)
  - [PatchedGroup](docs/PatchedGroup.md)
  - [PatchedInvitation](docs/PatchedInvitation.md)
  - [PatchedMembership](docs/PatchedMembership.md)
  - [PatchedOrganization](docs/PatchedOrganization.md)
- - [PatchedParameter](docs/PatchedParameter.md)
- - [PatchedParameterRule](docs/PatchedParameterRule.md)
- - [PatchedParameterType](docs/PatchedParameterType.md)
- - [PatchedParameterTypeRule](docs/PatchedParameterTypeRule.md)
- - [PatchedProject](docs/PatchedProject.md)
+ - [PatchedParameterRuleUpdate](docs/PatchedParameterRuleUpdate.md)
+ - [PatchedParameterTypeRuleUpdate](docs/PatchedParameterTypeRuleUpdate.md)
+ - [PatchedParameterTypeUpdate](docs/PatchedParameterTypeUpdate.md)
+ - [PatchedParameterUpdate](docs/PatchedParameterUpdate.md)
+ - [PatchedProjectUpdate](docs/PatchedProjectUpdate.md)
  - [PatchedServiceAccount](docs/PatchedServiceAccount.md)
  - [PatchedTagUpdate](docs/PatchedTagUpdate.md)
- - [PatchedTemplate](docs/PatchedTemplate.md)
- - [PatchedValue](docs/PatchedValue.md)
+ - [PatchedTemplateUpdate](docs/PatchedTemplateUpdate.md)
+ - [PatchedValueUpdate](docs/PatchedValueUpdate.md)
  - [Project](docs/Project.md)
  - [ProjectCreate](docs/ProjectCreate.md)
+ - [ProjectUpdate](docs/ProjectUpdate.md)
  - [RoleEnum](docs/RoleEnum.md)
  - [ServiceAccount](docs/ServiceAccount.md)
  - [ServiceAccountCreateRequest](docs/ServiceAccountCreateRequest.md)
  - [ServiceAccountCreateResponse](docs/ServiceAccountCreateResponse.md)
+ - [ServiceAccountUpdateRequest](docs/ServiceAccountUpdateRequest.md)
  - [StateEnum](docs/StateEnum.md)
  - [StatusEnum](docs/StatusEnum.md)
  - [Tag](docs/Tag.md)
@@ -376,9 +386,12 @@ Class | Method | HTTP request | Description
  - [TemplateTimeline](docs/TemplateTimeline.md)
  - [TemplateTimelineEntry](docs/TemplateTimelineEntry.md)
  - [TemplateTimelineEntryTemplate](docs/TemplateTimelineEntryTemplate.md)
+ - [TemplateUpdate](docs/TemplateUpdate.md)
  - [User](docs/User.md)
  - [Value](docs/Value.md)
  - [ValueCreate](docs/ValueCreate.md)
+ - [ValueUpdate](docs/ValueUpdate.md)
+ - [VersionEnum](docs/VersionEnum.md)
 
 
 To get access to the crate's generated documentation, use:

@@ -29,7 +29,7 @@ pub struct AwsPush {
     #[serde(rename = "created_at")]
     pub created_at: String,
     #[serde(rename = "modified_at")]
-    pub modified_at: String,
+    pub modified_at: Option<String>,
     /// This setting allows parameters (non-secrets) to be pushed to a destination that only supports storing secrets.  This may increase your overall cost from the cloud provider as some cloud providers charge a premium for secrets-only storage.
     #[serde(rename = "coerce_parameters", skip_serializing_if = "Option::is_none")]
     pub coerce_parameters: Option<bool>,
@@ -76,7 +76,7 @@ impl AwsPush {
         name: String,
         latest_task: Option<crate::models::AwsPushTask>,
         created_at: String,
-        modified_at: String,
+        modified_at: Option<String>,
         projects: Vec<String>,
         tags: Vec<String>,
         region: Option<crate::models::AwsRegionEnum>,

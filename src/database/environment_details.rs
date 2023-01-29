@@ -25,7 +25,7 @@ impl From<&Environment> for EnvironmentDetails {
             parent_url: api_env.parent.clone().unwrap_or_default(),
             parent_name: "".to_owned(),
             created_at: api_env.created_at.clone(),
-            modified_at: api_env.modified_at.clone(),
+            modified_at: api_env.modified_at.clone().unwrap_or_default(),
         }
     }
 }

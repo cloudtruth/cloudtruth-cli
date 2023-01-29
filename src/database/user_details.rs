@@ -69,7 +69,7 @@ fn default_user() -> &'static User {
         email: None,
         picture_url: None,
         created_at: "".to_string(),
-        modified_at: "".to_string(),
+        modified_at: None
     })
 }
 
@@ -86,7 +86,7 @@ impl From<&User> for UserDetails {
             role: api.role.clone().unwrap_or_default().to_lowercase(),
             account_type: api._type.clone().unwrap_or_default(),
             created_at: api.created_at.clone(),
-            modified_at: api.modified_at.clone(),
+            modified_at: api.modified_at.clone().unwrap_or_default(),
 
             // not used for a user account
             last_used: "".to_string(),
@@ -115,7 +115,7 @@ impl From<&ServiceAccount> for UserDetails {
             role: user.role.clone().unwrap_or_default().to_lowercase(),
             account_type: user._type.clone().unwrap_or_default(),
             created_at: api.created_at.clone(),
-            modified_at: api.modified_at.clone(),
+            modified_at: api.modified_at.clone().unwrap_or_default(),
 
             last_used: api.last_used_at.clone().unwrap_or_default(),
             description: api.description.clone().unwrap_or_default(),
@@ -142,7 +142,7 @@ impl From<&ServiceAccountCreateResponse> for UserDetails {
             membership_id: user.membership_id.clone().unwrap_or_default(),
             role: user.role.clone().unwrap_or_default().to_lowercase(),
             created_at: api.created_at.clone(),
-            modified_at: api.modified_at.clone(),
+            modified_at: api.modified_at.clone().unwrap_or_default(),
             last_used: api.last_used_at.clone().unwrap_or_default(),
             description: api.description.clone().unwrap_or_default(),
             api_key: api.apikey.clone(),

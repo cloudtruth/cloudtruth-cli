@@ -18,6 +18,21 @@ pub struct PatchedOrganization {
     /// The organization name.
     #[serde(rename = "name", skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
+    /// A regular expression project names must match
+    #[serde(
+        rename = "project_name_pattern",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub project_name_pattern: Option<String>,
+    /// If set, we are performing maintenance on this organization and have disabled making changes
+    #[serde(rename = "maintenance", skip_serializing_if = "Option::is_none")]
+    pub maintenance: Option<bool>,
+    /// Multi-factor authentication for the organization
+    #[serde(rename = "mfa_enabled", skip_serializing_if = "Option::is_none")]
+    pub mfa_enabled: Option<bool>,
+    /// The current version of this Organization
+    #[serde(rename = "version", skip_serializing_if = "Option::is_none")]
+    pub version: Option<Box<crate::models::VersionEnum>>,
     /// Indicates if this Organization is the one currently targeted by the Bearer token used by the client to authorize.
     #[serde(rename = "current", skip_serializing_if = "Option::is_none")]
     pub current: Option<bool>,
@@ -58,6 +73,10 @@ impl PatchedOrganization {
             url: None,
             id: None,
             name: None,
+            project_name_pattern: None,
+            maintenance: None,
+            mfa_enabled: None,
+            version: None,
             current: None,
             role: None,
             subscription_expires_at: None,

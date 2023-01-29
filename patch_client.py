@@ -95,7 +95,6 @@ DEBUG_SUCCESS_CALL = """\
         }
 """
 
-
 def file_read_content(filename: str) -> str:
     f = open(filename, "r")
     content = f.read()
@@ -494,6 +493,22 @@ def default_enums(srcdir: str, verbose: bool) -> None:
             print(f"Updating {filename} with default variant")
         file_write_content(filename, updated)
 
+def remove_unused_parameter_id(srcdir: str, verbose: bool) -> None:
+    """
+    Removes unused paramer_id format strings in the paths for project API endpoints.
+    
+    Not sure why these are defined in the OpenAPI spec when they're not used.
+    """
+    filename = f"{srcdir}/apis/projects_api.rs"
+    orig = file_read_content(filename)
+    formatter_string = "parameter_id=crate::apis::urlencode(parameter_id),"
+    updated = orig.replace(formatter_string, "")
+    arg_string = " parameter_id: &str,"
+    updated = updated.replace(arg_string, "")
+    if verbose:
+        print(f"Updating {filename} to remove parameter id in format strings")
+    file_write_content(filename, updated)
+
 
 if __name__ == "__main__":
     client_dir = os.getcwd() + "/client"
@@ -515,3 +530,4 @@ if __name__ == "__main__":
     object_type_string(srcdir, verbose)
     optional_enums(srcdir, verbose)
     default_enums(srcdir, verbose)
+    remove_unused_parameter_id(srcdir, verbose)

@@ -26,7 +26,7 @@ pub struct Group {
     #[serde(rename = "created_at")]
     pub created_at: String,
     #[serde(rename = "modified_at")]
-    pub modified_at: String,
+    pub modified_at: Option<String>,
 }
 
 impl Group {
@@ -36,7 +36,7 @@ impl Group {
         name: String,
         users: Vec<String>,
         created_at: String,
-        modified_at: String,
+        modified_at: Option<String>,
     ) -> Group {
         Group {
             url,

@@ -35,12 +35,17 @@ pub struct AwsPushTask {
     #[serde(rename = "created_at")]
     pub created_at: String,
     #[serde(rename = "modified_at")]
-    pub modified_at: String,
+    pub modified_at: Option<String>,
 }
 
 impl AwsPushTask {
     /// Push task for an AWS integration.
-    pub fn new(url: String, id: String, created_at: String, modified_at: String) -> AwsPushTask {
+    pub fn new(
+        url: String,
+        id: String,
+        created_at: String,
+        modified_at: Option<String>,
+    ) -> AwsPushTask {
         AwsPushTask {
             url,
             id,

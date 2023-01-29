@@ -8,8 +8,8 @@ use cloudtruth_restapi::apis::projects_api::*;
 use cloudtruth_restapi::apis::utils_api::utils_generate_password_create;
 use cloudtruth_restapi::apis::Error::ResponseError;
 use cloudtruth_restapi::models::{
-    ParameterCreate, ParameterRuleCreate, ParameterRuleTypeEnum, PatchedParameter,
-    PatchedParameterRule, PatchedValue, ValueCreate,
+    ParameterCreate, ParameterRuleCreate, ParameterRuleTypeEnum, PatchedParameterUpdate,
+    PatchedParameterRuleUpdate, PatchedValueUpdate, ValueCreate,
 };
 use std::collections::HashMap;
 use std::result::Result;
@@ -93,13 +93,6 @@ fn mask_secrets_arg(mask_secrets: bool) -> Option<bool> {
     match mask_secrets {
         true => Some(true),
         false => None,
-    }
-}
-
-fn wrap_secrets_arg(mask_secrets: bool) -> Option<bool> {
-    match mask_secrets {
-        true => None,
-        false => Some(WRAP_SECRETS),
     }
 }
 
@@ -202,7 +195,6 @@ impl Parameters {
             Some(out_fmt.as_str()),
             options.starts_with.as_deref(),
             options.tag.as_deref(),
-            None, // TODO: should wrap per wrap_secrets_arg(), but makes output text unusable
         );
         match response {
             Ok(export) => Ok(Some(export.body)),
@@ -249,7 +241,6 @@ impl Parameters {
             None,
             env_arg,
             Some(evaluate),
-            NO_ID_IN,
             immediate_parameters_arg(immediate_parameters),
             mask_secrets_arg(mask_secrets),
             Some(key_name),
@@ -261,16 +252,9 @@ impl Parameters {
             NO_ORDERING,
             NO_PAGE_COUNT,
             NO_PAGE_SIZE,
-            PROJECT,
-            PROJECT_CONTAINS,
-            PROJECT_ICONTAINS,
-            PROJECT_IEXACT,
-            PROJECT_ISTARTS,
-            PROJECT_STARTS,
             ONLY_SECRETS,
             tag.as_deref(),
             None,
-            wrap_secrets_arg(mask_secrets),
         );
         match response {
             Ok(data) => match data.results {
@@ -362,7 +346,6 @@ impl Parameters {
                 None,
                 env_arg,
                 eval_arg,
-                NO_ID_IN,
                 immediate_parameters_arg(immediate_parameters),
                 mask_secrets_arg(mask_secrets),
                 None,
@@ -374,16 +357,9 @@ impl Parameters {
                 NO_ORDERING,
                 Some(page_count),
                 page_size(rest_cfg),
-                PROJECT,
-                PROJECT_CONTAINS,
-                PROJECT_ICONTAINS,
-                PROJECT_IEXACT,
-                PROJECT_ISTARTS,
-                PROJECT_STARTS,
                 ONLY_SECRETS,
                 tag.as_deref(),
-                value_arg,
-                wrap_secrets_arg(mask_secrets),
+                value_arg
             );
             match response {
                 Ok(data) => {
@@ -467,8 +443,7 @@ impl Parameters {
                 None,
                 None, // cannot give an environment, or it will only get for that environment
                 eval_arg,
-                NO_ID_IN,
-                immediate_parameters_arg(immediate_parameters),
+                    immediate_parameters_arg(immediate_parameters),
                 mask_secrets_arg(mask_secrets),
                 Some(param_name),
                 NO_NAME_CONTAINS,
@@ -479,16 +454,9 @@ impl Parameters {
                 NO_ORDERING,
                 Some(page_count),
                 page_size(rest_cfg),
-                PROJECT,
-                PROJECT_CONTAINS,
-                PROJECT_ICONTAINS,
-                PROJECT_IEXACT,
-                PROJECT_ISTARTS,
-                PROJECT_STARTS,
                 ONLY_SECRETS,
                 None, // cannot use a tag without an environment
                 VALUES_TRUE,
-                wrap_secrets_arg(mask_secrets),
             );
             match response {
                 Ok(data) => {
@@ -566,22 +534,15 @@ impl Parameters {
         secret: Option<bool>,
         param_type: Option<&str>,
     ) -> Result<ParameterDetails, ParameterError> {
-        let param_update = PatchedParameter {
-            url: None,
+        let param_update = PatchedParameterUpdate {
             id: None,
             name: Some(key_name.to_string()),
             description: description.map(String::from),
             secret,
             _type: param_type.map(String::from),
-            rules: None,
-            values: None,
-            referencing_templates: None,
-            referencing_values: None,
             created_at: None,
             modified_at: None,
             project: None,
-            project_name: None,
-            overrides: None,
         };
         let response =
             projects_parameters_partial_update(rest_cfg, param_id, proj_id, Some(param_update));
@@ -636,7 +597,6 @@ impl Parameters {
             proj_id,
             value_create,
             None,
-            Some(WRAP_SECRETS),
         );
         match response {
             Ok(api_value) => Ok(api_value.id),
@@ -676,12 +636,8 @@ impl Parameters {
             }
             None => None,
         };
-        let value_update = PatchedValue {
-            url: None,
+        let value_update = PatchedValueUpdate {
             id: None,
-            environment: None,
-            environment_name: None,
-            parameter: None,
             secret: None,
             external: Some(external),
             external_fqn: fqn.map(String::from),
@@ -690,14 +646,7 @@ impl Parameters {
             value: None,
             created_at: None,
             modified_at: None,
-            external_error: None,
-            earliest_tag: None,
             interpolated: evaluated,
-            evaluated: None,
-            external_status: None,
-            referenced_projects: None,
-            referenced_parameters: None,
-            referenced_templates: None,
         };
         let response = projects_parameters_values_partial_update(
             rest_cfg,
@@ -705,7 +654,6 @@ impl Parameters {
             param_id,
             proj_id,
             None,
-            Some(WRAP_SECRETS),
             Some(value_update),
         );
         match response {
@@ -749,8 +697,7 @@ impl Parameters {
         rule_type: Option<ParamRuleType>,
         constraint: Option<&str>,
     ) -> Result<String, ParameterError> {
-        let patch_rule = PatchedParameterRule {
-            url: None,
+        let patch_rule = PatchedParameterRuleUpdate {
             id: None,
             parameter: None,
             _type: rule_type.map(ParameterRuleTypeEnum::from),

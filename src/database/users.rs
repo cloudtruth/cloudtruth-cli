@@ -180,10 +180,12 @@ impl Users {
         rest_cfg: &OpenApiConfig,
         user_name: &str,
         description: Option<&str>,
+        role: Option<&str>
     ) -> Result<UserDetails, UserError> {
         let user_create = ServiceAccountCreateRequest {
             name: user_name.to_string(),
             description: description.map(String::from),
+            role: role.map(String::from)
         };
         let response = serviceaccounts_create(rest_cfg, user_create);
         match response {
@@ -273,7 +275,7 @@ impl Users {
         description: Option<&str>,
     ) -> Result<UserDetails, UserError> {
         let role_enum = to_role_enum(role)?;
-        let details = self.create_service_account(rest_cfg, user_name, description)?;
+        let details = self.create_service_account(rest_cfg, user_name, description, Some(role))?;
 
         // must add membership for the account to show up in the list
         let response = self.create_membership(rest_cfg, &details.user_url, role_enum);

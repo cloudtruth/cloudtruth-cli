@@ -67,7 +67,7 @@ impl From<&ParameterRule> for ParameterRuleDetail {
             rule_type: ParamRuleType::from(api._type),
             constraint: api.constraint.clone(),
             created_at: api.created_at.clone(),
-            modified_at: api.modified_at.clone(),
+            modified_at: api.modified_at.clone().unwrap_or_default(),
         }
     }
 }
@@ -79,7 +79,7 @@ impl From<&ParameterTypeRule> for ParameterRuleDetail {
             rule_type: ParamRuleType::from(api._type),
             constraint: api.constraint.clone(),
             created_at: api.created_at.clone(),
-            modified_at: api.modified_at.clone(),
+            modified_at: api.modified_at.clone().unwrap_or_default(),
         }
     }
 }

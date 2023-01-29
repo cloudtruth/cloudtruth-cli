@@ -10,11 +10,13 @@
 
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct ParameterType {
+    /// The URL for the parameter type.
     #[serde(rename = "url")]
     pub url: String,
-    /// A unique identifier for the parameter type.
     #[serde(rename = "id")]
     pub id: String,
+    #[serde(rename = "ledger_id")]
+    pub ledger_id: String,
     /// The parameter type name.
     #[serde(rename = "name")]
     pub name: String,
@@ -24,7 +26,7 @@ pub struct ParameterType {
     /// Rules applied to this parameter.
     #[serde(rename = "rules")]
     pub rules: Vec<crate::models::ParameterTypeRule>,
-    /// All types must derive, either directly or indirectly, from one of the CloudTruth built-in types.   This is the ParameterType that this type is derived from.
+    /// The URL for this parameter type's parent
     #[serde(rename = "parent", skip_serializing_if = "Option::is_none")]
     pub parent: Option<String>,
     /// Name of the parent ParameterType (if any).
@@ -33,22 +35,24 @@ pub struct ParameterType {
     #[serde(rename = "created_at")]
     pub created_at: String,
     #[serde(rename = "modified_at")]
-    pub modified_at: String,
+    pub modified_at: Option<String>,
 }
 
 impl ParameterType {
     pub fn new(
         url: String,
         id: String,
+        ledger_id: String,
         name: String,
         rules: Vec<crate::models::ParameterTypeRule>,
         parent_name: Option<String>,
         created_at: String,
-        modified_at: String,
+        modified_at: Option<String>,
     ) -> ParameterType {
         ParameterType {
             url,
             id,
+            ledger_id,
             name,
             description: None,
             rules,

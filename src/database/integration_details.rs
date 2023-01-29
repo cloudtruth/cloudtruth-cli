@@ -49,9 +49,9 @@ impl From<&AwsIntegration> for IntegrationDetails {
                 _ => "".to_string(),
             },
             status_detail: aws.status_detail.clone(),
-            status_time: aws.status_last_checked_at.clone(),
+            status_time: aws.status_last_checked_at.clone().unwrap_or_default(),
             created_at: aws.created_at.clone(),
-            modified_at: aws.modified_at.clone(),
+            modified_at: aws.modified_at.clone().unwrap_or_default(),
         }
     }
 }
@@ -69,9 +69,9 @@ impl From<&GitHubIntegration> for IntegrationDetails {
                 _ => "".to_string(),
             },
             status_detail: github.status_detail.clone(),
-            status_time: github.status_last_checked_at.clone(),
+            status_time: github.status_last_checked_at.clone().unwrap_or_default(),
             created_at: github.created_at.clone(),
-            modified_at: github.modified_at.clone(),
+            modified_at: github.modified_at.clone().unwrap_or_default(),
         }
     }
 }
@@ -89,9 +89,9 @@ impl From<&AzureKeyVaultIntegration> for IntegrationDetails {
                 _ => "".to_string(),
             },
             status_detail: azure.status_detail.clone(),
-            status_time: azure.status_last_checked_at.clone(),
+            status_time: azure.status_last_checked_at.clone().unwrap_or_default(),
             created_at: azure.created_at.clone(),
-            modified_at: azure.modified_at.clone(),
+            modified_at: azure.modified_at.clone().unwrap_or_default(),
         }
     }
 }

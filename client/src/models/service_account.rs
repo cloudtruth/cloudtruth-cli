@@ -22,7 +22,7 @@ pub struct ServiceAccount {
     #[serde(rename = "created_at")]
     pub created_at: String,
     #[serde(rename = "modified_at")]
-    pub modified_at: String,
+    pub modified_at: Option<String>,
     /// The most recent date and time the service account was used.  It will be null if the service account has not been used.
     #[serde(rename = "last_used_at")]
     pub last_used_at: Option<String>,
@@ -34,7 +34,7 @@ impl ServiceAccount {
         id: String,
         user: Option<crate::models::User>,
         created_at: String,
-        modified_at: String,
+        modified_at: Option<String>,
         last_used_at: Option<String>,
     ) -> ServiceAccount {
         ServiceAccount {

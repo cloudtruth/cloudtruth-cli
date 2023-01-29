@@ -83,7 +83,7 @@ impl ParameterDetails {
         self.evaluated = env_value.interpolated.unwrap_or(false);
         self.raw_value = env_value.internal_value.clone().unwrap_or_default();
         self.created_at = env_value.created_at.clone();
-        self.modified_at = env_value.modified_at.clone();
+        self.modified_at = env_value.modified_at.clone().unwrap_or_default();
         self.error = env_value.external_error.clone().unwrap_or_default();
     }
 
@@ -140,9 +140,12 @@ fn default_param_value() -> &'static Value {
     DEFAULT_PARAM_VALUE.get_or_init(|| Value {
         url: "".to_owned(),
         id: "".to_owned(),
+        ledger_id: "".to_owned(),
         environment: "".to_owned(),
         environment_name: "".to_owned(),
+        environment_id: "".to_owned(),
         parameter: "".to_owned(),
+        parameter_id: "".to_owned(),
         external: None,
         external_fqn: None,
         external_filter: None,
@@ -156,9 +159,8 @@ fn default_param_value() -> &'static Value {
         referenced_templates: vec![],
         value: Some(DEFAULT_VALUE.to_owned()),
         created_at: "".to_owned(),
-        modified_at: "".to_owned(),
+        modified_at: None,
         external_error: None,
-        earliest_tag: None,
     })
 }
 
@@ -194,7 +196,7 @@ impl From<&Parameter> for ParameterDetails {
             evaluated: env_value.interpolated.unwrap_or(false),
             raw_value: env_value.internal_value.clone().unwrap_or_default(),
             created_at: env_value.created_at.clone(),
-            modified_at: env_value.modified_at.clone(),
+            modified_at: env_value.modified_at.clone().unwrap_or_default(),
 
             error: env_value.external_error.clone().unwrap_or_default(),
         }

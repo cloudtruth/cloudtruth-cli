@@ -66,6 +66,7 @@ pub mod api_api;
 pub mod audit_api;
 pub mod backup_api;
 pub mod environments_api;
+pub mod features_api;
 pub mod grants_api;
 pub mod groups_api;
 pub mod import_api;

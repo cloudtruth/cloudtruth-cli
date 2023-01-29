@@ -115,12 +115,13 @@ fn proc_proj_set(
                 &details.id,
                 description,
                 parent_url.as_deref(),
+                None
             )?;
             println!("Updated project '{name}'");
         }
     } else {
-        projects.create_project(rest_cfg, proj_name, description, parent_url.as_deref())?;
-        println!("Created project '{proj_name}'");
+        projects.create_project(rest_cfg, proj_name, description, parent_url.as_deref(), None)?;
+        println!("Created project '{}'", proj_name);
     }
     Ok(())
 }

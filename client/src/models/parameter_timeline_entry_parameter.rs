@@ -11,15 +11,15 @@
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct ParameterTimelineEntryParameter {
     /// A unique identifier for the parameter.
-    #[serde(rename = "id")]
-    pub id: String,
+    #[serde(rename = "parameter_id")]
+    pub parameter_id: Option<String>,
     /// The parameter name.
     #[serde(rename = "name")]
     pub name: String,
 }
 
 impl ParameterTimelineEntryParameter {
-    pub fn new(id: String, name: String) -> ParameterTimelineEntryParameter {
-        ParameterTimelineEntryParameter { id, name }
+    pub fn new(parameter_id: Option<String>, name: String) -> ParameterTimelineEntryParameter {
+        ParameterTimelineEntryParameter { parameter_id, name }
     }
 }

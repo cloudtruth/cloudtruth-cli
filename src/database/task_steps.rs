@@ -64,7 +64,7 @@ impl From<&AwsPushTaskStep> for TaskStepDetails {
             parameter_name: api.parameter_name.clone().unwrap_or_default(),
             venue_name: api.venue_name.clone().unwrap_or_default(),
             created_at: api.created_at.clone(),
-            modified_at: api.modified_at.clone(),
+            modified_at: api.modified_at.clone().unwrap_or_default(),
         }
     }
 }
@@ -88,7 +88,7 @@ impl From<&AwsPullTaskStep> for TaskStepDetails {
             parameter_name: api.parameter_name.clone().unwrap_or_default(),
             venue_name: api.venue_name.clone().unwrap_or_default(),
             created_at: api.created_at.clone(),
-            modified_at: api.modified_at.clone(),
+            modified_at: api.modified_at.clone().unwrap_or_default(),
         }
     }
 }
@@ -112,7 +112,7 @@ impl From<&GitHubPullTaskStep> for TaskStepDetails {
             parameter_name: api.parameter_name.clone().unwrap_or_default(),
             venue_name: api.venue_name.clone().unwrap_or_default(),
             created_at: api.created_at.clone(),
-            modified_at: api.modified_at.clone(),
+            modified_at: api.modified_at.clone().unwrap_or_default(),
         }
     }
 }
@@ -136,7 +136,7 @@ impl From<&TaskStep> for TaskStepDetails {
             parameter_name: api.parameter_name.clone().unwrap_or_default(),
             venue_name: api.venue_name.clone().unwrap_or_default(),
             created_at: api.created_at.clone(),
-            modified_at: api.modified_at.clone(),
+            modified_at: api.modified_at.clone().unwrap_or_default(),
         }
     }
 }
