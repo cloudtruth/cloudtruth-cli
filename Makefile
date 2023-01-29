@@ -32,7 +32,7 @@ subdirs += $(test_dir)
 .PHONY += test
 .PHONY += test_prerequisites
 
-all: prerequisites cli
+all: precommit
 
 ### Commands for outside the container
 
