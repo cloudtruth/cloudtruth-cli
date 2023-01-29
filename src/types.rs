@@ -25,20 +25,17 @@ fn proc_param_type_delete(
         // NOTE: the server is responsible for checking if children exist
         let mut confirmed = subcmd_args.is_present(CONFIRM_FLAG);
         if !confirmed {
-            confirmed = user_confirm(
-                format!("Delete parameter type '{}'", type_name),
-                DEL_CONFIRM,
-            );
+            confirmed = user_confirm(format!("Delete parameter type '{type_name}'"), DEL_CONFIRM);
         }
 
         if !confirmed {
-            warning_message(format!("Parameter type '{}' not deleted!", type_name));
+            warning_message(format!("Parameter type '{type_name}' not deleted!"));
         } else {
             types.delete_type(rest_cfg, &type_id)?;
-            println!("Deleted parameter type '{}'", type_name);
+            println!("Deleted parameter type '{type_name}'");
         }
     } else {
-        warning_message(format!("Parameter type '{}' does not exist!", type_name));
+        warning_message(format!("Parameter type '{type_name}' does not exist!"));
     }
     Ok(())
 }
@@ -61,7 +58,7 @@ fn proc_param_type_list(
     }
 
     if details.is_empty() {
-        println!("No {} found.", description);
+        println!("No {description} found.");
     } else if !show_values {
         let list = details
             .iter()
@@ -182,7 +179,7 @@ fn proc_param_type_set(
         if let Some(parent_detail) = types.get_details_by_name(rest_cfg, parent_name)? {
             parent_url = Some(parent_detail.url);
         } else {
-            error_message(format!("No parent parameter type '{}' found", parent_name));
+            error_message(format!("No parent parameter type '{parent_name}' found"));
             process::exit(46);
         }
     }
@@ -267,7 +264,7 @@ fn proc_param_type_set(
         process::exit(48);
     }
 
-    println!("{} parameter type '{}'", action, final_name);
+    println!("{action} parameter type '{final_name}'");
     Ok(())
 }
 

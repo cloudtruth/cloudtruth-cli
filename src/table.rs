@@ -40,19 +40,19 @@ impl fmt::Display for TableError {
     fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
         match self {
             TableError::UnhandledFormat(format) => {
-                write!(f, "Unhandled format: {}", format)
+                write!(f, "Unhandled format: {format}")
             }
             TableError::CsvError(details) => {
-                write!(f, "CSV error: {}", details)
+                write!(f, "CSV error: {details}")
             }
             TableError::JsonError(details) => {
-                write!(f, "JSON error: {}", details)
+                write!(f, "JSON error: {details}")
             }
             TableError::WriteError(details) => {
-                write!(f, "IO error: {}:", details)
+                write!(f, "IO error: {details}:")
             }
             TableError::YamlError(details) => {
-                write!(f, "YAML error: {}", details)
+                write!(f, "YAML error: {details}")
             }
         }
     }
@@ -244,7 +244,7 @@ impl Table {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::utils::StringWriter;
+    use std::io::Cursor;
 
     fn create_basic_table() -> Table {
         let mut table = Table::new("my_table_type");
@@ -266,11 +266,12 @@ mod tests {
 
     #[test]
     fn test_basic_json() {
-        let mut writer = StringWriter::new();
+        let mut cursor = Cursor::new(Vec::new());
         let table = create_basic_table();
-        table.render_json_out(&mut writer).unwrap();
-        let actual = serde_json::from_str::<serde_json::Value>(writer.as_string()).unwrap();
-        let expected = serde_json::from_str::<serde_json::Value>(
+        table.render_json_out(&mut cursor).unwrap();
+        cursor.set_position(0);
+        let actual: serde_json::Value = serde_json::from_reader(cursor).unwrap();
+        let expected: serde_json::Value = serde_json::from_str(
             r#"{
   "my_table_type": [
     {
@@ -297,11 +298,12 @@ mod tests {
 
     #[test]
     fn test_basic_yaml() {
-        let mut writer = StringWriter::new();
+        let mut cursor = Cursor::new(Vec::new());
         let table = create_basic_table();
-        table.render_yaml_out(&mut writer).unwrap();
-        let actual = serde_yaml::from_str::<serde_yaml::Value>(writer.as_string()).unwrap();
-        let expected = serde_yaml::from_str::<serde_yaml::Value>(
+        table.render_yaml_out(&mut cursor).unwrap();
+        cursor.set_position(0);
+        let actual: serde_yaml::Value = serde_yaml::from_reader(cursor).unwrap();
+        let expected: serde_yaml::Value = serde_yaml::from_str(
             r#"---
 my_table_type:
   - Column 2: B

@@ -31,7 +31,7 @@ fn proc_back_snapshot(
             "yaml" => println!("{}", serde_yaml::to_string(&snapshot).unwrap()),
             "json" => println!("{}", serde_json::to_string_pretty(&snapshot).unwrap()),
             _ => {
-                error_message(format!("Unsupported format {}", fmt));
+                error_message(format!("Unsupported format {fmt}"));
                 process::exit(55);
             }
         }

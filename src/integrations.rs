@@ -11,7 +11,7 @@ use indoc::printdoc;
 use std::process;
 
 pub fn integration_not_found_message(integ_name: &str) -> String {
-    format!("Integration '{}' not found", integ_name)
+    format!("Integration '{integ_name}' not found")
 }
 
 fn proc_integ_explore(
@@ -30,7 +30,7 @@ fn proc_integ_explore(
     let raw_types: &[&str] = &["File", "Value"];
     if nodes.is_empty() {
         if let Some(fqn) = fqn {
-            error_message(format!("Nothing found for FQN '{}'!", fqn));
+            error_message(format!("Nothing found for FQN '{fqn}'!"));
         } else {
             error_message("No integrations found.".to_string());
         }
@@ -59,7 +59,7 @@ fn proc_integ_explore(
                 indent2 = indent.repeat(2);
             }
             for key in node.content_keys {
-                println!("{}{{{{ {} }}}}", indent2, key);
+                println!("{indent2}{{{{ {key} }}}}");
             }
         }
     } else {
@@ -75,7 +75,7 @@ fn proc_integ_explore(
                 indent2 = indent.repeat(2);
             }
             for key in node.content_keys {
-                let entry_name = format!("{}{{{{ {} }}}}", indent2, key);
+                let entry_name = format!("{indent2}{{{{ {key} }}}}");
                 table.add_row(vec![entry_name, node.fqn.clone()]);
             }
         }
@@ -172,7 +172,7 @@ fn proc_integ_refresh(
     let integ_resp = integrations.get_id(rest_cfg, integ_name)?;
     if let Some(integ_id) = integ_resp {
         integrations.refresh_connection(rest_cfg, &integ_id)?;
-        println!("Refreshed integration '{}'", integ_name);
+        println!("Refreshed integration '{integ_name}'");
     } else {
         error_message(integration_not_found_message(integ_name));
         process::exit(32);

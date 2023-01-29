@@ -12,9 +12,9 @@ pub enum ProjectError {
 impl fmt::Display for ProjectError {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
-            ProjectError::Authentication(msg) => write!(f, "Not Authenticated: {}", msg),
-            ProjectError::ResponseError(msg) => write!(f, "{}", msg),
-            ProjectError::UnhandledError(msg) => write!(f, "Unhandled error: {}", msg),
+            ProjectError::Authentication(msg) => write!(f, "Not Authenticated: {msg}"),
+            ProjectError::ResponseError(msg) => write!(f, "{msg}"),
+            ProjectError::UnhandledError(msg) => write!(f, "Unhandled error: {msg}"),
         }
     }
 }

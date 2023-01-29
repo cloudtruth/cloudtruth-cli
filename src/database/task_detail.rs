@@ -63,7 +63,7 @@ impl TaskDetail {
             "summary" => self.summary(),
             "created-at" => self.created_at.clone(),
             "modified-at" => self.modified_at.clone(),
-            _ => format!("Unhandled property name '{}'", property_name),
+            _ => format!("Unhandled property name '{property_name}'"),
         }
     }
 

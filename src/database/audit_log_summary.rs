@@ -14,7 +14,7 @@ impl From<&AuditTrailSummary> for AuditLogSummary {
     fn from(api: &AuditTrailSummary) -> Self {
         Self {
             total_records: api.total,
-            earliest: api.earliest.clone().unwrap_or_else(|| "".to_string()),
+            earliest: api.earliest.clone().unwrap_or_default(),
             max_days: api.max_days,
             max_records: api.max_records,
         }

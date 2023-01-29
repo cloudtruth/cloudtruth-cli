@@ -52,17 +52,17 @@ fn proc_users_delete(
     if let Some(user_id) = response {
         let mut confirmed = subcmd_args.is_present(CONFIRM_FLAG);
         if !confirmed {
-            confirmed = user_confirm(format!("Delete user '{}'", user_name), DEL_CONFIRM);
+            confirmed = user_confirm(format!("Delete user '{user_name}'"), DEL_CONFIRM);
         }
 
         if !confirmed {
-            warning_message(format!("User '{}' not deleted!", user_name));
+            warning_message(format!("User '{user_name}' not deleted!"));
         } else {
             users.delete_user(rest_cfg, &user_id)?;
-            println!("Deleted user '{}'", user_name);
+            println!("Deleted user '{user_name}'");
         }
     } else {
-        warning_message(format!("User '{}' does not exist!", user_name));
+        warning_message(format!("User '{user_name}' does not exist!"));
     }
     Ok(())
 }
@@ -74,7 +74,7 @@ fn proc_users_get(subcmd_args: &ArgMatches, rest_cfg: &OpenApiConfig, users: &Us
     if let Some(details) = response {
         print_user(&details);
     } else {
-        error_message(format!("The user '{}' could not be found", user_name));
+        error_message(format!("The user '{user_name}' could not be found"));
         process::exit(23);
     }
     Ok(())
@@ -139,12 +139,11 @@ fn proc_users_set(subcmd_args: &ArgMatches, rest_cfg: &OpenApiConfig, users: &Us
     if let Some(user_id) = response {
         if description.is_none() && role.is_none() {
             warning_message(format!(
-                "User '{}' not updated: no updated parameters provided",
-                user_name
+                "User '{user_name}' not updated: no updated parameters provided"
             ));
         } else {
             users.update_user(rest_cfg, &user_id, role, description)?;
-            println!("Updated user '{}'", user_name);
+            println!("Updated user '{user_name}'");
         }
     } else {
         let details =
@@ -168,17 +167,17 @@ fn proc_invite_delete(
     if let Some(invite_id) = response {
         let mut confirmed = subcmd_args.is_present(CONFIRM_FLAG);
         if !confirmed {
-            confirmed = user_confirm(format!("Delete invitation for '{}'", email), DEL_CONFIRM);
+            confirmed = user_confirm(format!("Delete invitation for '{email}'"), DEL_CONFIRM);
         }
 
         if !confirmed {
-            warning_message(format!("Invitation for '{}' not deleted!", email));
+            warning_message(format!("Invitation for '{email}' not deleted!"));
         } else {
             invitations.delete_invitation(rest_cfg, &invite_id)?;
-            println!("Deleted invitation for '{}'", email);
+            println!("Deleted invitation for '{email}'");
         }
     } else {
-        warning_message(format!("Invitation for '{}' does not exist!", email));
+        warning_message(format!("Invitation for '{email}' does not exist!"));
     }
     Ok(())
 }
@@ -223,9 +222,9 @@ fn proc_invite_resend(
 
     if let Some(invite_id) = invite_id {
         invitations.resend_invitation(rest_cfg, &invite_id)?;
-        println!("Resent invitation for '{}'", email);
+        println!("Resent invitation for '{email}'");
     } else {
-        error_message(format!("Pending invitation for '{}' not found!", email));
+        error_message(format!("Pending invitation for '{email}' not found!"));
         process::exit(29);
     }
     Ok(())
@@ -243,12 +242,11 @@ fn proc_invite_set(
     if let Some(invite_id) = response {
         if role.is_none() {
             warning_message(format!(
-                "Invitation for '{}' not updated: no updated parameters provided",
-                email
+                "Invitation for '{email}' not updated: no updated parameters provided"
             ));
         } else {
             invitations.update_invitation(rest_cfg, &invite_id, role)?;
-            println!("Updated invitation for '{}'", email);
+            println!("Updated invitation for '{email}'");
         }
     } else {
         let details = invitations.create_invitation(rest_cfg, email, role.unwrap_or("viewer"))?;

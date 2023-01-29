@@ -29,19 +29,17 @@ pub fn template_eval_errors(tle: &TemplateLookupError) -> String {
 impl fmt::Display for TemplateError {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
-            TemplateError::Authentication(msg) => write!(f, "Not Authenticated: {}", msg),
-            TemplateError::ResponseError(msg) => write!(f, "{}", msg),
-            TemplateError::UnhandledError(msg) => write!(f, "{}", msg),
+            TemplateError::Authentication(msg) => write!(f, "Not Authenticated: {msg}"),
+            TemplateError::ResponseError(msg) => write!(f, "{msg}"),
+            TemplateError::UnhandledError(msg) => write!(f, "{msg}"),
             TemplateError::EvaluateFailed(tle) => {
                 write!(f, "Evaluation failed:{}", template_eval_errors(tle))
             }
-            TemplateError::NotFound(template, project) => write!(
-                f,
-                "No template '{}' found in project '{}'",
-                template, project
-            ),
+            TemplateError::NotFound(template, project) => {
+                write!(f, "No template '{template}' found in project '{project}'")
+            }
             TemplateError::EnvironmentMissing(env_name, condition) => {
-                write!(f, "Did not find environment '{}'{}", env_name, condition)
+                write!(f, "Did not find environment '{env_name}'{condition}")
             }
         }
     }

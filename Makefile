@@ -118,7 +118,7 @@ test_prerequisites:
 	make -C $(test_dir) prerequisites
 
 test:
-	cargo test
+	RUST_BACKTRACE=1 cargo test
 
 integration: cargo
 	make -C $(test_dir) $@

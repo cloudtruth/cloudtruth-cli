@@ -13,10 +13,10 @@ pub enum IntegrationError {
 impl fmt::Display for IntegrationError {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
-            IntegrationError::NotFound(msg) => write!(f, "{}", msg),
-            IntegrationError::Authentication(msg) => write!(f, "Not Authenticated: {}", msg),
-            IntegrationError::ResponseError(msg) => write!(f, "{}", msg),
-            IntegrationError::UnhandledError(msg) => write!(f, "{}", msg),
+            IntegrationError::NotFound(msg) => write!(f, "{msg}"),
+            IntegrationError::Authentication(msg) => write!(f, "Not Authenticated: {msg}"),
+            IntegrationError::ResponseError(msg) => write!(f, "{msg}"),
+            IntegrationError::UnhandledError(msg) => write!(f, "{msg}"),
         }
     }
 }

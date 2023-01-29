@@ -6,6 +6,7 @@ use cloudtruth_restapi::apis::Error::ResponseError;
 use cloudtruth_restapi::models::{Group, PatchedGroup};
 
 use crate::database::{auth_details, page_size, response_message, GroupError, OpenApiConfig};
+use crate::utils::default;
 
 use super::{GroupDetails, Users};
 
@@ -151,10 +152,10 @@ impl Groups {
             Group {
                 name: group_name.to_string(),
                 description: description.map(str::to_string),
-                id: String::default(),
-                url: String::default(),
-                created_at: String::default(),
-                modified_at: String::default(),
+                id: default(),
+                url: default(),
+                created_at: default(),
+                modified_at: default(),
                 users: Vec::new(),
             },
         );

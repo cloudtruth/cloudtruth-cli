@@ -1,4 +1,4 @@
-use crate::database::task_detail::TaskDetail;
+use crate::{database::task_detail::TaskDetail, utils::default};
 use cloudtruth_restapi::models::{AwsPull, AwsPush, GitHubPull};
 
 #[derive(Clone, Debug)]
@@ -64,7 +64,7 @@ impl ActionDetails {
             "service" => self.service.clone(),
             "created-at" => self.created_at.clone(),
             "modified-at" => self.modified_at.clone(),
-            _ => format!("Unhandled property name '{}'", property_name),
+            _ => format!("Unhandled property name '{property_name}'"),
         }
     }
 
@@ -215,7 +215,7 @@ impl From<&GitHubPull> for ActionDetails {
             project_names: vec![],
             tag_urls: vec![],
             tag_names: vec![],
-            last_task: Default::default(),
+            last_task: default(),
             region: "".to_string(),
             service: "".to_string(),
             created_at: api.created_at.clone(),

@@ -41,7 +41,7 @@ impl UserDetails {
             "last-used" => self.last_used.clone(),
             "description" => self.description.clone(),
 
-            _ => format!("Unhandled property name '{}'", property_name),
+            _ => format!("Unhandled property name '{property_name}'"),
         }
     }
 

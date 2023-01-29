@@ -12,10 +12,10 @@ impl fmt::Display for BackupError {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
             BackupError::UnhandledError(msg) => {
-                write!(f, "Unhandled error: {}", msg)
+                write!(f, "Unhandled error: {msg}")
             }
             BackupError::ResponseError(msg) => {
-                write!(f, "{}", msg)
+                write!(f, "{msg}")
             }
         }
     }

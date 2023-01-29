@@ -189,6 +189,7 @@ impl Projects {
         Ok(projects)
     }
 
+    #[allow(clippy::only_used_in_recursion)]
     fn get_all_descendants_from_list(
         &self,
         parent_url: &str,
@@ -220,7 +221,7 @@ impl Projects {
             .find(|&d| d.name == parent_name)
             .expect("No project found with that name")
             .clone();
-        let descendants = self.get_all_descendants_from_list(&parent.url, &*all_details);
+        let descendants = self.get_all_descendants_from_list(&parent.url, &all_details);
         Ok(descendants)
     }
 

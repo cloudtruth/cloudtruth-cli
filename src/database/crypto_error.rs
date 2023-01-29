@@ -20,36 +20,34 @@ impl Display for CryptoError {
     fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
         match self {
             CryptoError::Base64(details) => {
-                write!(f, "Base64 error: {}", details)
+                write!(f, "Base64 error: {details}")
             }
             CryptoError::Decrypt(details) => {
-                write!(f, "Decryption error: {}", details)
+                write!(f, "Decryption error: {details}")
             }
             CryptoError::Encrypt(details) => {
-                write!(f, "Encryption error: {}", details)
+                write!(f, "Encryption error: {details}")
             }
             CryptoError::InvalidAlgorithm(name) => {
-                write!(f, "Invalid encryption algorithm: {}", name)
+                write!(f, "Invalid encryption algorithm: {name}")
             }
             CryptoError::InvalidEncoding(size) => {
                 write!(
                     f,
-                    "Expected {} encoded parts, and received {}",
-                    ENCODED_PART_COUNT, size
+                    "Expected {ENCODED_PART_COUNT} encoded parts, and received {size}"
                 )
             }
             CryptoError::InvalidPrefix(prefix) => {
                 write!(
                     f,
-                    "Expected `{}` as a prefix, and got `{}`",
-                    ENCRYPTION_PREFIX, prefix
+                    "Expected `{ENCRYPTION_PREFIX}` as a prefix, and got `{prefix}`"
                 )
             }
             CryptoError::KeyDerivation(details) => {
-                write!(f, "Key derivation error: {}", details)
+                write!(f, "Key derivation error: {details}")
             }
             CryptoError::UnsupportedAlgorithm(details) => {
-                write!(f, "Unsupported algorithm: {}", details)
+                write!(f, "Unsupported algorithm: {details}")
             }
         }
     }

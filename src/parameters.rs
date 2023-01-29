@@ -85,10 +85,7 @@ fn proc_param_delete(
             binary_name(),
         );
         if !user_confirm(
-            format!(
-                "Delete parameter '{}' from project '{}'",
-                key_name, proj_name
-            ),
+            format!("Delete parameter '{key_name}' from project '{proj_name}'"),
             DEL_CONFIRM,
         ) {
             return Ok(());
@@ -135,16 +132,12 @@ fn proc_param_diff(
 
     if env_list.len() > max_len {
         warning_message(format!(
-            "Can specify a maximum of {} environment values.",
-            max_len
+            "Can specify a maximum of {max_len} environment values."
         ));
         return Ok(());
     }
     if as_list.len() > max_len {
-        warning_message(format!(
-            "Can specify a maximum of {} as-of values.",
-            max_len
-        ));
+        warning_message(format!("Can specify a maximum of {max_len} as-of values."));
         return Ok(());
     }
 
@@ -195,11 +188,11 @@ fn proc_param_diff(
         header2 = env2_name.to_string();
     } else {
         header1 = match as_tag1 {
-            Some(a) => format!("{} ({})", env1_name, a),
+            Some(a) => format!("{env1_name} ({a})"),
             _ => env1_name.to_string(),
         };
         header2 = match as_tag2 {
-            Some(a) => format!("{} ({})", env2_name, a),
+            Some(a) => format!("{env2_name} ({a})"),
             _ => env2_name.to_string(),
         };
     }
@@ -232,8 +225,8 @@ fn proc_param_diff(
     )?;
 
     // get the names from both lists to make sure we get the added/deleted parameters, too
-    let mut param_list: Vec<String> = env1_values.iter().map(|(k, _)| k.clone()).collect();
-    param_list.append(&mut env2_values.iter().map(|(k, _)| k.clone()).collect());
+    let mut param_list: Vec<String> = env1_values.keys().cloned().collect();
+    param_list.append(&mut env2_values.keys().cloned().collect());
     param_list.sort_by_key(|l| l.to_lowercase());
     param_list.dedup();
 
@@ -342,7 +335,7 @@ fn proc_param_env(
     )?;
 
     if param_values.is_empty() {
-        error_message(format!("Parameter '{}' was not found", param_name));
+        error_message(format!("Parameter '{param_name}' was not found"));
         process::exit(10);
     }
 
@@ -384,7 +377,7 @@ fn proc_param_env(
         }
     }
     if !added {
-        println!("No values set for '{}' in any environments", param_name);
+        println!("No values set for '{param_name}' in any environments");
     } else {
         table.render(fmt)?;
     }
@@ -422,7 +415,7 @@ fn proc_param_export(
     let body = parameters.export_parameters(rest_cfg, proj_id, env_id, options)?;
 
     if let Some(body) = body {
-        println!("{}", body)
+        println!("{body}")
     } else {
         println!(
             "Could not export parameters format '{}' from project '{}' in environment '{}'.",
@@ -515,10 +508,7 @@ fn proc_param_get(
             warning_message(param.error);
         }
     } else {
-        println!(
-            "The parameter '{}' could not be found in your organization.",
-            key
-        );
+        println!("The parameter '{key}' could not be found in your organization.");
     }
     Ok(())
 }
@@ -611,7 +601,7 @@ fn proc_param_list(
         );
         warning_message(msg.to_string());
     } else if details.is_empty() {
-        println!("No {} found in project {}", description, proj_name,);
+        println!("No {description} found in project {proj_name}",);
     } else if !show_values {
         let list = details
             .iter()
@@ -811,7 +801,7 @@ fn proc_param_set(
 
     // if user asked to be prompted
     if prompt_user {
-        println!("Please enter the '{}' value: ", key_name);
+        println!("Please enter the '{key_name}' value: ");
         val_str = read_password()?;
         value = Some(val_str.as_str());
     } else if let Some(filename) = filename {
@@ -846,14 +836,12 @@ fn proc_param_set(
             let projects = Projects::new();
             let source_proj = projects.get_name_from_url(rest_cfg, &original.project_url);
             error_message(format!(
-                "Parameter '{}' must be set from project '{}' -- it is not part of project '{}'",
-                key_name, source_proj, proj_name
+                "Parameter '{key_name}' must be set from project '{source_proj}' -- it is not part of project '{proj_name}'"
             ));
             help_message(format!(
-                "If you want to create a parameter in {}, you can use the --create-child flag. \
+                "If you want to create a parameter in {proj_name}, you can use the --create-child flag. \
                 \nThis creates another parameter that inherits values, but generally needs to \nbe \
-                managed separately.",
-                proj_name
+                managed separately."
             ));
             process::exit(20);
         }
@@ -1048,14 +1036,12 @@ fn proc_param_unset(
     match result {
         Some(_) => {
             println!(
-                "Removed parameter value '{}' from project '{}' for environment '{}'.",
-                key_name, proj_name, env_name,
+                "Removed parameter value '{key_name}' from project '{proj_name}' for environment '{env_name}'.",
             );
         }
         None => {
             warning_message(format!(
-                "Did not find parameter value '{}' to delete from project '{}' for environment '{}'.",
-                key_name, proj_name, env_name,
+                "Did not find parameter value '{key_name}' to delete from project '{proj_name}' for environment '{env_name}'.",
             ));
         }
     };
@@ -1084,12 +1070,11 @@ fn proc_param_push(
             rest_cfg, proj_id, "", param_name, false, false, true, None, None,
         )? {
             steps = parameters.get_task_steps(rest_cfg, proj_id, env_id, &details.id)?;
-            qualifier = format!(" for parameter '{}'", param_name);
+            qualifier = format!(" for parameter '{param_name}'");
             include_param_name = false;
         } else {
             error_message(format!(
-                "Did not find parameter '{}' from project '{}'.",
-                param_name, proj_name,
+                "Did not find parameter '{param_name}' from project '{proj_name}'.",
             ));
             process::exit(44);
         }
@@ -1100,7 +1085,7 @@ fn proc_param_push(
     }
 
     if steps.is_empty() {
-        println!("No pushes found in project '{}'{}.", proj_name, qualifier);
+        println!("No pushes found in project '{proj_name}'{qualifier}.");
     } else if !show_values {
         let list = steps
             .iter()
@@ -1148,7 +1133,7 @@ impl DriftDetails {
             "current" => self.current_value.clone(),
             "server" => self.parameter_value.clone(),
             "secret" => self.secret.to_string(),
-            _ => format!("Unhandled property name '{}'", property_name),
+            _ => format!("Unhandled property name '{property_name}'"),
         }
     }
 

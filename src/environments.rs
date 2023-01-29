@@ -26,17 +26,17 @@ fn proc_env_delete(
         // NOTE: the server is responsible for checking if children exist
         let mut confirmed = subcmd_args.is_present(CONFIRM_FLAG);
         if !confirmed {
-            confirmed = user_confirm(format!("Delete environment '{}'", env_name), DEL_CONFIRM);
+            confirmed = user_confirm(format!("Delete environment '{env_name}'"), DEL_CONFIRM);
         }
 
         if !confirmed {
-            warning_message(format!("Environment '{}' not deleted!", env_name));
+            warning_message(format!("Environment '{env_name}' not deleted!"));
         } else {
             environments.delete_environment(rest_cfg, details.id)?;
-            println!("Deleted environment '{}'", env_name);
+            println!("Deleted environment '{env_name}'");
         }
     } else {
-        warning_message(format!("Environment '{}' does not exist!", env_name));
+        warning_message(format!("Environment '{env_name}' does not exist!"));
     }
     Ok(())
 }
@@ -93,19 +93,17 @@ fn proc_env_set(
     if let Some(details) = details {
         if parent_name.is_some() && parent_name.unwrap() != details.parent_name.as_str() {
             error_message(format!(
-                "Environment '{}' parent cannot be updated.",
-                env_name
+                "Environment '{env_name}' parent cannot be updated."
             ));
             process::exit(6);
         } else if description.is_none() && rename.is_none() {
             warning_message(format!(
-                "Environment '{}' not updated: no updated parameters provided",
-                env_name
+                "Environment '{env_name}' not updated: no updated parameters provided"
             ));
         } else {
             let name = rename.unwrap_or(env_name);
             environments.update_environment(rest_cfg, &details.id, name, description)?;
-            println!("Updated environment '{}'", name);
+            println!("Updated environment '{name}'");
         }
     } else {
         let parent_name = parent_name.unwrap_or(DEFAULT_ENV_NAME);
@@ -116,9 +114,9 @@ fn proc_env_set(
                 description,
                 parent_details.url.as_str(),
             )?;
-            println!("Created environment '{}'", env_name);
+            println!("Created environment '{env_name}'");
         } else {
-            error_message(format!("No parent environment '{}' found", parent_name));
+            error_message(format!("No parent environment '{parent_name}' found"));
             process::exit(5);
         }
     }
@@ -149,10 +147,10 @@ fn proc_env_tree(
     let start = subcmd_args.value_of(NAME_ARG).unwrap();
     let details = environments.get_environment_details(rest_cfg)?;
     if details.iter().filter(|x| x.name == start).last().is_some() {
-        println!("{}", start);
+        println!("{start}");
         print_children(1, start, &details);
     } else {
-        warning_message(format!("No environment '{}' found", start));
+        warning_message(format!("No environment '{start}' found"));
     }
     Ok(())
 }
@@ -172,28 +170,26 @@ fn proc_env_tag_delete(
             // NOTE: the server is responsible for checking if children exist
             if !confirmed {
                 confirmed = user_confirm(
-                    format!("Delete tag '{}' from environment '{}'", tag_name, env_name),
+                    format!("Delete tag '{tag_name}' from environment '{env_name}'"),
                     DEL_CONFIRM,
                 );
             }
 
             if !confirmed {
                 warning_message(format!(
-                    "Tag '{}' in environment '{}' not deleted!",
-                    tag_name, env_name
+                    "Tag '{tag_name}' in environment '{env_name}' not deleted!"
                 ));
             } else {
                 environments.delete_env_tag(rest_cfg, &env_id, &tag_id)?;
-                println!("Deleted tag '{}' from environment '{}'", tag_name, env_name);
+                println!("Deleted tag '{tag_name}' from environment '{env_name}'");
             }
         } else {
             warning_message(format!(
-                "Environment '{}' does not have a tag '{}'!",
-                env_name, tag_name
+                "Environment '{env_name}' does not have a tag '{tag_name}'!"
             ));
         }
     } else {
-        warning_message(format!("Environment '{}' does not exist!", env_name));
+        warning_message(format!("Environment '{env_name}' does not exist!"));
     }
     Ok(())
 }
@@ -213,7 +209,7 @@ fn proc_env_tag_list(
         let tags = environments.get_env_tags(rest_cfg, &env_id)?;
 
         if tags.is_empty() {
-            println!("No tags found in environment {}", env_name,);
+            println!("No tags found in environment {env_name}",);
         } else if !show_values {
             let list = tags.iter().map(|t| t.name.clone()).collect::<Vec<String>>();
             println!("{}", list.join("\n"))
@@ -292,12 +288,12 @@ fn proc_env_tag_set(
                     description,
                     time_value,
                 )?;
-                println!("Updated tag '{}' in environment '{}'.", name, env_name);
+                println!("Updated tag '{name}' in environment '{env_name}'.");
             }
         } else {
             let _ =
                 environments.create_env_tag(rest_cfg, &env_id, tag_name, description, timestamp)?;
-            println!("Created tag '{}' in environment '{}'.", tag_name, env_name);
+            println!("Created tag '{tag_name}' in environment '{env_name}'.");
         }
     } else {
         error_no_environment_message(env_name);

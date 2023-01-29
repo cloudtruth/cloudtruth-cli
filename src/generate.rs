@@ -31,7 +31,7 @@ fn proc_gen_password(subcmd_args: &ArgMatches, rest_cfg: &OpenApiConfig) -> Resu
     let password = parameters.generate_password(
         rest_cfg, length, hardware, lowercase, number, space, symbol, uppercase,
     )?;
-    println!("{}", password);
+    println!("{password}");
     Ok(())
 }
 

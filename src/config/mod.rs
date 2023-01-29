@@ -551,7 +551,7 @@ impl Config {
 
         //////////////////
         // Request timeout
-        let mut value = format!("{}", DEFAULT_REQUEST_TIMEOUT);
+        let mut value = format!("{DEFAULT_REQUEST_TIMEOUT}");
         let mut source = SRC_DEFAULT.to_string();
         if let Some(env_value) = ConfigEnv::get_override(CT_REQ_TIMEOUT) {
             value = env_value;

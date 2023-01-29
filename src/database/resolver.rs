@@ -24,8 +24,7 @@ impl Resolver {
         let env_id = environments.get_id(rest_cfg, env_name)?;
         if env_id.is_none() {
             errors.push(format!(
-                "The '{}' environment could not be found in your account.",
-                env_name,
+                "The '{env_name}' environment could not be found in your account.",
             ));
         }
 
@@ -35,8 +34,7 @@ impl Resolver {
             proj_id = projects.get_id(rest_cfg, proj_name)?;
             if proj_id.is_none() {
                 errors.push(format!(
-                    "The '{}' project could not be found in your account.",
-                    proj_name,
+                    "The '{proj_name}' project could not be found in your account.",
                 ));
             }
         } else {
