@@ -343,26 +343,9 @@ fn proc_template_set(
     Ok(())
 }
 
-/// Looks for the earlier time than this... It relies on the reverse time order.
-fn find_previous(
-    history: &[TemplateHistory],
-    current: &TemplateHistory,
-) -> Option<TemplateHistory> {
-    let mut found = None;
-    let curr_id = current.get_id();
-    let curr_date = current.get_date();
-    for entry in history {
-        if entry.get_id() == curr_id && entry.get_date() < curr_date {
-            found = Some(entry.clone());
-            break;
-        }
-    }
-    found
-}
-
 fn get_changes(
     current: &TemplateHistory,
-    previous: Option<TemplateHistory>,
+    previous: Option<&TemplateHistory>,
     properties: &[&str],
 ) -> Vec<String> {
     let mut changes = vec![];
@@ -418,24 +401,19 @@ fn proc_template_history(
     if history.is_empty() {
         println!("No template history {modifier}in project '{proj_name}'.");
     } else {
-        let name_index = 3;
+        let name_index = 1;
         let mut table = Table::new("template-history");
-        let mut hdr: Vec<&str> = vec!["Date", "User", "Action", "Changes"];
+        let mut hdr: Vec<&str> = vec!["Action", "Changes"];
         if add_name {
             hdr.insert(name_index, "Name");
         }
         table.set_header(&hdr);
 
-        let orig_list = history.clone();
-        for ref entry in history {
-            let prev = find_previous(&orig_list, entry);
+        for (index, entry) in history.iter().enumerate() {
+            let history_tail = &history[index+1..];
+            let prev = history_tail.iter().find(|e| entry.get_id() == e.get_id());
             let changes = get_changes(entry, prev, TEMPLATE_HISTORY_PROPERTIES);
-            let mut row = vec![
-                entry.date.clone(),
-                entry.user_name.clone(),
-                entry.change_type.to_string(),
-                changes.join("\n"),
-            ];
+            let mut row = vec![entry.change_type.to_string(), changes.join("\n")];
             if add_name {
                 row.insert(name_index, entry.name.clone())
             }

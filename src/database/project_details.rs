@@ -20,7 +20,7 @@ impl From<&Project> for ProjectDetails {
             id: api_proj.id.clone(),
             url: api_proj.url.clone(),
             name: api_proj.name.clone(),
-            parameter_name_pattern: api_proj.parameter_name_pattern.unwrap_or_default(),
+            parameter_name_pattern: api_proj.parameter_name_pattern.clone().unwrap_or_default(),
             description: api_proj.description.clone().unwrap_or_default(),
             parent_url: api_proj.depends_on.clone().unwrap_or_default(),
             parent_name: "".to_string(),

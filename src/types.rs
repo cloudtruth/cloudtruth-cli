@@ -174,11 +174,11 @@ fn proc_param_type_set(
     let delete_regex = subcmd_args.is_present(RULE_NO_REGEX_ARG);
     let type_added: bool;
 
-    let parent_url = match parent_name {
+    let mut parent_url = match parent_name {
         Some(parent_name) => match types.get_details_by_name(rest_cfg, parent_name)? {
             Some(parent) => Some(parent.url),
             None => {
-                error_message(format!("No parent parameter type '{}' found", parent_name));
+                error_message(format!("No parent parameter type '{parent_name}' found"));
                 process::exit(46)
             }
         },

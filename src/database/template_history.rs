@@ -29,7 +29,7 @@ impl TemplateHistory {
             "name" => self.name.clone(),
             "body" => self.body.clone(),
             "description" => self.description.clone(),
-            x => format!("Unhandled property: {}", x),
+            x => format!("Unhandled property: {x}"),
         }
     }
 

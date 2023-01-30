@@ -19,18 +19,11 @@ const VALUES_TRUE: Option<bool> = Some(true);
 const NO_ORDERING: Option<&str> = None;
 const ONLY_SECRETS: Option<bool> = None;
 const NO_DESC_ICONTAINS: Option<&str> = None;
-const NO_ID_IN: Option<Vec<String>> = None;
 const NO_NAME_CONTAINS: Option<&str> = None;
 const NO_NAME_ICONTAINS: Option<&str> = None;
 const NO_NAME_IEXACT: Option<&str> = None;
 const NO_NAME_ISTARTS: Option<&str> = None;
 const NO_NAME_STARTS: Option<&str> = None;
-const PROJECT: Option<&str> = None;
-const PROJECT_CONTAINS: Option<&str> = None;
-const PROJECT_ICONTAINS: Option<&str> = None;
-const PROJECT_IEXACT: Option<&str> = None;
-const PROJECT_ISTARTS: Option<&str> = None;
-const PROJECT_STARTS: Option<&str> = None;
 
 const WRAP_ALGORITHM: CryptoAlgorithm = CryptoAlgorithm::AesGcm;
 

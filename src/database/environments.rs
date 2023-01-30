@@ -12,8 +12,6 @@ use std::collections::HashMap;
 const NO_DESC_CONTAINS: Option<&str> = None;
 const NO_NAME_CONTAINS: Option<&str> = None;
 const NO_ORDERING: Option<&str> = None;
-const NO_PARENT_NAME: Option<&str> = None;
-const NO_PARENT_CONTAINS: Option<&str> = None;
 
 pub struct Environments {}
 

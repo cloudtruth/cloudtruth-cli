@@ -127,7 +127,7 @@ fn proc_proj_set(
             parent_url.as_deref(),
             None,
         )?;
-        println!("Created project '{}'", proj_name);
+        println!("Created project '{proj_name}'");
     }
     Ok(())
 }
