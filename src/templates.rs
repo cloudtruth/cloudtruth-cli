@@ -410,7 +410,7 @@ fn proc_template_history(
         table.set_header(&hdr);
 
         for (index, entry) in history.iter().enumerate() {
-            let history_tail = &history[index+1..];
+            let history_tail = &history[index + 1..];
             let prev = history_tail.iter().find(|e| entry.get_id() == e.get_id());
             let changes = get_changes(entry, prev, TEMPLATE_HISTORY_PROPERTIES);
             let mut row = vec![entry.change_type.to_string(), changes.join("\n")];
