@@ -7,9 +7,7 @@ mod audit_log_summary;
 mod audit_logs;
 mod backup_error;
 mod backups;
-mod crypto;
 mod crypto_algorithm;
-mod crypto_error;
 mod environment_details;
 mod environment_error;
 mod environment_tag;
@@ -62,11 +60,6 @@ pub use audit_log_summary::AuditLogSummary;
 pub use audit_logs::AuditLogs;
 pub use backup_error::BackupError;
 pub use backups::{BackupSnapshotDetails, Backups};
-pub use crypto::{
-    secret_encode_wrap, secret_unwrap_decode, valid_encoding, ENCODED_PART_COUNT, ENCRYPTION_PREFIX,
-};
-pub use crypto_algorithm::CryptoAlgorithm;
-pub use crypto_error::CryptoError;
 pub use environment_details::EnvironmentDetails;
 pub use environment_error::EnvironmentError;
 pub use environment_tag::EnvironmentTag;
@@ -87,7 +80,7 @@ pub use invitation_error::InvitationError;
 pub use invitations::Invitations;
 pub use openapi::{
     auth_details, extract_details, extract_from_json, last_from_url, page_size, parent_id_from_url,
-    response_message, OpenApiConfig, NO_PAGE_COUNT, NO_PAGE_SIZE, WRAP_SECRETS,
+    response_message, OpenApiConfig, NO_PAGE_COUNT, NO_PAGE_SIZE,
 };
 pub use parameter_details::ParameterDetails;
 pub use parameter_error::ParameterError;

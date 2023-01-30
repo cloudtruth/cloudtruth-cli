@@ -1,8 +1,7 @@
-use crate::database::openapi::key_from_config;
 use crate::database::{
-    extract_details, extract_from_json, page_size, response_message, secret_encode_wrap,
-    secret_unwrap_decode, CryptoAlgorithm, OpenApiConfig, ParamExportOptions, ParamRuleType,
-    ParameterDetails, ParameterError, TaskStepDetails, NO_PAGE_COUNT, NO_PAGE_SIZE, WRAP_SECRETS,
+    extract_details, extract_from_json, page_size, response_message, OpenApiConfig,
+    ParamExportOptions, ParamRuleType, ParameterDetails, ParameterError, TaskStepDetails,
+    NO_PAGE_COUNT, NO_PAGE_SIZE,
 };
 use cloudtruth_restapi::apis::projects_api::*;
 use cloudtruth_restapi::apis::utils_api::utils_generate_password_create;
@@ -24,8 +23,6 @@ const NO_NAME_ICONTAINS: Option<&str> = None;
 const NO_NAME_IEXACT: Option<&str> = None;
 const NO_NAME_ISTARTS: Option<&str> = None;
 const NO_NAME_STARTS: Option<&str> = None;
-
-const WRAP_ALGORITHM: CryptoAlgorithm = CryptoAlgorithm::AesGcm;
 
 pub struct Parameters {}
 
@@ -257,12 +254,7 @@ impl Parameters {
                     } else {
                         // TODO: handle more than one??
                         let param = &parameters[0];
-                        let mut details = ParameterDetails::from(param);
-                        if WRAP_SECRETS && !mask_secrets && details.encrypted() {
-                            let key = key_from_config(rest_cfg);
-                            let plaintext = secret_unwrap_decode(key.as_bytes(), &details.value)?;
-                            details.value = plaintext;
-                        }
+                        let details = ParameterDetails::from(param);
                         Ok(Some(details))
                     }
                 }
@@ -358,13 +350,7 @@ impl Parameters {
                 Ok(data) => {
                     if let Some(parameters) = data.results {
                         for param in parameters {
-                            let mut details = ParameterDetails::from(&param);
-                            if WRAP_SECRETS && !mask_secrets && details.encrypted() {
-                                let key = key_from_config(rest_cfg);
-                                let plaintext =
-                                    secret_unwrap_decode(key.as_bytes(), &details.value)?;
-                                details.value = plaintext;
-                            }
+                            let details = ParameterDetails::from(&param);
                             result.push(details);
                         }
                         page_count += 1;
@@ -453,17 +439,12 @@ impl Parameters {
             );
             match response {
                 Ok(data) => {
-                    let key = key_from_config(rest_cfg);
                     if let Some(values) = data.results {
                         for api_param in values {
                             let mut details = ParameterDetails::from(&api_param);
                             for (_, api_value) in api_param.values {
                                 if let Some(value) = api_value {
                                     details.set_value(&value);
-                                    if WRAP_SECRETS && !mask_secrets && details.encrypted() {
-                                        details.value =
-                                            secret_unwrap_decode(key.as_bytes(), &details.value)?;
-                                    }
                                     result.insert(details.env_url.clone(), details.clone());
                                 }
                             }
@@ -557,25 +538,13 @@ impl Parameters {
         proj_id: &str,
         env_id: &str,
         param_id: &str,
-        is_secret: bool,
         value: Option<&str>,
         fqn: Option<&str>,
         jmes_path: Option<&str>,
         evaluated: Option<bool>,
     ) -> Result<String, ParameterError> {
         let external = value.is_none() || fqn.is_some();
-        let data = match value {
-            Some(v) => {
-                if is_secret && WRAP_SECRETS {
-                    let key = key_from_config(rest_cfg);
-                    let encrypted = secret_encode_wrap(WRAP_ALGORITHM, key.as_bytes(), v).unwrap();
-                    Some(encrypted)
-                } else {
-                    Some(String::from(v))
-                }
-            }
-            None => None,
-        };
+        let data = value.map(String::from);
         let value_create = ValueCreate {
             environment: env_id.to_string(),
             external: Some(external),
@@ -605,25 +574,13 @@ impl Parameters {
         proj_id: &str,
         param_id: &str,
         value_id: &str,
-        is_secret: bool,
         value: Option<&str>,
         fqn: Option<&str>,
         jmes_path: Option<&str>,
         evaluated: Option<bool>,
     ) -> Result<String, ParameterError> {
         let external = fqn.is_some() || jmes_path.is_some();
-        let data = match value {
-            Some(v) => {
-                if is_secret && WRAP_SECRETS {
-                    let key = key_from_config(rest_cfg);
-                    let encrypted = secret_encode_wrap(WRAP_ALGORITHM, key.as_bytes(), v).unwrap();
-                    Some(encrypted)
-                } else {
-                    Some(String::from(v))
-                }
-            }
-            None => None,
-        };
+        let data = value.map(String::from);
         let value_update = PatchedValueUpdate {
             id: None,
             secret: None,

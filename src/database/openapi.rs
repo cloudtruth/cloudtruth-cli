@@ -9,8 +9,6 @@ pub type OpenApiConfig = Configuration;
 pub const NO_PAGE_COUNT: Option<i32> = None;
 pub const NO_PAGE_SIZE: Option<i32> = None;
 
-pub const WRAP_SECRETS: bool = false;
-
 pub fn extract_from_json(value: &serde_json::Value) -> String {
     if value.is_string() {
         return value.as_str().unwrap().to_string();
@@ -101,9 +99,6 @@ fn user_agent_name() -> String {
     )
 }
 
-pub fn key_from_config(rest_cfg: &OpenApiConfig) -> String {
-    rest_cfg.api_key.clone().unwrap().key
-}
 pub fn page_size(rest_cfg: &OpenApiConfig) -> Option<i32> {
     rest_cfg.rest_page_size
 }

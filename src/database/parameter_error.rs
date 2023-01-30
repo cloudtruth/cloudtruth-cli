@@ -1,4 +1,4 @@
-use crate::database::{template_eval_errors, CryptoError};
+use crate::database::template_eval_errors;
 use cloudtruth_restapi::models::TemplateLookupError;
 use std::error;
 use std::fmt;
@@ -13,7 +13,6 @@ pub enum ParameterError {
     ResponseError(String),
     EvaluationError(String),
     TemplateEvalError(TemplateLookupError),
-    CryptoError(CryptoError),
 }
 
 impl fmt::Display for ParameterError {
@@ -44,16 +43,7 @@ impl fmt::Display for ParameterError {
                     template_eval_errors(tle)
                 )
             }
-            ParameterError::CryptoError(e) => {
-                write!(f, "{e}")
-            }
         }
-    }
-}
-
-impl From<CryptoError> for ParameterError {
-    fn from(e: CryptoError) -> Self {
-        ParameterError::CryptoError(e)
     }
 }
 
