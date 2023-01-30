@@ -51,7 +51,7 @@ use crate::types::process_parameter_type_command;
 use crate::users::process_users_command;
 use crate::utils::{error_message, help_message, warning_message};
 use crate::versions::process_version_command;
-use chrono::{Utc};
+use chrono::Utc;
 use clap::ArgMatches;
 use color_eyre::eyre::Result;
 use std::io;
