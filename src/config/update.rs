@@ -68,7 +68,8 @@ impl Updates {
         }
         let last = self
             .last_checked
-            .unwrap_or_else(|| NaiveDate::from_ymd(2021, 6, 1));
+            .or_else(|| NaiveDate::from_ymd_opt(2021, 6, 1))
+            .unwrap();
         let freq = self.frequency.unwrap_or_default();
         let delta = Duration::days(freq.days());
         last.checked_add_signed(delta)
@@ -116,24 +117,24 @@ mod tests {
         // bogus default that always triggers an update
         assert_eq!(
             update.next_update().unwrap(),
-            NaiveDate::from_ymd(2021, 6, 8)
+            NaiveDate::from_ymd_opt(2021, 6, 8).unwrap()
         );
 
         // change frequency and see differences
         update.frequency = Some(Frequency::Daily);
         assert_eq!(
             update.next_update().unwrap(),
-            NaiveDate::from_ymd(2021, 6, 2)
+            NaiveDate::from_ymd_opt(2021, 6, 2).unwrap()
         );
         update.frequency = Some(Frequency::Weekly);
         assert_eq!(
             update.next_update().unwrap(),
-            NaiveDate::from_ymd(2021, 6, 8)
+            NaiveDate::from_ymd_opt(2021, 6, 8).unwrap()
         );
         update.frequency = Some(Frequency::Monthly);
         assert_eq!(
             update.next_update().unwrap(),
-            NaiveDate::from_ymd(2021, 7, 1)
+            NaiveDate::from_ymd_opt(2021, 7, 1).unwrap()
         );
 
         // with checking disabled, a None is returned
@@ -142,21 +143,21 @@ mod tests {
         update.check = true;
 
         // different date with 31 days in the month (even in the future!)
-        update.last_checked = Some(NaiveDate::from_ymd(2050, 3, 1));
+        update.last_checked = Some(NaiveDate::from_ymd_opt(2050, 3, 1)).unwrap();
         update.frequency = Some(Frequency::Daily);
         assert_eq!(
             update.next_update().unwrap(),
-            NaiveDate::from_ymd(2050, 3, 2)
+            NaiveDate::from_ymd_opt(2050, 3, 2).unwrap()
         );
         update.frequency = Some(Frequency::Weekly);
         assert_eq!(
             update.next_update().unwrap(),
-            NaiveDate::from_ymd(2050, 3, 8)
+            NaiveDate::from_ymd_opt(2050, 3, 8).unwrap()
         );
         update.frequency = Some(Frequency::Monthly);
         assert_eq!(
             update.next_update().unwrap(),
-            NaiveDate::from_ymd(2050, 3, 31)
+            NaiveDate::from_ymd_opt(2050, 3, 31).unwrap()
         );
     }
 
@@ -201,7 +202,7 @@ mod tests {
         assert_eq!(update.frequency.unwrap(), Frequency::Daily);
         assert_eq!(
             update.last_checked.unwrap(),
-            NaiveDate::from_ymd(2021, 1, 1)
+            NaiveDate::from_ymd_opt(2021, 1, 1).unwrap()
         );
 
         let content = indoc!(
@@ -219,7 +220,7 @@ mod tests {
         assert_eq!(update.frequency.unwrap(), Frequency::Weekly);
         assert_eq!(
             update.last_checked.unwrap(),
-            NaiveDate::from_ymd(2050, 12, 31)
+            NaiveDate::from_ymd_opt(2050, 12, 31).unwrap()
         );
     }
 
@@ -231,7 +232,7 @@ mod tests {
         last_checked: DATE
         "#
         );
-        let expected = NaiveDate::from_ymd(2021, 4, 1);
+        let expected = NaiveDate::from_ymd_opt(2021, 4, 1).unwrap();
         for date in &["2021-04-01", "2021-4-1", "4-1-2021", "4/1/2021"] {
             let update: Updates = serde_yaml::from_str(&content.replace("DATE", date)).unwrap();
             assert_eq!(update.last_checked.unwrap(), expected);

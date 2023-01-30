@@ -26,7 +26,7 @@ fn response_error(
                     env_name.unwrap_or_default().to_string(),
                     "".to_string(),
                 )
-            } else if msg.contains("No HistoricalEnvironment matches") {
+            } else if msg.contains("No EnvironmentLedger matches") {
                 TemplateError::EnvironmentMissing(
                     env_name.unwrap_or_default().to_string(),
                     " at specified time/tag".to_string(),

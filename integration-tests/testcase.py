@@ -66,12 +66,18 @@ def get_cli_base_cmd() -> str:
 
     # leverage current structure... walk back up a maximum of 2 levels
     for _ in range(3):
-        possible_release = curr.parent / exec_path_release
-        if possible_release.exists():
-            return str(possible_release) + " "
         possible_debug = curr.parent / exec_path_debug
+        possible_release = curr.parent / exec_path_release
+        # prefer latest build if both exist
+        if possible_debug.exists() and possible_release.exists():
+            if os.path.getmtime(possible_debug) > os.path.getmtime(possible_release):
+                return str(possible_debug) + " "
+            else:
+                return str(possible_release) + " "
         if possible_debug.exists():
             return str(possible_debug) + " "
+        if possible_release.exists():
+            return str(possible_release) + " "
         curr = curr.parent
 
     # we failed to find this, so just use the "default".

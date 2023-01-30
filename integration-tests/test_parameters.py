@@ -1573,7 +1573,7 @@ Parameter,{env_a} ({modified_p2_a}),{env_b} ({modified_p2_b})
         ####################
         # negative cases with times before when the project was created
         timestamp = "3/24/2021"
-        no_project = "No HistoricalProject matches the given query"
+        no_project = "No ProjectLedger matches the given query"
         param_cmd = base_cmd + f"--project '{proj_name}' param "
         result = self.run_cli(cmd_env, param_cmd + f"ls -v --as-of '{timestamp}'")
         self.assertResultError(result, no_project)
@@ -1582,7 +1582,7 @@ Parameter,{env_a} ({modified_p2_a}),{env_b} ({modified_p2_b})
         result = self.run_cli(cmd_env, param_cmd + f"env '{param1}' --as-of '{timestamp}'")
         self.assertResultError(result, no_project)
 
-        no_environment = "No HistoricalEnvironment matches the given query"
+        no_environment = "No EnvironmentLedger matches the given query"
         result = self.run_cli(cmd_env, param_cmd + f"export shell --as-of '{timestamp}'")
         self.assertResultError(result, no_environment)
 
@@ -2406,7 +2406,7 @@ Parameter,{env_a} ({modified_p2_a}),{env_b} ({modified_p2_b})
         result = self.run_cli(cmd_env, tag_set + f"--time '{timestamp}'")
         self.assertResultSuccess(result)
 
-        no_project = "No HistoricalProject matches the given query"
+        no_project = "No ProjectLedger matches the given query"
         param_cmd = base_cmd + f"--env '{env_name}' --project '{proj_name}' param "
         result = self.run_cli(cmd_env, param_cmd + f"ls -v --as-of '{tag_name}'")
         self.assertResultError(result, no_project)
