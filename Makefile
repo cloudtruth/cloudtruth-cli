@@ -92,7 +92,7 @@ subdir_precommit:
 subdir_prereq:
 	make subdir_action SUBDIR_ACTION=prerequisites
 
-precommit: cargo test subdir_precommit
+precommit: cargo test subdir_precommit lint
 
 prerequisites: subdir_prereq
 ifeq ($(rustup_exists),'')
