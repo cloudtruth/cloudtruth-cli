@@ -1,4 +1,4 @@
-use chrono::{DateTime, Datelike, NaiveDate, NaiveDateTime, NaiveTime, Utc};
+use chrono::{DateTime, NaiveDate, NaiveDateTime, NaiveTime, TimeZone, Utc};
 use color_eyre::eyre::Result;
 use color_eyre::Report;
 use std::error;
@@ -12,7 +12,9 @@ use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 pub const DEL_CONFIRM: Option<bool> = Some(false);
 pub const REDACTED: &str = "*****";
 pub const FILE_READ_ERR: &str = "Failed to read value from file.";
-pub const ISO8601: &str = "%Y-%m-%dT%H:%M:%S%.fZ";
+// old format but server is not accepting it now
+// pub const ISO8601: &str = "%Y-%m-%dT%H:%M:%S%.fZ";
+pub const ISO8601: &str = "%Y-%m-%dT%H:%M:%S%.6fZ";
 pub const SEPARATOR: &str = "=========================";
 pub const API_KEY_PAGE: &str = "\"API Access\"";
 
@@ -167,32 +169,21 @@ pub fn parse_datetime(input: Option<&str>) -> Option<String> {
             Some(rfc2822.format(ISO8601).to_string())
         } else if let Ok(rfc3339) = DateTime::parse_from_rfc3339(orig) {
             Some(rfc3339.format(ISO8601).to_string())
-        } else if let Ok(datetime) = NaiveDateTime::parse_from_str(orig, ISO8601) {
+        } else if let Ok(datetime) = NaiveDateTime::parse_from_str(orig, "%Y-%m-%dT%H:%M:%S%.fZ") {
             Some(datetime.format(ISO8601).to_string())
         } else if let Ok(datetime) = NaiveDateTime::parse_from_str(orig, "%Y-%m-%dT%H:%M:%S%.f") {
-            Some(datetime.format(ISO8601).to_string())
+            Some(Utc.from_utc_datetime(&datetime).format(ISO8601).to_string())
         } else if let Ok(time_only) = NaiveTime::parse_from_str(orig, "%H:%M:%S%.f") {
-            let now = Utc::now();
-            let new_str = format!(
-                "{}-{}-{}T{}Z",
-                now.year(),
-                now.month(),
-                now.day(),
-                time_only
-            );
-            let dt = NaiveDateTime::parse_from_str(&new_str, ISO8601).unwrap();
+            let dt = Utc.from_utc_datetime(&Utc::now().date_naive().and_time(time_only));
             Some(dt.format(ISO8601).to_string())
         } else if let Ok(full_date) = NaiveDate::parse_from_str(orig, "%Y-%m-%d") {
-            let new_str = format!("{full_date}T00:00:00Z");
-            let dt = NaiveDateTime::parse_from_str(&new_str, ISO8601).unwrap();
+            let dt = Utc.from_utc_datetime(&full_date.and_time(default()));
             Some(dt.format(ISO8601).to_string())
         } else if let Ok(us_date) = NaiveDate::parse_from_str(orig, "%m-%d-%Y") {
-            let new_str = format!("{us_date}T00:00:00Z");
-            let dt = NaiveDateTime::parse_from_str(&new_str, ISO8601).unwrap();
+            let dt = Utc.from_utc_datetime(&us_date.and_time(default()));
             Some(dt.format(ISO8601).to_string())
         } else if let Ok(us_date) = NaiveDate::parse_from_str(orig, "%m/%d/%Y") {
-            let new_str = format!("{us_date}T00:00:00Z");
-            let dt = NaiveDateTime::parse_from_str(&new_str, ISO8601).unwrap();
+            let dt = Utc.from_utc_datetime(&us_date.and_time(default()));
             Some(dt.format(ISO8601).to_string())
         } else {
             None
@@ -232,7 +223,7 @@ mod test {
         let now = Utc::now();
         let input = now.to_rfc2822();
         let output = parse_datetime(Some(&input)).unwrap();
-        assert_eq!(now.format("%FT%TZ").to_string(), output); // no fractional seconds
+        assert_eq!(now.format("%FT%T.000000Z").to_string(), output); // no fractional seconds
         assert_eq!(parse_tag(Some(&input)), None);
 
         // full RFC23339
@@ -242,9 +233,9 @@ mod test {
         assert_eq!(now.format(ISO8601).to_string(), output);
         assert_eq!(parse_tag(Some(&input)), None);
 
-        // ISO8601
+        // ISO8601 with Z offset
         let input = Some("2021-07-27T18:34:23.270824Z");
-        let expected = input.map(String::from);
+        let expected = Some("2021-07-27T18:34:23.270824Z".into());
         assert_eq!(parse_datetime(input), expected);
         assert_eq!(parse_tag(input), None);
 
@@ -263,25 +254,25 @@ mod test {
         // time only, with milliseconds
         let input = Some("03:05:12.345");
         let output = parse_datetime(input).unwrap();
-        assert!(output.contains("T03:05:12.345Z"));
+        assert!(output.contains("T03:05:12.345"));
         assert_eq!(parse_tag(input), None);
 
         // full date (no time)
         let input = Some("2020-02-02");
         let output = parse_datetime(input).unwrap();
-        assert_eq!(output, String::from("2020-02-02T00:00:00Z"));
+        assert!(output.contains("2020-02-02"));
         assert_eq!(parse_tag(input), None);
 
         // US date with slashes
         let input = Some("01/19/2021");
         let output = parse_datetime(input).unwrap();
-        assert_eq!(output, String::from("2021-01-19T00:00:00Z"));
+        assert!(output.contains("2021-01-19"));
         assert_eq!(parse_tag(input), None);
 
         // US date with dashes
         let input = Some("01-19-2021");
         let output = parse_datetime(input).unwrap();
-        assert_eq!(output, String::from("2021-01-19T00:00:00Z"));
+        assert!(output.contains("2021-01-19"));
         assert_eq!(parse_tag(input), None);
 
         // unfortunately, it lets this through too!

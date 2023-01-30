@@ -51,7 +51,7 @@ use crate::types::process_parameter_type_command;
 use crate::users::process_users_command;
 use crate::utils::{error_message, help_message, warning_message};
 use crate::versions::process_version_command;
-use chrono::{Datelike, NaiveDate, Utc};
+use chrono::Utc;
 use clap::ArgMatches;
 use color_eyre::eyre::Result;
 use std::io;
@@ -105,8 +105,7 @@ fn validate_config(config: &Config) -> Result<()> {
 fn check_updates(updates: &Updates) -> Result<()> {
     // NOTE: the next_update() returns None if the check is disabled...
     if let Some(next_update) = updates.next_update() {
-        let now = Utc::today();
-        let today = NaiveDate::from_ymd(now.year(), now.month(), now.day());
+        let today = Utc::now().date_naive();
         if today >= next_update {
             let latest_str = get_latest_version();
             let latest_ver = Version::from(&latest_str).unwrap();

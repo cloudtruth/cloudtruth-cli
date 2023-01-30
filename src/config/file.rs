@@ -1111,7 +1111,7 @@ mod tests {
         let updates = Updates {
             check: true,
             action: Some(Action::Error),
-            last_checked: Some(NaiveDate::from_ymd(2021, 1, 20)),
+            last_checked: Some(NaiveDate::from_ymd_opt(2021, 1, 20)).unwrap(),
             frequency: Some(Frequency::Monthly),
         };
 
