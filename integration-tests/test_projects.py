@@ -102,7 +102,7 @@ class TestProjects(TestCase):
 
         # attempt to delete something that is used elsewhere
         result = self.run_cli(cmd_env, base_cmd + f"project delete '{proj_name2}' --confirm")
-        self.assertResultError(result, "Cannot remove project because the following project(s) depend on it")
+        self.assertResultError(result, f"Cannot delete '{proj_name2}' because the following projects depend on it")
         self.assertIn(proj_name3, result.err())
         self.assertIn(proj_name4, result.err())
 

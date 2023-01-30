@@ -223,8 +223,9 @@ ANOTHER_PARAM=PARAM2
 
         ############
         # see that we cannot delete a parameter with the template using it
+        err = f"Cannot delete {param1} because it is referenced by the following templates: {temp_name}"
         result = self.run_cli(cmd_env, base_cmd + f"--project {proj_name} param del -y '{param1}' ")
-        self.assertResultError(result, f"Cannot delete {param1} as it is used in the following templates: {temp_name}")
+        self.assertResultError(result, err)
 
         ###########
         # check error message with unresolved variables
@@ -907,7 +908,8 @@ PARAMETER={{{{{param1}}}}}
 
         # see that we cannot delete the template that is referenced by a parameter
         result = self.run_cli(cmd_env, sub_cmd + f"del -y {temp_name}")
-        self.assertResultError(result, "Cannot remove template because it is referenced by")
+        err_msg = f"Cannot delete {temp_name} because it is referenced by the following dynamic values"
+        self.assertResultError(result, err_msg)
         self.assertIn(param1, result.err())
 
         # see that we catch the circular error
