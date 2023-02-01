@@ -27,6 +27,7 @@ jobs:
       runsOn: ${{ matrix.os }}
       serverUrl: https://api.staging.cloudtruth.io
       buildOptions: --release
+      testOptions: --release
       testRunnerOptions: --exclude backup
     secrets:
       CLOUDTRUTH_API_KEY: ${{ secrets.CI_ACCT_STAGING_CONTRIBUTOR }}
