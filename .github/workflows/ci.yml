@@ -19,7 +19,6 @@ jobs:
     uses: ./.github/workflows/test.yml
 
     strategy:
-      fail-fast: false
       matrix:
         include:
           - os: macos-latest
