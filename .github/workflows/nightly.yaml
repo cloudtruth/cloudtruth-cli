@@ -28,4 +28,5 @@ jobs:
       buildOptions: --release
       testOptions: --release
       testRunnerOptions: --exclude backup
+    secrets: inherit
 

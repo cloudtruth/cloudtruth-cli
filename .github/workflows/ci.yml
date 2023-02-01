@@ -31,4 +31,5 @@ jobs:
     with:
       runsOn: ${{ matrix.os }}
       testRunnerOptions: --exclude backup ${{ matrix.options }}
+    secrets: inherit
 

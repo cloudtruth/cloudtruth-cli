@@ -45,7 +45,11 @@ on:
         description: cache ID to use for rust-cache
         type: string
         default: v0-cli-test
-    secrets: inherit
+    secrets:
+      CI_ACCT_STAGING_CONTRIBUTOR:
+        description: "Staging API Key"
+        required: true
+
 jobs:
   test:
     name: CLI E2E Test (Staging)
