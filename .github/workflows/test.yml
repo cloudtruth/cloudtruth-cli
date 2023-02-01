@@ -16,6 +16,9 @@ on:
       buildOptions:
         description: options to pass to the Cargo build
         type: string
+      testOptions:
+        description: options to pass to the Cargo tests
+        type: string
       testRunnerOptions:
         description: string of command-line options to pass to the test runner
         type: string
@@ -84,6 +87,7 @@ jobs:
         with:
           ref: ${{ inputs.ref }}
           buildOptions: ${{ inputs.buildOptions }}
+          testOptions: ${{ inputs.testOptions }}
           cacheKey: ${{ inputs.rustCacheKey }}
 
       - run: make test_prerequisites
