@@ -52,8 +52,8 @@ jobs:
           name: ${{ env.ARTIFACT_ID }}
           if-no-files-found: ignore
           path: |
-            target/debug/cloudtruth
-            target/release/cloudtruth
+            ./target/debug/cloudtruth
+            ./target/release/cloudtruth
 
   test:
     name: CLI E2E Test (Staging)
