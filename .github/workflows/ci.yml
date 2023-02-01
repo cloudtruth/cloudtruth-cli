@@ -69,7 +69,7 @@ jobs:
           components: rustfmt, clippy
           skipBuild: true
           skipUnitTests: true
-          cacheKey: cli-lint
+          cacheKey: v0-cli-lint
 
       - name: ShellCheck
         uses: ludeeus/action-shellcheck@master
@@ -98,6 +98,8 @@ jobs:
 
     steps:
       - uses: cloudtruth/cli-build-action@v1
+        with:
+          cacheKey: v0-cli-ci
 
       - run: make test_prerequisites
 
