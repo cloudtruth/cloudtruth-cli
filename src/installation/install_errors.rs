@@ -6,6 +6,7 @@ use std::str::Utf8Error;
 
 #[derive(Clone, Debug)]
 pub enum InstallError {
+    #[cfg_attr(target_os = "windows", allow(dead_code))]
     FailedToRunInstall(String),
     InstallFailed(String),
     Filesystem(String),

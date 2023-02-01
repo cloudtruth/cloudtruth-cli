@@ -1,10 +1,15 @@
-use crate::installation::{binary_version, InstallError};
-use std::fs;
+use crate::installation::InstallError;
 use std::io;
 use std::io::Write;
-use std::process::Command;
-use std::str;
-use tempfile::tempdir;
+#[cfg(not(target_os = "windows"))]
+#[rustfmt::skip]
+use {
+    crate::installation::binary_version,
+    std::fs,
+    std::process::Command,
+    std::str,
+    tempfile::tempdir,
+};
 
 #[cfg(target_os = "windows")]
 pub fn install_latest_version(quiet: bool) -> Result<(), InstallError> {

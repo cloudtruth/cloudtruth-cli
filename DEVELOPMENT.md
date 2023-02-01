@@ -14,7 +14,7 @@ The CloudTruth CLI tool is written in Rust, using the Rust 2018 edition.
 While we don't actively pick the latest Rust features to use, we also haven't guaranteed it will 
 build with older versions of Rust either.
 If you have difficulties building, please check to see if a newer Rust will work.
-Our CI configuration indicates which version we're using at the moment.
+The target rustc version is configured in the `rust-toolchain` file
 
 To build the application, check out the source code and then run:
 
@@ -48,6 +48,11 @@ It can be invoked with either of the following:
 ```
 cargo clippy
 make lint
+```
+
+To automatically fix linter issues you can run:
+```
+cargo clippy --fix
 ```
 
 Testing
@@ -116,3 +121,36 @@ this workflow:
       fetch a small set of data using the ci@cloudtruth.com account.
 4. You can delete the draft release and the artifacts after you are done, then submit a pull request
    to get your changes into the _master_ branch.
+
+Windows builds on Linux/MacOS with MingGW
+------------------------------------------
+
+If you'd like to verify that your code builds on Windows from a local Linux or MacOS machine, you can
+install and configure the mingw-w64 runtime as a target for the compiler.
+
+First you need to install mingw-w64. Use your OS package manager (`apt-get` for Debian/Ubuntu, `brew` for MacOS)
+```
+brew install mingw-w64
+sudo apt-get install mingw-w64
+```
+
+Then you will need to register mingw-w64 as a custom target. Create or update your `~/.cargo/config` so that it contains:
+```
+[target.x86_64-pc-windows-gnu]
+linker = "x86_64-w64-mingw32-gcc"
+ar = "x86_64-w64-mingw32-gcc-ar"
+```
+
+You will also need to add the target to your rust toolchain otherwise your builds will not have `rust-std`
+```
+rustup target add x86_64-pc-windows-gnu
+```
+
+Now you can use cargo to build a Windows exe with your custom target
+```
+cargo build --release --target=x86_64-pc-windows-gnu
+```
+
+
+
+
