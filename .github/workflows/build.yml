@@ -1,0 +1,57 @@
+# A callable workflow for CLI builds
+# Stores the build artifact at the given artifact ID
+---
+name: Build
+on:
+  workflow_call:
+    inputs:
+      artifactId:
+        description: The artifact ID used to store the build artifact with actions/upload-artifact
+        type: string
+        required: true
+      runsOn:
+        description: The runner to run the workflow on
+        type: string
+        default: ubuntu-latest
+      ref:
+        description: the git ref to checkout from cloudtruth-cli
+        type: string
+      buildOptions:
+        description: options to pass to the Cargo build
+        type: string
+      testOptions:
+        description: options to pass to the Cargo tests
+        type: string
+      rustCacheKey:
+        description: cache ID to use for rust-cache
+        type: string
+        default: v0-cli-test
+
+env:
+  CI: true
+  RUST_BACKTRACE: 1
+
+jobs:
+  build:
+    name: CLI Build
+    runs-on: ${{ inputs.runsOn }}
+
+    steps:
+      - name: Build
+        uses: cloudtruth/cli-build-action@v1
+        with:
+          ref: ${{ inputs.ref }}
+          buildOptions: ${{ inputs.buildOptions }}
+          testOptions: ${{ inputs.testOptions }}
+          cacheKey: ${{ inputs.rustCacheKey }}
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ inputs.artifactId }}
+          if-no-files-found: ignore
+          path: |
+            ./target/debug/cloudtruth
+            ./target/debug/cloudtruth.exe
+            ./target/release/cloudtruth
+            ./target/release/cloudtruth.exe

@@ -29,31 +29,20 @@ on:
 
 env:
   CI: true
-  ARTIFACT_ID: ${{github.repository_id}}-${{github.run_id}}-${{inputs.runsOn}}
   JOB_ID: ${{github.repository_id}}-${{github.run_id}}-${{github.run_attempt}}-${{inputs.runsOn}}
   RUST_BACKTRACE: 1
 
 jobs:
   build:
     name: CLI Build
-    runs-on: ${{ inputs.runsOn }}
-
-    steps:
-      - name: Build
-        uses: cloudtruth/cli-build-action@v1
-        with:
-          ref: ${{ inputs.ref }}
-          buildOptions: ${{ inputs.buildOptions }}
-          testOptions: ${{ inputs.testOptions }}
-          cacheKey: ${{ inputs.rustCacheKey }}
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: ${{ env.ARTIFACT_ID }}
-          if-no-files-found: ignore
-          path: |
-            target/debug/cloudtruth
-            target/release/cloudtruth
+    uses: ./.github/workflows/build.yml
+    with:
+      artifactId: ${{github.repository_id}}-${{github.run_id}}-${{inputs.runsOn}}
+      runsOn: ${{ inputs.runsOn }}
+      ref: ${{ inputs.ref }}
+      buildOptions: ${{ inputs.buildOptions }}
+      testOptions: ${{ inputs.testOptions }}
+      rustCacheKey: ${{ inputs.rustCacheKey }}
 
   test:
     name: CLI E2E Test (Staging)
@@ -110,7 +99,7 @@ jobs:
 
       - uses: actions/download-artifact@v3
         with:
-          name: ${{ env.ARTIFACT_ID }}
+          name: ${{github.repository_id}}-${{github.run_id}}-${{inputs.runsOn}}
           path: target
 
       - if: inputs.runsOn != "windows-latest"
