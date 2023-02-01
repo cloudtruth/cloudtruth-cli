@@ -31,5 +31,3 @@ jobs:
       testRunnerOptions: --exclude backup
     secrets:
       CLOUDTRUTH_API_KEY: ${{ secrets.CI_ACCT_STAGING_CONTRIBUTOR }}
-
-

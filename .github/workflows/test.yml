@@ -89,6 +89,7 @@ jobs:
           buildOptions: ${{ inputs.buildOptions }}
           testOptions: ${{ inputs.testOptions }}
           cacheKey: ${{ inputs.rustCacheKey }}
+          cacheOnFailure: true
 
       - run: make test_prerequisites
 
