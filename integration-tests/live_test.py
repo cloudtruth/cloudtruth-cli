@@ -200,6 +200,7 @@ def live_test(*args):
         env[CT_TEST_JOB_ID] = args.job_id
 
     cli = get_cli_base_cmd()
+    print(f"CloudTruth command: {cli}")
     subprocess.run(cli + "config current -x", shell=True)
 
     # propagate the debug flags

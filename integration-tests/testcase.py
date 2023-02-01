@@ -66,6 +66,7 @@ def get_cli_base_cmd() -> str:
 
     # leverage current structure... walk back up a maximum of 2 levels
     for _ in range(3):
+        print(curr)
         possible_debug = curr.parent / exec_path_debug
         possible_release = curr.parent / exec_path_release
         # prefer latest build if both exist
