@@ -52,7 +52,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        partitions:
+        include:
           - os: macos-latest
             options: --before ${{ env.PART_A_END }}
           - os: ubuntu-latest
@@ -62,7 +62,7 @@ jobs:
     with:
       runs-on: ${{ matrix.os }}
       serverUrl: ${{ env.CLOUDTRUTH_SERVER_URL }}
-      testRunnerOptions: --exclude backup ${{ matrix.partitions.options }}
+      testRunnerOptions: --exclude backup ${{ matrix.options }}
 
     secrets:
       CLOUDTRUTH_API_KEY: ${{ env.CLOUDTRUTH_API_KEY }}
