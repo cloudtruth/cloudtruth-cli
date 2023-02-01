@@ -26,7 +26,7 @@ on:
         required: true
 jobs:
   test:
-    name: Test
+    name: CLI E2E Test
     runs-on: ${{ inputs.runsOn }}
 
     env:
@@ -34,6 +34,10 @@ jobs:
       JOB_ID: ${{github.repository_id}}-${{github.run_id}}-${{github.run_attempt}}-${{inputs.runs-on}}
 
       RUST_BACKTRACE: 1
+
+      # these are to run against staging
+      CLOUDTRUTH_SERVER_URL: ${{ inputs.serverUrl }}
+      CLOUDTRUTH_API_KEY: ${{ secrets.CLOUDTRUTH_API_KEY }}
 
       # These are based on pre-configured integrations in the CLI CI account.
       # this test currently does not work. need to recreate the test data
