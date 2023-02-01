@@ -1,0 +1,40 @@
+name: CloudTruth CLI Lint
+on:
+  workflow_call:
+    inputs:
+      runsOn:
+        description: The runner to run the workflow on
+        type: string
+        default: ubuntu-latest
+      ref:
+        description: the git ref to checkout from cloudtruth-cli
+        type: string
+      rustCacheKey:
+        description: cache ID to use for rust-cache
+        type: string
+        default: v0-cli-lint
+jobs:
+  lint:
+    name: CLI Lint
+    runs-on: ${{ inputs.runsOn }}
+
+    steps:
+      - uses: cloudtruth/cli-build-action@v1
+        with:
+          components: rustfmt, clippy
+          skipBuild: true
+          skipUnitTests: true
+          cacheKey: ${{ inputs.rustCacheKey }}
+
+      - name: ShellCheck
+        uses: ludeeus/action-shellcheck@master
+        with:
+          ignore_paths: client
+
+      - run: cargo fmt --all -- --check
+
+      - uses: actions-rs/clippy-check@v1
+        with:
+          name: Clippy Check
+          token: ${{ github.token }}
+          args: --all-features -- -D warnings

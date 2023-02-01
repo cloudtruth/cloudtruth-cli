@@ -12,28 +12,7 @@ on:
 jobs:
   lint:
     name: Lint
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: cloudtruth/cli-build-action@v1
-        with:
-          components: rustfmt, clippy
-          skipBuild: true
-          skipUnitTests: true
-          cacheKey: v0-cli-lint
-
-      - name: ShellCheck
-        uses: ludeeus/action-shellcheck@master
-        with:
-          ignore_paths: client
-
-      - run: cargo fmt --all -- --check
-
-      - uses: actions-rs/clippy-check@v1
-        with:
-          name: Clippy Check
-          token: ${{ secrets.GITHUB_TOKEN }}
-          args: --all-features -- -D warnings
+    uses: ./.github/workflows/lint.yml      
 
   test:
     name: CI Test
