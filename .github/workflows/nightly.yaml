@@ -12,15 +12,6 @@ jobs:
   lint:
     name: Lint
     uses: ./.github/workflows/lint.yml
-    strategy:
-      fail-fast: false
-      matrix:
-        os:
-          - ubuntu-latest
-          - macos-latest
-          - windows-latest
-    with:
-      runsOn: ${{ matrix.os }}
 
   test:
     name: Test

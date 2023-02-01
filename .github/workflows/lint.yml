@@ -2,10 +2,6 @@ name: CloudTruth CLI Lint
 on:
   workflow_call:
     inputs:
-      runsOn:
-        description: The runner to run the workflow on
-        type: string
-        default: ubuntu-latest
       ref:
         description: the git ref to checkout from cloudtruth-cli
         type: string
@@ -16,7 +12,7 @@ on:
 jobs:
   lint:
     name: CLI Lint
-    runs-on: ${{ inputs.runsOn }}
+    runs-on: ubuntu-latest
 
     steps:
       - uses: cloudtruth/cli-build-action@v1
@@ -27,6 +23,7 @@ jobs:
           cacheKey: ${{ inputs.rustCacheKey }}
 
       - name: ShellCheck
+        if: inputs.runsOn != 'windows-latest'
         uses: ludeeus/action-shellcheck@master
         with:
           ignore_paths: client
