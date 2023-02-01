@@ -20,7 +20,7 @@ class TestTemplates(TestCase):
         cmd_env = self.get_cmd_env()
         proj_name = self.make_name("template-proj")
         temp_name = "orig-template"  # templates are scoped to a project, so no need to "randomize"
-        filename = self.make_name("basic-body") + ".txt"
+        filename = "basic-body" + ".txt"
         body = "Text with no params\n"
         self.write_file(filename, body)
         empty_msg = empty_template(proj_name)
@@ -147,7 +147,7 @@ class TestTemplates(TestCase):
         self.set_param(cmd_env, proj_name, param2, value2a, env=env_a, secret=True)
         self.set_param(cmd_env, proj_name, param2, value2b, env=env_b, secret=True)
 
-        filename = self.make_name("eval-body") + ".txt"
+        filename = "eval-body" + ".txt"
         base = """\
 # here is a comment
 // we do not care about what other content you put in
@@ -265,7 +265,7 @@ ANOTHER_PARAM=PARAM2
         # create a template
         temp_name = "my-test-template"
         temp_cmd = base_cmd + f"--project '{proj_name}' template "
-        filename = self.make_name("temp-times") + ".txt"
+        filename = "temp-times" + ".txt"
 
         body = """\
 # just a different template
@@ -366,7 +366,7 @@ this.is.a.template.value=PARAM1
         # create a template
         temp_name = "my-test-template"
         temp_cmd = base_cmd + f"--project '{proj_name}' --env '{env_name}' template "
-        filename = self.make_name("temp-tag") + ".txt"
+        filename = "temp-tag" + ".txt"
 
         body = """\
 # just a different template
@@ -612,7 +612,7 @@ PARAMETER=PARAM1
 
 """
         temp_name = "my-template"
-        filename = self.make_name("temp-diff") + ".txt"
+        filename = "temp-diff" + ".txt"
         self.write_file(filename, body.replace("PARAM1", f"{{{{{param1}}}}}").replace("PARAM2", f"{{{{{param2}}}}}"))
         result = self.run_cli(cmd_env, sub_cmd + f"set '{temp_name}'  -b '{filename}'")
         self.assertResultSuccess(result)
@@ -884,7 +884,7 @@ PARAMETER={{{{{param1}}}}}
         cmd_env = self.get_cmd_env()
         temp_name = "param_template"  # templates are scoped to a project, so no need to "randomize"
 
-        filename = self.make_name("ref-body") + ".txt"
+        filename = "ref-body" + ".txt"
         body1 = "nothing to evaluate here"
         self.write_file(filename, body1)
 
@@ -954,7 +954,7 @@ PARAMETER={{{{{param1}}}}}
         cmd_env = self.get_cmd_env()
         temp_base = "temp-name"
 
-        filename = self.make_name("paged-temp") + ".txt"
+        filename = "paged-temp" + ".txt"
         body1 = "nothing to evaluate here"
         self.write_file(filename, body1)
 

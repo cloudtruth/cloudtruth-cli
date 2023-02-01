@@ -11,9 +11,9 @@ jobs:
     runs-on: macos-latest
 
     env:
-      CLOUDTRUTH_TEST_FILTER: basic
       CLOUDTRUTH_API_KEY: ${{ secrets.CI_ACCT_READWRITE_CT_API_KEY }}
       RUST_BACKTRACE: 1
+      JOB_ID: ${{github.repository}}-${{github.run_id}}-${{github.run_attempt}}-cli-prod
 
     steps:
       - uses: actions/checkout@v3
@@ -27,6 +27,6 @@ jobs:
         run: make test_prerequisites
 
       - name: Integration Test
-        run: |
-          cd integration-tests
-          python3 live_test.py --job-id "${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}-cli-prod" --filter ${{ env.CLOUDTRUTH_TEST_FILTER }} --exclude backup
+        shell: bash
+        working-directory: integration-tests
+        run: python3 live_test.py --job-id "$JOB_ID" --filter basic --exclude backup

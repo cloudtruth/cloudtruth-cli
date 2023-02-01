@@ -836,7 +836,7 @@ SECOND_SECRET='sensitive value with spaces'
         cmd_env = self.get_cmd_env()
 
         # create the file with the value
-        filename = self.make_name("value")
+        filename = "value"
         value1 = "static val from file"
         self.write_file(filename, value1)
 
@@ -2670,7 +2670,7 @@ Name,Value,Project
         proj_name = self.make_name("param-overdone")
         self.create_project(cmd_env, proj_name)
 
-        filename = self.make_name("cooked")
+        filename = "cooked"
         self.write_file(filename, "bogus value from file")
 
         err_msg = "Conflicting arguments: cannot specify more than one"

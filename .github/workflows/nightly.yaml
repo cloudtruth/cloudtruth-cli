@@ -8,61 +8,14 @@ on:
   schedule:
     # Run full test on a nightly basis -- time is GMT, so do it a bit after midnight ET
     - cron: '37 5 * * *'
-
-env:
-  CI: true
-  RUST_BACKTRACE: 1
-  # This needs to match the RUST_VERSION in create-draft-release.yml.
-  RUST_CACHE_KEY: v0-rust-nightly
-
-  # these are to run against staging
-  CLOUDTRUTH_SERVER_URL: https://api.staging.cloudtruth.io
-  CLOUDTRUTH_API_KEY: ${{ secrets.CI_ACCT_STAGING_CONTRIBUTOR }}
-  # below, lets us run against production
-  # CLOUDTRUTH_API_KEY: ${{ secrets.CI_ACCT_READWRITE_CT_API_KEY }}
-
-  # These are based on pre-configured integrations in the CLI CI account.
-  # this test currently does not work. need to recreate the test data
-  # CLOUDTRUTH_TEST_BROKEN_PROJECT: proj-int-broken
-  # CLOUDTRUTH_TEST_BROKEN_TEMPLATE: temp-int-broken
-  # CLOUDTRUTH_TEST_BROKEN_PARAM1: param1
-  # CLOUDTRUTH_TEST_BROKEN_PARAM2: param2
-  # CLOUDTRUTH_TEST_BROKEN_PARAM3: param3
-  # CLOUDTRUTH_TEST_BROKEN_PARAM4: param4
-  # CLOUDTRUTH_TEST_BROKEN_VALUE1: value1
-  # CLOUDTRUTH_TEST_BROKEN_VALUE2: King
-  # CLOUDTRUTH_TEST_BROKEN_VALUE3: voluptas
-  # CLOUDTRUTH_TEST_BROKEN_JMES2: speicla.beef_brocolli
-  # CLOUDTRUTH_TEST_BROKEN_JMES3: numquam.doloremque
-  # CLOUDTRUTH_TEST_BROKEN_FQN2: github://cloudtruth/another-test-repo/main/jade.yaml
-  # CLOUDTRUTH_TEST_BROKEN_FQN3: github://cloudtruth/github-integration-test-repo/trimmed/more_config/anotherconfig.yaml
-
-  CLOUDTRUTH_TEST_EXPLORE_FQN: github://cloudtruth/github-integration-test-repo/main/short.yaml
-  CLOUDTRUTH_TEST_EXPLORE_JMES: speicla.POrk_Egg_Foo_Young
-  CLOUDTRUTH_TEST_EXPLORE_VALUE: Healey
-
-  CLOUDTRUTH_TEST_PARAMETERS_FQN: github://cloudtruth/github-integration-test-repo/my-branch/short.yaml
-  CLOUDTRUTH_TEST_PARAMETERS_JMES: speicla.POrk_Egg_Foo_Young
-
-  CLOUDTRUTH_TEST_TEMPLATE_FQN: github://cloudtruth/github-integration-test-repo/main/ci_test_template.txt
-  CLOUDTRUTH_TEST_TEMPLATE_PARAM1: my-param-name
-
-  CLOUDTRUTH_TEST_BASIC_INTEGRATION_NAME: ct-stage-write@943604981792
-  CLOUDTRUTH_TEST_BASIC_BAD_INTEGRATION_NAME: my-missing-integration
-
-  CLOUDTRUTH_TEST_PUSH_INTEGRATION_NAME: ct-stage-write@943604981792
-  CLOUDTRUTH_TEST_PUSH_BAD_INTEGRATION_NAME: my-missing-integration
-
-  CLOUDTRUTH_TEST_IMPORT_INTEGRATION_NAME: ct-stage-write@943604981792
-  CLOUDTRUTH_TEST_IMPORT_BAD_INTEGRATION_NAME: my-missing-integration
-
-  CLOUDTRUTH_TEST_COMPLETE_INTEGRATION_NAME: ct-stage-write@943604981792
-
 jobs:
+  lint:
+    name: Lint
+    uses: ./.github/workflows/lint.yml
+
   test:
     name: Test
-    runs-on: ${{ matrix.os }}
-
+    uses: ./.github/workflows/test-staging.yml
     strategy:
       fail-fast: false
       matrix:
@@ -70,76 +23,10 @@ jobs:
           - ubuntu-latest
           - macos-latest
           - windows-latest
-
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Install Rust
-        id: rust
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          override: true
-          
-      - uses: Swatinem/rust-cache@v2
-        with:
-          prefix-key: ${{ env.RUST_CACHE_KEY }}
-          shared-key: ${{ runner.os }}
-
-      - name: Show Rust version and platform details
-        run: rustc --version --verbose
-
-      - run: cargo build -r
-      - run: cargo test -r
-      - run: make test_prerequisites
-
-      - name: Integration Test - non-Windows
-        env:
-          OS: ${{ runner.os }}
-        if: runner.os != 'Windows'
-        run: |
-          cd integration-tests
-          python3 live_test.py --job-id "${OS}-${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}-cli-nightly" --exclude backup --exclude integration
-
-      - name: Integration Test - Windows
-        env:
-          OS: ${{ runner.os }}
-        if: runner.os == 'Windows'
-        run: |
-          cd integration-tests
-          py live_test.py --job-id "$ENV:OS-$ENV:GITHUB_RUN_NUMBER-$ENV:GITHUB_RUN_ATTEMPT-cli-nightly" --exclude backup --exclude integration
-  cleanup:
-    name: Cleanup
-    runs-on: ubuntu-latest
-
-    # wait for all test jobs to complete
-    needs: test
-    # run cleanup even when tests fail
-    if: ${{ always() }}
-
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Install Rust
-        id: rust
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          override: true
-
-      - uses: Swatinem/rust-cache@v2
-        with:
-          prefix-key: ${{ env.RUST_CACHE_KEY }}
-          shared-key: ${{ runner.os }}
-
-      - name: Show Rust version and platform details
-        run: rustc --version --verbose
-
-      - run: cargo build -r
-      - run: |
-          cd integration-tests
-          python3 cleanup.py --confirm "${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}-cli-nightly"
-      
-
-
+    with:
+      runsOn: ${{ matrix.os }}
+      buildOptions: --release
+      testOptions: --release
+      testRunnerOptions: --exclude backup
+    secrets: inherit
 
