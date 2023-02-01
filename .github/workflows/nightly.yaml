@@ -9,10 +9,22 @@ on:
     # Run full test on a nightly basis -- time is GMT, so do it a bit after midnight ET
     - cron: '37 5 * * *'
 jobs:
-  test:
-    name: CI Test
+  lint:
+    name: Lint
     uses: ./.github/workflows/test.yml
-
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
+    with:
+      runsOn: ${{ matrix.os }}
+      
+  test:
+    name: Test
+    uses: ./.github/workflows/test.yml
     strategy:
       fail-fast: false
       matrix:

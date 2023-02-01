@@ -15,7 +15,7 @@ jobs:
     uses: ./.github/workflows/lint.yml      
 
   test:
-    name: CI Test
+    name: Test
     uses: ./.github/workflows/test.yml
 
     strategy:
