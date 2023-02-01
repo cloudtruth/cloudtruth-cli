@@ -114,8 +114,23 @@ jobs:
         working-directory: integration-tests
         run: python3 live_test.py --job-id "$JOB_ID" ${{ inputs.testRunnerOptions }}
 
-      - name: Cleanup Script
-        if: ${{ always() }}
-        shell: bash
+  cleanup:
+    name: Cleanup
+    needs: test
+    if: always()
+    runs-on: ${{ inputs.runsOn }}
+    steps:
+
+      - uses: actions/checkout@v3
+        with:
+          repository: cloudtruth/cloudtruth-cli
+          ref: ${{ inputs.ref }}
+
+      - uses: actions/download-artifact@v3
+        with:
+          name: ${{github.repository_id}}-${{github.run_id}}-${{inputs.runsOn}}
+          path: target
+
+      - shell: bash
         working-directory: integration-tests
         run: python3 cleanup.py --confirm "$JOB_ID"
