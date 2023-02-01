@@ -1,28 +1,5 @@
 name: Staging
 on:
-  workflow_dispatch:
-    inputs:
-      runsOn:
-        description: The runner to run the workflow on
-        type: string
-        default: ubuntu-latest
-      ref:
-        description: the git ref to checkout from cloudtruth-cli
-        type: string
-      buildOptions:
-        description: options to pass to the Cargo build
-        type: string
-      testOptions:
-        description: options to pass to the Cargo tests
-        type: string
-      testRunnerOptions:
-        description: string of command-line options to pass to the test runner
-        type: string
-        default: --exclude backup --filter basic
-      rustCacheKey:
-        description: cache ID to use for rust-cache
-        type: string
-        default: v0-cli-test
   workflow_call:
     inputs:
       runsOn:

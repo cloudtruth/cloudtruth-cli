@@ -3,12 +3,24 @@
 ---
 name: Production
 on:
-  workflow_dispatch:
+  workflow_call:
+    inputs:
+      runsOn:
+        description: The runner to run the workflow on
+        type: string
+        default: macos-latest
+      testRunnerOptions:
+        description: string of command-line options to pass to the test runner
+        type: string
+    secrets:
+      CI_ACCT_READWRITE_CT_API_KEY:
+        description: "Production API Key"
+        required: true
 
 jobs:
   test:
-    name: Basic Integration Test (Production)
-    runs-on: macos-latest
+    name: CLI E2E Test (Production)
+    runs-on: ${{ inputs.runsOn }}
 
     env:
       CLOUDTRUTH_API_KEY: ${{ secrets.CI_ACCT_READWRITE_CT_API_KEY }}
@@ -29,4 +41,4 @@ jobs:
       - name: Integration Test
         shell: bash
         working-directory: integration-tests
-        run: python3 live_test.py --job-id "$JOB_ID" --filter basic --exclude backup
+        run: python3 live_test.py --job-id "$JOB_ID" ${{ inputs.testRunnerOptions }}
