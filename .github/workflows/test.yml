@@ -31,7 +31,7 @@ jobs:
 
     env:
       CI: true  
-      JOB_ID: ${{github.repository_id}}-${{github.run_id}}-${{github.run_attempt}}-${{runner.os}}
+      JOB_ID: ${{github.repository_id}}-${{github.run_id}}-${{github.run_attempt}}-${{inputs.runs-on}}
 
       RUST_BACKTRACE: 1
 
