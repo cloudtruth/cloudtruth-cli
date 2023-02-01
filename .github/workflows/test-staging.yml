@@ -27,17 +27,37 @@ on:
         description: "Staging API Key"
         required: true
 
+env:
+  CI: true
+  ARTIFACT_ID: ${{github.repository}}-${{github.run_id}}-${{inputs.runsOn}}
+  JOB_ID: ${{github.repository}}-${{github.run_id}}-${{github.run_attempt}}-${{inputs.runsOn}}
+  RUST_BACKTRACE: 1
+
 jobs:
+  build:
+    name: CLI Build
+    runs-on: ${{ inputs.runsOn }}
+
+    steps:
+      - name: Build
+        uses: cloudtruth/cli-build-action@v1
+        with:
+          ref: ${{ inputs.ref }}
+          buildOptions: ${{ inputs.buildOptions }}
+          testOptions: ${{ inputs.testOptions }}
+          cacheKey: ${{ inputs.rustCacheKey }}
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ env.ARTIFACT_ID }}
+          path: target
+
   test:
     name: CLI E2E Test (Staging)
+    needs: build
     runs-on: ${{ inputs.runsOn }}
 
     env:
-      CI: true
-      JOB_ID: ${{github.repository}}-${{github.run_id}}-${{github.run_attempt}}-${{inputs.runsOn}}
-
-      RUST_BACKTRACE: 1
-
       # these are to run against staging
       CLOUDTRUTH_SERVER_URL: https://api.staging.cloudtruth.io
       CLOUDTRUTH_API_KEY: ${{ secrets.CI_ACCT_STAGING_CONTRIBUTOR }}
@@ -80,13 +100,15 @@ jobs:
       CLOUDTRUTH_TEST_COMPLETE_INTEGRATION_NAME: ct-stage-write@943604981792
 
     steps:
-      - uses: cloudtruth/cli-build-action@v1
+      - uses: actions/checkout@v3
         with:
+          repository: cloudtruth/cloudtruth-cli
           ref: ${{ inputs.ref }}
-          buildOptions: ${{ inputs.buildOptions }}
-          testOptions: ${{ inputs.testOptions }}
-          cacheKey: ${{ inputs.rustCacheKey }}
-          cacheOnFailure: true
+          path: ${{ inputs.path }}
+
+      - uses: actions/download-artifact@v3
+        with:
+          name: ${{ env.ARTIFACT_ID }}
 
       - run: make test_prerequisites
 
