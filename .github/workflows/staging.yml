@@ -1,0 +1,44 @@
+# This is the legacy staging test workflow that is being kept so that GitHub shows
+# historical job logs. Use test-staging.yml workflow instead
+---
+name: Staging (Historical)
+#github syntax requires 'on' to be defined even though we dont want to use it
+on:
+  push:
+    branches-ignore: 
+      - '**' #never run
+
+jobs:
+  test:
+    name: Basic Integration Test (Staging)
+    runs-on: ubuntu-latest
+
+    env:
+      CLOUDTRUTH_TEST_FILTER: basic
+      # these are to run against staging
+      CLOUDTRUTH_SERVER_URL: https://api.staging.cloudtruth.io
+      CLOUDTRUTH_API_KEY: ${{ secrets.CI_ACCT_STAGING_CONTRIBUTOR }}
+      RUST_BACKTRACE: 1
+
+      CLOUDTRUTH_TEST_BASIC_INTEGRATION_NAME: ct-stage-write@943604981792
+      CLOUDTRUTH_TEST_BASIC_BAD_INTEGRATION_NAME: my-missing-integration
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install Rust
+        id: rust
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          override: true
+
+      - name: Show Rust version and platform details
+        run: rustc --version --verbose
+
+      - run: cargo build -r
+
+      - name: Integration Test
+        run: |
+          cd integration-tests
+          python3 live_test.py --job-id "${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}-cli-stage" --filter ${{ env.CLOUDTRUTH_TEST_FILTER }} --exclude backup

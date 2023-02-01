@@ -1,0 +1,36 @@
+# This is the legacy production test workflow that is being kept so that GitHub shows
+# historical job logs. Use test-production.yml workflow instead
+---
+name: Production (Historical)
+
+#github syntax requires 'on' to be defined even though we dont want to use it
+on:
+  push:
+    branches-ignore: 
+      - '**' #never run
+
+jobs:
+  test:
+    name: Basic Integration Test (Production)
+    runs-on: macos-latest
+
+    env:
+      CLOUDTRUTH_TEST_FILTER: basic
+      CLOUDTRUTH_API_KEY: ${{ secrets.CI_ACCT_READWRITE_CT_API_KEY }}
+      RUST_BACKTRACE: 1
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: CLI installation
+        run: |
+          sudo ./install.sh
+          cloudtruth --version
+
+      - name: Prerequisites
+        run: make test_prerequisites
+
+      - name: Integration Test
+        run: |
+          cd integration-tests
+          python3 live_test.py --job-id "${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}-cli-prod" --filter ${{ env.CLOUDTRUTH_TEST_FILTER }} --exclude backup
