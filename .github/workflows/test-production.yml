@@ -1,7 +1,7 @@
 # This runs a small set of basic tests against the production deployment, using the latest released
 # CLI image.
 ---
-name: Production
+name: E2E Production
 on:
   workflow_call:
     inputs:
