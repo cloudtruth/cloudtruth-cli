@@ -37,4 +37,7 @@ jobs:
       serverUrl: https://api.staging.cloudtruth.io
       buildOptions: --release
       testRunnerOptions: --exclude backup
+    secrets:
+      CLOUDTRUTH_API_KEY: ${{ secrets.CI_ACCT_STAGING_CONTRIBUTOR }}
+
 
