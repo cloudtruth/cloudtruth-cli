@@ -103,9 +103,11 @@ jobs:
           path: target
 
       # upload-artifact does not preserve permissions
-      - run: chmod -f +x target/debug/cloudtruth || chmod -f +x target/debug/cloudtruth.exe
+      - shell: bash
+        run: chmod -f +x target/debug/cloudtruth || chmod -f +x target/debug/cloudtruth.exe
 
-      - run: make test_prerequisites
+      - shell: bash
+        run: make test_prerequisites
 
       - name: E2E Test
         shell: bash
