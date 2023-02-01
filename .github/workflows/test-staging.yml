@@ -1,5 +1,28 @@
-name: CloudTruth CLI E2E Test
+name: Staging
 on:
+  workflow_dispatch:
+    inputs:
+      runsOn:
+        description: The runner to run the workflow on
+        type: string
+        default: ubuntu-latest
+      ref:
+        description: the git ref to checkout from cloudtruth-cli
+        type: string
+      buildOptions:
+        description: options to pass to the Cargo build
+        type: string
+      testOptions:
+        description: options to pass to the Cargo tests
+        type: string
+      testRunnerOptions:
+        description: string of command-line options to pass to the test runner
+        type: string
+        default: --exclude backup --filter basic
+      rustCacheKey:
+        description: cache ID to use for rust-cache
+        type: string
+        default: v0-cli-test
   workflow_call:
     inputs:
       runsOn:
@@ -9,10 +32,6 @@ on:
       ref:
         description: the git ref to checkout from cloudtruth-cli
         type: string
-      serverUrl:
-        description: URL of the CloudTruth API Server
-        type: string
-        required: true
       buildOptions:
         description: options to pass to the Cargo build
         type: string
@@ -26,24 +45,21 @@ on:
         description: cache ID to use for rust-cache
         type: string
         default: v0-cli-test
-    secrets:
-      CLOUDTRUTH_API_KEY:
-        description: CloudTruth API Key
-        required: true
+    secrets: inherit
 jobs:
   test:
-    name: CLI E2E Test
+    name: CLI E2E Test (Staging)
     runs-on: ${{ inputs.runsOn }}
 
     env:
-      CI: true  
+      CI: true
       JOB_ID: ${{github.repository}}-${{github.run_id}}-${{github.run_attempt}}-${{inputs.runsOn}}
 
       RUST_BACKTRACE: 1
 
       # these are to run against staging
-      CLOUDTRUTH_SERVER_URL: ${{ inputs.serverUrl }}
-      CLOUDTRUTH_API_KEY: ${{ secrets.CLOUDTRUTH_API_KEY }}
+      CLOUDTRUTH_SERVER_URL: https://api.staging.cloudtruth.io
+      CLOUDTRUTH_API_KEY: ${{ secrets.CI_ACCT_STAGING_CONTRIBUTOR }}
 
       # These are based on pre-configured integrations in the CLI CI account.
       # this test currently does not work. need to recreate the test data

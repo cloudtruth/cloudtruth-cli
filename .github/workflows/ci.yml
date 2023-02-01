@@ -16,7 +16,7 @@ jobs:
 
   test:
     name: Test
-    uses: ./.github/workflows/test.yml
+    uses: ./.github/workflows/test-staging.yml
 
     strategy:
       matrix:
@@ -30,8 +30,5 @@ jobs:
 
     with:
       runsOn: ${{ matrix.os }}
-      serverUrl: https://api.staging.cloudtruth.io
       testRunnerOptions: --exclude backup ${{ matrix.options }}
 
-    secrets:
-      CLOUDTRUTH_API_KEY: ${{ secrets.CI_ACCT_STAGING_CONTRIBUTOR }}
