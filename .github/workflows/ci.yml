@@ -9,13 +9,6 @@ on:
       - main
   workflow_dispatch:
 
-env:
-  CI: true
-  RUST_BACKTRACE: 1
-  # these are to run against staging
-  CLOUDTRUTH_SERVER_URL: https://api.staging.cloudtruth.io
-  CLOUDTRUTH_API_KEY: ${{ secrets.CI_ACCT_STAGING_CONTRIBUTOR }}
-
 jobs:
   lint:
     name: Lint
@@ -59,8 +52,8 @@ jobs:
 
     with:
       runs-on: ${{ matrix.os }}
-      serverUrl: ${{ env.CLOUDTRUTH_SERVER_URL }}
+      serverUrl: https://api.staging.cloudtruth.io
       testRunnerOptions: --exclude backup ${{ matrix.options }}
 
     secrets:
-      CLOUDTRUTH_API_KEY: ${{ env.CLOUDTRUTH_API_KEY }}
+      CLOUDTRUTH_API_KEY: ${{ secrets.CI_ACCT_STAGING_CONTRIBUTOR }}
