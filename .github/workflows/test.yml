@@ -2,7 +2,7 @@ name: CloudTruth CLI E2E Test
 on:
   workflow_call:
     inputs:
-      run-on:
+      runs-on:
         description: The runner to run the workflow on
         type: string
         default: ubuntu-latest
