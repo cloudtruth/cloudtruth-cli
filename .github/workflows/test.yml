@@ -72,9 +72,6 @@ jobs:
 
       CLOUDTRUTH_TEST_COMPLETE_INTEGRATION_NAME: ct-stage-write@943604981792
 
-      # PART_A_END: test_parameter
-      # PART_C_START: test_project
-
     steps:
       - uses: cloudtruth/cli-build-action@v1
         with:

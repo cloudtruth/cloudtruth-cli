@@ -17,9 +17,6 @@ env:
   CLOUDTRUTH_SERVER_URL: https://api.staging.cloudtruth.io
   CLOUDTRUTH_API_KEY: ${{ secrets.CI_ACCT_STAGING_CONTRIBUTOR }}
 
-  PART_A_END: test_parameter
-  PART_C_START: test_project
-
 jobs:
   lint:
     name: Lint
@@ -54,11 +51,11 @@ jobs:
       matrix:
         include:
           - os: macos-latest
-            options: --before ${{ env.PART_A_END }}
+            options: --before test_parameter
           - os: ubuntu-latest
-            options: --after ${{ env.PART_A_END }} --before ${{ env.PART_C_START }} 
+            options: --after test_parameter --before test_project
           - os: windows-latest
-            options: ${{ env.PART_C_START }} 
+            options: --after test_project
     with:
       runs-on: ${{ matrix.os }}
       serverUrl: ${{ env.CLOUDTRUTH_SERVER_URL }}
