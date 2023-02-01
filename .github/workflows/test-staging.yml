@@ -27,17 +27,29 @@ on:
         description: "Staging API Key"
         required: true
 
+env:
+  CI: true
+  JOB_ID: ${{github.repository_id}}-${{github.run_id}}-${{github.run_attempt}}-${{inputs.runsOn}}
+  RUST_BACKTRACE: 1
+
 jobs:
+  build:
+    name: CLI Build
+    uses: ./.github/workflows/build.yml
+    with:
+      artifactId: ${{github.repository_id}}-${{github.run_id}}-${{inputs.runsOn}}
+      runsOn: ${{ inputs.runsOn }}
+      ref: ${{ inputs.ref }}
+      buildOptions: ${{ inputs.buildOptions }}
+      testOptions: ${{ inputs.testOptions }}
+      rustCacheKey: ${{ inputs.rustCacheKey }}
+
   test:
     name: CLI E2E Test (Staging)
+    needs: build
     runs-on: ${{ inputs.runsOn }}
 
     env:
-      CI: true
-      JOB_ID: ${{github.repository}}-${{github.run_id}}-${{github.run_attempt}}-${{inputs.runsOn}}
-
-      RUST_BACKTRACE: 1
-
       # these are to run against staging
       CLOUDTRUTH_SERVER_URL: https://api.staging.cloudtruth.io
       CLOUDTRUTH_API_KEY: ${{ secrets.CI_ACCT_STAGING_CONTRIBUTOR }}
@@ -80,23 +92,45 @@ jobs:
       CLOUDTRUTH_TEST_COMPLETE_INTEGRATION_NAME: ct-stage-write@943604981792
 
     steps:
-      - uses: cloudtruth/cli-build-action@v1
+      - uses: actions/checkout@v3
         with:
+          repository: cloudtruth/cloudtruth-cli
           ref: ${{ inputs.ref }}
-          buildOptions: ${{ inputs.buildOptions }}
-          testOptions: ${{ inputs.testOptions }}
-          cacheKey: ${{ inputs.rustCacheKey }}
-          cacheOnFailure: true
 
-      - run: make test_prerequisites
+      - uses: actions/download-artifact@v3
+        with:
+          name: ${{github.repository_id}}-${{github.run_id}}-${{inputs.runsOn}}
+          path: target
+
+      # upload-artifact does not preserve permissions
+      - shell: bash
+        run: chmod -f +x target/debug/cloudtruth || chmod -f +x target/debug/cloudtruth.exe
+
+      - shell: bash
+        run: make test_prerequisites
 
       - name: E2E Test
         shell: bash
         working-directory: integration-tests
         run: python3 live_test.py --job-id "$JOB_ID" ${{ inputs.testRunnerOptions }}
 
-      - name: Cleanup Script
-        if: ${{ always() }}
-        shell: bash
+  cleanup:
+    name: Cleanup
+    needs: test
+    if: always()
+    runs-on: ${{ inputs.runsOn }}
+    steps:
+
+      - uses: actions/checkout@v3
+        with:
+          repository: cloudtruth/cloudtruth-cli
+          ref: ${{ inputs.ref }}
+
+      - uses: actions/download-artifact@v3
+        with:
+          name: ${{github.repository_id}}-${{github.run_id}}-${{inputs.runsOn}}
+          path: target
+
+      - shell: bash
         working-directory: integration-tests
         run: python3 cleanup.py --confirm "$JOB_ID"
