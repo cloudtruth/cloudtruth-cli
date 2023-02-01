@@ -113,6 +113,8 @@ jobs:
           name: ${{ env.ARTIFACT_ID }}
           path: target
 
+      - run: chmod +x target/debug/cloudtruth
+
       - run: make test_prerequisites
 
       - name: E2E Test
