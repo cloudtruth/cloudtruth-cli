@@ -29,8 +29,8 @@ on:
 
 env:
   CI: true
-  ARTIFACT_ID: ${{github.repository}}-${{github.run_id}}-${{inputs.runsOn}}
-  JOB_ID: ${{github.repository}}-${{github.run_id}}-${{github.run_attempt}}-${{inputs.runsOn}}
+  ARTIFACT_ID: ${{github.repository_id}}-${{github.run_id}}-${{inputs.runsOn}}
+  JOB_ID: ${{github.repository_id}}-${{github.run_id}}-${{github.run_attempt}}-${{inputs.runsOn}}
   RUST_BACKTRACE: 1
 
 jobs:
