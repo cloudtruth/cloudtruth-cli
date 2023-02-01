@@ -64,28 +64,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: cloudtruth/cli-build-action@v1
+        with:
+          components: rustfmt, clippy
+          skipBuild: true
+          skipUnitTests: true
+          cacheKey: cli-lint
 
       - name: ShellCheck
         uses: ludeeus/action-shellcheck@master
         with:
           ignore_paths: client
-
-      - name: Install Rust
-        id: rust
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          override: true
-          components: rustfmt, clippy
-
-      - uses: Swatinem/rust-cache@v2
-        with:
-          prefix-key: lint
-          shared-key: ${{ runner.os }}
-
-      - name: Show Rust version and platform details
-        run: rustc --version --verbose
 
       - run: cargo fmt --all -- --check
 
@@ -108,25 +97,8 @@ jobs:
           - windows-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: cloudtruth/cli-build-action@v1
 
-      - name: Install Rust
-        id: rust
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          override: true
-
-      - uses: Swatinem/rust-cache@v2
-        with:
-          prefix-key: ${{ env.RUST_CACHE_KEY }}
-          shared-key: ${{ runner.os }}
-
-      - name: Show Rust version and platform details
-        run: rustc --version --verbose
-
-      - run: cargo build
-      - run: cargo test
       - run: make test_prerequisites
 
       - name: Integration Test - Part A
