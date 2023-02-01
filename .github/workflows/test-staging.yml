@@ -50,7 +50,10 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: ${{ env.ARTIFACT_ID }}
-          path: target
+          if-no-files-found: ignore
+          path: |
+            target/debug/cloudtruth
+            target/release/cloudtruth
 
   test:
     name: CLI E2E Test (Staging)
