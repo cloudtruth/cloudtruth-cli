@@ -2,7 +2,7 @@ name: CloudTruth CLI E2E Test
 on:
   workflow_call:
     inputs:
-      runs-on:
+      runsOn:
         description: The runner to run the workflow on
         type: string
         default: ubuntu-latest
@@ -27,7 +27,7 @@ on:
 jobs:
   test:
     name: Test
-    runs-on: ${{ inputs.run-on }}
+    runs-on: ${{ inputs.runsOn }}
 
     env:
       CI: true  

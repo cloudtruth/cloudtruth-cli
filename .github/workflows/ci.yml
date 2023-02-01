@@ -51,7 +51,7 @@ jobs:
             options: --after test_project
 
     with:
-      runs-on: ${{ matrix.os }}
+      runsOn: ${{ matrix.os }}
       serverUrl: https://api.staging.cloudtruth.io
       testRunnerOptions: --exclude backup ${{ matrix.options }}
 
