@@ -1,3 +1,4 @@
+---
 name: Nightly
 
 # This runs the full suite of tests on all platforms. CI has been changed to run a subset of tests
