@@ -102,12 +102,7 @@ jobs:
           name: ${{github.repository_id}}-${{github.run_id}}-${{inputs.runsOn}}
           path: target
 
-      - if: inputs.runsOn != 'windows-latest'
-        run: chmod +x target/debug/cloudtruth
-
-      - if: inputs.runsOn == 'windows-latest'
-        shell: bash
-        run: chmod +x target/debug/cloudtruth.exe
+      - run: chmod -f +x target/debug/cloudtruth target/debug/cloudtruth.exe || true
 
       - run: make test_prerequisites
 
