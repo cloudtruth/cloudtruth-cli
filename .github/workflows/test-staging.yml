@@ -102,10 +102,10 @@ jobs:
           name: ${{github.repository_id}}-${{github.run_id}}-${{inputs.runsOn}}
           path: target
 
-      - if: inputs.runsOn != "windows-latest"
+      - if: ${{ inputs.runsOn != "windows-latest" }}
         run: chmod +x target/debug/cloudtruth
 
-      - if: inputs.runsOn == "windows-latest"
+      - if: ${{ inputs.runsOn == "windows-latest" }}
         shell: bash
         run: chmod +x target/debug/cloudtruth.exe
 
