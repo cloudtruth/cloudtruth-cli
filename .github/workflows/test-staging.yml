@@ -107,11 +107,12 @@ jobs:
         with:
           repository: cloudtruth/cloudtruth-cli
           ref: ${{ inputs.ref }}
-          path: ${{ inputs.path }}
 
       - uses: actions/download-artifact@v3
         with:
           name: ${{ env.ARTIFACT_ID }}
+
+      - run: find . -name cloudtruth
 
       - run: make test_prerequisites
 
