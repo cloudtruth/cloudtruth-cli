@@ -13,6 +13,9 @@ on:
         description: URL of the CloudTruth API Server
         type: string
         required: true
+      buildOptions:
+        description: options to pass to the Cargo build
+        type: string
       testRunnerOptions:
         description: string of command-line options to pass to the test runner
         type: string
@@ -80,6 +83,7 @@ jobs:
       - uses: cloudtruth/cli-build-action@v1
         with:
           ref: ${{ inputs.ref }}
+          buildOptions: ${{ inputs.buildOptions }}
           cacheKey: ${{ inputs.rustCacheKey }}
 
       - run: make test_prerequisites
