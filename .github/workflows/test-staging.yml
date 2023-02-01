@@ -113,7 +113,12 @@ jobs:
           name: ${{ env.ARTIFACT_ID }}
           path: target
 
-      - run: chmod +x target/debug/cloudtruth
+      - if: inputs.runsOn != "windows-latest"
+        run: chmod +x target/debug/cloudtruth
+
+      - if: inputs.runsOn == "windows-latest"
+        shell: bash
+        run: chmod +x target/debug/cloudtruth.exe
 
       - run: make test_prerequisites
 
