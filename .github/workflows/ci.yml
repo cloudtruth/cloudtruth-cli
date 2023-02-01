@@ -48,7 +48,7 @@ jobs:
 
   test:
     name: Test
-    uses: cloudtruth/cloudtruth-cli/.github/workflows/test.yml@${{ github.ref }}
+    uses: ./.github/workflows/test.yml
     strategy:
       fail-fast: false
       matrix:
