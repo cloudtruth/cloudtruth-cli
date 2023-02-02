@@ -51,6 +51,7 @@ on:
   push:
     tags:
       - '[0-9]+.[0-9]+.[0-9]+-?**'
+      - nightly
 
 env:
   CI: true
@@ -59,6 +60,7 @@ env:
 
 jobs:
   create-release:
+    if: startsWith(github.ref, 'refs/tags/')
     name: Create Release
     runs-on: ubuntu-latest
 
@@ -66,29 +68,22 @@ jobs:
       - name: Create artifacts directory
         run: mkdir artifacts
 
-      - name: Get the release version from the tag
-        if: env.CT_VERSION == ''
-        run: |
-          # Apparently, this is the right way to get a tag name. Really?
-          #
-          # See: https://github.community/t5/GitHub-Actions/How-to-get-just-the-tag-name/m-p/32167/highlight/true#M1027
-          echo CT_VERSION=${GITHUB_REF#refs/tags/} >> $GITHUB_ENV
-
       - name: Create GitHub release
         id: release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          draft: true
-          tag_name: ${{ env.CT_VERSION }}
-          release_name: ${{ env.CT_VERSION }}
+          draft: ${{ github.ref_name != 'nightly' }}
+          prerelease: ${{ github.ref_name == 'nightly'}}
+          tag_name: ${{ github.ref_name }}
+          release_name: ${{ github.ref_name }}
 
       - name: Save release information to artifacts
         run: |
           echo "${{ steps.release.outputs.id }}" > artifacts/release-id
           echo "${{ steps.release.outputs.upload_url }}" > artifacts/release-upload-url
-          echo "${{ env.CT_VERSION }}" > artifacts/release-version
+          echo "${{ github.ref_name }}" > artifacts/release-version
 
       - name: Upload artifacts for other jobs to consume
         uses: actions/upload-artifact@v1
@@ -101,8 +96,9 @@ jobs:
           fetch-depth: 1
 
       - name: Cargo and tag version alignment
+        if: github.ref_name != 'nightly'
         env:
-          TAG_VERSION: ${{ env.CT_VERSION }}
+          TAG_VERSION: ${{ github.ref_name }}
         run: |
           CARGO_VERSION=$(grep "version = " Cargo.toml | head -n 1 | cut -d'"' -f2)
           echo "CARGO_VERSION=${CARGO_VERSION}"
