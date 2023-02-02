@@ -9,6 +9,7 @@ import unittest
 from testcase import get_cli_base_cmd
 from testcase import CT_API_KEY, CT_URL, CT_PROFILE
 from testcase import CT_TEST_JOB_ID, CT_TEST_LOG_COMMANDS, CT_TEST_LOG_OUTPUT
+from testcase import CT_TEST_LOG_COMMANDS_ON_FAILURE, CT_TEST_LOG_OUTPUT_ON_FAILURE
 
 
 def parse_args(*args) -> argparse.Namespace:
@@ -78,6 +79,34 @@ def parse_args(*args) -> argparse.Namespace:
         dest="log_output",
         action="store_true",
         help="Print the output to stdout."
+    )
+    parser.add_argument(
+        "-la",
+        "--log-all",
+        dest="log_all",
+        action="store_true",
+        help="Print the output and commands to stdout"
+    )
+    parser.add_argument(
+        "-lcf",
+        "--log-commands-on-failure",
+        dest="log_commands_on_failure",
+        action="store_true",
+        help="Print the commands to stdout when a test fails"
+    )
+    parser.add_argument(
+        "-lof",
+        "--log-output-on-failure",
+        dest="log_output_on_failure",
+        action="store_true",
+        help="Print the output to stdout when a test fails"
+    )
+    parser.add_argument(
+        "-laf",
+        "--log-all-on-failure",
+        dest="log_all_on_failure",
+        action="store_true",
+        help="Print the output and commands to stdout when a test fails"
     )
     parser.add_argument(
         "--job-id",
@@ -193,8 +222,17 @@ def live_test(*args):
         env[CT_API_KEY] = args.api_key
     if args.profile:
         env[CT_PROFILE] = args.profile
+    if args.log_all:
+        args.log_commands = True
+        args.log_output = True
+    if args.log_all_on_failure:
+        args.log_commands_on_failure = True
+        args.log_output_on_failure = True
     env[CT_TEST_LOG_COMMANDS] = str(int(args.log_commands))
     env[CT_TEST_LOG_OUTPUT] = str(int(args.log_output))
+    env[CT_TEST_LOG_COMMANDS_ON_FAILURE] = str(int(args.log_commands_on_failure))
+    env[CT_TEST_LOG_OUTPUT_ON_FAILURE] = str(int(args.log_output_on_failure))
+
     if args.job_id:
         print(f"JOB_ID: {args.job_id}")
         env[CT_TEST_JOB_ID] = args.job_id
