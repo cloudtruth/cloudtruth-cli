@@ -2251,10 +2251,10 @@ Parameter,{env_a} ({modified_p2_a}),{env_b} ({modified_p2_b})
         self.assertIn("Value is greater than the maximum value", result.err())
 
         # bogus rules -- min/max out of whack
-        err_msg = "Rule update error: Maximum constraint is less than an existing rule's minimum constraint"
+        err_msg = "Rule create error: Maximum constraint is less than an existing rule's minimum constraint"
         result = self.run_cli(cmd_env, set_cmd + f"--max {value - 11}")
         self.assertResultError(result, err_msg)
-        err_msg = "Rule update error: Minimum constraint is greater than an existing rule's maximum constraint"
+        err_msg = "Rule create error: Minimum constraint is greater than an existing rule's maximum constraint"
         result = self.run_cli(cmd_env, set_cmd + f"--min {value + 11}")
         self.assertResultError(result, err_msg)
 
