@@ -134,6 +134,9 @@ pub fn environments_create(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
     local_var_req_builder = local_var_req_builder.json(&environment_create);
 
     let local_var_req = local_var_req_builder.build()?;
@@ -210,6 +213,9 @@ pub fn environments_destroy(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
 
     let local_var_req = local_var_req_builder.build()?;
     let method = local_var_req.method().clone();
@@ -260,8 +266,6 @@ pub fn environments_list(
     ordering: Option<&str>,
     page: Option<i32>,
     page_size: Option<i32>,
-    parent__name: Option<&str>,
-    parent__name__icontains: Option<&str>,
 ) -> Result<crate::models::PaginatedEnvironmentList, Error<EnvironmentsListError>> {
     let local_var_configuration = configuration;
 
@@ -295,14 +299,6 @@ pub fn environments_list(
         local_var_req_builder =
             local_var_req_builder.query(&[("page_size", &local_var_str.to_string())]);
     }
-    if let Some(ref local_var_str) = parent__name {
-        local_var_req_builder =
-            local_var_req_builder.query(&[("parent__name", &local_var_str.to_string())]);
-    }
-    if let Some(ref local_var_str) = parent__name__icontains {
-        local_var_req_builder =
-            local_var_req_builder.query(&[("parent__name__icontains", &local_var_str.to_string())]);
-    }
     if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
@@ -318,6 +314,9 @@ pub fn environments_list(
             None => local_var_key,
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
+    };
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
 
     let local_var_req = local_var_req_builder.build()?;
@@ -365,8 +364,8 @@ pub fn environments_list(
 pub fn environments_partial_update(
     configuration: &configuration::Configuration,
     id: &str,
-    patched_environment: Option<crate::models::PatchedEnvironment>,
-) -> Result<crate::models::Environment, Error<EnvironmentsPartialUpdateError>> {
+    patched_environment_update: Option<crate::models::PatchedEnvironmentUpdate>,
+) -> Result<crate::models::EnvironmentUpdate, Error<EnvironmentsPartialUpdateError>> {
     let local_var_configuration = configuration;
 
     let local_var_client = &local_var_configuration.client;
@@ -395,7 +394,10 @@ pub fn environments_partial_update(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
-    local_var_req_builder = local_var_req_builder.json(&patched_environment);
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
+    local_var_req_builder = local_var_req_builder.json(&patched_environment_update);
 
     let local_var_req = local_var_req_builder.build()?;
     let method = local_var_req.method().clone();
@@ -487,6 +489,9 @@ pub fn environments_pushes_list(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
 
     let local_var_req = local_var_req_builder.build()?;
     let method = local_var_req.method().clone();
@@ -561,6 +566,9 @@ pub fn environments_retrieve(
             None => local_var_key,
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
+    };
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
 
     let local_var_req = local_var_req_builder.build()?;
@@ -638,6 +646,9 @@ pub fn environments_tags_create(
             None => local_var_key,
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
+    };
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
     local_var_req_builder = local_var_req_builder.json(&tag_create);
 
@@ -717,6 +728,9 @@ pub fn environments_tags_destroy(
             None => local_var_key,
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
+    };
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
 
     let local_var_req = local_var_req_builder.build()?;
@@ -838,6 +852,9 @@ pub fn environments_tags_list(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
 
     let local_var_req = local_var_req_builder.build()?;
     let method = local_var_req.method().clone();
@@ -916,6 +933,9 @@ pub fn environments_tags_partial_update(
             None => local_var_key,
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
+    };
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
     local_var_req_builder = local_var_req_builder.json(&patched_tag_update);
 
@@ -996,6 +1016,9 @@ pub fn environments_tags_retrieve(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
 
     let local_var_req = local_var_req_builder.build()?;
     let method = local_var_req.method().clone();
@@ -1075,6 +1098,9 @@ pub fn environments_tags_update(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
     local_var_req_builder = local_var_req_builder.json(&tag_update);
 
     let local_var_req = local_var_req_builder.build()?;
@@ -1122,8 +1148,8 @@ pub fn environments_tags_update(
 pub fn environments_update(
     configuration: &configuration::Configuration,
     id: &str,
-    environment: crate::models::Environment,
-) -> Result<crate::models::Environment, Error<EnvironmentsUpdateError>> {
+    environment_update: crate::models::EnvironmentUpdate,
+) -> Result<crate::models::EnvironmentUpdate, Error<EnvironmentsUpdateError>> {
     let local_var_configuration = configuration;
 
     let local_var_client = &local_var_configuration.client;
@@ -1152,7 +1178,10 @@ pub fn environments_update(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
-    local_var_req_builder = local_var_req_builder.json(&environment);
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
+    local_var_req_builder = local_var_req_builder.json(&environment_update);
 
     let local_var_req = local_var_req_builder.build()?;
     let method = local_var_req.method().clone();

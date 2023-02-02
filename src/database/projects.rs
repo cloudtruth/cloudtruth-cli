@@ -5,7 +5,7 @@ use crate::database::{
 
 use cloudtruth_restapi::apis::projects_api::*;
 use cloudtruth_restapi::apis::Error::ResponseError;
-use cloudtruth_restapi::models::{PatchedProject, ProjectCreate};
+use cloudtruth_restapi::models::{PatchedProjectUpdate, ProjectCreate};
 use std::collections::HashMap;
 use std::result::Result;
 
@@ -232,11 +232,13 @@ impl Projects {
         proj_name: &str,
         description: Option<&str>,
         parent_url: Option<&str>,
+        parameter_name_pattern: Option<&str>,
     ) -> Result<Option<String>, ProjectError> {
         let proj = ProjectCreate {
             name: proj_name.to_string(),
             description: description.map(String::from),
             depends_on: parent_url.map(String::from),
+            parameter_name_pattern: parameter_name_pattern.map(String::from),
         };
         let response = projects_create(rest_cfg, proj);
         match response {
@@ -273,20 +275,18 @@ impl Projects {
         project_id: &str,
         description: Option<&str>,
         parent_url: Option<&str>,
+        parameter_name_pattern: Option<&str>,
     ) -> Result<Option<String>, ProjectError> {
-        let proj = PatchedProject {
-            url: None,
+        let proj = PatchedProjectUpdate {
             id: None,
             name: Some(project_name.to_string()),
             description: description.map(|d| d.to_string()),
             created_at: None,
             modified_at: None,
-            pushes: None,
-            push_urls: None,
             depends_on: parent_url.map(String::from),
-            dependents: None,
             access_controlled: None,
             role: None,
+            parameter_name_pattern: parameter_name_pattern.map(String::from),
         };
         let response = projects_partial_update(rest_cfg, project_id, Some(proj));
         match response {

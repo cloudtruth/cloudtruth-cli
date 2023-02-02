@@ -18,6 +18,21 @@ pub struct Organization {
     /// The organization name.
     #[serde(rename = "name")]
     pub name: String,
+    /// A regular expression project names must match
+    #[serde(
+        rename = "project_name_pattern",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub project_name_pattern: Option<String>,
+    /// If set, we are performing maintenance on this organization and have disabled making changes
+    #[serde(rename = "maintenance")]
+    pub maintenance: bool,
+    /// Multi-factor authentication for the organization
+    #[serde(rename = "mfa_enabled", skip_serializing_if = "Option::is_none")]
+    pub mfa_enabled: Option<bool>,
+    /// The current version of this Organization
+    #[serde(rename = "version")]
+    pub version: Option<Box<crate::models::VersionEnum>>,
     /// Indicates if this Organization is the one currently targeted by the Bearer token used by the client to authorize.
     #[serde(rename = "current")]
     pub current: bool,
@@ -37,7 +52,7 @@ pub struct Organization {
     #[serde(rename = "created_at")]
     pub created_at: String,
     #[serde(rename = "modified_at")]
-    pub modified_at: String,
+    pub modified_at: Option<String>,
 }
 
 impl Organization {
@@ -45,6 +60,8 @@ impl Organization {
         url: String,
         id: String,
         name: String,
+        maintenance: bool,
+        version: Option<crate::models::VersionEnum>,
         current: bool,
         role: Option<crate::models::RoleEnum>,
         subscription_expires_at: Option<String>,
@@ -53,12 +70,16 @@ impl Organization {
         subscription_plan_id: Option<String>,
         subscription_plan_name: Option<String>,
         created_at: String,
-        modified_at: String,
+        modified_at: Option<String>,
     ) -> Organization {
         Organization {
             url,
             id,
             name,
+            project_name_pattern: None,
+            maintenance,
+            mfa_enabled: None,
+            version: version.map(Box::new),
             current,
             role: role.map(Box::new),
             subscription_expires_at,

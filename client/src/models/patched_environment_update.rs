@@ -9,10 +9,7 @@
  */
 
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
-pub struct PatchedEnvironment {
-    #[serde(rename = "url", skip_serializing_if = "Option::is_none")]
-    pub url: Option<String>,
-    /// A unique identifier for the environment.
+pub struct PatchedEnvironmentUpdate {
     #[serde(rename = "id", skip_serializing_if = "Option::is_none")]
     pub id: Option<String>,
     /// The environment name.
@@ -39,10 +36,9 @@ pub struct PatchedEnvironment {
     pub modified_at: Option<String>,
 }
 
-impl PatchedEnvironment {
-    pub fn new() -> PatchedEnvironment {
-        PatchedEnvironment {
-            url: None,
+impl PatchedEnvironmentUpdate {
+    pub fn new() -> PatchedEnvironmentUpdate {
+        PatchedEnvironmentUpdate {
             id: None,
             name: None,
             description: None,

@@ -180,10 +180,12 @@ impl Users {
         rest_cfg: &OpenApiConfig,
         user_name: &str,
         description: Option<&str>,
+        role: Option<&str>,
     ) -> Result<UserDetails, UserError> {
         let user_create = ServiceAccountCreateRequest {
             name: user_name.to_string(),
             description: description.map(String::from),
+            role: role.map(String::from),
         };
         let response = serviceaccounts_create(rest_cfg, user_create);
         match response {
@@ -273,7 +275,7 @@ impl Users {
         description: Option<&str>,
     ) -> Result<UserDetails, UserError> {
         let role_enum = to_role_enum(role)?;
-        let details = self.create_service_account(rest_cfg, user_name, description)?;
+        let details = self.create_service_account(rest_cfg, user_name, description, Some(role))?;
 
         // must add membership for the account to show up in the list
         let response = self.create_membership(rest_cfg, &details.user_url, role_enum);
@@ -316,44 +318,6 @@ impl Users {
     pub fn get_current_user(&self, rest_cfg: &OpenApiConfig) -> Result<UserDetails, UserError> {
         let details = self.get_current_user_account(rest_cfg)?;
         Ok(details)
-    }
-
-    /// Gets a map of user ID to name for all account types.
-    pub fn get_user_id_to_name_map(
-        &self,
-        rest_cfg: &OpenApiConfig,
-    ) -> Result<UserNameMap, UserError> {
-        let mut user_map = UserNameMap::new();
-        let mut page_count = 1;
-        loop {
-            let response = users_list(
-                rest_cfg,
-                NO_ORDERING,
-                Some(page_count),
-                page_size(rest_cfg),
-                None,
-            );
-            match response {
-                Ok(data) => {
-                    if let Some(accounts) = data.results {
-                        for acct in accounts {
-                            user_map.insert(acct.id, acct.name.unwrap_or_default());
-                        }
-                        page_count += 1;
-                    } else {
-                        break;
-                    }
-                    if data.next.is_none() || data.next.as_ref().unwrap().is_empty() {
-                        break;
-                    }
-                }
-                Err(ResponseError(ref content)) => {
-                    return Err(response_error(&content.status, &content.content))
-                }
-                Err(e) => return Err(UserError::UnhandledError(e.to_string())),
-            }
-        }
-        Ok(user_map)
     }
 
     /// Gets a map of user URL to name for all account types.

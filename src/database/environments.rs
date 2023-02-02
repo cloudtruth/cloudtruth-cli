@@ -5,15 +5,13 @@ use crate::database::{
 use cloudtruth_restapi::apis::environments_api::*;
 use cloudtruth_restapi::apis::Error::ResponseError;
 use cloudtruth_restapi::models::{
-    EnvironmentCreate, PatchedEnvironment, PatchedTagUpdate, TagCreate,
+    EnvironmentCreate, PatchedEnvironmentUpdate, PatchedTagUpdate, TagCreate,
 };
 use std::collections::HashMap;
 
 const NO_DESC_CONTAINS: Option<&str> = None;
 const NO_NAME_CONTAINS: Option<&str> = None;
 const NO_ORDERING: Option<&str> = None;
-const NO_PARENT_NAME: Option<&str> = None;
-const NO_PARENT_CONTAINS: Option<&str> = None;
 
 pub struct Environments {}
 
@@ -61,8 +59,6 @@ impl Environments {
                 NO_ORDERING,
                 Some(page_count),
                 page_size(rest_cfg),
-                NO_PARENT_NAME,
-                NO_PARENT_CONTAINS,
             );
             if let Ok(data) = response {
                 if let Some(environments) = data.results {
@@ -114,8 +110,6 @@ impl Environments {
             NO_ORDERING,
             NO_PAGE_COUNT,
             NO_PAGE_SIZE,
-            NO_PARENT_NAME,
-            NO_PARENT_CONTAINS,
         );
 
         match response {
@@ -171,8 +165,6 @@ impl Environments {
                 NO_ORDERING,
                 Some(page_count),
                 page_size(rest_cfg),
-                NO_PARENT_NAME,
-                NO_PARENT_CONTAINS,
             );
             match response {
                 Ok(data) => {
@@ -274,8 +266,7 @@ impl Environments {
         environment_name: &str,
         description: Option<&str>,
     ) -> Result<Option<String>, EnvironmentError> {
-        let env = PatchedEnvironment {
-            url: None,
+        let env = PatchedEnvironmentUpdate {
             id: None,
             name: Some(environment_name.to_string()),
             description: description.map(String::from),

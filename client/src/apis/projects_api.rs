@@ -14,6 +14,13 @@ use std::time::Instant;
 use super::{configuration, Error};
 use crate::apis::{handle_serde_error, ResponseContent};
 
+/// struct for typed errors of method [`projects_copy_create`]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum ProjectsCopyCreateError {
+    UnknownValue(serde_json::Value),
+}
+
 /// struct for typed errors of method [`projects_create`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
@@ -299,6 +306,86 @@ pub enum ProjectsUpdateError {
     UnknownValue(serde_json::Value),
 }
 
+pub fn projects_copy_create(
+    configuration: &configuration::Configuration,
+    id: &str,
+    project: crate::models::Project,
+) -> Result<crate::models::Project, Error<ProjectsCopyCreateError>> {
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
+
+    let local_var_uri_str = format!(
+        "{}/api/v1/projects/{id}/copy/",
+        local_var_configuration.base_path,
+        id = crate::apis::urlencode(id)
+    );
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
+
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
+    }
+
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
+        let local_var_key = local_var_apikey.key.clone();
+        let local_var_value = match local_var_apikey.prefix {
+            Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
+            None => local_var_key,
+        };
+        local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
+    };
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
+    local_var_req_builder = local_var_req_builder.json(&project);
+
+    let local_var_req = local_var_req_builder.build()?;
+    let method = local_var_req.method().clone();
+    let start = Instant::now();
+    let mut local_var_resp = local_var_client.execute(local_var_req)?;
+    if local_var_configuration.rest_debug {
+        let duration = start.elapsed();
+        println!(
+            "URL {} {} elapsed: {:?}",
+            method,
+            &local_var_resp.url(),
+            duration
+        );
+    }
+
+    let local_var_status = local_var_resp.status();
+    let local_var_content = local_var_resp.text()?;
+
+    if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if local_var_configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
+    } else {
+        let local_var_entity: Option<ProjectsCopyCreateError> =
+            serde_json::from_str(&local_var_content).ok();
+        let local_var_error = ResponseContent {
+            status: local_var_status,
+            content: local_var_content,
+            entity: local_var_entity,
+        };
+        if local_var_configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
+        Err(Error::ResponseError(local_var_error))
+    }
+}
+
 pub fn projects_create(
     configuration: &configuration::Configuration,
     project_create: crate::models::ProjectCreate,
@@ -326,6 +413,9 @@ pub fn projects_create(
             None => local_var_key,
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
+    };
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
     local_var_req_builder = local_var_req_builder.json(&project_create);
 
@@ -402,6 +492,9 @@ pub fn projects_destroy(
             None => local_var_key,
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
+    };
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
 
     let local_var_req = local_var_req_builder.build()?;
@@ -502,6 +595,9 @@ pub fn projects_list(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
 
     let local_var_req = local_var_req_builder.build()?;
     let method = local_var_req.method().clone();
@@ -559,7 +655,6 @@ pub fn projects_parameter_export_list(
     output: Option<&str>,
     startswith: Option<&str>,
     tag: Option<&str>,
-    wrap: Option<bool>,
 ) -> Result<crate::models::ParameterExport, Error<ProjectsParameterExportListError>> {
     let local_var_configuration = configuration;
 
@@ -612,10 +707,6 @@ pub fn projects_parameter_export_list(
     if let Some(ref local_var_str) = tag {
         local_var_req_builder = local_var_req_builder.query(&[("tag", &local_var_str.to_string())]);
     }
-    if let Some(ref local_var_str) = wrap {
-        local_var_req_builder =
-            local_var_req_builder.query(&[("wrap", &local_var_str.to_string())]);
-    }
     if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
@@ -631,6 +722,9 @@ pub fn projects_parameter_export_list(
             None => local_var_key,
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
+    };
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
 
     let local_var_req = local_var_req_builder.build()?;
@@ -707,6 +801,9 @@ pub fn projects_parameters_create(
             None => local_var_key,
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
+    };
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
     local_var_req_builder = local_var_req_builder.json(&parameter_create);
 
@@ -786,6 +883,9 @@ pub fn projects_parameters_destroy(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
 
     let local_var_req = local_var_req_builder.build()?;
     let method = local_var_req.method().clone();
@@ -852,7 +952,6 @@ pub fn projects_parameters_duality_list(
     t2_as_of: Option<String>,
     t2_tag: Option<&str>,
     values: Option<bool>,
-    wrap: Option<bool>,
 ) -> Result<crate::models::PaginatedParameterDualityList, Error<ProjectsParametersDualityListError>>
 {
     let local_var_configuration = configuration;
@@ -947,10 +1046,6 @@ pub fn projects_parameters_duality_list(
         local_var_req_builder =
             local_var_req_builder.query(&[("values", &local_var_str.to_string())]);
     }
-    if let Some(ref local_var_str) = wrap {
-        local_var_req_builder =
-            local_var_req_builder.query(&[("wrap", &local_var_str.to_string())]);
-    }
     if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
@@ -966,6 +1061,9 @@ pub fn projects_parameters_duality_list(
             None => local_var_key,
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
+    };
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
 
     let local_var_req = local_var_req_builder.build()?;
@@ -1018,7 +1116,6 @@ pub fn projects_parameters_list(
     difference: Option<&str>,
     environment: Option<&str>,
     evaluate: Option<bool>,
-    id__in: Option<Vec<String>>,
     immediate_parameters: Option<bool>,
     mask_secrets: Option<bool>,
     name: Option<&str>,
@@ -1030,16 +1127,9 @@ pub fn projects_parameters_list(
     ordering: Option<&str>,
     page: Option<i32>,
     page_size: Option<i32>,
-    project__name: Option<&str>,
-    project__name__contains: Option<&str>,
-    project__name__icontains: Option<&str>,
-    project__name__iexact: Option<&str>,
-    project__name__istartswith: Option<&str>,
-    project__name__startswith: Option<&str>,
     secret: Option<bool>,
     tag: Option<&str>,
     values: Option<bool>,
-    wrap: Option<bool>,
 ) -> Result<crate::models::PaginatedParameterList, Error<ProjectsParametersListError>> {
     let local_var_configuration = configuration;
 
@@ -1072,17 +1162,6 @@ pub fn projects_parameters_list(
     if let Some(ref local_var_str) = evaluate {
         local_var_req_builder =
             local_var_req_builder.query(&[("evaluate", &local_var_str.to_string())]);
-    }
-    if let Some(ref local_var_str) = id__in {
-        local_var_req_builder = local_var_req_builder.query(&[(
-            "id__in",
-            &local_var_str
-                .into_iter()
-                .map(|p| p.to_string())
-                .collect::<Vec<String>>()
-                .join(",")
-                .to_string(),
-        )]);
     }
     if let Some(ref local_var_str) = immediate_parameters {
         local_var_req_builder =
@@ -1128,30 +1207,6 @@ pub fn projects_parameters_list(
         local_var_req_builder =
             local_var_req_builder.query(&[("page_size", &local_var_str.to_string())]);
     }
-    if let Some(ref local_var_str) = project__name {
-        local_var_req_builder =
-            local_var_req_builder.query(&[("project__name", &local_var_str.to_string())]);
-    }
-    if let Some(ref local_var_str) = project__name__contains {
-        local_var_req_builder =
-            local_var_req_builder.query(&[("project__name__contains", &local_var_str.to_string())]);
-    }
-    if let Some(ref local_var_str) = project__name__icontains {
-        local_var_req_builder = local_var_req_builder
-            .query(&[("project__name__icontains", &local_var_str.to_string())]);
-    }
-    if let Some(ref local_var_str) = project__name__iexact {
-        local_var_req_builder =
-            local_var_req_builder.query(&[("project__name__iexact", &local_var_str.to_string())]);
-    }
-    if let Some(ref local_var_str) = project__name__istartswith {
-        local_var_req_builder = local_var_req_builder
-            .query(&[("project__name__istartswith", &local_var_str.to_string())]);
-    }
-    if let Some(ref local_var_str) = project__name__startswith {
-        local_var_req_builder = local_var_req_builder
-            .query(&[("project__name__startswith", &local_var_str.to_string())]);
-    }
     if let Some(ref local_var_str) = secret {
         local_var_req_builder =
             local_var_req_builder.query(&[("secret", &local_var_str.to_string())]);
@@ -1162,10 +1217,6 @@ pub fn projects_parameters_list(
     if let Some(ref local_var_str) = values {
         local_var_req_builder =
             local_var_req_builder.query(&[("values", &local_var_str.to_string())]);
-    }
-    if let Some(ref local_var_str) = wrap {
-        local_var_req_builder =
-            local_var_req_builder.query(&[("wrap", &local_var_str.to_string())]);
     }
     if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
@@ -1182,6 +1233,9 @@ pub fn projects_parameters_list(
             None => local_var_key,
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
+    };
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
 
     let local_var_req = local_var_req_builder.build()?;
@@ -1230,7 +1284,7 @@ pub fn projects_parameters_partial_update(
     configuration: &configuration::Configuration,
     id: &str,
     project_pk: &str,
-    patched_parameter: Option<crate::models::PatchedParameter>,
+    patched_parameter_update: Option<crate::models::PatchedParameterUpdate>,
 ) -> Result<crate::models::Parameter, Error<ProjectsParametersPartialUpdateError>> {
     let local_var_configuration = configuration;
 
@@ -1261,7 +1315,10 @@ pub fn projects_parameters_partial_update(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
-    local_var_req_builder = local_var_req_builder.json(&patched_parameter);
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
+    local_var_req_builder = local_var_req_builder.json(&patched_parameter_update);
 
     let local_var_req = local_var_req_builder.build()?;
     let method = local_var_req.method().clone();
@@ -1364,6 +1421,9 @@ pub fn projects_parameters_pushes_list(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
 
     let local_var_req = local_var_req_builder.build()?;
     let method = local_var_req.method().clone();
@@ -1418,7 +1478,6 @@ pub fn projects_parameters_retrieve(
     mask_secrets: Option<bool>,
     tag: Option<&str>,
     values: Option<bool>,
-    wrap: Option<bool>,
 ) -> Result<crate::models::Parameter, Error<ProjectsParametersRetrieveError>> {
     let local_var_configuration = configuration;
 
@@ -1460,10 +1519,6 @@ pub fn projects_parameters_retrieve(
         local_var_req_builder =
             local_var_req_builder.query(&[("values", &local_var_str.to_string())]);
     }
-    if let Some(ref local_var_str) = wrap {
-        local_var_req_builder =
-            local_var_req_builder.query(&[("wrap", &local_var_str.to_string())]);
-    }
     if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
@@ -1479,6 +1534,9 @@ pub fn projects_parameters_retrieve(
             None => local_var_key,
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
+    };
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
 
     let local_var_req = local_var_req_builder.build()?;
@@ -1557,6 +1615,9 @@ pub fn projects_parameters_rules_create(
             None => local_var_key,
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
+    };
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
     local_var_req_builder = local_var_req_builder.json(&parameter_rule_create);
 
@@ -1637,6 +1698,9 @@ pub fn projects_parameters_rules_destroy(
             None => local_var_key,
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
+    };
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
 
     let local_var_req = local_var_req_builder.build()?;
@@ -1734,6 +1798,9 @@ pub fn projects_parameters_rules_list(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
 
     let local_var_req = local_var_req_builder.build()?;
     let method = local_var_req.method().clone();
@@ -1782,8 +1849,8 @@ pub fn projects_parameters_rules_partial_update(
     id: &str,
     parameter_pk: &str,
     project_pk: &str,
-    patched_parameter_rule: Option<crate::models::PatchedParameterRule>,
-) -> Result<crate::models::ParameterRule, Error<ProjectsParametersRulesPartialUpdateError>> {
+    patched_parameter_rule_update: Option<crate::models::PatchedParameterRuleUpdate>,
+) -> Result<crate::models::ParameterRuleUpdate, Error<ProjectsParametersRulesPartialUpdateError>> {
     let local_var_configuration = configuration;
 
     let local_var_client = &local_var_configuration.client;
@@ -1814,7 +1881,10 @@ pub fn projects_parameters_rules_partial_update(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
-    local_var_req_builder = local_var_req_builder.json(&patched_parameter_rule);
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
+    local_var_req_builder = local_var_req_builder.json(&patched_parameter_rule_update);
 
     let local_var_req = local_var_req_builder.build()?;
     let method = local_var_req.method().clone();
@@ -1894,6 +1964,9 @@ pub fn projects_parameters_rules_retrieve(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
 
     let local_var_req = local_var_req_builder.build()?;
     let method = local_var_req.method().clone();
@@ -1942,8 +2015,8 @@ pub fn projects_parameters_rules_update(
     id: &str,
     parameter_pk: &str,
     project_pk: &str,
-    parameter_rule: crate::models::ParameterRule,
-) -> Result<crate::models::ParameterRule, Error<ProjectsParametersRulesUpdateError>> {
+    parameter_rule_update: crate::models::ParameterRuleUpdate,
+) -> Result<crate::models::ParameterRuleUpdate, Error<ProjectsParametersRulesUpdateError>> {
     let local_var_configuration = configuration;
 
     let local_var_client = &local_var_configuration.client;
@@ -1974,7 +2047,10 @@ pub fn projects_parameters_rules_update(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
-    local_var_req_builder = local_var_req_builder.json(&parameter_rule);
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
+    local_var_req_builder = local_var_req_builder.json(&parameter_rule_update);
 
     let local_var_req = local_var_req_builder.build()?;
     let method = local_var_req.method().clone();
@@ -2062,6 +2138,9 @@ pub fn projects_parameters_timeline_retrieve(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
 
     let local_var_req = local_var_req_builder.build()?;
     let method = local_var_req.method().clone();
@@ -2147,6 +2226,9 @@ pub fn projects_parameters_timelines_retrieve(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
 
     let local_var_req = local_var_req_builder.build()?;
     let method = local_var_req.method().clone();
@@ -2194,7 +2276,7 @@ pub fn projects_parameters_update(
     configuration: &configuration::Configuration,
     id: &str,
     project_pk: &str,
-    parameter: crate::models::Parameter,
+    parameter_update: crate::models::ParameterUpdate,
 ) -> Result<crate::models::Parameter, Error<ProjectsParametersUpdateError>> {
     let local_var_configuration = configuration;
 
@@ -2225,7 +2307,10 @@ pub fn projects_parameters_update(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
-    local_var_req_builder = local_var_req_builder.json(&parameter);
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
+    local_var_req_builder = local_var_req_builder.json(&parameter_update);
 
     let local_var_req = local_var_req_builder.build()?;
     let method = local_var_req.method().clone();
@@ -2276,7 +2361,6 @@ pub fn projects_parameters_values_create(
     project_pk: &str,
     value_create: crate::models::ValueCreate,
     evaluate: Option<bool>,
-    wrap: Option<bool>,
 ) -> Result<crate::models::Value, Error<ProjectsParametersValuesCreateError>> {
     let local_var_configuration = configuration;
 
@@ -2295,10 +2379,6 @@ pub fn projects_parameters_values_create(
         local_var_req_builder =
             local_var_req_builder.query(&[("evaluate", &local_var_str.to_string())]);
     }
-    if let Some(ref local_var_str) = wrap {
-        local_var_req_builder =
-            local_var_req_builder.query(&[("wrap", &local_var_str.to_string())]);
-    }
     if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
@@ -2314,6 +2394,9 @@ pub fn projects_parameters_values_create(
             None => local_var_key,
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
+    };
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
     local_var_req_builder = local_var_req_builder.json(&value_create);
 
@@ -2401,6 +2484,9 @@ pub fn projects_parameters_values_destroy(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
 
     let local_var_req = local_var_req_builder.build()?;
     let method = local_var_req.method().clone();
@@ -2456,7 +2542,6 @@ pub fn projects_parameters_values_list(
     page: Option<i32>,
     page_size: Option<i32>,
     tag: Option<&str>,
-    wrap: Option<bool>,
 ) -> Result<crate::models::PaginatedValueList, Error<ProjectsParametersValuesListError>> {
     let local_var_configuration = configuration;
 
@@ -2502,10 +2587,6 @@ pub fn projects_parameters_values_list(
     if let Some(ref local_var_str) = tag {
         local_var_req_builder = local_var_req_builder.query(&[("tag", &local_var_str.to_string())]);
     }
-    if let Some(ref local_var_str) = wrap {
-        local_var_req_builder =
-            local_var_req_builder.query(&[("wrap", &local_var_str.to_string())]);
-    }
     if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
@@ -2521,6 +2602,9 @@ pub fn projects_parameters_values_list(
             None => local_var_key,
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
+    };
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
 
     let local_var_req = local_var_req_builder.build()?;
@@ -2572,9 +2656,8 @@ pub fn projects_parameters_values_partial_update(
     parameter_pk: &str,
     project_pk: &str,
     evaluate: Option<bool>,
-    wrap: Option<bool>,
-    patched_value: Option<crate::models::PatchedValue>,
-) -> Result<crate::models::Value, Error<ProjectsParametersValuesPartialUpdateError>> {
+    patched_value_update: Option<crate::models::PatchedValueUpdate>,
+) -> Result<crate::models::ValueUpdate, Error<ProjectsParametersValuesPartialUpdateError>> {
     let local_var_configuration = configuration;
 
     let local_var_client = &local_var_configuration.client;
@@ -2593,10 +2676,6 @@ pub fn projects_parameters_values_partial_update(
         local_var_req_builder =
             local_var_req_builder.query(&[("evaluate", &local_var_str.to_string())]);
     }
-    if let Some(ref local_var_str) = wrap {
-        local_var_req_builder =
-            local_var_req_builder.query(&[("wrap", &local_var_str.to_string())]);
-    }
     if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
@@ -2613,7 +2692,10 @@ pub fn projects_parameters_values_partial_update(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
-    local_var_req_builder = local_var_req_builder.json(&patched_value);
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
+    local_var_req_builder = local_var_req_builder.json(&patched_value_update);
 
     let local_var_req = local_var_req_builder.build()?;
     let method = local_var_req.method().clone();
@@ -2669,7 +2751,6 @@ pub fn projects_parameters_values_retrieve(
     include: Option<&str>,
     mask_secrets: Option<bool>,
     tag: Option<&str>,
-    wrap: Option<bool>,
 ) -> Result<crate::models::Value, Error<ProjectsParametersValuesRetrieveError>> {
     let local_var_configuration = configuration;
 
@@ -2708,10 +2789,6 @@ pub fn projects_parameters_values_retrieve(
     if let Some(ref local_var_str) = tag {
         local_var_req_builder = local_var_req_builder.query(&[("tag", &local_var_str.to_string())]);
     }
-    if let Some(ref local_var_str) = wrap {
-        local_var_req_builder =
-            local_var_req_builder.query(&[("wrap", &local_var_str.to_string())]);
-    }
     if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
@@ -2727,6 +2804,9 @@ pub fn projects_parameters_values_retrieve(
             None => local_var_key,
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
+    };
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
 
     let local_var_req = local_var_req_builder.build()?;
@@ -2778,9 +2858,8 @@ pub fn projects_parameters_values_update(
     parameter_pk: &str,
     project_pk: &str,
     evaluate: Option<bool>,
-    wrap: Option<bool>,
-    value: Option<crate::models::Value>,
-) -> Result<crate::models::Value, Error<ProjectsParametersValuesUpdateError>> {
+    value_update: Option<crate::models::ValueUpdate>,
+) -> Result<crate::models::ValueUpdate, Error<ProjectsParametersValuesUpdateError>> {
     let local_var_configuration = configuration;
 
     let local_var_client = &local_var_configuration.client;
@@ -2799,10 +2878,6 @@ pub fn projects_parameters_values_update(
         local_var_req_builder =
             local_var_req_builder.query(&[("evaluate", &local_var_str.to_string())]);
     }
-    if let Some(ref local_var_str) = wrap {
-        local_var_req_builder =
-            local_var_req_builder.query(&[("wrap", &local_var_str.to_string())]);
-    }
     if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
         local_var_req_builder =
             local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
@@ -2819,7 +2894,10 @@ pub fn projects_parameters_values_update(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
-    local_var_req_builder = local_var_req_builder.json(&value);
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
+    local_var_req_builder = local_var_req_builder.json(&value_update);
 
     let local_var_req = local_var_req_builder.build()?;
     let method = local_var_req.method().clone();
@@ -2866,8 +2944,8 @@ pub fn projects_parameters_values_update(
 pub fn projects_partial_update(
     configuration: &configuration::Configuration,
     id: &str,
-    patched_project: Option<crate::models::PatchedProject>,
-) -> Result<crate::models::Project, Error<ProjectsPartialUpdateError>> {
+    patched_project_update: Option<crate::models::PatchedProjectUpdate>,
+) -> Result<crate::models::ProjectUpdate, Error<ProjectsPartialUpdateError>> {
     let local_var_configuration = configuration;
 
     let local_var_client = &local_var_configuration.client;
@@ -2896,7 +2974,10 @@ pub fn projects_partial_update(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
-    local_var_req_builder = local_var_req_builder.json(&patched_project);
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
+    local_var_req_builder = local_var_req_builder.json(&patched_project_update);
 
     let local_var_req = local_var_req_builder.build()?;
     let method = local_var_req.method().clone();
@@ -2971,6 +3052,9 @@ pub fn projects_retrieve(
             None => local_var_key,
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
+    };
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
 
     let local_var_req = local_var_req_builder.build()?;
@@ -3073,6 +3157,9 @@ pub fn projects_template_preview_create(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
     local_var_req_builder = local_var_req_builder.json(&template_preview_create_request);
 
     let local_var_req = local_var_req_builder.build()?;
@@ -3149,6 +3236,9 @@ pub fn projects_templates_create(
             None => local_var_key,
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
+    };
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
     local_var_req_builder = local_var_req_builder.json(&template_create);
 
@@ -3227,6 +3317,9 @@ pub fn projects_templates_destroy(
             None => local_var_key,
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
+    };
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
 
     let local_var_req = local_var_req_builder.build()?;
@@ -3346,6 +3439,9 @@ pub fn projects_templates_list(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
 
     let local_var_req = local_var_req_builder.build()?;
     let method = local_var_req.method().clone();
@@ -3393,7 +3489,7 @@ pub fn projects_templates_partial_update(
     configuration: &configuration::Configuration,
     id: &str,
     project_pk: &str,
-    patched_template: Option<crate::models::PatchedTemplate>,
+    patched_template_update: Option<crate::models::PatchedTemplateUpdate>,
 ) -> Result<crate::models::Template, Error<ProjectsTemplatesPartialUpdateError>> {
     let local_var_configuration = configuration;
 
@@ -3424,7 +3520,10 @@ pub fn projects_templates_partial_update(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
-    local_var_req_builder = local_var_req_builder.json(&patched_template);
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
+    local_var_req_builder = local_var_req_builder.json(&patched_template_update);
 
     let local_var_req = local_var_req_builder.build()?;
     let method = local_var_req.method().clone();
@@ -3526,6 +3625,9 @@ pub fn projects_templates_retrieve(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
 
     let local_var_req = local_var_req_builder.build()?;
     let method = local_var_req.method().clone();
@@ -3618,6 +3720,9 @@ pub fn projects_templates_timeline_retrieve(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
 
     let local_var_req = local_var_req_builder.build()?;
     let method = local_var_req.method().clone();
@@ -3708,6 +3813,9 @@ pub fn projects_templates_timelines_retrieve(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
 
     let local_var_req = local_var_req_builder.build()?;
     let method = local_var_req.method().clone();
@@ -3755,7 +3863,7 @@ pub fn projects_templates_update(
     configuration: &configuration::Configuration,
     id: &str,
     project_pk: &str,
-    template: crate::models::Template,
+    template_update: crate::models::TemplateUpdate,
 ) -> Result<crate::models::Template, Error<ProjectsTemplatesUpdateError>> {
     let local_var_configuration = configuration;
 
@@ -3786,7 +3894,10 @@ pub fn projects_templates_update(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
-    local_var_req_builder = local_var_req_builder.json(&template);
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
+    local_var_req_builder = local_var_req_builder.json(&template_update);
 
     let local_var_req = local_var_req_builder.build()?;
     let method = local_var_req.method().clone();
@@ -3833,8 +3944,8 @@ pub fn projects_templates_update(
 pub fn projects_update(
     configuration: &configuration::Configuration,
     id: &str,
-    project: crate::models::Project,
-) -> Result<crate::models::Project, Error<ProjectsUpdateError>> {
+    project_update: crate::models::ProjectUpdate,
+) -> Result<crate::models::ProjectUpdate, Error<ProjectsUpdateError>> {
     let local_var_configuration = configuration;
 
     let local_var_client = &local_var_configuration.client;
@@ -3863,7 +3974,10 @@ pub fn projects_update(
         };
         local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
     };
-    local_var_req_builder = local_var_req_builder.json(&project);
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
+    local_var_req_builder = local_var_req_builder.json(&project_update);
 
     let local_var_req = local_var_req_builder.build()?;
     let method = local_var_req.method().clone();

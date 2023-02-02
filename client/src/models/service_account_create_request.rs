@@ -16,6 +16,9 @@ pub struct ServiceAccountCreateRequest {
     /// An optional description of the process or system using the service account.
     #[serde(rename = "description", skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
+    /// The role for the service acount
+    #[serde(rename = "role", skip_serializing_if = "Option::is_none")]
+    pub role: Option<String>,
 }
 
 impl ServiceAccountCreateRequest {
@@ -23,6 +26,7 @@ impl ServiceAccountCreateRequest {
         ServiceAccountCreateRequest {
             name,
             description: None,
+            role: None,
         }
     }
 }

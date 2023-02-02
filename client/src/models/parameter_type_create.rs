@@ -16,17 +16,17 @@ pub struct ParameterTypeCreate {
     /// A description of the parameter type, provide documentation on how to use this type here.
     #[serde(rename = "description", skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
-    /// All types must derive, either directly or indirectly, from one of the CloudTruth built-in types.   This is the ParameterType that this type is derived from.
-    #[serde(rename = "parent", skip_serializing_if = "Option::is_none")]
-    pub parent: Option<String>,
+    /// The URL for this parameter type's parent
+    #[serde(rename = "parent")]
+    pub parent: String,
 }
 
 impl ParameterTypeCreate {
-    pub fn new(name: String) -> ParameterTypeCreate {
+    pub fn new(name: String, parent: String) -> ParameterTypeCreate {
         ParameterTypeCreate {
             name,
             description: None,
-            parent: None,
+            parent,
         }
     }
 }

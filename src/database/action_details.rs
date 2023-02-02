@@ -128,7 +128,7 @@ impl From<&AwsPush> for ActionDetails {
                 _ => "".to_string(),
             },
             created_at: api.created_at.clone(),
-            modified_at: api.modified_at.clone(),
+            modified_at: api.modified_at.clone().unwrap_or_default(),
         }
     }
 }
@@ -172,7 +172,7 @@ impl From<&AwsPull> for ActionDetails {
                 _ => "".to_string(),
             },
             created_at: api.created_at.clone(),
-            modified_at: api.modified_at.clone(),
+            modified_at: api.modified_at.clone().unwrap_or_default(),
         }
     }
 }
@@ -219,7 +219,7 @@ impl From<&GitHubPull> for ActionDetails {
             region: "".to_string(),
             service: "".to_string(),
             created_at: api.created_at.clone(),
-            modified_at: api.modified_at.clone(),
+            modified_at: api.modified_at.clone().unwrap_or_default(),
         }
     }
 }

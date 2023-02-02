@@ -35,12 +35,17 @@ pub struct GitHubPullTask {
     #[serde(rename = "created_at")]
     pub created_at: String,
     #[serde(rename = "modified_at")]
-    pub modified_at: String,
+    pub modified_at: Option<String>,
 }
 
 impl GitHubPullTask {
     /// Pull task for a GitHub integration.
-    pub fn new(url: String, id: String, created_at: String, modified_at: String) -> GitHubPullTask {
+    pub fn new(
+        url: String,
+        id: String,
+        created_at: String,
+        modified_at: Option<String>,
+    ) -> GitHubPullTask {
         GitHubPullTask {
             url,
             id,

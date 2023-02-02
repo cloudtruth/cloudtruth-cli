@@ -252,6 +252,7 @@ impl Integrations {
                 NO_ORDERING,
                 Some(page_count),
                 page_size(rest_cfg),
+                None,
             );
             if let Ok(data) = response {
                 if let Some(list) = data.results {
@@ -817,7 +818,7 @@ impl Integrations {
             coerce_parameters: coerce_params,
             local,
             created_at: "".to_string(),
-            modified_at: "".to_string(),
+            modified_at: None,
         };
         let response = integrations_aws_pushes_create(rest_cfg, integration_id, push_create);
         match response {
@@ -991,7 +992,7 @@ impl Integrations {
             include_templates,
             coerce_parameters: coerce_params,
             created_at: "".to_string(),
-            modified_at: "".to_string(),
+            modified_at: None,
         };
         let response = integrations_aws_pushes_sync_create(
             rest_cfg,
@@ -1578,7 +1579,7 @@ impl Integrations {
             resource: Some(resource.to_string()),
             latest_task: None,
             created_at: "".to_string(),
-            modified_at: "".to_string(),
+            modified_at: None,
             dry_run,
             mode: None,
             mapped_values: vec![],
@@ -1638,7 +1639,7 @@ impl Integrations {
             description: description.map(String::from),
             latest_task: None,
             created_at: "".to_string(),
-            modified_at: "".to_string(),
+            modified_at: None,
             dry_run,
             mode: None,
             mapped_values: vec![],
@@ -1723,7 +1724,7 @@ impl Integrations {
             description,
             latest_task: None,
             created_at: "".to_string(),
-            modified_at: "".to_string(),
+            modified_at: None,
             dry_run: None,
             mode: None,
             mapped_values: vec![],

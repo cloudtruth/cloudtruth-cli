@@ -74,7 +74,7 @@ pub struct GitHubPullTaskStep {
     #[serde(rename = "created_at")]
     pub created_at: String,
     #[serde(rename = "modified_at")]
-    pub modified_at: String,
+    pub modified_at: Option<String>,
 }
 
 impl GitHubPullTaskStep {
@@ -87,7 +87,7 @@ impl GitHubPullTaskStep {
         project: Option<String>,
         parameter: Option<String>,
         created_at: String,
-        modified_at: String,
+        modified_at: Option<String>,
     ) -> GitHubPullTaskStep {
         GitHubPullTaskStep {
             url,

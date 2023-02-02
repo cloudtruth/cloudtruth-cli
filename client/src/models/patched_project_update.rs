@@ -9,10 +9,7 @@
  */
 
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
-pub struct PatchedProject {
-    #[serde(rename = "url", skip_serializing_if = "Option::is_none")]
-    pub url: Option<String>,
-    /// A unique identifier for the project.
+pub struct PatchedProjectUpdate {
     #[serde(rename = "id", skip_serializing_if = "Option::is_none")]
     pub id: Option<String>,
     /// The project name.
@@ -21,9 +18,12 @@ pub struct PatchedProject {
     /// A description of the project.  You may find it helpful to document how this project is used to assist others when they need to maintain software that uses this content.
     #[serde(rename = "description", skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
-    /// This is the opposite of `depends_on`, see that field for more details.
-    #[serde(rename = "dependents", skip_serializing_if = "Option::is_none")]
-    pub dependents: Option<Vec<String>>,
+    /// A regular expression parameter names must match
+    #[serde(
+        rename = "parameter_name_pattern",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub parameter_name_pattern: Option<String>,
     /// Project dependencies allow projects to be used for shared configuration, for example a database used by many applications needs to advertise its port number.  Projects can depend on another project which will add the parameters from the parent project into the current project.  All of the parameter names between the two projects must be unique.  When retrieving values or rendering templates, all of the parameters from the parent project will also be available in the current project.
     #[serde(rename = "depends_on", skip_serializing_if = "Option::is_none")]
     pub depends_on: Option<String>,
@@ -33,31 +33,22 @@ pub struct PatchedProject {
     /// Your role in the project, if the project is access-controlled.
     #[serde(rename = "role", skip_serializing_if = "Option::is_none")]
     pub role: Option<Box<crate::models::RoleEnum>>,
-    /// Deprecated. Only shows pushes for aws integrations in /api/v1/.
-    #[serde(rename = "pushes", skip_serializing_if = "Option::is_none")]
-    pub pushes: Option<Vec<crate::models::AwsPush>>,
-    /// Push actions associated with the project.
-    #[serde(rename = "push_urls", skip_serializing_if = "Option::is_none")]
-    pub push_urls: Option<Vec<String>>,
     #[serde(rename = "created_at", skip_serializing_if = "Option::is_none")]
     pub created_at: Option<String>,
     #[serde(rename = "modified_at", skip_serializing_if = "Option::is_none")]
     pub modified_at: Option<String>,
 }
 
-impl PatchedProject {
-    pub fn new() -> PatchedProject {
-        PatchedProject {
-            url: None,
+impl PatchedProjectUpdate {
+    pub fn new() -> PatchedProjectUpdate {
+        PatchedProjectUpdate {
             id: None,
             name: None,
             description: None,
-            dependents: None,
+            parameter_name_pattern: None,
             depends_on: None,
             access_controlled: None,
             role: None,
-            pushes: None,
-            push_urls: None,
             created_at: None,
             modified_at: None,
         }

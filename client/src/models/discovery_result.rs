@@ -11,14 +11,14 @@
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct DiscoveryResult {
     #[serde(rename = "matched")]
-    pub matched: ::std::collections::HashMap<String, crate::models::DiscoveredContent>,
+    pub matched: ::std::collections::HashMap<String, Vec<crate::models::DiscoveredContent>>,
     #[serde(rename = "skipped")]
     pub skipped: ::std::collections::HashMap<String, String>,
 }
 
 impl DiscoveryResult {
     pub fn new(
-        matched: ::std::collections::HashMap<String, crate::models::DiscoveredContent>,
+        matched: ::std::collections::HashMap<String, Vec<crate::models::DiscoveredContent>>,
         skipped: ::std::collections::HashMap<String, String>,
     ) -> DiscoveryResult {
         DiscoveryResult { matched, skipped }

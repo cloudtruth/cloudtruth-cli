@@ -12,13 +12,8 @@
 
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct ParameterTimelineEntry {
-    #[serde(rename = "history_date")]
-    pub history_date: String,
     #[serde(rename = "history_type")]
     pub history_type: Option<Box<crate::models::HistoryTypeEnum>>,
-    /// The unique identifier of a user.
-    #[serde(rename = "history_user", skip_serializing_if = "Option::is_none")]
-    pub history_user: Option<String>,
     /// The affected environment(s).
     #[serde(rename = "history_environments")]
     pub history_environments: Vec<crate::models::ParameterTimelineEntryEnvironment>,
@@ -33,16 +28,13 @@ pub struct ParameterTimelineEntry {
 impl ParameterTimelineEntry {
     /// Details about a single change.
     pub fn new(
-        history_date: String,
         history_type: Option<crate::models::HistoryTypeEnum>,
         history_environments: Vec<crate::models::ParameterTimelineEntryEnvironment>,
         history_model: Option<crate::models::HistoryModelEnum>,
         history_parameter: Option<crate::models::ParameterTimelineEntryParameter>,
     ) -> ParameterTimelineEntry {
         ParameterTimelineEntry {
-            history_date,
             history_type: history_type.map(Box::new),
-            history_user: None,
             history_environments,
             history_model: history_model.map(Box::new),
             history_parameter: history_parameter.map(Box::new),

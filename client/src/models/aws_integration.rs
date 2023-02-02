@@ -28,11 +28,11 @@ pub struct AwsIntegration {
     pub status_detail: String,
     /// The last time the status was evaluated.
     #[serde(rename = "status_last_checked_at")]
-    pub status_last_checked_at: String,
+    pub status_last_checked_at: Option<String>,
     #[serde(rename = "created_at")]
     pub created_at: String,
     #[serde(rename = "modified_at")]
-    pub modified_at: String,
+    pub modified_at: Option<String>,
     #[serde(rename = "fqn")]
     pub fqn: String,
     /// The type of integration.
@@ -51,8 +51,8 @@ pub struct AwsIntegration {
     #[serde(rename = "aws_enabled_services")]
     pub aws_enabled_services: Vec<crate::models::AwsServiceEnum>,
     /// This is a shared secret between the AWS Administrator who set up your IAM trust relationship and your CloudTruth AWS Integration.  CloudTruth will generate a random value for you to give to your AWS Administrator in order to create the necessary IAM role for proper access.
-    #[serde(rename = "aws_external_id")]
-    pub aws_external_id: String,
+    #[serde(rename = "aws_external_id", skip_serializing_if = "Option::is_none")]
+    pub aws_external_id: Option<String>,
     /// If present, this is the KMS Key Id that is used to push values.  This key must be accessible in the AWS account (it cannot be an ARN to a key in another AWS account).
     #[serde(rename = "aws_kms_key_id", skip_serializing_if = "Option::is_none")]
     pub aws_kms_key_id: Option<String>,
@@ -68,15 +68,14 @@ impl AwsIntegration {
         name: String,
         status: Option<crate::models::StatusEnum>,
         status_detail: String,
-        status_last_checked_at: String,
+        status_last_checked_at: Option<String>,
         created_at: String,
-        modified_at: String,
+        modified_at: Option<String>,
         fqn: String,
         _type: String,
         aws_account_id: String,
         aws_enabled_regions: Vec<crate::models::AwsRegionEnum>,
         aws_enabled_services: Vec<crate::models::AwsServiceEnum>,
-        aws_external_id: String,
         aws_role_name: String,
     ) -> AwsIntegration {
         AwsIntegration {
@@ -95,7 +94,7 @@ impl AwsIntegration {
             aws_account_id,
             aws_enabled_regions,
             aws_enabled_services,
-            aws_external_id,
+            aws_external_id: None,
             aws_kms_key_id: None,
             aws_role_name,
         }

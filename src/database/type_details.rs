@@ -1,5 +1,5 @@
 use crate::database::{ParamRuleType, ParameterRuleDetail};
-use cloudtruth_restapi::models::ParameterType;
+use cloudtruth_restapi::models::{ParameterType, ParameterTypeUpdate};
 
 #[derive(Clone, Debug)]
 pub struct TypeDetails {
@@ -30,7 +30,24 @@ impl From<&ParameterType> for TypeDetails {
                 .map(ParameterRuleDetail::from)
                 .collect(),
             created_at: api_ptype.created_at.clone(),
-            modified_at: api_ptype.modified_at.clone(),
+            modified_at: api_ptype.modified_at.clone().unwrap_or_default(),
+        }
+    }
+}
+
+/// Converts from the OpenApi `ParameterTypeUpdate` model to the CloudTruth `TypeDetails`
+impl From<&ParameterTypeUpdate> for TypeDetails {
+    fn from(api_ptype: &ParameterTypeUpdate) -> Self {
+        Self {
+            id: api_ptype.id.clone(),
+            url: "".to_owned(),
+            name: api_ptype.name.clone(),
+            description: api_ptype.description.clone().unwrap_or_default(),
+            parent_url: api_ptype.parent.clone(),
+            parent_name: "".to_owned(),
+            rules: Vec::new(),
+            created_at: api_ptype.created_at.clone(),
+            modified_at: api_ptype.modified_at.clone().unwrap_or_default(),
         }
     }
 }

@@ -10,14 +10,22 @@
 
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct Project {
+    /// The URL for the project.
     #[serde(rename = "url")]
     pub url: String,
-    /// A unique identifier for the project.
     #[serde(rename = "id")]
     pub id: String,
+    #[serde(rename = "ledger_id")]
+    pub ledger_id: String,
     /// The project name.
     #[serde(rename = "name")]
     pub name: String,
+    /// A regular expression parameter names must match
+    #[serde(
+        rename = "parameter_name_pattern",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub parameter_name_pattern: Option<String>,
     /// A description of the project.  You may find it helpful to document how this project is used to assist others when they need to maintain software that uses this content.
     #[serde(rename = "description", skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
@@ -42,25 +50,28 @@ pub struct Project {
     #[serde(rename = "created_at")]
     pub created_at: String,
     #[serde(rename = "modified_at")]
-    pub modified_at: String,
+    pub modified_at: Option<String>,
 }
 
 impl Project {
     pub fn new(
         url: String,
         id: String,
+        ledger_id: String,
         name: String,
         dependents: Vec<String>,
         role: Option<crate::models::RoleEnum>,
         pushes: Vec<crate::models::AwsPush>,
         push_urls: Vec<String>,
         created_at: String,
-        modified_at: String,
+        modified_at: Option<String>,
     ) -> Project {
         Project {
             url,
             id,
+            ledger_id,
             name,
+            parameter_name_pattern: None,
             description: None,
             dependents,
             depends_on: None,

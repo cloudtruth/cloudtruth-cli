@@ -12,10 +12,13 @@
 
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct ParameterTypeRule {
+    /// The URL for the project.
     #[serde(rename = "url")]
     pub url: String,
     #[serde(rename = "id")]
     pub id: String,
+    #[serde(rename = "ledger_id")]
+    pub ledger_id: String,
     /// The type this rule is for.
     #[serde(rename = "parameter_type")]
     pub parameter_type: String,
@@ -26,7 +29,7 @@ pub struct ParameterTypeRule {
     #[serde(rename = "created_at")]
     pub created_at: String,
     #[serde(rename = "modified_at")]
-    pub modified_at: String,
+    pub modified_at: Option<String>,
 }
 
 impl ParameterTypeRule {
@@ -34,15 +37,17 @@ impl ParameterTypeRule {
     pub fn new(
         url: String,
         id: String,
+        ledger_id: String,
         parameter_type: String,
         _type: crate::models::ParameterRuleTypeEnum,
         constraint: String,
         created_at: String,
-        modified_at: String,
+        modified_at: Option<String>,
     ) -> ParameterTypeRule {
         ParameterTypeRule {
             url,
             id,
+            ledger_id,
             parameter_type,
             _type,
             constraint,

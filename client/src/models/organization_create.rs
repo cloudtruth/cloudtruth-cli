@@ -13,10 +13,16 @@ pub struct OrganizationCreate {
     /// The organization name.
     #[serde(rename = "name")]
     pub name: String,
+    /// Multi-factor authentication for the organization
+    #[serde(rename = "mfa_enabled", skip_serializing_if = "Option::is_none")]
+    pub mfa_enabled: Option<bool>,
 }
 
 impl OrganizationCreate {
     pub fn new(name: String) -> OrganizationCreate {
-        OrganizationCreate { name }
+        OrganizationCreate {
+            name,
+            mfa_enabled: None,
+        }
     }
 }

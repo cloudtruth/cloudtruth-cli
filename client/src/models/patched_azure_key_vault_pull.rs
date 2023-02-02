@@ -44,7 +44,7 @@ pub struct PatchedAzureKeyVaultPull {
     pub dry_run: Option<bool>,
     /// Values being managed by a mapped pull.
     #[serde(rename = "mapped_values", skip_serializing_if = "Option::is_none")]
-    pub mapped_values: Option<Vec<crate::models::Value>>,
+    pub mapped_values: Option<Vec<crate::models::ValueCreate>>,
     /// The pull mode used.  A pattern pull uses a pattern-matching resource string with mustache-style markers to identify the project, parameter, and environment names, or with a Python regular expression that uses named capture groups that define the same three concepts.  A mapped pull uses a specific resource and JMESpath expression to deliver a value to a specific project, parameter, and environment.  This leverages external value linkages made in the value editor, and there is one mapped pull per integration provided by the system so that you can trigger external value pull synchronizations.
     #[serde(rename = "mode", skip_serializing_if = "Option::is_none")]
     pub mode: Option<Box<crate::models::ModeEnum>>,

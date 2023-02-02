@@ -12,13 +12,13 @@
 
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct TemplateTimelineEntryTemplate {
-    /// A unique identifier for the parameter.
     #[serde(rename = "id")]
     pub id: String,
+    #[serde(rename = "ledger_id")]
+    pub ledger_id: String,
     /// The parameter name.
     #[serde(rename = "name")]
     pub name: String,
-    /// A description of the parameter.  You may find it helpful to document how this parameter is used to assist others when they need to maintain software that uses this content.
     #[serde(rename = "description", skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
     /// The content of the template.  Use mustache-style templating delimiters of `{{` and `}}` to reference parameter values by name for substitution into the template result.
@@ -28,9 +28,10 @@ pub struct TemplateTimelineEntryTemplate {
 
 impl TemplateTimelineEntryTemplate {
     /// Helper methods for all views or serializers that expose template concepts.
-    pub fn new(id: String, name: String) -> TemplateTimelineEntryTemplate {
+    pub fn new(id: String, ledger_id: String, name: String) -> TemplateTimelineEntryTemplate {
         TemplateTimelineEntryTemplate {
             id,
+            ledger_id,
             name,
             description: None,
             body: None,

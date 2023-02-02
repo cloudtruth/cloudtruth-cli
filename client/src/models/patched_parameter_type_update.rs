@@ -9,10 +9,7 @@
  */
 
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
-pub struct PatchedParameterType {
-    #[serde(rename = "url", skip_serializing_if = "Option::is_none")]
-    pub url: Option<String>,
-    /// A unique identifier for the parameter type.
+pub struct PatchedParameterTypeUpdate {
     #[serde(rename = "id", skip_serializing_if = "Option::is_none")]
     pub id: Option<String>,
     /// The parameter type name.
@@ -21,31 +18,22 @@ pub struct PatchedParameterType {
     /// A description of the parameter type, provide documentation on how to use this type here.
     #[serde(rename = "description", skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
-    /// Rules applied to this parameter.
-    #[serde(rename = "rules", skip_serializing_if = "Option::is_none")]
-    pub rules: Option<Vec<crate::models::ParameterTypeRule>>,
-    /// All types must derive, either directly or indirectly, from one of the CloudTruth built-in types.   This is the ParameterType that this type is derived from.
+    /// The URL for this parameter type's parent
     #[serde(rename = "parent", skip_serializing_if = "Option::is_none")]
     pub parent: Option<String>,
-    /// Name of the parent ParameterType (if any).
-    #[serde(rename = "parent_name", skip_serializing_if = "Option::is_none")]
-    pub parent_name: Option<String>,
     #[serde(rename = "created_at", skip_serializing_if = "Option::is_none")]
     pub created_at: Option<String>,
     #[serde(rename = "modified_at", skip_serializing_if = "Option::is_none")]
     pub modified_at: Option<String>,
 }
 
-impl PatchedParameterType {
-    pub fn new() -> PatchedParameterType {
-        PatchedParameterType {
-            url: None,
+impl PatchedParameterTypeUpdate {
+    pub fn new() -> PatchedParameterTypeUpdate {
+        PatchedParameterTypeUpdate {
             id: None,
             name: None,
             description: None,
-            rules: None,
             parent: None,
-            parent_name: None,
             created_at: None,
             modified_at: None,
         }

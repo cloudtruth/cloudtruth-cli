@@ -47,18 +47,18 @@ pub fn stderr_message(message: String, color: Color) {
 }
 
 /// Print the provided message to stderr in 'Yellow'.
-pub fn warning_message(message: String) {
-    stderr_message(message, Color::Yellow);
+pub fn warning_message<S: Into<String>>(message: S) {
+    stderr_message(message.into(), Color::Yellow);
 }
 
 /// Print the provided message to stderr in 'Red'.
-pub fn error_message(message: String) {
-    stderr_message(message, Color::Red);
+pub fn error_message<S: Into<String>>(message: S) {
+    stderr_message(message.into(), Color::Red);
 }
 
 /// Print the provided message to stderr in 'Cyan'.
-pub fn help_message(message: String) {
-    stderr_message(message, Color::Cyan);
+pub fn help_message<S: Into<String>>(message: S) {
+    stderr_message(message.into(), Color::Cyan);
 }
 
 pub fn error_no_environment_message(env_name: &str) {
@@ -68,8 +68,8 @@ pub fn error_no_environment_message(env_name: &str) {
 }
 
 /// Add "WARN:" prefix to the message, and print it to stderr
-pub fn warn_user(message: String) {
-    warning_message(format!("WARN: {message}"));
+pub fn warn_user<S: Into<String>>(message: S) {
+    warning_message(format!("WARN: {}", message.into()));
 }
 
 /// Simple method for standardizing the message when no sub-command is executed.

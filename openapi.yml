@@ -231,6 +231,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -255,6 +256,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -271,6 +273,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -287,6 +290,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -328,19 +332,12 @@ paths:
         description: Number of results to return per page.
         schema:
           type: integer
-      - in: query
-        name: parent__name
-        schema:
-          type: string
-      - in: query
-        name: parent__name__icontains
-        schema:
-          type: string
       tags:
       - environments
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -367,6 +364,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '201':
           content:
@@ -409,6 +407,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -481,6 +480,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -519,6 +519,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '201':
           content:
@@ -553,6 +554,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -598,6 +600,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -642,6 +645,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -675,6 +679,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '204':
           description: No response body
@@ -687,13 +692,14 @@ paths:
         schema:
           type: string
           format: uuid
-          description: A unique identifier for the environment.
+        description: A UUID string identifying this environment ledger.
         required: true
       tags:
       - environments
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -717,23 +723,24 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Environment'
+              $ref: '#/components/schemas/EnvironmentUpdate'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/Environment'
+              $ref: '#/components/schemas/EnvironmentUpdate'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/Environment'
+              $ref: '#/components/schemas/EnvironmentUpdate'
         required: true
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Environment'
+                $ref: '#/components/schemas/EnvironmentUpdate'
           description: ''
     patch:
       operationId: environments_partial_update
@@ -751,22 +758,23 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PatchedEnvironment'
+              $ref: '#/components/schemas/PatchedEnvironmentUpdate'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PatchedEnvironment'
+              $ref: '#/components/schemas/PatchedEnvironmentUpdate'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PatchedEnvironment'
+              $ref: '#/components/schemas/PatchedEnvironmentUpdate'
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Environment'
+                $ref: '#/components/schemas/EnvironmentUpdate'
           description: ''
     delete:
       operationId: environments_destroy
@@ -783,11 +791,27 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '204':
           description: Environment destroyed.
         '409':
           description: The environment has children and cannot be removed.
+  /api/v1/features/:
+    get:
+      operationId: features_retrieve
+      description: Returns a dictionary of features and whether or not they are enabled
+      tags:
+      - features
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeaturesResponse'
+          description: ''
   /api/v1/grants/:
     get:
       operationId: grants_list
@@ -844,6 +868,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -878,6 +903,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '201':
           content:
@@ -909,6 +935,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -951,6 +978,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -992,6 +1020,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -1022,6 +1051,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '204':
           description: Deleted.
@@ -1040,6 +1070,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -1089,6 +1120,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -1118,6 +1150,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '201':
           content:
@@ -1144,6 +1177,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -1181,6 +1215,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -1217,6 +1252,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -1242,6 +1278,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '204':
           description: No response body
@@ -1281,6 +1318,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -1324,6 +1362,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -1365,6 +1404,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '201':
           content:
@@ -1407,6 +1447,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -1445,6 +1486,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '201':
           content:
@@ -1497,6 +1539,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -1530,6 +1573,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '201':
           content:
@@ -1602,6 +1646,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -1709,6 +1754,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -1750,6 +1796,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -1785,6 +1832,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -1814,6 +1862,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -1854,6 +1903,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -1893,6 +1943,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -1921,6 +1972,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '403':
           description: Cannot destroy innate mapped pull of a data integration.
@@ -1959,6 +2011,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '202':
           description: Synchronization task enqueued.
@@ -2025,6 +2078,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -2058,6 +2112,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '201':
           content:
@@ -2130,6 +2185,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -2237,6 +2293,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -2278,6 +2335,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -2313,6 +2371,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -2342,6 +2401,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -2382,6 +2442,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -2421,6 +2482,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -2449,6 +2511,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '204':
           description: No response body
@@ -2487,6 +2550,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '202':
           description: Synchronization task enqueued.
@@ -2513,6 +2577,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -2547,6 +2612,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -2580,6 +2646,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -2617,6 +2684,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '204':
           description: Integration removed.
@@ -2654,6 +2722,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -2697,6 +2766,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -2736,6 +2806,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '201':
           content:
@@ -2788,6 +2859,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -2821,6 +2893,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '201':
           content:
@@ -2893,6 +2966,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -3000,6 +3074,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -3041,6 +3116,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -3076,6 +3152,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -3105,6 +3182,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -3145,6 +3223,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -3184,6 +3263,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -3212,6 +3292,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '403':
           description: Cannot destroy innate mapped pull of a data integration.
@@ -3250,6 +3331,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '202':
           description: Synchronization task enqueued.
@@ -3316,6 +3398,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -3349,6 +3432,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '201':
           content:
@@ -3421,6 +3505,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -3528,6 +3613,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -3569,6 +3655,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -3604,6 +3691,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -3633,6 +3721,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -3673,6 +3762,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -3712,6 +3802,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -3740,6 +3831,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '204':
           description: No response body
@@ -3778,6 +3870,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '202':
           description: Synchronization task enqueued.
@@ -3804,6 +3897,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -3837,6 +3931,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -3870,6 +3965,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -3907,6 +4003,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '204':
           description: Integration removed.
@@ -3944,6 +4041,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -3991,12 +4089,18 @@ paths:
         description: Number of results to return per page.
         schema:
           type: integer
+      - in: query
+        name: page_token
+        schema:
+          type: string
+        description: When paginating, this is the value that came back in the last
+          page's next
       tags:
       - integrations
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
-      - {}
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -4043,6 +4147,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -4081,6 +4186,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '201':
           content:
@@ -4133,6 +4239,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -4205,6 +4312,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -4312,6 +4420,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -4353,6 +4462,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -4388,6 +4498,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -4417,6 +4528,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -4457,6 +4569,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -4496,6 +4609,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -4539,6 +4653,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '202':
           description: Synchronization task enqueued.
@@ -4564,6 +4679,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -4601,6 +4717,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '204':
           description: Integration removed.
@@ -4659,6 +4776,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -4687,6 +4805,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '201':
           content:
@@ -4715,6 +4834,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -4749,6 +4869,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -4782,6 +4903,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -4804,6 +4926,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '204':
           description: No response body
@@ -4833,6 +4956,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       - {}
       responses:
         '200':
@@ -4866,6 +4990,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -4919,6 +5044,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -4945,6 +5071,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '201':
           content:
@@ -4968,6 +5095,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -5002,6 +5130,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -5035,6 +5164,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -5057,6 +5187,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '204':
           description: No response body
@@ -5091,6 +5222,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -5117,6 +5249,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '201':
           content:
@@ -5139,6 +5272,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -5172,6 +5306,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -5204,6 +5339,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -5225,6 +5361,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '204':
           description: No response body
@@ -5267,6 +5404,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -5293,6 +5431,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '201':
           content:
@@ -5309,13 +5448,14 @@ paths:
         schema:
           type: string
           format: uuid
-          description: A unique identifier for the project.
+        description: A UUID string identifying this project ledger.
         required: true
       tags:
       - projects
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -5339,23 +5479,24 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Project'
+              $ref: '#/components/schemas/ProjectUpdate'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/Project'
+              $ref: '#/components/schemas/ProjectUpdate'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/Project'
+              $ref: '#/components/schemas/ProjectUpdate'
         required: true
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Project'
+                $ref: '#/components/schemas/ProjectUpdate'
           description: ''
     patch:
       operationId: projects_partial_update
@@ -5373,22 +5514,23 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PatchedProject'
+              $ref: '#/components/schemas/PatchedProjectUpdate'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PatchedProject'
+              $ref: '#/components/schemas/PatchedProjectUpdate'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PatchedProject'
+              $ref: '#/components/schemas/PatchedProjectUpdate'
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Project'
+                $ref: '#/components/schemas/ProjectUpdate'
           description: ''
     delete:
       operationId: projects_destroy
@@ -5405,11 +5547,48 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '204':
           description: Project destroyed.
         '409':
           description: The project has dependents and cannot be removed.
+  /api/v1/projects/{id}/copy/:
+    post:
+      operationId: projects_copy_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this project ledger.
+        required: true
+      tags:
+      - projects
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Project'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Project'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Project'
+        required: true
+      security:
+      - JWTAuth: []
+      - ApiKeyAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+          description: ''
   /api/v1/projects/{project_pk}/parameter-export/:
     get:
       operationId: projects_parameter_export_list
@@ -5487,18 +5666,12 @@ paths:
           type: string
         description: Specify a tag to retrieve configuration from. Cannot be specified
           with `as_of`. Requires `environment`.
-      - in: query
-        name: wrap
-        schema:
-          type: boolean
-          default: false
-        description: Indicates all secrets are wrapped. For more information on secret
-          wrapping, see the documentation.
       tags:
       - projects
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -5533,8 +5706,8 @@ paths:
           type: string
         description: Specify a list of comma-separated environment names or ids (uuid)
           to compare values. Only returns a parameter if there is a difference. Cannot
-          be used with `environment`, `wrap` or `values`. If used with `mask_secrets`
-          then no secret parameters will be included in the result.
+          be used with `environment` or `values`. If used with `mask_secrets` then
+          no secret parameters will be included in the result.
       - in: query
         name: environment
         schema:
@@ -5549,16 +5722,6 @@ paths:
         description: |-
           If `true`, runs template evaluation on this parameter's values.  If `false`, returns the value's template.
           Has no effect on values that are not interpolated.
-      - in: query
-        name: id__in
-        schema:
-          type: array
-          items:
-            type: string
-            format: uuid
-        description: Multiple values may be separated by commas.
-        explode: false
-        style: form
       - in: query
         name: immediate_parameters
         schema:
@@ -5614,30 +5777,12 @@ paths:
         description: Number of results to return per page.
         schema:
           type: integer
-      - in: query
-        name: project__name
+      - in: path
+        name: parameter_id
         schema:
           type: string
-      - in: query
-        name: project__name__contains
-        schema:
-          type: string
-      - in: query
-        name: project__name__icontains
-        schema:
-          type: string
-      - in: query
-        name: project__name__iexact
-        schema:
-          type: string
-      - in: query
-        name: project__name__istartswith
-        schema:
-          type: string
-      - in: query
-        name: project__name__startswith
-        schema:
-          type: string
+          format: uuid
+        required: true
       - in: path
         name: project_pk
         schema:
@@ -5662,18 +5807,12 @@ paths:
         description: 'If false, values are not returned: the `values` array will have
           no entries. This speeds up retrieval if value content is not needed. Cannot
           be used with `environment`.'
-      - in: query
-        name: wrap
-        schema:
-          type: boolean
-          default: false
-        description: Wrap secrets. For more information on secret wrapping, see the
-          documentation.
       tags:
       - projects
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -5684,6 +5823,12 @@ paths:
     post:
       operationId: projects_parameters_create
       parameters:
+      - in: path
+        name: parameter_id
+        schema:
+          type: string
+          format: uuid
+        required: true
       - in: path
         name: project_pk
         schema:
@@ -5707,6 +5852,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '201':
           content:
@@ -5768,6 +5914,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -5826,6 +5973,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -5867,6 +6015,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '201':
           content:
@@ -5883,7 +6032,7 @@ paths:
         schema:
           type: string
           format: uuid
-        description: A UUID string identifying this parameter rule.
+        description: A UUID string identifying this parameter rule ledger.
         required: true
       - in: path
         name: parameter_pk
@@ -5904,6 +6053,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -5941,23 +6091,24 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ParameterRule'
+              $ref: '#/components/schemas/ParameterRuleUpdate'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/ParameterRule'
+              $ref: '#/components/schemas/ParameterRuleUpdate'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/ParameterRule'
+              $ref: '#/components/schemas/ParameterRuleUpdate'
         required: true
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ParameterRule'
+                $ref: '#/components/schemas/ParameterRuleUpdate'
           description: ''
     patch:
       operationId: projects_parameters_rules_partial_update
@@ -5989,22 +6140,23 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PatchedParameterRule'
+              $ref: '#/components/schemas/PatchedParameterRuleUpdate'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PatchedParameterRule'
+              $ref: '#/components/schemas/PatchedParameterRuleUpdate'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PatchedParameterRule'
+              $ref: '#/components/schemas/PatchedParameterRuleUpdate'
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ParameterRule'
+                $ref: '#/components/schemas/ParameterRuleUpdate'
           description: ''
     delete:
       operationId: projects_parameters_rules_destroy
@@ -6035,6 +6187,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '204':
           description: No response body
@@ -6110,19 +6263,12 @@ paths:
           type: string
         description: Specify a tag to retrieve configuration from. Cannot be specified
           with `as_of`. Requires `environment`.
-      - in: query
-        name: wrap
-        schema:
-          type: boolean
-          default: false
-        description: 'For writes, indicates `internal_value` is wrapped; for reads,
-          indicates `value` is wrapped. For more information on secret wrapping, see
-          the documentation. '
       tags:
       - projects
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -6157,12 +6303,6 @@ paths:
           format: uuid
         description: The project id.
         required: true
-      - in: query
-        name: wrap
-        schema:
-          type: boolean
-        description: 'Indicates the `internal_value` is a wrapped secret. For more
-          information on secret wrapping, see the documentation. '
       tags:
       - projects
       requestBody:
@@ -6180,6 +6320,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '201':
           content:
@@ -6218,7 +6359,7 @@ paths:
         schema:
           type: string
           format: uuid
-          description: A unique identifier for the value.
+        description: A UUID string identifying this value ledger.
         required: true
       - in: query
         name: include
@@ -6251,19 +6392,12 @@ paths:
           type: string
         description: Specify a tag to retrieve configuration from. Cannot be specified
           with `as_of`. Requires `environment`.
-      - in: query
-        name: wrap
-        schema:
-          type: boolean
-          default: false
-        description: 'For writes, indicates `internal_value` is wrapped; for reads,
-          indicates `value` is wrapped. For more information on secret wrapping, see
-          the documentation. '
       tags:
       - projects
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -6305,34 +6439,29 @@ paths:
           format: uuid
         description: The project id.
         required: true
-      - in: query
-        name: wrap
-        schema:
-          type: boolean
-        description: 'Indicates the `internal_value` is a wrapped secret. For more
-          information on secret wrapping, see the documentation. '
       tags:
       - projects
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Value'
+              $ref: '#/components/schemas/ValueUpdate'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/Value'
+              $ref: '#/components/schemas/ValueUpdate'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/Value'
+              $ref: '#/components/schemas/ValueUpdate'
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Value'
+                $ref: '#/components/schemas/ValueUpdate'
           description: ''
     patch:
       operationId: projects_parameters_values_partial_update
@@ -6368,34 +6497,29 @@ paths:
           format: uuid
         description: The project id.
         required: true
-      - in: query
-        name: wrap
-        schema:
-          type: boolean
-        description: 'Indicates the `internal_value` is a wrapped secret. For more
-          information on secret wrapping, see the documentation. '
       tags:
       - projects
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PatchedValue'
+              $ref: '#/components/schemas/PatchedValueUpdate'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PatchedValue'
+              $ref: '#/components/schemas/PatchedValueUpdate'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PatchedValue'
+              $ref: '#/components/schemas/PatchedValueUpdate'
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Value'
+                $ref: '#/components/schemas/ValueUpdate'
           description: ''
     delete:
       operationId: projects_parameters_values_destroy
@@ -6436,6 +6560,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '204':
           description: No response body
@@ -6469,7 +6594,7 @@ paths:
         schema:
           type: string
           format: uuid
-          description: A unique identifier for the parameter.
+        description: A UUID string identifying this parameter ledger.
         required: true
       - in: query
         name: immediate_parameters
@@ -6484,6 +6609,12 @@ paths:
           type: boolean
           default: false
         description: If true, replaces all secrets with `*****`.
+      - in: path
+        name: parameter_id
+        schema:
+          type: string
+          format: uuid
+        required: true
       - in: path
         name: project_pk
         schema:
@@ -6504,18 +6635,12 @@ paths:
         description: 'If false, values are not returned: the `values` array will have
           no entries. This speeds up retrieval if value content is not needed. Cannot
           be used with `environment`.'
-      - in: query
-        name: wrap
-        schema:
-          type: boolean
-          default: false
-        description: Wrap secrets. For more information on secret wrapping, see the
-          documentation.
       tags:
       - projects
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -6534,6 +6659,12 @@ paths:
           description: A unique identifier for the parameter.
         required: true
       - in: path
+        name: parameter_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
         name: project_pk
         schema:
           type: string
@@ -6545,17 +6676,18 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Parameter'
+              $ref: '#/components/schemas/ParameterUpdate'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/Parameter'
+              $ref: '#/components/schemas/ParameterUpdate'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/Parameter'
+              $ref: '#/components/schemas/ParameterUpdate'
         required: true
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -6591,6 +6723,12 @@ paths:
           description: A unique identifier for the parameter.
         required: true
       - in: path
+        name: parameter_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
         name: project_pk
         schema:
           type: string
@@ -6602,16 +6740,17 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PatchedParameter'
+              $ref: '#/components/schemas/PatchedParameterUpdate'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PatchedParameter'
+              $ref: '#/components/schemas/PatchedParameterUpdate'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PatchedParameter'
+              $ref: '#/components/schemas/PatchedParameterUpdate'
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -6647,6 +6786,12 @@ paths:
           description: A unique identifier for the parameter.
         required: true
       - in: path
+        name: parameter_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
         name: project_pk
         schema:
           type: string
@@ -6657,6 +6802,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '204':
           description: No response body
@@ -6681,7 +6827,13 @@ paths:
         schema:
           type: string
           format: uuid
-          description: A unique identifier for the parameter.
+        description: A UUID string identifying this parameter ledger.
+        required: true
+      - in: path
+        name: parameter_id
+        schema:
+          type: string
+          format: uuid
         required: true
       - in: path
         name: project_pk
@@ -6700,6 +6852,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -6797,6 +6950,12 @@ paths:
         schema:
           type: integer
       - in: path
+        name: parameter_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
         name: project_pk
         schema:
           type: string
@@ -6840,18 +6999,12 @@ paths:
         description: 'If false, values are not returned: the `values` array will have
           no entries. This speeds up retrieval if value content is not needed. Cannot
           be used with `environment`.'
-      - in: query
-        name: wrap
-        schema:
-          type: boolean
-          default: false
-        description: Wrap secrets. For more information on secret wrapping, see the
-          documentation.
       tags:
       - projects
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -6876,6 +7029,12 @@ paths:
         description: Specify a point in time to retrieve configuration from. Cannot
           be specified with `tag`.
       - in: path
+        name: parameter_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
         name: project_pk
         schema:
           type: string
@@ -6892,6 +7051,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -6959,6 +7119,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -7041,6 +7202,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -7080,6 +7242,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '201':
           content:
@@ -7122,7 +7285,7 @@ paths:
         schema:
           type: string
           format: uuid
-          description: A unique identifier for the parameter.
+        description: A UUID string identifying this parameter ledger.
         required: true
       - in: query
         name: mask_secrets
@@ -7147,6 +7310,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -7182,17 +7346,18 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Template'
+              $ref: '#/components/schemas/TemplateUpdate'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/Template'
+              $ref: '#/components/schemas/TemplateUpdate'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/Template'
+              $ref: '#/components/schemas/TemplateUpdate'
         required: true
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -7228,16 +7393,17 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PatchedTemplate'
+              $ref: '#/components/schemas/PatchedTemplateUpdate'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PatchedTemplate'
+              $ref: '#/components/schemas/PatchedTemplateUpdate'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PatchedTemplate'
+              $ref: '#/components/schemas/PatchedTemplateUpdate'
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -7272,6 +7438,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '204':
           description: Template destroyed.
@@ -7305,7 +7472,7 @@ paths:
         schema:
           type: string
           format: uuid
-          description: A unique identifier for the parameter.
+        description: A UUID string identifying this parameter ledger.
         required: true
       - in: path
         name: project_pk
@@ -7324,6 +7491,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -7370,6 +7538,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -7404,6 +7573,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -7439,6 +7609,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '201':
           content:
@@ -7461,6 +7632,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -7483,22 +7655,23 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ServiceAccount'
+              $ref: '#/components/schemas/ServiceAccountUpdateRequest'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/ServiceAccount'
+              $ref: '#/components/schemas/ServiceAccountUpdateRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/ServiceAccount'
+              $ref: '#/components/schemas/ServiceAccountUpdateRequest'
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ServiceAccount'
+                $ref: '#/components/schemas/ServiceAccountUpdateRequest'
           description: ''
     patch:
       operationId: serviceaccounts_partial_update
@@ -7525,6 +7698,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -7546,6 +7720,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '204':
           description: No response body
@@ -7583,19 +7758,12 @@ paths:
         description: Number of results to return per page.
         schema:
           type: integer
-      - in: query
-        name: parent__name__icontains
-        schema:
-          type: string
-      - in: query
-        name: parent__name__iexact
-        schema:
-          type: string
       tags:
       - types
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -7622,6 +7790,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '201':
           content:
@@ -7673,6 +7842,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -7707,6 +7877,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '201':
           content:
@@ -7723,7 +7894,7 @@ paths:
         schema:
           type: string
           format: uuid
-        description: A UUID string identifying this parameter type rule.
+        description: A UUID string identifying this parameter type rule ledger.
         required: true
       - in: path
         name: parametertype_pk
@@ -7737,6 +7908,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -7767,23 +7939,24 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ParameterTypeRule'
+              $ref: '#/components/schemas/ParameterTypeRuleUpdate'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/ParameterTypeRule'
+              $ref: '#/components/schemas/ParameterTypeRuleUpdate'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/ParameterTypeRule'
+              $ref: '#/components/schemas/ParameterTypeRuleUpdate'
         required: true
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ParameterTypeRule'
+                $ref: '#/components/schemas/ParameterTypeRuleUpdate'
           description: ''
     patch:
       operationId: types_rules_partial_update
@@ -7808,22 +7981,23 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PatchedParameterTypeRule'
+              $ref: '#/components/schemas/PatchedParameterTypeRuleUpdate'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PatchedParameterTypeRule'
+              $ref: '#/components/schemas/PatchedParameterTypeRuleUpdate'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PatchedParameterTypeRule'
+              $ref: '#/components/schemas/PatchedParameterTypeRuleUpdate'
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ParameterTypeRule'
+                $ref: '#/components/schemas/ParameterTypeRuleUpdate'
           description: ''
     delete:
       operationId: types_rules_destroy
@@ -7847,6 +8021,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '204':
           description: No response body
@@ -7859,13 +8034,14 @@ paths:
         schema:
           type: string
           format: uuid
-          description: A unique identifier for the parameter type.
+        description: A UUID string identifying this parameter type ledger.
         required: true
       tags:
       - types
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -7889,23 +8065,24 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ParameterType'
+              $ref: '#/components/schemas/ParameterTypeUpdate'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/ParameterType'
+              $ref: '#/components/schemas/ParameterTypeUpdate'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/ParameterType'
+              $ref: '#/components/schemas/ParameterTypeUpdate'
         required: true
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ParameterType'
+                $ref: '#/components/schemas/ParameterTypeUpdate'
           description: ''
     patch:
       operationId: types_partial_update
@@ -7923,22 +8100,23 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PatchedParameterType'
+              $ref: '#/components/schemas/PatchedParameterTypeUpdate'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PatchedParameterType'
+              $ref: '#/components/schemas/PatchedParameterTypeUpdate'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PatchedParameterType'
+              $ref: '#/components/schemas/PatchedParameterTypeUpdate'
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ParameterType'
+                $ref: '#/components/schemas/ParameterTypeUpdate'
           description: ''
     delete:
       operationId: types_destroy
@@ -7955,6 +8133,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '204':
           description: No response body
@@ -7989,6 +8168,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -8011,6 +8191,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -8043,6 +8224,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '204':
           description: User deleted. The client should behave as if the user logged
@@ -8068,6 +8250,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '200':
           content:
@@ -8136,6 +8319,7 @@ paths:
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
+      - tokenAuth: []
       responses:
         '201':
           content:
@@ -8261,6 +8445,7 @@ components:
           type: string
           format: date-time
           readOnly: true
+          nullable: true
           description: The last time the status was evaluated.
         created_at:
           type: string
@@ -8270,6 +8455,7 @@ components:
           type: string
           format: date-time
           readOnly: true
+          nullable: true
         fqn:
           type: string
           readOnly: true
@@ -8298,11 +8484,13 @@ components:
           description: The AWS services to integrate with.
         aws_external_id:
           type: string
-          readOnly: true
           description: This is a shared secret between the AWS Administrator who set
             up your IAM trust relationship and your CloudTruth AWS Integration.  CloudTruth
             will generate a random value for you to give to your AWS Administrator
             in order to create the necessary IAM role for proper access.
+          minLength: 2
+          pattern: ^[\w+=,.@:/\-]*$
+          maxLength: 1224
         aws_kms_key_id:
           type: string
           nullable: true
@@ -8325,7 +8513,6 @@ components:
       - aws_account_id
       - aws_enabled_regions
       - aws_enabled_services
-      - aws_external_id
       - aws_role_name
       - created_at
       - fqn
@@ -8461,6 +8648,7 @@ components:
           type: string
           format: date-time
           readOnly: true
+          nullable: true
         create_environments:
           type: boolean
           description: Allow the pull to create environments.  Any automatically created
@@ -8482,7 +8670,7 @@ components:
         mapped_values:
           type: array
           items:
-            $ref: '#/components/schemas/Value'
+            $ref: '#/components/schemas/ValueCreate'
           readOnly: true
           description: Values being managed by a mapped pull.
         mode:
@@ -8583,6 +8771,7 @@ components:
           type: string
           format: date-time
           readOnly: true
+          nullable: true
       required:
       - created_at
       - id
@@ -8702,6 +8891,7 @@ components:
           type: string
           format: date-time
           readOnly: true
+          nullable: true
       required:
       - created_at
       - environment
@@ -8747,6 +8937,7 @@ components:
           type: string
           format: date-time
           readOnly: true
+          nullable: true
         coerce_parameters:
           type: boolean
           description: This setting allows parameters (non-secrets) to be pushed to
@@ -8878,6 +9069,7 @@ components:
           type: string
           format: date-time
           readOnly: true
+          nullable: true
       required:
       - created_at
       - id
@@ -8997,6 +9189,7 @@ components:
           type: string
           format: date-time
           readOnly: true
+          nullable: true
       required:
       - created_at
       - environment
@@ -9154,6 +9347,7 @@ components:
           type: string
           format: date-time
           readOnly: true
+          nullable: true
           description: The last time the status was evaluated.
         created_at:
           type: string
@@ -9163,6 +9357,7 @@ components:
           type: string
           format: date-time
           readOnly: true
+          nullable: true
         fqn:
           type: string
           readOnly: true
@@ -9270,6 +9465,7 @@ components:
           type: string
           format: date-time
           readOnly: true
+          nullable: true
         create_environments:
           type: boolean
           description: Allow the pull to create environments.  Any automatically created
@@ -9291,7 +9487,7 @@ components:
         mapped_values:
           type: array
           items:
-            $ref: '#/components/schemas/Value'
+            $ref: '#/components/schemas/ValueCreate'
           readOnly: true
           description: Values being managed by a mapped pull.
         mode:
@@ -9380,6 +9576,7 @@ components:
           type: string
           format: date-time
           readOnly: true
+          nullable: true
       required:
       - created_at
       - id
@@ -9499,6 +9696,7 @@ components:
           type: string
           format: date-time
           readOnly: true
+          nullable: true
       required:
       - created_at
       - environment
@@ -9544,6 +9742,7 @@ components:
           type: string
           format: date-time
           readOnly: true
+          nullable: true
         coerce_parameters:
           type: boolean
           description: This setting allows parameters (non-secrets) to be pushed to
@@ -9663,6 +9862,7 @@ components:
           type: string
           format: date-time
           readOnly: true
+          nullable: true
       required:
       - created_at
       - id
@@ -9782,6 +9982,7 @@ components:
           type: string
           format: date-time
           readOnly: true
+          nullable: true
       required:
       - created_at
       - environment
@@ -10075,7 +10276,9 @@ components:
         matched:
           type: object
           additionalProperties:
-            $ref: '#/components/schemas/DiscoveredContent'
+            type: array
+            items:
+              $ref: '#/components/schemas/DiscoveredContent'
         skipped:
           type: object
           additionalProperties:
@@ -10090,11 +10293,91 @@ components:
           type: string
           format: uri
           readOnly: true
+          description: The URL for the environment.
         id:
           type: string
-          format: uuid
           readOnly: true
-          description: A unique identifier for the environment.
+        ledger_id:
+          type: string
+          readOnly: true
+        name:
+          type: string
+          description: The environment name.
+        description:
+          type: string
+          description: A description of the environment.  You may find it helpful
+            to document how this environment is used to assist others when they need
+            to maintain software that uses this content.
+        parent:
+          type: string
+          format: uri
+          nullable: true
+          description: Environments can inherit from a single parent environment which
+            provides values for parameters when specific environments do not have
+            a value set.  Every organization has one default environment that cannot
+            be removed.
+        children:
+          type: array
+          items:
+            type: string
+            format: uri
+          readOnly: true
+          description: This is the opposite of `parent`, see that field for more details.
+        access_controlled:
+          type: boolean
+          description: Indicates if access control is being enforced through grants.
+        role:
+          allOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          nullable: true
+          readOnly: true
+          description: Your role in the environment, if the environment is access-controlled.
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        modified_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+      required:
+      - children
+      - created_at
+      - id
+      - ledger_id
+      - modified_at
+      - name
+      - role
+      - url
+    EnvironmentCreate:
+      type: object
+      properties:
+        name:
+          type: string
+          description: The environment name.
+          maxLength: 256
+        description:
+          type: string
+          description: A description of the environment.  You may find it helpful
+            to document how this environment is used to assist others when they need
+            to maintain software that uses this content.
+        parent:
+          type: string
+          format: uri
+          nullable: true
+          description: Environments can inherit from a single parent environment which
+            provides values for parameters when specific environments do not have
+            a value set.  Every organization has one default environment that cannot
+            be removed.
+      required:
+      - name
+    EnvironmentUpdate:
+      type: object
+      properties:
+        id:
+          type: string
+          readOnly: true
         name:
           type: string
           description: The environment name.
@@ -10136,6 +10419,7 @@ components:
           type: string
           format: date-time
           readOnly: true
+          nullable: true
       required:
       - children
       - created_at
@@ -10143,29 +10427,13 @@ components:
       - modified_at
       - name
       - role
-      - url
-    EnvironmentCreate:
+    FeaturesResponse:
       type: object
       properties:
-        name:
-          type: string
-          description: The environment name.
-          maxLength: 256
-        description:
-          type: string
-          description: A description of the environment.  You may find it helpful
-            to document how this environment is used to assist others when they need
-            to maintain software that uses this content.
-        parent:
-          type: string
-          format: uri
-          nullable: true
-          description: Environments can inherit from a single parent environment which
-            provides values for parameters when specific environments do not have
-            a value set.  Every organization has one default environment that cannot
-            be removed.
+        self_hosted:
+          type: boolean
       required:
-      - name
+      - self_hosted
     GeneratedPasswordResponse:
       type: object
       properties:
@@ -10208,6 +10476,7 @@ components:
           type: string
           format: date-time
           readOnly: true
+          nullable: true
           description: The last time the status was evaluated.
         created_at:
           type: string
@@ -10217,6 +10486,7 @@ components:
           type: string
           format: date-time
           readOnly: true
+          nullable: true
         fqn:
           type: string
           readOnly: true
@@ -10298,6 +10568,7 @@ components:
           type: string
           format: date-time
           readOnly: true
+          nullable: true
         create_environments:
           type: boolean
           description: Allow the pull to create environments.  Any automatically created
@@ -10319,7 +10590,7 @@ components:
         mapped_values:
           type: array
           items:
-            $ref: '#/components/schemas/Value'
+            $ref: '#/components/schemas/ValueCreate'
           readOnly: true
           description: Values being managed by a mapped pull.
         mode:
@@ -10385,6 +10656,7 @@ components:
           type: string
           format: date-time
           readOnly: true
+          nullable: true
       required:
       - created_at
       - id
@@ -10504,6 +10776,7 @@ components:
           type: string
           format: date-time
           readOnly: true
+          nullable: true
       required:
       - created_at
       - environment
@@ -10547,6 +10820,7 @@ components:
           type: string
           format: date-time
           readOnly: true
+          nullable: true
       required:
       - created_at
       - id
@@ -10589,6 +10863,7 @@ components:
           type: string
           format: date-time
           readOnly: true
+          nullable: true
       required:
       - created_at
       - id
@@ -10869,6 +11144,7 @@ components:
           type: string
           format: date-time
           readOnly: true
+          nullable: true
       required:
       - created_at
       - id
@@ -10946,6 +11222,23 @@ components:
           type: string
           description: The organization name.
           maxLength: 256
+        project_name_pattern:
+          type: string
+          description: A regular expression project names must match
+          maxLength: 255
+        maintenance:
+          type: boolean
+          readOnly: true
+          description: If set, we are performing maintenance on this organization
+            and have disabled making changes
+        mfa_enabled:
+          type: boolean
+          description: Multi-factor authentication for the organization
+        version:
+          allOf:
+          - $ref: '#/components/schemas/VersionEnum'
+          readOnly: true
+          description: The current version of this Organization
         current:
           type: boolean
           readOnly: true
@@ -10986,10 +11279,12 @@ components:
           type: string
           format: date-time
           readOnly: true
+          nullable: true
       required:
       - created_at
       - current
       - id
+      - maintenance
       - modified_at
       - name
       - role
@@ -10999,6 +11294,7 @@ components:
       - subscription_plan_id
       - subscription_plan_name
       - url
+      - version
     OrganizationCreate:
       type: object
       properties:
@@ -11006,6 +11302,9 @@ components:
           type: string
           description: The organization name.
           maxLength: 256
+        mfa_enabled:
+          type: boolean
+          description: Multi-factor authentication for the organization
       required:
       - name
     PaginatedAuditTrailList:
@@ -11776,26 +12075,20 @@ components:
           type: string
           format: uri
           readOnly: true
+          description: The parameter url.
         id:
           type: string
-          format: uuid
           readOnly: true
-          description: A unique identifier for the parameter.
+        ledger_id:
+          type: string
+          readOnly: true
         name:
           type: string
           description: The parameter name.
-          maxLength: 256
         description:
           type: string
-          description: A description of the parameter.  You may find it helpful to
-            document how this parameter is used to assist others when they need to
-            maintain software that uses this content.
         secret:
           type: boolean
-          description: Indicates if this content is secret or not.  External values
-            are inspected on-demand to ensure they align with the parameter's secret
-            setting and if they do not, those external values are not allowed to be
-            used.
         type:
           type: string
           default: string
@@ -11810,7 +12103,7 @@ components:
           type: string
           format: uri
           readOnly: true
-          description: The project that the parameter is within.
+          description: The project url.
         project_name:
           type: string
           readOnly: true
@@ -11820,13 +12113,15 @@ components:
           items:
             type: string
           readOnly: true
-          description: Templates that reference this Parameter.
+          description: Templates that reference this Parameter.  This field is not
+            valid for history requests.
         referencing_values:
           type: array
           items:
             type: string
           readOnly: true
-          description: Dynamic values that reference this Parameter.
+          description: Dynamic values that reference this Parameter.  This field is
+            not valid for history requests.
         values:
           type: object
           additionalProperties:
@@ -11858,6 +12153,15 @@ components:
             \ (directly or indirectly).  If the value is None then no value has\n\
             \            ever been set in any environment for this parameter within\
             \ all the project\n            dependencies.\n        "
+        values_flat:
+          type: array
+          items:
+            $ref: '#/components/schemas/Value'
+          readOnly: true
+          description: "\n        Identical to values, except the dictionary is flattened\
+            \ to a list.\n        Note that in this case, the environment in the Value\
+            \ is the environment\n        asked for, not the environment where it\
+            \ was obtained.\n        "
         overrides:
           type: string
           format: uri
@@ -11877,9 +12181,11 @@ components:
           type: string
           format: date-time
           readOnly: true
+          nullable: true
       required:
       - created_at
       - id
+      - ledger_id
       - modified_at
       - name
       - overrides
@@ -11890,6 +12196,7 @@ components:
       - rules
       - url
       - values
+      - values_flat
     ParameterCreate:
       type: object
       description: A single parameter inside of a project.
@@ -11963,9 +12270,12 @@ components:
           type: string
           format: uri
           readOnly: true
+          description: The URL for the parameter rule.
         id:
           type: string
-          format: uuid
+          readOnly: true
+        ledger_id:
+          type: string
           readOnly: true
         parameter:
           type: string
@@ -11985,10 +12295,12 @@ components:
           type: string
           format: date-time
           readOnly: true
+          nullable: true
       required:
       - constraint
       - created_at
       - id
+      - ledger_id
       - modified_at
       - parameter
       - type
@@ -12020,6 +12332,46 @@ components:
       - max_len
       - regex
       type: string
+    ParameterRuleUpdate:
+      type: object
+      description: |-
+        A type of `ModelSerializer` that uses hyperlinked relationships with compound keys instead
+        of primary key relationships.  Specifically:
+
+        * A 'url' field is included instead of the 'id' field.
+        * Relationships to other instances are hyperlinks, instead of primary keys.
+
+        NOTE: this only works with DRF 3.1.0 and above.
+      properties:
+        id:
+          type: string
+          readOnly: true
+        parameter:
+          type: string
+          format: uri
+          readOnly: true
+          description: The parameter this rule is for.
+        type:
+          $ref: '#/components/schemas/ParameterRuleTypeEnum'
+        constraint:
+          type: string
+          maxLength: 1024
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        modified_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+      required:
+      - constraint
+      - created_at
+      - id
+      - modified_at
+      - parameter
+      - type
     ParameterTimeline:
       type: object
       properties:
@@ -12042,17 +12394,10 @@ components:
       type: object
       description: Details about a single change.
       properties:
-        history_date:
-          type: string
-          format: date-time
         history_type:
           allOf:
           - $ref: '#/components/schemas/HistoryTypeEnum'
           readOnly: true
-        history_user:
-          type: string
-          description: The unique identifier of a user.
-          nullable: true
         history_environments:
           type: array
           items:
@@ -12070,7 +12415,6 @@ components:
           readOnly: true
           description: The affected parameter.
       required:
-      - history_date
       - history_environments
       - history_model
       - history_parameter
@@ -12078,15 +12422,15 @@ components:
     ParameterTimelineEntryEnvironment:
       type: object
       properties:
-        id:
+        environment_id:
           type: string
           format: uuid
-          readOnly: true
           description: A unique identifier for the environment.
+          readOnly: true
+          nullable: true
         name:
           type: string
           description: The environment name.
-          maxLength: 256
         override:
           type: boolean
           readOnly: true
@@ -12095,24 +12439,24 @@ components:
             this environment. If `false` then the environment has no value set directly
             so it inherited the value from its parent.
       required:
-      - id
+      - environment_id
       - name
       - override
     ParameterTimelineEntryParameter:
       type: object
       properties:
-        id:
+        parameter_id:
           type: string
           format: uuid
-          readOnly: true
           description: A unique identifier for the parameter.
+          nullable: true
+          readOnly: true
         name:
           type: string
           description: The parameter name.
-          maxLength: 256
       required:
-      - id
       - name
+      - parameter_id
     ParameterType:
       type: object
       properties:
@@ -12120,11 +12464,13 @@ components:
           type: string
           format: uri
           readOnly: true
+          description: The URL for the parameter type.
         id:
           type: string
-          format: uuid
           readOnly: true
-          description: A unique identifier for the parameter type.
+        ledger_id:
+          type: string
+          readOnly: true
         name:
           type: string
           description: The parameter type name.
@@ -12143,9 +12489,7 @@ components:
           type: string
           format: uri
           nullable: true
-          description: All types must derive, either directly or indirectly, from
-            one of the CloudTruth built-in types.   This is the ParameterType that
-            this type is derived from.
+          description: The URL for this parameter type's parent
         parent_name:
           type: string
           readOnly: true
@@ -12159,9 +12503,11 @@ components:
           type: string
           format: date-time
           readOnly: true
+          nullable: true
       required:
       - created_at
       - id
+      - ledger_id
       - modified_at
       - name
       - parent_name
@@ -12181,12 +12527,10 @@ components:
         parent:
           type: string
           format: uri
-          nullable: true
-          description: All types must derive, either directly or indirectly, from
-            one of the CloudTruth built-in types.   This is the ParameterType that
-            this type is derived from.
+          description: The URL for this parameter type's parent
       required:
       - name
+      - parent
     ParameterTypeRule:
       type: object
       description: |-
@@ -12202,9 +12546,12 @@ components:
           type: string
           format: uri
           readOnly: true
+          description: The URL for the project.
         id:
           type: string
-          format: uuid
+          readOnly: true
+        ledger_id:
+          type: string
           readOnly: true
         parameter_type:
           type: string
@@ -12224,10 +12571,12 @@ components:
           type: string
           format: date-time
           readOnly: true
+          nullable: true
       required:
       - constraint
       - created_at
       - id
+      - ledger_id
       - modified_at
       - parameter_type
       - type
@@ -12251,6 +12600,125 @@ components:
       required:
       - constraint
       - type
+    ParameterTypeRuleUpdate:
+      type: object
+      description: |-
+        A type of `ModelSerializer` that uses hyperlinked relationships with compound keys instead
+        of primary key relationships.  Specifically:
+
+        * A 'url' field is included instead of the 'id' field.
+        * Relationships to other instances are hyperlinks, instead of primary keys.
+
+        NOTE: this only works with DRF 3.1.0 and above.
+      properties:
+        id:
+          type: string
+          readOnly: true
+        parameter_type:
+          type: string
+          format: uri
+          readOnly: true
+          description: The type this rule is for.
+        type:
+          $ref: '#/components/schemas/ParameterRuleTypeEnum'
+        constraint:
+          type: string
+          maxLength: 1024
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        modified_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+      required:
+      - constraint
+      - created_at
+      - id
+      - modified_at
+      - parameter_type
+      - type
+    ParameterTypeUpdate:
+      type: object
+      properties:
+        id:
+          type: string
+          readOnly: true
+        name:
+          type: string
+          description: The parameter type name.
+          maxLength: 256
+        description:
+          type: string
+          description: A description of the parameter type, provide documentation
+            on how to use this type here.
+        parent:
+          type: string
+          format: uri
+          description: The URL for this parameter type's parent
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        modified_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+      required:
+      - created_at
+      - id
+      - modified_at
+      - name
+      - parent
+    ParameterUpdate:
+      type: object
+      description: A single parameter inside of a project.
+      properties:
+        id:
+          type: string
+          readOnly: true
+        name:
+          type: string
+          description: The parameter name.
+          maxLength: 256
+        description:
+          type: string
+          description: A description of the parameter.  You may find it helpful to
+            document how this parameter is used to assist others when they need to
+            maintain software that uses this content.
+        secret:
+          type: boolean
+          description: Indicates if this content is secret or not.  External values
+            are inspected on-demand to ensure they align with the parameter's secret
+            setting and if they do not, those external values are not allowed to be
+            used.
+        type:
+          type: string
+          default: string
+          description: The type of this Parameter.
+        project:
+          type: string
+          format: uri
+          readOnly: true
+          description: The project url.
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        modified_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+      required:
+      - created_at
+      - id
+      - modified_at
+      - name
+      - project
     PatchedAwsIntegration:
       type: object
       properties:
@@ -12285,6 +12753,7 @@ components:
           type: string
           format: date-time
           readOnly: true
+          nullable: true
           description: The last time the status was evaluated.
         created_at:
           type: string
@@ -12294,6 +12763,7 @@ components:
           type: string
           format: date-time
           readOnly: true
+          nullable: true
         fqn:
           type: string
           readOnly: true
@@ -12322,11 +12792,13 @@ components:
           description: The AWS services to integrate with.
         aws_external_id:
           type: string
-          readOnly: true
           description: This is a shared secret between the AWS Administrator who set
             up your IAM trust relationship and your CloudTruth AWS Integration.  CloudTruth
             will generate a random value for you to give to your AWS Administrator
             in order to create the necessary IAM role for proper access.
+          minLength: 2
+          pattern: ^[\w+=,.@:/\-]*$
+          maxLength: 1224
         aws_kms_key_id:
           type: string
           nullable: true
@@ -12381,6 +12853,7 @@ components:
           type: string
           format: date-time
           readOnly: true
+          nullable: true
         create_environments:
           type: boolean
           description: Allow the pull to create environments.  Any automatically created
@@ -12402,7 +12875,7 @@ components:
         mapped_values:
           type: array
           items:
-            $ref: '#/components/schemas/Value'
+            $ref: '#/components/schemas/ValueCreate'
           readOnly: true
           description: Values being managed by a mapped pull.
         mode:
@@ -12550,6 +13023,7 @@ components:
           type: string
           format: date-time
           readOnly: true
+          nullable: true
           description: The last time the status was evaluated.
         created_at:
           type: string
@@ -12559,6 +13033,7 @@ components:
           type: string
           format: date-time
           readOnly: true
+          nullable: true
         fqn:
           type: string
           readOnly: true
@@ -12614,6 +13089,7 @@ components:
           type: string
           format: date-time
           readOnly: true
+          nullable: true
         create_environments:
           type: boolean
           description: Allow the pull to create environments.  Any automatically created
@@ -12635,7 +13111,7 @@ components:
         mapped_values:
           type: array
           items:
-            $ref: '#/components/schemas/Value'
+            $ref: '#/components/schemas/ValueCreate'
           readOnly: true
           description: Values being managed by a mapped pull.
         mode:
@@ -12735,18 +13211,12 @@ components:
           type: boolean
           description: Include secrets in the values being pushed.  This setting requires
             the destination to support secrets, otherwise the push will fail.
-    PatchedEnvironment:
+    PatchedEnvironmentUpdate:
       type: object
       properties:
-        url:
-          type: string
-          format: uri
-          readOnly: true
         id:
           type: string
-          format: uuid
           readOnly: true
-          description: A unique identifier for the environment.
         name:
           type: string
           description: The environment name.
@@ -12788,6 +13258,7 @@ components:
           type: string
           format: date-time
           readOnly: true
+          nullable: true
     PatchedGitHubPull:
       type: object
       description: |-
@@ -12824,6 +13295,7 @@ components:
           type: string
           format: date-time
           readOnly: true
+          nullable: true
         create_environments:
           type: boolean
           description: Allow the pull to create environments.  Any automatically created
@@ -12845,7 +13317,7 @@ components:
         mapped_values:
           type: array
           items:
-            $ref: '#/components/schemas/Value'
+            $ref: '#/components/schemas/ValueCreate'
           readOnly: true
           description: Values being managed by a mapped pull.
         mode:
@@ -12892,6 +13364,7 @@ components:
           type: string
           format: date-time
           readOnly: true
+          nullable: true
     PatchedGroup:
       type: object
       properties:
@@ -12926,6 +13399,7 @@ components:
           type: string
           format: date-time
           readOnly: true
+          nullable: true
     PatchedInvitation:
       type: object
       properties:
@@ -13009,6 +13483,7 @@ components:
           type: string
           format: date-time
           readOnly: true
+          nullable: true
     PatchedOrganization:
       type: object
       properties:
@@ -13024,6 +13499,23 @@ components:
           type: string
           description: The organization name.
           maxLength: 256
+        project_name_pattern:
+          type: string
+          description: A regular expression project names must match
+          maxLength: 255
+        maintenance:
+          type: boolean
+          readOnly: true
+          description: If set, we are performing maintenance on this organization
+            and have disabled making changes
+        mfa_enabled:
+          type: boolean
+          description: Multi-factor authentication for the organization
+        version:
+          allOf:
+          - $ref: '#/components/schemas/VersionEnum'
+          readOnly: true
+          description: The current version of this Organization
         current:
           type: boolean
           readOnly: true
@@ -13064,116 +13556,8 @@ components:
           type: string
           format: date-time
           readOnly: true
-    PatchedParameter:
-      type: object
-      description: A single parameter inside of a project.
-      properties:
-        url:
-          type: string
-          format: uri
-          readOnly: true
-        id:
-          type: string
-          format: uuid
-          readOnly: true
-          description: A unique identifier for the parameter.
-        name:
-          type: string
-          description: The parameter name.
-          maxLength: 256
-        description:
-          type: string
-          description: A description of the parameter.  You may find it helpful to
-            document how this parameter is used to assist others when they need to
-            maintain software that uses this content.
-        secret:
-          type: boolean
-          description: Indicates if this content is secret or not.  External values
-            are inspected on-demand to ensure they align with the parameter's secret
-            setting and if they do not, those external values are not allowed to be
-            used.
-        type:
-          type: string
-          default: string
-          description: The type of this Parameter.
-        rules:
-          type: array
-          items:
-            $ref: '#/components/schemas/ParameterRule'
-          readOnly: true
-          description: Rules applied to this parameter.
-        project:
-          type: string
-          format: uri
-          readOnly: true
-          description: The project that the parameter is within.
-        project_name:
-          type: string
-          readOnly: true
-          description: The project name that the parameter is within.
-        referencing_templates:
-          type: array
-          items:
-            type: string
-          readOnly: true
-          description: Templates that reference this Parameter.
-        referencing_values:
-          type: array
-          items:
-            type: string
-          readOnly: true
-          description: Dynamic values that reference this Parameter.
-        values:
-          type: object
-          additionalProperties:
-            allOf:
-            - $ref: '#/components/schemas/Value'
-            nullable: true
-          readOnly: true
-          description: "\n            This dictionary has keys that correspond to\
-            \ environment urls, and values\n            that correspond to the effective\
-            \ value for this parameter in that environment.\n            Each parameter\
-            \ has an effective value in every environment based on\n            project\
-            \ dependencies and environment inheritance.\n\n            The effective\
-            \ value is found by looking (within the keyed environment) up\n      \
-            \      the project dependencies by parameter name.  If a value is not\
-            \ found, the\n            parent environment is consulted with the same\
-            \ logic to locate a value.  It\n            is possible for there to be\
-            \ a `null` value record for an environment, which\n            means there\
-            \ is no value set; it is also possible for there to be a value record\n\
-            \            with a `value` of `null`, which means the value was explicitly\
-            \ set to `null`.\n\n            If the value's parameter does not match\
-            \ the enclosing parameter (holding the\n            values array) then\
-            \ that value is flowing in through project dependencies.\n           \
-            \ Clients must recognize this in case the user asks to modify the value;\
-            \ in this\n            case the client must POST a new Value to the current\
-            \ parameter to override the\n            value coming in from the project\
-            \ dependency.\n\n            If the Value.environment matches the key,\
-            \ then it is an explicit value set for\n            that environment.\
-            \  If they differ, the value was obtained from a parent\n            environment\
-            \ (directly or indirectly).  If the value is None then no value has\n\
-            \            ever been set in any environment for this parameter within\
-            \ all the project\n            dependencies.\n        "
-        overrides:
-          type: string
-          format: uri
-          readOnly: true
           nullable: true
-          description: If this parameter's project depends on another project which
-            provides a parameter of the same name, this parameter overrides the one
-            provided by the dependee.  You can use this field to determine if there
-            will be side-effects the user should know about when deleting a parameter.  Deleting
-            a parameter that overrides another one due to an identical name will uncover
-            the one from the dependee project.
-        created_at:
-          type: string
-          format: date-time
-          readOnly: true
-        modified_at:
-          type: string
-          format: date-time
-          readOnly: true
-    PatchedParameterRule:
+    PatchedParameterRuleUpdate:
       type: object
       description: |-
         A type of `ModelSerializer` that uses hyperlinked relationships with compound keys instead
@@ -13184,13 +13568,8 @@ components:
 
         NOTE: this only works with DRF 3.1.0 and above.
       properties:
-        url:
-          type: string
-          format: uri
-          readOnly: true
         id:
           type: string
-          format: uuid
           readOnly: true
         parameter:
           type: string
@@ -13210,53 +13589,8 @@ components:
           type: string
           format: date-time
           readOnly: true
-    PatchedParameterType:
-      type: object
-      properties:
-        url:
-          type: string
-          format: uri
-          readOnly: true
-        id:
-          type: string
-          format: uuid
-          readOnly: true
-          description: A unique identifier for the parameter type.
-        name:
-          type: string
-          description: The parameter type name.
-          maxLength: 256
-        description:
-          type: string
-          description: A description of the parameter type, provide documentation
-            on how to use this type here.
-        rules:
-          type: array
-          items:
-            $ref: '#/components/schemas/ParameterTypeRule'
-          readOnly: true
-          description: Rules applied to this parameter.
-        parent:
-          type: string
-          format: uri
           nullable: true
-          description: All types must derive, either directly or indirectly, from
-            one of the CloudTruth built-in types.   This is the ParameterType that
-            this type is derived from.
-        parent_name:
-          type: string
-          readOnly: true
-          nullable: true
-          description: Name of the parent ParameterType (if any).
-        created_at:
-          type: string
-          format: date-time
-          readOnly: true
-        modified_at:
-          type: string
-          format: date-time
-          readOnly: true
-    PatchedParameterTypeRule:
+    PatchedParameterTypeRuleUpdate:
       type: object
       description: |-
         A type of `ModelSerializer` that uses hyperlinked relationships with compound keys instead
@@ -13267,13 +13601,8 @@ components:
 
         NOTE: this only works with DRF 3.1.0 and above.
       properties:
-        url:
-          type: string
-          format: uri
-          readOnly: true
         id:
           type: string
-          format: uuid
           readOnly: true
         parameter_type:
           type: string
@@ -13293,18 +13622,80 @@ components:
           type: string
           format: date-time
           readOnly: true
-    PatchedProject:
+          nullable: true
+    PatchedParameterTypeUpdate:
       type: object
       properties:
-        url:
+        id:
+          type: string
+          readOnly: true
+        name:
+          type: string
+          description: The parameter type name.
+          maxLength: 256
+        description:
+          type: string
+          description: A description of the parameter type, provide documentation
+            on how to use this type here.
+        parent:
+          type: string
+          format: uri
+          description: The URL for this parameter type's parent
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        modified_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+    PatchedParameterUpdate:
+      type: object
+      description: A single parameter inside of a project.
+      properties:
+        id:
+          type: string
+          readOnly: true
+        name:
+          type: string
+          description: The parameter name.
+          maxLength: 256
+        description:
+          type: string
+          description: A description of the parameter.  You may find it helpful to
+            document how this parameter is used to assist others when they need to
+            maintain software that uses this content.
+        secret:
+          type: boolean
+          description: Indicates if this content is secret or not.  External values
+            are inspected on-demand to ensure they align with the parameter's secret
+            setting and if they do not, those external values are not allowed to be
+            used.
+        type:
+          type: string
+          default: string
+          description: The type of this Parameter.
+        project:
           type: string
           format: uri
           readOnly: true
+          description: The project url.
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        modified_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+    PatchedProjectUpdate:
+      type: object
+      properties:
         id:
           type: string
-          format: uuid
           readOnly: true
-          description: A unique identifier for the project.
         name:
           type: string
           description: The project name.
@@ -13314,14 +13705,10 @@ components:
           description: A description of the project.  You may find it helpful to document
             how this project is used to assist others when they need to maintain software
             that uses this content.
-        dependents:
-          type: array
-          items:
-            type: string
-            format: uri
-          readOnly: true
-          description: This is the opposite of `depends_on`, see that field for more
-            details.
+        parameter_name_pattern:
+          type: string
+          description: A regular expression parameter names must match
+          maxLength: 256
         depends_on:
           type: string
           format: uri
@@ -13339,19 +13726,6 @@ components:
           nullable: true
           readOnly: true
           description: Your role in the project, if the project is access-controlled.
-        pushes:
-          type: array
-          items:
-            $ref: '#/components/schemas/AwsPush'
-          readOnly: true
-          description: Deprecated. Only shows pushes for aws integrations in /api/v1/.
-        push_urls:
-          type: array
-          items:
-            type: string
-            format: uri
-          readOnly: true
-          description: Push actions associated with the project.
         created_at:
           type: string
           format: date-time
@@ -13360,6 +13734,7 @@ components:
           type: string
           format: date-time
           readOnly: true
+          nullable: true
     PatchedServiceAccount:
       type: object
       properties:
@@ -13386,6 +13761,7 @@ components:
           type: string
           format: date-time
           readOnly: true
+          nullable: true
         last_used_at:
           type: string
           format: date-time
@@ -13420,21 +13796,14 @@ components:
           nullable: true
           description: The point in time this tag represents.  If explicitly set to
             `null` then the current time will be used.
-    PatchedTemplate:
+    PatchedTemplateUpdate:
       type: object
       description: A parameter template in a given project, optionally instantiated
         against an environment.
       properties:
-        url:
-          type: string
-          format: uri
-          readOnly: true
-          description: The templates this value references, if interpolated.
         id:
           type: string
-          format: uuid
           readOnly: true
-          description: A unique identifier for the template.
         name:
           type: string
           description: The template name.
@@ -13453,42 +13822,6 @@ components:
           description: The content of the template.  Use mustache-style templating
             delimiters of `{{` and `}}` to reference parameter values by name for
             substitution into the template result.
-        referenced_projects:
-          type: array
-          items:
-            type: string
-          readOnly: true
-          description: Projects (other than this template's project) that this template
-            referenced
-        referenced_parameters:
-          type: array
-          items:
-            type: string
-          readOnly: true
-          description: Parameters that this template references.
-        referenced_templates:
-          type: array
-          items:
-            type: string
-          readOnly: true
-          description: Other templates that this template references.
-        referencing_templates:
-          type: array
-          items:
-            type: string
-          readOnly: true
-          description: Other templates that reference this template.
-        referencing_values:
-          type: array
-          items:
-            type: string
-          readOnly: true
-          description: The dynamic values that reference this template.
-        has_secret:
-          type: boolean
-          readOnly: true
-          default: false
-          description: If True, this template contains secrets.
         created_at:
           type: string
           format: date-time
@@ -13497,41 +13830,16 @@ components:
           type: string
           format: date-time
           readOnly: true
-    PatchedValue:
+          nullable: true
+    PatchedValueUpdate:
       type: object
-      description: A value for a parameter in a given environment.
+      description: |-
+        Unlike other UpdateSerializers, we do not inherit from the CreateSerializer here
+        because `environment` is not a required field for updates.
       properties:
-        url:
-          type: string
-          format: uri
-          readOnly: true
         id:
           type: string
-          format: uuid
           readOnly: true
-          description: A unique identifier for the value.
-        environment:
-          type: string
-          format: uri
-          readOnly: true
-          description: The environment this value is set in.
-        environment_name:
-          type: string
-          readOnly: true
-          description: The environment name for this value.  This is a convenience
-            to avoid another query against the server to resolve the environment url
-            into a name.
-        earliest_tag:
-          type: string
-          nullable: true
-          readOnly: true
-          description: The earliest tag name this value appears in (within the value's
-            environment).
-        parameter:
-          type: string
-          format: uri
-          readOnly: true
-          description: The parameter this value is for.
         external:
           type: boolean
           description: An external parameter leverages a CloudTruth integration to
@@ -13551,17 +13859,6 @@ components:
             as the content is structured and of a supported format.  JMESpath expressions
             are supported on `json`, `yaml`, and `dotenv` content.
           maxLength: 1024
-        external_error:
-          type: string
-          nullable: true
-          readOnly: true
-          description: This field is deprecated and unused.
-        external_status:
-          allOf:
-          - $ref: '#/components/schemas/TaskStep'
-          readOnly: true
-          nullable: true
-          description: The most recent mapped pull status for an external value.
         internal_value:
           type: string
           nullable: true
@@ -13573,20 +13870,6 @@ components:
           type: boolean
           description: 'If `true`, apply template substitution rules to this value.  If
             `false`, this value is a literal value.  Note: secrets cannot be interpolated.'
-        value:
-          type: string
-          nullable: true
-          readOnly: true
-          description: |-
-            This is the actual content of the Value for the given parameter in the given environment.
-
-            If you request secret masking, no secret content will be included in the result and instead a series of asterisks will be used instead for the value.  If you request wrapping, the secret content will be wrapped in an envelope that is bound to your JWT token.  For more information about secret wrapping, see the docs.
-
-            Clients applying this value to a shell environment should set `<parameter_name>=<value>` even if `value` is the empty string.  If `value` is `null`, the client should unset that shell environment variable.
-        evaluated:
-          type: boolean
-          readOnly: true
-          description: If true, the `value` field has undergone template evaluation.
         secret:
           type: boolean
           nullable: true
@@ -13599,26 +13882,16 @@ components:
             by leveraging this field.  It is also possible for a parameter to not
             be a secret but for this value to be dynamic and reference a Parameter
             that is a secret.  In this case, we indicate the value is a secret.
-        referenced_projects:
-          type: array
-          items:
-            type: string
-            format: uri
+        value:
+          type: string
+          nullable: true
           readOnly: true
-        referenced_parameters:
-          type: array
-          items:
-            type: string
-            format: uri
-          readOnly: true
-          description: The parameters this value references, if interpolated.
-        referenced_templates:
-          type: array
-          items:
-            type: string
-            format: uri
-          readOnly: true
-          description: The templates this value references, if interpolated.
+          description: |-
+            This is the actual content of the Value for the given parameter in the given environment.
+
+            If you request secret masking, no secret content will be included in the result and instead a series of asterisks will be used instead for the value.
+
+            Clients applying this value to a shell environment should set `<parameter_name>=<value>` even if `value` is the empty string.  If `value` is `null`, the client should unset that shell environment variable.
         created_at:
           type: string
           format: date-time
@@ -13627,6 +13900,7 @@ components:
           type: string
           format: date-time
           readOnly: true
+          nullable: true
     Project:
       type: object
       properties:
@@ -13634,14 +13908,19 @@ components:
           type: string
           format: uri
           readOnly: true
+          description: The URL for the project.
         id:
           type: string
-          format: uuid
           readOnly: true
-          description: A unique identifier for the project.
+        ledger_id:
+          type: string
+          readOnly: true
         name:
           type: string
           description: The project name.
+        parameter_name_pattern:
+          type: string
+          description: A regular expression parameter names must match
           maxLength: 256
         description:
           type: string
@@ -13694,10 +13973,12 @@ components:
           type: string
           format: date-time
           readOnly: true
+          nullable: true
       required:
       - created_at
       - dependents
       - id
+      - ledger_id
       - modified_at
       - name
       - push_urls
@@ -13716,6 +13997,10 @@ components:
           description: A description of the project.  You may find it helpful to document
             how this project is used to assist others when they need to maintain software
             that uses this content.
+        parameter_name_pattern:
+          type: string
+          description: A regular expression parameter names must match
+          maxLength: 256
         depends_on:
           type: string
           format: uri
@@ -13726,6 +14011,57 @@ components:
             Projects can depend on another project which will add the parameters from the parent project into the current project.  All of the parameter names between the two projects must be unique.  When retrieving values or rendering templates, all of the parameters from the parent project will also be available in the current project.
       required:
       - name
+    ProjectUpdate:
+      type: object
+      properties:
+        id:
+          type: string
+          readOnly: true
+        name:
+          type: string
+          description: The project name.
+          maxLength: 256
+        description:
+          type: string
+          description: A description of the project.  You may find it helpful to document
+            how this project is used to assist others when they need to maintain software
+            that uses this content.
+        parameter_name_pattern:
+          type: string
+          description: A regular expression parameter names must match
+          maxLength: 256
+        depends_on:
+          type: string
+          format: uri
+          nullable: true
+          description: |-
+            Project dependencies allow projects to be used for shared configuration, for example a database used by many applications needs to advertise its port number.
+
+            Projects can depend on another project which will add the parameters from the parent project into the current project.  All of the parameter names between the two projects must be unique.  When retrieving values or rendering templates, all of the parameters from the parent project will also be available in the current project.
+        access_controlled:
+          type: boolean
+          description: Indicates if access control is being enforced through grants.
+        role:
+          allOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          nullable: true
+          readOnly: true
+          description: Your role in the project, if the project is access-controlled.
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        modified_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+      required:
+      - created_at
+      - id
+      - modified_at
+      - name
+      - role
     RoleEnum:
       enum:
       - OWNER
@@ -13759,6 +14095,7 @@ components:
           type: string
           format: date-time
           readOnly: true
+          nullable: true
         last_used_at:
           type: string
           format: date-time
@@ -13784,6 +14121,10 @@ components:
           type: string
           description: An optional description of the process or system using the
             service account.
+        role:
+          type: string
+          writeOnly: true
+          description: The role for the service acount
       required:
       - name
     ServiceAccountCreateResponse:
@@ -13812,6 +14153,7 @@ components:
           type: string
           format: date-time
           readOnly: true
+          nullable: true
         last_used_at:
           type: string
           format: date-time
@@ -13831,6 +14173,19 @@ components:
       - modified_at
       - url
       - user
+    ServiceAccountUpdateRequest:
+      type: object
+      properties:
+        description:
+          type: string
+          description: An optional description of the process or system using the
+            service account.
+        role:
+          type: string
+          readOnly: true
+          description: The role for the service acount
+      required:
+      - role
     StateEnum:
       enum:
       - queued
@@ -14093,6 +14448,7 @@ components:
           type: string
           format: date-time
           readOnly: true
+          nullable: true
       required:
       - created_at
       - environment
@@ -14114,13 +14470,13 @@ components:
           description: The templates this value references, if interpolated.
         id:
           type: string
-          format: uuid
           readOnly: true
-          description: A unique identifier for the template.
+        ledger_id:
+          type: string
+          readOnly: true
         name:
           type: string
           description: The template name.
-          maxLength: 256
         description:
           type: string
           description: ('A description of the template.  You may find it helpful to
@@ -14141,31 +14497,35 @@ components:
             type: string
           readOnly: true
           description: Projects (other than this template's project) that this template
-            referenced
+            references.  This field is not valid for history requests.
         referenced_parameters:
           type: array
           items:
             type: string
           readOnly: true
-          description: Parameters that this template references.
+          description: Parameters that this template references.  This field is not
+            valid for history requests.
         referenced_templates:
           type: array
           items:
             type: string
           readOnly: true
-          description: Other templates that this template references.
+          description: Other templates that this template references.  This field
+            is not valid for history requests.
         referencing_templates:
           type: array
           items:
             type: string
           readOnly: true
-          description: Other templates that reference this template.
+          description: Other templates that reference this template.  This field is
+            not valid for history requests.
         referencing_values:
           type: array
           items:
             type: string
           readOnly: true
-          description: The dynamic values that reference this template.
+          description: The dynamic values that reference this template.  This field
+            is not valid for history requests.
         has_secret:
           type: boolean
           readOnly: true
@@ -14179,11 +14539,13 @@ components:
           type: string
           format: date-time
           readOnly: true
+          nullable: true
       required:
       - created_at
       - evaluated
       - has_secret
       - id
+      - ledger_id
       - modified_at
       - name
       - referenced_parameters
@@ -14290,24 +14652,16 @@ components:
       type: object
       description: Details about a single change.
       properties:
-        history_date:
-          type: string
-          format: date-time
         history_type:
           allOf:
           - $ref: '#/components/schemas/HistoryTypeEnum'
           readOnly: true
-        history_user:
-          type: string
-          description: The unique identifier of a user.
-          nullable: true
         history_template:
           allOf:
           - $ref: '#/components/schemas/TemplateTimelineEntryTemplate'
           readOnly: true
           description: The template record as it was when archived for history.
       required:
-      - history_date
       - history_template
       - history_type
     TemplateTimelineEntryTemplate:
@@ -14317,18 +14671,15 @@ components:
       properties:
         id:
           type: string
-          format: uuid
           readOnly: true
-          description: A unique identifier for the parameter.
+        ledger_id:
+          type: string
+          readOnly: true
         name:
           type: string
           description: The parameter name.
-          maxLength: 256
         description:
           type: string
-          description: A description of the parameter.  You may find it helpful to
-            document how this parameter is used to assist others when they need to
-            maintain software that uses this content.
         body:
           type: string
           description: The content of the template.  Use mustache-style templating
@@ -14336,6 +14687,48 @@ components:
             substitution into the template result.
       required:
       - id
+      - ledger_id
+      - name
+    TemplateUpdate:
+      type: object
+      description: A parameter template in a given project, optionally instantiated
+        against an environment.
+      properties:
+        id:
+          type: string
+          readOnly: true
+        name:
+          type: string
+          description: The template name.
+          maxLength: 256
+        description:
+          type: string
+          description: ('A description of the template.  You may find it helpful to
+            document how this template is used to assist others when they need to
+            maintain software that uses this content.',)
+        evaluated:
+          type: boolean
+          readOnly: true
+          description: If true, the `body` field has undergone evaluation.
+        body:
+          type: string
+          description: The content of the template.  Use mustache-style templating
+            delimiters of `{{` and `}}` to reference parameter values by name for
+            substitution into the template result.
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        modified_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+      required:
+      - created_at
+      - evaluated
+      - id
+      - modified_at
       - name
     User:
       type: object
@@ -14388,6 +14781,7 @@ components:
           type: string
           format: date-time
           readOnly: true
+          nullable: true
       required:
       - created_at
       - email
@@ -14407,52 +14801,44 @@ components:
           type: string
           format: uri
           readOnly: true
+          description: The value url.
         id:
           type: string
-          format: uuid
           readOnly: true
-          description: A unique identifier for the value.
+        ledger_id:
+          type: string
+          readOnly: true
         environment:
           type: string
           format: uri
           readOnly: true
           description: The environment this value is set in.
+        environment_id:
+          type: string
+          readOnly: true
+          description: The environment id for this value.
         environment_name:
           type: string
           readOnly: true
           description: The environment name for this value.  This is a convenience
             to avoid another query against the server to resolve the environment url
             into a name.
-        earliest_tag:
-          type: string
-          nullable: true
-          readOnly: true
-          description: The earliest tag name this value appears in (within the value's
-            environment).
         parameter:
           type: string
           format: uri
           readOnly: true
           description: The parameter this value is for.
+        parameter_id:
+          type: string
+          readOnly: true
+          description: The parameter id for this value.
         external:
           type: boolean
-          description: An external parameter leverages a CloudTruth integration to
-            retrieve content on-demand from an external source.  When this is `false`
-            the value is stored by CloudTruth and considered to be _internal_.  When
-            this is `true`, the `external_fqn` field must be set.
         external_fqn:
           type: string
-          description: The FQN, or Fully-Qualified Name, is the path through the integration
-            to get to the desired content.  This must be present and reference a valid
-            integration when the value is `external`.
-          maxLength: 1024
         external_filter:
           type: string
-          description: If the value is `external`, the content returned by the integration
-            can be reduced by applying a JMESpath expression.  This is valid as long
-            as the content is structured and of a supported format.  JMESpath expressions
-            are supported on `json`, `yaml`, and `dotenv` content.
-          maxLength: 1024
+          nullable: true
         external_error:
           type: string
           nullable: true
@@ -14467,14 +14853,8 @@ components:
         internal_value:
           type: string
           nullable: true
-          description: This is the content to use when resolving the Value for an
-            internal non-secret, or when storing a secret.  This field cannot be specified
-            when creating or updating an `external` value.
-          maxLength: 65536
         interpolated:
           type: boolean
-          description: 'If `true`, apply template substitution rules to this value.  If
-            `false`, this value is a literal value.  Note: secrets cannot be interpolated.'
         value:
           type: string
           nullable: true
@@ -14482,7 +14862,7 @@ components:
           description: |-
             This is the actual content of the Value for the given parameter in the given environment.
 
-            If you request secret masking, no secret content will be included in the result and instead a series of asterisks will be used instead for the value.  If you request wrapping, the secret content will be wrapped in an envelope that is bound to your JWT token.  For more information about secret wrapping, see the docs.
+            If you request secret masking, no secret content will be included in the result and instead a series of asterisks will be used instead for the value.
 
             Clients applying this value to a shell environment should set `<parameter_name>=<value>` even if `value` is the empty string.  If `value` is `null`, the client should unset that shell environment variable.
         evaluated:
@@ -14507,20 +14887,24 @@ components:
             type: string
             format: uri
           readOnly: true
+          description: The projects this value references, if dynamic.  This field
+            is not valid for history requests.
         referenced_parameters:
           type: array
           items:
             type: string
             format: uri
           readOnly: true
-          description: The parameters this value references, if interpolated.
+          description: The parameters this value references, if dynamic.  this field
+            is not valid for history requests.
         referenced_templates:
           type: array
           items:
             type: string
             format: uri
           readOnly: true
-          description: The templates this value references, if interpolated.
+          description: The templates this value references, if dynamic.  This field
+            is not valid for history requests.
         created_at:
           type: string
           format: date-time
@@ -14529,17 +14913,20 @@ components:
           type: string
           format: date-time
           readOnly: true
+          nullable: true
       required:
       - created_at
-      - earliest_tag
       - environment
+      - environment_id
       - environment_name
       - evaluated
       - external_error
       - external_status
       - id
+      - ledger_id
       - modified_at
       - parameter
+      - parameter_id
       - referenced_parameters
       - referenced_projects
       - referenced_templates
@@ -14586,6 +14973,88 @@ components:
             `false`, this value is a literal value.  Note: secrets cannot be interpolated.'
       required:
       - environment
+    ValueUpdate:
+      type: object
+      description: |-
+        Unlike other UpdateSerializers, we do not inherit from the CreateSerializer here
+        because `environment` is not a required field for updates.
+      properties:
+        id:
+          type: string
+          readOnly: true
+        external:
+          type: boolean
+          description: An external parameter leverages a CloudTruth integration to
+            retrieve content on-demand from an external source.  When this is `false`
+            the value is stored by CloudTruth and considered to be _internal_.  When
+            this is `true`, the `external_fqn` field must be set.
+        external_fqn:
+          type: string
+          description: The FQN, or Fully-Qualified Name, is the path through the integration
+            to get to the desired content.  This must be present and reference a valid
+            integration when the value is `external`.
+          maxLength: 1024
+        external_filter:
+          type: string
+          description: If the value is `external`, the content returned by the integration
+            can be reduced by applying a JMESpath expression.  This is valid as long
+            as the content is structured and of a supported format.  JMESpath expressions
+            are supported on `json`, `yaml`, and `dotenv` content.
+          maxLength: 1024
+        internal_value:
+          type: string
+          nullable: true
+          description: This is the content to use when resolving the Value for an
+            internal non-secret, or when storing a secret.  This field cannot be specified
+            when creating or updating an `external` value.
+          maxLength: 65536
+        interpolated:
+          type: boolean
+          description: 'If `true`, apply template substitution rules to this value.  If
+            `false`, this value is a literal value.  Note: secrets cannot be interpolated.'
+        secret:
+          type: boolean
+          nullable: true
+          readOnly: true
+          description: Indicates the value content is a secret.  Normally this is
+            `true` when the parameter is a secret. It is possible for a parameter
+            to be a secret with a external value that is not a secret.  It is not
+            possible to convert a parameter from a secret to a non-secret if any of
+            the values are external and a secret.  Clients can check this condition
+            by leveraging this field.  It is also possible for a parameter to not
+            be a secret but for this value to be dynamic and reference a Parameter
+            that is a secret.  In this case, we indicate the value is a secret.
+        value:
+          type: string
+          nullable: true
+          readOnly: true
+          description: |-
+            This is the actual content of the Value for the given parameter in the given environment.
+
+            If you request secret masking, no secret content will be included in the result and instead a series of asterisks will be used instead for the value.
+
+            Clients applying this value to a shell environment should set `<parameter_name>=<value>` even if `value` is the empty string.  If `value` is `null`, the client should unset that shell environment variable.
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        modified_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+      required:
+      - created_at
+      - id
+      - modified_at
+      - secret
+      - value
+    VersionEnum:
+      enum:
+      - 1
+      - 2
+      - 3
+      type: integer
   securitySchemes:
     ApiKeyAuth:
       in: header
@@ -14617,5 +15086,9 @@ components:
         \ the JWT, place your JWT in the Authorization header as 'Bearer JWT', where\n\
         JWT is your JWT.  For example:\n\n    Authorization: Bearer eyJhbGciOiJIkuydfy.eyJzdWIiOiIxMjM....\n\
         \        "
+    tokenAuth:
+      type: http
+      scheme: bearer
 externalDocs:
   url: https://docs.cloudtruth.com/
+

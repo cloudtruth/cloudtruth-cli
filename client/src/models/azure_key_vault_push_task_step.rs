@@ -74,7 +74,7 @@ pub struct AzureKeyVaultPushTaskStep {
     #[serde(rename = "created_at")]
     pub created_at: String,
     #[serde(rename = "modified_at")]
-    pub modified_at: String,
+    pub modified_at: Option<String>,
 }
 
 impl AzureKeyVaultPushTaskStep {
@@ -87,7 +87,7 @@ impl AzureKeyVaultPushTaskStep {
         project: Option<String>,
         parameter: Option<String>,
         created_at: String,
-        modified_at: String,
+        modified_at: Option<String>,
     ) -> AzureKeyVaultPushTaskStep {
         AzureKeyVaultPushTaskStep {
             url,

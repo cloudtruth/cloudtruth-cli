@@ -27,7 +27,7 @@ pub struct Membership {
     #[serde(rename = "created_at")]
     pub created_at: String,
     #[serde(rename = "modified_at")]
-    pub modified_at: String,
+    pub modified_at: Option<String>,
 }
 
 impl Membership {
@@ -38,7 +38,7 @@ impl Membership {
         organization: String,
         role: Option<crate::models::RoleEnum>,
         created_at: String,
-        modified_at: String,
+        modified_at: Option<String>,
     ) -> Membership {
         Membership {
             url,

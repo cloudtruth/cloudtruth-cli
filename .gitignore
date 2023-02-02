@@ -1,7 +1,6 @@
 # Build Artifacts
 /target
 /client/docs
-debug/
 generator.log
 *.pdb
 **/*.rs.bk

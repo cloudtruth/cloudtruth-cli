@@ -10,11 +10,13 @@
 
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct Environment {
+    /// The URL for the environment.
     #[serde(rename = "url")]
     pub url: String,
-    /// A unique identifier for the environment.
     #[serde(rename = "id")]
     pub id: String,
+    #[serde(rename = "ledger_id")]
+    pub ledger_id: String,
     /// The environment name.
     #[serde(rename = "name")]
     pub name: String,
@@ -36,22 +38,24 @@ pub struct Environment {
     #[serde(rename = "created_at")]
     pub created_at: String,
     #[serde(rename = "modified_at")]
-    pub modified_at: String,
+    pub modified_at: Option<String>,
 }
 
 impl Environment {
     pub fn new(
         url: String,
         id: String,
+        ledger_id: String,
         name: String,
         children: Vec<String>,
         role: Option<crate::models::RoleEnum>,
         created_at: String,
-        modified_at: String,
+        modified_at: Option<String>,
     ) -> Environment {
         Environment {
             url,
             id,
+            ledger_id,
             name,
             description: None,
             parent: None,

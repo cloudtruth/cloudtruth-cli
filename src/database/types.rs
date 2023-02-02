@@ -6,8 +6,8 @@ use crate::database::{
 use cloudtruth_restapi::apis::types_api::*;
 use cloudtruth_restapi::apis::Error::ResponseError;
 use cloudtruth_restapi::models::{
-    ParameterRuleTypeEnum, ParameterTypeCreate, ParameterTypeRuleCreate, PatchedParameterType,
-    PatchedParameterTypeRule,
+    ParameterRuleTypeEnum, ParameterTypeCreate, ParameterTypeRuleCreate,
+    PatchedParameterTypeRuleUpdate, PatchedParameterTypeUpdate,
 };
 use std::result::Result;
 
@@ -44,8 +44,6 @@ impl Types {
             NO_ORDERING,
             NO_PAGE_COUNT,
             NO_PAGE_SIZE,
-            None,
-            None,
         );
 
         match response {
@@ -98,8 +96,6 @@ impl Types {
                 NO_ORDERING,
                 Some(page_count),
                 page_size(rest_cfg),
-                None,
-                None,
             );
 
             match response {
@@ -132,12 +128,12 @@ impl Types {
         rest_cfg: &OpenApiConfig,
         type_name: &str,
         description: Option<&str>,
-        parent_url: Option<&str>,
+        parent_url: &str,
     ) -> Result<TypeDetails, TypeError> {
         let create_type = ParameterTypeCreate {
             name: type_name.to_string(),
             description: description.map(String::from),
-            parent: parent_url.map(String::from),
+            parent: parent_url.to_string(),
         };
         let response = types_create(rest_cfg, create_type);
         match response {
@@ -175,16 +171,13 @@ impl Types {
         description: Option<&str>,
         parent_url: Option<&str>,
     ) -> Result<TypeDetails, TypeError> {
-        let type_update = PatchedParameterType {
-            url: None,
+        let type_update = PatchedParameterTypeUpdate {
             id: None,
             name: Some(type_name.to_string()),
             description: description.map(|d| d.to_string()),
             created_at: None,
             modified_at: None,
-            rules: None,
             parent: parent_url.map(String::from),
-            parent_name: None,
         };
         let response = types_partial_update(rest_cfg, type_id, Some(type_update));
         match response {
@@ -227,8 +220,7 @@ impl Types {
         rule_type: Option<ParamRuleType>,
         constraint: Option<&str>,
     ) -> Result<String, TypeError> {
-        let patch_rule = PatchedParameterTypeRule {
-            url: None,
+        let patch_rule = PatchedParameterTypeRuleUpdate {
             id: None,
             parameter_type: None,
             _type: rule_type.map(ParameterRuleTypeEnum::from),
