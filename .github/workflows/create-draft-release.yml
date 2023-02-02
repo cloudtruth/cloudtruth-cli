@@ -71,6 +71,8 @@ jobs:
       - name: Create GitHub release
         id: release
         uses: actions/create-release@v1
+        # for nightly: release can already exist
+        continue-on-error: ${{ github.ref_name == 'nightly' }} 
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -79,6 +81,15 @@ jobs:
           tag_name: ${{ github.ref_name }}
           release_name: ${{ github.ref_name }}
 
+      # Nightly only: delete old release assets
+      - if: github.ref_name == 'nightly'
+        uses: mknejp/delete-release-assets@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag: nightly
+          assets: '*'
+          fail-if-no-assets: false
+
       - name: Save release information to artifacts
         run: |
           echo "${{ steps.release.outputs.id }}" > artifacts/release-id
@@ -86,7 +97,7 @@ jobs:
           echo "${{ github.ref_name }}" > artifacts/release-version
 
       - name: Upload artifacts for other jobs to consume
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v3
         with:
           name: artifacts
           path: artifacts
@@ -251,7 +262,7 @@ jobs:
           fi
 
       - name: Upload release archive
-        uses: actions/upload-release-asset@v1.0.1
+        uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -272,7 +283,7 @@ jobs:
 
       - name: Upload Debian package
         if: contains(matrix.build, 'linux')
-        uses: actions/upload-release-asset@v1.0.1
+        uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -301,7 +312,7 @@ jobs:
 
       - name: Upload RPM package
         if: contains(matrix.build, 'linux')
-        uses: actions/upload-release-asset@v1.0.1
+        uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -312,7 +323,7 @@ jobs:
 
       - name: Upload Release Notes
         if: matrix.build == 'linux'
-        uses: actions/upload-release-asset@v1.0.1
+        uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -323,7 +334,7 @@ jobs:
 
       - name: Upload POSIX Install
         if: matrix.build == 'linux'
-        uses: actions/upload-release-asset@v1.0.1
+        uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -334,7 +345,7 @@ jobs:
 
       - name: Upload Windows Install
         if: matrix.build == 'linux'
-        uses: actions/upload-release-asset@v1.0.1
+        uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
