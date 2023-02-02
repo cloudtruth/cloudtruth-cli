@@ -14,16 +14,13 @@ jobs:
       CT_TEST_PROJECT: TruthStrap
       CT_TEST_PARAM: INTEGRATION_TEST_RESULT
       CT_TEST_VALUE: Speicla
+      CT_VERSION: ${{ github.ref_name }}
 
     steps:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 1
 
-      - name: Get the release version from the tag
-        if: env.CT_VERSION == ''
-        run: |
-          echo CT_VERSION=${GITHUB_REF#refs/tags/} >> $GITHUB_ENV
 
       - name: alpine-3.13
         run: |
@@ -49,16 +46,13 @@ jobs:
       CT_TEST_PROJECT: TruthStrap
       CT_TEST_PARAM: INTEGRATION_TEST_RESULT
       CT_TEST_VALUE: Speicla
+      CT_VERSION: ${{ github.ref_name }}
 
     steps:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 1
 
-      - name: Get the release version from the tag
-        if: env.CT_VERSION == ''
-        run: |
-          echo CT_VERSION=${GITHUB_REF#refs/tags/} >> $GITHUB_ENV
 
       - name: rockylinux-8
         run: |
@@ -76,16 +70,13 @@ jobs:
       CT_TEST_PROJECT: TruthStrap
       CT_TEST_PARAM: INTEGRATION_TEST_RESULT
       CT_TEST_VALUE: Speicla
+      CT_VERSION: ${{ github.ref_name }}
 
     steps:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 1
 
-      - name: Get the release version from the tag
-        if: env.CT_VERSION == ''
-        run: |
-          echo CT_VERSION=${GITHUB_REF#refs/tags/} >> $GITHUB_ENV
 
       - name: debian-bullseye-slim
         run: |
@@ -112,23 +103,20 @@ jobs:
           docker run -e CLOUDTRUTH_API_KEY --rm -v $(pwd):/truth -t cloudtruth:debian-jessie-slim cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
 
   test-macOS:
-    runs-on: macos-latest
+    runs-on: macOS-latest
     env:
       # These values are used for running the CLI command
       CLOUDTRUTH_API_KEY: ${{ secrets.CI_ACCT_READONLY_CT_API_KEY }}
       CT_TEST_PROJECT: TruthStrap
       CT_TEST_PARAM: INTEGRATION_TEST_RESULT
       CT_TEST_VALUE: Speicla
+      CT_VERSION: ${{ github.ref_name }}
 
     steps:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 1
 
-      - name: Get the release version from the tag
-        if: env.CT_VERSION == ''
-        run: |
-          echo CT_VERSION=${GITHUB_REF#refs/tags/} >> $GITHUB_ENV
 
       - name: macOS-latest
         run: |
@@ -143,16 +131,13 @@ jobs:
       CT_TEST_PROJECT: TruthStrap
       CT_TEST_PARAM: INTEGRATION_TEST_RESULT
       CT_TEST_VALUE: Speicla
+      CT_VERSION: ${{ github.ref_name }}
 
     steps:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 1
 
-      - name: Get the release version from the tag
-        if: env.CT_VERSION == ''
-        run: |
-          echo CT_VERSION=${GITHUB_REF#refs/tags/} >> $GITHUB_ENV
 
       - name: ubuntu-focal
         run: |
@@ -194,16 +179,13 @@ jobs:
       CT_TEST_PROJECT: TruthStrap
       CT_TEST_PARAM: INTEGRATION_TEST_RESULT
       CT_TEST_VALUE: Speicla
+      CT_VERSION: ${{ github.ref_name }}
 
     steps:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 1
 
-      - name: Get the release version from the tag
-        if: env.CT_VERSION == ''
-        run: |
-          echo CT_VERSION=${GITHUB_REF#refs/tags/} >> $GITHUB_ENV
 
       - name: Set Windows CT_VERSION variable
         run: |
