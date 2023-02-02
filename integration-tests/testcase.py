@@ -32,6 +32,8 @@ TEST_PAGE_SIZE = 5
 
 CT_TEST_LOG_COMMANDS = "CT_LIVE_TEST_LOG_COMMANDS"
 CT_TEST_LOG_OUTPUT = "CT_LIVE_TEST_LOG_OUTPUT"
+CT_TEST_LOG_COMMANDS_ON_FAILURE = "CT_LIVE_TEST_LOG_COMMANDS_ON_FAILURE"
+CT_TEST_LOG_OUTPUT_ON_FAILURE = "CT_LIVE_TEST_LOG_OUTPUT_ON_FAILURE"
 CT_TEST_JOB_ID = "CT_LIVE_TEST_JOB_ID"
 
 SRC_ENV = "shell"
@@ -125,7 +127,10 @@ class TestCase(unittest.TestCase):
         self._base_cmd = get_cli_base_cmd()
         self.log_commands = int(os.environ.get(CT_TEST_LOG_COMMANDS, "0"))
         self.log_output = int(os.environ.get(CT_TEST_LOG_OUTPUT, "0"))
+        self.log_commands_on_failure = int(os.environ.get(CT_TEST_LOG_COMMANDS_ON_FAILURE, "0"))
+        self.log_output_on_failure = int(os.environ.get(CT_TEST_LOG_OUTPUT_ON_FAILURE, "0"))
         self.job_id = os.environ.get(CT_TEST_JOB_ID, "testcli")
+        self._failure_logs = None
         self._projects = None
         self._environments = None
         self._users = None
@@ -137,6 +142,8 @@ class TestCase(unittest.TestCase):
         self.maxDiff = None
 
     def setUp(self) -> None:
+        # collects logs to display when/if the test case fails
+        self._failure_logs = list()
         # start each test with empty sets for projects and environments
         self._projects = list()
         self._environments = list()
@@ -148,6 +155,21 @@ class TestCase(unittest.TestCase):
         super().setUp()
 
     def tearDown(self) -> None:
+        # Report test failures
+        if not self.log_commands and self.log_commands_on_failure or \
+           not self.log_output and self.log_output_on_failure:
+            # Python 3.4 - 3.10
+            if hasattr(self._outcome, 'errors'):
+                result = self.defaultTestResult()
+                self._feedErrorsToResult(result, self._outcome.errors)
+            # Python 3.11+
+            else:
+                result = self._outcome.result
+            success = all(test != self for test, _ in result.errors + result.failures)
+            if not success:
+                print()  # gives better reading output
+                print("\n".join(self._failure_logs))
+
         # tear down any possibly lingering projects -- they should have been deleted in reverse
         # order in case there are any children.
         for proj in reversed(self._projects):
@@ -274,12 +296,14 @@ class TestCase(unittest.TestCase):
         self.assertGreaterEqual(len([_ for _ in gets if "page=1" in _]), 1)
         self.assertGreaterEqual(len([_ for _ in gets if "page=2" in _]), 1)
 
-    def run_cli(self, env: Dict[str, str], cmd: str) -> Result:
+    def run_cli(self, env: Dict[str, str], cmd: str) -> Result:  # noqa: C901
         # WARNING: DOS prompt does not like the single quotes, so use double
         cmd = cmd.replace("'", "\"")
 
         if self.log_commands:
             print(cmd)
+        elif self.log_commands_on_failure:
+            self._failure_logs.append(cmd)
 
         def _next_part(arg_list: List, key: str) -> str:
             """Simple function to walk the 'arg_list' and find the item after the 'key'"""
@@ -342,6 +366,11 @@ class TestCase(unittest.TestCase):
                 print("\n".join(result.stdout))
             if result.stderr:
                 print("\n".join(result.stderr))
+        elif self.log_output_on_failure:
+            if result.stdout:
+                self._failure_logs.append("\n".join(result.stdout))
+            if result.stderr:
+                self._failure_logs.append("\n".join(result.stderr))
 
         return result
 
