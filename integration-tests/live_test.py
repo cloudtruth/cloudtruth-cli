@@ -205,19 +205,19 @@ def filter_suite(suite, func):
 def filter_before(suite, before: str):
     def is_before(testcase: str) -> bool:
         return testcase._testMethodName > before
-    return filter_suite(suite, is_before, before)
+    return filter_suite(suite, is_before)
 
 
 def filter_after(suite, after: str):
     def is_after(testcase: str) -> bool:
         return testcase._testMethodName < after
-    return filter_suite(suite, is_after, after)
+    return filter_suite(suite, is_after)
 
 
 def filter_exclude(suite, exclude: str):
     def is_excluded(testcase: str) -> bool:
         return exclude in testcase._testMethodName
-    return filter_suite(suite, is_excluded, exclude)
+    return filter_suite(suite, is_excluded)
 
 
 def live_test(*args):
