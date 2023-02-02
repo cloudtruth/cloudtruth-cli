@@ -2,12 +2,7 @@
 # historical job logs. Use test-production.yml workflow instead
 ---
 name: Production (Historical)
-
-#github syntax requires 'on' to be defined even though we dont want to use it
-on:
-  push:
-    branches-ignore: 
-      - '**' #never run
+on: workflow_dispatch
 
 jobs:
   test:

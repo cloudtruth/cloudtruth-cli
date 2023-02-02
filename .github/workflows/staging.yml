@@ -2,11 +2,7 @@
 # historical job logs. Use test-staging.yml workflow instead
 ---
 name: Staging (Historical)
-#github syntax requires 'on' to be defined even though we dont want to use it
-on:
-  push:
-    branches-ignore: 
-      - '**' #never run
+on: workflow_dispatch
 
 jobs:
   test:
