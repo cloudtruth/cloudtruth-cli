@@ -1,0 +1,303 @@
+# The release steps here pull heavily from the GitHub Actions configuration for the bat and ripgrep projects.
+#
+# bat: https://github.com/sharkdp/bat
+# The MIT License (MIT)
+#
+# Copyright (c) 2018-2020 bat-developers (https://github.com/sharkdp/bat).
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#
+# ripgrep: https://github.com/BurntSushi/ripgrep
+# The MIT License (MIT)
+#
+# Copyright (c) 2015 Andrew Gallant
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+---
+name: Build Release
+run-name: Build Release (${{ github.ref_name }})
+on:
+  workflow_call:
+    inputs:
+      releaseId:
+        description: 'Release ID returned by create-release action'
+        type: string
+        required: true
+      releaseUploadUrl:
+        description: 'Release Upload Url returned by create-release action'
+        type: string
+        required: true
+      releaseVersion:
+        description: 'CLI Release Version (defaults to tag name)'
+        type: string
+        default: ${{ github.ref_name }}
+    secrets:
+      GITHUB_TOKEN:
+        description: "GitHub API token"
+        required: true
+
+env:
+  CI: true
+  RELEASE_UPLOAD_URL: ${{ inputs.releaseUploadUrl }}
+  RELEASE_VERSION: ${{ inputs.releaseVersion }}
+  RUST_BACKTRACE: 1
+  CROSS_VERSION: 0.2.4
+
+jobs:
+  build-release:
+    name: Build Release
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        # Split the "build" attribute off from the others so the GitHub Actions UI only shows the short build name.
+        # The "include" part will add attributes to the corresponding "build" values. The "build" names must match.
+        # If we don't split like this, the GitHub Action UI will show the full set of configuration keys, overwhelming
+        # the UI.
+        build: [linux, linux-arm, linux-aarch64, macos, macos-aarch64, win-msvc]
+        include:
+          - { build: linux         , os: ubuntu-18.04 , target: x86_64-unknown-linux-musl   , use-cross: true  }
+          - { build: linux-arm     , os: ubuntu-18.04 , target: arm-unknown-linux-gnueabihf , use-cross: true  }
+          - { build: linux-aarch64 , os: ubuntu-18.04 , target: aarch64-unknown-linux-gnu   , use-cross: true  }
+          - { build: macos         , os: macos-latest , target: x86_64-apple-darwin         , use-cross: false }
+          - { build: macos-aarch64 , os: macos-latest , target: aarch64-apple-darwin        , use-cross: false }
+          - { build: win-msvc      , os: windows-2019 , target: x86_64-pc-windows-msvc      , use-cross: false }
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+
+      - name: Install prerequisites
+        shell: bash
+        run: |
+          case ${{ matrix.target }} in
+            arm-unknown-linux-gnueabihf)
+              sudo apt-get -y update
+              sudo apt-get -y install gcc-arm-linux-gnueabihf
+            ;;
+
+            aarch64-unknown-linux-gnu)
+              sudo apt-get -y update
+              sudo apt-get -y install gcc-aarch64-linux-gnu
+            ;;
+          esac
+
+      - name: Initialize workflow variables
+        id: vars
+        shell: bash
+        run: |
+          # Determine EXE suffix.
+          EXE_SUFFIX=""
+
+          case ${{ matrix.target }} in
+            *-pc-windows-*)
+              EXE_SUFFIX=".exe"
+            ;;
+          esac;
+
+          echo EXE_SUFFIX=$EXE_SUFFIX >> $GITHUB_ENV
+
+          # Define the executable for stripping binaries, if one exists.
+          STRIP="strip"
+          case ${{ matrix.target }} in
+            arm-unknown-linux-gnueabihf)
+              STRIP="arm-linux-gnueabihf-strip"
+            ;;
+
+            aarch64-unknown-linux-gnu)
+              STRIP="aarch64-linux-gnu-strip"
+            ;;
+
+            *-pc-windows-msvc)
+              STRIP=""
+            ;;
+          esac;
+
+          echo STRIP=$STRIP >> $GITHUB_ENV
+
+      - name: Install Rust
+        id: rust
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          override: true
+          target: ${{ matrix.target }}
+
+      - name: Install cross with OpenSSL support
+        run: cargo install cross --version $CROSS_VERSION
+        if: matrix.use-cross
+
+      - name: Install cargo-deb
+        if: contains(matrix.build, 'linux')
+        run: cargo install cargo-deb
+
+      - uses: actions-rs/cargo@v1
+        with:
+          use-cross: ${{ matrix.use-cross }}
+          command: build
+          args: --target ${{ matrix.target }} --release
+
+      - name: Get pre-stripped binary size
+        run: ls -lh target/${{ matrix.target }}/release/
+        if: env.STRIP
+
+      - name: Strip binaries
+        shell: bash
+        run: |
+          "${{ env.STRIP }}" "target/${{ matrix.target }}/release/${{ env.PROJECT_NAME }}${{ env.EXE_SUFFIX }}"
+        if: env.STRIP
+
+      - name: Get post-stripped binary size
+        run: ls -lh target/${{ matrix.target }}/release/
+        if: env.STRIP
+
+      - name: Build archive
+        shell: bash
+        run: |
+          staging="${{ env.PROJECT_NAME }}-${{ env.RELEASE_VERSION }}-${{ matrix.target }}"
+          mkdir -p "$staging"
+
+          # Find where the build script put the generated completions files.
+          src_completions_dir="$(find . -name cloudtruth.bash -print0 | xargs -0 ls -t | head -n 1 | xargs dirname)"
+
+          # Move the generated shell completion files to a location cargo-deb will read from.
+          dst_completions_dir="target/${{ matrix.target }}/release/completions"
+          mv "$src_completions_dir" "$dst_completions_dir"
+
+          cp {README.md,LICENSE} "$staging/"
+          cp -a "$dst_completions_dir" "$staging/"
+          cp "target/${{ matrix.target }}/release/${{ env.PROJECT_NAME }}${{ env.EXE_SUFFIX }}" "$staging/"
+
+          if [ "${{ matrix.os }}" = "windows-2019" ]; then
+            7z a "$staging.zip" "$staging"
+            echo ASSET=$staging.zip >> $GITHUB_ENV
+          else
+            tar -czf "$staging.tar.gz" "$staging"
+            echo ASSET=$staging.tar.gz >> $GITHUB_ENV
+          fi
+
+      - name: Upload release archive
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ env.RELEASE_UPLOAD_URL }}
+          asset_path: ${{ env.ASSET }}
+          asset_name: ${{ env.ASSET }}
+          asset_content_type: application/octet-stream
+
+      - name: Build Debian package
+        if: contains(matrix.build, 'linux')
+        shell: bash
+        run: |
+          cargo deb --no-build --no-strip --target ${{ matrix.target }}
+
+          deb_path=$(ls target/${{ matrix.target }}/debian/*.deb)
+          echo DEB_PATH=$deb_path >> $GITHUB_ENV
+          echo DEB_NAME=$(basename $deb_path) >> $GITHUB_ENV
+
+      - name: Upload Debian package
+        if: contains(matrix.build, 'linux')
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ env.RELEASE_UPLOAD_URL }}
+          asset_path: ${{ env.DEB_PATH }}
+          asset_name: ${{ env.DEB_NAME }}
+          asset_content_type: application/octet-stream
+
+      - name: Install cargo-generate-rpm
+        if: contains(matrix.build, 'linux')
+        run: cargo install cargo-generate-rpm
+
+      - name: Build RPM package
+        if: contains(matrix.build, 'linux')
+        shell: bash
+        run: |
+          sed -i 's/TARGET/${{ matrix.target }}/g' Cargo.rpm.toml
+          cat Cargo.rpm.toml >> Cargo.toml
+          
+          rpm_arch=$(echo "${{ matrix.target }}" | cut -d- -f1)
+          cargo generate-rpm --arch $rpm_arch
+
+          rpm_path=$(ls target/generate-rpm/cloudtruth-*$rpm_arch.rpm)
+          echo RPM_PATH=$rpm_path >> $GITHUB_ENV
+          echo RPM_NAME=$(basename $rpm_path) >> $GITHUB_ENV
+
+      - name: Upload RPM package
+        if: contains(matrix.build, 'linux')
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ env.RELEASE_UPLOAD_URL }}
+          asset_path: ${{ env.RPM_PATH }}
+          asset_name: ${{ env.RPM_NAME }}
+          asset_content_type: application/octet-stream
+
+      - name: Upload Release Notes
+        if: matrix.build == 'linux'
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ env.RELEASE_UPLOAD_URL }}
+          asset_path: CHANGELOG.md
+          asset_name: CHANGELOG.md
+          asset_content_type: application/octet-stream
+
+      - name: Upload POSIX Install
+        if: matrix.build == 'linux'
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ env.RELEASE_UPLOAD_URL }}
+          asset_path: install.sh
+          asset_name: install.sh
+          asset_content_type: application/octet-stream
+
+      - name: Upload Windows Install
+        if: matrix.build == 'linux'
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ env.RELEASE_UPLOAD_URL }}
+          asset_path: install.ps1
+          asset_name: install.ps1
+          asset_content_type: application/octet-stream

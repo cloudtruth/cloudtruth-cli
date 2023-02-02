@@ -4,8 +4,8 @@
     needs: [ 'build-release' ]
     env:
       # github release info
-      CT_DOWNLOAD_RELEASE_ID: {{ '${{ needs.create-release.outputs.releaseId }}' }}
-      CT_DOWNLOAD_VERSION: {{ '${{ github.ref_name }}' }}
+      CT_DOWNLOAD_RELEASE_ID: {{ '${{ inputs.releaseId }}' }}
+      CT_DOWNLOAD_VERSION: {{ '${{ inputs.releaseVersion }}' }}
 
       # Need auth-token to download from draft release
       CT_DOWNLOAD_AUTH_TOKEN: {{ '${{ secrets.GITHUB_TOKEN }}' }}

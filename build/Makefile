@@ -15,7 +15,7 @@
 .PHONY += workflow-draft
 .PHONY += workflow-prerelease
 
-all: workflow-draft workflow-prerelease
+all: workflow-prerelease workflow-test-release
 
 clean:
 	rm -f docker/
@@ -29,8 +29,8 @@ lint:
 	python3 -m pip install --user --upgrade flake8
 	python3 -m flake8
 
-workflow-draft:
-	python3 gen.py -w draft
+workflow-test-release:
+	python3 gen.py -w test-release
 
 workflow-prerelease:
 	python3 gen.py -w prerelease
