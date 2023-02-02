@@ -2,12 +2,13 @@
 # historical job logs. Use test-production.yml workflow instead
 ---
 name: Production (Historical)
-on: workflow_dispatch
+on:
+  workflow_dispatch:
 
 jobs:
   test:
     name: Basic Integration Test (Production)
-    runs-on: macos-latest
+    runs-on: macOS-latest
 
     env:
       CLOUDTRUTH_TEST_FILTER: basic
@@ -15,7 +16,7 @@ jobs:
       RUST_BACKTRACE: 1
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v2
 
       - name: CLI installation
         run: |
@@ -27,5 +28,5 @@ jobs:
 
       - name: Integration Test
         run: |
-          cd integration-tests
-          python3 live_test.py --job-id "${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}-cli-prod" --filter ${{ env.CLOUDTRUTH_TEST_FILTER }} --exclude backup
+          cd tests/pytest
+          python3 live_test.py --job-id "prod-${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}" --filter ${{ env.CLOUDTRUTH_TEST_FILTER }} --exclude backup
