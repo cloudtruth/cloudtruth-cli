@@ -31,19 +31,19 @@ pub struct Template {
     /// The content of the template.  Use mustache-style templating delimiters of `{{` and `}}` to reference parameter values by name for substitution into the template result.
     #[serde(rename = "body", skip_serializing_if = "Option::is_none")]
     pub body: Option<String>,
-    /// Projects (other than this template's project) that this template referenced
+    /// Projects (other than this template's project) that this template references.  This field is not valid for history requests.
     #[serde(rename = "referenced_projects")]
     pub referenced_projects: Vec<String>,
-    /// Parameters that this template references.
+    /// Parameters that this template references.  This field is not valid for history requests.
     #[serde(rename = "referenced_parameters")]
     pub referenced_parameters: Vec<String>,
-    /// Other templates that this template references.
+    /// Other templates that this template references.  This field is not valid for history requests.
     #[serde(rename = "referenced_templates")]
     pub referenced_templates: Vec<String>,
-    /// Other templates that reference this template.
+    /// Other templates that reference this template.  This field is not valid for history requests.
     #[serde(rename = "referencing_templates")]
     pub referencing_templates: Vec<String>,
-    /// The dynamic values that reference this template.
+    /// The dynamic values that reference this template.  This field is not valid for history requests.
     #[serde(rename = "referencing_values")]
     pub referencing_values: Vec<String>,
     /// If True, this template contains secrets.

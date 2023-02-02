@@ -59,12 +59,13 @@ pub struct Value {
     /// Indicates the value content is a secret.  Normally this is `true` when the parameter is a secret. It is possible for a parameter to be a secret with a external value that is not a secret.  It is not possible to convert a parameter from a secret to a non-secret if any of the values are external and a secret.  Clients can check this condition by leveraging this field.  It is also possible for a parameter to not be a secret but for this value to be dynamic and reference a Parameter that is a secret.  In this case, we indicate the value is a secret.
     #[serde(rename = "secret")]
     pub secret: Option<bool>,
+    /// The projects this value references, if dynamic.  This field is not valid for history requests.
     #[serde(rename = "referenced_projects")]
     pub referenced_projects: Vec<String>,
-    /// The parameters this value references, if interpolated.
+    /// The parameters this value references, if dynamic.  this field is not valid for history requests.
     #[serde(rename = "referenced_parameters")]
     pub referenced_parameters: Vec<String>,
-    /// The templates this value references, if interpolated.
+    /// The templates this value references, if dynamic.  This field is not valid for history requests.
     #[serde(rename = "referenced_templates")]
     pub referenced_templates: Vec<String>,
     #[serde(rename = "created_at")]

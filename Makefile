@@ -59,6 +59,7 @@ clean:
 
 # client needs to re-generated when the openapi.yaml changes
 client: openapi.yml patch_client.py
+	rm -rf client/
 	docker run --rm \
 		-v "$(shell pwd):/local" \
 		--user "$(shell id -u):$(shell id -g)" \
@@ -69,7 +70,7 @@ client: openapi.yml patch_client.py
 		--additional-properties=packageName=cloudtruth-restapi,packageVersion=1.0.0,supportAsync=false,enumUnknownDefaultCase=true \
 		> generator.log
 	python3 patch_client.py
-	cd client && cargo fmt && cargo build -r
+	cd client && cargo fmt --all && cargo build
 
 lint_local:
 	cargo fmt --all -- --check

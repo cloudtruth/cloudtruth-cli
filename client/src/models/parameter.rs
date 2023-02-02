@@ -38,10 +38,10 @@ pub struct Parameter {
     /// The project name that the parameter is within.
     #[serde(rename = "project_name")]
     pub project_name: String,
-    /// Templates that reference this Parameter.
+    /// Templates that reference this Parameter.  This field is not valid for history requests.
     #[serde(rename = "referencing_templates")]
     pub referencing_templates: Vec<String>,
-    /// Dynamic values that reference this Parameter.
+    /// Dynamic values that reference this Parameter.  This field is not valid for history requests.
     #[serde(rename = "referencing_values")]
     pub referencing_values: Vec<String>,
     ///              This dictionary has keys that correspond to environment urls, and values             that correspond to the effective value for this parameter in that environment.             Each parameter has an effective value in every environment based on             project dependencies and environment inheritance.              The effective value is found by looking (within the keyed environment) up             the project dependencies by parameter name.  If a value is not found, the             parent environment is consulted with the same logic to locate a value.  It             is possible for there to be a `null` value record for an environment, which             means there is no value set; it is also possible for there to be a value record             with a `value` of `null`, which means the value was explicitly set to `null`.              If the value's parameter does not match the enclosing parameter (holding the             values array) then that value is flowing in through project dependencies.             Clients must recognize this in case the user asks to modify the value; in this             case the client must POST a new Value to the current parameter to override the             value coming in from the project dependency.              If the Value.environment matches the key, then it is an explicit value set for             that environment.  If they differ, the value was obtained from a parent             environment (directly or indirectly).  If the value is None then no value has             ever been set in any environment for this parameter within all the project             dependencies.         

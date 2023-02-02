@@ -12113,13 +12113,15 @@ components:
           items:
             type: string
           readOnly: true
-          description: Templates that reference this Parameter.
+          description: Templates that reference this Parameter.  This field is not
+            valid for history requests.
         referencing_values:
           type: array
           items:
             type: string
           readOnly: true
-          description: Dynamic values that reference this Parameter.
+          description: Dynamic values that reference this Parameter.  This field is
+            not valid for history requests.
         values:
           type: object
           additionalProperties:
@@ -14495,31 +14497,35 @@ components:
             type: string
           readOnly: true
           description: Projects (other than this template's project) that this template
-            referenced
+            references.  This field is not valid for history requests.
         referenced_parameters:
           type: array
           items:
             type: string
           readOnly: true
-          description: Parameters that this template references.
+          description: Parameters that this template references.  This field is not
+            valid for history requests.
         referenced_templates:
           type: array
           items:
             type: string
           readOnly: true
-          description: Other templates that this template references.
+          description: Other templates that this template references.  This field
+            is not valid for history requests.
         referencing_templates:
           type: array
           items:
             type: string
           readOnly: true
-          description: Other templates that reference this template.
+          description: Other templates that reference this template.  This field is
+            not valid for history requests.
         referencing_values:
           type: array
           items:
             type: string
           readOnly: true
-          description: The dynamic values that reference this template.
+          description: The dynamic values that reference this template.  This field
+            is not valid for history requests.
         has_secret:
           type: boolean
           readOnly: true
@@ -14881,20 +14887,24 @@ components:
             type: string
             format: uri
           readOnly: true
+          description: The projects this value references, if dynamic.  This field
+            is not valid for history requests.
         referenced_parameters:
           type: array
           items:
             type: string
             format: uri
           readOnly: true
-          description: The parameters this value references, if interpolated.
+          description: The parameters this value references, if dynamic.  this field
+            is not valid for history requests.
         referenced_templates:
           type: array
           items:
             type: string
             format: uri
           readOnly: true
-          description: The templates this value references, if interpolated.
+          description: The templates this value references, if dynamic.  This field
+            is not valid for history requests.
         created_at:
           type: string
           format: date-time
