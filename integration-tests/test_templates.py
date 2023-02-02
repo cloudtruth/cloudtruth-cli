@@ -483,8 +483,8 @@ this.is.a.template.value=PARAM1
         self.assertResultSuccess(result)
 
         # get the modified time -- before making changes
-        # templates = self.get_cli_entries(cmd_env, temp_cmd + "list --show-times -f json", "template")
-        # modified_at = templates[1].get("Modified At")
+        templates = self.get_cli_entries(cmd_env, temp_cmd + "list --show-times -f json", "template")
+        modified_at = templates[1].get("Modified At")
 
         tag_name = "stable"
         result = self.run_cli(cmd_env, base_cmd + f"env tag set {env_name} {tag_name}")
@@ -527,11 +527,11 @@ this.is.a.template.value=PARAM1
         self.assertIn(body2b, result.out())
 
         # further focus on older updates using a time
-        # result = self.run_cli(cmd_env, temp_cmd + f"history '{temp2}' --as-of '{modified_at}'")
-        # self.assertResultSuccess(result)
-        # self.assertIn(temp2, result.out())
-        # self.assertIn(body2a, result.out())
-        # self.assertNotIn(body2b, result.out())  # filtered out by time
+        result = self.run_cli(cmd_env, temp_cmd + f"history '{temp2}' --as-of '{modified_at}'")
+        self.assertResultSuccess(result)
+        self.assertIn(temp2, result.out())
+        self.assertIn(body2a, result.out())
+        self.assertNotIn(body2b, result.out())  # filtered out by time
 
         # further focus on older updates using tag
         result = self.run_cli(cmd_env, temp_cmd + f"history '{temp2}' --as-of '{tag_name}'")
