@@ -45,7 +45,7 @@ def parse_args(*args) -> argparse.Namespace:
         "--workflow",
         dest="workflow_name",
         type=str,
-        choices=["draft", "prerelease"],
+        choices=["prerelease", "test-release"],
     )
     return parser.parse_args(*args)
 
@@ -85,18 +85,22 @@ def update_workflow(config_file: str, template_dir: str, workflow_name: str) -> 
                 st = Template(step_direct_ps if data.get("powershell") else step_direct_sh)
                 new_workflow += st.render(os=os, version=version)
 
-    if workflow_name == "draft":
-        # we have to merge it in
-        with Path("../.github/workflows/create-draft-release.yml").open() as fp:
-            existing_workflow_lines = fp.readlines()
-        for line in range(len(existing_workflow_lines)):
-            if "## @@@" in existing_workflow_lines[line]:
-                existing_workflow = "".join(existing_workflow_lines[:(line + 1)])
-                break
-        assert existing_workflow, "marker not found in create-draft-release?"
-        existing_workflow += new_workflow
-        with Path("../.github/workflows/create-draft-release.yml").open("w") as fp:
-            fp.write(existing_workflow)
+    # if workflow_name == "draft":
+    #     # we have to merge it in
+    #     with Path("../.github/workflows/create-draft-release.yml").open() as fp:
+    #         existing_workflow_lines = fp.readlines()
+    #     for line in range(len(existing_workflow_lines)):
+    #         if "## @@@" in existing_workflow_lines[line]:
+    #             existing_workflow = "".join(existing_workflow_lines[:(line + 1)])
+    #             break
+    #     assert existing_workflow, "marker not found in create-draft-release?"
+    #     existing_workflow += new_workflow
+    #     with Path("../.github/workflows/create-draft-release.yml").open("w") as fp:
+    #         fp.write(existing_workflow)
+
+    if workflow_name == "test-release":
+        with Path("../.github/workflows/test-release.yml").open("w") as fp:
+            fp.write(new_workflow)
 
     elif workflow_name == "prerelease":
         # we can replace it

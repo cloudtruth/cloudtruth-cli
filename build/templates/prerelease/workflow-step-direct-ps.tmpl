@@ -1,9 +1,3 @@
-
-      - name: Set Windows CT_VERSION variable
-        run: |
-          # NOTE: the '${GITHUB_REF#refs/tags}' string manipulation does NOT work in PowerShell
-          echo CT_VERSION=$("${ENV:GITHUB_REF}".TrimStart("refs/tags/")) >> "${ENV:GITHUB_ENV}"
-
       - name: windows-latest
         shell: pwsh
         run: |
@@ -11,4 +5,3 @@
           New-Alias grep findstr
           $ctExe = .\install.ps1 -version "$ENV:CT_VERSION"
           & $ctExe --project "$ENV:CT_TEST_PROJECT" parameters list -v | grep "$ENV:CT_TEST_PARAM" | grep "$ENV:CT_TEST_VALUE"
-

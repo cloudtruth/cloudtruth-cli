@@ -1,0 +1,59 @@
+---
+name: Create Nightly Release
+
+on:
+  workflow_call:
+    secrets:
+      GITHUB_TOKEN:
+        description: GitHub API Token
+        required: true
+      CI_ACCT_READONLY_CT_API_KEY:
+        description: CloudTruth API Key
+        required: true
+
+env:
+  CI: true
+  RUST_BACKTRACE: 1
+
+jobs:
+  create-release:
+    name: Create Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Create tag name
+        shell: bash
+        run: echo "TAG_NAME=$(date +%d-%m-%Y)" >> $GITHUB_ENV
+
+      - name: Create nightly release
+        id: release
+        uses: viperproject/create-nightly-release@v1.1.8
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ env.TAG_NAME }}
+          release_name: ${{ env.TAG_NAME }}
+          keep_num: 0
+          keep_tags: false
+
+    outputs:
+      releaseId: ${{ steps.release.outputs.id }}
+      releaseUploadUrl: ${{ steps.release.outputs.upload_url }}
+
+  build-release:
+    name: Build Release
+    needs: create-release
+    uses: ./.github/workflows/build-release.yml
+    with:
+      releaseId: ${{ needs.create-release.outputs.releaseId }}
+      releaseUploadUrl: ${{ needs.create-release.outputs.releaseUploadUrl }}
+    secrets: inherit
+
+  test-release:
+    name: Test Release
+    needs: build-release
+    uses: ./.github/workflows/test-release.yml
+    with:
+      releaseId: ${{ needs.create-release.outputs.releaseId }}
+      releaseVersion: ${{ env.TAG_NAME }}
+    secrets: inherit
