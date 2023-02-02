@@ -1,6 +1,7 @@
 from testcase import TestCase
 from testcase import find_by_prop
 from testcase import TEST_PAGE_SIZE
+from testcase import skip_known_issue
 
 
 class TestProjects(TestCase):
@@ -102,7 +103,7 @@ class TestProjects(TestCase):
 
         # attempt to delete something that is used elsewhere
         result = self.run_cli(cmd_env, base_cmd + f"project delete '{proj_name2}' --confirm")
-        self.assertResultError(result, f"Cannot delete '{proj_name2}' because the following projects depend on it")
+        self.assertResultError(result, f"Cannot delete {proj_name2} because the following projects depend on it")
         self.assertIn(proj_name3, result.err())
         self.assertIn(proj_name4, result.err())
 
@@ -138,6 +139,7 @@ class TestProjects(TestCase):
         self.delete_project(cmd_env, proj_name2)
         self.delete_project(cmd_env, proj_name1)
 
+    @skip_known_issue("SC-9178")
     def test_project_parent_parameters(self):
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()

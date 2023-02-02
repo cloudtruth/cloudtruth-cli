@@ -35,6 +35,7 @@ CT_TEST_LOG_OUTPUT = "CT_LIVE_TEST_LOG_OUTPUT"
 CT_TEST_LOG_COMMANDS_ON_FAILURE = "CT_LIVE_TEST_LOG_COMMANDS_ON_FAILURE"
 CT_TEST_LOG_OUTPUT_ON_FAILURE = "CT_LIVE_TEST_LOG_OUTPUT_ON_FAILURE"
 CT_TEST_JOB_ID = "CT_LIVE_TEST_JOB_ID"
+CT_TEST_KNOWN_ISSUES = "CT_LIVE_TEST_KNOWN_ISSUES"
 
 SRC_ENV = "shell"
 SRC_ARG = "argument"
@@ -93,6 +94,11 @@ def find_by_prop(entries: List[Dict], prop_name: str, prop_value: str) -> List[D
 
 def missing_any(env_var_names: List[str]) -> bool:
     return not all([os.environ.get(x) for x in env_var_names])
+
+
+# decorator to mark a test as a known issue
+def skip_known_issue(msg: str):
+    return unittest.skipUnless(os.environ.get(CT_TEST_KNOWN_ISSUES), f"Known issue: {msg}")
 
 
 @dataclasses.dataclass

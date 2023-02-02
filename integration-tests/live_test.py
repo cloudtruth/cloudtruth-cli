@@ -10,6 +10,7 @@ from testcase import get_cli_base_cmd
 from testcase import CT_API_KEY, CT_URL, CT_PROFILE
 from testcase import CT_TEST_JOB_ID, CT_TEST_LOG_COMMANDS, CT_TEST_LOG_OUTPUT
 from testcase import CT_TEST_LOG_COMMANDS_ON_FAILURE, CT_TEST_LOG_OUTPUT_ON_FAILURE
+from testcase import CT_TEST_KNOWN_ISSUES
 
 
 def parse_args(*args) -> argparse.Namespace:
@@ -144,6 +145,12 @@ def parse_args(*args) -> argparse.Namespace:
         default=[],
         help="Exclude tests containing the provided string(s) in the name"
     )
+    parser.add_argument(
+        "--known-issues",
+        dest="known_issues",
+        action="store_true",
+        help="don't skip known issues"
+    )
     return parser.parse_args(*args)
 
 
@@ -181,12 +188,12 @@ def print_suite(suite):
         print("invalid")
 
 
-def filter_suite(suite, func, compared_to: str):
+def filter_suite(suite, func):
     for testmodule in suite:
         for testsuite in testmodule:
             tests_to_remove = []
             for index, testcase in enumerate(testsuite._tests):
-                if func(testcase._testMethodName, compared_to):
+                if func(testcase):
                     tests_to_remove.append(index)
 
             # do this in reverse order, so index does not change
@@ -196,20 +203,20 @@ def filter_suite(suite, func, compared_to: str):
 
 
 def filter_before(suite, before: str):
-    def is_before(testname: str, compared_to: str) -> bool:
-        return testname > compared_to
+    def is_before(testcase: str) -> bool:
+        return testcase._testMethodName > before
     return filter_suite(suite, is_before, before)
 
 
 def filter_after(suite, after: str):
-    def is_after(testname: str, compared_to: str) -> bool:
-        return testname < compared_to
+    def is_after(testcase: str) -> bool:
+        return testcase._testMethodName < after
     return filter_suite(suite, is_after, after)
 
 
 def filter_exclude(suite, exclude: str):
-    def is_excluded(testname: str, compared_to: str) -> bool:
-        return exclude in testname
+    def is_excluded(testcase: str) -> bool:
+        return exclude in testcase._testMethodName
     return filter_suite(suite, is_excluded, exclude)
 
 
@@ -236,6 +243,9 @@ def live_test(*args):
     if args.job_id:
         print(f"JOB_ID: {args.job_id}")
         env[CT_TEST_JOB_ID] = args.job_id
+
+    if args.known_issues:
+        env[CT_TEST_KNOWN_ISSUES] = True
 
     cli = get_cli_base_cmd()
     print(f"CloudTruth command: {cli}")

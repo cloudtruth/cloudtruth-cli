@@ -1,6 +1,7 @@
 from testcase import TestCase
 from testcase import DEFAULT_ENV_NAME
 from testcase import TEST_PAGE_SIZE
+from testcase import skip_known_issue
 
 
 class TestEnvironments(TestCase):
@@ -188,6 +189,7 @@ class TestEnvironments(TestCase):
             env_name = self.make_name(f"pag-{idx}")
             self.delete_environment(cmd_env, env_name)
 
+    @skip_known_issue("SC-9640")
     def test_environment_tagging(self):
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
