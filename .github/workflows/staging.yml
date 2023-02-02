@@ -4,6 +4,10 @@
 name: Staging (Historical)
 on:
   workflow_dispatch:
+    inputs:
+      ref:
+        description: "CLI Git ref to checkout"
+        default: 1.1.8
 
 jobs:
   test:
@@ -23,6 +27,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+        with:
+          ref: ${{ inputs.ref }}
 
       - name: Install Rust
         id: rust

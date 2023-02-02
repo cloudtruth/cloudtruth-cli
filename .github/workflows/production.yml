@@ -4,6 +4,11 @@
 name: Production (Historical)
 on:
   workflow_dispatch:
+    inputs:
+      version:
+        description: "CLI release version to install"
+        required: true
+        default: 1.1.8
 
 jobs:
   test:
@@ -17,10 +22,12 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+        with:
+          ref: ${{ inputs.version }}
 
       - name: CLI installation
         run: |
-          sudo ./install.sh
+          sudo ./install.sh --version '${{ inputs.version }}'
           cloudtruth --version
 
       - name: Prerequisites
