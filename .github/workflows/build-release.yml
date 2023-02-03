@@ -176,7 +176,7 @@ jobs:
 
       - name: Install cargo-deb
         if: contains(matrix.build, 'linux')
-        run: cargo binstall --no-confirm cargo-deb
+        run: cargo binstall --no-confirm --strategies 'quick-install,crate-meta-data,compile' cargo-deb
 
       - if: matrix.use-cross
         shell: bash
