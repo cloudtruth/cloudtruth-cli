@@ -69,7 +69,7 @@ env:
   RELEASE_VERSION: ${{ inputs.releaseVersion }}
   PROJECT_NAME: cloudtruth
   RUST_BACKTRACE: 1
-  CROSS_VERSION: 0.1.16
+  CROSS_VERSION: 0.2.4
 
 jobs:
   build-release:
