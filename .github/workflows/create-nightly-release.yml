@@ -4,9 +4,6 @@ name: Create Nightly Release
 on:
   workflow_call:
     secrets:
-      GITHUB_TOKEN:
-        description: GitHub API Token
-        required: true
       CI_ACCT_READONLY_CT_API_KEY:
         description: CloudTruth API Key
         required: true

@@ -62,10 +62,6 @@ on:
         description: 'CLI Release Version (defaults to tag name)'
         type: string
         default: ${{ github.ref_name }}
-    secrets:
-      GITHUB_TOKEN:
-        description: "GitHub API token"
-        required: true
 
 env:
   CI: true
