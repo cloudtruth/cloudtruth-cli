@@ -167,7 +167,7 @@ jobs:
                 UNPACK_CMD="unzip -d $HOME/.cargo/bin"
           esac;
           CARGO_BINSTALL_URL="https://github.com/cargo-bins/cargo-binstall/releases/download/latest/${CARGO_BINSTALL_FILE}"
-          curl -LOSs --output_dir "$HOME/.cargo/bin" "$CARGO_BINSTALL_URL"
+          curl -LOSs --output-dir "$HOME/.cargo/bin" "$CARGO_BINSTALL_URL"
           $UNPACK_CMD "$CARGO_BINSTALL_FILE"
 
       - name: Install cross with OpenSSL support
