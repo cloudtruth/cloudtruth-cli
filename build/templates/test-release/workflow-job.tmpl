@@ -1,7 +1,6 @@
 
   test-{{ os }}:
     runs-on: {{ runs_on }}
-    needs: [ 'build-release' ]
     env:
       # github release info
       CT_DOWNLOAD_RELEASE_ID: {{ '${{ inputs.releaseId }}' }}
