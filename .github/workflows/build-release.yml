@@ -158,7 +158,7 @@ jobs:
 
       - name: Install cross with OpenSSL support
         run: cargo install cross --version $CROSS_VERSION
-        if: matrix.use-cross && !env.ACT
+        if: matrix.use-cross
 
       - name: Install cargo-deb
         if: contains(matrix.build, 'linux')
@@ -166,7 +166,7 @@ jobs:
 
       - uses: actions-rs/cargo@v1
         with:
-          use-cross: ${{ matrix.use-cross && !env.ACT }}
+          use-cross: ${{ matrix.use-cross }}
           command: build
           args: --target ${{ matrix.target }} --release
 
