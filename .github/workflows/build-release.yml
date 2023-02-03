@@ -153,13 +153,30 @@ jobs:
           override: true
           target: ${{ matrix.target }}
 
+      - name: Install cargo-binstall
+        if: contains(matrix.build, 'linux') || matrix.use-cross
+        shell: bash
+        run: |
+          case ${{ matrix.target }} in
+              *-linux-*)
+                CARGO_BINSTALL_FILE='cargo-binstall-x86_64-unknown-linux-musl.tgz'
+                UNPACK_CMD="tar -C $HOME/.cargo/bin -xvzf"
+              ;;
+              *)
+                CARGO_BINSTALL_FILE='cargo-binstall-${{matrix.target}}.zip'
+                UNPACK_CMD="unzip -d $HOME/.cargo/bin"
+          esac;
+          CARGO_BINSTALL_URL="https://github.com/cargo-bins/cargo-binstall/releases/download/latest/${CARGO_BINSTALL_FILE}"
+          curl -LOSs --output_dir "$HOME/.cargo/bin" "$CARGO_BINSTALL_URL"
+          $UNPACK_CMD "$CARGO_BINSTALL_FILE"
+
       - name: Install cross with OpenSSL support
-        run: cargo install cross --version $CROSS_VERSION
         if: matrix.use-cross
+        run: cargo binstall --no-confirm cross --version $CROSS_VERSION
 
       - name: Install cargo-deb
         if: contains(matrix.build, 'linux')
-        run: cargo install cargo-deb
+        run: cargo binstall --no-confirm cargo-deb
 
       - uses: actions-rs/cargo@v1
         with:
@@ -239,7 +256,7 @@ jobs:
 
       - name: Install cargo-generate-rpm
         if: contains(matrix.build, 'linux')
-        run: cargo install cargo-generate-rpm
+        run: cargo binstall --no-confirm cargo-generate-rpm
 
       - name: Build RPM package
         if: contains(matrix.build, 'linux')
