@@ -103,12 +103,12 @@ jobs:
           case ${{ matrix.target }} in
             arm-unknown-linux-gnueabihf)
               sudo apt-get -y update
-              sudo apt-get -y install gcc-arm-linux-gnueabihf
+              sudo apt-get -y install binutils-arm-linux-gnueabi
             ;;
 
             aarch64-unknown-linux-gnu)
               sudo apt-get -y update
-              sudo apt-get -y install gcc-aarch64-linux-gnu
+              sudo apt-get -y install binutils-aarch64-linux-gnu
             ;;
           esac
 
@@ -145,46 +145,20 @@ jobs:
 
           echo STRIP=$STRIP >> $GITHUB_ENV
 
-      - name: Install Rust
+      - name: Build CLI
         id: rust
-        uses: actions-rs/toolchain@v1
+        uses: cloudtruth/cli-build-action@v2
         with:
+          cross: ${{ matrix.use-cross }}
+          cargoBinstall: ${{ matrix.use-cross || contains(matrix.build, 'linux') }}
           profile: minimal
-          override: true
           target: ${{ matrix.target }}
-
-      - name: Install cargo-binstall
-        if: contains(matrix.build, 'linux') || matrix.use-cross
-        shell: bash
-        run: |
-          case ${{ matrix.target }} in
-              *-linux-*)
-                CARGO_BINSTALL_FILE='cargo-binstall-x86_64-unknown-linux-musl.tgz'
-                UNPACK_CMD="tar -C $HOME/.cargo/bin -xvzf"
-              ;;
-              *)
-                CARGO_BINSTALL_FILE='cargo-binstall-${{matrix.target}}.zip'
-                UNPACK_CMD="unzip -d $HOME/.cargo/bin"
-          esac;
-          CARGO_BINSTALL_URL="https://github.com/cargo-bins/cargo-binstall/releases/latest/download/${CARGO_BINSTALL_FILE}"
-          curl -LOSs "$CARGO_BINSTALL_URL"
-          $UNPACK_CMD "$CARGO_BINSTALL_FILE"
-
-      - name: Install cross
-        if: matrix.use-cross
-        run: cargo binstall --no-confirm cross --version $CROSS_VERSION
+          buildOptions: --release --target ${{ matrix.target }}
+          testOptions: --release --target ${{ matrix.target }}
 
       - name: Install cargo-deb
         if: contains(matrix.build, 'linux')
         run: cargo binstall --no-confirm --strategies 'quick-install,crate-meta-data,compile' cargo-deb
-
-      - if: matrix.use-cross
-        shell: bash
-        run: cross build --target ${{ matrix.target }} --release
-
-      - if: ${{ !matrix.use-cross }}
-        shell: bash
-        run: cargo build --target ${{ matrix.target }} --release
 
 
       - name: Get pre-stripped binary size
