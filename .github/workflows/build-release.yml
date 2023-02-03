@@ -170,7 +170,7 @@ jobs:
           curl -LOSs "$CARGO_BINSTALL_URL"
           $UNPACK_CMD "$CARGO_BINSTALL_FILE"
 
-      - name: Install cross with OpenSSL support
+      - name: Install cross
         if: matrix.use-cross
         run: cargo binstall --no-confirm cross --version $CROSS_VERSION
 
