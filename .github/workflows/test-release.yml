@@ -12,6 +12,9 @@ on:
         type: string
         default: ${{ github.ref_name }}
     secrets:
+      GITHUB_TOKEN:
+        description: GitHub API Token
+        required: true
       CI_ACCT_READONLY_CT_API_KEY:
         description: CloudTruth API Key
         required: true
@@ -19,7 +22,6 @@ on:
 jobs:
   test-alpine:
     runs-on: ubuntu-latest
-    needs: [ 'build-release' ]
     env:
       # github release info
       CT_DOWNLOAD_RELEASE_ID: ${{ inputs.releaseId }}
@@ -60,7 +62,6 @@ jobs:
 
   test-rockylinux:
     runs-on: ubuntu-latest
-    needs: [ 'build-release' ]
     env:
       # github release info
       CT_DOWNLOAD_RELEASE_ID: ${{ inputs.releaseId }}
@@ -91,7 +92,6 @@ jobs:
 
   test-debian:
     runs-on: ubuntu-latest
-    needs: [ 'build-release' ]
     env:
       # github release info
       CT_DOWNLOAD_RELEASE_ID: ${{ inputs.releaseId }}
@@ -142,7 +142,6 @@ jobs:
 
   test-macOS:
     runs-on: macOS-latest
-    needs: [ 'build-release' ]
     env:
       # github release info
       CT_DOWNLOAD_RELEASE_ID: ${{ inputs.releaseId }}
@@ -168,7 +167,6 @@ jobs:
 
   test-ubuntu:
     runs-on: ubuntu-latest
-    needs: [ 'build-release' ]
     env:
       # github release info
       CT_DOWNLOAD_RELEASE_ID: ${{ inputs.releaseId }}
@@ -229,7 +227,6 @@ jobs:
 
   test-windows:
     runs-on: windows-latest
-    needs: [ 'build-release' ]
     env:
       # github release info
       CT_DOWNLOAD_RELEASE_ID: ${{ inputs.releaseId }}
