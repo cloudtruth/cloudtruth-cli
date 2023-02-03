@@ -4,7 +4,6 @@
 
 os_name := $(shell uname -s)
 rustup_exists := $(shell which rustup)
-# rust_sources := $(shell find src -name '*.rs')
 openapi_gen_version := v5.3.1
 build_dir := build
 test_dir := integration-tests
@@ -77,7 +76,7 @@ lint:
 	cargo fmt --all -- --check || { cargo fmt --all; exit 1; }
 	cargo clippy --all-features -- -D warnings
 	black -q --check . || { black . ; exit 1; } 
-	ruff check $(ruff_options) . || { ruff $(ruff_options) . check --fix-only; exit 1; }
+	ruff check . || { ruff . check --fix-only; exit 1; }
 	shellcheck install.sh
 
 subdir_action:

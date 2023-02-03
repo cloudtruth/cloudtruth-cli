@@ -3,7 +3,7 @@
 # SFS301 is ignored if flake8-sfs is installed, allowing python3 f-strings
 [tool.ruff]
 select = ["E", "F", "W"]
-# ignore = ["E203","E402","W503","SFS301"]
+ignore = ["E402"]
 line-length = 120
 
 [tool.ruff.mccabe]

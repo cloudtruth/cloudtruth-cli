@@ -2,8 +2,6 @@
 # Copyright (C) 2021 CloudTruth, Inc.
 #
 
-ruff_options := --show-source --config ../pyproject.toml
-
 .PHONY = all
 .PHONY += clean
 .PHONY += help
