@@ -2,8 +2,6 @@
 # Copyright (C) 2021 CloudTruth, Inc.
 #
 
-ruff_options := --config ../pyproject.toml
-
 .PHONY = all
 .PHONY += clean
 .PHONY += cli-check
@@ -22,7 +20,6 @@ clean:
 	# rm ~/.actrc
 
 prerequisites:
-	python3 -m pip install --upgrade ruff black && which ruff black
 	python3 -m pip install --user --upgrade -r requirements.txt
 	# curl https://raw.githubusercontent.com/nektos/act/master/install.sh | sudo bash
 
