@@ -9,7 +9,6 @@ on:
 
 env:
   CI: true
-  PROJECT_NAME: cloudtruth
   RUST_BACKTRACE: 1
 
 jobs:
@@ -34,7 +33,6 @@ jobs:
           fetch-depth: 1
 
       - name: Cargo and tag version alignment
-        if: ${{ !env.ACT }}
         env:
           TAG_VERSION: ${{ github.ref_name }}
         run: |

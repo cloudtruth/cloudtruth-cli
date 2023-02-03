@@ -67,6 +67,7 @@ env:
   CI: true
   RELEASE_UPLOAD_URL: ${{ inputs.releaseUploadUrl }}
   RELEASE_VERSION: ${{ inputs.releaseVersion }}
+  PROJECT_NAME: cloudtruth
   RUST_BACKTRACE: 1
   CROSS_VERSION: 0.1.16
 
