@@ -180,7 +180,7 @@ jobs:
 
       - if: matrix.use-cross
         shell: bash
-        run: cargo cross --target ${{ matrix.target }} --release
+        run: cross build --target ${{ matrix.target }} --release
 
       - if: ${{ !matrix.use-cross }}
         shell: bash
