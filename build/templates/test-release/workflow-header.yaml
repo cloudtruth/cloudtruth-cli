@@ -12,9 +12,6 @@ on:
         type: string
         default: ${{ github.ref_name }}
     secrets:
-      GITHUB_TOKEN:
-        description: GitHub API Token
-        required: true
       CI_ACCT_READONLY_CT_API_KEY:
         description: CloudTruth API Key
         required: true
