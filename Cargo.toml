@@ -49,7 +49,7 @@ prettytable-rs = "0.10.0"
 powershell_script = "0.2.1"
 rand_core = {version = "0.6.2", features = ["getrandom"]}
 # reqwest version must match client package
-reqwest = "~0.9"
+reqwest = {version="~0.9", default-features = false, features=["default-tls-vendored"]}
 rpassword = "5.0.1"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0.64"
