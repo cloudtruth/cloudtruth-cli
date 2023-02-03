@@ -4,6 +4,7 @@
 
 os_name := $(shell uname -s)
 rustup_exists := $(shell which rustup)
+# rust_sources := $(shell find src -name '*.rs')
 openapi_gen_version := v5.3.1
 build_dir := build
 test_dir := integration-tests
@@ -50,7 +51,7 @@ shell:
 ### Commands for either outside or inside the container
 
 # the client must be generated before building the Rust program that uses it
-cargo cli: client
+cargo cli Cargo.lock %.rs %.toml: client
 	cargo build
 
 clean:
@@ -72,20 +73,17 @@ client: openapi.yml patch_client.py
 	python3 patch_client.py
 	cd client && cargo fmt --all && cargo build
 
-lint_local:
-	cargo fmt --all -- --check
+lint:
+	cargo fmt --all -- --check || { cargo fmt --all; exit 1; }
 	cargo clippy --all-features -- -D warnings
+	black -q --check . || { black . ; exit 1; } 
+	ruff check $(ruff_options) . || { ruff $(ruff_options) . check --fix-only; exit 1; }
 	shellcheck install.sh
-
-lint: lint_local subdir_lint
 
 subdir_action:
 	@for sd in $(subdirs) ; do \
   		echo "Performing $(SUBDIR_ACTION) in $$sd directory" && make -C $$sd $(SUBDIR_ACTION) || exit 1; \
   	done
-
-subdir_lint:
-	make subdir_action SUBDIR_ACTION=lint
 
 subdir_precommit:
 	make subdir_action SUBDIR_ACTION=precommit
@@ -93,7 +91,7 @@ subdir_precommit:
 subdir_prereq:
 	make subdir_action SUBDIR_ACTION=prerequisites
 
-precommit: cargo test lint_local subdir_precommit
+precommit: cargo test lint subdir_precommit
 
 prerequisites: subdir_prereq
 ifeq ($(rustup_exists),'')
@@ -113,6 +111,8 @@ else ifeq ($(os_name),Linux)
 else
 	@echo "Did not install shellcheck"
 endif
+	python3 -m pip install --upgrade ruff black && which ruff black
+
 
 # This target is used by workflows before running integration tests
 test_prerequisites:

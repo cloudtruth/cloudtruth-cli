@@ -1,0 +1,15 @@
+# we have to ignore E203,W503 because black inserts a space, flake8 says it is bad
+# we ignore E402 due to some trickery in the sphinx conf.py file with PYTHONPATH
+# SFS301 is ignored if flake8-sfs is installed, allowing python3 f-strings
+[tool.ruff]
+select = ["E", "F", "W"]
+# ignore = ["E203","E402","W503","SFS301"]
+line-length = 120
+
+[tool.ruff.mccabe]
+max-complexity = 25
+
+[tool.black]
+line-length = 120
+# black ignores "build" directory by default so copied their default excludes here
+exclude = '/(\.direnv|\.eggs|\.git|\.hg|\.mypy_cache|\.nox|\.tox|\.venv|venv|\.svn|\.ipynb_checkpoints|buck-out|dist|__pypackages__)'

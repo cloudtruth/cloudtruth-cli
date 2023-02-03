@@ -2,11 +2,12 @@
 # Copyright (C) 2021 CloudTruth, Inc.
 #
 
+ruff_options := --show-source --config ../pyproject.toml
+
 .PHONY = all
 .PHONY += clean
 .PHONY += help
 .PHONY += integration
-.PHONY += lint
 .PHONY += prerequisites
 .PHONY += precommit
 .PHONY += targets
@@ -18,15 +19,12 @@ clean:
 
 prerequisites:
 	python3 -m pip install --user --upgrade -r requirements.txt
-
-lint:
-	python3 -m pip install --user --upgrade flake8
-	python3 -m flake8
-
+	
 integration:
 	python3 live_test.py
 
-precommit: lint
+precommit:
+	@echo "Nothing to do"
 
 help: targets
 

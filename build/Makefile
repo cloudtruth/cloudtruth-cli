@@ -2,12 +2,13 @@
 # Copyright (C) 2021 CloudTruth, Inc.
 #
 
+ruff_options := --config ../pyproject.toml
+
 .PHONY = all
 .PHONY += clean
 .PHONY += cli-check
 .PHONY += cli-gen
 .PHONY += help
-.PHONY += lint
 .PHONY += prerequisites
 .PHONY += precommit
 .PHONY += regen
@@ -21,6 +22,7 @@ clean:
 	# rm ~/.actrc
 
 prerequisites:
+	python3 -m pip install --upgrade ruff black && which ruff black
 	python3 -m pip install --user --upgrade -r requirements.txt
 	# curl https://raw.githubusercontent.com/nektos/act/master/install.sh | sudo bash
 
@@ -31,7 +33,7 @@ lint:
 workflow-test-release:
 	python3 gen.py
 
-precommit: lint cli-check
+precommit: cli-check
 
 cli-check:
 	python3 cli_walk.py check
