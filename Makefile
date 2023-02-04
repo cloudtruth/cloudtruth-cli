@@ -75,9 +75,10 @@ client: openapi.yml patch_client.py
 lint:
 	cargo fmt --all -- --check || { cargo fmt --all; exit 1; }
 	cargo clippy --all-features -- -D warnings
-	black -q --check . || { black . ; exit 1; } 
+	python3 -m black -q --check . || { python3 -m black . ; exit 1; } 
 	ruff check . || { ruff . check --fix-only; exit 1; }
 	shellcheck install.sh
+	python3 -m yamllint .
 
 subdir_action:
 	@for sd in $(subdirs) ; do \
@@ -110,7 +111,10 @@ else ifeq ($(os_name),Linux)
 else
 	@echo "Did not install shellcheck"
 endif
-	python3 -m pip install --upgrade ruff black && which ruff black
+	python3 -m pip install --user --upgrade black yamllint ruff
+ifeq ('',$(shell which ruff))
+	$(error Need to add python packages to your PATH)
+endif
 
 
 # This target is used by workflows before running integration tests

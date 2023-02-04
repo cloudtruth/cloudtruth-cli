@@ -3,6 +3,11 @@
 ---
 extends: default
 
+ignore: |
+  /client/
+
+IGNORE-FROM-FILE: [.gitignore, .yamlignore]
+
 rules:
   comments-indentation: disable
   braces: disable
@@ -10,4 +15,4 @@ rules:
     max: 200
   truthy:
     level: error
-    allowed-values: ['true', 'false', 'on']
+    allowed-values: ['true', 'false', 'on', 'yes']
