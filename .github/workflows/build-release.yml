@@ -99,6 +99,7 @@ jobs:
 
       - name: Install prerequisites
         shell: bash
+        if: contains(matrix.build, 'linux')
         run: |
           case ${{ matrix.target }} in
             # x86_64-unknown-linux-musl)
