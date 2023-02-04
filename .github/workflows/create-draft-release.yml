@@ -10,6 +10,8 @@ on:
 env:
   CI: true
   RUST_BACKTRACE: 1
+  # Set this to 1 when testing the workflow to automatically cleanup releases
+  TEST: 1 
 
 jobs:
   create-release:
@@ -63,12 +65,12 @@ jobs:
       releaseVersion: ${{ github.ref_name }}
     secrets: inherit
 
-  #temp job to delete the release
+  # Delete the release when running the workflow in test mode
   cleanup:
     name: Cleanup
     runs-on: ubuntu-latest
     needs: [create-release, test-release]
-    if: always()
+    if: always() && ${{ env.TEST }}
     steps:
       - uses: dev-drprasad/delete-tag-and-release@v0.2.0
         with:
