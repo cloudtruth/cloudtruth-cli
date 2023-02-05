@@ -161,7 +161,7 @@ jobs:
 
       - name: Install cargo-deb
         if: contains(matrix.build, 'linux')
-        run: cargo binstall --no-confirm --strategies 'quick-install,crate-meta-data,compile' cargo-deb
+        run: cargo binstall --no-confirm --force --strategies 'quick-install,crate-meta-data,compile' cargo-deb
 
 
       - name: Get pre-stripped binary size
@@ -236,7 +236,7 @@ jobs:
 
       - name: Install cargo-generate-rpm
         if: contains(matrix.build, 'linux')
-        run: cargo binstall --no-confirm cargo-generate-rpm
+        run: cargo binstall --no-confirm --force cargo-generate-rpm
 
       - name: Build RPM package
         if: contains(matrix.build, 'linux')
