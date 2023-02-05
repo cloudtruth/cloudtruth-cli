@@ -70,7 +70,7 @@ jobs:
     steps:
       - uses: author/action-rollback@stable
         with:
-          release_id: ${{ needs.create_release.releaseId }}
+          release_id: ${{ needs.create_release.outputs.releaseId }}
           tag: ${{ github.ref }}
           #  If the release does not exist but the tag does, setting this to true will remove the tag.
           delete_orphan_tag: true
