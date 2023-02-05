@@ -6,5 +6,5 @@ ENV CT_DOWNLOAD_AUTH_TOKEN=$DOWNLOAD_AUTH_TOKEN
 ENV CT_DOWNLOAD_RELEASE_ID=$DOWNLOAD_RELEASE_ID
 ENV CT_DOWNLOAD_VERSION=$DOWNLOAD_VERSION
 COPY ./install.sh /tmp/ctinstall.sh
-RUN chmod 755 /tmp/ctinstall.sh && /tmp/ctinstall.sh --auth-token "${CT_DOWNLOAD_AUTH_TOKEN}" --release-id "${CT_DOWNLOAD_RELEASE_ID}" --version "${CT_DOWNLOAD_VERSION}"
+RUN chmod 755 /tmp/ctinstall.sh && /tmp/ctinstall.sh --auth-token "${CT_DOWNLOAD_AUTH_TOKEN}" --release-id "${CT_DOWNLOAD_RELEASE_ID}" --version "${CT_DOWNLOAD_VERSION}" --debug
 CMD cloudtruth --version
