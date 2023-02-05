@@ -11,6 +11,7 @@ jobs:
     docker: true
     versions:
       - "9"
+      - "8"
   debian:
     docker: true
     versions:

@@ -73,6 +73,13 @@ jobs:
              -f build/docker/prerelease/Dockerfile.rockylinux-9 \
              -t cloudtruth:rockylinux-9
           docker run -e CLOUDTRUTH_API_KEY --rm -v $(pwd):/truth -t cloudtruth:rockylinux-9 cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
+      - name: rockylinux-8
+        run: |
+          docker build . \
+            --build-arg DOWNLOAD_VERSION="${CT_VERSION}" \
+             -f build/docker/prerelease/Dockerfile.rockylinux-8 \
+             -t cloudtruth:rockylinux-8
+          docker run -e CLOUDTRUTH_API_KEY --rm -v $(pwd):/truth -t cloudtruth:rockylinux-8 cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
   test-debian:
     runs-on: ubuntu-latest
     env:
