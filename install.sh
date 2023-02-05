@@ -1,7 +1,12 @@
-#!/usr/bin/env sh
+#!/bin/bash
 #
 # Copyright (C) 2021 CloudTruth, Inc.
 #
+
+# Using bash for arrays, but we want to remain posix compliant where possible
+# shellcheck shell=sh
+# Disable warnings about arrays
+# shellcheck disable=SC3054,SC3024,SC3030
 
 set -e
 
@@ -12,6 +17,7 @@ CT_DRAFT_AUTH_TOKEN=
 CT_DRAFT_RELEASE_ID=
 CT_DRY_RUN=0
 CT_INSTALL_PREREQUISITES=1
+CURL_OPTS=(-fsSL)
 
 ### Detection     ############################################################
 
@@ -41,7 +47,6 @@ if [ -z "${PKG}" ]; then
 fi
 
 ### Arguments     ############################################################
-
 while true; do
     case $1 in
       (-a|--auth-token)
@@ -49,7 +54,7 @@ while true; do
             shift 2;;
       (-d|--debug)
             echo "[debug] enabled"
-            EXTRA_CURL_OPTIONS="-v"
+            CURL_OPTS+=(-v)
             set -x
             shift;;
       (-y|--dry-run)
@@ -149,7 +154,7 @@ fi
 
 if [ -z "${CT_CLI_VERSION}" ]; then
     CT_VER_FILE_URL="https://api.github.com/repos/cloudtruth/cloudtruth-cli/releases/latest"
-    CT_CLI_VERSION=$(curl --silent --show-error "${CT_VER_FILE_URL}" | \
+    CT_CLI_VERSION=$(curl "${CURL_OPTS[@]}" "${CT_VER_FILE_URL}" | \
               grep "tag_name" | \
               sed -E 's/.*"([^"]+)".*/\1/')
     echo "[cloudtruth] found latest version: ${CT_CLI_VERSION}"
@@ -182,7 +187,7 @@ download_release() {
     package=$1
     base_url="https://github.com/cloudtruth/cloudtruth-cli/releases/download"
     download_url="${base_url}/${CT_CLI_VERSION}/${package}"
-    curl "${EXTRA_CURL_OPTIONS}" -fsL -H "Accept: application/octet-stream" -o "${package}" "${download_url}"
+    curl "${CURL_OPTS[@]}" -H "Accept: application/octet-stream" -o "${package}" "${download_url}"
 }
 
 # this is used to download a draft release during integration testing
@@ -191,7 +196,7 @@ download_draft() {
     assetfile="${CT_DRAFT_RELEASE_ID}.assets.json"
 
     # get all the assets for the release
-    curl "${EXTRA_CURL_OPTIONS}" -fs -H "Authorization: token ${CT_DRAFT_AUTH_TOKEN}" -o "${assetfile}" \
+    curl "${CURL_OPTS[@]}" -H "Authorization: token ${CT_DRAFT_AUTH_TOKEN}" -o "${assetfile}" \
         "https://api.github.com/repos/cloudtruth/cloudtruth-cli/releases/${CT_DRAFT_RELEASE_ID}/assets"
 
     # find the asset id for the given package
@@ -199,7 +204,7 @@ download_draft() {
     rm "${assetfile}"
 
     download_url="https://api.github.com/repos/cloudtruth/cloudtruth-cli/releases/assets/${asset_id}"
-    curl "${EXTRA_CURL_OPTIONS}" -fs --location-trusted -H "Authorization: token ${CT_DRAFT_AUTH_TOKEN}" -H "Accept: application/octet-stream" -o "${package}" "${download_url}"
+    curl "${CURL_OPTS[@]}" --location-trusted -H "Authorization: token ${CT_DRAFT_AUTH_TOKEN}" -H "Accept: application/octet-stream" -o "${package}" "${download_url}"
 }
 
 # alpine, macos - no package format yet, use generic binary
