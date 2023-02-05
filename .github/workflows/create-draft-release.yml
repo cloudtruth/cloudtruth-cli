@@ -67,7 +67,7 @@ jobs:
     name: Failure Rollback
     runs-on: ubuntu-latest
     needs: [create-release]
-    if: failure() && steps.create_release.outputs.id != ''
+    if: failure() && needs.create_release.outputs.id != ''
     steps:
       - uses: author/action-rollback@stable
         with:
