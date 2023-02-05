@@ -62,7 +62,6 @@ jobs:
       releaseVersion: ${{ github.ref_name }}
     secrets: inherit
 
-  # Delete the release when running the workflow in test mode
   cleanup:
     name: Rollback on Failure
     runs-on: ubuntu-latest

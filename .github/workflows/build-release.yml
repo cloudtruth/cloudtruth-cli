@@ -193,7 +193,7 @@ jobs:
           cp "target/${{ matrix.target }}/release/${{ env.PROJECT_NAME }}${{ env.EXE_SUFFIX }}" "$staging/"
 
           case ${{ matrix.target }} in
-            *-pc-window-*)
+            *-pc-windows-*)
               7z a "$staging.zip" "$staging"
               echo ASSET=$staging.zip >> $GITHUB_ENV
             ;;
