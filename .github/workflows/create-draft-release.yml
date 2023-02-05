@@ -66,9 +66,10 @@ jobs:
     name: Rollback on Failure
     runs-on: ubuntu-latest
     needs: [create-release, test-release]
-    if: failure() && needs.create_release.outputs.releaseId != ''
+    if: failure()
     steps:
       - uses: author/action-rollback@stable
+        if: needs.create_release.outputs.releaseId != ''
         with:
           release_id: ${{ needs.create_release.outputs.releaseId }}
           tag: ${{ github.ref }}
