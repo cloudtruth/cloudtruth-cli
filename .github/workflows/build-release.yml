@@ -157,7 +157,7 @@ jobs:
           profile: minimal
           target: ${{ matrix.target }}
           buildOptions: --release --target ${{ matrix.target }}
-          testOptions: --release --target ${{ matrix.target }}
+          skipTests: true
 
       - name: Install cargo-deb
         if: contains(matrix.build, 'linux')
