@@ -69,9 +69,9 @@ jobs:
     if: failure() && contains(github.ref, 'test')
     steps:
       - uses: author/action-rollback@stable
-        if: needs.create_release.outputs.releaseId != ''
+        if: needs.create-release.outputs.releaseId != ''
         with:
-          release_id: ${{ needs.create_release.outputs.releaseId }}
+          release_id: ${{ needs.create-release.outputs.releaseId }}
           tag: ${{ github.ref }}
           #  If the release does not exist but the tag does, setting this to true will remove the tag.
           delete_orphan_tag: true
