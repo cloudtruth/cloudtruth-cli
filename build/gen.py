@@ -109,7 +109,7 @@ def update_dockerfiles(config_file: str, template_dir: str, workflow_name: str, 
             continue
 
         for version in data["versions"]:
-            dt = Template(dockerfile)
+            dt = Template(dockerfile, trim_blocks=True, lstrip_blocks=True)
             filename = f"{docker_dir}/{workflow_name}/Dockerfile.{os}-{version}"
             with Path(filename).open("w") as fp:
                 fp.write(dt.render(os=os, version=version))

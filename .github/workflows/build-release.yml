@@ -102,9 +102,6 @@ jobs:
         if: contains(matrix.build, 'linux')
         run: |
           case ${{ matrix.target }} in
-            # x86_64-unknown-linux-musl)
-              # sudo apt-get -y install gcc-x86-64-linux-gnu
-            # ;;
             arm-unknown-linux-gnueabihf)
               sudo apt-get -y update
               sudo apt-get -y install gcc-arm-linux-gnueabihf
@@ -196,11 +193,11 @@ jobs:
           cp "target/${{ matrix.target }}/release/${{ env.PROJECT_NAME }}${{ env.EXE_SUFFIX }}" "$staging/"
 
           case ${{ matrix.target }} in
-            windows-*)
+            *-pc-window-*)
               7z a "$staging.zip" "$staging"
               echo ASSET=$staging.zip >> $GITHUB_ENV
             ;;
-            
+
             *)
               tar -czf "$staging.tar.gz" "$staging"
               echo ASSET=$staging.tar.gz >> $GITHUB_ENV
