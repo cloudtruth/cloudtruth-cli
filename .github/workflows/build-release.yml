@@ -195,13 +195,17 @@ jobs:
           cp -a "$dst_completions_dir" "$staging/"
           cp "target/${{ matrix.target }}/release/${{ env.PROJECT_NAME }}${{ env.EXE_SUFFIX }}" "$staging/"
 
-          if [ "${{ matrix.os }}" = "windows-2019" ]; then
-            7z a "$staging.zip" "$staging"
-            echo ASSET=$staging.zip >> $GITHUB_ENV
-          else
-            tar -czf "$staging.tar.gz" "$staging"
-            echo ASSET=$staging.tar.gz >> $GITHUB_ENV
-          fi
+          case ${{ matrix.target }} in
+            windows-*)
+              7z a "$staging.zip" "$staging"
+              echo ASSET=$staging.zip >> $GITHUB_ENV
+            ;;
+            
+            *)
+              tar -czf "$staging.tar.gz" "$staging"
+              echo ASSET=$staging.tar.gz >> $GITHUB_ENV
+            ;;
+          esac
 
       - name: Upload release archive
         uses: actions/upload-release-asset@v1
