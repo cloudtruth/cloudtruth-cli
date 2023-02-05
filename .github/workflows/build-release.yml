@@ -155,6 +155,7 @@ jobs:
           target: ${{ matrix.target }}
           buildOptions: --release --target ${{ matrix.target }}
           skipUnitTests: true
+          cacheDirectories: ${{ env.HOME}}/.cargo/bin
 
       - name: Install cargo-deb
         if: contains(matrix.build, 'linux')

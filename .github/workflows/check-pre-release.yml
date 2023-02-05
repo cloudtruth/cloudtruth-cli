@@ -22,20 +22,34 @@ jobs:
           fetch-depth: 1
 
 
-      - name: alpine-3.13
+      - name: alpine-3.17
         run: |
           docker build . \
             --build-arg DOWNLOAD_VERSION="${CT_VERSION}" \
-             -f build/docker/prerelease/Dockerfile.alpine-3.13 \
-             -t cloudtruth:alpine-3.13
-          docker run -e CLOUDTRUTH_API_KEY --rm -v $(pwd):/truth -t cloudtruth:alpine-3.13 cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
-      - name: alpine-3.12
+             -f build/docker/prerelease/Dockerfile.alpine-3.17 \
+             -t cloudtruth:alpine-3.17
+          docker run -e CLOUDTRUTH_API_KEY --rm -v $(pwd):/truth -t cloudtruth:alpine-3.17 cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
+      - name: alpine-3.16
         run: |
           docker build . \
             --build-arg DOWNLOAD_VERSION="${CT_VERSION}" \
-             -f build/docker/prerelease/Dockerfile.alpine-3.12 \
-             -t cloudtruth:alpine-3.12
-          docker run -e CLOUDTRUTH_API_KEY --rm -v $(pwd):/truth -t cloudtruth:alpine-3.12 cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
+             -f build/docker/prerelease/Dockerfile.alpine-3.16 \
+             -t cloudtruth:alpine-3.16
+          docker run -e CLOUDTRUTH_API_KEY --rm -v $(pwd):/truth -t cloudtruth:alpine-3.16 cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
+      - name: alpine-3.15
+        run: |
+          docker build . \
+            --build-arg DOWNLOAD_VERSION="${CT_VERSION}" \
+             -f build/docker/prerelease/Dockerfile.alpine-3.15 \
+             -t cloudtruth:alpine-3.15
+          docker run -e CLOUDTRUTH_API_KEY --rm -v $(pwd):/truth -t cloudtruth:alpine-3.15 cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
+      - name: alpine-3.14
+        run: |
+          docker build . \
+            --build-arg DOWNLOAD_VERSION="${CT_VERSION}" \
+             -f build/docker/prerelease/Dockerfile.alpine-3.14 \
+             -t cloudtruth:alpine-3.14
+          docker run -e CLOUDTRUTH_API_KEY --rm -v $(pwd):/truth -t cloudtruth:alpine-3.14 cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
   test-rockylinux:
     runs-on: ubuntu-latest
     env:
@@ -52,13 +66,13 @@ jobs:
           fetch-depth: 1
 
 
-      - name: rockylinux-8
+      - name: rockylinux-9
         run: |
           docker build . \
             --build-arg DOWNLOAD_VERSION="${CT_VERSION}" \
-             -f build/docker/prerelease/Dockerfile.rockylinux-8 \
-             -t cloudtruth:rockylinux-8
-          docker run -e CLOUDTRUTH_API_KEY --rm -v $(pwd):/truth -t cloudtruth:rockylinux-8 cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
+             -f build/docker/prerelease/Dockerfile.rockylinux-9 \
+             -t cloudtruth:rockylinux-9
+          docker run -e CLOUDTRUTH_API_KEY --rm -v $(pwd):/truth -t cloudtruth:rockylinux-9 cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
   test-debian:
     runs-on: ubuntu-latest
     env:
@@ -89,13 +103,13 @@ jobs:
              -f build/docker/prerelease/Dockerfile.debian-buster-slim \
              -t cloudtruth:debian-buster-slim
           docker run -e CLOUDTRUTH_API_KEY --rm -v $(pwd):/truth -t cloudtruth:debian-buster-slim cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
-      - name: debian-jessie-slim
+      - name: debian-stretch-slim
         run: |
           docker build . \
             --build-arg DOWNLOAD_VERSION="${CT_VERSION}" \
-             -f build/docker/prerelease/Dockerfile.debian-jessie-slim \
-             -t cloudtruth:debian-jessie-slim
-          docker run -e CLOUDTRUTH_API_KEY --rm -v $(pwd):/truth -t cloudtruth:debian-jessie-slim cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
+             -f build/docker/prerelease/Dockerfile.debian-stretch-slim \
+             -t cloudtruth:debian-stretch-slim
+          docker run -e CLOUDTRUTH_API_KEY --rm -v $(pwd):/truth -t cloudtruth:debian-stretch-slim cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
   test-macOS:
     runs-on: macOS-latest
     env:
@@ -133,6 +147,27 @@ jobs:
           fetch-depth: 1
 
 
+      - name: ubuntu-lunar
+        run: |
+          docker build . \
+            --build-arg DOWNLOAD_VERSION="${CT_VERSION}" \
+             -f build/docker/prerelease/Dockerfile.ubuntu-lunar \
+             -t cloudtruth:ubuntu-lunar
+          docker run -e CLOUDTRUTH_API_KEY --rm -v $(pwd):/truth -t cloudtruth:ubuntu-lunar cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
+      - name: ubuntu-kinetic
+        run: |
+          docker build . \
+            --build-arg DOWNLOAD_VERSION="${CT_VERSION}" \
+             -f build/docker/prerelease/Dockerfile.ubuntu-kinetic \
+             -t cloudtruth:ubuntu-kinetic
+          docker run -e CLOUDTRUTH_API_KEY --rm -v $(pwd):/truth -t cloudtruth:ubuntu-kinetic cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
+      - name: ubuntu-jammy
+        run: |
+          docker build . \
+            --build-arg DOWNLOAD_VERSION="${CT_VERSION}" \
+             -f build/docker/prerelease/Dockerfile.ubuntu-jammy \
+             -t cloudtruth:ubuntu-jammy
+          docker run -e CLOUDTRUTH_API_KEY --rm -v $(pwd):/truth -t cloudtruth:ubuntu-jammy cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
       - name: ubuntu-focal
         run: |
           docker build . \
@@ -147,20 +182,6 @@ jobs:
              -f build/docker/prerelease/Dockerfile.ubuntu-bionic \
              -t cloudtruth:ubuntu-bionic
           docker run -e CLOUDTRUTH_API_KEY --rm -v $(pwd):/truth -t cloudtruth:ubuntu-bionic cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
-      - name: ubuntu-xenial
-        run: |
-          docker build . \
-            --build-arg DOWNLOAD_VERSION="${CT_VERSION}" \
-             -f build/docker/prerelease/Dockerfile.ubuntu-xenial \
-             -t cloudtruth:ubuntu-xenial
-          docker run -e CLOUDTRUTH_API_KEY --rm -v $(pwd):/truth -t cloudtruth:ubuntu-xenial cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
-      - name: ubuntu-trusty
-        run: |
-          docker build . \
-            --build-arg DOWNLOAD_VERSION="${CT_VERSION}" \
-             -f build/docker/prerelease/Dockerfile.ubuntu-trusty \
-             -t cloudtruth:ubuntu-trusty
-          docker run -e CLOUDTRUTH_API_KEY --rm -v $(pwd):/truth -t cloudtruth:ubuntu-trusty cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
   test-windows:
     runs-on: windows-latest
     env:

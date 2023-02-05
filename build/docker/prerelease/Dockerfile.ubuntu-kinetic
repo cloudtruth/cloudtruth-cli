@@ -1,4 +1,4 @@
-FROM ubuntu:trusty
+FROM ubuntu:kinetic
 ARG DOWNLOAD_VERSION=""
 ENV CT_DOWNLOAD_VERSION=$DOWNLOAD_VERSION
 COPY install.sh /tmp/ctinstall.sh
