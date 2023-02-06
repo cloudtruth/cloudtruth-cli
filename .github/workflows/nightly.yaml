@@ -32,6 +32,7 @@ jobs:
     outputs:
       releaseId: ${{ steps.release.outputs.id }}
       releaseUploadUrl: ${{ steps.release.outputs.upload_url }}
+      tagName: ${{ env.TAG_NAME }}
 
   build-release:
     name: Build Release
@@ -40,15 +41,15 @@ jobs:
     with:
       releaseId: ${{ needs.create-release.outputs.releaseId }}
       releaseUploadUrl: ${{ needs.create-release.outputs.releaseUploadUrl }}
-      releaseVersion: ${{ env.TAG_NAME }}
+      releaseVersion: ${{ needs.create-release.outputs.tagName }}
 
   test-release:
     name: Test Release
-    needs: build-release
+    needs: [create-release, build-release]
     uses: ./.github/workflows/test-release.yml
     with:
       releaseId: ${{ needs.create-release.outputs.releaseId }}
-      releaseVersion: ${{ env.TAG_NAME }}
+      releaseVersion: ${{ needs.create-release.outputs.tagName }}
       serverUrl: https://api.staging.cloudtruth.io
     secrets:
       CLOUDTRUTH_API_KEY: ${{ secrets.CI_ACCT_STAGING_CONTRIBUTOR }}
