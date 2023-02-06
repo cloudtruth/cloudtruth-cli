@@ -1,5 +1,6 @@
 ---
-name: Nightly Build & Release
+name: Nightly
+run-name: Nightly Build & Release
 
 on:
   workflow_dispatch:
