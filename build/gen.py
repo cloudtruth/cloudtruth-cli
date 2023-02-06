@@ -40,13 +40,6 @@ def parse_args(*args) -> argparse.Namespace:
         help="Directory containing input workflow YAML templates.",
         default=TEMPLATE_DIR,
     )
-    parser.add_argument(
-        "-w",
-        "--workflow",
-        dest="workflow_name",
-        type=str,
-        choices=["prerelease", "test-release"],
-    )
     return parser.parse_args(*args)
 
 
@@ -89,11 +82,6 @@ def update_workflow(config_file: str, template_dir: str, workflow_name: str) -> 
         with Path("../.github/workflows/test-release.yml").open("w") as fp:
             fp.write(new_workflow)
 
-    elif workflow_name == "prerelease":
-        # we can replace it
-        with Path("../.github/workflows/check-pre-release.yml").open("w") as fp:
-            fp.write(new_workflow)
-
 
 def update_dockerfiles(config_file: str, template_dir: str, workflow_name: str, docker_dir: str) -> None:
     with Path(f"{config_file}").open() as fp:
@@ -120,8 +108,8 @@ def update_dockerfiles(config_file: str, template_dir: str, workflow_name: str, 
 
 def main(*sys_args):
     args = parse_args(*sys_args)
-    update_dockerfiles(args.config_file, args.template_dir, args.workflow_name, args.docker_dir)
-    update_workflow(args.config_file, args.template_dir, args.workflow_name)
+    update_dockerfiles(args.config_file, args.template_dir, 'test-release', args.docker_dir)
+    update_workflow(args.config_file, args.template_dir, 'test-release')
 
 
 if __name__ == "__main__":

@@ -1,7 +1,0 @@
-      - name: windows-latest
-        shell: pwsh
-        run: |
-          $InformationPreference = 'Continue'
-          New-Alias grep findstr
-          $ctExe = .\install.ps1 -version "$ENV:CT_VERSION"
-          & $ctExe --project "$ENV:CT_TEST_PROJECT" parameters list -v | grep "$ENV:CT_TEST_PARAM" | grep "$ENV:CT_TEST_VALUE"
