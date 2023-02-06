@@ -1,7 +1,8 @@
 ---
 on:
-  release:
-    types: [prereleased]
+  workflow_dispatch:
+  # release:
+  #   types: [prereleased]
 
 name: 'Check Pre-Release'
 
@@ -10,6 +11,6 @@ jobs:
     name: Test Release
     uses: ./.github/workflows/test-release.yml
     with:
-      releaseVersion: ${{ event.release.tag_name }}
+      releaseVersion: 1.1.8 #${{ event.release.tag_name }}
     secrets:
       CLOUDTRUTH_API_KEY: ${{ secrets.CI_ACCT_READONLY_CT_API_KEY}}
