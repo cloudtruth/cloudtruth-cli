@@ -5,6 +5,9 @@
       # github release info
       CT_DOWNLOAD_RELEASE_ID: {{ '${{ inputs.releaseId }}' }}
       CT_DOWNLOAD_VERSION: {{ '${{ inputs.releaseVersion }}' }}
+      
+      # Need auth-token to download from draft release
+      CT_DOWNLOAD_AUTH_TOKEN={{ '${{ secrets.GITHUB_TOKEN }}' }}
 
       # These values are used for running the CLI command
       CLOUDTRUTH_API_KEY: {{ '${{ secrets.CLOUDTRUTH_API_KEY }}' }}
@@ -18,7 +21,4 @@
           fetch-depth: 1
       - shell: bash
         run: |
-          # Need auth-token to download from draft release
-          if [ -n "${CT_DOWNLOAD_RELEASE_ID}" ]; then
-            echo CT_DOWNLOAD_AUTH_TOKEN={{ '${{ secrets.GITHUB_TOKEN }}' }} >> $GITHUB_ENV
-          fi
+          

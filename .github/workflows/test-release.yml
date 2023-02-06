@@ -22,6 +22,9 @@ jobs:
       # github release info
       CT_DOWNLOAD_RELEASE_ID: ${{ inputs.releaseId }}
       CT_DOWNLOAD_VERSION: ${{ inputs.releaseVersion }}
+      
+      # Need auth-token to download from draft release
+      CT_DOWNLOAD_AUTH_TOKEN=${{ secrets.GITHUB_TOKEN }}
 
       # These values are used for running the CLI command
       CLOUDTRUTH_API_KEY: ${{ secrets.CLOUDTRUTH_API_KEY }}
@@ -35,10 +38,7 @@ jobs:
           fetch-depth: 1
       - shell: bash
         run: |
-          # Need auth-token to download from draft release
-          if [ -n "${CT_DOWNLOAD_RELEASE_ID}" ]; then
-            echo CT_DOWNLOAD_AUTH_TOKEN=${{ secrets.GITHUB_TOKEN }} >> $GITHUB_ENV
-          fi
+          
       - name: alpine-3.17
         run: |
           docker build . \
@@ -85,6 +85,9 @@ jobs:
       # github release info
       CT_DOWNLOAD_RELEASE_ID: ${{ inputs.releaseId }}
       CT_DOWNLOAD_VERSION: ${{ inputs.releaseVersion }}
+      
+      # Need auth-token to download from draft release
+      CT_DOWNLOAD_AUTH_TOKEN=${{ secrets.GITHUB_TOKEN }}
 
       # These values are used for running the CLI command
       CLOUDTRUTH_API_KEY: ${{ secrets.CLOUDTRUTH_API_KEY }}
@@ -98,10 +101,7 @@ jobs:
           fetch-depth: 1
       - shell: bash
         run: |
-          # Need auth-token to download from draft release
-          if [ -n "${CT_DOWNLOAD_RELEASE_ID}" ]; then
-            echo CT_DOWNLOAD_AUTH_TOKEN=${{ secrets.GITHUB_TOKEN }} >> $GITHUB_ENV
-          fi
+          
       - name: rockylinux-9
         run: |
           docker build . \
@@ -128,6 +128,9 @@ jobs:
       # github release info
       CT_DOWNLOAD_RELEASE_ID: ${{ inputs.releaseId }}
       CT_DOWNLOAD_VERSION: ${{ inputs.releaseVersion }}
+      
+      # Need auth-token to download from draft release
+      CT_DOWNLOAD_AUTH_TOKEN=${{ secrets.GITHUB_TOKEN }}
 
       # These values are used for running the CLI command
       CLOUDTRUTH_API_KEY: ${{ secrets.CLOUDTRUTH_API_KEY }}
@@ -141,10 +144,7 @@ jobs:
           fetch-depth: 1
       - shell: bash
         run: |
-          # Need auth-token to download from draft release
-          if [ -n "${CT_DOWNLOAD_RELEASE_ID}" ]; then
-            echo CT_DOWNLOAD_AUTH_TOKEN=${{ secrets.GITHUB_TOKEN }} >> $GITHUB_ENV
-          fi
+          
       - name: debian-bullseye-slim
         run: |
           docker build . \
@@ -181,6 +181,9 @@ jobs:
       # github release info
       CT_DOWNLOAD_RELEASE_ID: ${{ inputs.releaseId }}
       CT_DOWNLOAD_VERSION: ${{ inputs.releaseVersion }}
+      
+      # Need auth-token to download from draft release
+      CT_DOWNLOAD_AUTH_TOKEN=${{ secrets.GITHUB_TOKEN }}
 
       # These values are used for running the CLI command
       CLOUDTRUTH_API_KEY: ${{ secrets.CLOUDTRUTH_API_KEY }}
@@ -194,24 +197,23 @@ jobs:
           fetch-depth: 1
       - shell: bash
         run: |
-          # Need auth-token to download from draft release
-          if [ -n "${CT_DOWNLOAD_RELEASE_ID}" ]; then
-            echo CT_DOWNLOAD_AUTH_TOKEN=${{ secrets.GITHUB_TOKEN }} >> $GITHUB_ENV
-          fi
+          
       - name: macOS-latest
         run: |
-          sudo ./install.sh
-            ${CT_DOWNLOAD_AUTH_TOKEN+--auth-token "${CT_DOWNLOAD_AUTH_TOKEN}"} \
+          sudo ./install.sh \
+            --version "${CT_DOWNLOAD_VERSION}" \
+            ${CT_DOWNLOAD_RELEASE_ID+--auth-token "${CT_DOWNLOAD_AUTH_TOKEN}"} \
             ${CT_DOWNLOAD_RELEASE_ID+--release-id "${CT_DOWNLOAD_RELEASE_ID}"} \
-            ${CT_DOWNLOAD_VERSION+--version "${CT_DOWNLOAD_VERSION}"}
           cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep "${CT_TEST_PARAM}" | grep "${CT_TEST_VALUE}"
-
   test-ubuntu:
     runs-on: ubuntu-latest
     env:
       # github release info
       CT_DOWNLOAD_RELEASE_ID: ${{ inputs.releaseId }}
       CT_DOWNLOAD_VERSION: ${{ inputs.releaseVersion }}
+      
+      # Need auth-token to download from draft release
+      CT_DOWNLOAD_AUTH_TOKEN=${{ secrets.GITHUB_TOKEN }}
 
       # These values are used for running the CLI command
       CLOUDTRUTH_API_KEY: ${{ secrets.CLOUDTRUTH_API_KEY }}
@@ -225,10 +227,7 @@ jobs:
           fetch-depth: 1
       - shell: bash
         run: |
-          # Need auth-token to download from draft release
-          if [ -n "${CT_DOWNLOAD_RELEASE_ID}" ]; then
-            echo CT_DOWNLOAD_AUTH_TOKEN=${{ secrets.GITHUB_TOKEN }} >> $GITHUB_ENV
-          fi
+          
       - name: ubuntu-lunar
         run: |
           docker build . \
@@ -285,6 +284,9 @@ jobs:
       # github release info
       CT_DOWNLOAD_RELEASE_ID: ${{ inputs.releaseId }}
       CT_DOWNLOAD_VERSION: ${{ inputs.releaseVersion }}
+      
+      # Need auth-token to download from draft release
+      CT_DOWNLOAD_AUTH_TOKEN=${{ secrets.GITHUB_TOKEN }}
 
       # These values are used for running the CLI command
       CLOUDTRUTH_API_KEY: ${{ secrets.CLOUDTRUTH_API_KEY }}
@@ -298,18 +300,16 @@ jobs:
           fetch-depth: 1
       - shell: bash
         run: |
-          # Need auth-token to download from draft release
-          if [ -n "${CT_DOWNLOAD_RELEASE_ID}" ]; then
-            echo CT_DOWNLOAD_AUTH_TOKEN=${{ secrets.GITHUB_TOKEN }} >> $GITHUB_ENV
-          fi
+          
       - name: windows-latest
         shell: pwsh
         run: |
           $InformationPreference = 'Continue'
           New-Alias grep findstr
-          $install_opts = @{}
-          if ($ENV:CT_DOWNLOAD_VERSION)    { $install_opts['version'] = $ENV:CT_DOWNLOAD_VERSION }
-          if ($ENV:CT_DOWNLOAD_RELEASE_ID) { $install_opts['releaseId'] = $ENV:CT_RELEASE_ID }
-          if ($ENV:CT_DOWNLOAD_AUTH_TOKEN) { $install_opts['authToken'] = $ENV:CT_DOWNLOAD_AUTH_TOKEN }
+          $install_opts = @{ version = $ENV:CT_DOWNLOAD_VERSION }
+          if ($ENV:CT_DOWNLOAD_RELEASE_ID) { 
+              $install_opts['releaseId'] = $ENV:CT_DOWNLOAD_RELEASE_ID
+              $install_opts['authToken'] = $ENV:CT_DOWNLOAD_AUTH_TOKEN
+          }
           $ctExe = .\install.ps1 @install_opts
           & $ctExe --project "$ENV:CT_TEST_PROJECT" parameters list -v | grep "$ENV:CT_TEST_PARAM" | grep "$ENV:CT_TEST_VALUE"
