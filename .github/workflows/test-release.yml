@@ -24,7 +24,7 @@ jobs:
       CT_DOWNLOAD_VERSION: ${{ inputs.releaseVersion }}
       
       # Need auth-token to download from draft release
-      CT_DOWNLOAD_AUTH_TOKEN=${{ secrets.GITHUB_TOKEN }}
+      CT_DOWNLOAD_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # These values are used for running the CLI command
       CLOUDTRUTH_API_KEY: ${{ secrets.CLOUDTRUTH_API_KEY }}
@@ -87,7 +87,7 @@ jobs:
       CT_DOWNLOAD_VERSION: ${{ inputs.releaseVersion }}
       
       # Need auth-token to download from draft release
-      CT_DOWNLOAD_AUTH_TOKEN=${{ secrets.GITHUB_TOKEN }}
+      CT_DOWNLOAD_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # These values are used for running the CLI command
       CLOUDTRUTH_API_KEY: ${{ secrets.CLOUDTRUTH_API_KEY }}
@@ -130,7 +130,7 @@ jobs:
       CT_DOWNLOAD_VERSION: ${{ inputs.releaseVersion }}
       
       # Need auth-token to download from draft release
-      CT_DOWNLOAD_AUTH_TOKEN=${{ secrets.GITHUB_TOKEN }}
+      CT_DOWNLOAD_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # These values are used for running the CLI command
       CLOUDTRUTH_API_KEY: ${{ secrets.CLOUDTRUTH_API_KEY }}
@@ -183,7 +183,7 @@ jobs:
       CT_DOWNLOAD_VERSION: ${{ inputs.releaseVersion }}
       
       # Need auth-token to download from draft release
-      CT_DOWNLOAD_AUTH_TOKEN=${{ secrets.GITHUB_TOKEN }}
+      CT_DOWNLOAD_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # These values are used for running the CLI command
       CLOUDTRUTH_API_KEY: ${{ secrets.CLOUDTRUTH_API_KEY }}
@@ -213,7 +213,7 @@ jobs:
       CT_DOWNLOAD_VERSION: ${{ inputs.releaseVersion }}
       
       # Need auth-token to download from draft release
-      CT_DOWNLOAD_AUTH_TOKEN=${{ secrets.GITHUB_TOKEN }}
+      CT_DOWNLOAD_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # These values are used for running the CLI command
       CLOUDTRUTH_API_KEY: ${{ secrets.CLOUDTRUTH_API_KEY }}
@@ -286,7 +286,7 @@ jobs:
       CT_DOWNLOAD_VERSION: ${{ inputs.releaseVersion }}
       
       # Need auth-token to download from draft release
-      CT_DOWNLOAD_AUTH_TOKEN=${{ secrets.GITHUB_TOKEN }}
+      CT_DOWNLOAD_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # These values are used for running the CLI command
       CLOUDTRUTH_API_KEY: ${{ secrets.CLOUDTRUTH_API_KEY }}
