@@ -4,15 +4,14 @@ on:
   workflow_call:
     inputs:
       releaseId:
-        description: 'Release ID returned by create-release action'
+        description: 'Release ID returned by create-release action. This is only needed for draft releases.'
         type: string
-        required: true
       releaseVersion:
-        description: 'CLI Release Version (defaults to tag name)'
+        description: 'CLI Release Version (defaults to current tag name)'
         type: string
         default: ${{ github.ref_name }}
     secrets:
-      CI_ACCT_READONLY_CT_API_KEY:
+      CLOUDTRUTH_API_KEY:
         description: CloudTruth API Key
         required: true
 

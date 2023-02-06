@@ -60,7 +60,8 @@ jobs:
     with:
       releaseId: ${{ needs.create-release.outputs.releaseId }}
       releaseVersion: ${{ github.ref_name }}
-    secrets: inherit
+    secrets:
+      CLOUDTRUTH_API_KEY: ${{ secrets.CI_ACCT_READONLY_CT_API_KEY}}
 
   # cleanup:
   #   name: Rollback on Failure

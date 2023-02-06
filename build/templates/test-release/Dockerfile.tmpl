@@ -1,13 +1,16 @@
 FROM {{ os }}:{{ version }}
-ARG DOWNLOAD_AUTH_TOKEN=""
-ARG DOWNLOAD_RELEASE_ID=""
-ARG DOWNLOAD_VERSION=""
-ENV CT_DOWNLOAD_AUTH_TOKEN=$DOWNLOAD_AUTH_TOKEN
-ENV CT_DOWNLOAD_RELEASE_ID=$DOWNLOAD_RELEASE_ID
-ENV CT_DOWNLOAD_VERSION=$DOWNLOAD_VERSION
+ARG CT_DOWNLOAD_AUTH_TOKEN=""
+ARG CT_DOWNLOAD_RELEASE_ID=""
+ARG CT_DOWNLOAD_VERSION=""
+ENV CT_DOWNLOAD_AUTH_TOKEN=${CT_DOWNLOAD_AUTH_TOKEN}
+ENV CT_DOWNLOAD_RELEASE_ID=${CT_DOWNLOAD_RELEASE_ID}
+ENV CT_DOWNLOAD_VERSION=${CT_DOWNLOAD_VERSION}
 {% if os.startswith('ubuntu') or os.startswith('debian') %}
 RUN apt-get update
 {% endif %}
 COPY ./install.sh /tmp/ctinstall.sh
-RUN chmod 755 /tmp/ctinstall.sh && /tmp/ctinstall.sh --auth-token "${CT_DOWNLOAD_AUTH_TOKEN}" --release-id "${CT_DOWNLOAD_RELEASE_ID}" --version "${CT_DOWNLOAD_VERSION}"
+RUN chmod 755 /tmp/ctinstall.sh && /tmp/ctinstall.sh \
+    ${CT_DOWNLOAD_AUTH_TOKEN+--auth-token "${CT_DOWNLOAD_AUTH_TOKEN}"} \
+    ${CT_DOWNLOAD_RELEASE_ID+--release-id "${CT_DOWNLOAD_RELEASE_ID}"} \
+    ${CT_DOWNLOAD_VERSION+--version "${CT_DOWNLOAD_VERSION}"}
 CMD cloudtruth --version

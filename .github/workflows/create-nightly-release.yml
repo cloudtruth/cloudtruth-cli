@@ -4,7 +4,7 @@ name: Create Nightly Release
 on:
   workflow_call:
     secrets:
-      CI_ACCT_READONLY_CT_API_KEY:
+      CI_ACCT_READWRITE_CT_API_KEY:
         description: CloudTruth API Key
         required: true
 

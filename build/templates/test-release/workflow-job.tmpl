@@ -6,11 +6,8 @@
       CT_DOWNLOAD_RELEASE_ID: {{ '${{ inputs.releaseId }}' }}
       CT_DOWNLOAD_VERSION: {{ '${{ inputs.releaseVersion }}' }}
 
-      # Need auth-token to download from draft release
-      CT_DOWNLOAD_AUTH_TOKEN: {{ '${{ secrets.GITHUB_TOKEN }}' }}
-
       # These values are used for running the CLI command
-      CLOUDTRUTH_API_KEY: {{ '${{ secrets.CI_ACCT_READONLY_CT_API_KEY }}' }}
+      CLOUDTRUTH_API_KEY: {{ '${{ secrets.CLOUDTRUTH_API_KEY }}' }}
       CT_TEST_PROJECT: TruthStrap
       CT_TEST_PARAM: INTEGRATION_TEST_RESULT
       CT_TEST_VALUE: Speicla
@@ -19,3 +16,9 @@
       - uses: actions/checkout@v3
         with:
           fetch-depth: 1
+      - shell: bash
+        run: |
+          # Need auth-token to download from draft release
+          if [ -n "${CT_DOWNLOAD_RELEASE_ID}" ]; then
+            echo CT_DOWNLOAD_AUTH_TOKEN=${} >> $GITHUB_ENV
+          fi

@@ -4,6 +4,10 @@
         run: |
           $InformationPreference = 'Continue'
           New-Alias grep findstr
-          $ctExe = .\install.ps1 -authToken "$ENV:CT_DOWNLOAD_AUTH_TOKEN" -releaseId "$ENV:CT_DOWNLOAD_RELEASE_ID" -version "$ENV:CT_DOWNLOAD_VERSION"
+          $install_opts = @{}
+          if ($ENV:CT_DOWNLOAD_VERSION)    { $install_opts['version'] = $ENV:CT_DOWNLOAD_VERSION }
+          if ($ENV:CT_DOWNLOAD_RELEASE_ID) { $install_opts['releaseId'] = $ENV:CT_RELEASE_ID }
+          if ($ENV:CT_DOWNLOAD_AUTH_TOKEN) { $install_opts['authToken'] = $ENV:CT_DOWNLOAD_AUTH_TOKEN }
+          $ctExe = .\install.ps1 @install_opts
           & $ctExe --project "$ENV:CT_TEST_PROJECT" parameters list -v | grep "$ENV:CT_TEST_PARAM" | grep "$ENV:CT_TEST_VALUE"
 
