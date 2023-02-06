@@ -201,8 +201,11 @@ fn proc_env_tag_list(
 ) -> Result<()> {
     let env_name = subcmd_args.value_of(ENV_NAME_ARG).unwrap();
     let fmt = subcmd_args.value_of(FORMAT_OPT).unwrap();
-    let show_usage = subcmd_args.is_present("usage");
-    let show_values = show_values(subcmd_args) || show_usage;
+    // Disable --usage since it's currently not showing the real data, but still in the API spec
+    // we may want to re-enable later.
+    // let show_usage = subcmd_args.is_present("usage");
+    // let show_values = show_values(subcmd_args) || show_usage;
+    let show_values = show_values(subcmd_args);
     let environment_id = environments.get_id(rest_cfg, env_name)?;
 
     if let Some(env_id) = environment_id {
@@ -215,20 +218,20 @@ fn proc_env_tag_list(
             println!("{}", list.join("\n"))
         } else {
             let mut table = Table::new("environment-tags");
-            let mut hdr = vec!["Name", "Timestamp", "Description"];
-            if show_usage {
-                hdr.push("Total Reads");
-                hdr.push("Last User");
-                hdr.push("Last Time");
-            }
+            let hdr = vec!["Name", "Timestamp", "Description"];
+            // if show_usage {
+            //     hdr.push("Last User");
+            //     hdr.push("Last Time");
+            //     hdr.push("Toal Reads")
+            // }
             table.set_header(&hdr);
             for entry in tags {
-                let mut row = vec![entry.name, entry.timestamp, entry.description];
-                if show_usage {
-                    row.push(entry.total_reads.to_string());
-                    row.push(entry.last_use_user);
-                    row.push(entry.last_use_time);
-                }
+                let row = vec![entry.name, entry.timestamp, entry.description];
+                // if show_usage {
+                //     row.push(entry.last_use_user);
+                //     row.push(entry.last_use_time);
+                //     row.push(entry.total_reads);
+                // }
                 table.add_row(row);
             }
             table.render(fmt)?;

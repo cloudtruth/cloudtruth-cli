@@ -719,10 +719,12 @@ pub fn build_cli() -> App<'static, 'static> {
                             SubCommand::with_name(LIST_SUBCMD)
                                 .visible_aliases(LIST_ALIASES)
                                 .arg(env_name_arg())
-                                .arg(Arg::with_name("usage")
-                                    .long("usage")
-                                    .short("u")
-                                    .help("Display tag usage data"))
+                                // Disable --usage since it's currently not showing the real data, but still in the API spec
+                                // we may want to re-enable later.
+                                // .arg(Arg::with_name("usage")
+                                //     .long("usage")
+                                //     .short("u")
+                                //     .help("Display tag usage data"))
                                 .arg(values_flag().help("Display environment tag information"))
                                 .arg(table_format_options().help("Format for environment tag values data"))
                                 .about("List CloudTruth environment tags"),
