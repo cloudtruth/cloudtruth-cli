@@ -238,7 +238,7 @@ jobs:
 
       - name: Install cargo-generate-rpm
         if: contains(matrix.build, 'linux')
-        run: cargo binstall --no-confirm --force cargo-generate-rpm
+        run: cargo install cargo-generate-rpm
 
       - name: Build RPM package
         if: contains(matrix.build, 'linux')
