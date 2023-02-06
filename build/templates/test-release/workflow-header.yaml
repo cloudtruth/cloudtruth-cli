@@ -10,9 +10,11 @@ on:
         description: 'CLI Release Version (defaults to current tag name)'
         type: string
         default: ${{ github.ref_name }}
+      serverUrl:
+        description: URL to the CloudTruth server (defaults to production)
+        type: string
     secrets:
       CLOUDTRUTH_API_KEY:
         description: CloudTruth API Key
         required: true
-
 jobs:

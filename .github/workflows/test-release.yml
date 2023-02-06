@@ -1,5 +1,6 @@
 ---
 name: 'Test Release'
+run-name: "Test Release (${{ inputs.releaseVersion }})"
 on:
   workflow_call:
     inputs:
@@ -10,11 +11,13 @@ on:
         description: 'CLI Release Version (defaults to current tag name)'
         type: string
         default: ${{ github.ref_name }}
+      serverUrl:
+        description: URL to the CloudTruth server (defaults to production)
+        type: string
     secrets:
       CLOUDTRUTH_API_KEY:
         description: CloudTruth API Key
         required: true
-
 jobs:
   test-alpine:
     runs-on: ubuntu-latest
@@ -27,6 +30,7 @@ jobs:
       CT_DOWNLOAD_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # These values are used for running the CLI command
+      CLOUDTRUTH_SERVER_URL: ${{ inputs.serverUrl }}
       CLOUDTRUTH_API_KEY: ${{ secrets.CLOUDTRUTH_API_KEY }}
       CT_TEST_PROJECT: TruthStrap
       CT_TEST_PARAM: INTEGRATION_TEST_RESULT
@@ -90,6 +94,7 @@ jobs:
       CT_DOWNLOAD_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # These values are used for running the CLI command
+      CLOUDTRUTH_SERVER_URL: ${{ inputs.serverUrl }}
       CLOUDTRUTH_API_KEY: ${{ secrets.CLOUDTRUTH_API_KEY }}
       CT_TEST_PROJECT: TruthStrap
       CT_TEST_PARAM: INTEGRATION_TEST_RESULT
@@ -133,6 +138,7 @@ jobs:
       CT_DOWNLOAD_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # These values are used for running the CLI command
+      CLOUDTRUTH_SERVER_URL: ${{ inputs.serverUrl }}
       CLOUDTRUTH_API_KEY: ${{ secrets.CLOUDTRUTH_API_KEY }}
       CT_TEST_PROJECT: TruthStrap
       CT_TEST_PARAM: INTEGRATION_TEST_RESULT
@@ -186,6 +192,7 @@ jobs:
       CT_DOWNLOAD_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # These values are used for running the CLI command
+      CLOUDTRUTH_SERVER_URL: ${{ inputs.serverUrl }}
       CLOUDTRUTH_API_KEY: ${{ secrets.CLOUDTRUTH_API_KEY }}
       CT_TEST_PROJECT: TruthStrap
       CT_TEST_PARAM: INTEGRATION_TEST_RESULT
@@ -215,6 +222,7 @@ jobs:
       CT_DOWNLOAD_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # These values are used for running the CLI command
+      CLOUDTRUTH_SERVER_URL: ${{ inputs.serverUrl }}
       CLOUDTRUTH_API_KEY: ${{ secrets.CLOUDTRUTH_API_KEY }}
       CT_TEST_PROJECT: TruthStrap
       CT_TEST_PARAM: INTEGRATION_TEST_RESULT
@@ -288,6 +296,7 @@ jobs:
       CT_DOWNLOAD_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # These values are used for running the CLI command
+      CLOUDTRUTH_SERVER_URL: ${{ inputs.serverUrl }}
       CLOUDTRUTH_API_KEY: ${{ secrets.CLOUDTRUTH_API_KEY }}
       CT_TEST_PROJECT: TruthStrap
       CT_TEST_PARAM: INTEGRATION_TEST_RESULT
