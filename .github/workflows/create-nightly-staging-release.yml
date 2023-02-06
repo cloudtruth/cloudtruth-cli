@@ -1,0 +1,54 @@
+---
+name: Create Nightly Staging Release
+
+on:
+  workflow_dispatch:
+
+jobs:
+  create-release:
+    name: Create Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Create tag name
+        shell: bash
+        run: echo "TAG_NAME=$(date +%d-%m-%Y)" >> $GITHUB_ENV
+
+      - name: Create Release
+        id: release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          draft: true
+          prerelease: true
+          tag_name: ${{ env.TAG_NAME }}
+          release_name: ${{ env.TAG_NAME }}
+
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+
+    outputs:
+      releaseId: ${{ steps.release.outputs.id }}
+      releaseUploadUrl: ${{ steps.release.outputs.upload_url }}
+
+  build-release:
+    name: Build Release
+    needs: create-release
+    uses: ./.github/workflows/build-release.yml
+    with:
+      releaseId: ${{ needs.create-release.outputs.releaseId }}
+      releaseUploadUrl: ${{ needs.create-release.outputs.releaseUploadUrl }}
+      releaseVersion: ${{ env.TAG_NAME }}
+
+  test-release:
+    name: Test Release
+    needs: build-release
+    uses: ./.github/workflows/test-release.yml
+    with:
+      releaseId: ${{ needs.create-release.outputs.releaseId }}
+      releaseVersion: ${{ env.TAG_NAME }}
+      serverUrl: https://api.staging.cloudtruth.io
+    secrets:
+      CLOUDTRUTH_API_KEY: ${{ secrets.CI_ACCT_STAGING_CONTRIBUTOR }}
