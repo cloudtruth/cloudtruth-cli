@@ -182,7 +182,14 @@ impl Projects {
         // populate the parent names
         for prj in &mut projects {
             if !prj.parent_url.is_empty() {
-                prj.parent_name = url_map.get(&prj.parent_url).unwrap().clone();
+                // concurrent user updates can cause parent_url to not be present in url_map
+                // handle the case by setting parent_url and parent_name to None
+                if let Some(parent_name) = url_map.get(&prj.parent_url) {
+                    prj.parent_name = parent_name.clone()
+                } else {
+                    prj.parent_name = String::new();
+                    prj.parent_url = String::new()
+                }
             }
         }
         projects.sort_by(|l, r| l.name.cmp(&r.name));
