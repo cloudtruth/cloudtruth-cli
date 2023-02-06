@@ -1,5 +1,5 @@
 ---
-name: Create Nightly Staging Release
+name: Nightly Build/Test/Release
 
 on:
   workflow_dispatch:
