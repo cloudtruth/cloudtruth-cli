@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Create GitHub release
+      - name: Create Release
         id: release
         uses: actions/create-release@v1
         env:
