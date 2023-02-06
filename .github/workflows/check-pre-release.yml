@@ -1,8 +1,7 @@
 ---
 on:
-  workflow_dispatch:
-  # release:
-  #   types: [prereleased]
+  release:
+    types: [prereleased]
 
 name: 'Check Pre-Release'
 
