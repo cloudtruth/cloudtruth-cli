@@ -12,7 +12,7 @@ jobs:
     steps:
       - name: Create tag name
         shell: bash
-        run: echo "TAG_NAME=nightly-$(date +%d-%m-%Y)" >> $GITHUB_ENV
+        run: echo "TAG_NAME=staging-nightly-$(date +%d-%m-%Y)" >> $GITHUB_ENV
 
       - name: Create Release
         id: release
