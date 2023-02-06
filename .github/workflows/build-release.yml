@@ -46,7 +46,7 @@
 # THE SOFTWARE.
 ---
 name: Build Release
-run-name: Build Release (${{ github.ref_name }})
+run-name: Build Release (${{ inputs.releaseVersion }})
 on:
   workflow_call:
     inputs:
@@ -159,7 +159,7 @@ jobs:
 
       - name: Install cargo-deb
         if: contains(matrix.build, 'linux')
-        run: cargo binstall --no-confirm --strategies 'quick-install,crate-meta-data,compile' cargo-deb
+        run: cargo binstall --no-confirm --force --strategies 'quick-install,crate-meta-data,compile' cargo-deb
 
 
       - name: Get pre-stripped binary size

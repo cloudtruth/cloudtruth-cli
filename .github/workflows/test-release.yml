@@ -1,5 +1,7 @@
 ---
 name: 'Test Release'
+run-name: Test Release (${{ inputs.releaseVersion }})
+
 on:
   workflow_call:
     inputs:
