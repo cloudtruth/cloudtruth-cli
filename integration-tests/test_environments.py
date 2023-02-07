@@ -1,7 +1,6 @@
 from testcase import TestCase
 from testcase import DEFAULT_ENV_NAME
 from testcase import TEST_PAGE_SIZE
-from testcase import skip_known_issue
 
 
 class TestEnvironments(TestCase):
@@ -189,7 +188,6 @@ class TestEnvironments(TestCase):
             env_name = self.make_name(f"pag-{idx}")
             self.delete_environment(cmd_env, env_name)
 
-    @skip_known_issue("SC-9640")
     def test_environment_tagging(self):
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
@@ -245,48 +243,6 @@ class TestEnvironments(TestCase):
         self.assertResultSuccess(result)
         tag1 = new_tag
 
-        # make sure we can see the entry, before it has been read
-        usage_cmd = list_cmd + "-uf json"
-        tags = self.get_cli_entries(cmd_env, usage_cmd, "environment-tags")
-        tag_data = tags[0]
-        self.assertEqual(tag1, tag_data.get("Name"))
-        self.assertEqual(desc1b, tag_data.get("Description"))  # updated
-        self.assertEqual(orig_time, tag_data.get("Timestamp"))  # not updated
-        self.assertEqual("0", tag_data.get("Total Reads"))
-        self.assertEqual("", tag_data.get("Last User"))
-        # self.assertEqual("", tag_data.get("Last Time"))
-
-        # just do a sample read using the tag
-        param_list = param_cmd + f"ls --as-of '{tag1}' "
-        result = self.run_cli(cmd_env, param_list + "-v")
-        self.assertResultSuccess(result)
-        self.assertIn(param1, result.out())
-        self.assertIn(value1, result.out())
-
-        # do it again without values (issue seen during development)
-        result = self.run_cli(cmd_env, param_list)
-        self.assertResultSuccess(result)
-        self.assertIn(param1, result.out())
-        self.assertNotIn(value1, result.out())
-
-        # see the tag usage is updated
-        tags = self.get_cli_entries(cmd_env, usage_cmd, "environment-tags")
-        tag_data = tags[0]
-        self.assertEqual("2", tag_data.get("Total Reads"))
-        self.assertNotEqual("", tag_data.get("Last User"))
-        self.assertNotEqual("", tag_data.get("Last Time"))
-
-        # update the timestamp with the --current
-        result = self.run_cli(cmd_env, tag_cmd + f"set '{env_name}' '{tag1}' --current")
-        self.assertResultSuccess(result)
-
-        usage_cmd = list_cmd + "-uf json"
-        tags = self.get_cli_entries(cmd_env, usage_cmd, "environment-tags")
-        tag_data = tags[0]
-        self.assertEqual(tag1, tag_data.get("Name"))
-        self.assertEqual(desc1b, tag_data.get("Description"))
-        self.assertLess(orig_time, tag_data.get("Timestamp"))  # update time should be newer
-
         # set a timestamp -- we are pretty liberal about what we convert
         timestamp = "03/24/2021"
         result = self.run_cli(cmd_env, tag_cmd + f"set {env_name} {tag1} -t '{timestamp}'")
@@ -295,7 +251,7 @@ class TestEnvironments(TestCase):
         result = self.run_cli(cmd_env, list_cmd + "-u -f csv")
         self.assertResultSuccess(result)
         self.assertIn("2021-03-24", result.out())
-        self.assertIn(",Total Reads,Last User,Last Time", result.out())
+        self.assertIn(",Last User,Last Time", result.out())
 
         # warning when nothing is updated
         result = self.run_cli(cmd_env, tag_cmd + f"set {env_name} {tag1}")

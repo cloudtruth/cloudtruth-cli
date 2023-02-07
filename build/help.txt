@@ -683,7 +683,6 @@ USAGE:
 
 FLAGS:
     -h, --help       Prints help information
-    -u, --usage      Display tag usage data
     -v, --values     Display environment tag information
     -V, --version    Prints version information
 
