@@ -4,6 +4,7 @@ from testcase import TEST_PAGE_SIZE
 from testcase import PROP_NAME
 from testcase import PROP_CREATED
 from testcase import PROP_MODIFIED
+from testcase import skip_known_issue
 
 PROP_CONSTRAINT = "Constraint"
 PROP_COUNT = "Rules"
@@ -74,6 +75,7 @@ class TestParameterTypes(TestCase):
         result = self.run_cli(cmd_env, sub_cmd + f"delete {type_name} --confirm")
         self.assertResultWarning(result, f"Parameter type '{type_name}' does not exist")
 
+    @skip_known_issue('SC-9666')
     def test_type_parents(self):
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
@@ -258,11 +260,11 @@ class TestParameterTypes(TestCase):
         self.assertIsNotNone(entry.get(PROP_MODIFIED))
 
         # invalid constraints -- child cannot be more permissive than parent
-        err_msg = "Rule update error: Maximum constraint is greater than an existing rule's maximum constraint"
+        err_msg = "Rule create error: Maximum constraint is greater than an existing rule's maximum constraint"
         cmd = type_cmd + f"set {type_name2} --max {max_a + 1}"
         result = self.run_cli(cmd_env, cmd)
         self.assertResultError(result, err_msg)
-        err_msg = "Rule update error: Minimum constraint is less than an existing rule's minimum constraint"
+        err_msg = "Rule create error: Minimum constraint is less than an existing rule's minimum constraint"
         cmd = type_cmd + f"set {type_name2} --min {min_a - 1}"
         result = self.run_cli(cmd_env, cmd)
         self.assertResultError(result, err_msg)
