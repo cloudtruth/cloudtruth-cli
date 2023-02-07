@@ -53,44 +53,7 @@ jobs:
       # these are to run against staging
       CLOUDTRUTH_SERVER_URL: https://api.staging.cloudtruth.io
       CLOUDTRUTH_API_KEY: ${{ secrets.CI_ACCT_STAGING_CONTRIBUTOR }}
-
-      # These are based on pre-configured integrations in the CLI CI account.
-      # this test currently does not work. need to recreate the test data
-      CLOUDTRUTH_TEST_BROKEN_PROJECT: proj-int-broken
-      CLOUDTRUTH_TEST_BROKEN_TEMPLATE: temp-int-broken
-      CLOUDTRUTH_TEST_BROKEN_PARAM1: param1
-      CLOUDTRUTH_TEST_BROKEN_PARAM2: param2
-      CLOUDTRUTH_TEST_BROKEN_PARAM3: param3
-      CLOUDTRUTH_TEST_BROKEN_PARAM4: param4
-      CLOUDTRUTH_TEST_BROKEN_VALUE1: value1
-      CLOUDTRUTH_TEST_BROKEN_VALUE2: King
-      CLOUDTRUTH_TEST_BROKEN_VALUE3: voluptas
-      CLOUDTRUTH_TEST_BROKEN_JMES2: speicla.beef_brocolli
-      CLOUDTRUTH_TEST_BROKEN_JMES3: numquam.doloremque
-      CLOUDTRUTH_TEST_BROKEN_FQN2: github://cloudtruth/another-test-repo/main/jade.yaml
-      CLOUDTRUTH_TEST_BROKEN_FQN3: github://cloudtruth/github-integration-test-repo/trimmed/more_config/anotherconfig.yaml
-
-      CLOUDTRUTH_TEST_EXPLORE_FQN: github://cloudtruth/github-integration-test-repo/main/short.yaml
-      CLOUDTRUTH_TEST_EXPLORE_JMES: speicla.POrk_Egg_Foo_Young
-      CLOUDTRUTH_TEST_EXPLORE_VALUE: Healey
-
-      CLOUDTRUTH_TEST_PARAMETERS_FQN: github://cloudtruth/github-integration-test-repo/my-branch/short.yaml
-      CLOUDTRUTH_TEST_PARAMETERS_JMES: speicla.POrk_Egg_Foo_Young
-
-      CLOUDTRUTH_TEST_TEMPLATE_FQN: github://cloudtruth/github-integration-test-repo/main/ci_test_template.txt
-      CLOUDTRUTH_TEST_TEMPLATE_PARAM1: my-param-name
-
-      CLOUDTRUTH_TEST_BASIC_INTEGRATION_NAME: ct-stage-write@943604981792
-      CLOUDTRUTH_TEST_BASIC_BAD_INTEGRATION_NAME: my-missing-integration
-
-      CLOUDTRUTH_TEST_PUSH_INTEGRATION_NAME: ct-stage-write@943604981792
-      CLOUDTRUTH_TEST_PUSH_BAD_INTEGRATION_NAME: my-missing-integration
-
-      CLOUDTRUTH_TEST_IMPORT_INTEGRATION_NAME: ct-stage-write@943604981792
-      CLOUDTRUTH_TEST_IMPORT_BAD_INTEGRATION_NAME: my-missing-integration
-
-      CLOUDTRUTH_TEST_COMPLETE_INTEGRATION_NAME: ct-stage-write@943604981792
-
+      
     steps:
       - uses: actions/checkout@v3
         with:
@@ -108,6 +71,11 @@ jobs:
 
       - shell: bash
         run: make test_prerequisites
+
+      - name: Setup test variables
+        shell: bash
+        run: |
+          cat integration-tests/staging.env >> $GITHUB_ENV
 
       - name: E2E Test
         shell: bash
