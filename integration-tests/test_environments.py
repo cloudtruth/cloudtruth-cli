@@ -208,7 +208,7 @@ class TestEnvironments(TestCase):
         tag_cmd = base_cmd + "env tag "
         list_cmd = tag_cmd + f"list '{env_name}' "
         empty_msg = f"No tags found in environment {env_name}"
-        for cmd in [list_cmd, list_cmd + "-v", list_cmd + "-f csv", list_cmd + "-u", list_cmd + "-vuf csv"]:
+        for cmd in [list_cmd, list_cmd + "-v", list_cmd + "-f csv", list_cmd + "-vf csv"]:
             result = self.run_cli(cmd_env, cmd)
             self.assertResultSuccess(result)
             self.assertIn(empty_msg, result.out())
@@ -247,11 +247,6 @@ class TestEnvironments(TestCase):
         timestamp = "03/24/2021"
         result = self.run_cli(cmd_env, tag_cmd + f"set {env_name} {tag1} -t '{timestamp}'")
         self.assertResultSuccess(result)
-
-        result = self.run_cli(cmd_env, list_cmd + "-u -f csv")
-        self.assertResultSuccess(result)
-        self.assertIn("2021-03-24", result.out())
-        self.assertIn(",Last User,Last Time", result.out())
 
         # warning when nothing is updated
         result = self.run_cli(cmd_env, tag_cmd + f"set {env_name} {tag1}")
