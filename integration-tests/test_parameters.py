@@ -12,6 +12,7 @@ from testcase import PROP_NAME
 from testcase import PROP_VALUE
 from testcase import REDACTED
 from testcase import TEST_PAGE_SIZE
+from testcase import skip_known_issue
 
 
 class TestParameters(TestCase):
@@ -2096,6 +2097,7 @@ Parameter,{env_a} ({modified_p2_a}),{env_b} ({modified_p2_b})
         self.delete_project(cmd_env, proj_name)
         self.delete_environment(cmd_env, env_name)
 
+    @skip_known_issue('SC-9666')
     def test_parameter_rules_integer(self):
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()

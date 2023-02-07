@@ -5,6 +5,7 @@ from typing import Optional
 
 from testcase import TestCase, CT_API_KEY
 from testcase import find_by_prop
+from testcase import skip_known_issue
 
 PROP_TYPE = "Type"
 PROP_ACTION = "Action"
@@ -61,6 +62,7 @@ class TestAuditLogs(TestCase):
             return []
         return eval(result.out()).get("audit-logs")
 
+    @skip_known_issue('SC-9630')
     def test_audit_logs(self):
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()

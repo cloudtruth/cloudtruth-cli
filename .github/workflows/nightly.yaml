@@ -28,6 +28,5 @@ jobs:
       runsOn: ${{ matrix.os }}
       buildOptions: --release
       testOptions: --release
-      testRunnerOptions: --exclude backup
     secrets: inherit
 
