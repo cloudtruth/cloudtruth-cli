@@ -12398,6 +12398,13 @@ components:
           allOf:
           - $ref: '#/components/schemas/HistoryTypeEnum'
           readOnly: true
+        modified_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        modified_by:
+          type: string
         history_environments:
           type: array
           items:
@@ -12419,6 +12426,7 @@ components:
       - history_model
       - history_parameter
       - history_type
+      - modified_at
     ParameterTimelineEntryEnvironment:
       type: object
       properties:
@@ -14656,6 +14664,13 @@ components:
           allOf:
           - $ref: '#/components/schemas/HistoryTypeEnum'
           readOnly: true
+        modified_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        modified_by:
+          type: string
         history_template:
           allOf:
           - $ref: '#/components/schemas/TemplateTimelineEntryTemplate'
@@ -14664,6 +14679,7 @@ components:
       required:
       - history_template
       - history_type
+      - modified_at
     TemplateTimelineEntryTemplate:
       type: object
       description: Helper methods for all views or serializers that expose template

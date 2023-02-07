@@ -18319,6 +18319,15 @@
                         ],
                         "readOnly": true
                     },
+                    "modified_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true,
+                        "nullable": true
+                    },
+                    "modified_by": {
+                        "type": "string"
+                    },
                     "history_environments": {
                         "type": "array",
                         "items": {
@@ -18350,7 +18359,8 @@
                     "history_environments",
                     "history_model",
                     "history_parameter",
-                    "history_type"
+                    "history_type",
+                    "modified_at"
                 ]
             },
             "ParameterTimelineEntryEnvironment": {
@@ -20896,6 +20906,15 @@
                         ],
                         "readOnly": true
                     },
+                    "modified_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true,
+                        "nullable": true
+                    },
+                    "modified_by": {
+                        "type": "string"
+                    },
                     "history_template": {
                         "allOf": [
                             {
@@ -20908,7 +20927,8 @@
                 },
                 "required": [
                     "history_template",
-                    "history_type"
+                    "history_type",
+                    "modified_at"
                 ]
             },
             "TemplateTimelineEntryTemplate": {
