@@ -275,7 +275,7 @@ impl Users {
         description: Option<&str>,
     ) -> Result<UserDetails, UserError> {
         let role_enum = to_role_enum(role)?;
-        let details = self.create_service_account(rest_cfg, user_name, description, Some(role))?;
+        let details = self.create_service_account(rest_cfg, user_name, description, None)?;
 
         // must add membership for the account to show up in the list
         let response = self.create_membership(rest_cfg, &details.user_url, role_enum);
