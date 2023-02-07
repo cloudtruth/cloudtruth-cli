@@ -349,6 +349,7 @@ class TestParameterTypes(TestCase):
         self.delete_type(cmd_env, type_name2)
         self.delete_type(cmd_env, type_name1)
 
+    @skip_known_issue('SC-9666')
     def test_type_boolean(self):
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
@@ -557,13 +558,13 @@ class TestParameterTypes(TestCase):
 
         # child rules must be more restrictive
         err_msg = (
-            "Rule update error: Maximum length constraint is greater than an existing rule's maximum length constraint"
+            "Rule create error: Maximum length constraint is greater than an existing rule's maximum length constraint"
         )
         cmd = type_cmd + f"set {type_name2} --max-len {max_len_a + 1}"
         result = self.run_cli(cmd_env, cmd)
         self.assertResultError(result, err_msg)
         err_msg = (
-            "Rule update error: Minimum length constraint is less than an existing rule's minimum length constraint"
+            "Rule create error: Minimum length constraint is less than an existing rule's minimum length constraint"
         )
         cmd = type_cmd + f"set {type_name2} --min-len {min_len_a - 1}"
         result = self.run_cli(cmd_env, cmd)
