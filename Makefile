@@ -59,7 +59,7 @@ clean:
 
 # client needs to re-generated when the openapi.yaml changes
 client: openapi.yml patch_client.py
-	rm -rf client/
+	rm -rf client/src
 	docker run --rm \
 		-v "$(shell pwd):/local" \
 		--user "$(shell id -u):$(shell id -g)" \
@@ -73,12 +73,18 @@ client: openapi.yml patch_client.py
 	cd client && cargo fmt --all && cargo build
 
 lint:
-	cargo fmt --all -- --check || { cargo fmt --all; exit 1; }
+	cargo fmt --all -- --check
 	cargo clippy --all-features -- -D warnings
-	python3 -m black -q --check . || { python3 -m black . ; exit 1; } 
-	ruff check . || { ruff . check --fix-only; exit 1; }
-	shellcheck install.sh
+	python3 -m black --check .
+	ruff check .
+# run Shellcheck on all shell scripts, ignoring client/ and .gitignore files
+	git ls-files | grep -v -E '^client/' | grep -E '\.sh$$' | xargs shellcheck
 	python3 -m yamllint .
+
+format:
+	cargo fmt --all
+	python3 -m black .
+	ruff check . --fix
 
 subdir_action:
 	@for sd in $(subdirs) ; do \
