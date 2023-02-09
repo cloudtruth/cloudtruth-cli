@@ -240,9 +240,11 @@ def live_test(*args):
     env[CT_TEST_LOG_COMMANDS_ON_FAILURE] = str(int(args.log_commands_on_failure))
     env[CT_TEST_LOG_OUTPUT_ON_FAILURE] = str(int(args.log_output_on_failure))
 
-    if args.job_id:
-        print(f"JOB_ID: {args.job_id}")
-        env[CT_TEST_JOB_ID] = args.job_id
+    if not args.job_id:
+        import uuid
+        args.job_id = f"local-{uuid.uuid4()}"
+    print(f"JOB_ID: {args.job_id}")
+    env[CT_TEST_JOB_ID] = args.job_id
 
     if args.known_issues:
         env[CT_TEST_KNOWN_ISSUES] = True
