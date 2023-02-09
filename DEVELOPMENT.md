@@ -122,6 +122,49 @@ this workflow:
 4. You can delete the draft release and the artifacts after you are done, then submit a pull request
    to get your changes into the _master_ branch.
 
+Running a multi-command scenario with debugging in VS Code
+===========================================================
+
+With vscode-lldb you can debug Rust programs in VS Code. However, the launch configuration only has support for running
+a single executable file. For debugging a complex multi-command scenario, you need to invoke the debugger via external
+commands.
+
+The following is an example script that you can use as a tempate. You'll need the vscode-lldb extension installed for this to work.
+
+```sh
+#!/usr/bin/env sh
+set -e
+
+### Path to local cloudtruth executable with debugging symbols.
+### Make sure you're not building with the --release (-r) option for this.
+CLOUDTRUTH_BIN="$(git rev-parse --show-toplevel)/target/debug/cloudtruth"
+
+### alias the cloudtruth command to ignore PATH and ensure we always go to the local debug executable
+# shellcheck disable=SC2139
+alias cloudtruth="$CLOUDTRUTH_BIN"
+
+### Use this function to launch lldb in vs code
+### Example:
+### debugcloudtruth projects list
+debugcloudtruth () {
+    args='['
+    for arg in "$@"; do
+        args="$args'$arg', "
+    done
+    args="$args]"
+    launch_config="{type: 'lldb', request: 'launch', name: 'CloudTruth', sourceLanguages: ['rust'], program: '\${fileWorkspaceFolder}/target/debug/cloudtruth', args: $args}"
+    debug_url='vscode://vadimcn.vscode-lldb/launch/config'
+    code --wait --reuse-window --verbose --open-url "$debug_url?$launch_config"
+}
+
+
+# use `cloudtruth` to run commands without debugging
+cloudtruth --version
+
+# use `debugcloudtruth`to attach the debugger
+debugcloudtruth --version
+```
+
 Windows builds on Linux/MacOS with MingGW
 ------------------------------------------
 
