@@ -135,7 +135,7 @@ class TestCase(unittest.TestCase):
         self.log_output = int(os.environ.get(CT_TEST_LOG_OUTPUT, "0"))
         self.log_commands_on_failure = int(os.environ.get(CT_TEST_LOG_COMMANDS_ON_FAILURE, "0"))
         self.log_output_on_failure = int(os.environ.get(CT_TEST_LOG_OUTPUT_ON_FAILURE, "0"))
-        self.job_id = os.environ.get(CT_TEST_JOB_ID, "testcli")
+        self.job_id = os.environ.get(CT_TEST_JOB_ID)
         self._failure_logs = None
         self._projects = None
         self._environments = None
