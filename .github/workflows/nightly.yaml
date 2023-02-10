@@ -1,32 +1,54 @@
 ---
-name: Nightly
-
-# This runs the full suite of tests on all platforms. CI has been changed to run a subset of tests
-# on each platform to get full coverage, but not on each platform.
+name: Create Nightly Staging Release
 
 on:
   workflow_dispatch:
-  schedule:
-    # Run full test on a nightly basis -- time is GMT, so do it a bit after midnight ET
-    - cron: '37 5 * * *'
+
 jobs:
-  lint:
-    name: Lint
-    uses: ./.github/workflows/lint.yml
+  create-release:
+    name: Create Release
+    runs-on: ubuntu-latest
 
-  test:
-    name: Test
-    uses: ./.github/workflows/test-staging.yml
-    strategy:
-      fail-fast: false
-      matrix:
-        os:
-          - ubuntu-latest
-          - macos-latest
-          - windows-latest
+    steps:
+      - name: Create tag name
+        shell: bash
+        run: echo "TAG_NAME=$(date +%d-%m-%Y)" >> $GITHUB_ENV
+
+      - name: Create Release
+        id: release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          draft: true
+          prerelease: true
+          tag_name: ${{ env.TAG_NAME }}
+          release_name: ${{ env.TAG_NAME }}
+
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+
+    outputs:
+      releaseId: ${{ steps.release.outputs.id }}
+      releaseUploadUrl: ${{ steps.release.outputs.upload_url }}
+
+  build-release:
+    name: Build Release
+    needs: create-release
+    uses: ./.github/workflows/build-release.yml
     with:
-      runsOn: ${{ matrix.os }}
-      buildOptions: --release
-      testOptions: --release
-    secrets: inherit
+      releaseId: ${{ needs.create-release.outputs.releaseId }}
+      releaseUploadUrl: ${{ needs.create-release.outputs.releaseUploadUrl }}
+      releaseVersion: ${{ env.TAG_NAME }}
 
+  test-release:
+    name: Test Release
+    needs: build-release
+    uses: ./.github/workflows/test-release.yml
+    with:
+      releaseId: ${{ needs.create-release.outputs.releaseId }}
+      releaseVersion: ${{ env.TAG_NAME }}
+      serverUrl: https://api.staging.cloudtruth.io
+    secrets:
+      CLOUDTRUTH_API_KEY: ${{ secrets.CI_ACCT_STAGING_CONTRIBUTOR }}
