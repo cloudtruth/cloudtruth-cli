@@ -158,11 +158,10 @@ fn default_param_value() -> &'static Value {
 
 impl From<&Parameter> for ParameterDetails {
     fn from(api_param: &Parameter) -> Self {
-        let first = api_param.values.values().next();
-        let env_value: &Value = match first {
-            Some(Some(v)) => v,
-            _ => default_param_value(),
-        };
+        // try to get the value associated with the env
+        let opt_env_value = api_param.values_flat.first();
+        // if no env, then get defaults
+        let env_value = opt_env_value.unwrap_or(default_param_value());
 
         ParameterDetails {
             id: api_param.id.clone(),
@@ -177,7 +176,6 @@ impl From<&Parameter> for ParameterDetails {
                 .iter()
                 .map(ParameterRuleDetail::from)
                 .collect(),
-
             val_id: env_value.id.clone(),
             value: env_value.value.clone().unwrap_or_default(),
             env_url: env_value.environment.clone(),
@@ -187,9 +185,14 @@ impl From<&Parameter> for ParameterDetails {
             jmes_path: env_value.external_filter.clone().unwrap_or_default(),
             evaluated: env_value.interpolated.unwrap_or(false),
             raw_value: env_value.internal_value.clone().unwrap_or_default(),
-            created_at: env_value.created_at.clone(),
-            modified_at: env_value.modified_at.clone().unwrap_or_default(),
-
+            created_at: match opt_env_value {
+                Some(val) => val.created_at.clone(),
+                None => api_param.created_at.clone(),
+            },
+            modified_at: match opt_env_value {
+                Some(val) => val.modified_at.clone().unwrap_or_default(),
+                None => api_param.created_at.clone(),
+            },
             error: env_value.external_error.clone().unwrap_or_default(),
         }
     }
