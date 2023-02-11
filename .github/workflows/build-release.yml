@@ -69,11 +69,10 @@ env:
   RELEASE_VERSION: ${{ inputs.releaseVersion }}
   PROJECT_NAME: cloudtruth
   RUST_BACKTRACE: 1
-  CROSS_VERSION: 0.2.4
 
 jobs:
-  build-release:
-    name: Build Release
+  build-packages:
+    name: Build Release Packages
     runs-on: ${{ matrix.os }}
 
     strategy:
@@ -219,7 +218,9 @@ jobs:
         if: contains(matrix.build, 'linux')
         shell: bash
         run: |
-          cargo deb --no-build --no-strip --target ${{ matrix.target }}
+          cargo deb --no-build --no-strip \
+            --target ${{ matrix.target }} \
+            --deb-version "$RELEASE_VERSION"
 
           deb_path=$(ls target/${{ matrix.target }}/debian/*.deb)
           echo DEB_PATH=$deb_path >> $GITHUB_ENV
@@ -243,12 +244,13 @@ jobs:
       - name: Build RPM package
         if: contains(matrix.build, 'linux')
         shell: bash
-        run: |
-          sed -i 's/TARGET/${{ matrix.target }}/g' Cargo.rpm.toml
-          cat Cargo.rpm.toml >> Cargo.toml
-          
+        run: |          
           rpm_arch=$(echo "${{ matrix.target }}" | cut -d- -f1)
-          cargo generate-rpm --arch $rpm_arch
+          rpm_toml_version="version = $RELEASE_VERSION"
+          cargo generate-rpm \
+            --arch $rpm_arch \
+            --target ${{ matrix.target }} \
+            --set-metadata "$rpm_toml_version"
 
           rpm_path=$(ls target/generate-rpm/cloudtruth-*$rpm_arch.rpm)
           echo RPM_PATH=$rpm_path >> $GITHUB_ENV
@@ -265,8 +267,15 @@ jobs:
           asset_name: ${{ env.RPM_NAME }}
           asset_content_type: application/octet-stream
 
+  upload-assets:
+    name: Upload Other Assets
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+          
       - name: Upload Release Notes
-        if: matrix.build == 'linux'
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -277,7 +286,6 @@ jobs:
           asset_content_type: application/octet-stream
 
       - name: Upload POSIX Install
-        if: matrix.build == 'linux'
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -288,7 +296,6 @@ jobs:
           asset_content_type: application/octet-stream
 
       - name: Upload Windows Install
-        if: matrix.build == 'linux'
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
