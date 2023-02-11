@@ -246,7 +246,7 @@ jobs:
         shell: bash
         run: |          
           rpm_arch=$(echo "${{ matrix.target }}" | cut -d- -f1)
-          rpm_toml_version="version = $RELEASE_VERSION"
+          rpm_toml_version="version = '$RELEASE_VERSION'"
           cargo generate-rpm \
             --arch $rpm_arch \
             --target ${{ matrix.target }} \
@@ -274,7 +274,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 1
-          
+
       - name: Upload Release Notes
         uses: actions/upload-release-asset@v1
         env:
