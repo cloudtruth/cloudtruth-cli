@@ -227,10 +227,7 @@ if [ "${PKG}" = "deb" ]; then
     if [ "${ARCH}" = "x86_64" ]; then
         ARCH="amd64"
     fi
-    # debian package names strip build information off the release version name
-    # this is typical in a draft build, like 0.3.0_mytest.1 => 0.3.0
-    CT_CLI_VERSION_STUB=$(echo "${CT_CLI_VERSION}" | sed 's/[^0-9.]*\([0-9.]*\).*/\1/')
-    PACKAGE=cloudtruth_${CT_CLI_VERSION_STUB}_${ARCH}.deb
+    PACKAGE=cloudtruth_${CT_CLI_VERSION}_${ARCH}.deb
     download "${PACKAGE}"
     if [ ${CT_DRY_RUN} -ne 0 ]; then
         echo "[dry-run] skipping install of ${PACKAGE}"
@@ -241,9 +238,6 @@ fi
 
 # rpm based
 if [ "${PKG}" = "rpm" ]; then
-    ## rpm package names strip build information off the release version name
-    ## this is typical in a draft build, like 0.3.0_mytest.1 => 0.3.0
-    ##CT_CLI_VERSION_STUB=$(echo "${CT_CLI_VERSION}" | sed 's/[^0-9.]*\([0-9.]*\).*/\1/')
     PACKAGE=cloudtruth-${CT_CLI_VERSION}-1.${ARCH}.rpm
     download "${PACKAGE}"
     if [ ${CT_DRY_RUN} -ne 0 ]; then
