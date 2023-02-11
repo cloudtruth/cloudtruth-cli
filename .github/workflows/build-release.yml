@@ -252,7 +252,7 @@ jobs:
             --target ${{ matrix.target }} \
             --set-metadata "$rpm_toml_version"
 
-          rpm_path=$(ls target/generate-rpm/cloudtruth-*$rpm_arch.rpm)
+          rpm_path=$(ls target/${{ matrix.target }}/generate-rpm/cloudtruth-*$rpm_arch.rpm)
           echo RPM_PATH=$rpm_path >> $GITHUB_ENV
           echo RPM_NAME=$(basename $rpm_path) >> $GITHUB_ENV
 
