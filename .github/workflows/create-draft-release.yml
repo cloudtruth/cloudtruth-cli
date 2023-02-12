@@ -13,15 +13,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Create Release
+      - name: Create Draft Release
         id: release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: ncipollo/release-action@v1
         with:
+          updateOnlyUnreleased: true # prevent modifying any non-draft non-prerelease
+          removeArtifacts: true # deletes any existing artifacts when modifying
           draft: true
-          tag_name: ${{ github.ref_name }}
-          release_name: ${{ github.ref_name }}
+          # need to set this false initially otherwise GH won't emit a prereleased event at the end 
+          prerelease: false 
+          tag: ${{ github.ref_name }}
+          name: Cloudtruth CLI ${{ github.ref_name }}
 
       - uses: actions/checkout@v3
         with:
@@ -57,19 +59,3 @@ jobs:
       releaseVersion: ${{ github.ref_name }}
     secrets:
       CLOUDTRUTH_API_KEY: ${{ secrets.CI_ACCT_READONLY_CT_API_KEY}}
-
-  # cleanup:
-  #   name: Rollback on Failure
-  #   runs-on: ubuntu-latest
-  #   needs: [create-release, test-release]
-  #   if: failure()
-  #   steps:
-  #     - uses: author/action-rollback@stable
-  #       if: needs.create-release.outputs.releaseId != ''
-  #       with:
-  #         release_id: ${{ needs.create-release.outputs.releaseId }}
-  #         tag: ${{ github.ref }}
-  #         #  If the release does not exist but the tag does, setting this to true will remove the tag.
-  #         delete_orphan_tag: true
-  #       env:
-  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

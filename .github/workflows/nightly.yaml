@@ -23,7 +23,6 @@ jobs:
         id: release
         uses: ncipollo/release-action@v1
         with:
-          updateOnlyUnreleased: true # prevent modifying any non-draft non-prerelease
           allowUpdates: true # allow overwriting
           removeArtifacts: true # deletes any existing artifacts when modifying
           draft: true
