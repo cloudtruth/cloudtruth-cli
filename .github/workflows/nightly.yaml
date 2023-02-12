@@ -87,13 +87,12 @@ jobs:
           repo: cloudtruth-cli
           tag: ${{ needs.create-release.outputs.tagName }}
           file: /.*/
-          path: assets
           token: ${{ secrets.GITHUB_TOKEN }}
 
       ## rename asset files to remove the date
       - shell: bash
         run: |
-          find assets -name 'cloudtruth-nightly-staging-*' \
+          ls cloudtruth* \
           | sed -E 's/^(.*)-(([0-9]{2}-){2}[0-9]{4})(.*)$/& \1\4/' \
           | xargs -n2 echo mv 
       
