@@ -32,7 +32,6 @@ env:
 jobs:
   test:
     name: CLI E2E Test (Staging)
-    needs: build
     runs-on: ${{ inputs.runsOn }}
 
     env:
