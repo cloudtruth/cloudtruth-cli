@@ -17,7 +17,7 @@ jobs:
           DATE="$(date +%d-%m-%Y)"
           echo DATE=$DATE >> $GITHUB_ENV
           echo TAG_NAME=nightly-staging-$DATE >> $GITHUB_ENV
-          echo "RELEASE_NAME=Nightly Staging Build ($DATE)" >> $GITHUB_ENV
+          echo "RELEASE_NAME=Nightly Staging ($DATE)" >> $GITHUB_ENV
 
       - name: Create Draft Release
         id: release
