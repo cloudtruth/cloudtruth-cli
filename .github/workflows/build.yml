@@ -37,7 +37,7 @@ jobs:
 
     steps:
       - name: Build
-        uses: cloudtruth/cli-build-action@v1
+        uses: cloudtruth/cli-build-action@v2
         with:
           ref: ${{ inputs.ref }}
           buildOptions: ${{ inputs.buildOptions }}

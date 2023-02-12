@@ -26,7 +26,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: cloudtruth/cli-build-action@v1
+      - uses: cloudtruth/cli-build-action@v2
         with:
           components: rustfmt, clippy
           skipBuild: true
