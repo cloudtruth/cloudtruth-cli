@@ -17,6 +17,7 @@ on:
       CLOUDTRUTH_API_KEY:
         description: CloudTruth API Key
         required: true
+
 jobs:
   test-alpine:
     runs-on: ubuntu-latest

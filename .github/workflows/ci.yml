@@ -9,10 +9,19 @@ on:
   #     - main
   workflow_dispatch:
 
+env:
+  CI: true
+
 jobs:
   lint:
     name: Lint
-    uses: ./.github/workflows/lint.yml      
+    uses: ./.github/workflows/lint.yml
+
+  build:
+    name: CLI Build
+    uses: ./.github/workflows/build.yml
+    with:
+      artifactId: cloudtruth-ci
 
   test:
     name: Test
@@ -31,6 +40,7 @@ jobs:
 
     with:
       runsOn: ${{ matrix.os }}
+      artifactId: cloudtruth-ci
       testRunnerOptions: ${{ matrix.options }}
     secrets: inherit
 

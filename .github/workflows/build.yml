@@ -25,10 +25,9 @@ on:
       rustCacheKey:
         description: cache ID to use for rust-cache
         type: string
-        default: v0-cli-test
+        default: v0-cli-build
 
 env:
-  CI: true
   RUST_BACKTRACE: 1
 
 jobs:

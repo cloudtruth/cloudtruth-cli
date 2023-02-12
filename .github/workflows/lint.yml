@@ -18,6 +18,8 @@ on:
         description: cache ID to use for rust-cache
         type: string
         default: v0-cli-lint
+env:
+  CI: true
 jobs:
   lint:
     name: CLI Lint

@@ -2,26 +2,22 @@ name: E2E Staging
 on:
   workflow_call:
     inputs:
-      runsOn:
-        description: The runner to run the workflow on
+      artifactId:
+        description: An artifact ID containing the CLI executable to test. Either artifactId or releaseVersion should be provided
         type: string
-        default: ubuntu-latest
+      releaseVersion:
+        description: A release tag to download with the install script. Either artifactId or releaseVersion should be provided
+        type: string
       ref:
-        description: the git ref to checkout from cloudtruth-cli
-        type: string
-      buildOptions:
-        description: options to pass to the Cargo build
-        type: string
-      testOptions:
-        description: options to pass to the Cargo tests
+        description: the git ref to checkout from cloudtruth-cli (defaults to current ref)
         type: string
       testRunnerOptions:
         description: string of command-line options to pass to the test runner
         type: string
-      rustCacheKey:
-        description: cache ID to use for rust-cache
+      runsOn:
+        description: The runner to run the workflow on
         type: string
-        default: v0-cli-test
+        default: ubuntu-latest
     secrets:
       CI_ACCT_STAGING_CONTRIBUTOR:
         description: "Staging API Key"
@@ -29,21 +25,11 @@ on:
 
 env:
   CI: true
+  # ID to append to test data to avoid name collisions
   JOB_ID: ${{github.repository_id}}-${{github.run_id}}-${{github.run_attempt}}-${{inputs.runsOn}}
   RUST_BACKTRACE: 1
 
 jobs:
-  build:
-    name: CLI Build
-    uses: ./.github/workflows/build.yml
-    with:
-      artifactId: ${{github.repository_id}}-${{github.run_id}}-${{inputs.runsOn}}
-      runsOn: ${{ inputs.runsOn }}
-      ref: ${{ inputs.ref }}
-      buildOptions: ${{ inputs.buildOptions }}
-      testOptions: ${{ inputs.testOptions }}
-      rustCacheKey: ${{ inputs.rustCacheKey }}
-
   test:
     name: CLI E2E Test (Staging)
     needs: build
@@ -55,19 +41,36 @@ jobs:
       CLOUDTRUTH_API_KEY: ${{ secrets.CI_ACCT_STAGING_CONTRIBUTOR }}
       
     steps:
+      - shell: bash
+        if: | 
+          inputs.artifactId == '' && inputs.releaseVersion == '' ||
+          inputs.artifactId != '' && inputs.releaseVersion != ''
+        run: | 
+          echo "Workflow input error: exactly one of 'artifactId' or 'releaseVersion' must be provided"
+          exit 1
+
       - uses: actions/checkout@v3
         with:
           repository: cloudtruth/cloudtruth-cli
           ref: ${{ inputs.ref }}
 
       - uses: actions/download-artifact@v3
+        if: inputs.artifactId
         with:
-          name: ${{github.repository_id}}-${{github.run_id}}-${{inputs.runsOn}}
+          name: ${{ inputs.artifactId }}
           path: target
+
+      - shell: bash
+        if: inputs.releaseVersion && !contains(runner.os, 'Windows')
+        run: sudo ./install.sh --version '${{ inputs.releaseVersion }}'
+
+      - shell: pwsh
+        if: inputs.releaseVersion && contains(runner.os, 'Windows')
+        run: .\install.ps1 --version '${{ inputs.releaseVersion }}'
 
       # upload-artifact does not preserve permissions
       - shell: bash
-        run: find target -type f -exec chmod +x {} +
+        run: find target -type f -name 'cloudtruth*' -exec chmod +x {} +
 
       - shell: bash
         run: make test_prerequisites
