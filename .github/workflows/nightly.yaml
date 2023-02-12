@@ -13,23 +13,18 @@ jobs:
     steps:
       - name: Create tag name
         shell: bash
-        run: echo "TAG_NAME=staging-nightly-$(date +%d-%m-%Y)" >> $GITHUB_ENV
+        run: echo "TAG_NAME=nightly-staging-$(date +%d-%m-%Y)" >> $GITHUB_ENV
 
-      - name: Create Release
+      - name: Create Draft Release
         id: release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           draft: true
-          prerelease: true
           tag_name: ${{ env.TAG_NAME }}
           release_name: ${{ env.TAG_NAME }}
-
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 1
-
+      
     outputs:
       releaseId: ${{ steps.release.outputs.id }}
       releaseUploadUrl: ${{ steps.release.outputs.upload_url }}
@@ -54,3 +49,30 @@ jobs:
       serverUrl: https://api.staging.cloudtruth.io
     secrets:
       CLOUDTRUTH_API_KEY: ${{ secrets.CI_ACCT_STAGING_CONTRIBUTOR }}
+
+  # remove draft status and change to pre-release
+  make-prerelease:
+    name: Remove Draft Status and Make Pre-release
+    needs: [create-release, test-release]
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          curl -LSs \
+            -H 'Accept: application/vnd.github+json' \
+            -H 'Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
+            -X PATCH \
+            'https://api.github.com/repos/${{ github.repository }}/releases/${{ needs.create-release.outputs.releaseId}}'
+            -d '{"draft": false, "prerelease": true}'
+
+      - uses: dev-drprasad/delete-older-releases@v0.2.0
+        with:
+          keep_latest: 3
+          delete_tag_pattern: nightly-staging
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      
+
+
+
+  
