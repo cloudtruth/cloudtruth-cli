@@ -26,6 +26,7 @@ jobs:
   test:
     name: Test
     uses: ./.github/workflows/test-staging.yml
+    needs: [build]
 
     strategy:
       fail-fast: false
