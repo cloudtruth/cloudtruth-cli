@@ -17,7 +17,6 @@ on:
       CLOUDTRUTH_API_KEY:
         description: CloudTruth API Key
         required: true
-
 jobs:
   test-alpine:
     runs-on: ubuntu-latest
@@ -182,7 +181,7 @@ jobs:
           docker run -e CLOUDTRUTH_API_KEY ${CLOUDTRUTH_SERVER_URL:+ -e CLOUDTRUTH_SERVER_URL} --rm -v $(pwd):/truth -t cloudtruth:debian-stretch-slim cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
 
   test-macOS:
-    runs-on: macOS-latest
+    runs-on: macos-latest
     env:
       # github release info
       CT_DOWNLOAD_RELEASE_ID: ${{ inputs.releaseId }}

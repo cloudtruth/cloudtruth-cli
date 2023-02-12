@@ -73,7 +73,7 @@ def update_workflow(config_file: str, template_dir: str, workflow_name: str) -> 
                 new_workflow += st.render(os=os, version=version)
         else:
             for version in data["versions"]:
-                runs_on = f"{os}-{version}"
+                runs_on = f"{os.lower()}-{version}"
                 new_workflow = new_workflow + jt.render(os=os, runs_on=runs_on)
                 st = Template(step_direct_ps if data.get("powershell") else step_direct_sh)
                 new_workflow += st.render(os=os, version=version)
