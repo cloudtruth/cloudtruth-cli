@@ -70,7 +70,7 @@ jobs:
           allowUpdates: true
           omitBody: true
           omitName: true
-          tag: ${{ env.TAG_NAME }}
+          tag: ${{ needs.create-release.outputs.tagName }}
           commit: ${{ github.sha }}
 
       - uses: dev-drprasad/delete-older-releases@v0.2.0
