@@ -1,15 +1,15 @@
 ---
 name: Nightly
-run-name: Nightly Build & Release
+run-name: Nightly Release
 
 on:
   workflow_dispatch:
 
 jobs:
   create-release:
-    name: Create Release
+    name: Create Draft Release
     runs-on: ubuntu-latest
-
+  
     steps:
       - name: Create tag name
         shell: bash
@@ -17,13 +17,16 @@ jobs:
 
       - name: Create Draft Release
         id: release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: ncipollo/release-action@v1
         with:
+          allowUpdates: true # allow overwriting release
+          removeArtifacts: true # deletes any existing artifacts
           draft: true
-          tag_name: ${{ env.TAG_NAME }}
-          release_name: ${{ env.TAG_NAME }}
+          tag: ${{ env.TAG_NAME }}
+          commit: ${{ github.sha }}
+          body: |
+            Nightly build with latest code from `${{ github.ref_name }}`.
+            This build is only tested against a staging environment and not intended for production use.
       
     outputs:
       releaseId: ${{ steps.release.outputs.id }}
@@ -40,7 +43,7 @@ jobs:
       releaseVersion: ${{ needs.create-release.outputs.tagName }}
 
   test-release:
-    name: Test Release
+    name: Test Draft Release
     needs: [create-release, build-release]
     uses: ./.github/workflows/test-release.yml
     with:
@@ -52,16 +55,18 @@ jobs:
 
   # remove draft status and change to pre-release
   make-prerelease:
-    name: Remove Draft Status and Make Pre-release
+    name: Make Pre-Release
     needs: [create-release, test-release]
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     if: always()
     steps:
       - run: |
-          curl -LSs \
+          curl -L \
+            -X PATCH \
             -H 'Accept: application/vnd.github+json' \
             -H 'Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
-            -X PATCH \
             'https://api.github.com/repos/${{ github.repository }}/releases/${{ needs.create-release.outputs.releaseId}}'
             -d '{"draft": false, "prerelease": true}'
 
@@ -69,6 +74,7 @@ jobs:
         with:
           keep_latest: 3
           delete_tag_pattern: nightly-staging
+          delete_tags: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
