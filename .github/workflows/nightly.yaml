@@ -13,7 +13,11 @@ jobs:
     steps:
       - name: Create tag name
         shell: bash
-        run: echo "TAG_NAME=nightly-staging-$(date +%d-%m-%Y)" >> $GITHUB_ENV
+        run: |
+          DATE="$(date +%d-%m-%Y)"
+          echo DATE=$DATE >> .GITHUB_ENV
+          echo TAG_NAME=nightly-staging-$DATE >> $GITHUB_ENV
+          echo "RELEASE_NAME=Nightly Staging Build ($DATE)" >> $GITHUB_ENV
 
       - name: Create Draft Release
         id: release
@@ -24,9 +28,10 @@ jobs:
           removeArtifacts: true # deletes any existing artifacts when modifying
           draft: true
           tag: ${{ env.TAG_NAME }}
+          name: ${{ env.RELEASE_NAME }}
           commit: ${{ github.sha }} # need commit because tag doesn't exist yet
           body: |
-            Nightly build with latest code from `${{ github.ref_name }}`.
+            Nightly build on ${{ env.DATE }} from `${{ github.ref_name }}`.
             This build is only tested against a staging environment and not intended for production use.
       
     outputs:
@@ -47,6 +52,7 @@ jobs:
     name: Test Draft Release
     needs: [create-release, build-release]
     uses: ./.github/workflows/test-release.yml
+    if: false # skip for testing tagging
     with:
       releaseId: ${{ needs.create-release.outputs.releaseId }}
       releaseVersion: ${{ needs.create-release.outputs.tagName }}
@@ -54,7 +60,6 @@ jobs:
     secrets:
       CLOUDTRUTH_API_KEY: ${{ secrets.CI_ACCT_STAGING_CONTRIBUTOR }}
 
-  # remove draft status and change to pre-release
   make-prerelease:
     name: Make Pre-Release
     needs: [create-release, test-release]
@@ -62,6 +67,8 @@ jobs:
     permissions:
       contents: write
     steps:
+
+      # move new release from draft to pre-release
       - uses: ncipollo/release-action@v1
         with:
           draft: false
@@ -72,13 +79,44 @@ jobs:
           tag: ${{ needs.create-release.outputs.tagName }}
           commit: ${{ github.sha }}
 
+      ## bump the "nightly-staging" tag to the new release
+
+      ## since there's no easy way to copy a release, we need to download all release assets
+      ## and transfer them to the nightly-staging release
+      - uses: i3h/download-release-asset@v1
+        with:
+          owner: cloudtruth
+          repo: cloudtruth-cli
+          tag: ${{ needs.create-release.outputs.tagName }}
+          file: /.*/
+          path: assets
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      ## overwrite "nightly-staging" release with the new release assets
+      - uses: ncipollo/release-action@v1
+        with:
+          artifactErrorsFailBuild: true
+          allowUpdates: true
+          removeArtifacts: true
+          draft: false
+          prerelease: true
+          name: Nightly Staging (latest)
+          tag: nightly-staging
+          commit: ${{ github.sha }}
+          artifacts: assets/*
+          body: |
+            Latest nightly build from `${{ github.ref_name }}`.
+            This build is only tested against a staging environment and not intended for production use.
+
+      # rotate out old nightly releases
       - uses: dev-drprasad/delete-older-releases@v0.2.0
         with:
           keep_latest: 3
-          delete_tag_pattern: nightly-staging
+          delete_tag_pattern: nightly-staging-
           delete_tags: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 
       
 
