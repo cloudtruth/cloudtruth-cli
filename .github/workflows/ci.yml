@@ -20,8 +20,13 @@ jobs:
   build:
     name: CLI Build
     uses: ./.github/workflows/build.yml
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
     with:
-      artifactId: cloudtruth-ci
+      runsOn: ${{ matrix.os }}
+      artifactId: cloudtruth-ci-${{ matrix.os }}
 
   test:
     name: Test
@@ -41,7 +46,7 @@ jobs:
 
     with:
       runsOn: ${{ matrix.os }}
-      artifactId: cloudtruth-ci
+      artifactId: cloudtruth-ci-${{ matrix.os }}
       testRunnerOptions: ${{ matrix.options }}
     secrets: inherit
 
