@@ -19,11 +19,12 @@ jobs:
         id: release
         uses: ncipollo/release-action@v1
         with:
-          allowUpdates: true # allow overwriting release
-          removeArtifacts: true # deletes any existing artifacts
+          updateOnlyUnreleased: true # prevent modifying any non-draft non-prerelease
+          allowUpdates: true # allow overwriting
+          removeArtifacts: true # deletes any existing artifacts when modifying
           draft: true
           tag: ${{ env.TAG_NAME }}
-          commit: ${{ github.sha }}
+          commit: ${{ github.sha }} # need commit because tag doesn't exist yet
           body: |
             Nightly build with latest code from `${{ github.ref_name }}`.
             This build is only tested against a staging environment and not intended for production use.
@@ -62,13 +63,15 @@ jobs:
       contents: write
     if: always()
     steps:
-      - run: |
-          curl -L \
-            -X PATCH \
-            -H 'Accept: application/vnd.github+json' \
-            -H 'Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
-            'https://api.github.com/repos/${{ github.repository }}/releases/${{ needs.create-release.outputs.releaseId}}'
-            -d '{"draft": false, "prerelease": true}'
+      - uses: ncipollo/release-action@v1
+        with:
+          draft: false
+          prerelease: true
+          allowUpdates: true
+          omitBody: true
+          omitName: true
+          tag: ${{ env.TAG_NAME }}
+          commit: ${{ github.sha }}
 
       - uses: dev-drprasad/delete-older-releases@v0.2.0
         with:
