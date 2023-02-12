@@ -19,7 +19,10 @@ subdirs += $(test_dir)
 .PHONY += help
 .PHONY += image
 .PHONY += integration
+.PHONY += fix
+.PHONY += format
 .PHONY += lint
+.PHONY += lint_fix
 .PHONY += lint_local
 .PHONY += precommit
 .PHONY += prerequisites
@@ -72,6 +75,15 @@ client: openapi.yml patch_client.py
 	python3 patch_client.py
 	cd client && cargo fmt --all && cargo build
 
+# apply both formatting fixes and linting fixes
+fix: format lint_fix
+
+# apply formatting fixes to the working directory
+format:
+	cargo fmt --all
+	python3 -m black .
+	ruff check . --fix
+
 lint:
 	cargo fmt --all -- --check
 	cargo clippy --all-features -- -D warnings
@@ -79,12 +91,20 @@ lint:
 	ruff check .
 # run Shellcheck on all shell scripts, ignoring client/ and .gitignore files
 	git ls-files | grep -v -E '^client/' | grep -E '\.sh$$' | xargs shellcheck
-	python3 -m yamllint .
+#   disable yamllint for now until we find better auto-formatting options
+#	python3 -m yamllint .
 
-format:
-	cargo fmt --all
+# apply linting fixes
+lint_fix:
+	@cargo clippy --all-features --fix -- -D warnings; \
+	[ "$$?" -eq 101 ] && read -p 'Force fixes? [y/n]: ' force; \
+	case "$$force" in \
+		[Yy]*) \
+			cargo clippy --all-features --fix --allow-staged --allow-dirty -- -D warnings ;; \
+		*) \
+			exit 1 ;; \
+	esac;
 	python3 -m black .
-	ruff check . --fix
 
 subdir_action:
 	@for sd in $(subdirs) ; do \
@@ -145,7 +165,10 @@ targets:
 	@echo "client         - generate and build the cloudtruth-restapi library"
 	@echo "image          - make the cloudtruth/cli docker container for development"
 	@echo "integration    - runs the integration test against the live server"
-	@echo "lint           - checks for formatting issues"
+	@echo "fix			  - fix formatting and linting issues:
+	@echo "format "		  - fix formatting issues"
+	@echo "lint           - checks for formatting and lint issues"
+	@echo "lint_fix"	  - fix linting issues
 	@echo "precommit      - build rust targets, tests, and lints the files"
 	@echo "prerequisites  - install prerequisites"
 	@echo "regen          - regenerate non-build artifacts"
