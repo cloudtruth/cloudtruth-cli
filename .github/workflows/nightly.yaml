@@ -61,7 +61,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    if: always()
     steps:
       - uses: ncipollo/release-action@v1
         with:
