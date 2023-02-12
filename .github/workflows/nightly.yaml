@@ -52,7 +52,7 @@ jobs:
     name: Test Draft Release
     needs: [create-release, build-release]
     uses: ./.github/workflows/test-release.yml
-    if: false # skip for testing tagging
+    if: never() # skip for testing tagging
     with:
       releaseId: ${{ needs.create-release.outputs.releaseId }}
       releaseVersion: ${{ needs.create-release.outputs.tagName }}
