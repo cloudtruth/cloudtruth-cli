@@ -55,6 +55,7 @@ jobs:
     name: Remove Draft Status and Make Pre-release
     needs: [create-release, test-release]
     runs-on: ubuntu-latest
+    if: always()
     steps:
       - run: |
           curl -LSs \
