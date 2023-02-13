@@ -18,6 +18,7 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           allowUpdates: true # allow overwriting
+          updateOnlyUnreleased: true # prevent modifying any non-draft non-prerelease
           removeArtifacts: true # deletes any existing artifacts when modifying
           draft: true
           # need to set this false initially otherwise GH won't emit a prereleased event at the end 
@@ -26,8 +27,8 @@ jobs:
           name: Staging Build
           commit: ${{ github.sha }} # need commit because tag doesn't exist yet
           body: |
-            This is a pre-release build of latest code from `${{ github.ref_name }}`.
-            This build is for development purposes and not intended for production use.
+           This is a pre-release build of latest code from `${{ github.ref_name }}`.
+           This build is for development purposes and not intended for production use.
       
     outputs:
       releaseId: ${{ steps.release.outputs.id }}

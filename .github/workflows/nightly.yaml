@@ -26,6 +26,7 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           allowUpdates: true # allow overwriting
+          updateOnlyUnreleased: true # prevent modifying any non-draft non-prerelease
           removeArtifacts: true # deletes any existing artifacts when modifying
           draft: true
           tag: ${{ env.TAG_NAME }}
