@@ -12,6 +12,7 @@ CT_DRAFT_AUTH_TOKEN=
 CT_DRAFT_RELEASE_ID=
 CT_DRY_RUN=0
 CT_INSTALL_PREREQUISITES=1
+CURL_OPTS="-fsSL"
 
 ### Detection     ############################################################
 
@@ -41,7 +42,6 @@ if [ -z "${PKG}" ]; then
 fi
 
 ### Arguments     ############################################################
-
 while true; do
     case $1 in
       (-a|--auth-token)
@@ -49,7 +49,7 @@ while true; do
             shift 2;;
       (-d|--debug)
             echo "[debug] enabled"
-            EXTRA_CURL_OPTIONS="-v"
+            CURL_OPTS="${CURL_OPTS}v"
             set -x
             shift;;
       (-y|--dry-run)
@@ -149,7 +149,7 @@ fi
 
 if [ -z "${CT_CLI_VERSION}" ]; then
     CT_VER_FILE_URL="https://api.github.com/repos/cloudtruth/cloudtruth-cli/releases/latest"
-    CT_CLI_VERSION=$(curl --silent "${CT_VER_FILE_URL}" | \
+    CT_CLI_VERSION=$(curl "${CURL_OPTS}" "${CT_VER_FILE_URL}" | \
               grep "tag_name" | \
               sed -E 's/.*"([^"]+)".*/\1/')
     echo "[cloudtruth] found latest version: ${CT_CLI_VERSION}"
@@ -182,7 +182,7 @@ download_release() {
     package=$1
     base_url="https://github.com/cloudtruth/cloudtruth-cli/releases/download"
     download_url="${base_url}/${CT_CLI_VERSION}/${package}"
-    curl ${EXTRA_CURL_OPTIONS} -fsL -H "Accept: application/octet-stream" -o "${package}" "${download_url}"
+    curl "${CURL_OPTS}" -H "Accept: application/octet-stream" -o "${package}" "${download_url}"
 }
 
 # this is used to download a draft release during integration testing
@@ -191,7 +191,7 @@ download_draft() {
     assetfile="${CT_DRAFT_RELEASE_ID}.assets.json"
 
     # get all the assets for the release
-    curl ${EXTRA_CURL_OPTIONS} -fs -H "Authorization: token ${CT_DRAFT_AUTH_TOKEN}" -o "${assetfile}" \
+    curl "${CURL_OPTS}" -H "Authorization: token ${CT_DRAFT_AUTH_TOKEN}" -o "${assetfile}" \
         "https://api.github.com/repos/cloudtruth/cloudtruth-cli/releases/${CT_DRAFT_RELEASE_ID}/assets"
 
     # find the asset id for the given package
@@ -199,7 +199,7 @@ download_draft() {
     rm "${assetfile}"
 
     download_url="https://api.github.com/repos/cloudtruth/cloudtruth-cli/releases/assets/${asset_id}"
-    curl ${EXTRA_CURL_OPTIONS} -fs --location-trusted -H "Authorization: token ${CT_DRAFT_AUTH_TOKEN}" -H "Accept: application/octet-stream" -o "${package}" "${download_url}"
+    curl "${CURL_OPTS}" --location-trusted -H "Authorization: token ${CT_DRAFT_AUTH_TOKEN}" -H "Accept: application/octet-stream" -o "${package}" "${download_url}"
 }
 
 # alpine, macos - no package format yet, use generic binary
@@ -208,11 +208,12 @@ if [ "${PKG}" = "apk" ] || [ "${PKG}" = "macos" ]; then
         if [ "${ARCH}" = "arm64" ]; then
             ARCH="aarch64"
         fi
-        PACKAGE_DIR=cloudtruth-${CT_CLI_VERSION}-${ARCH}-apple-darwin
+        TARGET_NAME=apple-darwin
     else
-        PACKAGE_DIR=cloudtruth-${CT_CLI_VERSION}-${ARCH}-unknown-linux-musl
+        TARGET_NAME=unknown-linux-musl
     fi
-    PACKAGE=${PACKAGE_DIR}.tar.gz
+    PACKAGE_DIR="cloudtruth-${CT_CLI_VERSION}-${ARCH}-${TARGET_NAME}"
+    PACKAGE="${PACKAGE_DIR}.tar.gz"
     download "${PACKAGE}"
     tar xzf "${PACKAGE}"
     if [ ${CT_DRY_RUN} -ne 0 ]; then
@@ -227,10 +228,7 @@ if [ "${PKG}" = "deb" ]; then
     if [ "${ARCH}" = "x86_64" ]; then
         ARCH="amd64"
     fi
-    # debian package names strip build information off the release version name
-    # this is typical in a draft build, like 0.3.0_mytest.1 => 0.3.0
-    CT_CLI_VERSION_STUB=$(echo "${CT_CLI_VERSION}" | sed 's/[^0-9.]*\([0-9.]*\).*/\1/')
-    PACKAGE=cloudtruth_${CT_CLI_VERSION_STUB}_${ARCH}.deb
+    PACKAGE=cloudtruth_${CT_CLI_VERSION}_${ARCH}.deb
     download "${PACKAGE}"
     if [ ${CT_DRY_RUN} -ne 0 ]; then
         echo "[dry-run] skipping install of ${PACKAGE}"
@@ -241,10 +239,7 @@ fi
 
 # rpm based
 if [ "${PKG}" = "rpm" ]; then
-    # rpm package names strip build information off the release version name
-    # this is typical in a draft build, like 0.3.0_mytest.1 => 0.3.0
-    CT_CLI_VERSION_STUB=$(echo "${CT_CLI_VERSION}" | sed 's/[^0-9.]*\([0-9.]*\).*/\1/')
-    PACKAGE=cloudtruth-${CT_CLI_VERSION_STUB}-1.${ARCH}.rpm
+    PACKAGE=cloudtruth-${CT_CLI_VERSION}-1.${ARCH}.rpm
     download "${PACKAGE}"
     if [ ${CT_DRY_RUN} -ne 0 ]; then
         echo "[dry-run] skipping install of ${PACKAGE}"

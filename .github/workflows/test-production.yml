@@ -1,0 +1,44 @@
+# This runs a small set of basic tests against the production deployment, using the latest released
+# CLI image.
+---
+name: E2E Production
+on:
+  workflow_call:
+    inputs:
+      runsOn:
+        description: The runner to run the workflow on
+        type: string
+        default: macos-latest
+      testRunnerOptions:
+        description: string of command-line options to pass to the test runner
+        type: string
+    secrets:
+      CI_ACCT_READWRITE_CT_API_KEY:
+        description: "Production API Key"
+        required: true
+
+jobs:
+  test:
+    name: CLI E2E Test (Production)
+    runs-on: ${{ inputs.runsOn }}
+
+    env:
+      CLOUDTRUTH_API_KEY: ${{ secrets.CI_ACCT_READWRITE_CT_API_KEY }}
+      RUST_BACKTRACE: 1
+      JOB_ID: ${{github.repository}}-${{github.run_id}}-${{github.run_attempt}}-cli-prod
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: CLI installation
+        run: |
+          sudo ./install.sh
+          cloudtruth --version
+
+      - name: Prerequisites
+        run: make test_prerequisites
+
+      - name: Integration Test
+        shell: bash
+        working-directory: integration-tests
+        run: python3 live_test.py --job-id "$JOB_ID" ${{ inputs.testRunnerOptions }}

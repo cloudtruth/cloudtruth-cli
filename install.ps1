@@ -11,7 +11,7 @@
 # To see any informational messages, set $InformationPreference = 'Continue'
 # before running.
 # 
-# NOTE: this puts cloudtruth.exe into $ENV:TEMP and leaves gunk behind
+# NOTE: this puts cloudtruth.exe into Temp:\ and leaves gunk behind
 #       we'll make a chocolatey or scoop package soon, hopefully
 #
 
@@ -92,7 +92,9 @@ $tmp | Expand-Archive -DestinationPath $out
 if ($dryRun.IsPresent) {
     Write-Warning -MessageData "Skipping install of ${package}\cloudtruth.exe"
 } else {
-    Copy-Item -Path "$out\${package}\cloudtruth.exe" -Destination $ENV:TEMP
-    Write-Information -MessageData (& "$ENV:TEMP\cloudtruth.exe" --version)
-    return "$ENV:TEMP\cloudtruth.exe"
+    # see: https://github.com/PowerShell/PowerShell/issues/4216
+    # $ENV:TEMP was not cross-platform and is now replaced with Temp:\ PSDrive
+    Copy-Item -Path "$out\${package}\cloudtruth.exe" -Destination "Temp:\"
+    Write-Information -MessageData (& "Temp:\cloudtruth.exe" --version)
+    return "Temp:\cloudtruth.exe"
 }

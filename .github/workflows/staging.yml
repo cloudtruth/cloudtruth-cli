@@ -1,9 +1,13 @@
-# This runs a small set of basic tests against the staging deployment, using the latest CLI code
-# which has to get built.
+# This is the legacy staging test workflow that is being kept so that GitHub shows
+# historical job logs. Use test-staging.yml workflow instead
 ---
-name: Staging
+name: Staging (Historical)
 on:
   workflow_dispatch:
+    inputs:
+      ref:
+        description: "CLI Git ref to checkout"
+        default: 1.1.8
 
 jobs:
   test:
@@ -23,6 +27,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+        with:
+          ref: ${{ inputs.ref }}
 
       - name: Install Rust
         id: rust
@@ -40,4 +46,4 @@ jobs:
       - name: Integration Test
         run: |
           cd tests/pytest
-          python3 live_test.py --job-id "stage-${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}" --filter ${{ env.CLOUDTRUTH_TEST_FILTER }} --exclude backup
+          python3 live_test.py --job-id "stage-${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}" --filter ${{ env.CLOUDTRUTH_TEST_FILTER }}

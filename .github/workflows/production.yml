@@ -1,9 +1,14 @@
-# This runs a small set of basic tests against the production deployment, using the latest released
-# CLI image.
+# This is the legacy production test workflow that is being kept so that GitHub shows
+# historical job logs. Use test-production.yml workflow instead
 ---
-name: Production
+name: Production (Historical)
 on:
   workflow_dispatch:
+    inputs:
+      version:
+        description: "CLI release version to install"
+        required: true
+        default: 1.1.8
 
 jobs:
   test:
@@ -17,10 +22,12 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+        with:
+          ref: ${{ inputs.version }}
 
       - name: CLI installation
         run: |
-          sudo ./install.sh
+          sudo ./install.sh --version '${{ inputs.version }}'
           cloudtruth --version
 
       - name: Prerequisites
