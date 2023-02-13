@@ -205,9 +205,7 @@ jobs:
           esac
 
       - name: Upload release archive
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: shogo82148/actions-upload-release-asset@v1
         with:
           upload_url: ${{ env.RELEASE_UPLOAD_URL }}
           asset_path: ${{ env.ASSET }}
@@ -228,9 +226,7 @@ jobs:
 
       - name: Upload Debian package
         if: contains(matrix.build, 'linux')
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: shogo82148/actions-upload-release-asset@v1
         with:
           upload_url: ${{ env.RELEASE_UPLOAD_URL }}
           asset_path: ${{ env.DEB_PATH }}
@@ -258,9 +254,7 @@ jobs:
 
       - name: Upload RPM package
         if: contains(matrix.build, 'linux')
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: shogo82148/actions-upload-release-asset@v1
         with:
           upload_url: ${{ env.RELEASE_UPLOAD_URL }}
           asset_path: ${{ env.RPM_PATH }}
@@ -276,9 +270,7 @@ jobs:
           fetch-depth: 1
 
       - name: Upload Release Notes
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: shogo82148/actions-upload-release-asset@v1
         with:
           upload_url: ${{ env.RELEASE_UPLOAD_URL }}
           asset_path: CHANGELOG.md
@@ -286,9 +278,7 @@ jobs:
           asset_content_type: application/octet-stream
 
       - name: Upload POSIX Install
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: shogo82148/actions-upload-release-asset@v1
         with:
           upload_url: ${{ env.RELEASE_UPLOAD_URL }}
           asset_path: install.sh
@@ -296,9 +286,7 @@ jobs:
           asset_content_type: application/octet-stream
 
       - name: Upload Windows Install
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: shogo82148/actions-upload-release-asset@v1
         with:
           upload_url: ${{ env.RELEASE_UPLOAD_URL }}
           asset_path: install.ps1
