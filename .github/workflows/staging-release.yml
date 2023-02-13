@@ -1,26 +1,18 @@
 ---
-name: Nightly Release
+name: Staging Release
 
 on:
   workflow_dispatch:
-  schedule:
-    # Run builds on midnight EST
-    - cron: '0 5 * * *'
+  push:
+    branches:
+      - main
 
 jobs:
   create-release:
-    name: Create Draft Release
+    name: Create Staging Release
     runs-on: ubuntu-latest
   
     steps:
-      - name: Create tag name
-        shell: bash
-        run: |
-          DATE="$(date +%d-%m-%Y)"
-          echo DATE=$DATE >> $GITHUB_ENV
-          echo TAG_NAME=nightly-$DATE >> $GITHUB_ENV
-          echo "RELEASE_NAME=Nightly ($DATE)" >> $GITHUB_ENV
-
       - name: Create Draft Release
         id: release
         uses: ncipollo/release-action@v1
@@ -28,17 +20,17 @@ jobs:
           allowUpdates: true # allow overwriting
           removeArtifacts: true # deletes any existing artifacts when modifying
           draft: true
-          tag: ${{ env.TAG_NAME }}
-          name: ${{ env.RELEASE_NAME }}
+          tag: staging
+          name: Staging Build
           commit: ${{ github.sha }} # need commit because tag doesn't exist yet
           body: |
-            Nightly pre-release build of `${{ github.ref_name }}` on ${{ env.DATE }}.
+            This is a pre-release build of latest code from `${{ github.ref_name }}`.
             This build is for development purposes and not intended for production use.
       
     outputs:
       releaseId: ${{ steps.release.outputs.id }}
       releaseUploadUrl: ${{ steps.release.outputs.upload_url }}
-      tagName: ${{ env.TAG_NAME }}
+      tagName: staging
 
   build-release:
     name: Build Release
@@ -62,7 +54,7 @@ jobs:
 
   make-prerelease:
     name: Make Pre-Release
-    needs: [create-release, build-release]
+    needs: [create-release, test-release]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -78,16 +70,6 @@ jobs:
           omitName: true
           tag: ${{ needs.create-release.outputs.tagName }}
           commit: ${{ github.sha }}
-
-      # rotate out old nightly releases
-      - uses: dev-drprasad/delete-older-releases@v0.2.0
-        with:
-          keep_latest: 3
-          delete_tag_pattern: nightly
-          delete_tags: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
 
       
 
