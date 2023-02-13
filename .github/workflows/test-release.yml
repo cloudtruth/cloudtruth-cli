@@ -60,7 +60,7 @@ jobs:
             -t cloudtruth:alpine-3.17 \
             cloudtruth --project ${CT_TEST_PROJECT} parameters list -v \
           | tee "$OUT_LOG"
-          cat "$OUTLOG" | grep "${CT_TEST_PARAM}" | grep "${CT_TEST_VALUE}"
+          cat "$OUT_LOG" | grep "${CT_TEST_PARAM}" | grep "${CT_TEST_VALUE}"
       - name: alpine-3.16
         run: |
           OUT_LOG='alpine-3.16-output.txt'
@@ -78,7 +78,7 @@ jobs:
             -t cloudtruth:alpine-3.16 \
             cloudtruth --project ${CT_TEST_PROJECT} parameters list -v \
           | tee "$OUT_LOG"
-          cat "$OUTLOG" | grep "${CT_TEST_PARAM}" | grep "${CT_TEST_VALUE}"
+          cat "$OUT_LOG" | grep "${CT_TEST_PARAM}" | grep "${CT_TEST_VALUE}"
       - name: alpine-3.15
         run: |
           OUT_LOG='alpine-3.15-output.txt'
@@ -96,7 +96,7 @@ jobs:
             -t cloudtruth:alpine-3.15 \
             cloudtruth --project ${CT_TEST_PROJECT} parameters list -v \
           | tee "$OUT_LOG"
-          cat "$OUTLOG" | grep "${CT_TEST_PARAM}" | grep "${CT_TEST_VALUE}"
+          cat "$OUT_LOG" | grep "${CT_TEST_PARAM}" | grep "${CT_TEST_VALUE}"
       - name: alpine-3.14
         run: |
           OUT_LOG='alpine-3.14-output.txt'
@@ -114,7 +114,7 @@ jobs:
             -t cloudtruth:alpine-3.14 \
             cloudtruth --project ${CT_TEST_PROJECT} parameters list -v \
           | tee "$OUT_LOG"
-          cat "$OUTLOG" | grep "${CT_TEST_PARAM}" | grep "${CT_TEST_VALUE}"
+          cat "$OUT_LOG" | grep "${CT_TEST_PARAM}" | grep "${CT_TEST_VALUE}"
   test-rockylinux:
     runs-on: ubuntu-latest
     env:
@@ -156,7 +156,7 @@ jobs:
             -t cloudtruth:rockylinux-9 \
             cloudtruth --project ${CT_TEST_PROJECT} parameters list -v \
           | tee "$OUT_LOG"
-          cat "$OUTLOG" | grep "${CT_TEST_PARAM}" | grep "${CT_TEST_VALUE}"
+          cat "$OUT_LOG" | grep "${CT_TEST_PARAM}" | grep "${CT_TEST_VALUE}"
       - name: rockylinux-8
         run: |
           OUT_LOG='rockylinux-8-output.txt'
@@ -174,7 +174,7 @@ jobs:
             -t cloudtruth:rockylinux-8 \
             cloudtruth --project ${CT_TEST_PROJECT} parameters list -v \
           | tee "$OUT_LOG"
-          cat "$OUTLOG" | grep "${CT_TEST_PARAM}" | grep "${CT_TEST_VALUE}"
+          cat "$OUT_LOG" | grep "${CT_TEST_PARAM}" | grep "${CT_TEST_VALUE}"
   test-debian:
     runs-on: ubuntu-latest
     env:
@@ -216,7 +216,7 @@ jobs:
             -t cloudtruth:debian-bullseye-slim \
             cloudtruth --project ${CT_TEST_PROJECT} parameters list -v \
           | tee "$OUT_LOG"
-          cat "$OUTLOG" | grep "${CT_TEST_PARAM}" | grep "${CT_TEST_VALUE}"
+          cat "$OUT_LOG" | grep "${CT_TEST_PARAM}" | grep "${CT_TEST_VALUE}"
       - name: debian-buster-slim
         run: |
           OUT_LOG='debian-buster-slim-output.txt'
@@ -234,7 +234,7 @@ jobs:
             -t cloudtruth:debian-buster-slim \
             cloudtruth --project ${CT_TEST_PROJECT} parameters list -v \
           | tee "$OUT_LOG"
-          cat "$OUTLOG" | grep "${CT_TEST_PARAM}" | grep "${CT_TEST_VALUE}"
+          cat "$OUT_LOG" | grep "${CT_TEST_PARAM}" | grep "${CT_TEST_VALUE}"
       - name: debian-stretch-slim
         run: |
           OUT_LOG='debian-stretch-slim-output.txt'
@@ -252,7 +252,7 @@ jobs:
             -t cloudtruth:debian-stretch-slim \
             cloudtruth --project ${CT_TEST_PROJECT} parameters list -v \
           | tee "$OUT_LOG"
-          cat "$OUTLOG" | grep "${CT_TEST_PARAM}" | grep "${CT_TEST_VALUE}"
+          cat "$OUT_LOG" | grep "${CT_TEST_PARAM}" | grep "${CT_TEST_VALUE}"
   test-macOS:
     runs-on: macos-latest
     env:
@@ -324,7 +324,7 @@ jobs:
             -t cloudtruth:ubuntu-lunar \
             cloudtruth --project ${CT_TEST_PROJECT} parameters list -v \
           | tee "$OUT_LOG"
-          cat "$OUTLOG" | grep "${CT_TEST_PARAM}" | grep "${CT_TEST_VALUE}"
+          cat "$OUT_LOG" | grep "${CT_TEST_PARAM}" | grep "${CT_TEST_VALUE}"
       - name: ubuntu-kinetic
         run: |
           OUT_LOG='ubuntu-kinetic-output.txt'
@@ -342,7 +342,7 @@ jobs:
             -t cloudtruth:ubuntu-kinetic \
             cloudtruth --project ${CT_TEST_PROJECT} parameters list -v \
           | tee "$OUT_LOG"
-          cat "$OUTLOG" | grep "${CT_TEST_PARAM}" | grep "${CT_TEST_VALUE}"
+          cat "$OUT_LOG" | grep "${CT_TEST_PARAM}" | grep "${CT_TEST_VALUE}"
       - name: ubuntu-jammy
         run: |
           OUT_LOG='ubuntu-jammy-output.txt'
@@ -360,7 +360,7 @@ jobs:
             -t cloudtruth:ubuntu-jammy \
             cloudtruth --project ${CT_TEST_PROJECT} parameters list -v \
           | tee "$OUT_LOG"
-          cat "$OUTLOG" | grep "${CT_TEST_PARAM}" | grep "${CT_TEST_VALUE}"
+          cat "$OUT_LOG" | grep "${CT_TEST_PARAM}" | grep "${CT_TEST_VALUE}"
       - name: ubuntu-focal
         run: |
           OUT_LOG='ubuntu-focal-output.txt'
@@ -378,7 +378,7 @@ jobs:
             -t cloudtruth:ubuntu-focal \
             cloudtruth --project ${CT_TEST_PROJECT} parameters list -v \
           | tee "$OUT_LOG"
-          cat "$OUTLOG" | grep "${CT_TEST_PARAM}" | grep "${CT_TEST_VALUE}"
+          cat "$OUT_LOG" | grep "${CT_TEST_PARAM}" | grep "${CT_TEST_VALUE}"
       - name: ubuntu-bionic
         run: |
           OUT_LOG='ubuntu-bionic-output.txt'
@@ -396,7 +396,7 @@ jobs:
             -t cloudtruth:ubuntu-bionic \
             cloudtruth --project ${CT_TEST_PROJECT} parameters list -v \
           | tee "$OUT_LOG"
-          cat "$OUTLOG" | grep "${CT_TEST_PARAM}" | grep "${CT_TEST_VALUE}"
+          cat "$OUT_LOG" | grep "${CT_TEST_PARAM}" | grep "${CT_TEST_VALUE}"
   test-windows:
     runs-on: windows-latest
     env:
