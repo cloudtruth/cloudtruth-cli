@@ -9,11 +9,11 @@
              -f build/docker/test-release/Dockerfile.{{ os }}-{{ version }} \
              -t cloudtruth:{{ os }}-{{ version }}
           docker run --rm \
-            -i --log-driver=none -a stdin -a stdout -a stderr \
+            -i --log-driver=none -a stdout -a stderr \
             -e CLOUDTRUTH_API_KEY \
             ${CLOUDTRUTH_SERVER_URL:+ -e CLOUDTRUTH_SERVER_URL} \
             -v $(pwd):/truth \
-            -t cloudtruth:{{ os }}-{{ version }} \
+            cloudtruth:{{ os }}-{{ version }} \
             cloudtruth --project ${CT_TEST_PROJECT} parameters list -v \
           | tee "$OUT_LOG"
           cat "$OUT_LOG" | grep "${CT_TEST_PARAM}" | grep "${CT_TEST_VALUE}"

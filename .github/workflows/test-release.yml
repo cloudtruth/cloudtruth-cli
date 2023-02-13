@@ -53,11 +53,11 @@ jobs:
              -f build/docker/test-release/Dockerfile.alpine-3.17 \
              -t cloudtruth:alpine-3.17
           docker run --rm \
-            -i --log-driver=none -a stdin -a stdout -a stderr \
+            -i --log-driver=none -a stdout -a stderr \
             -e CLOUDTRUTH_API_KEY \
             ${CLOUDTRUTH_SERVER_URL:+ -e CLOUDTRUTH_SERVER_URL} \
             -v $(pwd):/truth \
-            -t cloudtruth:alpine-3.17 \
+            cloudtruth:alpine-3.17 \
             cloudtruth --project ${CT_TEST_PROJECT} parameters list -v \
           | tee "$OUT_LOG"
           cat "$OUT_LOG" | grep "${CT_TEST_PARAM}" | grep "${CT_TEST_VALUE}"
@@ -71,11 +71,11 @@ jobs:
              -f build/docker/test-release/Dockerfile.alpine-3.16 \
              -t cloudtruth:alpine-3.16
           docker run --rm \
-            -i --log-driver=none -a stdin -a stdout -a stderr \
+            -i --log-driver=none -a stdout -a stderr \
             -e CLOUDTRUTH_API_KEY \
             ${CLOUDTRUTH_SERVER_URL:+ -e CLOUDTRUTH_SERVER_URL} \
             -v $(pwd):/truth \
-            -t cloudtruth:alpine-3.16 \
+            cloudtruth:alpine-3.16 \
             cloudtruth --project ${CT_TEST_PROJECT} parameters list -v \
           | tee "$OUT_LOG"
           cat "$OUT_LOG" | grep "${CT_TEST_PARAM}" | grep "${CT_TEST_VALUE}"
@@ -89,11 +89,11 @@ jobs:
              -f build/docker/test-release/Dockerfile.alpine-3.15 \
              -t cloudtruth:alpine-3.15
           docker run --rm \
-            -i --log-driver=none -a stdin -a stdout -a stderr \
+            -i --log-driver=none -a stdout -a stderr \
             -e CLOUDTRUTH_API_KEY \
             ${CLOUDTRUTH_SERVER_URL:+ -e CLOUDTRUTH_SERVER_URL} \
             -v $(pwd):/truth \
-            -t cloudtruth:alpine-3.15 \
+            cloudtruth:alpine-3.15 \
             cloudtruth --project ${CT_TEST_PROJECT} parameters list -v \
           | tee "$OUT_LOG"
           cat "$OUT_LOG" | grep "${CT_TEST_PARAM}" | grep "${CT_TEST_VALUE}"
@@ -107,11 +107,11 @@ jobs:
              -f build/docker/test-release/Dockerfile.alpine-3.14 \
              -t cloudtruth:alpine-3.14
           docker run --rm \
-            -i --log-driver=none -a stdin -a stdout -a stderr \
+            -i --log-driver=none -a stdout -a stderr \
             -e CLOUDTRUTH_API_KEY \
             ${CLOUDTRUTH_SERVER_URL:+ -e CLOUDTRUTH_SERVER_URL} \
             -v $(pwd):/truth \
-            -t cloudtruth:alpine-3.14 \
+            cloudtruth:alpine-3.14 \
             cloudtruth --project ${CT_TEST_PROJECT} parameters list -v \
           | tee "$OUT_LOG"
           cat "$OUT_LOG" | grep "${CT_TEST_PARAM}" | grep "${CT_TEST_VALUE}"
@@ -149,11 +149,11 @@ jobs:
              -f build/docker/test-release/Dockerfile.rockylinux-9 \
              -t cloudtruth:rockylinux-9
           docker run --rm \
-            -i --log-driver=none -a stdin -a stdout -a stderr \
+            -i --log-driver=none -a stdout -a stderr \
             -e CLOUDTRUTH_API_KEY \
             ${CLOUDTRUTH_SERVER_URL:+ -e CLOUDTRUTH_SERVER_URL} \
             -v $(pwd):/truth \
-            -t cloudtruth:rockylinux-9 \
+            cloudtruth:rockylinux-9 \
             cloudtruth --project ${CT_TEST_PROJECT} parameters list -v \
           | tee "$OUT_LOG"
           cat "$OUT_LOG" | grep "${CT_TEST_PARAM}" | grep "${CT_TEST_VALUE}"
@@ -167,11 +167,11 @@ jobs:
              -f build/docker/test-release/Dockerfile.rockylinux-8 \
              -t cloudtruth:rockylinux-8
           docker run --rm \
-            -i --log-driver=none -a stdin -a stdout -a stderr \
+            -i --log-driver=none -a stdout -a stderr \
             -e CLOUDTRUTH_API_KEY \
             ${CLOUDTRUTH_SERVER_URL:+ -e CLOUDTRUTH_SERVER_URL} \
             -v $(pwd):/truth \
-            -t cloudtruth:rockylinux-8 \
+            cloudtruth:rockylinux-8 \
             cloudtruth --project ${CT_TEST_PROJECT} parameters list -v \
           | tee "$OUT_LOG"
           cat "$OUT_LOG" | grep "${CT_TEST_PARAM}" | grep "${CT_TEST_VALUE}"
@@ -209,11 +209,11 @@ jobs:
              -f build/docker/test-release/Dockerfile.debian-bullseye-slim \
              -t cloudtruth:debian-bullseye-slim
           docker run --rm \
-            -i --log-driver=none -a stdin -a stdout -a stderr \
+            -i --log-driver=none -a stdout -a stderr \
             -e CLOUDTRUTH_API_KEY \
             ${CLOUDTRUTH_SERVER_URL:+ -e CLOUDTRUTH_SERVER_URL} \
             -v $(pwd):/truth \
-            -t cloudtruth:debian-bullseye-slim \
+            cloudtruth:debian-bullseye-slim \
             cloudtruth --project ${CT_TEST_PROJECT} parameters list -v \
           | tee "$OUT_LOG"
           cat "$OUT_LOG" | grep "${CT_TEST_PARAM}" | grep "${CT_TEST_VALUE}"
@@ -227,11 +227,11 @@ jobs:
              -f build/docker/test-release/Dockerfile.debian-buster-slim \
              -t cloudtruth:debian-buster-slim
           docker run --rm \
-            -i --log-driver=none -a stdin -a stdout -a stderr \
+            -i --log-driver=none -a stdout -a stderr \
             -e CLOUDTRUTH_API_KEY \
             ${CLOUDTRUTH_SERVER_URL:+ -e CLOUDTRUTH_SERVER_URL} \
             -v $(pwd):/truth \
-            -t cloudtruth:debian-buster-slim \
+            cloudtruth:debian-buster-slim \
             cloudtruth --project ${CT_TEST_PROJECT} parameters list -v \
           | tee "$OUT_LOG"
           cat "$OUT_LOG" | grep "${CT_TEST_PARAM}" | grep "${CT_TEST_VALUE}"
@@ -245,11 +245,11 @@ jobs:
              -f build/docker/test-release/Dockerfile.debian-stretch-slim \
              -t cloudtruth:debian-stretch-slim
           docker run --rm \
-            -i --log-driver=none -a stdin -a stdout -a stderr \
+            -i --log-driver=none -a stdout -a stderr \
             -e CLOUDTRUTH_API_KEY \
             ${CLOUDTRUTH_SERVER_URL:+ -e CLOUDTRUTH_SERVER_URL} \
             -v $(pwd):/truth \
-            -t cloudtruth:debian-stretch-slim \
+            cloudtruth:debian-stretch-slim \
             cloudtruth --project ${CT_TEST_PROJECT} parameters list -v \
           | tee "$OUT_LOG"
           cat "$OUT_LOG" | grep "${CT_TEST_PARAM}" | grep "${CT_TEST_VALUE}"
@@ -317,11 +317,11 @@ jobs:
              -f build/docker/test-release/Dockerfile.ubuntu-lunar \
              -t cloudtruth:ubuntu-lunar
           docker run --rm \
-            -i --log-driver=none -a stdin -a stdout -a stderr \
+            -i --log-driver=none -a stdout -a stderr \
             -e CLOUDTRUTH_API_KEY \
             ${CLOUDTRUTH_SERVER_URL:+ -e CLOUDTRUTH_SERVER_URL} \
             -v $(pwd):/truth \
-            -t cloudtruth:ubuntu-lunar \
+            cloudtruth:ubuntu-lunar \
             cloudtruth --project ${CT_TEST_PROJECT} parameters list -v \
           | tee "$OUT_LOG"
           cat "$OUT_LOG" | grep "${CT_TEST_PARAM}" | grep "${CT_TEST_VALUE}"
@@ -335,11 +335,11 @@ jobs:
              -f build/docker/test-release/Dockerfile.ubuntu-kinetic \
              -t cloudtruth:ubuntu-kinetic
           docker run --rm \
-            -i --log-driver=none -a stdin -a stdout -a stderr \
+            -i --log-driver=none -a stdout -a stderr \
             -e CLOUDTRUTH_API_KEY \
             ${CLOUDTRUTH_SERVER_URL:+ -e CLOUDTRUTH_SERVER_URL} \
             -v $(pwd):/truth \
-            -t cloudtruth:ubuntu-kinetic \
+            cloudtruth:ubuntu-kinetic \
             cloudtruth --project ${CT_TEST_PROJECT} parameters list -v \
           | tee "$OUT_LOG"
           cat "$OUT_LOG" | grep "${CT_TEST_PARAM}" | grep "${CT_TEST_VALUE}"
@@ -353,11 +353,11 @@ jobs:
              -f build/docker/test-release/Dockerfile.ubuntu-jammy \
              -t cloudtruth:ubuntu-jammy
           docker run --rm \
-            -i --log-driver=none -a stdin -a stdout -a stderr \
+            -i --log-driver=none -a stdout -a stderr \
             -e CLOUDTRUTH_API_KEY \
             ${CLOUDTRUTH_SERVER_URL:+ -e CLOUDTRUTH_SERVER_URL} \
             -v $(pwd):/truth \
-            -t cloudtruth:ubuntu-jammy \
+            cloudtruth:ubuntu-jammy \
             cloudtruth --project ${CT_TEST_PROJECT} parameters list -v \
           | tee "$OUT_LOG"
           cat "$OUT_LOG" | grep "${CT_TEST_PARAM}" | grep "${CT_TEST_VALUE}"
@@ -371,11 +371,11 @@ jobs:
              -f build/docker/test-release/Dockerfile.ubuntu-focal \
              -t cloudtruth:ubuntu-focal
           docker run --rm \
-            -i --log-driver=none -a stdin -a stdout -a stderr \
+            -i --log-driver=none -a stdout -a stderr \
             -e CLOUDTRUTH_API_KEY \
             ${CLOUDTRUTH_SERVER_URL:+ -e CLOUDTRUTH_SERVER_URL} \
             -v $(pwd):/truth \
-            -t cloudtruth:ubuntu-focal \
+            cloudtruth:ubuntu-focal \
             cloudtruth --project ${CT_TEST_PROJECT} parameters list -v \
           | tee "$OUT_LOG"
           cat "$OUT_LOG" | grep "${CT_TEST_PARAM}" | grep "${CT_TEST_VALUE}"
@@ -389,11 +389,11 @@ jobs:
              -f build/docker/test-release/Dockerfile.ubuntu-bionic \
              -t cloudtruth:ubuntu-bionic
           docker run --rm \
-            -i --log-driver=none -a stdin -a stdout -a stderr \
+            -i --log-driver=none -a stdout -a stderr \
             -e CLOUDTRUTH_API_KEY \
             ${CLOUDTRUTH_SERVER_URL:+ -e CLOUDTRUTH_SERVER_URL} \
             -v $(pwd):/truth \
-            -t cloudtruth:ubuntu-bionic \
+            cloudtruth:ubuntu-bionic \
             cloudtruth --project ${CT_TEST_PROJECT} parameters list -v \
           | tee "$OUT_LOG"
           cat "$OUT_LOG" | grep "${CT_TEST_PARAM}" | grep "${CT_TEST_VALUE}"
