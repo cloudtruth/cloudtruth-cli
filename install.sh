@@ -208,13 +208,14 @@ if [ "${PKG}" = "apk" ] || [ "${PKG}" = "macos" ]; then
         if [ "${ARCH}" = "arm64" ]; then
             ARCH="aarch64"
         fi
-        PACKAGE_DIR=cloudtruth-${CT_CLI_VERSION}-${ARCH}-apple-darwin
+        TARGET_NAME=apple-darwin
     else
-        PACKAGE_DIR=cloudtruth-${CT_CLI_VERSION}-${ARCH}-unknown-linux-musl
+        TARGET_NAME=unknown-linux-musl
     fi
-    PACKAGE=${PACKAGE_DIR}.tar.gz
+    PACKAGE=cloudtruth-${CT_CLI_VERSION}-${ARCH}-${TARGET_NAME}.tar.gz
     download "${PACKAGE}"
     tar xzf "${PACKAGE}"
+    PACKAGE_DIR=$(find ./* -type d -name 'cloudtruth-*' | head )
     if [ ${CT_DRY_RUN} -ne 0 ]; then
         echo "[dry-run] skipping install of ${PACKAGE_DIR}/cloudtruth"
     else
