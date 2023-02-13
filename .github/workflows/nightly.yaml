@@ -1,9 +1,11 @@
 ---
-name: Nightly
-run-name: Nightly Release
+name: Nightly Release
 
 on:
   workflow_dispatch:
+  schedule:
+    # Run builds on midnight EST
+    - cron: '0 5 * * *'
 
 jobs:
   create-release:
