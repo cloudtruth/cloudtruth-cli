@@ -212,10 +212,10 @@ if [ "${PKG}" = "apk" ] || [ "${PKG}" = "macos" ]; then
     else
         TARGET_NAME=unknown-linux-musl
     fi
-    PACKAGE=cloudtruth-${CT_CLI_VERSION}-${ARCH}-${TARGET_NAME}.tar.gz
+    PACKAGE_DIR="cloudtruth-${CT_CLI_VERSION}-${ARCH}-${TARGET_NAME}"
+    PACKAGE="${PACKAGE_DIR}.tar.gz"
     download "${PACKAGE}"
     tar xzf "${PACKAGE}"
-    PACKAGE_DIR=$(find ./* -type d -name 'cloudtruth-*' | head )
     if [ ${CT_DRY_RUN} -ne 0 ]; then
         echo "[dry-run] skipping install of ${PACKAGE_DIR}/cloudtruth"
     else
