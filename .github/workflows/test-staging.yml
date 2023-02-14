@@ -9,7 +9,7 @@ on:
         description: A release tag to download with the install script. Either artifactId or releaseVersion should be provided
         type: string
       ref:
-        description: the git ref to checkout from cloudtruth-cli (defaults to the reuseable workflow ref)
+        description: the git ref to checkout from cloudtruth-cli (defaults to current ref)
         type: string
       testRunnerOptions:
         description: string of command-line options to pass to the test runner
