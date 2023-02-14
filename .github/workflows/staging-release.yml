@@ -64,8 +64,10 @@ jobs:
 
   make-prerelease:
     name: Make Pre-Release
-    needs: [create-release, test-release]
     runs-on: ubuntu-latest
+    needs: [create-release, build-release, test-release]
+    # run after tests but ignore if they fail
+    if: always() && needs.build-release.result == 'success'
     permissions:
       contents: write
     steps:
