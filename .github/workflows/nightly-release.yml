@@ -104,6 +104,21 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+  e2e:
+    name: E2E Test
+    needs: [create-release, make-prerelease]
+    uses: ./.github/workflows/test-staging.yml
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
+    with:
+      runsOn: ${{ matrix.os }}
+      releaseVersion: ${{ needs.create-release.outputs.tagName }}
+    secrets: inherit
 
       
 
