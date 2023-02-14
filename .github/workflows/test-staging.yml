@@ -11,7 +11,6 @@ on:
       ref:
         description: the git ref to checkout from cloudtruth-cli (defaults to the reuseable workflow ref)
         type: string
-        default: ${{ github.workflow_sha }}
       testRunnerOptions:
         description: string of command-line options to pass to the test runner
         type: string
