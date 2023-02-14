@@ -13,6 +13,10 @@ jobs:
     runs-on: ubuntu-latest
   
     steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+
       - name: Get Cargo.toml package version
         shell: bash
         run: |
@@ -48,7 +52,7 @@ jobs:
       releaseUploadUrl: ${{ needs.create-release.outputs.releaseUploadUrl }}
       releaseTag: ${{ needs.create-release.outputs.tagName }}
       packageVersion: ${{ needs.create-release.outputs.cargoPackageVersion }}
-      debRevision: ${{ needs.create-release.outputs.tagName }}
+      debRevision: ${{ github.sha }}
       rpmSnapshot: ${{ github.sha }}
 
   test-release:
