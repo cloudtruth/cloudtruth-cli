@@ -84,32 +84,7 @@ jobs:
         working-directory: integration-tests
         run: python3 live_test.py --job-id "$JOB_ID" ${{ inputs.testRunnerOptions }}
 
-  cleanup:
-    name: Cleanup
-    needs: test
-    if: always()
-    runs-on: ${{ inputs.runsOn }}
-    steps:
-
-      - uses: actions/checkout@v3
-        with:
-          repository: cloudtruth/cloudtruth-cli
-          ref: ${{ inputs.ref }}
-
-      - uses: actions/download-artifact@v3
-        if: inputs.artifactId
-        with:
-          name: ${{ inputs.artifactId }}
-          path: target
-
       - shell: bash
-        if: inputs.releaseVersion && !contains(runner.os, 'Windows')
-        run: sudo ./install.sh --version '${{ inputs.releaseVersion }}'
-
-      - shell: pwsh
-        if: inputs.releaseVersion && contains(runner.os, 'Windows')
-        run: .\install.ps1 --version '${{ inputs.releaseVersion }}'
-
-      - shell: bash
+        if: always()
         working-directory: integration-tests
         run: python3 cleanup.py --confirm "$JOB_ID"
