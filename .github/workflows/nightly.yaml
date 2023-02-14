@@ -1,0 +1,127 @@
+---
+name: Nightly Release
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Run builds on midnight EST
+    - cron: '0 5 * * *'
+
+jobs:
+  create-release:
+    name: Create Draft Release
+    runs-on: ubuntu-latest
+  
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+      
+      - name: Create tag name
+        shell: bash
+        run: |
+          DATE="$(date +%d-%m-%Y)"
+          echo DATE=$DATE >> $GITHUB_ENV
+          echo TAG_NAME=nightly-$DATE >> $GITHUB_ENV
+          echo "RELEASE_NAME=Nightly ($DATE)" >> $GITHUB_ENV
+
+      - name: Get Cargo.toml package version
+        shell: bash
+        run: |
+          echo CARGO_PKG_VERSION=$(cargo pkgid | cut -d@ -f2 ) >> $GITHUB_ENV
+
+      - name: Create Draft Release
+        id: release
+        uses: ncipollo/release-action@v1
+        with:
+          allowUpdates: true # allow overwriting
+          updateOnlyUnreleased: true # prevent modifying any non-draft non-prerelease
+          removeArtifacts: true # deletes any existing artifacts when modifying
+          draft: true
+          tag: ${{ env.TAG_NAME }}
+          name: ${{ env.RELEASE_NAME }}
+          commit: ${{ github.sha }} # need commit because tag doesn't exist yet
+          body: |
+            Nightly pre-release build of `${{ github.ref_name }}` on ${{ env.DATE }}.
+            This build is for development purposes and not intended for production use.
+      
+    outputs:
+      releaseId: ${{ steps.release.outputs.id }}
+      releaseUploadUrl: ${{ steps.release.outputs.upload_url }}
+      tagName: ${{ env.TAG_NAME }}
+      cargoPackageVersion: ${{ env.CARGO_PKG_VERSION }}
+
+  build-release:
+    name: Build Release
+    needs: create-release
+    uses: ./.github/workflows/build-release.yml
+    with:
+      releaseId: ${{ needs.create-release.outputs.releaseId }}
+      releaseUploadUrl: ${{ needs.create-release.outputs.releaseUploadUrl }}
+      releaseTag: ${{ needs.create-release.outputs.tagName }}
+      packageVersion: ${{ needs.create-release.outputs.cargoPackageVersion }}
+      debRevision: ${{ needs.create-release.outputs.tagName }}
+      rpmSnapshot: ${{ github.sha }}
+
+  test-release:
+    name: Test Draft Release
+    needs: [create-release, build-release]
+    uses: ./.github/workflows/test-release.yml
+    with:
+      releaseId: ${{ needs.create-release.outputs.releaseId }}
+      releaseVersion: ${{ needs.create-release.outputs.tagName }}
+      serverUrl: https://api.staging.cloudtruth.io
+    secrets:
+      CLOUDTRUTH_API_KEY: ${{ secrets.CT_STAGING_CI_ADMIN_API_KEY }}
+
+  make-prerelease:
+    name: Make Pre-Release
+    needs: [create-release, build-release, test-release]
+    # run after tests but ignore if they fail
+    if: always() && needs.build-release.result == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+
+      # move new release from draft to pre-release
+      - uses: ncipollo/release-action@v1
+        with:
+          draft: false
+          prerelease: true
+          allowUpdates: true
+          omitBody: true
+          omitName: true
+          tag: ${{ needs.create-release.outputs.tagName }}
+          commit: ${{ github.sha }}
+
+      # rotate out old nightly releases
+      - uses: dev-drprasad/delete-older-releases@v0.2.0
+        with:
+          keep_latest: 3
+          delete_tag_pattern: nightly
+          delete_tags: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  e2e:
+    name: Nightly E2E Test
+    needs: [create-release, make-prerelease]
+    uses: ./.github/workflows/test-staging.yml
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
+    with:
+      runsOn: ${{ matrix.os }}
+      releaseVersion: ${{ needs.create-release.outputs.tagName }}
+    secrets: inherit
+
+      
+
+
+
+  
