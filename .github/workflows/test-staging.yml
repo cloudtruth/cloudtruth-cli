@@ -59,6 +59,11 @@ jobs:
           name: ${{ inputs.artifactId }}
           path: target
 
+      # upload-artifact does not preserve permissions
+      - shell: bash
+        if: inputs.artifactId
+        run: find target -type f -name 'cloudtruth*' -exec chmod +x {} +
+
       - shell: bash
         if: inputs.releaseVersion && !contains(runner.os, 'Windows')
         run: sudo ./install.sh --version '${{ inputs.releaseVersion }}'
@@ -67,9 +72,6 @@ jobs:
         if: inputs.releaseVersion && contains(runner.os, 'Windows')
         run: .\install.ps1 --version '${{ inputs.releaseVersion }}'
 
-      # upload-artifact does not preserve permissions
-      - shell: bash
-        run: find target -type f -name 'cloudtruth*' -exec chmod +x {} +
 
       - shell: bash
         run: make test_prerequisites
