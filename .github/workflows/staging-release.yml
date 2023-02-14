@@ -1,0 +1,13 @@
+---
+name: Staging Release
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  placeholder:
+    name: Placeholder
+    runs-on: ubuntu-latest
