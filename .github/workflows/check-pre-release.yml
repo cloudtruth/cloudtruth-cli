@@ -24,4 +24,4 @@ jobs:
       releaseVersion: ${{ event.release.tag_name }}
       serverUrl: https://api.staging.cloudtruth.io
     secrets:
-      CLOUDTRUTH_API_KEY: ${{ secrets.CI_ACCT_STAGING_CONTRIBUTOR }}
+      CLOUDTRUTH_API_KEY: ${{ secrets.CT_STAGING_CI_ADMIN_API_KEY }}
