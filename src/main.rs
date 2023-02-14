@@ -371,7 +371,7 @@ mod main_test {
                 .args(cmd_args)
                 .assert()
                 .failure()
-                .stderr(starts_with("The API key is missing."));
+                .stderr(contains("The API key is missing."));
         }
     }
 

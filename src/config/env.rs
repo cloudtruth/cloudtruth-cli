@@ -3,7 +3,9 @@ use crate::config::{
     CT_ACCEPT_INVALID_CERTS, CT_API_KEY, CT_ENVIRONMENT, CT_PROJECT, CT_REQ_TIMEOUT, CT_REST_DEBUG,
     CT_REST_PAGE_SIZE, CT_REST_SUCCESS, CT_SERVER_URL,
 };
+use crate::utils::warn_user;
 use std::env;
+use std::str::FromStr;
 
 pub struct ConfigEnv {}
 
@@ -14,10 +16,10 @@ impl ConfigEnv {
             description: None,
             environment: Self::get_override(CT_ENVIRONMENT),
             project: Self::get_override(CT_PROJECT),
-            request_timeout: Self::get_duration_override(),
+            request_timeout: Self::parse_override(CT_REQ_TIMEOUT),
             rest_debug: Self::get_rest_debug(),
             rest_success: Self::get_rest_success(),
-            rest_page_size: Self::get_rest_page_size(),
+            rest_page_size: Self::parse_override(CT_REST_PAGE_SIZE),
             server_url: Self::get_override(CT_SERVER_URL),
             source_profile: None,
             accept_invalid_certs: Self::get_accept_invalid_certs(),
@@ -25,23 +27,28 @@ impl ConfigEnv {
     }
 
     pub fn get_override(config_name: &str) -> Option<String> {
-        let value = env::var(config_name);
-
-        if let Ok(value) = value {
-            Some(value)
-        } else {
-            None
-        }
+        env::var(config_name).ok().map(|val| {
+            if val.is_empty() {
+                warn_user(format!(
+                    "{} is defined but empty. It could be accidentally shadowing profile config.",
+                    config_name
+                ));
+            }
+            val.trim().to_owned()
+        })
     }
 
-    pub fn get_duration_override() -> Option<u64> {
-        let mut result = None;
-        if let Some(dur_str) = Self::get_override(CT_REQ_TIMEOUT) {
-            if let Ok(dur_val) = dur_str.parse::<u64>() {
-                result = Some(dur_val);
-            }
-        }
-        result
+    pub fn parse_override<T: FromStr>(config_name: &str) -> Option<T> {
+        Self::get_override(config_name).and_then(|config_value| {
+            config_value.parse().ok().or_else(|| {
+                warn_user(format!("Could not parse {}: {}", config_name, config_value));
+                None
+            })
+        })
+    }
+
+    pub fn get_rest_page_size() -> Option<i32> {
+        Self::parse_override(CT_REST_PAGE_SIZE)
     }
 
     pub fn get_rest_debug() -> Option<bool> {
@@ -55,24 +62,10 @@ impl ConfigEnv {
     }
 
     pub fn get_rest_success() -> Vec<String> {
-        let mut result = vec![];
-        if let Some(env_str) = Self::get_override(CT_REST_SUCCESS) {
-            let items: Vec<&str> = env_str.split(',').collect();
-            for i in items {
-                result.push(i.trim().to_string());
-            }
-        }
-        result
-    }
-
-    pub fn get_rest_page_size() -> Option<i32> {
-        match Self::get_override(CT_REST_PAGE_SIZE) {
-            Some(env_value) => match env_value.trim().parse() {
-                Ok(int_value) => Some(int_value),
-                _ => None,
-            },
-            _ => None,
-        }
+        Self::get_override(CT_REST_SUCCESS)
+            .iter()
+            .flat_map(|env_str| env_str.split(',').map(|i| i.trim().to_owned()))
+            .collect()
     }
 }
 
