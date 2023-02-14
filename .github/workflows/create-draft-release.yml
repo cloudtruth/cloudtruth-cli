@@ -21,7 +21,6 @@ jobs:
           updateOnlyUnreleased: true # prevent modifying any non-draft non-prerelease
           removeArtifacts: true # deletes any existing artifacts when modifying
           draft: true
-          prerelease: false # need to set this to false initially otherwise GH won't emit a prereleased event at the end 
           tag: ${{ github.ref_name }}
           commit: ${{ github.sha }}
           name: Cloudtruth CLI ${{ github.ref_name }}
