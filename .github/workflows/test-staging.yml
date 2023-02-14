@@ -70,7 +70,7 @@ jobs:
 
       - shell: pwsh
         if: inputs.releaseVersion && contains(runner.os, 'Windows')
-        run: .\install.ps1 --version '${{ inputs.releaseVersion }}'
+        run: .\install.ps1 -Version '${{ inputs.releaseVersion }}'
 
 
       - shell: bash
