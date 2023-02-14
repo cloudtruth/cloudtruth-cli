@@ -233,10 +233,12 @@ jobs:
             --target ${{ matrix.target }} \
             --deb-version "$PACKAGE_VERSION"
             ${DEB_REVISION:+ --deb-revision "$DEB_REVISION" }
-
-          deb_path=$(ls target/${{ matrix.target }}/debian/*.deb)
-          echo DEB_PATH=$deb_path >> $GITHUB_ENV
-          echo DEB_NAME=$(basename $deb_path) >> $GITHUB_ENV
+          deb_dir='target/${{ matrix.target }}/debian'
+          src_deb_path="$(ls $deb_dir/*.deb)"
+          dest_deb_path="$(echo $src_deb_path | sed -E "s/${PACKAGE_VERSION}/${RELEASE_TAG}/")"
+          mv "$src_deb_path" "$dest_deb_path"
+          echo DEB_PATH=$dest_deb_path >> $GITHUB_ENV
+          echo DEB_NAME=$(basename $dest_deb_path) >> $GITHUB_ENV
 
       - name: Upload Debian package
         if: contains(matrix.build, 'linux')
@@ -262,8 +264,11 @@ jobs:
             --target ${{ matrix.target }} \
             --set-metadata "$rpm_toml_version"
 
-          rpm_path=$(ls target/${{ matrix.target }}/generate-rpm/cloudtruth-*$rpm_arch.rpm)
-          echo RPM_PATH=$rpm_path >> $GITHUB_ENV
+          rpm_dir='target/${{ matrix.target }}/generate-rpm/'
+          rpm_path="${rpm_dir}/cloudtruth-${RELEASE_TAG}-1.${rpm_arch}.rpm"
+          # rename generated RPM to match github release name
+          mv rpm_dir/cloudtruth-*${rpm_arch}.rpm "${rpm_path}"
+          echo RPM_PATH=${rpm_path} >> $GITHUB_ENV
           echo RPM_NAME=$(basename $rpm_path) >> $GITHUB_ENV
 
       - name: Upload RPM package
