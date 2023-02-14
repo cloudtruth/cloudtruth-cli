@@ -58,15 +58,27 @@ on:
         description: 'Release Upload Url returned by create-release action'
         type: string
         required: true
-      releaseVersion:
-        description: 'CLI Release Version (defaults to tag name)'
+      releaseTag:
+        description: 'Release tag used for GitHub asset files.'
         type: string
         default: ${{ github.ref_name }}
-
+      packageVersion:
+        description: 'Numeric version string to use for package managers.'
+        type: string
+        default: ${{ github.ref_name }}
+      debRevision:
+        description: Additional alphanumeric revision string used for Debian packages.
+        type: string
+      rpmSnapshot:
+        description: Alphanumeric snapshot string to add to end of RPM version.
+        type: string
 env:
   CI: true
   RELEASE_UPLOAD_URL: ${{ inputs.releaseUploadUrl }}
-  RELEASE_VERSION: ${{ inputs.releaseVersion }}
+  RELEASE_TAG: ${{ inputs.releaseTag }}
+  PACKAGE_VERSION: ${{ inputs.packageVersion }}
+  DEB_REVISION: ${{ inputs.revision }}
+  RPM_SNAPSHOT: ${{ inputs.rpmSnapshot }}
   PROJECT_NAME: cloudtruth
   RUST_BACKTRACE: 1
 
@@ -115,6 +127,7 @@ jobs:
         id: vars
         shell: bash
         run: |
+          # 
           # Determine EXE suffix.
           EXE_SUFFIX=""
 
@@ -178,7 +191,7 @@ jobs:
       - name: Build archive
         shell: bash
         run: |
-          staging="${{ env.PROJECT_NAME }}-${{ env.RELEASE_VERSION }}-${{ matrix.target }}"
+          staging="${{ env.PROJECT_NAME }}-${{ env.RELEASE_TAG }}-${{ matrix.target }}"
           mkdir -p "$staging"
 
           # Find where the build script put the generated completions files.
@@ -218,7 +231,8 @@ jobs:
         run: |
           cargo deb --no-build --no-strip \
             --target ${{ matrix.target }} \
-            --deb-version "$RELEASE_VERSION"
+            --deb-version "$PACKAGE_VERSION"
+            ${DEB_REVISION:+ --deb-revision "$DEB_REVISION" }
 
           deb_path=$(ls target/${{ matrix.target }}/debian/*.deb)
           echo DEB_PATH=$deb_path >> $GITHUB_ENV
@@ -242,7 +256,7 @@ jobs:
         shell: bash
         run: |          
           rpm_arch=$(echo "${{ matrix.target }}" | cut -d- -f1)
-          rpm_toml_version="version = '$RELEASE_VERSION'"
+          rpm_toml_version="version = '${PACKAGE_VERSION}${RPM_SNAPSHOT:+^$RPM_SNAPSHOT}'"
           cargo generate-rpm \
             --arch $rpm_arch \
             --target ${{ matrix.target }} \

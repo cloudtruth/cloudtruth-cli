@@ -13,6 +13,10 @@ jobs:
     runs-on: ubuntu-latest
   
     steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+      
       - name: Create tag name
         shell: bash
         run: |
@@ -20,6 +24,11 @@ jobs:
           echo DATE=$DATE >> $GITHUB_ENV
           echo TAG_NAME=nightly-$DATE >> $GITHUB_ENV
           echo "RELEASE_NAME=Nightly ($DATE)" >> $GITHUB_ENV
+
+      - name: Get Cargo.toml package version
+        shell: bash
+        run: |
+          echo CARGO_PKG_VERSION=$(cargo pkgid | cut -d@ -f2 ) >> $GITHUB_ENV
 
       - name: Create Draft Release
         id: release
@@ -41,6 +50,7 @@ jobs:
       releaseId: ${{ steps.release.outputs.id }}
       releaseUploadUrl: ${{ steps.release.outputs.upload_url }}
       tagName: ${{ env.TAG_NAME }}
+      cargoPackageVersion: ${{ env.CARGO_PKG_VERSION }}
 
   build-release:
     name: Build Release
@@ -49,7 +59,10 @@ jobs:
     with:
       releaseId: ${{ needs.create-release.outputs.releaseId }}
       releaseUploadUrl: ${{ needs.create-release.outputs.releaseUploadUrl }}
-      releaseVersion: ${{ needs.create-release.outputs.tagName }}
+      releaseTag: ${{ needs.create-release.outputs.tagName }}
+      packageVersion: ${{ needs.create-release.outputs.cargoPackageVersion }}
+      debRevision: ${{ needs.create-release.outputs.tagName }}
+      rpmSnapshot: ${{ github.sha }}
 
   test-release:
     name: Test Draft Release

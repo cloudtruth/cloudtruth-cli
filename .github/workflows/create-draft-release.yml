@@ -34,9 +34,10 @@ jobs:
         env:
           TAG_VERSION: ${{ github.ref_name }}
         run: |
-          CARGO_VERSION=$(grep "version = " Cargo.toml | head -n 1 | cut -d'"' -f2)
+          CARGO_VERSION="$(cargo pkgid | cut -d@ -f2 )"
           echo "CARGO_VERSION=${CARGO_VERSION}"
           echo "TAG_VERSION=${TAG_VERSION}"
+          [ ! -z "$CARGO_VERSION" ]
           echo "${{ github.ref_name }}" | grep "${CARGO_VERSION}"
 
     outputs:
