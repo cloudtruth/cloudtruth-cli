@@ -224,6 +224,7 @@ jobs:
           asset_path: ${{ env.ASSET }}
           asset_name: ${{ env.ASSET }}
           asset_content_type: application/octet-stream
+          overwrite: true
 
       - name: Build Debian package
         if: contains(matrix.build, 'linux')
@@ -249,6 +250,8 @@ jobs:
           asset_path: ${{ env.DEB_PATH }}
           asset_name: ${{ env.DEB_NAME }}
           asset_content_type: application/octet-stream
+          overwrite: true
+
 
       - name: Install cargo-generate-rpm
         if: contains(matrix.build, 'linux')
@@ -281,6 +284,8 @@ jobs:
           asset_path: ${{ env.RPM_PATH }}
           asset_name: ${{ env.RPM_NAME }}
           asset_content_type: application/octet-stream
+          overwrite: true
+
 
   upload-assets:
     name: Upload Other Assets
@@ -297,6 +302,8 @@ jobs:
           asset_path: CHANGELOG.md
           asset_name: CHANGELOG.md
           asset_content_type: application/octet-stream
+          overwrite: true
+
 
       - name: Upload POSIX Install
         uses: shogo82148/actions-upload-release-asset@v1
@@ -305,6 +312,8 @@ jobs:
           asset_path: install.sh
           asset_name: install.sh
           asset_content_type: application/octet-stream
+          overwrite: true
+
 
       - name: Upload Windows Install
         uses: shogo82148/actions-upload-release-asset@v1
@@ -313,3 +322,5 @@ jobs:
           asset_path: install.ps1
           asset_name: install.ps1
           asset_content_type: application/octet-stream
+          overwrite: true
+
