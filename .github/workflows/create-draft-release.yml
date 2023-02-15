@@ -7,6 +7,10 @@ on:
     tags:
       - '[0-9]+.[0-9]+.[0-9]+-?**'
 
+# prevent multiple releases from running at the same time
+concurrency:
+  group: ${{ github.workflow_ref }}-${{ github.ref_name }}
+
 jobs:
   create-release:
     name: Create Release
