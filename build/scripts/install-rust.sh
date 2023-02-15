@@ -5,7 +5,7 @@
 # This can result in the CI failure, see: https://github.com/rust-lang/rustup/issues/3029
 rustup set auto-self-update disable
 # legacy CLI version with no rust-toolchain file
-if [ -f rust-toolchain -o -f rust-toolchain.yml -o -f rust.toolchain.yaml ]; then
+if [ -f rust-toolchain ] || [ -f rust-toolchain.toml ]; then
     rustup toolchain install 1.63.0 --profile minimal
 else
     # this command forces install of version in rust-toolchain file
