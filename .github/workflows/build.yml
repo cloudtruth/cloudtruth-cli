@@ -36,13 +36,27 @@ jobs:
     runs-on: ${{ inputs.runsOn }}
 
     steps:
-      - name: Build
-        uses: cloudtruth/cli-build-action@v2
+      - uses: actions/checkout@v3
         with:
           ref: ${{ inputs.ref }}
-          buildOptions: ${{ inputs.buildOptions }}
-          testOptions: ${{ inputs.testOptions }}
-          cacheKey: ${{ inputs.rustCacheKey }}
+
+      - shell: bash
+        run: sh build/scripts/install-rust.sh
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: ${{ inputs.cacheKey }}
+          shared-key: ${{ runner.os }}
+
+      - name: Build
+        shell: bash
+        run: |
+          cargo build ${{ inputs.buildOptions }}
+
+      - name: Test
+        shell: bash
+        run: |
+          cargo test ${{ inputs.testOptions }}
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v3
