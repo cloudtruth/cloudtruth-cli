@@ -1,6 +1,0 @@
-
-      - name: {{ os }}-{{ version }}
-        run: |
-          sudo ./install.sh --version "${CT_VERSION}"
-          cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep "${CT_TEST_PARAM}" | grep "${CT_TEST_VALUE}"
-

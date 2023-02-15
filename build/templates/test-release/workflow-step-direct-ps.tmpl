@@ -1,0 +1,13 @@
+
+      - name: windows-latest
+        shell: pwsh
+        run: |
+          $InformationPreference = 'Continue'
+          New-Alias grep findstr
+          $install_opts = @{ version = $ENV:CT_DOWNLOAD_VERSION }
+          if ($ENV:CT_DOWNLOAD_RELEASE_ID) { 
+              $install_opts['releaseId'] = $ENV:CT_DOWNLOAD_RELEASE_ID
+              $install_opts['authToken'] = $ENV:CT_DOWNLOAD_AUTH_TOKEN
+          }
+          $ctExe = .\install.ps1 @install_opts
+          & $ctExe --project "$ENV:CT_TEST_PROJECT" parameters list -v | grep "$ENV:CT_TEST_PARAM" | grep "$ENV:CT_TEST_VALUE"

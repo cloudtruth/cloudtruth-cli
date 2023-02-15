@@ -12,13 +12,12 @@
 .PHONY += precommit
 .PHONY += regen
 .PHONY += targets
-.PHONY += workflow-draft
-.PHONY += workflow-prerelease
+.PHONY += workflow-test-release
 
-all: workflow-draft workflow-prerelease
+all: workflow-test-release
 
 clean:
-	rm -f docker/
+	find docker/ -name 'Dockerfile*' | xargs rm -f
 	# rm ~/.actrc
 
 prerequisites:
@@ -29,11 +28,8 @@ lint:
 	python3 -m pip install --user --upgrade flake8
 	python3 -m flake8
 
-workflow-draft:
-	python3 gen.py -w draft
-
-workflow-prerelease:
-	python3 gen.py -w prerelease
+workflow-test-release:
+	python3 gen.py
 
 precommit: lint cli-check
 
@@ -43,7 +39,7 @@ cli-check:
 cli-gen:
 	python3 cli_walk.py generate
 
-regen: workflow-draft workflow-prerelease cli-gen
+regen: workflow-test-release cli-gen
 
 help: targets
 

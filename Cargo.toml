@@ -1,6 +1,6 @@
 [package]
 name = "cloudtruth"
-version = "1.1.8"
+version = "1.1.9"
 description = "A command-line interface to the CloudTruth configuration management service."
 authors = ["CloudTruth <support@cloudtruth.com>"]
 edition = "2021"
@@ -24,7 +24,18 @@ data you have stored within the CloudTruth configuration management service.
 """
 depends = "$auto, ca-certificates"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[package.metadata.generate-rpm]
+assets = [
+    { source = "target/release/cloudtruth",                  dest = "/usr/bin/cloudtruth",                                  mode = "755" },
+    { source = "target/release/completions/cloudtruth.bash", dest = "/usr/share/bash-completion/completions/cloudtruth",    mode = "644" },
+    { source = "target/release/completions/cloudtruth.fish", dest = "/usr/share/fish/vendor_completions.d/cloudtruth.fish", mode = "644" },
+    { source = "target/release/completions/_cloudtruth",     dest = "/usr/share/zsh/vendor-completions/_cloudtruth",        mode = "644" },
+    { source = "README.md",                                  dest = "/usr/share/doc/cloudtruth/README.md",                  mode = "644" }
+]
+auto-req = "no"
+
+[package.metadata.generate-rpm.requires]
+ca-certificates = "*"
 
 [build-dependencies]
 clap = "2.33.3"
@@ -49,7 +60,7 @@ prettytable-rs = "0.10.0"
 powershell_script = "0.2.1"
 rand_core = {version = "0.6.2", features = ["getrandom"]}
 # reqwest version must match client package
-reqwest = "~0.9"
+reqwest = {version="~0.9", default-features = false, features=["default-tls-vendored"]}
 rpassword = "5.0.1"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0.64"

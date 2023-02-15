@@ -1,13 +1,17 @@
 
   test-{{ os }}:
     runs-on: {{ runs_on }}
-    needs: [ 'build-release' ]
     env:
+      # github release info
+      CT_DOWNLOAD_RELEASE_ID: {{ '${{ inputs.releaseId }}' }}
+      CT_DOWNLOAD_VERSION: {{ '${{ inputs.releaseVersion }}' }}
+      
       # Need auth-token to download from draft release
       CT_DOWNLOAD_AUTH_TOKEN: {{ '${{ secrets.GITHUB_TOKEN }}' }}
 
       # These values are used for running the CLI command
-      CLOUDTRUTH_API_KEY: {{ '${{ secrets.CI_ACCT_READONLY_CT_API_KEY }}' }}
+      CLOUDTRUTH_SERVER_URL: {{ '${{ inputs.serverUrl }}' }}
+      CLOUDTRUTH_API_KEY: {{ '${{ secrets.CLOUDTRUTH_API_KEY }}' }}
       CT_TEST_PROJECT: TruthStrap
       CT_TEST_PARAM: INTEGRATION_TEST_RESULT
       CT_TEST_VALUE: Speicla
@@ -16,9 +20,6 @@
       - uses: actions/checkout@v3
         with:
           fetch-depth: 1
-
-      - uses: actions/download-artifact@v3
-        with:
-          name: artifacts
-          path: artifacts
-
+      - shell: bash
+        run: |
+          

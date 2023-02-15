@@ -1,0 +1,435 @@
+---
+name: 'Test Release'
+on:
+  workflow_call:
+    inputs:
+      releaseId:
+        description: 'Release ID returned by create-release action. This is only needed for draft releases.'
+        type: string
+      releaseVersion:
+        description: 'CLI Release Version (defaults to current tag name)'
+        type: string
+        default: ${{ github.ref_name }}
+      serverUrl:
+        description: URL to the CloudTruth server (defaults to production)
+        type: string
+        default: https://api.cloudtruth.io
+    secrets:
+      CLOUDTRUTH_API_KEY:
+        description: CloudTruth API Key
+        required: true
+jobs:
+  test-alpine:
+    runs-on: ubuntu-latest
+    env:
+      # github release info
+      CT_DOWNLOAD_RELEASE_ID: ${{ inputs.releaseId }}
+      CT_DOWNLOAD_VERSION: ${{ inputs.releaseVersion }}
+      
+      # Need auth-token to download from draft release
+      CT_DOWNLOAD_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # These values are used for running the CLI command
+      CLOUDTRUTH_SERVER_URL: ${{ inputs.serverUrl }}
+      CLOUDTRUTH_API_KEY: ${{ secrets.CLOUDTRUTH_API_KEY }}
+      CT_TEST_PROJECT: TruthStrap
+      CT_TEST_PARAM: INTEGRATION_TEST_RESULT
+      CT_TEST_VALUE: Speicla
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+      - shell: bash
+        run: |
+          
+      - name: alpine-3.17
+        run: |
+          OUT_LOG='alpine-3.17-output.txt'
+          docker build . \
+            --build-arg DOWNLOAD_AUTH_TOKEN="${CT_DOWNLOAD_AUTH_TOKEN}" \
+            --build-arg DOWNLOAD_RELEASE_ID="${CT_DOWNLOAD_RELEASE_ID}" \
+            --build-arg DOWNLOAD_VERSION="${CT_DOWNLOAD_VERSION}" \
+             -f build/docker/test-release/Dockerfile.alpine-3.17 \
+             -t cloudtruth:alpine-3.17
+          docker run --rm \
+            -i --log-driver=none -a stdout -a stderr \
+            -e CLOUDTRUTH_API_KEY \
+            ${CLOUDTRUTH_SERVER_URL:+ -e CLOUDTRUTH_SERVER_URL} \
+            -v $(pwd):/truth \
+            cloudtruth:alpine-3.17 \
+            cloudtruth --project ${CT_TEST_PROJECT} parameters list -v \
+          | tee "$OUT_LOG"
+          cat "$OUT_LOG" | grep "${CT_TEST_PARAM}" | grep "${CT_TEST_VALUE}"
+      - name: alpine-3.16
+        run: |
+          OUT_LOG='alpine-3.16-output.txt'
+          docker build . \
+            --build-arg DOWNLOAD_AUTH_TOKEN="${CT_DOWNLOAD_AUTH_TOKEN}" \
+            --build-arg DOWNLOAD_RELEASE_ID="${CT_DOWNLOAD_RELEASE_ID}" \
+            --build-arg DOWNLOAD_VERSION="${CT_DOWNLOAD_VERSION}" \
+             -f build/docker/test-release/Dockerfile.alpine-3.16 \
+             -t cloudtruth:alpine-3.16
+          docker run --rm \
+            -i --log-driver=none -a stdout -a stderr \
+            -e CLOUDTRUTH_API_KEY \
+            ${CLOUDTRUTH_SERVER_URL:+ -e CLOUDTRUTH_SERVER_URL} \
+            -v $(pwd):/truth \
+            cloudtruth:alpine-3.16 \
+            cloudtruth --project ${CT_TEST_PROJECT} parameters list -v \
+          | tee "$OUT_LOG"
+          cat "$OUT_LOG" | grep "${CT_TEST_PARAM}" | grep "${CT_TEST_VALUE}"
+      - name: alpine-3.15
+        run: |
+          OUT_LOG='alpine-3.15-output.txt'
+          docker build . \
+            --build-arg DOWNLOAD_AUTH_TOKEN="${CT_DOWNLOAD_AUTH_TOKEN}" \
+            --build-arg DOWNLOAD_RELEASE_ID="${CT_DOWNLOAD_RELEASE_ID}" \
+            --build-arg DOWNLOAD_VERSION="${CT_DOWNLOAD_VERSION}" \
+             -f build/docker/test-release/Dockerfile.alpine-3.15 \
+             -t cloudtruth:alpine-3.15
+          docker run --rm \
+            -i --log-driver=none -a stdout -a stderr \
+            -e CLOUDTRUTH_API_KEY \
+            ${CLOUDTRUTH_SERVER_URL:+ -e CLOUDTRUTH_SERVER_URL} \
+            -v $(pwd):/truth \
+            cloudtruth:alpine-3.15 \
+            cloudtruth --project ${CT_TEST_PROJECT} parameters list -v \
+          | tee "$OUT_LOG"
+          cat "$OUT_LOG" | grep "${CT_TEST_PARAM}" | grep "${CT_TEST_VALUE}"
+      - name: alpine-3.14
+        run: |
+          OUT_LOG='alpine-3.14-output.txt'
+          docker build . \
+            --build-arg DOWNLOAD_AUTH_TOKEN="${CT_DOWNLOAD_AUTH_TOKEN}" \
+            --build-arg DOWNLOAD_RELEASE_ID="${CT_DOWNLOAD_RELEASE_ID}" \
+            --build-arg DOWNLOAD_VERSION="${CT_DOWNLOAD_VERSION}" \
+             -f build/docker/test-release/Dockerfile.alpine-3.14 \
+             -t cloudtruth:alpine-3.14
+          docker run --rm \
+            -i --log-driver=none -a stdout -a stderr \
+            -e CLOUDTRUTH_API_KEY \
+            ${CLOUDTRUTH_SERVER_URL:+ -e CLOUDTRUTH_SERVER_URL} \
+            -v $(pwd):/truth \
+            cloudtruth:alpine-3.14 \
+            cloudtruth --project ${CT_TEST_PROJECT} parameters list -v \
+          | tee "$OUT_LOG"
+          cat "$OUT_LOG" | grep "${CT_TEST_PARAM}" | grep "${CT_TEST_VALUE}"
+  test-rockylinux:
+    runs-on: ubuntu-latest
+    env:
+      # github release info
+      CT_DOWNLOAD_RELEASE_ID: ${{ inputs.releaseId }}
+      CT_DOWNLOAD_VERSION: ${{ inputs.releaseVersion }}
+      
+      # Need auth-token to download from draft release
+      CT_DOWNLOAD_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # These values are used for running the CLI command
+      CLOUDTRUTH_SERVER_URL: ${{ inputs.serverUrl }}
+      CLOUDTRUTH_API_KEY: ${{ secrets.CLOUDTRUTH_API_KEY }}
+      CT_TEST_PROJECT: TruthStrap
+      CT_TEST_PARAM: INTEGRATION_TEST_RESULT
+      CT_TEST_VALUE: Speicla
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+      - shell: bash
+        run: |
+          
+      - name: rockylinux-9
+        run: |
+          OUT_LOG='rockylinux-9-output.txt'
+          docker build . \
+            --build-arg DOWNLOAD_AUTH_TOKEN="${CT_DOWNLOAD_AUTH_TOKEN}" \
+            --build-arg DOWNLOAD_RELEASE_ID="${CT_DOWNLOAD_RELEASE_ID}" \
+            --build-arg DOWNLOAD_VERSION="${CT_DOWNLOAD_VERSION}" \
+             -f build/docker/test-release/Dockerfile.rockylinux-9 \
+             -t cloudtruth:rockylinux-9
+          docker run --rm \
+            -i --log-driver=none -a stdout -a stderr \
+            -e CLOUDTRUTH_API_KEY \
+            ${CLOUDTRUTH_SERVER_URL:+ -e CLOUDTRUTH_SERVER_URL} \
+            -v $(pwd):/truth \
+            cloudtruth:rockylinux-9 \
+            cloudtruth --project ${CT_TEST_PROJECT} parameters list -v \
+          | tee "$OUT_LOG"
+          cat "$OUT_LOG" | grep "${CT_TEST_PARAM}" | grep "${CT_TEST_VALUE}"
+      - name: rockylinux-8
+        run: |
+          OUT_LOG='rockylinux-8-output.txt'
+          docker build . \
+            --build-arg DOWNLOAD_AUTH_TOKEN="${CT_DOWNLOAD_AUTH_TOKEN}" \
+            --build-arg DOWNLOAD_RELEASE_ID="${CT_DOWNLOAD_RELEASE_ID}" \
+            --build-arg DOWNLOAD_VERSION="${CT_DOWNLOAD_VERSION}" \
+             -f build/docker/test-release/Dockerfile.rockylinux-8 \
+             -t cloudtruth:rockylinux-8
+          docker run --rm \
+            -i --log-driver=none -a stdout -a stderr \
+            -e CLOUDTRUTH_API_KEY \
+            ${CLOUDTRUTH_SERVER_URL:+ -e CLOUDTRUTH_SERVER_URL} \
+            -v $(pwd):/truth \
+            cloudtruth:rockylinux-8 \
+            cloudtruth --project ${CT_TEST_PROJECT} parameters list -v \
+          | tee "$OUT_LOG"
+          cat "$OUT_LOG" | grep "${CT_TEST_PARAM}" | grep "${CT_TEST_VALUE}"
+  test-debian:
+    runs-on: ubuntu-latest
+    env:
+      # github release info
+      CT_DOWNLOAD_RELEASE_ID: ${{ inputs.releaseId }}
+      CT_DOWNLOAD_VERSION: ${{ inputs.releaseVersion }}
+      
+      # Need auth-token to download from draft release
+      CT_DOWNLOAD_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # These values are used for running the CLI command
+      CLOUDTRUTH_SERVER_URL: ${{ inputs.serverUrl }}
+      CLOUDTRUTH_API_KEY: ${{ secrets.CLOUDTRUTH_API_KEY }}
+      CT_TEST_PROJECT: TruthStrap
+      CT_TEST_PARAM: INTEGRATION_TEST_RESULT
+      CT_TEST_VALUE: Speicla
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+      - shell: bash
+        run: |
+          
+      - name: debian-bullseye-slim
+        run: |
+          OUT_LOG='debian-bullseye-slim-output.txt'
+          docker build . \
+            --build-arg DOWNLOAD_AUTH_TOKEN="${CT_DOWNLOAD_AUTH_TOKEN}" \
+            --build-arg DOWNLOAD_RELEASE_ID="${CT_DOWNLOAD_RELEASE_ID}" \
+            --build-arg DOWNLOAD_VERSION="${CT_DOWNLOAD_VERSION}" \
+             -f build/docker/test-release/Dockerfile.debian-bullseye-slim \
+             -t cloudtruth:debian-bullseye-slim
+          docker run --rm \
+            -i --log-driver=none -a stdout -a stderr \
+            -e CLOUDTRUTH_API_KEY \
+            ${CLOUDTRUTH_SERVER_URL:+ -e CLOUDTRUTH_SERVER_URL} \
+            -v $(pwd):/truth \
+            cloudtruth:debian-bullseye-slim \
+            cloudtruth --project ${CT_TEST_PROJECT} parameters list -v \
+          | tee "$OUT_LOG"
+          cat "$OUT_LOG" | grep "${CT_TEST_PARAM}" | grep "${CT_TEST_VALUE}"
+      - name: debian-buster-slim
+        run: |
+          OUT_LOG='debian-buster-slim-output.txt'
+          docker build . \
+            --build-arg DOWNLOAD_AUTH_TOKEN="${CT_DOWNLOAD_AUTH_TOKEN}" \
+            --build-arg DOWNLOAD_RELEASE_ID="${CT_DOWNLOAD_RELEASE_ID}" \
+            --build-arg DOWNLOAD_VERSION="${CT_DOWNLOAD_VERSION}" \
+             -f build/docker/test-release/Dockerfile.debian-buster-slim \
+             -t cloudtruth:debian-buster-slim
+          docker run --rm \
+            -i --log-driver=none -a stdout -a stderr \
+            -e CLOUDTRUTH_API_KEY \
+            ${CLOUDTRUTH_SERVER_URL:+ -e CLOUDTRUTH_SERVER_URL} \
+            -v $(pwd):/truth \
+            cloudtruth:debian-buster-slim \
+            cloudtruth --project ${CT_TEST_PROJECT} parameters list -v \
+          | tee "$OUT_LOG"
+          cat "$OUT_LOG" | grep "${CT_TEST_PARAM}" | grep "${CT_TEST_VALUE}"
+      - name: debian-stretch-slim
+        run: |
+          OUT_LOG='debian-stretch-slim-output.txt'
+          docker build . \
+            --build-arg DOWNLOAD_AUTH_TOKEN="${CT_DOWNLOAD_AUTH_TOKEN}" \
+            --build-arg DOWNLOAD_RELEASE_ID="${CT_DOWNLOAD_RELEASE_ID}" \
+            --build-arg DOWNLOAD_VERSION="${CT_DOWNLOAD_VERSION}" \
+             -f build/docker/test-release/Dockerfile.debian-stretch-slim \
+             -t cloudtruth:debian-stretch-slim
+          docker run --rm \
+            -i --log-driver=none -a stdout -a stderr \
+            -e CLOUDTRUTH_API_KEY \
+            ${CLOUDTRUTH_SERVER_URL:+ -e CLOUDTRUTH_SERVER_URL} \
+            -v $(pwd):/truth \
+            cloudtruth:debian-stretch-slim \
+            cloudtruth --project ${CT_TEST_PROJECT} parameters list -v \
+          | tee "$OUT_LOG"
+          cat "$OUT_LOG" | grep "${CT_TEST_PARAM}" | grep "${CT_TEST_VALUE}"
+  test-macOS:
+    runs-on: macos-latest
+    env:
+      # github release info
+      CT_DOWNLOAD_RELEASE_ID: ${{ inputs.releaseId }}
+      CT_DOWNLOAD_VERSION: ${{ inputs.releaseVersion }}
+      
+      # Need auth-token to download from draft release
+      CT_DOWNLOAD_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # These values are used for running the CLI command
+      CLOUDTRUTH_SERVER_URL: ${{ inputs.serverUrl }}
+      CLOUDTRUTH_API_KEY: ${{ secrets.CLOUDTRUTH_API_KEY }}
+      CT_TEST_PROJECT: TruthStrap
+      CT_TEST_PARAM: INTEGRATION_TEST_RESULT
+      CT_TEST_VALUE: Speicla
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+      - shell: bash
+        run: |
+          
+      - name: macOS-latest
+        run: |
+          sudo ./install.sh \
+            --version "${CT_DOWNLOAD_VERSION}" \
+            ${CT_DOWNLOAD_RELEASE_ID:+ --auth-token "${CT_DOWNLOAD_AUTH_TOKEN}" --release-id "${CT_DOWNLOAD_RELEASE_ID}"}
+          cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep "${CT_TEST_PARAM}" | grep "${CT_TEST_VALUE}"
+  test-ubuntu:
+    runs-on: ubuntu-latest
+    env:
+      # github release info
+      CT_DOWNLOAD_RELEASE_ID: ${{ inputs.releaseId }}
+      CT_DOWNLOAD_VERSION: ${{ inputs.releaseVersion }}
+      
+      # Need auth-token to download from draft release
+      CT_DOWNLOAD_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # These values are used for running the CLI command
+      CLOUDTRUTH_SERVER_URL: ${{ inputs.serverUrl }}
+      CLOUDTRUTH_API_KEY: ${{ secrets.CLOUDTRUTH_API_KEY }}
+      CT_TEST_PROJECT: TruthStrap
+      CT_TEST_PARAM: INTEGRATION_TEST_RESULT
+      CT_TEST_VALUE: Speicla
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+      - shell: bash
+        run: |
+          
+      - name: ubuntu-lunar
+        run: |
+          OUT_LOG='ubuntu-lunar-output.txt'
+          docker build . \
+            --build-arg DOWNLOAD_AUTH_TOKEN="${CT_DOWNLOAD_AUTH_TOKEN}" \
+            --build-arg DOWNLOAD_RELEASE_ID="${CT_DOWNLOAD_RELEASE_ID}" \
+            --build-arg DOWNLOAD_VERSION="${CT_DOWNLOAD_VERSION}" \
+             -f build/docker/test-release/Dockerfile.ubuntu-lunar \
+             -t cloudtruth:ubuntu-lunar
+          docker run --rm \
+            -i --log-driver=none -a stdout -a stderr \
+            -e CLOUDTRUTH_API_KEY \
+            ${CLOUDTRUTH_SERVER_URL:+ -e CLOUDTRUTH_SERVER_URL} \
+            -v $(pwd):/truth \
+            cloudtruth:ubuntu-lunar \
+            cloudtruth --project ${CT_TEST_PROJECT} parameters list -v \
+          | tee "$OUT_LOG"
+          cat "$OUT_LOG" | grep "${CT_TEST_PARAM}" | grep "${CT_TEST_VALUE}"
+      - name: ubuntu-kinetic
+        run: |
+          OUT_LOG='ubuntu-kinetic-output.txt'
+          docker build . \
+            --build-arg DOWNLOAD_AUTH_TOKEN="${CT_DOWNLOAD_AUTH_TOKEN}" \
+            --build-arg DOWNLOAD_RELEASE_ID="${CT_DOWNLOAD_RELEASE_ID}" \
+            --build-arg DOWNLOAD_VERSION="${CT_DOWNLOAD_VERSION}" \
+             -f build/docker/test-release/Dockerfile.ubuntu-kinetic \
+             -t cloudtruth:ubuntu-kinetic
+          docker run --rm \
+            -i --log-driver=none -a stdout -a stderr \
+            -e CLOUDTRUTH_API_KEY \
+            ${CLOUDTRUTH_SERVER_URL:+ -e CLOUDTRUTH_SERVER_URL} \
+            -v $(pwd):/truth \
+            cloudtruth:ubuntu-kinetic \
+            cloudtruth --project ${CT_TEST_PROJECT} parameters list -v \
+          | tee "$OUT_LOG"
+          cat "$OUT_LOG" | grep "${CT_TEST_PARAM}" | grep "${CT_TEST_VALUE}"
+      - name: ubuntu-jammy
+        run: |
+          OUT_LOG='ubuntu-jammy-output.txt'
+          docker build . \
+            --build-arg DOWNLOAD_AUTH_TOKEN="${CT_DOWNLOAD_AUTH_TOKEN}" \
+            --build-arg DOWNLOAD_RELEASE_ID="${CT_DOWNLOAD_RELEASE_ID}" \
+            --build-arg DOWNLOAD_VERSION="${CT_DOWNLOAD_VERSION}" \
+             -f build/docker/test-release/Dockerfile.ubuntu-jammy \
+             -t cloudtruth:ubuntu-jammy
+          docker run --rm \
+            -i --log-driver=none -a stdout -a stderr \
+            -e CLOUDTRUTH_API_KEY \
+            ${CLOUDTRUTH_SERVER_URL:+ -e CLOUDTRUTH_SERVER_URL} \
+            -v $(pwd):/truth \
+            cloudtruth:ubuntu-jammy \
+            cloudtruth --project ${CT_TEST_PROJECT} parameters list -v \
+          | tee "$OUT_LOG"
+          cat "$OUT_LOG" | grep "${CT_TEST_PARAM}" | grep "${CT_TEST_VALUE}"
+      - name: ubuntu-focal
+        run: |
+          OUT_LOG='ubuntu-focal-output.txt'
+          docker build . \
+            --build-arg DOWNLOAD_AUTH_TOKEN="${CT_DOWNLOAD_AUTH_TOKEN}" \
+            --build-arg DOWNLOAD_RELEASE_ID="${CT_DOWNLOAD_RELEASE_ID}" \
+            --build-arg DOWNLOAD_VERSION="${CT_DOWNLOAD_VERSION}" \
+             -f build/docker/test-release/Dockerfile.ubuntu-focal \
+             -t cloudtruth:ubuntu-focal
+          docker run --rm \
+            -i --log-driver=none -a stdout -a stderr \
+            -e CLOUDTRUTH_API_KEY \
+            ${CLOUDTRUTH_SERVER_URL:+ -e CLOUDTRUTH_SERVER_URL} \
+            -v $(pwd):/truth \
+            cloudtruth:ubuntu-focal \
+            cloudtruth --project ${CT_TEST_PROJECT} parameters list -v \
+          | tee "$OUT_LOG"
+          cat "$OUT_LOG" | grep "${CT_TEST_PARAM}" | grep "${CT_TEST_VALUE}"
+      - name: ubuntu-bionic
+        run: |
+          OUT_LOG='ubuntu-bionic-output.txt'
+          docker build . \
+            --build-arg DOWNLOAD_AUTH_TOKEN="${CT_DOWNLOAD_AUTH_TOKEN}" \
+            --build-arg DOWNLOAD_RELEASE_ID="${CT_DOWNLOAD_RELEASE_ID}" \
+            --build-arg DOWNLOAD_VERSION="${CT_DOWNLOAD_VERSION}" \
+             -f build/docker/test-release/Dockerfile.ubuntu-bionic \
+             -t cloudtruth:ubuntu-bionic
+          docker run --rm \
+            -i --log-driver=none -a stdout -a stderr \
+            -e CLOUDTRUTH_API_KEY \
+            ${CLOUDTRUTH_SERVER_URL:+ -e CLOUDTRUTH_SERVER_URL} \
+            -v $(pwd):/truth \
+            cloudtruth:ubuntu-bionic \
+            cloudtruth --project ${CT_TEST_PROJECT} parameters list -v \
+          | tee "$OUT_LOG"
+          cat "$OUT_LOG" | grep "${CT_TEST_PARAM}" | grep "${CT_TEST_VALUE}"
+  test-windows:
+    runs-on: windows-latest
+    env:
+      # github release info
+      CT_DOWNLOAD_RELEASE_ID: ${{ inputs.releaseId }}
+      CT_DOWNLOAD_VERSION: ${{ inputs.releaseVersion }}
+      
+      # Need auth-token to download from draft release
+      CT_DOWNLOAD_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # These values are used for running the CLI command
+      CLOUDTRUTH_SERVER_URL: ${{ inputs.serverUrl }}
+      CLOUDTRUTH_API_KEY: ${{ secrets.CLOUDTRUTH_API_KEY }}
+      CT_TEST_PROJECT: TruthStrap
+      CT_TEST_PARAM: INTEGRATION_TEST_RESULT
+      CT_TEST_VALUE: Speicla
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+      - shell: bash
+        run: |
+          
+      - name: windows-latest
+        shell: pwsh
+        run: |
+          $InformationPreference = 'Continue'
+          New-Alias grep findstr
+          $install_opts = @{ version = $ENV:CT_DOWNLOAD_VERSION }
+          if ($ENV:CT_DOWNLOAD_RELEASE_ID) { 
+              $install_opts['releaseId'] = $ENV:CT_DOWNLOAD_RELEASE_ID
+              $install_opts['authToken'] = $ENV:CT_DOWNLOAD_AUTH_TOKEN
+          }
+          $ctExe = .\install.ps1 @install_opts
+          & $ctExe --project "$ENV:CT_TEST_PROJECT" parameters list -v | grep "$ENV:CT_TEST_PARAM" | grep "$ENV:CT_TEST_VALUE"

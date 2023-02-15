@@ -4,216 +4,24 @@ on:
     types: [prereleased]
 
 name: 'Check Pre-Release'
+run-name: 'Check Pre-Release ${{events.release.tag_name }}'
 
 jobs:
-  test-alpine:
-    runs-on: ubuntu-latest
-    env:
-      # These values are used for running the CLI command
+  test-release:
+    name: Test Release
+    if: ${{ !contains('staging', github.event.release.tag_name) && !contains('nightly', github.event.release.tag_name) }}
+    uses: ./.github/workflows/test-release.yml
+    with:
+      releaseVersion: ${{ event.release.tag_name }}
+    secrets:
       CLOUDTRUTH_API_KEY: ${{ secrets.CI_ACCT_READONLY_CT_API_KEY }}
-      CT_TEST_PROJECT: TruthStrap
-      CT_TEST_PARAM: INTEGRATION_TEST_RESULT
-      CT_TEST_VALUE: Speicla
 
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 1
-
-      - name: Get the release version from the tag
-        if: env.CT_VERSION == ''
-        run: |
-          echo CT_VERSION=${GITHUB_REF#refs/tags/} >> $GITHUB_ENV
-
-      - name: alpine-3.13
-        run: |
-          docker build . \
-            --build-arg DOWNLOAD_VERSION="${CT_VERSION}" \
-             -f build/docker/prerelease/Dockerfile.alpine-3.13 \
-             -t cloudtruth:alpine-3.13
-          docker run -e CLOUDTRUTH_API_KEY --rm -v $(pwd):/truth -t cloudtruth:alpine-3.13 cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
-
-      - name: alpine-3.12
-        run: |
-          docker build . \
-            --build-arg DOWNLOAD_VERSION="${CT_VERSION}" \
-             -f build/docker/prerelease/Dockerfile.alpine-3.12 \
-             -t cloudtruth:alpine-3.12
-          docker run -e CLOUDTRUTH_API_KEY --rm -v $(pwd):/truth -t cloudtruth:alpine-3.12 cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
-
-  test-rockylinux:
-    runs-on: ubuntu-latest
-    env:
-      # These values are used for running the CLI command
-      CLOUDTRUTH_API_KEY: ${{ secrets.CI_ACCT_READONLY_CT_API_KEY }}
-      CT_TEST_PROJECT: TruthStrap
-      CT_TEST_PARAM: INTEGRATION_TEST_RESULT
-      CT_TEST_VALUE: Speicla
-
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 1
-
-      - name: Get the release version from the tag
-        if: env.CT_VERSION == ''
-        run: |
-          echo CT_VERSION=${GITHUB_REF#refs/tags/} >> $GITHUB_ENV
-
-      - name: rockylinux-8
-        run: |
-          docker build . \
-            --build-arg DOWNLOAD_VERSION="${CT_VERSION}" \
-             -f build/docker/prerelease/Dockerfile.rockylinux-8 \
-             -t cloudtruth:rockylinux-8
-          docker run -e CLOUDTRUTH_API_KEY --rm -v $(pwd):/truth -t cloudtruth:rockylinux-8 cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
-
-  test-debian:
-    runs-on: ubuntu-latest
-    env:
-      # These values are used for running the CLI command
-      CLOUDTRUTH_API_KEY: ${{ secrets.CI_ACCT_READONLY_CT_API_KEY }}
-      CT_TEST_PROJECT: TruthStrap
-      CT_TEST_PARAM: INTEGRATION_TEST_RESULT
-      CT_TEST_VALUE: Speicla
-
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 1
-
-      - name: Get the release version from the tag
-        if: env.CT_VERSION == ''
-        run: |
-          echo CT_VERSION=${GITHUB_REF#refs/tags/} >> $GITHUB_ENV
-
-      - name: debian-bullseye-slim
-        run: |
-          docker build . \
-            --build-arg DOWNLOAD_VERSION="${CT_VERSION}" \
-             -f build/docker/prerelease/Dockerfile.debian-bullseye-slim \
-             -t cloudtruth:debian-bullseye-slim
-          docker run -e CLOUDTRUTH_API_KEY --rm -v $(pwd):/truth -t cloudtruth:debian-bullseye-slim cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
-
-      - name: debian-buster-slim
-        run: |
-          docker build . \
-            --build-arg DOWNLOAD_VERSION="${CT_VERSION}" \
-             -f build/docker/prerelease/Dockerfile.debian-buster-slim \
-             -t cloudtruth:debian-buster-slim
-          docker run -e CLOUDTRUTH_API_KEY --rm -v $(pwd):/truth -t cloudtruth:debian-buster-slim cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
-
-      - name: debian-jessie-slim
-        run: |
-          docker build . \
-            --build-arg DOWNLOAD_VERSION="${CT_VERSION}" \
-             -f build/docker/prerelease/Dockerfile.debian-jessie-slim \
-             -t cloudtruth:debian-jessie-slim
-          docker run -e CLOUDTRUTH_API_KEY --rm -v $(pwd):/truth -t cloudtruth:debian-jessie-slim cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
-
-  test-macOS:
-    runs-on: macOS-latest
-    env:
-      # These values are used for running the CLI command
-      CLOUDTRUTH_API_KEY: ${{ secrets.CI_ACCT_READONLY_CT_API_KEY }}
-      CT_TEST_PROJECT: TruthStrap
-      CT_TEST_PARAM: INTEGRATION_TEST_RESULT
-      CT_TEST_VALUE: Speicla
-
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 1
-
-      - name: Get the release version from the tag
-        if: env.CT_VERSION == ''
-        run: |
-          echo CT_VERSION=${GITHUB_REF#refs/tags/} >> $GITHUB_ENV
-
-      - name: macOS-latest
-        run: |
-          sudo ./install.sh --version "${CT_VERSION}"
-          cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep "${CT_TEST_PARAM}" | grep "${CT_TEST_VALUE}"
-
-  test-ubuntu:
-    runs-on: ubuntu-latest
-    env:
-      # These values are used for running the CLI command
-      CLOUDTRUTH_API_KEY: ${{ secrets.CI_ACCT_READONLY_CT_API_KEY }}
-      CT_TEST_PROJECT: TruthStrap
-      CT_TEST_PARAM: INTEGRATION_TEST_RESULT
-      CT_TEST_VALUE: Speicla
-
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 1
-
-      - name: Get the release version from the tag
-        if: env.CT_VERSION == ''
-        run: |
-          echo CT_VERSION=${GITHUB_REF#refs/tags/} >> $GITHUB_ENV
-
-      - name: ubuntu-focal
-        run: |
-          docker build . \
-            --build-arg DOWNLOAD_VERSION="${CT_VERSION}" \
-             -f build/docker/prerelease/Dockerfile.ubuntu-focal \
-             -t cloudtruth:ubuntu-focal
-          docker run -e CLOUDTRUTH_API_KEY --rm -v $(pwd):/truth -t cloudtruth:ubuntu-focal cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
-
-      - name: ubuntu-bionic
-        run: |
-          docker build . \
-            --build-arg DOWNLOAD_VERSION="${CT_VERSION}" \
-             -f build/docker/prerelease/Dockerfile.ubuntu-bionic \
-             -t cloudtruth:ubuntu-bionic
-          docker run -e CLOUDTRUTH_API_KEY --rm -v $(pwd):/truth -t cloudtruth:ubuntu-bionic cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
-
-      - name: ubuntu-xenial
-        run: |
-          docker build . \
-            --build-arg DOWNLOAD_VERSION="${CT_VERSION}" \
-             -f build/docker/prerelease/Dockerfile.ubuntu-xenial \
-             -t cloudtruth:ubuntu-xenial
-          docker run -e CLOUDTRUTH_API_KEY --rm -v $(pwd):/truth -t cloudtruth:ubuntu-xenial cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
-
-      - name: ubuntu-trusty
-        run: |
-          docker build . \
-            --build-arg DOWNLOAD_VERSION="${CT_VERSION}" \
-             -f build/docker/prerelease/Dockerfile.ubuntu-trusty \
-             -t cloudtruth:ubuntu-trusty
-          docker run -e CLOUDTRUTH_API_KEY --rm -v $(pwd):/truth -t cloudtruth:ubuntu-trusty cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep ${CT_TEST_PARAM} | grep ${CT_TEST_VALUE}
-
-  test-windows:
-    runs-on: windows-latest
-    env:
-      # These values are used for running the CLI command
-      CLOUDTRUTH_API_KEY: ${{ secrets.CI_ACCT_READONLY_CT_API_KEY }}
-      CT_TEST_PROJECT: TruthStrap
-      CT_TEST_PARAM: INTEGRATION_TEST_RESULT
-      CT_TEST_VALUE: Speicla
-
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 1
-
-      - name: Get the release version from the tag
-        if: env.CT_VERSION == ''
-        run: |
-          echo CT_VERSION=${GITHUB_REF#refs/tags/} >> $GITHUB_ENV
-
-      - name: Set Windows CT_VERSION variable
-        run: |
-          # NOTE: the '${GITHUB_REF#refs/tags}' string manipulation does NOT work in PowerShell
-          echo CT_VERSION=$("${ENV:GITHUB_REF}".TrimStart("refs/tags/")) >> "${ENV:GITHUB_ENV}"
-
-      - name: windows-latest
-        shell: pwsh
-        run: |
-          $InformationPreference = 'Continue'
-          New-Alias grep findstr
-          $ctExe = .\install.ps1 -version "$ENV:CT_VERSION"
-          & $ctExe --project "$ENV:CT_TEST_PROJECT" parameters list -v | grep "$ENV:CT_TEST_PARAM" | grep "$ENV:CT_TEST_VALUE"
+  test-staging-release:
+    name: Test Staging Release
+    if: ${{ contains('staging', github.event.release.tag_name) || contains('nightly', github.event.release.tag_name)  }}
+    uses: ./.github/workflows/test-release.yml
+    with:
+      releaseVersion: ${{ event.release.tag_name }}
+      serverUrl: https://api.staging.cloudtruth.io
+    secrets:
+      CLOUDTRUTH_API_KEY: ${{ secrets.CT_STAGING_CI_ADMIN_API_KEY }}

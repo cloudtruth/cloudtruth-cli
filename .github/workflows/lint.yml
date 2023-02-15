@@ -18,13 +18,15 @@ on:
         description: cache ID to use for rust-cache
         type: string
         default: v0-cli-lint
+env:
+  CI: true
 jobs:
   lint:
     name: CLI Lint
     runs-on: ubuntu-latest
 
     steps:
-      - uses: cloudtruth/cli-build-action@v1
+      - uses: cloudtruth/cli-build-action@v2
         with:
           components: rustfmt, clippy
           skipBuild: true

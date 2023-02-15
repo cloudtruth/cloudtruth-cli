@@ -8,6 +8,82 @@ on:
       - main
 
 jobs:
-  placeholder:
-    name: Placeholder
+  create-release:
+    name: Create Staging Release
     runs-on: ubuntu-latest
+  
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+
+      - name: Get Cargo.toml package version
+        shell: bash
+        run: |
+          echo CARGO_PKG_VERSION=$(cargo pkgid | cut -d@ -f2 ) >> $GITHUB_ENV
+
+      - name: Create Draft Release
+        id: release
+        uses: ncipollo/release-action@v1
+        with:
+          allowUpdates: true # allow overwriting
+          updateOnlyUnreleased: true # prevent modifying any non-draft non-prerelease
+          removeArtifacts: true # deletes any existing artifacts when modifying
+          draft: true
+          tag: staging
+          name: Staging Build
+          commit: ${{ github.sha }} # need commit because tag doesn't exist yet
+          body: |
+           This is a pre-release build of latest code from `${{ github.ref_name }}`.
+           This build is for development purposes and not intended for production use.
+      
+    outputs:
+      releaseId: ${{ steps.release.outputs.id }}
+      releaseUploadUrl: ${{ steps.release.outputs.upload_url }}
+      tagName: staging
+      cargoPackageVersion: ${{ env.CARGO_PKG_VERSION }}
+
+  build-release:
+    name: Build Release
+    needs: create-release
+    uses: ./.github/workflows/build-release.yml
+    with:
+      releaseId: ${{ needs.create-release.outputs.releaseId }}
+      releaseUploadUrl: ${{ needs.create-release.outputs.releaseUploadUrl }}
+      releaseTag: ${{ needs.create-release.outputs.tagName }}
+      packageVersion: ${{ needs.create-release.outputs.cargoPackageVersion }}
+      debRevision: ${{ github.sha }}
+      rpmSnapshot: ${{ github.sha }}
+
+  test-release:
+    name: Test Draft Release
+    needs: [create-release, build-release]
+    uses: ./.github/workflows/test-release.yml
+    with:
+      releaseId: ${{ needs.create-release.outputs.releaseId }}
+      releaseVersion: ${{ needs.create-release.outputs.tagName }}
+      serverUrl: https://api.staging.cloudtruth.io
+    secrets:
+      CLOUDTRUTH_API_KEY: ${{ secrets.CT_STAGING_CI_ADMIN_API_KEY }}
+
+  make-prerelease:
+    name: Make Pre-Release
+    runs-on: ubuntu-latest
+    needs: [create-release, build-release, test-release]
+    # run after tests but ignore if they fail
+    if: always() && needs.build-release.result == 'success'
+    permissions:
+      contents: write
+    steps:
+
+      # move new release from draft to pre-release
+      - uses: ncipollo/release-action@v1
+        with:
+          draft: false
+          prerelease: true
+          allowUpdates: true
+          omitBody: true
+          omitName: true
+          tag: ${{ needs.create-release.outputs.tagName }}
+          commit: ${{ github.sha }}
+

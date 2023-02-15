@@ -40,13 +40,6 @@ def parse_args(*args) -> argparse.Namespace:
         help="Directory containing input workflow YAML templates.",
         default=TEMPLATE_DIR,
     )
-    parser.add_argument(
-        "-w",
-        "--workflow",
-        dest="workflow_name",
-        type=str,
-        choices=["draft", "prerelease"],
-    )
     return parser.parse_args(*args)
 
 
@@ -80,27 +73,13 @@ def update_workflow(config_file: str, template_dir: str, workflow_name: str) -> 
                 new_workflow += st.render(os=os, version=version)
         else:
             for version in data["versions"]:
-                runs_on = f"{os}-{version}"
+                runs_on = f"{os.lower()}-{version}"
                 new_workflow = new_workflow + jt.render(os=os, runs_on=runs_on)
                 st = Template(step_direct_ps if data.get("powershell") else step_direct_sh)
                 new_workflow += st.render(os=os, version=version)
 
-    if workflow_name == "draft":
-        # we have to merge it in
-        with Path("../.github/workflows/create-draft-release.yml").open() as fp:
-            existing_workflow_lines = fp.readlines()
-        for line in range(len(existing_workflow_lines)):
-            if "## @@@" in existing_workflow_lines[line]:
-                existing_workflow = "".join(existing_workflow_lines[:(line + 1)])
-                break
-        assert existing_workflow, "marker not found in create-draft-release?"
-        existing_workflow += new_workflow
-        with Path("../.github/workflows/create-draft-release.yml").open("w") as fp:
-            fp.write(existing_workflow)
-
-    elif workflow_name == "prerelease":
-        # we can replace it
-        with Path("../.github/workflows/check-pre-release.yml").open("w") as fp:
+    if workflow_name == "test-release":
+        with Path("../.github/workflows/test-release.yml").open("w") as fp:
             fp.write(new_workflow)
 
 
@@ -118,7 +97,7 @@ def update_dockerfiles(config_file: str, template_dir: str, workflow_name: str, 
             continue
 
         for version in data["versions"]:
-            dt = Template(dockerfile)
+            dt = Template(dockerfile, trim_blocks=True, lstrip_blocks=True)
             filename = f"{docker_dir}/{workflow_name}/Dockerfile.{os}-{version}"
             with Path(filename).open("w") as fp:
                 fp.write(dt.render(os=os, version=version))
@@ -129,8 +108,8 @@ def update_dockerfiles(config_file: str, template_dir: str, workflow_name: str, 
 
 def main(*sys_args):
     args = parse_args(*sys_args)
-    update_dockerfiles(args.config_file, args.template_dir, args.workflow_name, args.docker_dir)
-    update_workflow(args.config_file, args.template_dir, args.workflow_name)
+    update_dockerfiles(args.config_file, args.template_dir, 'test-release', args.docker_dir)
+    update_workflow(args.config_file, args.template_dir, 'test-release')
 
 
 if __name__ == "__main__":
