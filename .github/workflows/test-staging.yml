@@ -74,8 +74,6 @@ jobs:
           $ctExe = .\install.ps1 -Version '${{ inputs.releaseVersion }}'
           mv $ctExe .\
 
-
-
       - shell: bash
         run: make test_prerequisites
 
