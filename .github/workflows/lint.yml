@@ -53,4 +53,6 @@ jobs:
       - name: ShellCheck
         uses: ludeeus/action-shellcheck@master
         with:
-          ignore_paths: client
+          ignore_paths: |
+            client
+            target
