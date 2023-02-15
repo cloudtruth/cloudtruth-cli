@@ -38,7 +38,6 @@ jobs:
         run: rustup component add rustfmt clippy
 
       - uses: Swatinem/rust-cache@v2
-        if: ${{ !fromJSON(inputs.skipCache) }}
         with:
           prefix-key: ${{ inputs.rustCacheKey }}
           shared-key: ${{ runner.os }}
