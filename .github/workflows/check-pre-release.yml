@@ -4,7 +4,7 @@ on:
     types: [prereleased]
 
 name: 'Check Pre-Release'
-run-name: 'Check Pre-Release ${{events.release.tag_name }}'
+run-name: 'Check Pre-Release ${{ github.event.release.tag_name }}'
 
 jobs:
   test-release:
