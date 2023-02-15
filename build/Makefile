@@ -23,10 +23,6 @@ prerequisites:
 	python3 -m pip install --user --upgrade -r requirements.txt
 	# curl https://raw.githubusercontent.com/nektos/act/master/install.sh | sudo bash
 
-lint:
-	python3 -m pip install --user --upgrade flake8
-	python3 -m flake8
-
 workflow-test-release:
 	python3 gen.py
 
