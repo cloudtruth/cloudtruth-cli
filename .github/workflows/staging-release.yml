@@ -22,14 +22,14 @@ jobs:
         run: |
           echo CARGO_PKG_VERSION=$(cargo pkgid | cut -d@ -f2 ) >> $GITHUB_ENV
 
-      - name: Create Draft Release
+      - name: Create Release
         id: release
         uses: ncipollo/release-action@v1
         with:
           allowUpdates: true # allow overwriting
           updateOnlyUnreleased: true # prevent modifying any non-draft non-prerelease
           # removeArtifacts: true # deletes any existing artifacts when modifying
-          draft: false
+          draft: false # no draft. staging release needs to be always available for install
           prerelease: true
           tag: staging
           name: Staging Build
