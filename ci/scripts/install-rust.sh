@@ -1,5 +1,8 @@
 #!/usr/bin/env sh
 ### Used by GitHub Workflows to install the correct Rust toolchain
+### As of 2023, all GitHub actions for this purpose are are either deprecated
+### or do not support the usage of the `rust-toolchain.toml` file. As such,
+### we are using a custom script to ensure the correct Rust toolchain is installed.
 
 # When rustup is updated, it tries to replace its binary, which on Windows is somehow locked.
 # This can result in the CI failure, see: https://github.com/rust-lang/rustup/issues/3029

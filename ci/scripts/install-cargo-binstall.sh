@@ -1,4 +1,8 @@
 #!/usr/bin/env sh
+### Installs cargo-binstall on the GitHub Actions runner.
+### This speeds up the installation of utilities such as cargo-deb and cross
+### by installation pre-built binaries rather than compiling from source
+
 BASE_BINSTALL_URL='https://github.com/cargo-bins/cargo-binstall/releases/latest/download/'
 case $(uname) in
     Linux)
