@@ -157,17 +157,33 @@ jobs:
 
           echo STRIP=$STRIP >> $GITHUB_ENV
 
-      - name: Build CLI
-        id: rust
-        uses: cloudtruth/cli-build-action@v2
+      - run: sh build/scripts/install-rust.sh
+        shell: bash
+
+      - run: rustup target add ${{ matrix.target }}
+        shell: bash
+
+      - uses: Swatinem/rust-cache@v2
         with:
-          cross: ${{ matrix.use-cross }}
-          cargoBinstall: ${{ matrix.use-cross || contains(matrix.build, 'linux') }}
-          profile: minimal
-          target: ${{ matrix.target }}
-          buildOptions: --release --target ${{ matrix.target }}
-          skipUnitTests: true
-          cacheDirectories: ${{ env.HOME}}/.cargo/bin
+          prefix-key: v0-cloudtruth-cli
+          shared-key: ${{ runner.os }}-${{ matrix.target }}
+          cache-directories: ${{ env.HOME}}/.cargo/bin
+
+      - run: sh build/scripts/install-cargo-binstall.sh
+        if: matrix.use-cross || contains(matrix.build, 'linux')
+        shell: bash
+
+      - run: cargo binstall --no-confirm --force cross
+        if: matrix.use-cross
+        shell: bash
+
+      - run: cross build --release --target ${{ matrix.target }}
+        if: matrix.use-cross
+        shell: bash
+
+      - run: cargo build --release --target ${{ matrix.target }}
+        if: ${{ !matrix.use-cross }}
+        shell: bash
 
       - name: Install cargo-deb
         if: contains(matrix.build, 'linux')

@@ -26,18 +26,21 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: cloudtruth/cli-build-action@v2
+      - uses: actions/checkout@v3
         with:
-          components: rustfmt, clippy
-          skipBuild: true
-          skipUnitTests: true
-          cacheKey: ${{ inputs.rustCacheKey }}
+          repository: cloudtruth/cloudtruth-cli
+          ref: ${{ inputs.ref }}
 
-      - name: ShellCheck
-        if: inputs.runsOn != 'windows-latest'
-        uses: ludeeus/action-shellcheck@master
+      - shell: bash
+        run: sh build/scripts/install-rust.sh
+
+      - shell: bash
+        run: rustup component add rustfmt clippy
+
+      - uses: Swatinem/rust-cache@v2
         with:
-          ignore_paths: client
+          prefix-key: ${{ inputs.rustCacheKey }}
+          shared-key: ${{ runner.os }}
 
       - run: cargo fmt --all -- --check
 
@@ -46,3 +49,10 @@ jobs:
           name: Clippy Check
           token: ${{ github.token }}
           args: --all-features -- -D warnings
+
+      - name: ShellCheck
+        uses: ludeeus/action-shellcheck@master
+        with:
+          ignore_paths: |
+            client
+            target

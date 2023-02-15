@@ -129,7 +129,11 @@ endif
 # update rust release channels and rustup itself
 	rustup update
 # autoinstalls rust toolchain specified by rust-toolchain.toml in repo
-	rustup show 
+	rustup show
+# we use minimal profile in rust-toolchain.toml for CICD builds.
+# for dev environment, install default profile components
+	rustup component add rustfmt clippy rust-docs
+
 ifeq ($(os_name),Darwin)
 	brew install shellcheck;
 else ifeq ($(os_name),Linux)
