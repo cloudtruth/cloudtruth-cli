@@ -157,7 +157,7 @@ jobs:
 
           echo STRIP=$STRIP >> $GITHUB_ENV
 
-      - run: sh build/scripts/install-rust.sh
+      - run: sh ci/scripts/install-rust.sh
         shell: bash
 
       - run: rustup target add ${{ matrix.target }}
@@ -169,7 +169,7 @@ jobs:
           shared-key: ${{ runner.os }}-${{ matrix.target }}
           cache-directories: ${{ env.HOME}}/.cargo/bin
 
-      - run: sh build/scripts/install-cargo-binstall.sh
+      - run: sh ci/scripts/install-cargo-binstall.sh
         if: matrix.use-cross || contains(matrix.build, 'linux')
         shell: bash
 

@@ -50,7 +50,7 @@ jobs:
             --build-arg DOWNLOAD_AUTH_TOKEN="${CT_DOWNLOAD_AUTH_TOKEN}" \
             --build-arg DOWNLOAD_RELEASE_ID="${CT_DOWNLOAD_RELEASE_ID}" \
             --build-arg DOWNLOAD_VERSION="${CT_DOWNLOAD_VERSION}" \
-             -f build/docker/test-release/Dockerfile.alpine-3.17 \
+             -f ci/docker/test-release/Dockerfile.alpine-3.17 \
              -t cloudtruth:alpine-3.17
           docker run --rm \
             -i --log-driver=none -a stdout -a stderr \
@@ -68,7 +68,7 @@ jobs:
             --build-arg DOWNLOAD_AUTH_TOKEN="${CT_DOWNLOAD_AUTH_TOKEN}" \
             --build-arg DOWNLOAD_RELEASE_ID="${CT_DOWNLOAD_RELEASE_ID}" \
             --build-arg DOWNLOAD_VERSION="${CT_DOWNLOAD_VERSION}" \
-             -f build/docker/test-release/Dockerfile.alpine-3.16 \
+             -f ci/docker/test-release/Dockerfile.alpine-3.16 \
              -t cloudtruth:alpine-3.16
           docker run --rm \
             -i --log-driver=none -a stdout -a stderr \
@@ -86,7 +86,7 @@ jobs:
             --build-arg DOWNLOAD_AUTH_TOKEN="${CT_DOWNLOAD_AUTH_TOKEN}" \
             --build-arg DOWNLOAD_RELEASE_ID="${CT_DOWNLOAD_RELEASE_ID}" \
             --build-arg DOWNLOAD_VERSION="${CT_DOWNLOAD_VERSION}" \
-             -f build/docker/test-release/Dockerfile.alpine-3.15 \
+             -f ci/docker/test-release/Dockerfile.alpine-3.15 \
              -t cloudtruth:alpine-3.15
           docker run --rm \
             -i --log-driver=none -a stdout -a stderr \
@@ -104,7 +104,7 @@ jobs:
             --build-arg DOWNLOAD_AUTH_TOKEN="${CT_DOWNLOAD_AUTH_TOKEN}" \
             --build-arg DOWNLOAD_RELEASE_ID="${CT_DOWNLOAD_RELEASE_ID}" \
             --build-arg DOWNLOAD_VERSION="${CT_DOWNLOAD_VERSION}" \
-             -f build/docker/test-release/Dockerfile.alpine-3.14 \
+             -f ci/docker/test-release/Dockerfile.alpine-3.14 \
              -t cloudtruth:alpine-3.14
           docker run --rm \
             -i --log-driver=none -a stdout -a stderr \
@@ -146,7 +146,7 @@ jobs:
             --build-arg DOWNLOAD_AUTH_TOKEN="${CT_DOWNLOAD_AUTH_TOKEN}" \
             --build-arg DOWNLOAD_RELEASE_ID="${CT_DOWNLOAD_RELEASE_ID}" \
             --build-arg DOWNLOAD_VERSION="${CT_DOWNLOAD_VERSION}" \
-             -f build/docker/test-release/Dockerfile.rockylinux-9 \
+             -f ci/docker/test-release/Dockerfile.rockylinux-9 \
              -t cloudtruth:rockylinux-9
           docker run --rm \
             -i --log-driver=none -a stdout -a stderr \
@@ -164,7 +164,7 @@ jobs:
             --build-arg DOWNLOAD_AUTH_TOKEN="${CT_DOWNLOAD_AUTH_TOKEN}" \
             --build-arg DOWNLOAD_RELEASE_ID="${CT_DOWNLOAD_RELEASE_ID}" \
             --build-arg DOWNLOAD_VERSION="${CT_DOWNLOAD_VERSION}" \
-             -f build/docker/test-release/Dockerfile.rockylinux-8 \
+             -f ci/docker/test-release/Dockerfile.rockylinux-8 \
              -t cloudtruth:rockylinux-8
           docker run --rm \
             -i --log-driver=none -a stdout -a stderr \
@@ -206,7 +206,7 @@ jobs:
             --build-arg DOWNLOAD_AUTH_TOKEN="${CT_DOWNLOAD_AUTH_TOKEN}" \
             --build-arg DOWNLOAD_RELEASE_ID="${CT_DOWNLOAD_RELEASE_ID}" \
             --build-arg DOWNLOAD_VERSION="${CT_DOWNLOAD_VERSION}" \
-             -f build/docker/test-release/Dockerfile.debian-bullseye-slim \
+             -f ci/docker/test-release/Dockerfile.debian-bullseye-slim \
              -t cloudtruth:debian-bullseye-slim
           docker run --rm \
             -i --log-driver=none -a stdout -a stderr \
@@ -224,7 +224,7 @@ jobs:
             --build-arg DOWNLOAD_AUTH_TOKEN="${CT_DOWNLOAD_AUTH_TOKEN}" \
             --build-arg DOWNLOAD_RELEASE_ID="${CT_DOWNLOAD_RELEASE_ID}" \
             --build-arg DOWNLOAD_VERSION="${CT_DOWNLOAD_VERSION}" \
-             -f build/docker/test-release/Dockerfile.debian-buster-slim \
+             -f ci/docker/test-release/Dockerfile.debian-buster-slim \
              -t cloudtruth:debian-buster-slim
           docker run --rm \
             -i --log-driver=none -a stdout -a stderr \
@@ -242,7 +242,7 @@ jobs:
             --build-arg DOWNLOAD_AUTH_TOKEN="${CT_DOWNLOAD_AUTH_TOKEN}" \
             --build-arg DOWNLOAD_RELEASE_ID="${CT_DOWNLOAD_RELEASE_ID}" \
             --build-arg DOWNLOAD_VERSION="${CT_DOWNLOAD_VERSION}" \
-             -f build/docker/test-release/Dockerfile.debian-stretch-slim \
+             -f ci/docker/test-release/Dockerfile.debian-stretch-slim \
              -t cloudtruth:debian-stretch-slim
           docker run --rm \
             -i --log-driver=none -a stdout -a stderr \
@@ -314,7 +314,7 @@ jobs:
             --build-arg DOWNLOAD_AUTH_TOKEN="${CT_DOWNLOAD_AUTH_TOKEN}" \
             --build-arg DOWNLOAD_RELEASE_ID="${CT_DOWNLOAD_RELEASE_ID}" \
             --build-arg DOWNLOAD_VERSION="${CT_DOWNLOAD_VERSION}" \
-             -f build/docker/test-release/Dockerfile.ubuntu-lunar \
+             -f ci/docker/test-release/Dockerfile.ubuntu-lunar \
              -t cloudtruth:ubuntu-lunar
           docker run --rm \
             -i --log-driver=none -a stdout -a stderr \
@@ -332,7 +332,7 @@ jobs:
             --build-arg DOWNLOAD_AUTH_TOKEN="${CT_DOWNLOAD_AUTH_TOKEN}" \
             --build-arg DOWNLOAD_RELEASE_ID="${CT_DOWNLOAD_RELEASE_ID}" \
             --build-arg DOWNLOAD_VERSION="${CT_DOWNLOAD_VERSION}" \
-             -f build/docker/test-release/Dockerfile.ubuntu-kinetic \
+             -f ci/docker/test-release/Dockerfile.ubuntu-kinetic \
              -t cloudtruth:ubuntu-kinetic
           docker run --rm \
             -i --log-driver=none -a stdout -a stderr \
@@ -350,7 +350,7 @@ jobs:
             --build-arg DOWNLOAD_AUTH_TOKEN="${CT_DOWNLOAD_AUTH_TOKEN}" \
             --build-arg DOWNLOAD_RELEASE_ID="${CT_DOWNLOAD_RELEASE_ID}" \
             --build-arg DOWNLOAD_VERSION="${CT_DOWNLOAD_VERSION}" \
-             -f build/docker/test-release/Dockerfile.ubuntu-jammy \
+             -f ci/docker/test-release/Dockerfile.ubuntu-jammy \
              -t cloudtruth:ubuntu-jammy
           docker run --rm \
             -i --log-driver=none -a stdout -a stderr \
@@ -368,7 +368,7 @@ jobs:
             --build-arg DOWNLOAD_AUTH_TOKEN="${CT_DOWNLOAD_AUTH_TOKEN}" \
             --build-arg DOWNLOAD_RELEASE_ID="${CT_DOWNLOAD_RELEASE_ID}" \
             --build-arg DOWNLOAD_VERSION="${CT_DOWNLOAD_VERSION}" \
-             -f build/docker/test-release/Dockerfile.ubuntu-focal \
+             -f ci/docker/test-release/Dockerfile.ubuntu-focal \
              -t cloudtruth:ubuntu-focal
           docker run --rm \
             -i --log-driver=none -a stdout -a stderr \
@@ -386,7 +386,7 @@ jobs:
             --build-arg DOWNLOAD_AUTH_TOKEN="${CT_DOWNLOAD_AUTH_TOKEN}" \
             --build-arg DOWNLOAD_RELEASE_ID="${CT_DOWNLOAD_RELEASE_ID}" \
             --build-arg DOWNLOAD_VERSION="${CT_DOWNLOAD_VERSION}" \
-             -f build/docker/test-release/Dockerfile.ubuntu-bionic \
+             -f ci/docker/test-release/Dockerfile.ubuntu-bionic \
              -t cloudtruth:ubuntu-bionic
           docker run --rm \
             -i --log-driver=none -a stdout -a stderr \

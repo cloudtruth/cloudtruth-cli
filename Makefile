@@ -5,10 +5,10 @@
 os_name := $(shell uname -s)
 rustup_exists := $(shell which rustup)
 openapi_gen_version := v5.3.1
-build_dir := build
+ci_dir := ci
 test_dir := integration-tests
 # convenience for looping
-subdirs := $(build_dir)
+subdirs := $(ci_dir)
 subdirs += $(test_dir)
 
 .DEFAULT = all
@@ -158,7 +158,7 @@ integration: cargo
 	make -C $(test_dir) $@
 
 regen: cargo
-	make -C $(build_dir) $@
+	make -C $(ci_dir) $@
 
 help: targets
 
