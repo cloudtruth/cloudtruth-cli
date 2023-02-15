@@ -6,7 +6,7 @@ extends: default
 ignore: |
   /client/
 
-IGNORE-FROM-FILE: [.gitignore, .yamlignore]
+ignore-from-file: [.gitignore, .yamlignore]
 
 rules:
   comments-indentation: disable
