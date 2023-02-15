@@ -28,7 +28,7 @@ jobs:
         with:
           allowUpdates: true # allow overwriting
           updateOnlyUnreleased: true # prevent modifying any non-draft non-prerelease
-          removeArtifacts: true # deletes any existing artifacts when modifying
+          # removeArtifacts: true # deletes any existing artifacts when modifying
           draft: true
           tag: staging
           name: Staging Build
