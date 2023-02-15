@@ -40,7 +40,7 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         if: ${{ !fromJSON(inputs.skipCache) }}
         with:
-          prefix-key: ${{ inputs.cacheKey }}
+          prefix-key: ${{ inputs.rustCacheKey }}
           shared-key: ${{ runner.os }}
 
       - run: cargo fmt --all -- --check
