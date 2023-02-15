@@ -95,6 +95,7 @@ DEBUG_SUCCESS_CALL = """\
         }
 """
 
+
 def file_read_content(filename: str) -> str:
     f = open(filename, "r")
     content = f.read()
@@ -159,7 +160,7 @@ def update_gitpush(client_dir: str, verbose: bool) -> None:
     temp = temp.replace(orig_backticks, update_backticks)
 
     orig_need_quotes = ":${GIT_TOKEN}@"
-    update_need_quotes = ":\"${GIT_TOKEN}\"@"
+    update_need_quotes = ':"${GIT_TOKEN}"@'
     temp = temp.replace(orig_need_quotes, update_need_quotes)
 
     if temp != orig:
@@ -257,7 +258,7 @@ def add_debug_errors(srcdir: str, verbose: bool) -> None:
     """
     filelist = glob.glob(f"{srcdir}/apis/*.rs")
     raise_err = "        Err(Error::ResponseError(local_var_error))"
-    base_print = "\"RESP {} {}\""
+    base_print = '"RESP {} {}"'
     assert raise_err in REST_DEBUG_ERRORS, "Adding REST debug error handling must return error"
     assert base_print in REST_DEBUG_ERRORS, "Adding REST debug error handling must print error"
     for filename in filelist:
@@ -280,8 +281,8 @@ def fix_optional(filelist: List[str], var_name: str, var_type: str = "String", v
     """
     orig_variable = f"{var_name}: {var_type}"
     update_variable = orig_variable.replace(var_type, f"Option<{var_type}>")
-    orig_serde = f"rename = \"{var_name}\""
-    updated_serde = orig_serde + ", skip_serializing_if = \"Option::is_none\""
+    orig_serde = f'rename = "{var_name}"'
+    updated_serde = orig_serde + ', skip_serializing_if = "Option::is_none"'
 
     for filename in filelist:
         orig = file_read_content(filename)
@@ -359,7 +360,7 @@ def add_func_macro_to_mod(srcdir: str, verbose: bool) -> None:
     """
     filename = f"{srcdir}/apis/mod.rs"
     macro_def = "macro_rules! function"
-    assert(macro_def in FUNCTION_MACRO)
+    assert macro_def in FUNCTION_MACRO
 
     orig = file_read_content(filename)
     if macro_def in orig:
@@ -382,8 +383,7 @@ def serdes_error_handling_calls(srcdir: str, verbose: bool) -> None:
     updated_use = orig_use.replace("ResponseContent;", "{handle_serde_error, ResponseContent};")
     orig_serde_err = "serde_json::from_str(&local_var_content).map_err(Error::from)"
     updated_serde_err = orig_serde_err.replace(
-        "Error::from",
-        "|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content)"
+        "Error::from", "|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content)"
     )
 
     for filename in filelist:
@@ -480,8 +480,8 @@ def default_enums(srcdir: str, verbose: bool) -> None:
     This is spot tested in the src/database/history.tests.parse_to_history_type_enum().
     """
     filelist = glob.glob(f"{srcdir}/models/*.rs")
-    default_value = "#[serde(rename = \"unknown_default_open_api\")]"
-    default_variant = "#[serde(rename = \"unknown_default_open_api\", other)]"
+    default_value = '#[serde(rename = "unknown_default_open_api")]'
+    default_variant = '#[serde(rename = "unknown_default_open_api", other)]'
 
     for filename in filelist:
         orig = file_read_content(filename)
@@ -493,10 +493,11 @@ def default_enums(srcdir: str, verbose: bool) -> None:
             print(f"Updating {filename} with default variant")
         file_write_content(filename, updated)
 
+
 def remove_unused_parameter_id(srcdir: str, verbose: bool) -> None:
     """
     Removes unused paramer_id format strings in the paths for project API endpoints.
-    
+
     Not sure why these are defined in the OpenAPI spec when they're not used.
     """
     filename = f"{srcdir}/apis/projects_api.rs"

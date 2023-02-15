@@ -13,9 +13,7 @@ CONFIG_FILE = "cfg.yaml"
 
 
 def parse_args(*args) -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        description="Update the workflow and dockerfiles for CI"
-    )
+    parser = argparse.ArgumentParser(description="Update the workflow and dockerfiles for CI")
     parser.add_argument(
         "-c",
         "--config-file",
@@ -108,8 +106,8 @@ def update_dockerfiles(config_file: str, template_dir: str, workflow_name: str, 
 
 def main(*sys_args):
     args = parse_args(*sys_args)
-    update_dockerfiles(args.config_file, args.template_dir, 'test-release', args.docker_dir)
-    update_workflow(args.config_file, args.template_dir, 'test-release')
+    update_dockerfiles(args.config_file, args.template_dir, "test-release", args.docker_dir)
+    update_workflow(args.config_file, args.template_dir, "test-release")
 
 
 if __name__ == "__main__":

@@ -14,15 +14,8 @@ from testcase import CT_TEST_KNOWN_ISSUES
 
 
 def parse_args(*args) -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        description="Run the CloudTruth CLI tests"
-    )
-    parser.add_argument(
-        "-p",
-        "--profile",
-        type=str,
-        help="CLI profile to use for tests"
-    )
+    parser = argparse.ArgumentParser(description="Run the CloudTruth CLI tests")
+    parser.add_argument("-p", "--profile", type=str, help="CLI profile to use for tests")
     parser.add_argument(
         "-k",
         "--api_key",
@@ -42,120 +35,82 @@ def parse_args(*args) -> argparse.Namespace:
         default=3,
         help="Unittest verbosity level",
     )
-    parser.add_argument(
-        "--pdb",
-        dest="pdb",
-        action='store_true',
-        help="Open the debugger when a test fails"
-    )
+    parser.add_argument("--pdb", dest="pdb", action="store_true", help="Open the debugger when a test fails")
 
-    parser.add_argument(
-        "--debug",
-        dest="debug",
-        action='store_true',
-        help="Equivalent of --pdb --failfast"
-    )
+    parser.add_argument("--debug", dest="debug", action="store_true", help="Equivalent of --pdb --failfast")
     parser.add_argument(
         "--file",
         dest="file_filter",
         type=str,
         default="test_*.py",
-        help="Filter the files run using the specified pattern"
+        help="Filter the files run using the specified pattern",
+    )
+    parser.add_argument("--failfast", action="store_true", help="Stop the test on first error")
+    parser.add_argument(
+        "-lc", "--log-commands", dest="log_commands", action="store_true", help="Print the commands to stdout."
     )
     parser.add_argument(
-        "--failfast",
-        action="store_true",
-        help="Stop the test on first error"
+        "-lo", "--log-output", dest="log_output", action="store_true", help="Print the output to stdout."
     )
     parser.add_argument(
-        "-lc",
-        "--log-commands",
-        dest="log_commands",
-        action="store_true",
-        help="Print the commands to stdout."
-    )
-    parser.add_argument(
-        "-lo",
-        "--log-output",
-        dest="log_output",
-        action="store_true",
-        help="Print the output to stdout."
-    )
-    parser.add_argument(
-        "-la",
-        "--log-all",
-        dest="log_all",
-        action="store_true",
-        help="Print the output and commands to stdout"
+        "-la", "--log-all", dest="log_all", action="store_true", help="Print the output and commands to stdout"
     )
     parser.add_argument(
         "-lcf",
         "--log-commands-on-failure",
         dest="log_commands_on_failure",
         action="store_true",
-        help="Print the commands to stdout when a test fails"
+        help="Print the commands to stdout when a test fails",
     )
     parser.add_argument(
         "-lof",
         "--log-output-on-failure",
         dest="log_output_on_failure",
         action="store_true",
-        help="Print the output to stdout when a test fails"
+        help="Print the output to stdout when a test fails",
     )
     parser.add_argument(
         "-laf",
         "--log-all-on-failure",
         dest="log_all_on_failure",
         action="store_true",
-        help="Print the output and commands to stdout when a test fails"
+        help="Print the output and commands to stdout when a test fails",
     )
     parser.add_argument(
         "--job-id",
         type=str,
         dest="job_id",
-        help="Job Identifier to use as a suffix on project and environment names (default: testcli)"
+        help="Job Identifier to use as a suffix on project and environment names (default: testcli)",
     )
     parser.add_argument(
         "--filter",
         dest="test_filter",
         nargs="+",
         default=[],
-        help="Only include tests containing the provided string(s) in the name"
+        help="Only include tests containing the provided string(s) in the name",
     )
     parser.add_argument(
         "--list",
         dest="list_only",
         action="store_true",
-        help="Only print the tests that will be run (without running them)."
+        help="Only print the tests that will be run (without running them).",
     )
-    parser.add_argument(
-        "--before",
-        dest="before",
-        help="Only run tests before the specified string"
-    )
-    parser.add_argument(
-        "--after",
-        dest="after",
-        help="Only run tests after the specified string"
-    )
+    parser.add_argument("--before", dest="before", help="Only run tests before the specified string")
+    parser.add_argument("--after", dest="after", help="Only run tests after the specified string")
     parser.add_argument(
         "--exclude",
         dest="test_exclude",
         nargs="+",
         default=[],
-        help="Exclude tests containing the provided string(s) in the name"
+        help="Exclude tests containing the provided string(s) in the name",
     )
-    parser.add_argument(
-        "--known-issues",
-        dest="known_issues",
-        action="store_true",
-        help="don't skip known issues"
-    )
+    parser.add_argument("--known-issues", dest="known_issues", action="store_true", help="don't skip known issues")
     return parser.parse_args(*args)
 
 
 def debugTestRunner(enable_debug: bool, verbosity: int, failfast: bool):
     """Overload the TextTestRunner to conditionally drop into pdb on an error/failure."""
+
     class DebugTestResult(unittest.TextTestResult):
         def addError(self, test, err):
             # called before tearDown()
@@ -178,7 +133,7 @@ def debugTestRunner(enable_debug: bool, verbosity: int, failfast: bool):
 
 
 def print_suite(suite):
-    if hasattr(suite, '__iter__'):
+    if hasattr(suite, "__iter__"):
         for x in suite:
             print_suite(x)
     elif hasattr(suite, "_testMethodName"):
@@ -205,18 +160,21 @@ def filter_suite(suite, func):
 def filter_before(suite, before: str):
     def is_before(testcase: str) -> bool:
         return testcase._testMethodName > before
+
     return filter_suite(suite, is_before)
 
 
 def filter_after(suite, after: str):
     def is_after(testcase: str) -> bool:
         return testcase._testMethodName < after
+
     return filter_suite(suite, is_after)
 
 
 def filter_exclude(suite, exclude: str):
     def is_excluded(testcase: str) -> bool:
         return exclude in testcase._testMethodName
+
     return filter_suite(suite, is_excluded)
 
 
@@ -242,6 +200,7 @@ def live_test(*args):
 
     if not args.job_id:
         import uuid
+
         args.job_id = f"local-{uuid.uuid4()}"
     print(f"JOB_ID: {args.job_id}")
     env[CT_TEST_JOB_ID] = args.job_id
@@ -258,7 +217,7 @@ def live_test(*args):
         args.pdb = True
         args.failfast = True
 
-    test_directory = '.'
+    test_directory = "."
     loader = unittest.TestLoader()
     applied_filter = []
     if args.file_filter:
@@ -292,9 +251,7 @@ def live_test(*args):
         print_suite(suite)
         return 0
 
-    runner = debugTestRunner(
-        enable_debug=args.pdb, verbosity=args.verbosity, failfast=args.failfast
-    )
+    runner = debugTestRunner(enable_debug=args.pdb, verbosity=args.verbosity, failfast=args.failfast)
     test_result = runner.run(suite)
     rval = 0
     if len(test_result.errors):

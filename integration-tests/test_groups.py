@@ -27,7 +27,7 @@ class TestGroups(TestCase):
 
         # create with a description
         orig_desc = "Description on create"
-        result = self.run_cli(cmd_env, sub_cmd + f"set {group_name} --desc \"{orig_desc}\"")
+        result = self.run_cli(cmd_env, sub_cmd + f'set {group_name} --desc "{orig_desc}"')
         self.assertResultSuccess(result)
 
         result = self.run_cli(cmd_env, sub_cmd + "list --values --format csv")
@@ -36,14 +36,14 @@ class TestGroups(TestCase):
 
         # update the description
         new_desc = "Updated description"
-        result = self.run_cli(cmd_env, sub_cmd + f"set {group_name} --desc \"{new_desc}\"")
+        result = self.run_cli(cmd_env, sub_cmd + f'set {group_name} --desc "{new_desc}"')
         self.assertResultSuccess(result)
 
         entry = self._get_group_entry(cmd_env, group_name)
         self.assertEqual(entry.get(PROP_DESC), new_desc)
 
         # idempotent - do it again
-        result = self.run_cli(cmd_env, sub_cmd + f"set {group_name} --desc \"{new_desc}\"")
+        result = self.run_cli(cmd_env, sub_cmd + f'set {group_name} --desc "{new_desc}"')
         self.assertResultSuccess(result)
 
         result = self.run_cli(cmd_env, sub_cmd + f"get {group_name}")

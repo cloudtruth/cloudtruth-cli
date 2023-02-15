@@ -3,8 +3,7 @@ from testcase import skip_known_issue
 
 
 class TestProjects(TestCase):
-
-    @skip_known_issue('SC-9666')
+    @skip_known_issue("SC-9666")
     def test_backup_basic(self):
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
@@ -172,8 +171,8 @@ class TestProjects(TestCase):
             text = result.out()
             self.assertIn(f"{type1}:", text)
             self.assertIn(f"{type2}:", text)
-            self.assertIn(f"constraint: \"{type1_min}\"", text)
-            self.assertIn(f"constraint: \"{type1_max}\"", text)
+            self.assertIn(f'constraint: "{type1_min}"', text)
+            self.assertIn(f'constraint: "{type1_max}"', text)
 
             self.assertIn(f"{env_a}:", text)
             self.assertIn(f"{env_b}:", text)

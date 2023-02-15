@@ -30,7 +30,7 @@ class TestUsers(TestCase):
 
         # create with a description
         orig_desc = "Description on create"
-        result = self.run_cli(cmd_env, sub_cmd + f"set {user_name} --desc \"{orig_desc}\"")
+        result = self.run_cli(cmd_env, sub_cmd + f'set {user_name} --desc "{orig_desc}"')
         self.assertResultSuccess(result)
         api_key = result.stdout[1]
 
@@ -40,7 +40,7 @@ class TestUsers(TestCase):
 
         # update the description
         new_desc = "Updated description"
-        result = self.run_cli(cmd_env, sub_cmd + f"set {user_name} --desc \"{new_desc}\"")
+        result = self.run_cli(cmd_env, sub_cmd + f'set {user_name} --desc "{new_desc}"')
         self.assertResultSuccess(result)
 
         entry = self._get_user_entry(cmd_env, user_name)
@@ -49,7 +49,7 @@ class TestUsers(TestCase):
         self.assertEqual(entry.get(PROP_DESC), new_desc)
 
         # idempotent - do it again
-        result = self.run_cli(cmd_env, sub_cmd + f"set {user_name} --desc \"{new_desc}\"")
+        result = self.run_cli(cmd_env, sub_cmd + f'set {user_name} --desc "{new_desc}"')
         self.assertResultSuccess(result)
 
         # use the new API key -- see we get some environments back
@@ -181,7 +181,7 @@ class TestUsers(TestCase):
         cmd_env = self.get_cmd_env()
         base_cmd = self.get_cli_base_cmd()
         invite_cmd = base_cmd + "user invite "
-        def_role = 'viewer'
+        def_role = "viewer"
         curr_user = self.current_username(cmd_env)
 
         invitee = "ci-testing"

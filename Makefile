@@ -19,7 +19,10 @@ subdirs += $(test_dir)
 .PHONY += help
 .PHONY += image
 .PHONY += integration
+.PHONY += fix
+.PHONY += format
 .PHONY += lint
+.PHONY += lint_fix
 .PHONY += lint_local
 .PHONY += precommit
 .PHONY += prerequisites
@@ -50,7 +53,7 @@ shell:
 ### Commands for either outside or inside the container
 
 # the client must be generated before building the Rust program that uses it
-cargo cli: client
+cargo cli Cargo.lock %.rs %.toml: client
 	cargo build
 
 clean:
@@ -59,7 +62,7 @@ clean:
 
 # client needs to re-generated when the openapi.yaml changes
 client: openapi.yml patch_client.py
-	rm -rf client/
+	rm -rf client/src
 	docker run --rm \
 		-v "$(shell pwd):/local" \
 		--user "$(shell id -u):$(shell id -g)" \
@@ -72,20 +75,41 @@ client: openapi.yml patch_client.py
 	python3 patch_client.py
 	cd client && cargo fmt --all && cargo build
 
-lint_local:
+# apply both formatting fixes and linting fixes
+fix: format lint_fix
+
+# apply formatting fixes to the working directory
+format:
+	cargo fmt --all
+	python3 -m black .
+	ruff check . --fix
+
+lint:
 	cargo fmt --all -- --check
 	cargo clippy --all-features -- -D warnings
-	shellcheck install.sh
+	python3 -m black --check .
+	ruff check .
+# run Shellcheck on all shell scripts, ignoring client/ and .gitignore files
+	git ls-files | grep -v -E '^client/' | grep -E '\.sh$$' | xargs shellcheck
+# disable yamllint for now until we find better auto-formatting options
+#	python3 -m yamllint .
 
-lint: lint_local subdir_lint
+# apply linting fixes
+lint_fix:
+	@cargo clippy --all-features --fix -- -D warnings; \
+	[ "$$?" -eq 101 ] && read -p 'Force fixes? [y/n]: ' force; \
+	case "$$force" in \
+		[Yy]*) \
+			cargo clippy --all-features --fix --allow-staged --allow-dirty -- -D warnings ;; \
+		*) \
+			exit 1 ;; \
+	esac;
+	python3 -m black .
 
 subdir_action:
 	@for sd in $(subdirs) ; do \
   		echo "Performing $(SUBDIR_ACTION) in $$sd directory" && make -C $$sd $(SUBDIR_ACTION) || exit 1; \
   	done
-
-subdir_lint:
-	make subdir_action SUBDIR_ACTION=lint
 
 subdir_precommit:
 	make subdir_action SUBDIR_ACTION=precommit
@@ -93,7 +117,7 @@ subdir_precommit:
 subdir_prereq:
 	make subdir_action SUBDIR_ACTION=prerequisites
 
-precommit: cargo test lint_local subdir_precommit
+precommit: cargo test lint subdir_precommit
 
 prerequisites: subdir_prereq
 ifeq ($(rustup_exists),'')
@@ -113,6 +137,11 @@ else ifeq ($(os_name),Linux)
 else
 	@echo "Did not install shellcheck"
 endif
+	python3 -m pip install --user --upgrade black yamllint ruff
+ifeq ('',$(shell which ruff))
+	$(error Need to add python packages to your PATH)
+endif
+
 
 # This target is used by workflows before running integration tests
 test_prerequisites:
@@ -136,7 +165,10 @@ targets:
 	@echo "client         - generate and build the cloudtruth-restapi library"
 	@echo "image          - make the cloudtruth/cli docker container for development"
 	@echo "integration    - runs the integration test against the live server"
-	@echo "lint           - checks for formatting issues"
+	@echo "fix			  - fix formatting and linting issues:
+	@echo "format "		  - fix formatting issues"
+	@echo "lint           - checks for formatting and lint issues"
+	@echo "lint_fix"	  - fix linting issues
 	@echo "precommit      - build rust targets, tests, and lints the files"
 	@echo "prerequisites  - install prerequisites"
 	@echo "regen          - regenerate non-build artifacts"

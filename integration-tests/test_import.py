@@ -203,7 +203,7 @@ class ImportTestCase(TestCase):
         imports = self.get_cli_entries(cmd_env, env1_cmd + "--preview -sf json", "parameter")
         self.assertEqual(6, len(imports))
         entry = find_by_prop(imports, PROP_NAME, "MY_PARAM")[0]
-        self.assertEqual(entry.get(PROP_VALUE), 'no quotes here')
+        self.assertEqual(entry.get(PROP_VALUE), "no quotes here")
         self.assertEqual(entry.get(PROP_CHANGE), UPDATED)
         entry = find_by_prop(imports, PROP_NAME, "MY_SECRET")[0]
         self.assertEqual(entry.get(PROP_VALUE), "password")
@@ -232,7 +232,7 @@ class ImportTestCase(TestCase):
         imports = self.get_cli_entries(cmd_env, env2_cmd, "parameter")
         self.assertEqual(6, len(imports))
         entry = find_by_prop(imports, PROP_NAME, "MY_PARAM")[0]
-        self.assertEqual(entry.get(PROP_VALUE), 'no quotes here')
+        self.assertEqual(entry.get(PROP_VALUE), "no quotes here")
         self.assertEqual(entry.get(PROP_CHANGE), OVERRIDDEN)
         entry = find_by_prop(imports, PROP_NAME, "MY_SECRET")[0]
         self.assertEqual(entry.get(PROP_VALUE), "password")
@@ -255,7 +255,7 @@ class ImportTestCase(TestCase):
         imports = self.get_cli_entries(cmd_env, env2_cmd + "--no-inherit", "parameter")
         self.assertEqual(6, len(imports))
         entry = find_by_prop(imports, PROP_NAME, "MY_PARAM")[0]
-        self.assertEqual(entry.get(PROP_VALUE), 'no quotes here')
+        self.assertEqual(entry.get(PROP_VALUE), "no quotes here")
         self.assertEqual(entry.get(PROP_CHANGE), OVERRIDDEN)
         entry = find_by_prop(imports, PROP_NAME, "MY_SECRET")[0]
         self.assertEqual(entry.get(PROP_VALUE), "password")

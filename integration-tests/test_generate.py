@@ -48,7 +48,7 @@ class TestGeneration(TestCase):
             PasswordFlagTest(flag="number", query="require_numbers"),
             PasswordFlagTest(flag="symbol", query="require_symbols"),
             PasswordFlagTest(flag="space", query="require_spaces"),
-            PasswordFlagTest(flag="hardware", query="require_hardware_generation")
+            PasswordFlagTest(flag="hardware", query="require_hardware_generation"),
         ]
         for item in flag_tests:
             cmd = pass_cmd

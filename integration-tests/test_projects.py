@@ -17,7 +17,7 @@ class TestProjects(TestCase):
 
         # create with a description
         orig_desc = "Description on create"
-        result = self.run_cli(cmd_env, sub_cmd + f"set {proj_name} --desc \"{orig_desc}\"")
+        result = self.run_cli(cmd_env, sub_cmd + f'set {proj_name} --desc "{orig_desc}"')
         self.assertResultSuccess(result)
         result = self.run_cli(cmd_env, sub_cmd + "ls -v -f csv")
         self.assertResultSuccess(result)
@@ -25,20 +25,20 @@ class TestProjects(TestCase):
 
         # update the description
         new_desc = "Updated description"
-        result = self.run_cli(cmd_env, sub_cmd + f"set {proj_name} --desc \"{new_desc}\"")
+        result = self.run_cli(cmd_env, sub_cmd + f'set {proj_name} --desc "{new_desc}"')
         self.assertResultSuccess(result)
         result = self.run_cli(cmd_env, sub_cmd + "ls --values -f csv")
         self.assertResultSuccess(result)
         self.assertIn(f"{proj_name},,{new_desc}", result.out())
 
         # idempotent - do it again
-        result = self.run_cli(cmd_env, sub_cmd + f"set {proj_name} --desc \"{new_desc}\"")
+        result = self.run_cli(cmd_env, sub_cmd + f'set {proj_name} --desc "{new_desc}"')
         self.assertResultSuccess(result)
 
         # rename
         orig_name = proj_name
         proj_name = self.make_name("proj-rename")
-        result = self.run_cli(cmd_env, sub_cmd + f"set {orig_name} --rename \"{proj_name}\"")
+        result = self.run_cli(cmd_env, sub_cmd + f'set {orig_name} --rename "{proj_name}"')
         self.assertResultSuccess(result)
         self.assertIn(f"Updated project '{proj_name}'", result.out())
 

@@ -13,12 +13,12 @@ class TestEnvironments(TestCase):
         sub_cmd = base_cmd + "environments "
         result = self.run_cli(cmd_env, sub_cmd + "ls -v -f json")
         self.assertResultSuccess(result)
-        self.assertNotIn(f"\"{env_name}\"", result.out())
-        self.assertNotIn(f"\"{rename_name}\"", result.out())
+        self.assertNotIn(f'"{env_name}"', result.out())
+        self.assertNotIn(f'"{rename_name}"', result.out())
 
         # create with a description
         orig_desc = "Description on create"
-        result = self.run_cli(cmd_env, sub_cmd + f"set {env_name} --desc \"{orig_desc}\"")
+        result = self.run_cli(cmd_env, sub_cmd + f'set {env_name} --desc "{orig_desc}"')
         self.assertResultSuccess(result)
         result = self.run_cli(cmd_env, sub_cmd + "ls -v -f csv")
         self.assertResultSuccess(result)
@@ -26,20 +26,20 @@ class TestEnvironments(TestCase):
 
         # update the description
         new_desc = "Updated description"
-        result = self.run_cli(cmd_env, sub_cmd + f"set {env_name} --desc \"{new_desc}\"")
+        result = self.run_cli(cmd_env, sub_cmd + f'set {env_name} --desc "{new_desc}"')
         self.assertResultSuccess(result)
         result = self.run_cli(cmd_env, sub_cmd + "ls --values -f csv")
         self.assertResultSuccess(result)
         self.assertIn(f"{env_name},default,{new_desc}", result.out())
 
         # idempotent - do it again
-        result = self.run_cli(cmd_env, sub_cmd + f"set {env_name} --desc \"{new_desc}\"")
+        result = self.run_cli(cmd_env, sub_cmd + f'set {env_name} --desc "{new_desc}"')
         self.assertResultSuccess(result)
 
         # rename the environment
         orig_name = env_name
         env_name = rename_name
-        result = self.run_cli(cmd_env, sub_cmd + f"set {orig_name} --rename \"{env_name}\"")
+        result = self.run_cli(cmd_env, sub_cmd + f'set {orig_name} --rename "{env_name}"')
         self.assertResultSuccess(result)
         self.assertIn(f"Updated environment '{env_name}'", result.out())
 

@@ -31,12 +31,7 @@ def parse_args(*args) -> argparse.Namespace:
         help="Cli executable to run",
     )
     parser.add_argument(
-        "-f",
-        "--file",
-        dest="file",
-        type=str,
-        default="help.txt",
-        help="File for checking against, or reading from"
+        "-f", "--file", dest="file", type=str, default="help.txt", help="File for checking against, or reading from"
     )
     return parser.parse_args(*args)
 

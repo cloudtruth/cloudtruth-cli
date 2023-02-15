@@ -6,7 +6,6 @@ from testcase import TestCase
 
 
 class TestRun(TestCase):
-
     def test_run_inheritance_env_only(self):
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()

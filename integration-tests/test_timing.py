@@ -44,7 +44,7 @@ def parse_timing(timing_info: List[List[int]], lines: List[str]) -> List[List[in
 
 
 def print_timing_info(test_name: str, timing_info: OrderedDict) -> None:
-    print("\n" + '=' * 40 + f"  {test_name} " + '=' * 40)
+    print("\n" + "=" * 40 + f"  {test_name} " + "=" * 40)
     print("Times in milliseconds")
     for operation, times in timing_info.items():
         pretty = ", ".join([str(x) for x in times])
@@ -73,11 +73,26 @@ class TestTiming(TestCase):
         list_cmd = base_cmd + f"--project '{proj_name}' param list -s -v"
         cmd_env = self.get_cmd_env()
         cmd_env[CT_REST_DEBUG] = "true"
-        create_timing = [[], [], [], [], [], ]
+        create_timing = [
+            [],
+            [],
+            [],
+            [],
+            [],
+        ]
         create_total = []
-        get_timing = [[], [], [], ]
+        get_timing = [
+            [],
+            [],
+            [],
+        ]
         get_total = []
-        list_timing = [[], [], [], [], ]
+        list_timing = [
+            [],
+            [],
+            [],
+            [],
+        ]
         list_total = []
 
         for index in range(num_values):

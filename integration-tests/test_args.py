@@ -6,7 +6,6 @@ from testcase import CT_ENV, CT_PROFILE, CT_PROJ, CT_TIMEOUT, CT_URL
 
 
 class TestTopLevelArgs(TestCase):
-
     def test_arg_priority(self):
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
@@ -23,8 +22,8 @@ class TestTopLevelArgs(TestCase):
         self.create_environment(cmd_env, env2)
 
         # remove things to make sure we have a "clean" environment
-        cmd_env.pop(CT_PROJ, 'No project')
-        cmd_env.pop(CT_ENV, 'No environment')
+        cmd_env.pop(CT_PROJ, "No project")
+        cmd_env.pop(CT_ENV, "No environment")
 
         # the CLOUDTRUTH_PROFILE cannot be removed, since it may change the server-url/api-key, but
         # need to accommodate for the profile also setting the project/environment variables
@@ -113,13 +112,22 @@ class TestTopLevelArgs(TestCase):
         self.create_project(cmd_env, proj_name)
         cmd_env[CT_PROJ] = proj_name
 
-        for (subcmd, aliases) in {
+        for subcmd, aliases in {
             "actions": ["action", "act", "ac"],
             "actions imports": [
-                "action import", "action imp", "act import", "act im", "act i", "ac imports",
+                "action import",
+                "action imp",
+                "act import",
+                "act im",
+                "act i",
+                "ac imports",
             ],
             "actions pushes": [
-                "action push", "action pu", "act pushes", "act pu", "act p",
+                "action push",
+                "action pu",
+                "act pushes",
+                "act pu",
+                "act p",
             ],
             "audit-logs": ["audit", "aud", "au", "log", "logs"],
             "configuration": ["config", "conf", "con", "co", "c"],

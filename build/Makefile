@@ -7,7 +7,6 @@
 .PHONY += cli-check
 .PHONY += cli-gen
 .PHONY += help
-.PHONY += lint
 .PHONY += prerequisites
 .PHONY += precommit
 .PHONY += regen
@@ -24,14 +23,10 @@ prerequisites:
 	python3 -m pip install --user --upgrade -r requirements.txt
 	# curl https://raw.githubusercontent.com/nektos/act/master/install.sh | sudo bash
 
-lint:
-	python3 -m pip install --user --upgrade flake8
-	python3 -m flake8
-
 workflow-test-release:
 	python3 gen.py
 
-precommit: lint cli-check
+precommit: cli-check
 
 cli-check:
 	python3 cli_walk.py check

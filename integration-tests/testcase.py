@@ -129,6 +129,7 @@ class TestCase(unittest.TestCase):
     """
     This extends the unittest.TestCase to add some basic functions
     """
+
     def __init__(self, *args, **kwargs):
         self._base_cmd = get_cli_base_cmd()
         self.log_commands = int(os.environ.get(CT_TEST_LOG_COMMANDS, "0"))
@@ -162,10 +163,9 @@ class TestCase(unittest.TestCase):
 
     def tearDown(self) -> None:
         # Report test failures
-        if not self.log_commands and self.log_commands_on_failure or \
-           not self.log_output and self.log_output_on_failure:
+        if not self.log_commands and self.log_commands_on_failure or not self.log_output and self.log_output_on_failure:
             # Python 3.4 - 3.10
-            if hasattr(self._outcome, 'errors'):
+            if hasattr(self._outcome, "errors"):
                 result = self.defaultTestResult()
                 self._feedErrorsToResult(result, self._outcome.errors)
             # Python 3.11+
@@ -179,29 +179,29 @@ class TestCase(unittest.TestCase):
         # tear down any possibly lingering projects -- they should have been deleted in reverse
         # order in case there are any children.
         for proj in reversed(self._projects):
-            cmd = self._base_cmd + f"proj del \"{proj}\" --confirm"
+            cmd = self._base_cmd + f'proj del "{proj}" --confirm'
             subprocess.run(cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
         # tear down any possibly lingering environments -- they should have been deleted in reverse
         # order in case there are any children.
         for env in reversed(self._environments):
-            cmd = self._base_cmd + f"env del \"{env}\" --confirm"
+            cmd = self._base_cmd + f'env del "{env}" --confirm'
             subprocess.run(cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
         # delete any possibly lingering users
         for usr in self._users:
-            cmd = self._base_cmd + f"user del --confirm \"{usr}\""
+            cmd = self._base_cmd + f'user del --confirm "{usr}"'
             subprocess.run(cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
         # delete any possibly lingering invitations
         for email in self._invites:
-            cmd = self._base_cmd + f"user invitations del --confirm \"{email}\""
+            cmd = self._base_cmd + f'user invitations del --confirm "{email}"'
             subprocess.run(cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
         # tear down any possibly lingering types -- they should have been deleted in reverse
         # order in case there are any children.
         for typename in reversed(self._types):
-            cmd = self._base_cmd + f"type del \"{typename}\" --confirm"
+            cmd = self._base_cmd + f'type del "{typename}" --confirm'
             subprocess.run(cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
         # remove any added files
@@ -210,7 +210,7 @@ class TestCase(unittest.TestCase):
 
         # remove any added groups
         for groupname in self._groups:
-            cmd = self._base_cmd + f"group del \"{groupname}\" --confirm"
+            cmd = self._base_cmd + f'group del "{groupname}" --confirm'
             subprocess.run(cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
         super().tearDown()
@@ -304,7 +304,7 @@ class TestCase(unittest.TestCase):
 
     def run_cli(self, env: Dict[str, str], cmd: str) -> Result:  # noqa: C901
         # WARNING: DOS prompt does not like the single quotes, so use double
-        cmd = cmd.replace("'", "\"")
+        cmd = cmd.replace("'", '"')
 
         if self.log_commands:
             print(cmd)
@@ -355,9 +355,7 @@ class TestCase(unittest.TestCase):
                     self._groups.append(groupname)
 
         start = datetime.now()
-        process = subprocess.run(
-            cmd, env=env, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
-        )
+        process = subprocess.run(cmd, env=env, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         delta = datetime.now() - start
         result = Result(
             return_value=process.returncode,
@@ -472,12 +470,7 @@ class TestCase(unittest.TestCase):
         return result
 
     def create_env_tag(
-        self,
-        cmd_env,
-        env_name: str,
-        tag_name: str,
-        desc: Optional[str] = None,
-        time: Optional[str] = None
+        self, cmd_env, env_name: str, tag_name: str, desc: Optional[str] = None, time: Optional[str] = None
     ) -> None:
         cmd = self._base_cmd + f"env tag set '{env_name}' '{tag_name}' "
         if desc:
@@ -495,19 +488,19 @@ class TestCase(unittest.TestCase):
         self.assertIn("Deleted", result.out())
 
     def set_param(
-            self,
-            cmd_env,
-            proj: str,
-            name: str,
-            value: Optional[str] = None,
-            secret: Optional[bool] = None,
-            env: Optional[str] = None,
-            desc: Optional[str] = None,
-            param_type: Optional[str] = None,
-            fqn: Optional[str] = None,
-            jmes: Optional[str] = None,
-            evaluate: Optional[bool] = None,
-            extra: Optional[str] = None
+        self,
+        cmd_env,
+        proj: str,
+        name: str,
+        value: Optional[str] = None,
+        secret: Optional[bool] = None,
+        env: Optional[str] = None,
+        desc: Optional[str] = None,
+        param_type: Optional[str] = None,
+        fqn: Optional[str] = None,
+        jmes: Optional[str] = None,
+        evaluate: Optional[bool] = None,
+        extra: Optional[str] = None,
     ) -> Result:
         cmd = self._base_cmd + f"--project '{proj}' "
         if env:
@@ -604,20 +597,20 @@ class TestCase(unittest.TestCase):
         self.assertIn(value, result.out())
 
     def list_params(
-            self,
-            cmd_env,
-            proj: str,
-            env: Optional[str] = None,
-            show_values: bool = True,
-            secrets: bool = False,
-            fmt: Optional[str] = None,
-            as_of: Optional[str] = None,
-            show_times: bool = False,
-            show_rules: bool = False,
-            show_external: bool = False,
-            show_evaluated: bool = False,
-            show_parents: bool = False,
-            show_children: bool = False,
+        self,
+        cmd_env,
+        proj: str,
+        env: Optional[str] = None,
+        show_values: bool = True,
+        secrets: bool = False,
+        fmt: Optional[str] = None,
+        as_of: Optional[str] = None,
+        show_times: bool = False,
+        show_rules: bool = False,
+        show_external: bool = False,
+        show_evaluated: bool = False,
+        show_parents: bool = False,
+        show_children: bool = False,
     ) -> Result:
         cmd = self._base_cmd + f"--project '{proj}' "
         if env:
@@ -649,12 +642,7 @@ class TestCase(unittest.TestCase):
         return result
 
     def set_template(
-            self,
-            cmd_env,
-            proj: str,
-            name: str,
-            body: Optional[str] = None,
-            description: Optional[str] = None
+        self, cmd_env, proj: str, name: str, body: Optional[str] = None, description: Optional[str] = None
     ) -> Result:
         cmd = self._base_cmd + f"--project '{proj}' template set '{name}' "
         filename = None
