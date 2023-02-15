@@ -1,7 +1,12 @@
 from testcase import TestCase
+from unittest import skipIf
+import platform
 
 
 class TestVersions(TestCase):
+    @skipIf(
+        platform.system() == "Darwin",
+        "Fails to overwrite an existing installed executable without root")
     def test_version_install(self):
         cmd_env = self.get_cmd_env()
         base_cmd = self.get_cli_base_cmd()

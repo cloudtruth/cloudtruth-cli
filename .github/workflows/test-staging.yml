@@ -70,8 +70,9 @@ jobs:
 
       - shell: pwsh
         if: inputs.releaseVersion && contains(runner.os, 'Windows')
-        run: .\install.ps1 -Version '${{ inputs.releaseVersion }}'
-
+        run: |
+          $ctExe = .\install.ps1 -Version '${{ inputs.releaseVersion }}'
+          mv $ctExe .\integration-tests\
 
       - shell: bash
         run: make test_prerequisites
