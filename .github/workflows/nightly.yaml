@@ -7,6 +7,10 @@ on:
     # Run builds on midnight EST
     - cron: '0 5 * * *'
 
+# prevent multiple releases from running at the same time
+concurrency:
+  group: ${{ github.workflow_ref }}
+
 jobs:
   create-release:
     name: Create Draft Release
