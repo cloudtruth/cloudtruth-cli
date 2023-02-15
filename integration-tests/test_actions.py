@@ -49,12 +49,12 @@ class TestActions(TestCase):
     def tearDown(self) -> None:
         # delete any possibly lingering pushes
         for entry in self._pushes:
-            cmd = self._base_cmd + f"act push del -i \"{entry[0]}\" \"{entry[1]}\" -y"
+            cmd = self._base_cmd + f'act push del -i "{entry[0]}" "{entry[1]}" -y'
             subprocess.run(cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
         # delete any possibly lingering pulls
         for entry in self._pulls:
-            cmd = self._base_cmd + f"act import del -i \"{entry[0]}\" \"{entry[1]}\" -y"
+            cmd = self._base_cmd + f'act import del -i "{entry[0]}" "{entry[1]}" -y'
             subprocess.run(cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
         super().tearDown()
@@ -153,7 +153,7 @@ class TestActions(TestCase):
         entry_tags = entry.get("Tags")
         self.assertIn(tag1, entry_tags)
         self.assertIn(tag2, entry_tags)
-        self.assertEqual(len(entry_tags.split(' ')), 2)
+        self.assertEqual(len(entry_tags.split(" ")), 2)
 
         # check the right values were updated (no integration name specified)
         result = self.run_cli(cmd_env, base_cmd + f"ac push get {push_name2}")
@@ -222,7 +222,7 @@ class TestActions(TestCase):
         self.assertIn(tag2, entry_tags)
         self.assertIn(tag3, entry_tags)
         self.assertIn(tag4, entry_tags)
-        self.assertEqual(len(entry_tags.split(' ')), 3)
+        self.assertEqual(len(entry_tags.split(" ")), 3)
 
         ########################
         # task list
@@ -276,10 +276,7 @@ class TestActions(TestCase):
         #       different region (non-default)
         service = "secretsmanager"
         region = "us-west-2"
-        cmd = (
-            base_cmd + f"act push set -i '{integ_name}' '{push_name1}' --service '{service}' "
-            f"--region {region}"
-        )
+        cmd = base_cmd + f"act push set -i '{integ_name}' '{push_name1}' --service '{service}' " f"--region {region}"
         result = self.run_cli(cmd_env, cmd)
         self.assertResultSuccess(result)
         self.assertIn("Created push", result.out())
@@ -398,10 +395,7 @@ class TestActions(TestCase):
         desc1 = "original comment"
         resource1 = "/bogus_resource_path/{{ project }}/{{ environment }}/{{ parameter }}"
         self._pulls.append((integ_name, import_name1))
-        cmd = (
-            set_cmd + f"{import_name1} --integration '{integ_name}' -d '{desc1}' "
-            f"--resource '{resource1}'"
-        )
+        cmd = set_cmd + f"{import_name1} --integration '{integ_name}' -d '{desc1}' " f"--resource '{resource1}'"
         result = self.run_cli(cmd_env, cmd)
         self.assertResultSuccess(result)
         self.assertIn("Created", result.out())
@@ -650,10 +644,10 @@ class TestActions(TestCase):
         return expected in result.out()
 
     def waitFor(
-            self,
-            func,
-            timeout_minutes: int = 3,
-            sleep_seconds: int = 3,
+        self,
+        func,
+        timeout_minutes: int = 3,
+        sleep_seconds: int = 3,
     ) -> bool:
         completed = False
         start_time = datetime.datetime.now()
@@ -784,6 +778,7 @@ class TestActions(TestCase):
         def push_success() -> bool:
             get_push_cmd = push_cmd + f"get '{push_name}' -i '{integ_name}'"
             return self.success_with(cmd_env, get_push_cmd, "State: success")
+
         self.waitFor(push_success)
 
         # check that we have a step for each
@@ -826,9 +821,7 @@ class TestActions(TestCase):
         # create the import
         import_name = self.make_name("my-comp-imp")
         self._pulls.append((integ_name, import_name))
-        create_import_cmd = (
-            imp_cmd + f"set '{import_name}' --integration '{integ_name}' --resource '{resource}'"
-        )
+        create_import_cmd = imp_cmd + f"set '{import_name}' --integration '{integ_name}' --resource '{resource}'"
         result = self.run_cli(cmd_env, create_import_cmd)
         self.assertResultSuccess(result)
 
@@ -836,6 +829,7 @@ class TestActions(TestCase):
         def pull_success() -> bool:
             get_import_cmd = imp_cmd + f"get '{import_name}' -i '{integ_name}'"
             return self.success_with(cmd_env, get_import_cmd, "State: success")
+
         self.waitFor(pull_success)
 
         cmd = imp_cmd + f"st '{import_name}' -i '{integ_name}' -f json"
@@ -866,6 +860,7 @@ class TestActions(TestCase):
             push_step_cmd = push_cmd + f"task-steps {push_name} -f json"
             more_steps = self.get_cli_entries(cmd_env, push_step_cmd, "action-push-task-step")
             return len(more_steps) > push_step_len and push_success()
+
         self.waitFor(more_push_steps)
 
         ########################
@@ -902,6 +897,7 @@ class TestActions(TestCase):
             import_step_cmd = imp_cmd + f"task-steps {import_name} -f json"
             more_steps = self.get_cli_entries(cmd_env, import_step_cmd, "action-import-task-step")
             return len(more_steps) > import_step_len and pull_success()
+
         self.waitFor(more_pull_steps)
 
         validate_project1a()

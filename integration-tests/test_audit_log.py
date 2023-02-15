@@ -21,18 +21,18 @@ class TestAuditLogs(TestCase):
         self.assertNotEqual(0, len(deleted))
 
     def audit_entries(
-            self,
-            cmd_env,
-            type_str: Optional[str] = None,
-            name: Optional[str] = None,
-            action: Optional[str] = None,
-            max_entries: Optional[int] = None,
-            before: Optional[str] = None,
-            after: Optional[str] = None,
-            username: Optional[str] = None,
-            environment: Optional[str] = None,
-            project: Optional[str] = None,
-            parameter: Optional[str] = None,
+        self,
+        cmd_env,
+        type_str: Optional[str] = None,
+        name: Optional[str] = None,
+        action: Optional[str] = None,
+        max_entries: Optional[int] = None,
+        before: Optional[str] = None,
+        after: Optional[str] = None,
+        username: Optional[str] = None,
+        environment: Optional[str] = None,
+        project: Optional[str] = None,
+        parameter: Optional[str] = None,
     ) -> List[Dict]:
         cmd = self.get_cli_base_cmd() + "audit-logs ls -f json "
         if type_str:
@@ -62,7 +62,7 @@ class TestAuditLogs(TestCase):
             return []
         return eval(result.out()).get("audit-logs")
 
-    @skip_known_issue('SC-9630')
+    @skip_known_issue("SC-9630")
     def test_audit_logs(self):
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
@@ -182,9 +182,24 @@ class TestAuditLogs(TestCase):
         #####################################
         # just a basic thing to make sure our filters work
         for obj_type in [
-            "AwsIntegration", "Environment", "GitHubIntegration", "Invitation", "Membership", "Organization",
-            "Parameter", "ParameterRule", "ParameterType", "ParameterTypeRule", "Project", "Pull", "Push",
-            "ServiceAccount", "Tag", "Task", "Template", "Value"
+            "AwsIntegration",
+            "Environment",
+            "GitHubIntegration",
+            "Invitation",
+            "Membership",
+            "Organization",
+            "Parameter",
+            "ParameterRule",
+            "ParameterType",
+            "ParameterTypeRule",
+            "Project",
+            "Pull",
+            "Push",
+            "ServiceAccount",
+            "Tag",
+            "Task",
+            "Template",
+            "Value",
         ]:
             max_entries = 5
             entries = self.audit_entries(cmd_env, obj_type, max_entries=max_entries)

@@ -20,9 +20,7 @@ class CleanupItem:
 
 
 def parse_args(*args) -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        description="Cleanup the CloudTruth environment"
-    )
+    parser = argparse.ArgumentParser(description="Cleanup the CloudTruth environment")
     parser.add_argument(
         dest="needles",
         nargs="*",
@@ -33,32 +31,18 @@ def parse_args(*args) -> argparse.Namespace:
         "-q",
         "--quiet",
         dest="quiet",
-        action='store_true',
+        action="store_true",
         help="Do not show what the script is doing",
     )
-    parser.add_argument(
-        "-v",
-        "--verbose",
-        dest="verbose",
-        action="store_true",
-        help="Detailed output"
-    )
-    parser.add_argument(
-        "--confirm",
-        "--yes",
-        dest="confirm",
-        action="store_true",
-        help="Skip confirmation prompt"
-    )
+    parser.add_argument("-v", "--verbose", dest="verbose", action="store_true", help="Detailed output")
+    parser.add_argument("--confirm", "--yes", dest="confirm", action="store_true", help="Skip confirmation prompt")
     return parser.parse_args(*args)
 
 
 def cli(cmd: str) -> Result:
-    updated = base_cmd + cmd.replace("\'", "\"")  # allows this to work on Windows
+    updated = base_cmd + cmd.replace("'", '"')  # allows this to work on Windows
     start = datetime.now()
-    process = subprocess.run(
-        updated, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
-    )
+    process = subprocess.run(updated, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     delta = datetime.now() - start
     return Result(
         return_value=process.returncode,
@@ -70,10 +54,10 @@ def cli(cmd: str) -> Result:
 
 
 def yes_or_no(question: str) -> bool:
-    reply = str(input(question + ' (y/n): ')).lower().strip()
-    if reply[0] == 'y':
+    reply = str(input(question + " (y/n): ")).lower().strip()
+    if reply[0] == "y":
         return True
-    if reply[0] == 'n':
+    if reply[0] == "n":
         return False
     else:
         return yes_or_no("Please enter ")
@@ -102,7 +86,7 @@ def cloudtruth_cleanup(*args):
         CleanupItem(name="invitations", list_cmd="user invite ls", del_cmd="user invite del -y"),
         CleanupItem(name="types", list_cmd="types tree", del_cmd="types del -y"),
         CleanupItem(name="pushes", list_cmd="action push ls", del_cmd="action push del -y"),
-        CleanupItem(name="imports", list_cmd="action import ls", del_cmd="action import del -y")
+        CleanupItem(name="imports", list_cmd="action import ls", del_cmd="action import del -y"),
     ]
 
     for elem in elements:

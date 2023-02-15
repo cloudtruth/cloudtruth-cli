@@ -25,7 +25,7 @@ class TestParameterTypes(TestCase):
 
         # create with a description
         orig_desc = "Description on create"
-        result = self.run_cli(cmd_env, sub_cmd + f"set {type_name} --desc \"{orig_desc}\"")
+        result = self.run_cli(cmd_env, sub_cmd + f'set {type_name} --desc "{orig_desc}"')
         self.assertResultSuccess(result)
         entries = self.get_cli_entries(cmd_env, sub_cmd + "ls -f json", "parameter-type")
         entry = find_by_prop(entries, PROP_NAME, type_name)[0]
@@ -34,20 +34,20 @@ class TestParameterTypes(TestCase):
 
         # update the description
         new_desc = "Updated description"
-        result = self.run_cli(cmd_env, sub_cmd + f"set {type_name} --desc \"{new_desc}\"")
+        result = self.run_cli(cmd_env, sub_cmd + f'set {type_name} --desc "{new_desc}"')
         self.assertResultSuccess(result)
         result = self.run_cli(cmd_env, sub_cmd + "ls --values -f csv")
         self.assertResultSuccess(result)
         self.assertIn(f"{type_name},string,0,{new_desc}", result.out())
 
         # idempotent - do it again
-        result = self.run_cli(cmd_env, sub_cmd + f"set {type_name} --desc \"{new_desc}\"")
+        result = self.run_cli(cmd_env, sub_cmd + f'set {type_name} --desc "{new_desc}"')
         self.assertResultSuccess(result)
 
         # rename
         orig_name = type_name
         type_name = self.make_name("type-rename")
-        result = self.run_cli(cmd_env, sub_cmd + f"set {orig_name} --rename \"{type_name}\"")
+        result = self.run_cli(cmd_env, sub_cmd + f'set {orig_name} --rename "{type_name}"')
         self.assertResultSuccess(result)
         self.assertIn(f"Updated parameter type '{type_name}'", result.out())
 
@@ -75,7 +75,7 @@ class TestParameterTypes(TestCase):
         result = self.run_cli(cmd_env, sub_cmd + f"delete {type_name} --confirm")
         self.assertResultWarning(result, f"Parameter type '{type_name}' does not exist")
 
-    @skip_known_issue('SC-9666')
+    @skip_known_issue("SC-9666")
     def test_type_parents(self):
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
@@ -349,7 +349,7 @@ class TestParameterTypes(TestCase):
         self.delete_type(cmd_env, type_name2)
         self.delete_type(cmd_env, type_name1)
 
-    @skip_known_issue('SC-9666')
+    @skip_known_issue("SC-9666")
     def test_type_boolean(self):
         base_cmd = self.get_cli_base_cmd()
         cmd_env = self.get_cmd_env()
@@ -383,7 +383,8 @@ class TestParameterTypes(TestCase):
         min_value = -100
         max_value = 1000
         cmd = (
-            type_cmd + f"set {type_name2} --min-len {min_len} --max-len {max_len} "
+            type_cmd
+            + f"set {type_name2} --min-len {min_len} --max-len {max_len} "
             + f"--regex '{regex}' --min {min_value} --max {max_value}"
         )
         result = self.run_cli(cmd_env, cmd)
@@ -453,7 +454,7 @@ class TestParameterTypes(TestCase):
         # create a couple types based off an integer
         base_type = "string"
         type_name1 = self.make_name("type-str-parent")
-        self.create_type(cmd_env, type_name1)   # unspecified defaults to string
+        self.create_type(cmd_env, type_name1)  # unspecified defaults to string
         type_name2 = self.make_name("type-str-child")
         self.create_type(cmd_env, type_name2, parent=type_name1)
 
@@ -492,7 +493,7 @@ class TestParameterTypes(TestCase):
 
         ###################
         # parameter range checking, before child rules
-        def V(length: int, char: str = 'a') -> str:
+        def V(length: int, char: str = "a") -> str:
             return char * length
 
         too_short_err = "Rule violation: Value must be at least "
@@ -515,7 +516,7 @@ class TestParameterTypes(TestCase):
         # add child rules
         min_len_b = 6  # would like to do 1, but that means no string is provided...
         max_len_b = 19
-        regex_b = '.*b'  # ends with 'b'
+        regex_b = ".*b"  # ends with 'b'
         cmd = type_cmd + f"set {type_name2} --max-len {max_len_b} --min-len {min_len_b} --regex '{regex_b}'"
         result = self.run_cli(cmd_env, cmd)
         self.assertResultSuccess(result)
@@ -596,7 +597,7 @@ class TestParameterTypes(TestCase):
         value_a = V(int(min_len_a + (max_len_a - min_len_a) / 2))
         result = self.run_cli(cmd_env, param_cmd + f"set '{param1}' -t '{type_name1}' -v {value_a}")
         self.assertResultSuccess(result)
-        value_b = V(len(value_a)) + 'b'
+        value_b = V(len(value_a)) + "b"
         result = self.run_cli(cmd_env, param_cmd + f"set '{param2}' -t '{type_name2}' -v {value_b}")
         self.assertResultSuccess(result)
         self.verify_param(cmd_env, proj_name, param1, str(value_a))
@@ -642,7 +643,7 @@ class TestParameterTypes(TestCase):
         self.assertIn(f"{type_name2},{type_name1},3,", result.out())
 
         # see the constraint has gone away on parent, but not child
-        new_value = V(max_len_a + 10, 'b')
+        new_value = V(max_len_a + 10, "b")
         result = self.run_cli(cmd_env, param_cmd + f"set {param1} -v {new_value}")
         self.assertResultSuccess(result)
         self.verify_param(cmd_env, proj_name, param1, new_value)

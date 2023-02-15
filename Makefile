@@ -91,7 +91,7 @@ lint:
 	ruff check .
 # run Shellcheck on all shell scripts, ignoring client/ and .gitignore files
 	git ls-files | grep -v -E '^client/' | grep -E '\.sh$$' | xargs shellcheck
-#   disable yamllint for now until we find better auto-formatting options
+# disable yamllint for now until we find better auto-formatting options
 #	python3 -m yamllint .
 
 # apply linting fixes

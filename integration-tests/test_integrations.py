@@ -80,12 +80,12 @@ class TestIntegrations(TestCase):
         self.create_project(cmd_env, proj_name)
 
         # check that we get notification about no provider
-        fqn = 'test://missing.provider/should-gets-warning'
+        fqn = "test://missing.provider/should-gets-warning"
         result = self.run_cli(cmd_env, exp_cmd + f"-v '{fqn}'")
         self.assertResultError(result, f"No integration provider available for `{fqn}`")
 
         # check that we get notification about no provider
-        fqn = 'github://missing.provider/should-gets-warning'
+        fqn = "github://missing.provider/should-gets-warning"
         result = self.run_cli(cmd_env, exp_cmd + f"-v '{fqn}'")
         self.assertResultError(result, f"No integration available for `{fqn}`")
 

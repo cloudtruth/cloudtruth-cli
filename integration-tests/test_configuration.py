@@ -206,9 +206,20 @@ class TestConfiguration(TestCase):
         this_profile = f"profile ({prof_name})"
         param_names = [e.get("Parameter") for e in profile]
         extended = [
-            "Profile", "API key", "Organization", "User", "Role", "Project", "Environment",
-            "CLI version", "Server URL", "Request timeout", "REST debug", "REST success",
-            "REST page size", "Accept Invalid Certs"
+            "Profile",
+            "API key",
+            "Organization",
+            "User",
+            "Role",
+            "Project",
+            "Environment",
+            "CLI version",
+            "Server URL",
+            "Request timeout",
+            "REST debug",
+            "REST success",
+            "REST page size",
+            "Accept Invalid Certs",
         ]
         self.assertEqual(param_names, extended)
 

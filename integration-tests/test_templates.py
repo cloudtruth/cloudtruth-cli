@@ -53,7 +53,7 @@ class TestTemplates(TestCase):
 
         # update the description
         new_desc = "Updated description"
-        result = self.run_cli(cmd_env, sub_cmd + f"set {temp_name} --desc \"{new_desc}\"")
+        result = self.run_cli(cmd_env, sub_cmd + f'set {temp_name} --desc "{new_desc}"')
         self.assertResultSuccess(result)
         self.assertIn(f"Updated template '{temp_name}'", result.out())
         result = self.run_cli(cmd_env, sub_cmd + "ls --values -f csv")
@@ -61,13 +61,13 @@ class TestTemplates(TestCase):
         self.assertIn(f"{temp_name},{new_desc}", result.out())
 
         # idempotent - do it again
-        result = self.run_cli(cmd_env, sub_cmd + f"set {temp_name} --desc \"{new_desc}\"")
+        result = self.run_cli(cmd_env, sub_cmd + f'set {temp_name} --desc "{new_desc}"')
         self.assertResultSuccess(result)
 
         # rename
         orig_name = temp_name
         temp_name = "renamed-temp"
-        result = self.run_cli(cmd_env, sub_cmd + f"set {orig_name} --rename \"{temp_name}\"")
+        result = self.run_cli(cmd_env, sub_cmd + f'set {orig_name} --rename "{temp_name}"')
         self.assertResultSuccess(result)
         self.assertIn(f"Updated template '{temp_name}'", result.out())
         result = self.run_cli(cmd_env, sub_cmd + "ls")
@@ -82,7 +82,7 @@ class TestTemplates(TestCase):
         # change the body
         body = "different fixed value\n"
         self.write_file(filename, body)
-        result = self.run_cli(cmd_env, sub_cmd + f"set {temp_name} --body \"{filename}\"")
+        result = self.run_cli(cmd_env, sub_cmd + f'set {temp_name} --body "{filename}"')
         self.assertResultSuccess(result)
         self.assertIn(f"Updated template '{temp_name}'", result.out())
 
@@ -633,7 +633,9 @@ PARAMETER=PARAM1
         # show differences (including secrets) between default and
         result = self.run_cli(cmd_env, diff_cmd + f"-e '{env_a}' -s ")
         self.assertResultSuccess(result)
-        self.assertEqual(result.out(), f"""\
+        self.assertEqual(
+            result.out(),
+            f"""\
 --- {temp_name} ({env_a} at current)
 +++ {temp_name} ({def_env} at current)
 @@ -1,5 +1,5 @@
@@ -650,7 +652,8 @@ PARAMETER=PARAM1
 -PARAMETER={value1a}
 +PARAMETER={value1d}
  {fake_flake8}
-""")
+""",
+        )
 
         # now, set some different values
         same = "matchers"
@@ -662,7 +665,9 @@ PARAMETER=PARAM1
         # set to have more context than the file
         result = self.run_cli(cmd_env, diff_cmd + f"-e '{env_a}' -e '{env_b}' -s --context 1000")
         self.assertResultSuccess(result)
-        self.assertEqual(result.out(), f"""\
+        self.assertEqual(
+            result.out(),
+            f"""\
 --- {temp_name} ({env_a} at current)
 +++ {temp_name} ({env_b} at current)
 @@ -1,18 +1,18 @@
@@ -685,7 +690,8 @@ PARAMETER=PARAM1
  # lines
  PARAMETER={same}
  {fake_flake8}
-""")
+""",
+        )
 
         # raw: no differences between environments
         result = self.run_cli(cmd_env, diff_cmd + f"-e '{env_a}' -e '{env_b}' --raw -s")
@@ -718,7 +724,9 @@ PARAMETER={{{{{param1}}}}}
         # check with the time
         result = self.run_cli(cmd_env, diff_cmd + f"--as-of {modified_at} --raw")
         self.assertResultSuccess(result)
-        self.assertEqual(result.out(), f"""\
+        self.assertEqual(
+            result.out(),
+            f"""\
 --- {temp_name} ({def_env} at {modified_at})
 +++ {temp_name} ({def_env} at current)
 @@ -1,18 +1,4 @@
@@ -740,11 +748,14 @@ PARAMETER={{{{{param1}}}}}
 -# lines
  PARAMETER={{{{{param1}}}}}
  {fake_flake8}
-""")
+""",
+        )
 
         result = self.run_cli(cmd_env, diff_cmd + f"--as-of {modified_at} --env {env_a} -s")
         self.assertResultSuccess(result)
-        self.assertEqual(result.out(), f"""\
+        self.assertEqual(
+            result.out(),
+            f"""\
 --- {temp_name} ({env_a} at {modified_at})
 +++ {temp_name} ({def_env} at current)
 @@ -1,18 +1,4 @@
@@ -768,7 +779,8 @@ PARAMETER={{{{{param1}}}}}
 +SECRET={value2d}
 +PARAMETER={value1d}
  {fake_flake8}
-""")
+""",
+        )
 
         #####################
         # Tag testing
@@ -779,7 +791,9 @@ PARAMETER={{{{{param1}}}}}
         # compare a tag in one environment
         result = self.run_cli(cmd_env, diff_cmd + f"-e {env_b} --as-of {tag_name} -s")
         self.assertResultSuccess(result)
-        self.assertEqual(result.out(), f"""\
+        self.assertEqual(
+            result.out(),
+            f"""\
 --- {temp_name} ({env_b} at {tag_name})
 +++ {temp_name} ({def_env} at current)
 @@ -1,4 +1,4 @@
@@ -789,7 +803,8 @@ PARAMETER={{{{{param1}}}}}
 +SECRET={value2d}
 +PARAMETER={value1d}
  {fake_flake8}
-""")
+""",
+        )
 
         # see no differences between tag now in env_b
         result = self.run_cli(cmd_env, diff_cmd + f"-e {env_b} --as-of {tag_name} -e {env_b} -s")
@@ -801,7 +816,9 @@ PARAMETER={{{{{param1}}}}}
         diff_args = f"-s --env {env_b} --as-of {tag_name} --env {env_a} --as-of {future}"
         result = self.run_cli(cmd_env, diff_cmd + diff_args)
         self.assertResultSuccess(result)
-        self.assertEqual(result.out(), f"""\
+        self.assertEqual(
+            result.out(),
+            f"""\
 --- {temp_name} ({env_b} at {tag_name})
 +++ {temp_name} ({env_a} at {future})
 @@ -1,4 +1,4 @@
@@ -810,7 +827,8 @@ PARAMETER={{{{{param1}}}}}
 +SECRET={value2a}
  PARAMETER={same}
  {fake_flake8}
-""")
+""",
+        )
 
         #####################
         # Error cases
