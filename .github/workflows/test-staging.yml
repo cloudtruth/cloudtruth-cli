@@ -85,7 +85,7 @@ jobs:
       - name: E2E Test
         shell: bash
         working-directory: integration-tests
-        run: python3 live_test.py --job-id "$JOB_ID" ${{ inputs.testRunnerOptions }}
+        run: sudo python3 live_test.py --job-id "$JOB_ID" ${{ inputs.testRunnerOptions }}
 
       - shell: bash
         if: always()
