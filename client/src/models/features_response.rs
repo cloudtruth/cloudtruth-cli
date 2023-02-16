@@ -12,10 +12,26 @@
 pub struct FeaturesResponse {
     #[serde(rename = "self_hosted")]
     pub self_hosted: bool,
+    #[serde(rename = "aws_integration")]
+    pub aws_integration: bool,
+    #[serde(rename = "azure_integration")]
+    pub azure_integration: bool,
+    #[serde(rename = "github_integration")]
+    pub github_integration: bool,
 }
 
 impl FeaturesResponse {
-    pub fn new(self_hosted: bool) -> FeaturesResponse {
-        FeaturesResponse { self_hosted }
+    pub fn new(
+        self_hosted: bool,
+        aws_integration: bool,
+        azure_integration: bool,
+        github_integration: bool,
+    ) -> FeaturesResponse {
+        FeaturesResponse {
+            self_hosted,
+            aws_integration,
+            azure_integration,
+            github_integration,
+        }
     }
 }

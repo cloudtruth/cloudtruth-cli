@@ -499,29 +499,31 @@ this.is.a.template.value=PARAM1
         result = self.run_cli(cmd_env, temp_cmd + f"set '{temp2}' -b '{filename}'")
         self.assertResultSuccess(result)
 
+        user = f"Service Account ({self.current_username(cmd_env)})"
+
         # get a complete history
         result = self.run_cli(cmd_env, temp_cmd + "history -f csv")
         self.assertResultSuccess(result)
-        self.assertIn("Action,Name,Changes", result.out())
-        self.assertIn(f"create,{temp1},", result.out())
+        self.assertIn("Date,User,Action,Name,Changes", result.out())
+        self.assertIn(f",{user},create,{temp1},", result.out())
         self.assertIn(body1a, result.out())
-        self.assertIn(f"update,{temp1},", result.out())
+        self.assertIn(f",{user},update,{temp1},", result.out())
         self.assertIn(body1b, result.out())
         self.assertIn(desc1, result.out())
-        self.assertIn(f"create,{temp2},", result.out())
+        self.assertIn(f",{user},create,{temp2},", result.out())
         self.assertIn(body2a, result.out())
-        self.assertIn(f"update,{temp2},", result.out())
+        self.assertIn(f",{user},update,{temp2},", result.out())
         self.assertIn(body2b, result.out())
 
         # get a focused history on just one
         result = self.run_cli(cmd_env, temp_cmd + f"history '{temp2}' -f csv")
         self.assertResultSuccess(result)
-        self.assertNotIn("Action,Name,Changes", result.out())
+        self.assertNotIn("Date,User,Action,Name,Changes", result.out())
         self.assertNotIn(temp1, result.out())
         self.assertNotIn(body1a, result.out())
         self.assertNotIn(body1b, result.out())
         self.assertNotIn(desc1, result.out())
-        self.assertIn("Action,Changes", result.out())  # drop Name since it is given
+        self.assertIn("Date,User,Action,Changes", result.out())  # drop Name since it is given
         self.assertIn(temp2, result.out())
         self.assertIn(body2a, result.out())
         self.assertIn(body2b, result.out())
@@ -549,9 +551,9 @@ this.is.a.template.value=PARAM1
         # see that the deleted show up in the full history
         result = self.run_cli(cmd_env, temp_cmd + "history -f csv")
         self.assertResultSuccess(result)
-        self.assertIn("Action,Name,Changes", result.out())
-        self.assertIn(f"delete,{temp1},", result.out())
-        self.assertIn(f"delete,{temp2},", result.out())
+        self.assertIn("Date,User,Action,Name,Changes", result.out())
+        self.assertIn(f",{user},delete,{temp1},", result.out())
+        self.assertIn(f",{user},delete,{temp2},", result.out())
 
         # now that it is deleted, see that we fail to resolve the template name
         result = self.run_cli(cmd_env, temp_cmd + f"history '{temp1}'")

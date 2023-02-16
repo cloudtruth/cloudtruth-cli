@@ -8484,13 +8484,11 @@ components:
           description: The AWS services to integrate with.
         aws_external_id:
           type: string
+          readOnly: true
           description: This is a shared secret between the AWS Administrator who set
             up your IAM trust relationship and your CloudTruth AWS Integration.  CloudTruth
             will generate a random value for you to give to your AWS Administrator
             in order to create the necessary IAM role for proper access.
-          minLength: 2
-          pattern: ^[\w+=,.@:/\-]*$
-          maxLength: 1224
         aws_kms_key_id:
           type: string
           nullable: true
@@ -8513,6 +8511,7 @@ components:
       - aws_account_id
       - aws_enabled_regions
       - aws_enabled_services
+      - aws_external_id
       - aws_role_name
       - created_at
       - fqn
@@ -10432,7 +10431,16 @@ components:
       properties:
         self_hosted:
           type: boolean
+        aws_integration:
+          type: boolean
+        azure_integration:
+          type: boolean
+        github_integration:
+          type: boolean
       required:
+      - aws_integration
+      - azure_integration
+      - github_integration
       - self_hosted
     GeneratedPasswordResponse:
       type: object
@@ -12800,13 +12808,11 @@ components:
           description: The AWS services to integrate with.
         aws_external_id:
           type: string
+          readOnly: true
           description: This is a shared secret between the AWS Administrator who set
             up your IAM trust relationship and your CloudTruth AWS Integration.  CloudTruth
             will generate a random value for you to give to your AWS Administrator
             in order to create the necessary IAM role for proper access.
-          minLength: 2
-          pattern: ^[\w+=,.@:/\-]*$
-          maxLength: 1224
         aws_kms_key_id:
           type: string
           nullable: true
