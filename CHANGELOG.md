@@ -1,3 +1,10 @@
+# 1.2.0 - 2023-02-16
+* Updates to API client for compatibility with the latest server release
+* Fixed various issues with the install scripts on some platforms and networks
+* Azure integrations now show up in `integrations list` #388
+* Removed tag usage stats from the tag commands as they are no longer used #409 
+* Fixed race condition in `projects list` on large data sets #410
+  
 # 1.1.8 - 2022-08-28
 * Added the `groups` subcommand for group management
 * Updated `actions pushes` commands with new options
