@@ -8,6 +8,8 @@ pub struct TemplateHistory {
     pub description: String,
     pub body: String,
     pub change_type: HistoryAction,
+    pub modified_at: String,
+    pub user_name: String,
 }
 
 impl From<&TemplateTimelineEntry> for TemplateHistory {
@@ -19,6 +21,8 @@ impl From<&TemplateTimelineEntry> for TemplateHistory {
             description: api_template.description.clone().unwrap_or_default(),
             body: api_template.body.clone().unwrap_or_default(),
             change_type: HistoryAction::from(*api.history_type.clone().unwrap_or_default()),
+            modified_at: api.modified_at.clone().unwrap_or_default(),
+            user_name: api.modified_by.clone().unwrap_or_default(),
         }
     }
 }
@@ -29,6 +33,8 @@ impl TemplateHistory {
             "name" => self.name.clone(),
             "body" => self.body.clone(),
             "description" => self.description.clone(),
+            "modified_at" => self.modified_at.clone(),
+            "user_name" => self.user_name.clone(),
             x => format!("Unhandled property: {x}"),
         }
     }

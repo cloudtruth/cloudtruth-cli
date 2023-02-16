@@ -401,19 +401,27 @@ fn proc_template_history(
     if history.is_empty() {
         println!("No template history {modifier}in project '{proj_name}'.");
     } else {
-        let name_index = 1;
+        let name_index = 3;
         let mut table = Table::new("template-history");
-        let mut hdr: Vec<&str> = vec!["Action", "Changes"];
+        let mut hdr: Vec<&str> = vec!["Date", "User", "Action", "Changes"];
         if add_name {
             hdr.insert(name_index, "Name");
         }
         table.set_header(&hdr);
 
         for (index, entry) in history.iter().enumerate() {
+            // Looks for the earlier time than this... It relies on the reverse time order.
             let history_tail = &history[index + 1..];
-            let prev = history_tail.iter().find(|e| entry.get_id() == e.get_id());
+            let prev = history_tail
+                .iter()
+                .find(|e| entry.get_id() == e.get_id() && entry.modified_at > e.modified_at);
             let changes = get_changes(entry, prev, TEMPLATE_HISTORY_PROPERTIES);
-            let mut row = vec![entry.change_type.to_string(), changes.join("\n")];
+            let mut row = vec![
+                entry.modified_at.clone(),
+                entry.user_name.clone(),
+                entry.change_type.to_string(),
+                changes.join("\n"),
+            ];
             if add_name {
                 row.insert(name_index, entry.name.clone())
             }
