@@ -9,9 +9,8 @@ pub struct Config {
 }
 
 /// release-builds section of config.yaml
-#[derive(Deserialize, Serialize, Debug)]
+#[derive(Deserialize, Debug)]
 pub struct ReleaseBuild {
-    #[serde(skip_serializing)]
     pub runner: RunnerOs,
     pub target: String,
 }
