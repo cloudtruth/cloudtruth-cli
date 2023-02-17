@@ -1,44 +1,43 @@
 ---
 release-builds:
-  - { os: ubuntu-latest  , target: x86_64-unknown-linux-musl   , use-cross: true  }
-  - { os: ubuntu-latest  , target: arm-unknown-linux-gnueabihf , use-cross: true  }
-  - { os: ubuntu-latest  , target: aarch64-unknown-linux-gnu   , use-cross: true  }
-  - { os: macos-latest   , target: x86_64-apple-darwin         , use-cross: false }
-  - { os: macos-latest   , target: aarch64-apple-darwin        , use-cross: false }
-  - { os: windows-latest , target: x86_64-pc-windows-msvc      , use-cross: false }
+  - { runner: ubuntu-latest  , target: x86_64-unknown-linux-musl }
+  - { runner: ubuntu-latest  , target: arm-unknown-linux-gnueabihf }
+  - { runner: ubuntu-latest  , target: aarch64-unknown-linux-gnu }
+  - { runner: macos-latest   , target: x86_64-apple-darwin }
+  - { runner: macos-latest   , target: aarch64-apple-darwin }
+  - { runner: windows-latest , target: x86_64-pc-windows-msvc }
 release-tests:
-  alpine:
-    docker: true
+  - os: alpine
+    type: docker
     versions:
       - "3.17"
       - "3.16"
       - "3.15"
       - "3.14"
-  rockylinux:
-    docker: true
+  - os: rockylinux
+    type: docker
     versions:
       - "9"
       - "8"
-  debian:
-    docker: true
+  - os: debian
+    type: docker
     versions:
       - bullseye-slim
       - buster-slim
       - stretch-slim
-  macOS:
-    docker: false
-    versions:
-      - latest
-  ubuntu:
-    docker: true
+  - os: ubuntu
+    type: docker
     versions:
       - lunar
       - kinetic
       - jammy
       - focal
       - bionic
-  windows:
-    docker: false
-    powershell: true
+  - os: macos
+    type: shell
+    versions:
+      - latest
+  - os: windows
+    type: powershell
     versions:
       - latest

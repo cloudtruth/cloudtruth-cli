@@ -10,6 +10,11 @@ repository = "https://github.com/cloudtruth/cloudtruth-cli"
 readme = "README.md"
 build = "build.rs"
 
+[workspace]
+members = [
+    "ci"
+]
+
 [package.metadata.deb]
 assets = [
     ["target/release/cloudtruth", "usr/bin/", "755"],
@@ -80,3 +85,4 @@ assert_matches = "1.4"
 predicates = "1.0"
 rusty-hook = "0.11"
 serial_test = "0.5"
+
