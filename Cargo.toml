@@ -1,12 +1,7 @@
 [workspace]
 members = ["ci"]
-
 default-members = ["."]
-
-exclude = [
-    "client"
-]
-
+exclude = ["client"]
 
 [package]
 name = "cloudtruth"

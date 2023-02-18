@@ -8,6 +8,7 @@ use askama::Template;
 use clap::Parser;
 use std::io::prelude::*;
 use std::{
+    fmt::Debug,
     fs::{DirBuilder, File},
     path::Path,
 };
@@ -28,36 +29,24 @@ macro_rules! docker_base_path {
     };
 }
 
-struct BuildMatrixFile;
+const BUILD_RELEASE_PATH: &'static str = concat!(matrices_base_path!(), "/build_release.json");
 
-impl BuildMatrixFile {
-    const PATH: &'static str = concat!(matrices_base_path!(), "/build_release.json");
-    pub fn open() -> Result<File> {
-        Ok(File::create(Self::PATH)?)
+const TEST_RELEASE_PATH: &'static str = concat!(matrices_base_path!(), "/test_release.json");
+
+/// Helper for opening generated output files
+pub fn open_file<P: Debug + AsRef<Path>>(path: P, verbose: bool) -> Result<File> {
+    if verbose {
+        println!("Writing to {:?}", path);
     }
+    Ok(File::create(path)?)
 }
 
-struct TestMatrixFile;
-
-impl TestMatrixFile {
-    const PATH: &'static str = concat!(matrices_base_path!(), "/test_release.json");
-    pub fn open() -> Result<File> {
-        Ok(File::create(Self::PATH)?)
-    }
-}
-
-struct Dockerfile;
-
-impl Dockerfile {
-    const BASE_PATH: &'static str = docker_base_path!();
-    pub fn open<P: AsRef<Path>>(path: P) -> Result<File> {
-        Ok(File::create(Path::new(Self::BASE_PATH).join(path))?)
-    }
-}
 #[derive(Parser)]
 struct Cli {
     #[arg(long)]
     pretty: bool,
+    #[arg(short, long)]
+    verbose: bool,
 }
 
 fn main() -> Result<()> {
@@ -66,14 +55,16 @@ fn main() -> Result<()> {
         env!("CARGO_MANIFEST_DIR"),
         "/config.yaml"
     )))?;
+    let docker_base_path = Path::new(docker_base_path!());
+    DirBuilder::new().recursive(true).create(docker_base_path)?;
     for template in config
         .release_tests
         .iter()
         .filter(|t| t.install_type == InstallType::Docker)
         .flat_map(DockerTemplate::from_config)
     {
-        let mut file =
-            Dockerfile::open(format!("Dockerfile.{}-{}", template.os, template.version))?;
+        let path = &format!("Dockerfile.{}-{}", template.os, template.version);
+        let mut file = open_file(docker_base_path.join(path), cli.verbose)?;
         file.write_all(template.render()?.as_bytes())?;
     }
     DirBuilder::new()
@@ -81,12 +72,14 @@ fn main() -> Result<()> {
         .create(Path::new(matrices_base_path!()))?;
     let build_writer = BuildMatrixWriter::from_config(config.release_builds.as_mut_slice());
     let test_writer = TestMatrixWriter::from_config(config.release_tests.as_mut_slice());
+    let build_release_file = open_file(BUILD_RELEASE_PATH, cli.verbose)?;
+    let test_release_file = open_file(TEST_RELEASE_PATH, cli.verbose)?;
     if cli.pretty {
-        build_writer.write_json_pretty(BuildMatrixFile::open()?)?;
-        test_writer.write_json_pretty(TestMatrixFile::open()?)?;
+        build_writer.write_json_pretty(build_release_file)?;
+        test_writer.write_json_pretty(test_release_file)?;
     } else {
-        build_writer.write_json(BuildMatrixFile::open()?)?;
-        test_writer.write_json(TestMatrixFile::open()?)?;
+        build_writer.write_json(build_release_file)?;
+        test_writer.write_json(test_release_file)?;
     }
     Ok(())
 }

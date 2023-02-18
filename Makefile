@@ -12,11 +12,6 @@ test_dir := integration-tests
 subdirs := $(ci_dir)
 subdirs += $(test_dir)
 
-# source files
-rust_sources := $(shell git ls-files | grep -v -E '^client/' | grep -E '^src/' | grep -E '\.rs$$')
-python_sources := $(shell git ls-files | grep -v -E '^client/' | grep -E '\.py$$')
-shell_sources := $(shell git ls-files | grep -v -E '^client/' | grep -E '\.sh$$')
-
 .DEFAULT = all
 .PHONY = all
 .PHONY += cargo
