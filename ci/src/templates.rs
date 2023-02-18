@@ -1,28 +1,24 @@
-use crate::config::{InstallType, ReleaseTest, TestOs};
-use sailfish::TemplateOnce;
+use crate::config::{ReleaseTest, TestOs};
+use askama::Template;
 
 /// Template for generating the installation test Dockerfiles
-#[derive(TemplateOnce)]
-#[template(path = "Dockerfile.stpl")]
-pub struct DockerTemplate<'conf> {
+#[derive(Template)]
+#[template(path = "Dockerfile", escape = "none")]
+//#[template(print = "code")] //uncomment for debugging generated code
+pub struct DockerTemplate<'c> {
     pub os: TestOs,
-    pub install_type: InstallType,
-    pub version: &'conf str,
+    pub version: &'c str,
 }
 
-impl<'conf> DockerTemplate<'conf> {
-    pub fn from_release_test(
-        release_test: &'conf ReleaseTest,
-    ) -> impl Iterator<Item = DockerTemplate<'conf>> {
+impl<'c> DockerTemplate<'c> {
+    pub fn from_config(
+        release_test: &'c ReleaseTest<'c>,
+    ) -> impl Iterator<Item = DockerTemplate<'c>> {
         let &ReleaseTest {
-            os,
-            install_type,
-            ref versions,
+            os, ref versions, ..
         } = release_test;
-        versions.iter().map(move |version| DockerTemplate {
-            os,
-            install_type,
-            version,
-        })
+        versions
+            .into_iter()
+            .map(move |&version| DockerTemplate { os, version })
     }
 }

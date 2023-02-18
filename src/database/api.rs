@@ -46,8 +46,12 @@ impl Api {
 
     pub fn get_local_schema(&self, format: &str) -> Result<String, ApiError> {
         match format {
-            "yaml" => Ok(include_str!("../../openapi.yml").to_string()),
-            "json" => Ok(include_str!("../../openapi.json").to_string()),
+            "yaml" => {
+                Ok(include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/openapi.yml")).to_string())
+            }
+            "json" => {
+                Ok(include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/openapi.json")).to_string())
+            }
             _ => Err(ApiError::UnsupportedFormat(format.to_string())),
         }
     }

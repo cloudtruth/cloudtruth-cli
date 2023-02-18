@@ -1,6 +1,7 @@
 #
 # Copyright (C) 2021 CloudTruth, Inc.
 #
+VPATH = src:ci:ci/src:integration-tests
 
 os_name := $(shell uname -s)
 rustup_exists := $(shell which rustup)
@@ -11,10 +12,16 @@ test_dir := integration-tests
 subdirs := $(ci_dir)
 subdirs += $(test_dir)
 
+# source files
+rust_sources := $(shell git ls-files | grep -v -E '^client/' | grep -E '^src/' | grep -E '\.rs$$')
+python_sources := $(shell git ls-files | grep -v -E '^client/' | grep -E '\.py$$')
+shell_sources := $(shell git ls-files | grep -v -E '^client/' | grep -E '\.sh$$')
+
 .DEFAULT = all
 .PHONY = all
 .PHONY += cargo
 .PHONY += clean
+.PHONY += ci
 .PHONY += cli
 .PHONY += help
 .PHONY += image
@@ -23,7 +30,9 @@ subdirs += $(test_dir)
 .PHONY += format
 .PHONY += lint
 .PHONY += lint_fix
-.PHONY += lint_local
+.PHONY += lint_python
+.PHONY += lint_rust
+.PHONY += lint_shell
 .PHONY += precommit
 .PHONY += prerequisites
 .PHONY += shell
@@ -53,7 +62,7 @@ shell:
 ### Commands for either outside or inside the container
 
 # the client must be generated before building the Rust program that uses it
-cargo cli Cargo.lock %.rs %.toml: client
+cargo: client
 	cargo build
 
 clean:
@@ -84,15 +93,25 @@ format:
 	python3 -m black .
 	ruff check . --fix
 
-lint:
-	cargo fmt --all -- --check
-	cargo clippy --all-features -- -D warnings
-	python3 -m black --check .
-	ruff check .
-# run Shellcheck on all shell scripts, ignoring client/ and .gitignore files
-	git ls-files | grep -v -E '^client/' | grep -E '\.sh$$' | xargs shellcheck
-# disable yamllint for now until we find better auto-formatting options
-#	python3 -m yamllint .
+lint: lint_shell lint_rust lint_python
+
+lint_python: $(python_sources)
+
+%.py:
+	@echo Linting $@
+	@python3 -m black --quiet --check $@
+	@ruff check  $@
+
+lint_rust:
+	@echo Linting Rust sources...
+	@cargo fmt --all -- --check
+	@cargo clippy --all-features -- -D warnings
+
+lint_shell: $(shell_sources)
+
+$(shell_sources) :
+	@echo Linting $@
+	@shellcheck  $@
 
 # apply linting fixes
 lint_fix:
