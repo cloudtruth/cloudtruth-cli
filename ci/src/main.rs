@@ -17,21 +17,21 @@ use config::*;
 use matrix_generator::*;
 use templates::*;
 
-macro_rules! matrices_base_path {
-    () => {
-        concat!(env!("CARGO_MANIFEST_DIR"), "/actions-matrices")
+macro_rules! matrix_path {
+    ($($path:literal),*) => {
+        concat!(env!("CARGO_MANIFEST_DIR"), "/actions-matrices/", $($path),*)
     };
 }
 
-macro_rules! docker_base_path {
-    () => {
-        concat!(env!("CARGO_MANIFEST_DIR"), "/docker")
+macro_rules! docker_path {
+    ($($path:literal),*) => {
+        concat!(env!("CARGO_MANIFEST_DIR"), "/docker/", $($path),*)
     };
 }
 
-const BUILD_RELEASE_PATH: &'static str = concat!(matrices_base_path!(), "/build_release.json");
+const BUILD_RELEASE_PATH: &'static str = matrix_path!("build_release.json");
 
-const TEST_RELEASE_PATH: &'static str = concat!(matrices_base_path!(), "/test_release.json");
+const TEST_RELEASE_PATH: &'static str = matrix_path!("test_release.json");
 
 /// Helper for opening generated output files
 pub fn open_file<P: Debug + AsRef<Path>>(path: P, verbose: bool) -> Result<File> {
@@ -55,7 +55,7 @@ fn main() -> Result<()> {
         env!("CARGO_MANIFEST_DIR"),
         "/config.yaml"
     )))?;
-    let docker_base_path = Path::new(docker_base_path!());
+    let docker_base_path = Path::new(docker_path!());
     DirBuilder::new().recursive(true).create(docker_base_path)?;
     for template in config
         .release_tests
@@ -69,7 +69,7 @@ fn main() -> Result<()> {
     }
     DirBuilder::new()
         .recursive(true)
-        .create(Path::new(matrices_base_path!()))?;
+        .create(Path::new(matrix_path!()))?;
     let build_writer = BuildMatrixWriter::from_config(config.release_builds.as_mut_slice());
     let test_writer = TestMatrixWriter::from_config(config.release_tests.as_mut_slice());
     let build_release_file = open_file(BUILD_RELEASE_PATH, cli.verbose)?;
