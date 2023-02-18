@@ -29,6 +29,14 @@ macro_rules! docker_path {
     };
 }
 
+macro_rules! config_yaml_path {
+    () => {
+        concat!(env!("CARGO_MANIFEST_DIR"), "/config.yaml")
+    };
+}
+
+const CONFIG_YAML: &str = include_str!(config_yaml_path!());
+
 /// Helper for opening generated output files
 pub fn open_file<P: Debug + AsRef<Path>>(path: P, verbose: bool) -> Result<File> {
     if verbose {
@@ -80,10 +88,7 @@ fn generate_actions_matrices<'a: 'b, 'b>(cli: &Cli, config: &'a mut Config<'b>) 
 
 fn main() -> Result<()> {
     let cli = Cli::parse();
-    let mut config: Config = serde_yaml::from_str(include_str!(concat!(
-        env!("CARGO_MANIFEST_DIR"),
-        "/config.yaml"
-    )))?;
+    let mut config: Config = serde_yaml::from_str(CONFIG_YAML)?;
     generate_dockerfiles(&cli, &config)?;
     generate_actions_matrices(&cli, &mut config)?;
     Ok(())
