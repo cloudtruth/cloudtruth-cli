@@ -98,9 +98,8 @@ lint_python: $(python_sources)
 	@ruff check  $@
 
 lint_rust:
-	@echo Linting Rust sources...
-	@cargo fmt --all -- --check
-	@cargo clippy --all-features -- -D warnings
+	cargo fmt --all -- --check
+	cargo clippy --all-features -- -D warnings
 
 lint_shell: $(shell_sources)
 
