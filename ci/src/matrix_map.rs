@@ -17,11 +17,11 @@ pub trait HasSortKey {
 }
 
 #[derive(Serialize, Debug)]
-pub struct MatrixWriter<Key, Matrix>(BTreeMap<Key, Matrix>);
-pub type BuildMatrixWriter<'c> = MatrixWriter<RunnerOs, ReleaseBuildMatrix<'c>>;
-pub type TestMatrixWriter<'c> = MatrixWriter<InstallType, ReleaseTestMatrix<'c>>;
+pub struct MatrixMap<Key, Matrix>(BTreeMap<Key, Matrix>);
+pub type BuildMatrixMap<'c> = MatrixMap<RunnerOs, ReleaseBuildMatrix<'c>>;
+pub type TestMatrixMap<'c> = MatrixMap<InstallType, ReleaseTestMatrix<'c>>;
 
-impl<'c, Key, Matrix> MatrixWriter<Key, Matrix> {
+impl<'c, Key, Matrix> MatrixMap<Key, Matrix> {
     /// Load from config. Need mutable reference to sort the data for partitioning.
     pub fn from_config<Conf>(confs: &'c mut [Conf]) -> Self
     where
@@ -40,7 +40,7 @@ impl<'c, Key, Matrix> MatrixWriter<Key, Matrix> {
         Conf: HasSortKey<Key = Key>,
         Matrix: FromIterator<&'c Conf>,
     {
-        MatrixWriter(
+        MatrixMap(
             confs
                 .iter()
                 .group_by(|c| c.sort_key())

@@ -2,26 +2,26 @@ use std::{borrow::Cow, fmt::Display};
 
 use serde::{Deserialize, Serialize};
 
-use crate::matrix_generator::HasSortKey;
+use crate::matrix_map::HasSortKey;
 
 /// config.yaml file
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "kebab-case")]
 pub struct Config<'c> {
     #[serde(borrow)]
-    pub release_builds: Vec<ReleaseBuild<'c>>,
-    pub release_tests: Vec<ReleaseTest<'c>>,
+    pub release_builds: Vec<ReleaseBuildConfig<'c>>,
+    pub release_tests: Vec<ReleaseTestConfig<'c>>,
 }
 
 /// release-builds section of config.yaml
 #[derive(Deserialize, Debug)]
-pub struct ReleaseBuild<'c> {
+pub struct ReleaseBuildConfig<'c> {
     pub runner: RunnerOs,
     #[serde(borrow)]
     pub target: Cow<'c, str>,
 }
 
-impl<'c> HasSortKey for ReleaseBuild<'c> {
+impl<'c> HasSortKey for ReleaseBuildConfig<'c> {
     type Key = RunnerOs;
     fn sort_key(&self) -> Self::Key {
         self.runner
@@ -30,7 +30,7 @@ impl<'c> HasSortKey for ReleaseBuild<'c> {
 
 /// release-tests section of config.yaml
 #[derive(Deserialize, Debug)]
-pub struct ReleaseTest<'c> {
+pub struct ReleaseTestConfig<'c> {
     pub os: TestOs,
     #[serde(rename = "type")]
     pub install_type: InstallType,
@@ -38,7 +38,7 @@ pub struct ReleaseTest<'c> {
     pub versions: Vec<Cow<'c, str>>,
 }
 
-impl<'c> HasSortKey for ReleaseTest<'c> {
+impl<'c> HasSortKey for ReleaseTestConfig<'c> {
     type Key = InstallType;
     fn sort_key(&self) -> Self::Key {
         self.install_type

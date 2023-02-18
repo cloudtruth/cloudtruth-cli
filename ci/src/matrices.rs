@@ -1,4 +1,4 @@
-use crate::config::{ReleaseBuild, ReleaseTest, RunnerOs, TestOs};
+use crate::config::{ReleaseBuildConfig, ReleaseTestConfig, RunnerOs, TestOs};
 use serde::Serialize;
 
 #[derive(Serialize)]
@@ -6,8 +6,8 @@ pub struct ReleaseBuildMatrix<'c> {
     pub target: Vec<&'c str>,
 }
 
-impl<'c> FromIterator<&'c ReleaseBuild<'c>> for ReleaseBuildMatrix<'c> {
-    fn from_iter<T: IntoIterator<Item = &'c ReleaseBuild<'c>>>(value: T) -> Self {
+impl<'c> FromIterator<&'c ReleaseBuildConfig<'c>> for ReleaseBuildMatrix<'c> {
+    fn from_iter<T: IntoIterator<Item = &'c ReleaseBuildConfig<'c>>>(value: T) -> Self {
         Self {
             target: value.into_iter().map(|i| i.target.as_ref()).collect(),
         }
@@ -27,14 +27,14 @@ pub struct ReleaseTestIncludes<'c> {
     pub version: &'c str,
 }
 
-impl<'c> FromIterator<&'c ReleaseTest<'c>> for ReleaseTestMatrix<'c> {
-    fn from_iter<T: IntoIterator<Item = &'c ReleaseTest<'c>>>(value: T) -> Self {
+impl<'c> FromIterator<&'c ReleaseTestConfig<'c>> for ReleaseTestMatrix<'c> {
+    fn from_iter<T: IntoIterator<Item = &'c ReleaseTestConfig<'c>>>(value: T) -> Self {
         let mut matrix = ReleaseTestMatrix {
             os: Vec::new(),
             includes: Vec::new(),
         };
         for test in value {
-            let &ReleaseTest {
+            let &ReleaseTestConfig {
                 os, ref versions, ..
             } = test;
             matrix.os.push(os);
