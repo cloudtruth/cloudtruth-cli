@@ -19,6 +19,6 @@ impl<'c> DockerTemplate<'c> {
         } = release_test;
         versions
             .iter()
-            .map(move |&version| DockerTemplate { os, version })
+            .map(move |version| DockerTemplate { os, version })
     }
 }

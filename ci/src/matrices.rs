@@ -9,7 +9,7 @@ pub struct ReleaseBuildMatrix<'c> {
 impl<'c> FromIterator<&'c ReleaseBuild<'c>> for ReleaseBuildMatrix<'c> {
     fn from_iter<T: IntoIterator<Item = &'c ReleaseBuild<'c>>>(value: T) -> Self {
         Self {
-            target: value.into_iter().map(|i| i.target).collect(),
+            target: value.into_iter().map(|i| i.target.as_ref()).collect(),
         }
     }
 }

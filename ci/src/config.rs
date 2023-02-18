@@ -1,4 +1,4 @@
-use std::fmt::Display;
+use std::{borrow::Cow, fmt::Display};
 
 use serde::{Deserialize, Serialize};
 
@@ -17,7 +17,8 @@ pub struct Config<'c> {
 #[derive(Deserialize, Debug)]
 pub struct ReleaseBuild<'c> {
     pub runner: RunnerOs,
-    pub target: &'c str,
+    #[serde(borrow)]
+    pub target: Cow<'c, str>,
 }
 
 impl<'c> HasSortKey for ReleaseBuild<'c> {
@@ -34,7 +35,7 @@ pub struct ReleaseTest<'c> {
     #[serde(rename = "type")]
     pub install_type: InstallType,
     #[serde(borrow)]
-    pub versions: Vec<&'c str>,
+    pub versions: Vec<Cow<'c, str>>,
 }
 
 impl<'c> HasSortKey for ReleaseTest<'c> {
