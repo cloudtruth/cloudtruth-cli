@@ -29,10 +29,6 @@ macro_rules! docker_path {
     };
 }
 
-const BUILD_RELEASE_PATH: &'static str = matrix_path!("build_release.json");
-
-const TEST_RELEASE_PATH: &'static str = matrix_path!("test_release.json");
-
 /// Helper for opening generated output files
 pub fn open_file<P: Debug + AsRef<Path>>(path: P, verbose: bool) -> Result<File> {
     if verbose {
@@ -63,17 +59,16 @@ fn main() -> Result<()> {
         .filter(|t| t.install_type == InstallType::Docker)
         .flat_map(DockerTemplate::from_config)
     {
-        let path = &format!("Dockerfile.{}-{}", template.os, template.version);
-        let mut file = open_file(docker_base_path.join(path), cli.verbose)?;
+        let path =
+            docker_base_path.join(format!("Dockerfile.{}-{}", template.os, template.version));
+        let mut file = open_file(path, cli.verbose)?;
         file.write_all(template.render()?.as_bytes())?;
     }
-    DirBuilder::new()
-        .recursive(true)
-        .create(Path::new(matrix_path!()))?;
+    DirBuilder::new().recursive(true).create(matrix_path!())?;
     let build_writer = BuildMatrixWriter::from_config(config.release_builds.as_mut_slice());
     let test_writer = TestMatrixWriter::from_config(config.release_tests.as_mut_slice());
-    let build_release_file = open_file(BUILD_RELEASE_PATH, cli.verbose)?;
-    let test_release_file = open_file(TEST_RELEASE_PATH, cli.verbose)?;
+    let build_release_file = open_file(matrix_path!("build_release.json"), cli.verbose)?;
+    let test_release_file = open_file(matrix_path!("test_release.json"), cli.verbose)?;
     if cli.pretty {
         build_writer.write_json_pretty(build_release_file)?;
         test_writer.write_json_pretty(test_release_file)?;
