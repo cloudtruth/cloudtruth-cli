@@ -32,7 +32,7 @@ macro_rules! docker_path {
 /// Helper for opening generated output files
 pub fn open_file<P: Debug + AsRef<Path>>(path: P, verbose: bool) -> Result<File> {
     if verbose {
-        println!("Writing to {:?}", path);
+        println!("Writing to {path:?}");
     }
     Ok(File::create(path)?)
 }
@@ -45,12 +45,7 @@ struct Cli {
     verbose: bool,
 }
 
-fn main() -> Result<()> {
-    let cli = Cli::parse();
-    let mut config: Config = serde_yaml::from_str(include_str!(concat!(
-        env!("CARGO_MANIFEST_DIR"),
-        "/config.yaml"
-    )))?;
+fn generate_dockerfiles(cli: &Cli, config: &Config) -> Result<()> {
     let docker_base_path = Path::new(docker_path!());
     DirBuilder::new().recursive(true).create(docker_base_path)?;
     for template in config
@@ -64,9 +59,13 @@ fn main() -> Result<()> {
         let mut file = open_file(path, cli.verbose)?;
         file.write_all(template.render()?.as_bytes())?;
     }
+    Ok(())
+}
+
+fn generate_actions_matrices<'a: 'b, 'b>(cli: &Cli, config: &'a mut Config<'b>) -> Result<()> {
     DirBuilder::new().recursive(true).create(matrix_path!())?;
-    let build_writer = BuildMatrixWriter::from_config(config.release_builds.as_mut_slice());
-    let test_writer = TestMatrixWriter::from_config(config.release_tests.as_mut_slice());
+    let build_writer = BuildMatrixWriter::from_config(&mut config.release_builds);
+    let test_writer = TestMatrixWriter::from_config(&mut config.release_tests);
     let build_release_file = open_file(matrix_path!("build_release.json"), cli.verbose)?;
     let test_release_file = open_file(matrix_path!("test_release.json"), cli.verbose)?;
     if cli.pretty {
@@ -76,5 +75,16 @@ fn main() -> Result<()> {
         build_writer.write_json(build_release_file)?;
         test_writer.write_json(test_release_file)?;
     }
+    Ok(())
+}
+
+fn main() -> Result<()> {
+    let cli = Cli::parse();
+    let mut config: Config = serde_yaml::from_str(include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/config.yaml"
+    )))?;
+    generate_dockerfiles(&cli, &config)?;
+    generate_actions_matrices(&cli, &mut config)?;
     Ok(())
 }

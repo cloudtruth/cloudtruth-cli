@@ -99,7 +99,7 @@ lint_python: $(python_sources)
 
 lint_rust:
 	cargo fmt --all -- --check
-	cargo clippy --all-features -- -D warnings
+	cargo clippy --all --all-features -- -D warnings
 
 lint_shell: $(shell_sources)
 
@@ -109,11 +109,11 @@ $(shell_sources) :
 
 # apply linting fixes
 lint_fix:
-	@cargo clippy --all-features --fix -- -D warnings; \
+	@cargo clippy --all --all-features --fix -- -D warnings; \
 	[ "$$?" -eq 101 ] && read -p 'Force fixes? [y/n]: ' force; \
 	case "$$force" in \
 		[Yy]*) \
-			cargo clippy --all-features --fix --allow-staged --allow-dirty -- -D warnings ;; \
+			cargo clippy --all --all-features --fix --allow-staged --allow-dirty -- -D warnings ;; \
 		*) \
 			exit 1 ;; \
 	esac;
