@@ -58,11 +58,16 @@ where
     print!("=== Generated matrices for {name} ===\n{map}");
 }
 
+pub fn show_help() {
+    use clap::CommandFactory;
+    Cli::command().print_help().unwrap();
+}
+
 #[derive(Parser)]
 struct Cli {
-    #[arg(long)]
+    #[arg(long, short)]
     pretty: bool,
-    #[arg(short, long)]
+    #[arg(long, short)]
     verbose: bool,
     #[arg(long, help = "Build GitHub Actions matrices")]
     actions: bool,
@@ -111,14 +116,19 @@ fn generate_actions_matrices<'a: 'b, 'b>(cli: &Cli, config: &'a mut Config<'b>) 
 
 fn main() -> Result<()> {
     let cli = Cli::parse();
+    if !cli.actions && !cli.docker {
+        show_help();
+        eprintln!("ERROR: One of the following options is required: --actions, --docker");
+        std::process::exit(1);
+    }
     let config_yaml_path = Path::new(config_yaml_path!());
     let mut config_yaml = String::new();
     open_input_file(config_yaml_path, cli.verbose)?.read_to_string(&mut config_yaml)?;
     let mut config: Config = serde_yaml::from_str(&config_yaml)?;
-    if cli.docker || !cli.actions {
+    if cli.docker {
         generate_dockerfiles(&cli, &config)?;
     }
-    if cli.actions || !cli.docker {
+    if cli.actions {
         generate_actions_matrices(&cli, &mut config)?;
     }
     Ok(())
