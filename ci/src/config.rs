@@ -1,6 +1,7 @@
-use std::{borrow::Cow, fmt::Display};
+use std::borrow::Cow;
 
 use serde::{Deserialize, Serialize};
+use serde_plain::derive_display_from_serialize;
 
 use crate::matrix_map::HasSortKey;
 
@@ -55,6 +56,8 @@ pub enum RunnerOs {
     WindowsLatest,
 }
 
+derive_display_from_serialize!(RunnerOs);
+
 impl From<TestOs> for RunnerOs {
     // Choose the corresponding GitHub runner for a Test OS
     fn from(test_os: TestOs) -> Self {
@@ -79,22 +82,7 @@ pub enum TestOs {
     Windows,
 }
 
-/// Used for template rendering and output of Dockerfile names
-impl Display for TestOs {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        use TestOs::*;
-        match self {
-            // linux OS strings are primarily used for generating Dockerfile names
-            Alpine => write!(f, "alpine"),
-            RockyLinux => write!(f, "rockylinux"),
-            Debian => write!(f, "debian"),
-            Ubuntu => write!(f, "ubuntu"),
-            // the uppercase format for macOS and Windows matches GH Actions OS strings
-            Macos => write!(f, "macOS"),
-            Windows => write!(f, "Windows"),
-        }
-    }
-}
+derive_display_from_serialize!(TestOs);
 
 #[derive(Deserialize, Serialize, Eq, PartialEq, PartialOrd, Ord, Clone, Copy, Debug)]
 #[serde(rename_all = "lowercase")]
@@ -106,3 +94,5 @@ pub enum InstallType {
     /// Install with install.ps1
     PowerShell,
 }
+
+derive_display_from_serialize!(InstallType);

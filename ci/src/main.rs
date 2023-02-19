@@ -8,8 +8,9 @@ use anyhow::*;
 use clap::Parser;
 
 use std::{
-    fmt::Debug,
+    fmt::Display,
     fs::{DirBuilder, File},
+    io::Read,
     path::Path,
 };
 
@@ -35,14 +36,26 @@ macro_rules! config_yaml_path {
     };
 }
 
-const CONFIG_YAML: &str = include_str!(config_yaml_path!());
+pub fn open_input_file<P: AsRef<Path>>(path: P, verbose: bool) -> Result<File> {
+    if verbose {
+        println!("Reading from {path}", path = path.as_ref().display());
+    }
+    Ok(File::open(path)?)
+}
 
 /// Helper for opening generated output files
-pub fn open_file<P: Debug + AsRef<Path>>(path: P, verbose: bool) -> Result<File> {
+pub fn open_output_file<P: AsRef<Path>>(path: P, verbose: bool) -> Result<File> {
     if verbose {
-        println!("Writing to {path:?}");
+        println!("Writing to {path}", path = path.as_ref().display());
     }
     Ok(File::create(path)?)
+}
+
+pub fn display_matrix_map<K, M>(name: &str, map: &MatrixMap<K, M>)
+where
+    MatrixMap<K, M>: Display,
+{
+    print!("=== Generated matrices for {name} ===\n{map}");
 }
 
 #[derive(Parser)]
@@ -63,8 +76,8 @@ fn generate_dockerfiles(cli: &Cli, config: &Config) -> Result<()> {
         .flat_map(DockerTemplate::from_release_test_config)
         .map(|template| {
             let path = docker_base_path.join(template.file_name());
-            let result =
-                open_file(&path, cli.verbose).and_then(|file| template.write_dockerfile(file));
+            let result = open_output_file(&path, cli.verbose)
+                .and_then(|file| template.write_dockerfile(file));
             (path, result)
         });
     report_file_errors(results)
@@ -73,9 +86,15 @@ fn generate_dockerfiles(cli: &Cli, config: &Config) -> Result<()> {
 fn generate_actions_matrices<'a: 'b, 'b>(cli: &Cli, config: &'a mut Config<'b>) -> Result<()> {
     DirBuilder::new().recursive(true).create(matrix_path!())?;
     let build_map = BuildMatrixMap::from_config(&mut config.release_builds);
+    if cli.verbose {
+        display_matrix_map("build_release", &build_map);
+    }
     let test_map = TestMatrixMap::from_config(&mut config.release_tests);
-    let build_release_file = open_file(matrix_path!("build_release.json"), cli.verbose)?;
-    let test_release_file = open_file(matrix_path!("test_release.json"), cli.verbose)?;
+    if cli.verbose {
+        display_matrix_map("test_release", &test_map)
+    };
+    let build_release_file = open_output_file(matrix_path!("build_release.json"), cli.verbose)?;
+    let test_release_file = open_output_file(matrix_path!("test_release.json"), cli.verbose)?;
     if cli.pretty {
         build_map.write_json_pretty(build_release_file)?;
         test_map.write_json_pretty(test_release_file)?;
@@ -88,7 +107,10 @@ fn generate_actions_matrices<'a: 'b, 'b>(cli: &Cli, config: &'a mut Config<'b>) 
 
 fn main() -> Result<()> {
     let cli = Cli::parse();
-    let mut config: Config = serde_yaml::from_str(CONFIG_YAML)?;
+    let config_yaml_path = Path::new(config_yaml_path!());
+    let mut config_yaml = String::new();
+    open_input_file(config_yaml_path, cli.verbose)?.read_to_string(&mut config_yaml)?;
+    let mut config: Config = serde_yaml::from_str(&config_yaml)?;
     generate_dockerfiles(&cli, &config)?;
     generate_actions_matrices(&cli, &mut config)?;
     Ok(())

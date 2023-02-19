@@ -1,5 +1,5 @@
 use itertools::Itertools;
-use std::{collections::BTreeMap, io::Write};
+use std::{collections::BTreeMap, fmt::Display, io::Write};
 
 use anyhow::*;
 use serde::Serialize;
@@ -68,5 +68,18 @@ impl<'c, Key, Matrix> MatrixMap<Key, Matrix> {
         let serializer = &mut serde_json::Serializer::with_formatter(writer, formatter);
         self.serialize(serializer)?;
         Ok(())
+    }
+}
+
+impl<K, M> Display for MatrixMap<K, M>
+where
+    K: Display,
+    M: Display,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        for (key, matrix) in &self.0 {
+            writeln!(f, "{key}: {matrix}")?;
+        }
+        std::fmt::Result::Ok(())
     }
 }

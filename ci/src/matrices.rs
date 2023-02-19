@@ -14,17 +14,31 @@ impl<'c> FromIterator<&'c ReleaseBuildConfig<'c>> for ReleaseBuildMatrix<'c> {
     }
 }
 
+impl std::fmt::Display for ReleaseBuildMatrix<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.target.join(" "))
+    }
+}
+
 #[derive(Serialize)]
 pub struct ReleaseTestMatrix<'c> {
     pub os: Vec<TestOs>,
     pub includes: Vec<ReleaseTestIncludes<'c>>,
 }
-
 #[derive(Serialize)]
 pub struct ReleaseTestIncludes<'c> {
     pub os: TestOs,
     pub runner: RunnerOs,
     pub version: &'c str,
+}
+
+impl std::fmt::Display for ReleaseTestMatrix<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        for i in &self.includes {
+            write!(f, "{}-{} ", i.os, i.version)?;
+        }
+        std::fmt::Result::Ok(())
+    }
 }
 
 impl<'c> FromIterator<&'c ReleaseTestConfig<'c>> for ReleaseTestMatrix<'c> {
