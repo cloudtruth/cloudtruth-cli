@@ -9,7 +9,7 @@ use clap::Parser;
 
 use std::{
     fmt::Display,
-    fs::{DirBuilder, File},
+    fs::{create_dir, File},
     io::Read,
     path::Path,
 };
@@ -51,6 +51,13 @@ pub fn open_output_file<P: AsRef<Path>>(path: P, verbose: bool) -> Result<File> 
     Ok(File::create(path)?)
 }
 
+pub fn mkdir<P: AsRef<Path>>(path: P) -> Result<()> {
+    if !path.as_ref().is_dir() {
+        create_dir(path)?
+    }
+    Ok(())
+}
+
 pub fn display_matrix_map<K, M>(name: &str, map: &MatrixMap<K, M>)
 where
     MatrixMap<K, M>: Display,
@@ -77,7 +84,7 @@ struct Cli {
 
 fn generate_dockerfiles(cli: &Cli, config: &Config) -> Result<()> {
     let docker_base_path = Path::new(docker_path!());
-    DirBuilder::new().recursive(true).create(docker_base_path)?;
+    mkdir(docker_base_path)?;
     let results = config
         .release_tests
         .iter()
@@ -93,7 +100,7 @@ fn generate_dockerfiles(cli: &Cli, config: &Config) -> Result<()> {
 }
 
 fn generate_actions_matrices<'a: 'b, 'b>(cli: &Cli, config: &'a mut Config<'b>) -> Result<()> {
-    DirBuilder::new().recursive(true).create(matrix_path!())?;
+    mkdir(matrix_path!())?;
     let build_map = BuildMatrixMap::from_config(&mut config.release_builds);
     if cli.verbose {
         display_matrix_map("build_release", &build_map);
