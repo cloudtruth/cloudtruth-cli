@@ -3,7 +3,7 @@ use std::borrow::Cow;
 use serde::{Deserialize, Serialize};
 use serde_plain::derive_display_from_serialize;
 
-use crate::matrix_map::HasSortKey;
+use crate::gh_matrix_map::HasSortKey;
 
 /// config.yaml file
 #[derive(Deserialize, Debug)]

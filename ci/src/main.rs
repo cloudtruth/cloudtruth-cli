@@ -1,7 +1,7 @@
 mod config;
-mod matrices;
-mod matrix_map;
-mod templates;
+mod docker_template;
+mod gh_matrix;
+mod gh_matrix_map;
 
 use anyhow::*;
 
@@ -15,12 +15,12 @@ use std::{
 };
 
 use config::*;
-use matrix_map::*;
-use templates::*;
+use docker_template::*;
+use gh_matrix_map::*;
 
 macro_rules! matrix_path {
     ($($path:literal),*) => {
-        concat!(env!("CARGO_MANIFEST_DIR"), "/actions-matrices/", $($path),*)
+        concat!(env!("CARGO_MANIFEST_DIR"), "/gh-actions/", $($path),*)
     };
 }
 
@@ -64,6 +64,10 @@ struct Cli {
     pretty: bool,
     #[arg(short, long)]
     verbose: bool,
+    #[arg(long, help = "Build GitHub Actions matrices")]
+    actions: bool,
+    #[arg(long, help = "Build Dockerfiles")]
+    docker: bool,
 }
 
 fn generate_dockerfiles(cli: &Cli, config: &Config) -> Result<()> {
@@ -111,8 +115,12 @@ fn main() -> Result<()> {
     let mut config_yaml = String::new();
     open_input_file(config_yaml_path, cli.verbose)?.read_to_string(&mut config_yaml)?;
     let mut config: Config = serde_yaml::from_str(&config_yaml)?;
-    generate_dockerfiles(&cli, &config)?;
-    generate_actions_matrices(&cli, &mut config)?;
+    if cli.docker || !cli.actions {
+        generate_dockerfiles(&cli, &config)?;
+    }
+    if cli.actions || !cli.docker {
+        generate_actions_matrices(&cli, &mut config)?;
+    }
     Ok(())
 }
 

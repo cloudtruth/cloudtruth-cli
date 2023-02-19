@@ -6,7 +6,7 @@ use serde::Serialize;
 
 use crate::{
     config::{InstallType, RunnerOs},
-    matrices::{ReleaseBuildMatrix, ReleaseTestMatrix},
+    gh_matrix::{ReleaseBuildMatrix, ReleaseTestMatrix},
 };
 
 /// Trait for specifying the sort key for partitioning config data into matricies
