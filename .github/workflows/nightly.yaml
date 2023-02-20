@@ -122,6 +122,7 @@ jobs:
     with:
       runsOn: ${{ matrix.os }}
       releaseVersion: ${{ needs.create-release.outputs.tagName }}
+      testRunnerOptions: --reports
     secrets: inherit
 
       

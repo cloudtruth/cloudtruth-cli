@@ -1,4 +1,7 @@
+#!/usr/bin/env python3
 import argparse
+import dataclasses
+import inspect
 import os
 import pdb
 import subprocess
@@ -6,11 +9,36 @@ import sys
 import traceback
 import unittest
 
+from datetime import datetime
+from pathlib import Path
+from typing import Dict
+from typing import List
+from typing import Optional
+
 from testcase import get_cli_base_cmd
 from testcase import CT_API_KEY, CT_URL, CT_PROFILE
 from testcase import CT_TEST_JOB_ID, CT_TEST_LOG_COMMANDS, CT_TEST_LOG_OUTPUT
 from testcase import CT_TEST_LOG_COMMANDS_ON_FAILURE, CT_TEST_LOG_OUTPUT_ON_FAILURE
 from testcase import CT_TEST_KNOWN_ISSUES
+
+
+# NOTE: these constants are used to determine tag names
+ERROR = "error"
+FAILURE = "failure"
+SKIPPED = "skipped"
+SUCCESS = "success"
+
+
+@dataclasses.dataclass
+class TestCaseResults:
+    testname: str
+    classname: str
+    filename: str
+    line: int
+    result: Optional[str] = None
+    message: Optional[str] = None
+    starttime: Optional[datetime] = None
+    endtime: Optional[datetime] = None
 
 
 def parse_args(*args) -> argparse.Namespace:
@@ -83,6 +111,7 @@ def parse_args(*args) -> argparse.Namespace:
         help="Job Identifier to use as a suffix on project and environment names (default: testcli)",
     )
     parser.add_argument(
+        "-f",
         "--filter",
         dest="test_filter",
         nargs="+",
@@ -90,6 +119,7 @@ def parse_args(*args) -> argparse.Namespace:
         help="Only include tests containing the provided string(s) in the name",
     )
     parser.add_argument(
+        "-l",
         "--list",
         dest="list_only",
         action="store_true",
@@ -104,32 +134,120 @@ def parse_args(*args) -> argparse.Namespace:
         default=[],
         help="Exclude tests containing the provided string(s) in the name",
     )
+    parser.add_argument("-r", "--reports", dest="reports", action="store_true", help="Write summary report information")
     parser.add_argument("--known-issues", dest="known_issues", action="store_true", help="don't skip known issues")
     return parser.parse_args(*args)
+
+
+def error_message(tb: traceback, ae: AssertionError) -> str:
+    return "".join(traceback.format_tb(tb)) + "\n\nAssertion:\n" + str(ae)
+
+
+def name_from_test(test: unittest.case.TestCase) -> str:
+    return test._testMethodName
 
 
 def debugTestRunner(enable_debug: bool, verbosity: int, failfast: bool):
     """Overload the TextTestRunner to conditionally drop into pdb on an error/failure."""
 
     class DebugTestResult(unittest.TextTestResult):
-        def addError(self, test, err):
+        def __init__(self, stream, descriptions, verbosity):
+            super().__init__(stream=stream, descriptions=descriptions, verbosity=verbosity)
+            self.testCaseData = {}
+
+        def addError(self, test: unittest.case.TestCase, err) -> None:
             # called before tearDown()
             traceback.print_exception(*err)
             if enable_debug:
                 pdb.post_mortem(err[2])
-            super(DebugTestResult, self).addError(test, err)
+            name = name_from_test(test)
+            self.testCaseData[name].result = ERROR
+            self.testCaseData[name].message = error_message(err[2], err[1])
+            super().addError(test, err)
 
-        def addFailure(self, test, err):
+        def addFailure(self, test: unittest.case.TestCase, err) -> None:
             traceback.print_exception(*err)
             if enable_debug:
                 pdb.post_mortem(err[2])
-            super(DebugTestResult, self).addFailure(test, err)
+            name = name_from_test(test)
+            self.testCaseData[name].result = FAILURE
+            self.testCaseData[name].message = error_message(err[2], err[1])
+            super().addFailure(test, err)
+
+        def addSuccess(self, test: unittest.case.TestCase) -> None:
+            name = name_from_test(test)
+            self.testCaseData[name].result = SUCCESS
+            super().addSuccess(test)
+
+        def addSkip(self, test: unittest.case.TestCase, reason: str) -> None:
+            name = name_from_test(test)
+            self.testCaseData[name].result = SKIPPED
+            self.testCaseData[name].message = reason
+            super().addSkip(test, reason)
+
+        def startTest(self, test: unittest.case.TestCase) -> None:
+            super().startTest(test)
+            topdir = Path(__file__).parent.absolute().as_posix() + "/"
+            name = name_from_test(test)
+            fullpath = inspect.getsourcefile(type(test))
+            _, line = inspect.getsourcelines(getattr(test, name))
+            filename = fullpath.replace(topdir, "")
+            classname = test.__module__ + "." + test.__class__.__name__
+            data = TestCaseResults(name, classname, filename, line, starttime=datetime.now())
+            self.testCaseData[name] = data
+
+        def stopTest(self, test: unittest.case.TestCase) -> None:
+            super().stopTest(test)
+            name = name_from_test(test)
+            self.testCaseData[name].endtime = datetime.now()
 
     return unittest.TextTestRunner(
         verbosity=verbosity,
         failfast=failfast,
         resultclass=DebugTestResult,
     )
+
+
+def count_result(items: List[TestCaseResults], result: str) -> int:
+    return len([x for x in items if x.result == result])
+
+
+def print_props(props: Dict) -> str:
+    return " ".join(f"{k}={v}" for k, v in props.items())
+
+
+def write_reports(results) -> None:
+    suites = {}
+    for item in results.testCaseData.values():
+        name = item.classname
+        entries = suites[name] if name in suites else []
+        entries.append(item)
+        suites[name] = entries
+
+    for classname, testcases in suites.items():
+        suite_props = {
+            "name": classname,
+            "tests": len(testcases),
+            "failures": count_result(testcases, FAILURE),
+            "errors": count_result(testcases, ERROR),
+            "skipped": count_result(testcases, SKIPPED),
+            "success": count_result(testcases, SUCCESS),
+            "filename": next(iter(testcases)).filename,  # just grab filename from the first item
+        }
+        print("Suite: " + print_props(suite_props))
+
+        for test in testcases:
+            delta = test.endtime - test.starttime
+            case_props = {
+                "name": test.testname,
+                # 'classname': test.classname,
+                # 'file': f"{test.filename}:{test.line}",
+                "line": test.line,
+                "timestamp": test.starttime.isoformat(),
+                "time": delta.total_seconds(),
+                "status": test.result,
+            }
+            print("    Case: " + print_props(case_props))
 
 
 def print_suite(suite):
@@ -253,6 +371,10 @@ def live_test(*args):
 
     runner = debugTestRunner(enable_debug=args.pdb, verbosity=args.verbosity, failfast=args.failfast)
     test_result = runner.run(suite)
+
+    if args.reports:
+        write_reports(test_result)
+
     rval = 0
     if len(test_result.errors):
         rval += 1
