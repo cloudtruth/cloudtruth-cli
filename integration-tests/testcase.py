@@ -382,7 +382,8 @@ class TestCase(unittest.TestCase):
             command=cmd,
         )
 
-        ## Log outputs (TODO: may want to consider using TextTestRunners buffer option for log-on-failure behavior)
+        ## Log outputs
+        ## TODO: may want to consider using TextTestRunners buffer option for log-on-failure behavior)
         if self.log_output:
             if result.stdout:
                 print("\n".join(result.stdout))
@@ -394,16 +395,15 @@ class TestCase(unittest.TestCase):
             if result.stderr:
                 self._failure_logs.append("\n".join(result.stderr))
 
-        ## if stripping debug output, re-enable original CLOUDTRUTH_REST_DEBUGvalues if previously found and strip logs
-        ## from output. Do this after the logging steps above so that console has complete logs, but test cases have
-        ## stripped logs
-        ## NOTE: re.match caches compiled version of recent patterns. no need to re.compile
-
         if strip_rest_debug:
+            ## if stripping debug output, re-enable original CLOUDTRUTH_REST_DEBUG value if previously found
             if orig_rest_debug_value is not None:
                 env[CT_REST_DEBUG] = orig_rest_debug_value
             else:
                 del env[CT_REST_DEBUG]
+            ## now strip logs from output before returning. do this after the logging steps above so that console has
+            ## complete logs, but test cases have stripped logs
+            ## NOTE: re.match caches compiled version of recent patterns. no need to re.compile
             result.stdout = [
                 line for line in result.stdout if not re.match("^URL \\w+ .+? elapsed: [\\d\\.]+\\w+$", line)
             ]
