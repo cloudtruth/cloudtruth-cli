@@ -85,17 +85,12 @@ struct Cli {
 fn generate_dockerfiles(cli: &Cli, config: &Config) -> Result<()> {
     let docker_base_path = Path::new(docker_path!());
     mkdir(docker_base_path)?;
-    let results = config
-        .release_tests
-        .iter()
-        .filter(|t| t.install_type == InstallType::Docker)
-        .flat_map(DockerTemplate::from_release_test_config)
-        .map(|template| {
-            let path = docker_base_path.join(template.file_name());
-            let result = open_output_file(&path, cli.verbose)
-                .and_then(|file| template.write_dockerfile(file));
-            (path, result)
-        });
+    let results = DockerTemplate::iter_from_config(config).map(|template| {
+        let path = docker_base_path.join(template.file_name());
+        let result =
+            open_output_file(&path, cli.verbose).and_then(|file| template.write_dockerfile(file));
+        (path, result)
+    });
     report_file_errors(results)
 }
 
