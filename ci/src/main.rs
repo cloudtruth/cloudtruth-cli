@@ -85,7 +85,7 @@ struct Cli {
 fn generate_dockerfiles(cli: &Cli, config: &Config) -> Result<()> {
     let docker_base_path = Path::new(docker_path!());
     mkdir(docker_base_path)?;
-    let results = DockerTemplate::iter_from_config(config).map(|template| {
+    let results = DockerTemplate::iter_from_config(&config.release_tests).map(|template| {
         let path = docker_base_path.join(template.file_name());
         let result =
             open_output_file(&path, cli.verbose).and_then(|file| template.write_dockerfile(file));

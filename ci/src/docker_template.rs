@@ -1,6 +1,6 @@
 use std::io::Write;
 
-use crate::config::{Config, InstallType, ReleaseTestConfig, TestOs};
+use crate::config::{InstallType, ReleaseTestConfig, TestOs};
 use anyhow::*;
 use askama::Template;
 
@@ -19,9 +19,10 @@ impl<'c> DockerTemplate<'c> {
     }
 
     // Generate sequence of Dockerfiles from the release-tests config
-    pub fn iter_from_config(config: &'c Config<'c>) -> impl Iterator<Item = DockerTemplate<'c>> {
+    pub fn iter_from_config(
+        config: &'c [ReleaseTestConfig<'c>],
+    ) -> impl Iterator<Item = DockerTemplate<'c>> {
         config
-            .release_tests
             .iter()
             .filter(|t| t.install_type == InstallType::Docker)
             .flat_map(DockerTemplate::from_release_test_config)
