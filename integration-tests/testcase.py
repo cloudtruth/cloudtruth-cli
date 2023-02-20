@@ -3,6 +3,7 @@ import os
 import shlex
 import subprocess
 import unittest
+import re
 from copy import deepcopy
 from datetime import datetime
 from datetime import timedelta
@@ -247,7 +248,15 @@ class TestCase(unittest.TestCase):
         return self._base_cmd
 
     def get_cmd_env(self):
-        return deepcopy(os.environ)
+        env_copy = deepcopy(os.environ)
+        ## temporarily unset the CLOUDTRUTH_REST_DEBUG environment variable if defined, so that
+        ## in run_cli_cmd() we can detect if a test explicitly set it. this allows us to determine if
+        ## we should keep the debug logs in stdout for tests that explicitly assert on them (ex: test_timing.py),
+        ## or if we should strip debug logs from stdout to prevent assertion failures in tests that are not
+        ## expecting debug logs.
+        if env_copy.get(CT_REST_DEBUG):
+            del env_copy[CT_REST_DEBUG]
+        return env_copy
 
     def get_display_env_command(self) -> str:
         if os.name == "nt":
@@ -354,6 +363,14 @@ class TestCase(unittest.TestCase):
                 if groupname and groupname not in self._groups:
                     self._groups.append(groupname)
 
+        ## determine if we should strip REST debug logs from the command output. note that in get_cmd_env() we remove
+        ## CLOUDTRUTH_REST_DEBUG variable from the local copy. this makes it possible to detect if a test case
+        ## explicitly set it and thus wants the debug logs in its output
+        orig_rest_debug_value = env.get(CT_REST_DEBUG)
+        strip_rest_debug = os.environ.get(CT_REST_DEBUG) and not orig_rest_debug_value
+        if strip_rest_debug:
+            env[CT_REST_DEBUG] = "true"
+
         start = datetime.now()
         process = subprocess.run(cmd, env=env, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         delta = datetime.now() - start
@@ -365,6 +382,7 @@ class TestCase(unittest.TestCase):
             command=cmd,
         )
 
+        ## Log outputs (TODO: may want to consider using TextTestRunners buffer option for log-on-failure behavior)
         if self.log_output:
             if result.stdout:
                 print("\n".join(result.stdout))
@@ -375,6 +393,20 @@ class TestCase(unittest.TestCase):
                 self._failure_logs.append("\n".join(result.stdout))
             if result.stderr:
                 self._failure_logs.append("\n".join(result.stderr))
+
+        ## if stripping debug output, re-enable original CLOUDTRUTH_REST_DEBUGvalues if previously found and strip logs
+        ## from output. Do this after the logging steps above so that console has complete logs, but test cases have
+        ## stripped logs
+        ## NOTE: re.match caches compiled version of recent patterns. no need to re.compile
+
+        if strip_rest_debug:
+            if orig_rest_debug_value is not None:
+                env[CT_REST_DEBUG] = orig_rest_debug_value
+            else:
+                del env[CT_REST_DEBUG]
+            result.stdout = [
+                line for line in result.stdout if not re.match("^URL \\w+ .+? elapsed: [\\d\\.]+\\w+$", line)
+            ]
 
         return result
 

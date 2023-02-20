@@ -202,9 +202,7 @@ def debugTestRunner(enable_debug: bool, verbosity: int, failfast: bool):
             self.testCaseData[name].endtime = datetime.now()
 
     return unittest.TextTestRunner(
-        verbosity=verbosity,
-        failfast=failfast,
-        resultclass=DebugTestResult,
+        verbosity=verbosity, failfast=failfast, resultclass=DebugTestResult, stream=sys.stdout
     )
 
 
