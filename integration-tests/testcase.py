@@ -55,6 +55,8 @@ PROP_RAW = "Raw"
 PROP_TYPE = "Type"
 PROP_VALUE = "Value"
 
+REGEX_REST_DEBUG = re.compile("^URL \\w+ .+? elapsed: [\\d\\.]+\\w+$")
+
 
 def get_cli_base_cmd() -> str:
     """
@@ -138,6 +140,7 @@ class TestCase(unittest.TestCase):
         self.log_commands_on_failure = int(os.environ.get(CT_TEST_LOG_COMMANDS_ON_FAILURE, "0"))
         self.log_output_on_failure = int(os.environ.get(CT_TEST_LOG_OUTPUT_ON_FAILURE, "0"))
         self.job_id = os.environ.get(CT_TEST_JOB_ID)
+        self.rest_debug = os.environ.get(CT_REST_DEBUG, "False").lower() in ("true", "1", "t")
         self._failure_logs = None
         self._projects = None
         self._environments = None
@@ -394,6 +397,10 @@ class TestCase(unittest.TestCase):
                 self._failure_logs.append("\n".join(result.stdout))
             if result.stderr:
                 self._failure_logs.append("\n".join(result.stderr))
+        elif self.rest_debug:
+            debug_out = [line for line in result.stdout if re.match(REGEX_REST_DEBUG, line)]
+            if debug_out:
+                print("\n".join(debug_out))
 
         if strip_rest_debug:
             ## if stripping debug output, re-enable original CLOUDTRUTH_REST_DEBUG value if previously found
@@ -403,10 +410,7 @@ class TestCase(unittest.TestCase):
                 del env[CT_REST_DEBUG]
             ## now strip logs from output before returning. do this after the logging steps above so that console has
             ## complete logs, but test cases have stripped logs
-            ## NOTE: re.match caches compiled version of recent patterns. no need to re.compile
-            result.stdout = [
-                line for line in result.stdout if not re.match("^URL \\w+ .+? elapsed: [\\d\\.]+\\w+$", line)
-            ]
+            result.stdout = [line for line in result.stdout if not re.match(REGEX_REST_DEBUG, line)]
 
         return result
 
