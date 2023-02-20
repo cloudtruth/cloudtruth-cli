@@ -47,6 +47,6 @@ jobs:
     with:
       runsOn: ${{ matrix.os }}
       artifactId: cloudtruth-ci-${{ matrix.os }}
-      testRunnerOptions: ${{ matrix.options }}
+      testRunnerOptions: ${{ matrix.options }} --reports
     secrets: inherit
 
