@@ -140,7 +140,7 @@ class TestCase(unittest.TestCase):
         self.log_commands_on_failure = int(os.environ.get(CT_TEST_LOG_COMMANDS_ON_FAILURE, "0"))
         self.log_output_on_failure = int(os.environ.get(CT_TEST_LOG_OUTPUT_ON_FAILURE, "0"))
         self.job_id = os.environ.get(CT_TEST_JOB_ID)
-        self.rest_debug = os.environ.get(CT_REST_DEBUG, "False").lower() in ("true", "1", "t")
+        self.rest_debug = os.environ.get(CT_REST_DEBUG, "False").lower() in ("true", "1", "y", "yes")
         self._failure_logs = None
         self._projects = None
         self._environments = None
@@ -257,7 +257,7 @@ class TestCase(unittest.TestCase):
         ## we should keep the debug logs in stdout for tests that explicitly assert on them (ex: test_timing.py),
         ## or if we should strip debug logs from stdout to prevent assertion failures in tests that are not
         ## expecting debug logs.
-        if env_copy.get(CT_REST_DEBUG):
+        if env_copy.get(CT_REST_DEBUG, "false").lower() in ("true", "1", "y", "yes"):
             del env_copy[CT_REST_DEBUG]
         return env_copy
 
@@ -370,7 +370,7 @@ class TestCase(unittest.TestCase):
         ## CLOUDTRUTH_REST_DEBUG variable from the local copy. this makes it possible to detect if a test case
         ## explicitly set it and thus wants the debug logs in its output
         orig_rest_debug_value = env.get(CT_REST_DEBUG)
-        strip_rest_debug = os.environ.get(CT_REST_DEBUG) and not orig_rest_debug_value
+        strip_rest_debug = self.rest_debug and not orig_rest_debug_value
         if strip_rest_debug:
             env[CT_REST_DEBUG] = "true"
 
