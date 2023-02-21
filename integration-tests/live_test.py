@@ -16,7 +16,7 @@ from typing import List
 from typing import Optional
 
 from testcase import get_cli_base_cmd
-from testcase import CT_API_KEY, CT_URL, CT_PROFILE
+from testcase import CT_API_KEY, CT_URL, CT_PROFILE, CT_REST_DEBUG
 from testcase import CT_TEST_JOB_ID, CT_TEST_LOG_COMMANDS, CT_TEST_LOG_OUTPUT
 from testcase import CT_TEST_LOG_COMMANDS_ON_FAILURE, CT_TEST_LOG_OUTPUT_ON_FAILURE
 from testcase import CT_TEST_KNOWN_ISSUES
@@ -63,6 +63,7 @@ def parse_args(*args) -> argparse.Namespace:
         default=3,
         help="Unittest verbosity level",
     )
+    parser.add_argument("--rest-debug", dest="rest_debug", action="store_true", help="Enable REST debug logging")
     parser.add_argument("--pdb", dest="pdb", action="store_true", help="Open the debugger when a test fails")
 
     parser.add_argument("--debug", dest="debug", action="store_true", help="Equivalent of --pdb --failfast")
@@ -202,9 +203,7 @@ def debugTestRunner(enable_debug: bool, verbosity: int, failfast: bool):
             self.testCaseData[name].endtime = datetime.now()
 
     return unittest.TextTestRunner(
-        verbosity=verbosity,
-        failfast=failfast,
-        resultclass=DebugTestResult,
+        verbosity=verbosity, failfast=failfast, resultclass=DebugTestResult, stream=sys.stdout
     )
 
 
@@ -305,6 +304,8 @@ def live_test(*args):
         env[CT_API_KEY] = args.api_key
     if args.profile:
         env[CT_PROFILE] = args.profile
+    if args.rest_debug:
+        env[CT_REST_DEBUG] = "true"
     if args.log_all:
         args.log_commands = True
         args.log_output = True

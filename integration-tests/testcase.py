@@ -3,6 +3,7 @@ import os
 import shlex
 import subprocess
 import unittest
+import re
 from copy import deepcopy
 from datetime import datetime
 from datetime import timedelta
@@ -53,6 +54,8 @@ PROP_NAME = "Name"
 PROP_RAW = "Raw"
 PROP_TYPE = "Type"
 PROP_VALUE = "Value"
+
+REGEX_REST_DEBUG = re.compile("^URL \\w+ .+? elapsed: [\\d\\.]+\\w+$")
 
 
 def get_cli_base_cmd() -> str:
@@ -137,6 +140,7 @@ class TestCase(unittest.TestCase):
         self.log_commands_on_failure = int(os.environ.get(CT_TEST_LOG_COMMANDS_ON_FAILURE, "0"))
         self.log_output_on_failure = int(os.environ.get(CT_TEST_LOG_OUTPUT_ON_FAILURE, "0"))
         self.job_id = os.environ.get(CT_TEST_JOB_ID)
+        self.rest_debug = os.environ.get(CT_REST_DEBUG, "False").lower() in ("true", "1", "y", "yes")
         self._failure_logs = None
         self._projects = None
         self._environments = None
@@ -247,7 +251,15 @@ class TestCase(unittest.TestCase):
         return self._base_cmd
 
     def get_cmd_env(self):
-        return deepcopy(os.environ)
+        env_copy = deepcopy(os.environ)
+        ## temporarily unset the CLOUDTRUTH_REST_DEBUG environment variable if defined, so that
+        ## in run_cli_cmd() we can detect if a test explicitly set it. this allows us to determine if
+        ## we should keep the debug logs in stdout for tests that explicitly assert on them (ex: test_timing.py),
+        ## or if we should strip debug logs from stdout to prevent assertion failures in tests that are not
+        ## expecting debug logs.
+        if env_copy.get(CT_REST_DEBUG, "false").lower() in ("true", "1", "y", "yes"):
+            del env_copy[CT_REST_DEBUG]
+        return env_copy
 
     def get_display_env_command(self) -> str:
         if os.name == "nt":
@@ -354,6 +366,14 @@ class TestCase(unittest.TestCase):
                 if groupname and groupname not in self._groups:
                     self._groups.append(groupname)
 
+        ## determine if we should strip REST debug logs from the command output. note that in get_cmd_env() we remove
+        ## CLOUDTRUTH_REST_DEBUG variable from the local copy. this makes it possible to detect if a test case
+        ## explicitly set it and thus wants the debug logs in its output
+        orig_rest_debug_value = env.get(CT_REST_DEBUG)
+        strip_rest_debug = self.rest_debug and not orig_rest_debug_value
+        if strip_rest_debug:
+            env[CT_REST_DEBUG] = "true"
+
         start = datetime.now()
         process = subprocess.run(cmd, env=env, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         delta = datetime.now() - start
@@ -365,6 +385,8 @@ class TestCase(unittest.TestCase):
             command=cmd,
         )
 
+        ## Log outputs
+        ## TODO: may want to consider using TextTestRunners buffer option for log-on-failure behavior)
         if self.log_output:
             if result.stdout:
                 print("\n".join(result.stdout))
@@ -375,6 +397,20 @@ class TestCase(unittest.TestCase):
                 self._failure_logs.append("\n".join(result.stdout))
             if result.stderr:
                 self._failure_logs.append("\n".join(result.stderr))
+        elif self.rest_debug:
+            debug_out = [line for line in result.stdout if re.match(REGEX_REST_DEBUG, line)]
+            if debug_out:
+                print("\n".join(debug_out))
+
+        if strip_rest_debug:
+            ## if stripping debug output, re-enable original CLOUDTRUTH_REST_DEBUG value if previously found
+            if orig_rest_debug_value is not None:
+                env[CT_REST_DEBUG] = orig_rest_debug_value
+            else:
+                del env[CT_REST_DEBUG]
+            ## now strip logs from output before returning. do this after the logging steps above so that console has
+            ## complete logs, but test cases have stripped logs
+            result.stdout = [line for line in result.stdout if not re.match(REGEX_REST_DEBUG, line)]
 
         return result
 
