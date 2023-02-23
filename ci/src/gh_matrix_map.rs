@@ -1,7 +1,6 @@
 use itertools::Itertools;
-use std::{collections::BTreeMap, fmt::Display, io::Write};
+use std::{collections::BTreeMap, fmt::Display};
 
-use anyhow::*;
 use serde::Serialize;
 
 use crate::{
@@ -11,8 +10,7 @@ use crate::{
 
 /// Trait for specifying the sort key for partitioning config data into matricies
 pub trait HasSortKey {
-    type Key: Ord + Eq + Copy;
-
+    type Key: Ord;
     fn sort_key(&self) -> Self::Key;
 }
 
@@ -25,7 +23,7 @@ impl<'c, Key, Matrix> MatrixMap<Key, Matrix> {
     /// Load from config. Need mutable reference to sort the data for partitioning.
     pub fn from_config<Conf>(confs: &'c mut [Conf]) -> Self
     where
-        Key: Ord + Eq + Copy,
+        Key: Ord,
         Conf: HasSortKey<Key = Key>,
         Matrix: FromIterator<&'c Conf>,
     {
@@ -36,7 +34,7 @@ impl<'c, Key, Matrix> MatrixMap<Key, Matrix> {
     /// Load from pre-sorted config
     pub fn from_config_sorted<Conf>(confs: &'c [Conf]) -> Self
     where
-        Key: Ord + Eq + Copy,
+        Key: Ord,
         Conf: HasSortKey<Key = Key>,
         Matrix: FromIterator<&'c Conf>,
     {
@@ -48,26 +46,6 @@ impl<'c, Key, Matrix> MatrixMap<Key, Matrix> {
                 .map(|(key, group)| (key, Matrix::from_iter(group)))
                 .collect(),
         )
-    }
-
-    pub fn write_json<W: Write>(&self, writer: W) -> Result<()>
-    where
-        Key: Serialize,
-        Matrix: Serialize,
-    {
-        serde_json::to_writer(writer, &self)?;
-        Ok(())
-    }
-
-    pub fn write_json_pretty<W: Write>(&self, writer: W) -> Result<()>
-    where
-        Key: Serialize,
-        Matrix: Serialize,
-    {
-        let formatter = serde_json::ser::PrettyFormatter::with_indent(b"  ");
-        let serializer = &mut serde_json::Serializer::with_formatter(writer, formatter);
-        self.serialize(serializer)?;
-        Ok(())
     }
 }
 

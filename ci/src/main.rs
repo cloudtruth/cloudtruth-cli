@@ -4,14 +4,12 @@ mod gh_matrix;
 mod gh_matrix_map;
 
 use anyhow::*;
-
 use clap::Parser;
 use serde::Serialize;
-
 use std::{
     fmt::Display,
     fs::{create_dir, File},
-    io::Read,
+    io::{Read, Write},
     path::Path,
 };
 
@@ -40,7 +38,7 @@ macro_rules! config_yaml_path {
     };
 }
 
-#[derive(Parser)]
+#[derive(clap::Parser)]
 struct Cli {
     #[arg(long, short)]
     pretty: bool,
@@ -93,63 +91,67 @@ impl Cli {
         }
         Ok(())
     }
-}
 
-fn generate_actions_matrices<'a: 'b, 'b>(cli: &Cli, config: &'a mut Config<'b>) -> Result<()> {
-    cli.mkdir(matrix_path!())?;
-    let results = vec![
-        generate_matrix_map(
-            cli,
-            "build-release",
-            BuildMatrixMap::from_config(&mut config.release_builds),
-        ),
-        generate_matrix_map(
-            cli,
-            "test-release",
-            TestMatrixMap::from_config(&mut config.release_tests),
-        ),
-    ];
-    collect_file_errors(
-        anyhow!("Multiple errors while writing GHA matrices"),
-        results.into_iter().filter_map(Result::err).collect(),
-    )
-}
-
-fn generate_matrix_map<K, M>(cli: &Cli, name: &str, map: MatrixMap<K, M>) -> Result<()>
-where
-    K: Ord + Copy + Serialize + Display,
-    M: Serialize + Display,
-{
-    if cli.verbose {
-        cli.display_matrix_map(name, &map);
+    pub fn write_json<W: Write, T: ?Sized + Serialize>(&self, writer: W, value: &T) -> Result<()> {
+        if self.pretty {
+            let formatter = serde_json::ser::PrettyFormatter::with_indent(b"  ");
+            let serializer = &mut serde_json::Serializer::with_formatter(writer, formatter);
+            value.serialize(serializer)?;
+        } else {
+            serde_json::to_writer(writer, &value)?;
+        }
+        Ok(())
     }
-    let path = Path::new(matrix_path!()).join(format!("{name}.json"));
-    let file = cli.open_output_file(path.as_path())?;
-    if cli.pretty {
-        map.write_json_pretty(file)
-    } else {
-        map.write_json(file)
-    }
-    .with_context(|| format!("Error while serializing GHA matrix to {path:?}"))
-}
 
-fn generate_dockerfiles(cli: &Cli, config: &Config) -> Result<()> {
-    let docker_base_path = Path::new(docker_path!());
-    cli.mkdir(docker_base_path)?;
-    let results = DockerTemplate::iter_from_config(&config.release_tests).map(|template| {
-        let path = docker_base_path.join(template.file_name());
-        let file = cli.open_output_file(path.as_path())?;
-        template.write_dockerfile(file).with_context(|| {
-            format!(
-                "Error while rendering template at {template_name:?} into {path:?}. {template:?}",
-                template_name = template.file_name(),
-            )
-        })
-    });
-    collect_file_errors(
-        anyhow!("Multiple file errors when generating Dockerfiles"),
-        results.filter_map(Result::err).collect(),
-    )
+    fn generate_actions_matrices<'a: 'b, 'b>(&self, config: &'a mut Config<'b>) -> Result<()> {
+        self.mkdir(matrix_path!())?;
+        let results = vec![
+            self.write_matrix_map(
+                "build-release",
+                BuildMatrixMap::from_config(&mut config.release_builds),
+            ),
+            self.write_matrix_map(
+                "test-release",
+                TestMatrixMap::from_config(&mut config.release_tests),
+            ),
+        ];
+        collect_file_errors(
+            anyhow!("Multiple errors while writing GHA matrices"),
+            results.into_iter().filter_map(Result::err).collect(),
+        )
+    }
+
+    fn write_matrix_map<K, M>(&self, name: &str, map: MatrixMap<K, M>) -> Result<()>
+    where
+        MatrixMap<K, M>: Serialize + Display,
+    {
+        if self.verbose {
+            self.display_matrix_map(name, &map);
+        }
+        let path = Path::new(matrix_path!()).join(format!("{name}.json"));
+        let file = self.open_output_file(path.as_path())?;
+        self.write_json(file, &map)
+            .with_context(|| format!("Error while serializing GHA matrix to {path:?}"))
+    }
+
+    fn generate_dockerfiles(&self, config: &Config) -> Result<()> {
+        let docker_base_path = Path::new(docker_path!());
+        self.mkdir(docker_base_path)?;
+        let results = DockerTemplate::iter_from_config(&config.release_tests).map(|template| {
+            let path = docker_base_path.join(template.file_name());
+            let file = self.open_output_file(path.as_path())?;
+            template.write_dockerfile(file).with_context(|| {
+                format!(
+                    "Error while rendering template at {template_name:?} into {path:?}. {template:?}",
+                    template_name = template.file_name(),
+                )
+            })
+        });
+        collect_file_errors(
+            anyhow!("Multiple file errors when generating Dockerfiles"),
+            results.filter_map(Result::err).collect(),
+        )
+    }
 }
 
 fn main() -> Result<()> {
@@ -167,12 +169,12 @@ fn main() -> Result<()> {
     let mut config: Config = serde_yaml::from_str(&config_yaml)?;
     let mut errors = Vec::new();
     if cli.docker {
-        if let Err(err) = generate_dockerfiles(&cli, &config) {
+        if let Err(err) = cli.generate_dockerfiles(&config) {
             errors.push(err);
         }
     }
     if cli.actions {
-        if let Err(err) = generate_actions_matrices(&cli, &mut config) {
+        if let Err(err) = cli.generate_actions_matrices(&mut config) {
             errors.push(err);
         }
     }
