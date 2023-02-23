@@ -167,20 +167,16 @@ fn main() -> Result<()> {
         .read_to_string(&mut config_yaml)
         .context("Error serializing config YAML")?;
     let mut config: Config = serde_yaml::from_str(&config_yaml)?;
-    let mut errors = Vec::new();
+    let mut results = Vec::new();
     if cli.docker {
-        if let Err(err) = cli.generate_dockerfiles(&config) {
-            errors.push(err);
-        }
+        results.push(cli.generate_dockerfiles(&config));
     }
     if cli.actions {
-        if let Err(err) = cli.generate_actions_matrices(&mut config) {
-            errors.push(err);
-        }
+        results.push(cli.generate_actions_matrices(&mut config));
     }
     collect_file_errors(
         anyhow!("Multiple file errors when generating CI files"),
-        errors,
+        results.into_iter().filter_map(Result::err).collect(),
     )
 }
 
