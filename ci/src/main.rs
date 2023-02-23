@@ -87,11 +87,16 @@ fn generate_dockerfiles(cli: &Cli, config: &Config) -> Result<()> {
     mkdir(docker_base_path)?;
     let results = DockerTemplate::iter_from_config(&config.release_tests).map(|template| {
         let path = docker_base_path.join(template.file_name());
-        let result =
-            open_output_file(&path, cli.verbose).and_then(|file| template.write_dockerfile(file));
-        (path, result)
+        let file = open_output_file(&path, cli.verbose)
+            .with_context(|| format!("Unable to open Dockerfile at {}", path.display()))?;
+        template
+            .write_dockerfile(file)
+            .with_context(|| format!("Unable to write Dockerfile at {}", path.display()))
     });
-    report_file_errors(results)
+    collect_file_errors(
+        anyhow!("Multiple file errors when generating Dockerfiles"),
+        results.filter_map(Result::err).collect(),
+    )
 }
 
 fn generate_actions_matrices<'a: 'b, 'b>(cli: &Cli, config: &'a mut Config<'b>) -> Result<()> {
@@ -137,25 +142,17 @@ fn main() -> Result<()> {
 }
 
 // collects and reports errors
-fn report_file_errors<I, P, T>(results: I) -> Result<()>
+fn collect_file_errors(aggregate_err: Error, mut errors: Vec<Error>) -> Result<()>
 where
-    I: IntoIterator<Item = (P, Result<T>)>,
-    P: AsRef<Path>,
 {
-    let mut err_paths = Vec::new();
-    for (p, result) in results {
-        if let Err(err) = result {
-            let path_display = p.as_ref().display();
-            eprintln!("Error: Could not write to {path_display}: {err}");
-            err_paths.push(path_display.to_string());
+    match errors.len() {
+        0 => Ok(()),
+        1 => Err(errors.remove(0)),
+        _ => {
+            for err in errors.into_iter() {
+                eprintln!("{err:#}");
+            }
+            Err(aggregate_err)
         }
-    }
-    if err_paths.is_empty() {
-        Ok(())
-    } else {
-        Err(anyhow!(
-            "Could not write to file(s): {}",
-            err_paths.join(" ")
-        ))
     }
 }
