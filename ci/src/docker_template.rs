@@ -5,7 +5,7 @@ use anyhow::*;
 use askama::Template;
 
 /// Template for generating the installation test Dockerfiles
-#[derive(Template)]
+#[derive(Debug, Template)]
 #[template(path = "Dockerfile", escape = "none")]
 //#[template(print = "code")] //uncomment for debugging generated code
 pub struct DockerTemplate<'c> {
