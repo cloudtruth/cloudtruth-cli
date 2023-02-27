@@ -11,6 +11,6 @@ cargo generate-rpm \
 rpm_dir="target/$TARGET/generate-rpm/"
 rpm_path="${rpm_dir}/cloudtruth-${RELEASE_TAG}-1.${rpm_arch}.rpm"
 # rename generated RPM to match github release name
-mv -f "${rpm_dir}/cloudtruth-*${rpm_arch}.rpm" "${rpm_path}"
+mv -f "${rpm_dir}/cloudtruth-"*"${rpm_arch}.rpm" "${rpm_path}"
 echo "RPM_PATH=${rpm_path}" >> "$GITHUB_ENV"
 echo "RPM_NAME=$(basename "$rpm_path")" >> "$GITHUB_ENV"

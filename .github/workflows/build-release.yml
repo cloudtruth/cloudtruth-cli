@@ -52,7 +52,7 @@ jobs:
           echo "matrices=$(cat $JSON_FILE)" >> $GITHUB_OUTPUT
 
   build-release-linux:
-    name: Build Linux Release
+    name: Linux
     runs-on: ubuntu-latest
     needs: [ matrix-map ]
 
@@ -95,9 +95,7 @@ jobs:
         run: ci/scripts/strip.sh
 
       - name: Build archive
-        shell: bash
-        run: |
-          ci/scripts/build-release-archive.sh
+        run: ci/scripts/build-release-archive.sh
 
       - name: Upload release archive
         uses: shogo82148/actions-upload-release-asset@v1
@@ -109,8 +107,7 @@ jobs:
           overwrite: true
 
       - name: Build Debian package
-        run: |
-          ci/scripts/build-debian-package.sh
+        run: ci/scripts/build-debian-package.sh
 
       - name: Upload Debian package
         uses: shogo82148/actions-upload-release-asset@v1
@@ -125,8 +122,7 @@ jobs:
         run: cargo install cargo-generate-rpm
 
       - name: Build RPM package
-        run: |          
-          ci/scripts/build-rpm-package.sh
+        run: ci/scripts/build-rpm-package.sh
 
       - name: Upload RPM package
         if: contains(matrix.build, 'linux')
@@ -139,7 +135,7 @@ jobs:
           overwrite: true
 
   build-release-macos:
-    name: Build MacOS Release
+    name: MacOS
     runs-on: macos-latest
     needs: [ matrix-map ]
 
@@ -172,9 +168,7 @@ jobs:
         run: ci/scripts/strip.sh
 
       - name: Build archive
-        shell: bash
-        run: |
-          ci/scripts/build-release-archive.sh
+        run: ci/scripts/build-release-archive.sh
 
       - name: Upload release archive
         uses: shogo82148/actions-upload-release-asset@v1
@@ -186,7 +180,7 @@ jobs:
           overwrite: true
 
   build-release-windows:
-    name: Build Windows Release
+    name: Windows
     runs-on: windows-latest
     needs: [ matrix-map ]
     defaults:
@@ -219,9 +213,7 @@ jobs:
         run: cargo build --release --target $TARGET
 
       - name: Build archive
-        shell: bash
-        run: |
-          ci/scripts/build-release-archive.sh
+        run: ci/scripts/build-release-archive.sh
 
       - name: Upload release archive
         uses: shogo82148/actions-upload-release-asset@v1
