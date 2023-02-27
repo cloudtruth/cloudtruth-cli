@@ -109,11 +109,11 @@ impl Cli {
         let results = vec![
             self.write_matrix(
                 "build-release",
-                ReleaseBuildMatrix::from_iter(config.release_builds.iter()),
+                ReleaseBuildMatrix::from_iter(&config.release_builds),
             ),
             self.write_matrix(
                 "test-release",
-                ReleaseTestMatrix::from_iter(config.release_tests.iter()),
+                ReleaseTestMatrix::from_iter(&config.release_tests),
             ),
         ];
         collect_file_errors(
