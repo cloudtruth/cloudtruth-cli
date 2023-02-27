@@ -41,7 +41,7 @@ jobs:
           ref: ${{ inputs.ref }}
 
       - shell: bash
-        run: sh build/scripts/install-rust.sh
+        run: sh ci/scripts/install-rust.sh
 
       - uses: Swatinem/rust-cache@v2
         with:

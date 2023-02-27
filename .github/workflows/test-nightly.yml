@@ -1,0 +1,23 @@
+---
+name: Nightly Test
+
+on:
+  repository_dispatch:
+    types: [nightly-release]
+
+jobs:
+  test-nightly:
+    name: Nightly Test
+
+    uses: ./.github/workflows/test-staging.yml
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
+    with:
+      runsOn: ${{ matrix.os }}
+      releaseVersion: ${{ github.event.client_payload.tagName }}
+    secrets: inherit

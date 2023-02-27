@@ -1,20 +1,22 @@
 #
 # Copyright (C) 2021 CloudTruth, Inc.
 #
+VPATH = src:ci:ci/src:integration-tests
 
 os_name := $(shell uname -s)
 rustup_exists := $(shell which rustup)
 openapi_gen_version := v5.3.1
-build_dir := build
+ci_dir := ci
 test_dir := integration-tests
 # convenience for looping
-subdirs := $(build_dir)
+subdirs := $(ci_dir)
 subdirs += $(test_dir)
 
 .DEFAULT = all
 .PHONY = all
 .PHONY += cargo
 .PHONY += clean
+.PHONY += ci
 .PHONY += cli
 .PHONY += help
 .PHONY += image
@@ -23,7 +25,9 @@ subdirs += $(test_dir)
 .PHONY += format
 .PHONY += lint
 .PHONY += lint_fix
-.PHONY += lint_local
+.PHONY += lint_python
+.PHONY += lint_rust
+.PHONY += lint_shell
 .PHONY += precommit
 .PHONY += prerequisites
 .PHONY += shell
@@ -53,7 +57,7 @@ shell:
 ### Commands for either outside or inside the container
 
 # the client must be generated before building the Rust program that uses it
-cargo cli Cargo.lock %.rs %.toml: client
+cargo: client
 	cargo build
 
 clean:
@@ -84,23 +88,26 @@ format:
 	python3 -m black .
 	ruff check . --fix
 
-lint:
-	cargo fmt --all -- --check
-	cargo clippy --all-features -- -D warnings
-	python3 -m black --check .
+lint: lint_shell lint_rust lint_python
+
+lint_python:
+	python3 -m black --quiet --check .
 	ruff check .
-# run Shellcheck on all shell scripts, ignoring client/ and .gitignore files
+
+lint_rust:
+	cargo fmt --all -- --check
+	cargo clippy --all --all-features -- -D warnings
+
+lint_shell:
 	git ls-files | grep -v -E '^client/' | grep -E '\.sh$$' | xargs shellcheck
-# disable yamllint for now until we find better auto-formatting options
-#	python3 -m yamllint .
 
 # apply linting fixes
 lint_fix:
-	@cargo clippy --all-features --fix -- -D warnings; \
+	@cargo clippy --all --all-features --fix -- -D warnings; \
 	[ "$$?" -eq 101 ] && read -p 'Force fixes? [y/n]: ' force; \
 	case "$$force" in \
 		[Yy]*) \
-			cargo clippy --all-features --fix --allow-staged --allow-dirty -- -D warnings ;; \
+			cargo clippy --all --all-features --fix --allow-staged --allow-dirty -- -D warnings ;; \
 		*) \
 			exit 1 ;; \
 	esac;
@@ -158,7 +165,7 @@ integration: cargo
 	make -C $(test_dir) $@
 
 regen: cargo
-	make -C $(build_dir) $@
+	make -C $(ci_dir) $@
 
 help: targets
 

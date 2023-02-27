@@ -1,49 +1,3 @@
-# The release steps here pull heavily from the GitHub Actions configuration for the bat and ripgrep projects.
-#
-# bat: https://github.com/sharkdp/bat
-# The MIT License (MIT)
-#
-# Copyright (c) 2018-2020 bat-developers (https://github.com/sharkdp/bat).
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
-#
-# ripgrep: https://github.com/BurntSushi/ripgrep
-# The MIT License (MIT)
-#
-# Copyright (c) 2015 Andrew Gallant
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-# THE SOFTWARE.
 ---
 name: Build Release
 run-name: Build Release (${{ inputs.releaseVersion }})
@@ -83,155 +37,74 @@ env:
   RUST_BACKTRACE: 1
 
 jobs:
-  build-packages:
-    name: Build Release Packages
-    runs-on: ${{ matrix.os }}
+  matrix:
+    name: Read Job Matrix
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+      - id: matrix
+        run: |
+          JSON_FILE=ci/gh-actions/build-release.json
+          echo "matrix=$(cat $JSON_FILE)" >> $GITHUB_OUTPUT
+
+  build-release:
+    name: Build Packages
+    runs-on: ${{ matrix.runner }}
+    needs: [ matrix ]
+    defaults:
+      run:
+        shell: bash
 
     strategy:
       fail-fast: false
-      matrix:
-        # Split the "build" attribute off from the others so the GitHub Actions UI only shows the short build name.
-        # The "include" part will add attributes to the corresponding "build" values. The "build" names must match.
-        # If we don't split like this, the GitHub Action UI will show the full set of configuration keys, overwhelming
-        # the UI.
-        build: [linux, linux-arm, linux-aarch64, macos, macos-aarch64, win-msvc]
-        include:
-          - { build: linux         , os: ubuntu-latest  , target: x86_64-unknown-linux-musl   , use-cross: true  }
-          - { build: linux-arm     , os: ubuntu-latest  , target: arm-unknown-linux-gnueabihf , use-cross: true  }
-          - { build: linux-aarch64 , os: ubuntu-latest  , target: aarch64-unknown-linux-gnu   , use-cross: true  }
-          - { build: macos         , os: macos-latest   , target: x86_64-apple-darwin         , use-cross: false }
-          - { build: macos-aarch64 , os: macos-latest   , target: aarch64-apple-darwin        , use-cross: false }
-          - { build: win-msvc      , os: windows-latest , target: x86_64-pc-windows-msvc      , use-cross: false }
+      matrix: ${{ fromJSON(needs.matrix.outputs.matrix) }}
+
+    env:
+      TARGET: ${{ matrix.target }}
 
     steps:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 1
 
-      - name: Install prerequisites
-        shell: bash
-        if: contains(matrix.build, 'linux')
-        run: |
-          case ${{ matrix.target }} in
-            arm-unknown-linux-gnueabihf)
-              sudo apt-get -y update
-              sudo apt-get -y install gcc-arm-linux-gnueabihf
-            ;;
-            aarch64-unknown-linux-gnu)
-              sudo apt-get -y update
-              sudo apt-get -y install gcc-aarch64-linux-gnu
-            ;;
-          esac
+      - run: ci/scripts/install-build-packages-linux.sh
+        if: contains(runner.os, 'Linux')
 
-      - name: Initialize workflow variables
-        id: vars
-        shell: bash
-        run: |
-          # 
-          # Determine EXE suffix.
-          EXE_SUFFIX=""
+      - run: ci/scripts/install-rust.sh
 
-          case ${{ matrix.target }} in
-            *-pc-windows-*)
-              EXE_SUFFIX=".exe"
-            ;;
-          esac;
-
-          echo EXE_SUFFIX=$EXE_SUFFIX >> $GITHUB_ENV
-
-          # Define the executable for stripping binaries, if one exists.
-          STRIP="strip"
-          case ${{ matrix.target }} in
-            arm-unknown-linux-gnueabihf)
-              STRIP="arm-linux-gnueabihf-strip"
-            ;;
-
-            aarch64-unknown-linux-gnu)
-              STRIP="aarch64-linux-gnu-strip"
-            ;;
-
-            *-pc-windows-msvc)
-              STRIP=""
-            ;;
-          esac;
-
-          echo STRIP=$STRIP >> $GITHUB_ENV
-
-      - run: sh build/scripts/install-rust.sh
-        shell: bash
-
-      - run: rustup target add ${{ matrix.target }}
-        shell: bash
+      - run: rustup target add "$TARGET"
 
       - uses: Swatinem/rust-cache@v2
         with:
           prefix-key: v0-cloudtruth-cli
-          shared-key: ${{ runner.os }}-${{ matrix.target }}
-          cache-directories: ${{ env.HOME}}/.cargo/bin
+          shared-key: ${{ runner.os }}-${{ env.TARGET }}
+          cache-directories: ${{ env.HOME }}/.cargo/bin
 
-      - run: sh build/scripts/install-cargo-binstall.sh
-        if: matrix.use-cross || contains(matrix.build, 'linux')
-        shell: bash
+      - uses: taiki-e/install-action@cargo-binstall
+        if: contains(runner.os, 'Linux')
 
-      - run: cargo binstall --no-confirm --force cross
-        if: matrix.use-cross
-        shell: bash
+      - name: Install cross
+        run: cargo binstall --no-confirm --force cross
+        if: contains(runner.os, 'Linux')
 
-      - run: cross build --release --target ${{ matrix.target }}
-        if: matrix.use-cross
-        shell: bash
+      - name: Cross build
+        run: cross build --release --target $TARGET
+        if: contains(runner.os, 'Linux')
 
-      - run: cargo build --release --target ${{ matrix.target }}
-        if: ${{ !matrix.use-cross }}
-        shell: bash
-
-      - name: Install cargo-deb
-        if: contains(matrix.build, 'linux')
-        run: cargo binstall --no-confirm --force --strategies 'quick-install,crate-meta-data,compile' cargo-deb
-
-
-      - name: Get pre-stripped binary size
-        run: ls -lh target/${{ matrix.target }}/release/
-        if: env.STRIP
+      - name: Cargo build
+        run: cargo build --release --target $TARGET
+        if: ${{ ! contains(runner.os, 'Linux') }}
 
       - name: Strip binaries
-        shell: bash
-        run: |
-          "${{ env.STRIP }}" "target/${{ matrix.target }}/release/${{ env.PROJECT_NAME }}${{ env.EXE_SUFFIX }}"
-        if: env.STRIP
-
-      - name: Get post-stripped binary size
-        run: ls -lh target/${{ matrix.target }}/release/
-        if: env.STRIP
+        run: ci/scripts/strip.sh
+        if: ${{ !contains(runner.os, 'Windows') }}
 
       - name: Build archive
-        shell: bash
-        run: |
-          staging="${{ env.PROJECT_NAME }}-${{ env.RELEASE_TAG }}-${{ matrix.target }}"
-          mkdir -p "$staging"
-
-          # Find where the build script put the generated completions files.
-          src_completions_dir="$(find . -name cloudtruth.bash -print0 | xargs -0 ls -t | head -n 1 | xargs dirname)"
-
-          # Move the generated shell completion files to a location cargo-deb will read from.
-          dst_completions_dir="target/${{ matrix.target }}/release/completions"
-          mv "$src_completions_dir" "$dst_completions_dir"
-
-          cp {README.md,LICENSE} "$staging/"
-          cp -a "$dst_completions_dir" "$staging/"
-          cp "target/${{ matrix.target }}/release/${{ env.PROJECT_NAME }}${{ env.EXE_SUFFIX }}" "$staging/"
-
-          case ${{ matrix.target }} in
-            *-pc-windows-*)
-              7z a "$staging.zip" "$staging"
-              echo ASSET=$staging.zip >> $GITHUB_ENV
-            ;;
-
-            *)
-              tar -czf "$staging.tar.gz" "$staging"
-              echo ASSET=$staging.tar.gz >> $GITHUB_ENV
-            ;;
-          esac
+        run: ci/scripts/build-release-archive.sh
 
       - name: Upload release archive
         uses: shogo82148/actions-upload-release-asset@v1
@@ -242,25 +115,17 @@ jobs:
           asset_content_type: application/octet-stream
           overwrite: true
 
+      - name: Install cargo-deb
+        run: cargo binstall --no-confirm --force --strategies 'quick-install,crate-meta-data,compile' cargo-deb
+        if: contains(runner.os, 'Linux')
+
       - name: Build Debian package
-        if: contains(matrix.build, 'linux')
-        shell: bash
-        run: |
-          cargo deb --no-build --no-strip \
-            --target ${{ matrix.target }} \
-            --deb-version "$PACKAGE_VERSION"
-            ${DEB_REVISION:+ --deb-revision "$DEB_REVISION" }
-          # rename deb package to use the github release tag
-          deb_dir='target/${{ matrix.target }}/debian'
-          src_deb_path="$(ls $deb_dir/*.deb)"
-          dest_deb_path="$(echo $src_deb_path | sed -E "s/${PACKAGE_VERSION}/${RELEASE_TAG}/")"
-          mv -f "$src_deb_path" "$dest_deb_path"
-          echo DEB_PATH=$dest_deb_path >> $GITHUB_ENV
-          echo DEB_NAME=$(basename $dest_deb_path) >> $GITHUB_ENV
+        run: ci/scripts/build-debian-package.sh
+        if: contains(runner.os, 'Linux')
 
       - name: Upload Debian package
-        if: contains(matrix.build, 'linux')
         uses: shogo82148/actions-upload-release-asset@v1
+        if: contains(runner.os, 'Linux')
         with:
           upload_url: ${{ env.RELEASE_UPLOAD_URL }}
           asset_path: ${{ env.DEB_PATH }}
@@ -268,40 +133,23 @@ jobs:
           asset_content_type: application/octet-stream
           overwrite: true
 
-
       - name: Install cargo-generate-rpm
-        if: contains(matrix.build, 'linux')
         run: cargo install cargo-generate-rpm
+        if: contains(runner.os, 'Linux')
 
       - name: Build RPM package
-        if: contains(matrix.build, 'linux')
-        shell: bash
-        run: |          
-          rpm_arch=$(echo "${{ matrix.target }}" | cut -d- -f1)
-          rpm_toml_version="version = '${PACKAGE_VERSION}${RPM_SNAPSHOT:+^$RPM_SNAPSHOT}'"
-          cargo generate-rpm \
-            --arch $rpm_arch \
-            --target ${{ matrix.target }} \
-            --set-metadata "$rpm_toml_version"
-
-          #rename RPM to use the github release tag
-          rpm_dir='target/${{ matrix.target }}/generate-rpm/'
-          rpm_path="${rpm_dir}/cloudtruth-${RELEASE_TAG}-1.${rpm_arch}.rpm"
-          # rename generated RPM to match github release name
-          mv -f ${rpm_dir}/cloudtruth-*${rpm_arch}.rpm "${rpm_path}"
-          echo RPM_PATH=${rpm_path} >> $GITHUB_ENV
-          echo RPM_NAME=$(basename $rpm_path) >> $GITHUB_ENV
+        run: ci/scripts/build-rpm-package.sh
+        if: contains(runner.os, 'Linux')
 
       - name: Upload RPM package
-        if: contains(matrix.build, 'linux')
         uses: shogo82148/actions-upload-release-asset@v1
+        if: contains(runner.os, 'Linux')
         with:
           upload_url: ${{ env.RELEASE_UPLOAD_URL }}
           asset_path: ${{ env.RPM_PATH }}
           asset_name: ${{ env.RPM_NAME }}
           asset_content_type: application/octet-stream
           overwrite: true
-
 
   upload-assets:
     name: Upload Other Assets
@@ -320,7 +168,6 @@ jobs:
           asset_content_type: application/octet-stream
           overwrite: true
 
-
       - name: Upload POSIX Install
         uses: shogo82148/actions-upload-release-asset@v1
         with:
@@ -330,7 +177,6 @@ jobs:
           asset_content_type: application/octet-stream
           overwrite: true
 
-
       - name: Upload Windows Install
         uses: shogo82148/actions-upload-release-asset@v1
         with:
@@ -339,4 +185,3 @@ jobs:
           asset_name: install.ps1
           asset_content_type: application/octet-stream
           overwrite: true
-
