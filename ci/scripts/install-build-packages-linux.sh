@@ -1,4 +1,5 @@
 #!/usr/bin/env sh
+set -e
 case $TARGET in
     arm-unknown-linux-gnueabihf)
         sudo apt-get -y update

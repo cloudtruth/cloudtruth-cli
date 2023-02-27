@@ -1,49 +1,3 @@
-# The release steps here pull heavily from the GitHub Actions configuration for the bat and ripgrep projects.
-#
-# bat: https://github.com/sharkdp/bat
-# The MIT License (MIT)
-#
-# Copyright (c) 2018-2020 bat-developers (https://github.com/sharkdp/bat).
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
-#
-# ripgrep: https://github.com/BurntSushi/ripgrep
-# The MIT License (MIT)
-#
-# Copyright (c) 2015 Andrew Gallant
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-# THE SOFTWARE.
 ---
 name: Build Release
 run-name: Build Release (${{ inputs.releaseVersion }})
@@ -143,7 +97,8 @@ jobs:
       - name: Build archive
         shell: bash
         run: |
-          echo "ASSET=$(ci/scripts/build-release-archive.sh)" >> $GITHUB_ENV
+          ci/scripts/build-release-archive.sh
+          echo "ASSET=$ASSET" >> $GITHUB_ENV
 
       - name: Upload release archive
         uses: shogo82148/actions-upload-release-asset@v1
@@ -156,9 +111,9 @@ jobs:
 
       - name: Build Debian package
         run: |
-          DEB_PATH="$(ci/scripts/build-debian-package.sh)"
+          ci/scripts/build-debian-package.sh
           echo "DEB_PATH=$DEB_PATH" >> $GITHUB_ENV
-          echo "DEB_NAME=$(basename $DEB_PATH)" >> $GITHUB_ENV
+          echo "DEB_NAME=$DEB_NAME" >> $GITHUB_ENV
 
       - name: Upload Debian package
         uses: shogo82148/actions-upload-release-asset@v1
@@ -174,9 +129,9 @@ jobs:
 
       - name: Build RPM package
         run: |          
-          rpm_path="$(ci/scripts/build-rpm-package.sh)"
-          echo "RPM_PATH=${rpm_path}" >> $GITHUB_ENV
-          echo "RPM_NAME=$(basename $rpm_path)" >> $GITHUB_ENV
+          ci/scripts/build-rpm-package.sh
+          echo "RPM_PATH=$RPM_PATH" >> $GITHUB_ENV
+          echo "RPM_NAME=$RPM_NAME" >> $GITHUB_ENV
 
       - name: Upload RPM package
         if: contains(matrix.build, 'linux')
@@ -224,7 +179,8 @@ jobs:
       - name: Build archive
         shell: bash
         run: |
-          echo "ASSET=$(ci/scripts/build-release-archive.sh)" >> $GITHUB_ENV
+          ci/scripts/build-release-archive.sh
+          echo "ASSET=$ASSET" >> $GITHUB_ENV
 
       - name: Upload release archive
         uses: shogo82148/actions-upload-release-asset@v1
@@ -268,7 +224,8 @@ jobs:
       - name: Build archive
         shell: bash
         run: |
-          echo "ASSET=$(ci/scripts/build-release-archive.sh)" >> $GITHUB_ENV
+          ci/scripts/build-release-archive.sh
+          echo "ASSET=$ASSET" >> $GITHUB_ENV
 
       - name: Upload release archive
         uses: shogo82148/actions-upload-release-asset@v1
@@ -296,7 +253,6 @@ jobs:
           asset_content_type: application/octet-stream
           overwrite: true
 
-
       - name: Upload POSIX Install
         uses: shogo82148/actions-upload-release-asset@v1
         with:
@@ -305,7 +261,6 @@ jobs:
           asset_name: install.sh
           asset_content_type: application/octet-stream
           overwrite: true
-
 
       - name: Upload Windows Install
         uses: shogo82148/actions-upload-release-asset@v1

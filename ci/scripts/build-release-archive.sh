@@ -1,4 +1,5 @@
-#!/usr/bin/sh
+#!/usr/bin/env sh
+set -e
 ARCHIVE_NAME="$PROJECT_NAME-$RELEASE_TAG-$TARGET"
 mkdir -p "$ARCHIVE_NAME"
 
@@ -16,11 +17,12 @@ cp "target/$TARGET/release/$PROJECT_NAME"* "$ARCHIVE_NAME/"
 case $(uname) in
     *Windows*)
         7z a "$ARCHIVE_NAME.zip" "$ARCHIVE_NAME"
-        echo "$ARCHIVE_NAME.zip"
+        ASSET="$ARCHIVE_NAME.zip"
     ;;
 
     *)
         tar -czf "$ARCHIVE_NAME.tar.gz" "$ARCHIVE_NAME"
-        echo "$ARCHIVE_NAME.tar.gz"
+        ASSET="$ARCHIVE_NAME.tar.gz"
     ;;
 esac
+export ASSET
