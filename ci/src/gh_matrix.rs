@@ -4,7 +4,7 @@ use serde::Serialize;
 #[derive(Serialize)]
 pub struct ReleaseBuildMatrix<'c> {
     pub target: Vec<&'c str>,
-    pub includes: Vec<ReleaseBuildIncludes<'c>>,
+    pub include: Vec<ReleaseBuildIncludes<'c>>,
 }
 
 #[derive(Serialize)]
@@ -15,7 +15,7 @@ pub struct ReleaseBuildIncludes<'c> {
 
 impl<'c> FromIterator<&'c ReleaseBuildConfig<'c>> for ReleaseBuildMatrix<'c> {
     fn from_iter<T: IntoIterator<Item = &'c ReleaseBuildConfig<'c>>>(value: T) -> Self {
-        let (target, includes) = value
+        let (target, include) = value
             .into_iter()
             .map(|&ReleaseBuildConfig { ref target, runner }| {
                 (
@@ -27,7 +27,7 @@ impl<'c> FromIterator<&'c ReleaseBuildConfig<'c>> for ReleaseBuildMatrix<'c> {
                 )
             })
             .unzip();
-        Self { target, includes }
+        Self { target, include }
     }
 }
 
@@ -40,7 +40,7 @@ impl std::fmt::Display for ReleaseBuildMatrix<'_> {
 #[derive(Serialize)]
 pub struct ReleaseTestMatrix<'c> {
     pub os: Vec<TestOs>,
-    pub includes: Vec<ReleaseTestIncludes<'c>>,
+    pub include: Vec<ReleaseTestIncludes<'c>>,
 }
 #[derive(Serialize)]
 pub struct ReleaseTestIncludes<'c> {
@@ -52,7 +52,7 @@ pub struct ReleaseTestIncludes<'c> {
 
 impl std::fmt::Display for ReleaseTestMatrix<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        for i in &self.includes {
+        for i in &self.include {
             write!(f, "{}-{} ", i.os, i.version)?;
         }
         std::fmt::Result::Ok(())
@@ -63,7 +63,7 @@ impl<'c> FromIterator<&'c ReleaseTestConfig<'c>> for ReleaseTestMatrix<'c> {
     fn from_iter<T: IntoIterator<Item = &'c ReleaseTestConfig<'c>>>(value: T) -> Self {
         let mut matrix = ReleaseTestMatrix {
             os: Vec::new(),
-            includes: Vec::new(),
+            include: Vec::new(),
         };
         for test in value {
             let &ReleaseTestConfig {
@@ -74,7 +74,7 @@ impl<'c> FromIterator<&'c ReleaseTestConfig<'c>> for ReleaseTestMatrix<'c> {
             } = test;
             matrix.os.push(os);
             matrix
-                .includes
+                .include
                 .extend(versions.iter().map(|version| ReleaseTestIncludes {
                     os,
                     runner: RunnerOs::from(os),
