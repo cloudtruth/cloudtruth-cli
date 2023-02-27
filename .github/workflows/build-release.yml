@@ -195,6 +195,9 @@ jobs:
     name: Build Windows Release
     runs-on: windows-latest
     needs: [ matrix-map ]
+    defaults:
+      run:
+        shell: bash
 
     strategy:
       fail-fast: false
