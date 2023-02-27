@@ -9,7 +9,5 @@ deb_dir="target/$TARGET/debian"
 src_deb_path=$(ls "$deb_dir"/*.deb)
 dest_deb_path=$(echo "$src_deb_path" | sed -E "s/${PACKAGE_VERSION}/${RELEASE_TAG}/")
 mv -f "$src_deb_path" "$dest_deb_path"
-DEB_PATH="$dest_deb_path"
-DEB_NAME=$(basename "$DEB_PATH")
-export DEB_PATH
-export DEB_NAME
+echo "DEB_PATH=$dest_deb_path" >> "$GITHUB_ENV"
+echo "DEB_NAME=$(basename "$DEB_PATH")" >> "$GITHUB_ENV"

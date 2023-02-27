@@ -1,6 +1,5 @@
 #!/usr/bin/env sh
 set -e
-ARCHIVE_NAME="$PROJECT_NAME-$RELEASE_TAG-$TARGET"
 mkdir -p "$ARCHIVE_NAME"
 
 # Find where the build script put the generated completions files.
@@ -17,12 +16,9 @@ cp "target/$TARGET/release/$PROJECT_NAME"* "$ARCHIVE_NAME/"
 case $(uname) in
     *Windows*)
         7z a "$ARCHIVE_NAME.zip" "$ARCHIVE_NAME"
-        ASSET="$ARCHIVE_NAME.zip"
     ;;
 
     *)
         tar -czf "$ARCHIVE_NAME.tar.gz" "$ARCHIVE_NAME"
-        ASSET="$ARCHIVE_NAME.tar.gz"
     ;;
 esac
-export ASSET

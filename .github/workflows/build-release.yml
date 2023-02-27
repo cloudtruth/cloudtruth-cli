@@ -34,6 +34,7 @@ env:
   DEB_REVISION: ${{ inputs.revision }}
   RPM_SNAPSHOT: ${{ inputs.rpmSnapshot }}
   PROJECT_NAME: cloudtruth
+  ARCHIVE_NAME: ${{ env.PROJECT_NAME }}-${{ env.RELEASE_TAG }}-${ env.TARGET }}
   RUST_BACKTRACE: 1
 
 jobs:
@@ -62,6 +63,7 @@ jobs:
 
     env:
       TARGET: ${{ matrix.target }}
+      ASSET: ${{ env.ARCHIVE_NAME }}.tar.gz
 
     steps:
       - uses: actions/checkout@v3
@@ -154,6 +156,7 @@ jobs:
 
     env:
       TARGET: ${{ matrix.target }}
+      ASSET: ${{ env.ARCHIVE_NAME }}.tar.gz
 
     steps:
       - uses: actions/checkout@v3
@@ -205,6 +208,8 @@ jobs:
 
     env:
       TARGET: ${{ matrix.target }}
+      ASSET: ${{ env.ARCHIVE_NAME }}.zip
+
 
     steps:
       - uses: actions/checkout@v3
