@@ -84,6 +84,7 @@ env:
 
 jobs:
   matrix-map:
+    name: Read Job Matrices
     runs-on: ubuntu-latest
     outputs:
       matrices: ${{ steps.matrix-map.outputs.matrices }}
@@ -98,7 +99,7 @@ jobs:
 
   build-packages:
     name: Build Release Packages
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     needs: [ matrix-map ]
 
     strategy:
