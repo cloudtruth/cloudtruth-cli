@@ -30,8 +30,7 @@ impl ConfigEnv {
         env::var(config_name).ok().map(|val| {
             if val.is_empty() {
                 warn_user(format!(
-                    "{} is defined but empty. It could be accidentally shadowing profile config.",
-                    config_name
+                    "{config_name} is defined but empty. It could be accidentally shadowing profile config."
                 ));
             }
             val.trim().to_owned()
@@ -41,7 +40,7 @@ impl ConfigEnv {
     pub fn parse_override<T: FromStr>(config_name: &str) -> Option<T> {
         Self::get_override(config_name).and_then(|config_value| {
             config_value.parse().ok().or_else(|| {
-                warn_user(format!("Could not parse {}: {}", config_name, config_value));
+                warn_user(format!("Could not parse {config_name}: {config_value}"));
                 None
             })
         })
