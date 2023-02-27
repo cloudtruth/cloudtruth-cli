@@ -1,5 +1,5 @@
 ---
-name: Nightly Test
+name: Test Nightly
 
 on:
   repository_dispatch:

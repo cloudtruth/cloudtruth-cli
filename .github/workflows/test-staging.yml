@@ -1,4 +1,4 @@
-name: E2E Staging
+name: Test Staging
 on:
   workflow_call:
     inputs:
