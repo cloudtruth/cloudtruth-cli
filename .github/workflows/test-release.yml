@@ -66,7 +66,7 @@ jobs:
       - name: docker
         if: matrix.install_type == 'docker'
         run: |
-          VERSION='${{ matrix.os }}-${{ matrix.version}}'
+          VERSION='${{ matrix.os }}-${{ matrix.version }}'
           TAG="cloudtruth:$VERSION"
           OUT_LOG="$TAG-output.txt"
           docker build . \

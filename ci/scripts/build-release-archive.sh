@@ -14,8 +14,8 @@ cp README.md LICENSE "$ARCHIVE_NAME/"
 cp -a "$dst_completions_dir" "$ARCHIVE_NAME/"
 cp "target/$TARGET/release/$PROJECT_NAME"* "$ARCHIVE_NAME/"
 
-case $(uname) in
-    *Windows*)
+case $TARGET in
+    *windows*)
         7z a "$ARCHIVE_NAME.zip" "$ARCHIVE_NAME"
         echo "ASSET=$ARCHIVE_NAME.zip" >> "$GITHUB_ENV"
     ;;

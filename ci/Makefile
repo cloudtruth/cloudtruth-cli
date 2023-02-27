@@ -30,8 +30,8 @@ clean:
 # rm ~/.actrc
 
 prerequisites:
-	python3 -m pip install --user --upgrade -r requirements.txt
-	# curl https://raw.githubusercontent.com/nektos/act/master/install.sh | sudo bash
+# python3 -m pip install --user --upgrade -r requirements.txt
+# curl https://raw.githubusercontent.com/nektos/act/master/install.sh | sudo bash
 
 precommit: default cli-check
 	@git ls-files -m -mo --exclude-standard |\
@@ -57,7 +57,6 @@ docker: $(docker_files) $(config_files) $(ci_bin)
 
 $(ci_bin) build: RUST_SOURCES #let Cargo detect changes
 	cargo build --release
-
 
 help: targets
 

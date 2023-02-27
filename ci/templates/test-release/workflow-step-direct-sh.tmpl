@@ -1,7 +1,0 @@
-
-      - name: {{ os }}-{{ version }}
-        run: |
-          sudo ./install.sh \
-            --version "${CT_DOWNLOAD_VERSION}" \
-            ${CT_DOWNLOAD_RELEASE_ID:+ --auth-token "${CT_DOWNLOAD_AUTH_TOKEN}" --release-id "${CT_DOWNLOAD_RELEASE_ID}"}
-          cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep "${CT_TEST_PARAM}" | grep "${CT_TEST_VALUE}"
