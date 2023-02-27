@@ -89,7 +89,6 @@ jobs:
     permissions:
       contents: write
     steps:
-
       # move new release from draft to pre-release
       - uses: ncipollo/release-action@v1
         with:
@@ -110,22 +109,11 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  e2e:
-    name: Nightly E2E Test
-    needs: [create-release, make-prerelease]
-    uses: ./.github/workflows/test-staging.yml
-    strategy:
-      fail-fast: false
-      matrix:
-        os:
-          - ubuntu-latest
-          - macos-latest
-          - windows-latest
-    with:
-      runsOn: ${{ matrix.os }}
-      releaseVersion: ${{ needs.create-release.outputs.tagName }}
-      testRunnerOptions: --reports
-    secrets: inherit
+      # dispatch repo event to trigger test-nightly.yml
+      - uses: peter-evans/repository-dispatch@v2
+        with:
+          event-type: nightly-release
+          client-payload: '{"tagName": "${{ needs.create-release.outputs.tagName }}"}'
 
       
 
