@@ -91,7 +91,7 @@ jobs:
       - id: matrix-map
         run: |
           JSON_FILE=ci/gh-actions/build-release.json
-          echo "matrices=$(cat $JSON_FILE)" >> .GITHUB_OUTPUT
+          echo "matrices=$(cat $JSON_FILE)" >> $GITHUB_OUTPUT
 
   build-packages:
     name: Build Release Packages
