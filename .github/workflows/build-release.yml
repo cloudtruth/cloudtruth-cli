@@ -86,7 +86,7 @@ jobs:
   matrix-map:
     runs-on: ubuntu-latest
     outputs:
-      matrices: ${{ steps.read-matrix-map.outputs.matrices }}
+      matrices: ${{ steps.matrix-map.outputs.matrices }}
     steps:
       - id: matrix-map
         run: |
