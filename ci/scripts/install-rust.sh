@@ -9,9 +9,9 @@ set -e
 rustup set auto-self-update disable
 # legacy CLI version with no rust-toolchain file
 if [ -f rust-toolchain ] || [ -f rust-toolchain.toml ]; then
-    rustup toolchain install 1.63.0 --profile minimal
-else
     # this command forces install of version in rust-toolchain file
     # this might change in the future but for now it's the best way
     rustup show
+else
+    rustup toolchain install 1.63.0 --profile minimal
 fi
