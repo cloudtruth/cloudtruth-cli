@@ -119,7 +119,7 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           prefix-key: v0-cloudtruth-cli
-          shared-key: ${{ runner.os }}-$TARGET
+          shared-key: ${{ runner.os }}-${{ env.TARGET }}
           cache-directories: ${{ env.HOME }}/.cargo/bin
 
       - uses: taiki-e/install-action@cargo-binstall
