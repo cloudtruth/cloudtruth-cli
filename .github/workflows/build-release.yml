@@ -53,7 +53,7 @@ jobs:
 
   build-release:
     name: Build Packages
-    runs-on: {{ matrix.runner }}
+    runs-on: ${{ matrix.runner }}
     needs: [ matrix-map ]
     defaults:
       run:
@@ -185,4 +185,3 @@ jobs:
           asset_name: install.ps1
           asset_content_type: application/octet-stream
           overwrite: true
-
