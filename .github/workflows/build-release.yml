@@ -62,7 +62,6 @@ jobs:
 
     env:
       TARGET: ${{ matrix.target }}
-      ARCHIVE_NAME: ${{ env.PROJECT_NAME }}-${{ env.RELEASE_TAG }}-${{ matrix.target }}
 
     steps:
       - uses: actions/checkout@v3
@@ -99,7 +98,6 @@ jobs:
         shell: bash
         run: |
           ci/scripts/build-release-archive.sh
-          echo "ASSET=$ASSET" >> $GITHUB_ENV
 
       - name: Upload release archive
         uses: shogo82148/actions-upload-release-asset@v1
@@ -113,8 +111,6 @@ jobs:
       - name: Build Debian package
         run: |
           ci/scripts/build-debian-package.sh
-          echo "DEB_PATH=$DEB_PATH" >> $GITHUB_ENV
-          echo "DEB_NAME=$DEB_NAME" >> $GITHUB_ENV
 
       - name: Upload Debian package
         uses: shogo82148/actions-upload-release-asset@v1
@@ -131,8 +127,6 @@ jobs:
       - name: Build RPM package
         run: |          
           ci/scripts/build-rpm-package.sh
-          echo "RPM_PATH=$RPM_PATH" >> $GITHUB_ENV
-          echo "RPM_NAME=$RPM_NAME" >> $GITHUB_ENV
 
       - name: Upload RPM package
         if: contains(matrix.build, 'linux')
@@ -155,8 +149,6 @@ jobs:
 
     env:
       TARGET: ${{ matrix.target }}
-      ASSET: ${{ env.ARCHIVE_NAME }}.tar.gz
-      ARCHIVE_NAME: ${{ env.PROJECT_NAME }}-${{ env.RELEASE_TAG }}-${{ matrix.target }}
 
     steps:
       - uses: actions/checkout@v3
@@ -183,7 +175,6 @@ jobs:
         shell: bash
         run: |
           ci/scripts/build-release-archive.sh
-          echo "ASSET=$ASSET" >> $GITHUB_ENV
 
       - name: Upload release archive
         uses: shogo82148/actions-upload-release-asset@v1
@@ -208,8 +199,6 @@ jobs:
 
     env:
       TARGET: ${{ matrix.target }}
-      ARCHIVE_NAME: ${{ env.PROJECT_NAME }}-${{ env.RELEASE_TAG }}-${{ matrix.target }}
-
 
     steps:
       - uses: actions/checkout@v3
@@ -233,7 +222,6 @@ jobs:
         shell: bash
         run: |
           ci/scripts/build-release-archive.sh
-          echo "ASSET=$ASSET" >> $GITHUB_ENV
 
       - name: Upload release archive
         uses: shogo82148/actions-upload-release-asset@v1

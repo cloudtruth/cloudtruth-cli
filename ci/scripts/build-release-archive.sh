@@ -1,5 +1,6 @@
 #!/usr/bin/env sh
 set -e
+ARCHIVE_NAME="$PROJECT_NAME-$RELEASE_TAG-$TARGET"
 mkdir -p "$ARCHIVE_NAME"
 
 # Find where the build script put the generated completions files.
