@@ -90,22 +90,16 @@ format:
 
 lint: lint_shell lint_rust lint_python
 
-lint_python: $(python_sources)
-
-%.py:
-	@echo Linting $@
-	@python3 -m black --quiet --check $@
-	@ruff check  $@
+lint_python:
+	python3 -m black --quiet --check .
+	ruff check .
 
 lint_rust:
 	cargo fmt --all -- --check
 	cargo clippy --all --all-features -- -D warnings
 
-lint_shell: $(shell_sources)
-
-$(shell_sources) :
-	@echo Linting $@
-	@shellcheck  $@
+lint_shell:
+	git ls-files | grep -v -E '^client/' | grep -E '\.sh$$' | xargs shellcheck
 
 # apply linting fixes
 lint_fix:
