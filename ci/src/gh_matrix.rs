@@ -1,16 +1,33 @@
-use crate::config::{ReleaseBuildConfig, ReleaseTestConfig, RunnerOs, TestOs};
+use crate::config::{InstallType, ReleaseBuildConfig, ReleaseTestConfig, RunnerOs, TestOs};
 use serde::Serialize;
 
 #[derive(Serialize)]
 pub struct ReleaseBuildMatrix<'c> {
     pub target: Vec<&'c str>,
+    pub includes: Vec<ReleaseBuildIncludes<'c>>,
+}
+
+#[derive(Serialize)]
+pub struct ReleaseBuildIncludes<'c> {
+    pub target: &'c str,
+    pub runner: RunnerOs,
 }
 
 impl<'c> FromIterator<&'c ReleaseBuildConfig<'c>> for ReleaseBuildMatrix<'c> {
     fn from_iter<T: IntoIterator<Item = &'c ReleaseBuildConfig<'c>>>(value: T) -> Self {
-        Self {
-            target: value.into_iter().map(|i| i.target.as_ref()).collect(),
-        }
+        let (target, includes) = value
+            .into_iter()
+            .map(|&ReleaseBuildConfig { ref target, runner }| {
+                (
+                    target.as_ref(),
+                    ReleaseBuildIncludes {
+                        target: target.as_ref(),
+                        runner,
+                    },
+                )
+            })
+            .unzip();
+        Self { target, includes }
     }
 }
 
@@ -30,6 +47,7 @@ pub struct ReleaseTestIncludes<'c> {
     pub os: TestOs,
     pub runner: RunnerOs,
     pub version: &'c str,
+    pub install_type: InstallType,
 }
 
 impl std::fmt::Display for ReleaseTestMatrix<'_> {
@@ -49,7 +67,10 @@ impl<'c> FromIterator<&'c ReleaseTestConfig<'c>> for ReleaseTestMatrix<'c> {
         };
         for test in value {
             let &ReleaseTestConfig {
-                os, ref versions, ..
+                os,
+                ref versions,
+                install_type,
+                ..
             } = test;
             matrix.os.push(os);
             matrix
@@ -58,6 +79,7 @@ impl<'c> FromIterator<&'c ReleaseTestConfig<'c>> for ReleaseTestMatrix<'c> {
                     os,
                     runner: RunnerOs::from(os),
                     version,
+                    install_type,
                 }));
         }
         matrix

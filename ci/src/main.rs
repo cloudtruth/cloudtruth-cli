@@ -1,10 +1,10 @@
 mod config;
 mod docker_template;
 mod gh_matrix;
-mod gh_matrix_map;
 
 use anyhow::*;
 use clap::Parser;
+use gh_matrix::{ReleaseBuildMatrix, ReleaseTestMatrix};
 use serde::Serialize;
 use std::{
     fmt::Display,
@@ -15,7 +15,6 @@ use std::{
 
 use config::*;
 use docker_template::*;
-use gh_matrix_map::*;
 
 /// Default base path for GH matrix outputs
 macro_rules! matrix_path {
@@ -71,14 +70,6 @@ impl Cli {
         File::create(path.as_ref())
             .with_context(|| format!("Unable to open file for writing: {:?}", path.as_ref()))
     }
-
-    pub fn display_matrix_map<K, M>(&self, name: &str, map: &MatrixMap<K, M>)
-    where
-        MatrixMap<K, M>: Display,
-    {
-        print!("=== Generated matrices for {name} ===\n{map}");
-    }
-
     pub fn mkdir<P: AsRef<Path>>(&self, path: P) -> Result<()> {
         if !path.as_ref().is_dir() {
             create_dir(path.as_ref())
@@ -103,35 +94,32 @@ impl Cli {
         Ok(())
     }
 
-    fn generate_actions_matrices<'a: 'b, 'b>(&self, config: &'a mut Config<'b>) -> Result<()> {
+    fn write_matrix<V: Serialize + Display>(&self, name: &str, value: V) -> Result<()> {
+        if self.verbose {
+            print!("=== Generated matrices for {name} ===\n{value}");
+        }
+        let path = Path::new(matrix_path!()).join(format!("{name}.json"));
+        let file = self.open_output_file(path.as_path())?;
+        self.write_json(file, &value)
+            .with_context(|| format!("Error while serializing GHA matrix to {path:?}"))
+    }
+
+    fn generate_actions_matrices<'a: 'b, 'b>(&self, config: &'a Config<'b>) -> Result<()> {
         self.mkdir(matrix_path!())?;
         let results = vec![
-            self.write_matrix_map(
+            self.write_matrix(
                 "build-release",
-                BuildMatrixMap::from_config(&mut config.release_builds),
+                ReleaseBuildMatrix::from_iter(config.release_builds.iter()),
             ),
-            self.write_matrix_map(
+            self.write_matrix(
                 "test-release",
-                TestMatrixMap::from_config(&mut config.release_tests),
+                ReleaseTestMatrix::from_iter(config.release_tests.iter()),
             ),
         ];
         collect_file_errors(
             anyhow!("Multiple errors while writing GHA matrices"),
             results.into_iter().filter_map(Result::err).collect(),
         )
-    }
-
-    fn write_matrix_map<K, M>(&self, name: &str, map: MatrixMap<K, M>) -> Result<()>
-    where
-        MatrixMap<K, M>: Serialize + Display,
-    {
-        if self.verbose {
-            self.display_matrix_map(name, &map);
-        }
-        let path = Path::new(matrix_path!()).join(format!("{name}.json"));
-        let file = self.open_output_file(path.as_path())?;
-        self.write_json(file, &map)
-            .with_context(|| format!("Error while serializing GHA matrix to {path:?}"))
     }
 
     fn generate_dockerfiles(&self, config: &Config) -> Result<()> {
@@ -166,13 +154,13 @@ fn main() -> Result<()> {
     cli.open_input_file(config_yaml_path)?
         .read_to_string(&mut config_yaml)
         .context("Error serializing config YAML")?;
-    let mut config: Config = serde_yaml::from_str(&config_yaml)?;
+    let config: Config = serde_yaml::from_str(&config_yaml)?;
     let mut results = Vec::new();
     if cli.docker {
         results.push(cli.generate_dockerfiles(&config));
     }
     if cli.actions {
-        results.push(cli.generate_actions_matrices(&mut config));
+        results.push(cli.generate_actions_matrices(&config));
     }
     collect_file_errors(
         anyhow!("Multiple file errors when generating CI files"),

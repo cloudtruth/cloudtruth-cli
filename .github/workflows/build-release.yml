@@ -51,14 +51,17 @@ jobs:
           JSON_FILE=ci/gh-actions/build-release.json
           echo "matrices=$(cat $JSON_FILE)" >> $GITHUB_OUTPUT
 
-  build-release-linux:
-    name: Linux
-    runs-on: ubuntu-latest
+  build-release:
+    name: Build Packages
+    runs-on: {{ matrix.runner }}
     needs: [ matrix-map ]
+    defaults:
+      run:
+        shell: bash
 
     strategy:
       fail-fast: false
-      matrix: ${{ fromJSON(needs.matrix-map.outputs.matrices).ubuntu-latest }}
+      matrix: ${{ fromJSON(needs.matrix-map.outputs.matrices) }}
 
     env:
       TARGET: ${{ matrix.target }}
@@ -69,6 +72,7 @@ jobs:
           fetch-depth: 1
 
       - run: ci/scripts/install-build-packages-linux.sh
+        if: contains(runner.os, "ubuntu")
 
       - run: ci/scripts/install-rust.sh
 
@@ -81,18 +85,23 @@ jobs:
           cache-directories: ${{ env.HOME }}/.cargo/bin
 
       - uses: taiki-e/install-action@cargo-binstall
+        if: contains(runner.os, "ubuntu")
 
       - name: Install cross
         run: cargo binstall --no-confirm --force cross
+        if: contains(runner.os, "ubuntu")
 
-      - name: Build
+      - name: Cross Build
         run: cross build --release --target $TARGET
+        if: contains(runner.os, "ubuntu")
 
-      - name: Install cargo-deb
-        run: cargo binstall --no-confirm --force --strategies 'quick-install,crate-meta-data,compile' cargo-deb
+      - name: Cargo Build
+        run: cargo build --release --target $TARGET
+        if: ${{ ! contains(runner.os, "ubuntu") }}
 
       - name: Strip binaries
         run: ci/scripts/strip.sh
+        if: ${{ !contains(runner.os, "windows") }}
 
       - name: Build archive
         run: ci/scripts/build-release-archive.sh
@@ -106,11 +115,17 @@ jobs:
           asset_content_type: application/octet-stream
           overwrite: true
 
+      - name: Install cargo-deb
+        run: cargo binstall --no-confirm --force --strategies 'quick-install,crate-meta-data,compile' cargo-deb
+        if: contains(runner.os, "ubuntu")
+
       - name: Build Debian package
         run: ci/scripts/build-debian-package.sh
+        if: contains(runner.os, "ubuntu")
 
       - name: Upload Debian package
         uses: shogo82148/actions-upload-release-asset@v1
+        if: contains(runner.os, "ubuntu")
         with:
           upload_url: ${{ env.RELEASE_UPLOAD_URL }}
           asset_path: ${{ env.DEB_PATH }}
@@ -120,106 +135,19 @@ jobs:
 
       - name: Install cargo-generate-rpm
         run: cargo install cargo-generate-rpm
+        if: contains(runner.os, "ubuntu")
 
       - name: Build RPM package
         run: ci/scripts/build-rpm-package.sh
+        if: contains(runner.os, "ubuntu")
 
       - name: Upload RPM package
         uses: shogo82148/actions-upload-release-asset@v1
+        if: contains(runner.os, "ubuntu")
         with:
           upload_url: ${{ env.RELEASE_UPLOAD_URL }}
           asset_path: ${{ env.RPM_PATH }}
           asset_name: ${{ env.RPM_NAME }}
-          asset_content_type: application/octet-stream
-          overwrite: true
-
-  build-release-macos:
-    name: MacOS
-    runs-on: macos-latest
-    needs: [ matrix-map ]
-
-    strategy:
-      fail-fast: false
-      matrix: ${{ fromJSON(needs.matrix-map.outputs.matrices).macos-latest }}
-
-    env:
-      TARGET: ${{ matrix.target }}
-
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 1
-
-      - run: ci/scripts/install-rust.sh
-
-      - run: rustup target add "$TARGET"
-
-      - uses: Swatinem/rust-cache@v2
-        with:
-          prefix-key: v0-cloudtruth-cli
-          shared-key: ${{ runner.os }}-${{ env.TARGET }}
-          cache-directories: ${{ env.HOME }}/.cargo/bin
-
-      - name: Build
-        run: cargo build --release --target $TARGET
-
-      - name: Strip binaries
-        run: ci/scripts/strip.sh
-
-      - name: Build archive
-        run: ci/scripts/build-release-archive.sh
-
-      - name: Upload release archive
-        uses: shogo82148/actions-upload-release-asset@v1
-        with:
-          upload_url: ${{ env.RELEASE_UPLOAD_URL }}
-          asset_path: ${{ env.ASSET }}
-          asset_name: ${{ env.ASSET }}
-          asset_content_type: application/octet-stream
-          overwrite: true
-
-  build-release-windows:
-    name: Windows
-    runs-on: windows-latest
-    needs: [ matrix-map ]
-    defaults:
-      run:
-        shell: bash
-
-    strategy:
-      fail-fast: false
-      matrix: ${{ fromJSON(needs.matrix-map.outputs.matrices).windows-latest }}
-
-    env:
-      TARGET: ${{ matrix.target }}
-
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 1
-
-      - run: ci/scripts/install-rust.sh
-
-      - run: rustup target add "$TARGET"
-
-      - uses: Swatinem/rust-cache@v2
-        with:
-          prefix-key: v0-cloudtruth-cli
-          shared-key: ${{ runner.os }}-${{ env.TARGET }}
-          cache-directories: ${{ env.HOME }}/.cargo/bin
-
-      - name: Build
-        run: cargo build --release --target $TARGET
-
-      - name: Build archive
-        run: ci/scripts/build-release-archive.sh
-
-      - name: Upload release archive
-        uses: shogo82148/actions-upload-release-asset@v1
-        with:
-          upload_url: ${{ env.RELEASE_UPLOAD_URL }}
-          asset_path: ${{ env.ASSET }}
-          asset_name: ${{ env.ASSET }}
           asset_content_type: application/octet-stream
           overwrite: true
 

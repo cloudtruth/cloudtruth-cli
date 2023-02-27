@@ -3,8 +3,6 @@ use std::borrow::Cow;
 use serde::{Deserialize, Serialize};
 use serde_plain::derive_display_from_serialize;
 
-use crate::gh_matrix_map::HasSortKey;
-
 /// config.yaml file
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "kebab-case")]
@@ -22,13 +20,6 @@ pub struct ReleaseBuildConfig<'c> {
     pub target: Cow<'c, str>,
 }
 
-impl<'c> HasSortKey for ReleaseBuildConfig<'c> {
-    type Key = RunnerOs;
-    fn sort_key(&self) -> Self::Key {
-        self.runner
-    }
-}
-
 /// release-tests section of config.yaml
 #[derive(Deserialize, Debug)]
 pub struct ReleaseTestConfig<'c> {
@@ -37,13 +28,6 @@ pub struct ReleaseTestConfig<'c> {
     pub install_type: InstallType,
     #[serde(borrow)]
     pub versions: Vec<Cow<'c, str>>,
-}
-
-impl<'c> HasSortKey for ReleaseTestConfig<'c> {
-    type Key = InstallType;
-    fn sort_key(&self) -> Self::Key {
-        self.install_type
-    }
 }
 
 /// GitHub Actions runners
