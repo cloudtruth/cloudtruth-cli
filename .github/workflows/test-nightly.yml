@@ -1,5 +1,6 @@
 ---
 name: Test Nightly
+run-name: Test Nightly (${{ github.event.client_payload.tagName }})
 
 on:
   repository_dispatch:
