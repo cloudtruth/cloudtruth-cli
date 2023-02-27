@@ -91,11 +91,11 @@ jobs:
         run: cargo binstall --no-confirm --force cross
         if: contains(runner.os, 'Linux')
 
-      - name: Cross Build
+      - name: Cross build
         run: cross build --release --target $TARGET
         if: contains(runner.os, 'Linux')
 
-      - name: Cargo Build
+      - name: Cargo build
         run: cargo build --release --target $TARGET
         if: ${{ ! contains(runner.os, 'Linux') }}
 
