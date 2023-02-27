@@ -19,29 +19,29 @@ on:
         description: CloudTruth API Key
         required: true
 jobs:
-  matrix-map:
-    name: Read Job Matrices
+  matrix:
+    name: Read Job Matrix
     runs-on: ubuntu-latest
     outputs:
-      matrices: ${{ steps.matrix-map.outputs.matrices }}
+      matrix: ${{ steps.matrix.outputs.matrix }}
     steps:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 1
-      - id: matrix-map
+      - id: matrix
         run: |
           JSON_FILE=ci/gh-actions/test-release.json
-          echo "matrices=$(cat $JSON_FILE)" >> $GITHUB_OUTPUT
+          echo "matrix=$(cat $JSON_FILE)" >> $GITHUB_OUTPUT
   test-release:
     runs-on: ${{ matrix.runner }}
-    needs: [ matrix-map ]
+    needs: [ matrix ]
     defaults:
       run:
         shell: bash
 
     strategy:
       fail-fast: false
-      matrix: ${{ fromJSON(needs.matrix-map.outputs.matrices) }}
+      matrix: ${{ fromJSON(needs.matrix.outputs.matrix) }}
 
     env:
       # github release info
