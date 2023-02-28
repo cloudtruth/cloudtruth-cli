@@ -13,7 +13,7 @@ concurrency:
 
 jobs:
   create-release:
-    name: Create Draft Release
+    name: Create Release
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -70,7 +70,7 @@ jobs:
       rpmSnapshot: ${{ github.sha }}
 
   test-release:
-    name: Test Draft Release
+    name: Test Release
     needs: [create-release, build-release]
     uses: ./.github/workflows/test-release.yml
     with:

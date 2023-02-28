@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   create-release:
-    name: Create Staging Release
+    name: Create Release
     runs-on: ubuntu-latest
   
     steps:
@@ -27,7 +27,7 @@ jobs:
         run: |
           echo CARGO_PKG_VERSION=$(cargo pkgid | cut -d@ -f2 ) >> $GITHUB_ENV
 
-      - name: Create Release
+      - name: Create Draft Release
         id: release
         uses: ncipollo/release-action@v1
         with:
@@ -62,7 +62,7 @@ jobs:
       rpmSnapshot: ${{ github.sha }}
 
   test-release:
-    name: Test Draft Release
+    name: Test Release
     needs: [create-release, build-release]
     uses: ./.github/workflows/test-release.yml
     with:
