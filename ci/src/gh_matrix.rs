@@ -71,7 +71,7 @@ impl<'c> FromIterator<&'c ReleaseTestConfig<'c>> for ReleaseTestMatrix<'c> {
         {
             matrix.os.push(os);
             for version in versions {
-                matrix.version.push(version.as_ref());
+                matrix.version.push(version);
                 matrix.include.push(ReleaseTestIncludes {
                     os,
                     runner: RunnerOs::from(os),
