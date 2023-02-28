@@ -15,19 +15,15 @@ pub struct ReleaseBuildIncludes<'c> {
 
 impl<'c> FromIterator<&'c ReleaseBuildConfig<'c>> for ReleaseBuildMatrix<'c> {
     fn from_iter<T: IntoIterator<Item = &'c ReleaseBuildConfig<'c>>>(value: T) -> Self {
-        let (target, include) = value
-            .into_iter()
-            .map(|&ReleaseBuildConfig { ref target, runner }| {
-                (
-                    target.as_ref(),
-                    ReleaseBuildIncludes {
-                        target: target.as_ref(),
-                        runner,
-                    },
-                )
-            })
-            .unzip();
-        Self { target, include }
+        let mut matrix = ReleaseBuildMatrix {
+            target: Vec::new(),
+            include: Vec::new(),
+        };
+        for &ReleaseBuildConfig { ref target, runner } in value {
+            matrix.target.push(target);
+            matrix.include.push(ReleaseBuildIncludes { target, runner });
+        }
+        matrix
     }
 }
 
@@ -39,7 +35,6 @@ impl std::fmt::Display for ReleaseBuildMatrix<'_> {
 
 #[derive(Serialize)]
 pub struct ReleaseTestMatrix<'c> {
-    pub os: Vec<TestOs>,
     pub include: Vec<ReleaseTestIncludes<'c>>,
 }
 #[derive(Serialize)]
@@ -62,25 +57,22 @@ impl std::fmt::Display for ReleaseTestMatrix<'_> {
 impl<'c> FromIterator<&'c ReleaseTestConfig<'c>> for ReleaseTestMatrix<'c> {
     fn from_iter<T: IntoIterator<Item = &'c ReleaseTestConfig<'c>>>(value: T) -> Self {
         let mut matrix = ReleaseTestMatrix {
-            os: Vec::new(),
             include: Vec::new(),
         };
-        for test in value {
-            let &ReleaseTestConfig {
-                os,
-                ref versions,
-                install_type,
-                ..
-            } = test;
-            matrix.os.push(os);
-            matrix
-                .include
-                .extend(versions.iter().map(|version| ReleaseTestIncludes {
+        for &ReleaseTestConfig {
+            os,
+            ref versions,
+            install_type,
+        } in value
+        {
+            for version in versions {
+                matrix.include.push(ReleaseTestIncludes {
                     os,
                     runner: RunnerOs::from(os),
                     version,
                     install_type,
-                }));
+                });
+            }
         }
         matrix
     }
