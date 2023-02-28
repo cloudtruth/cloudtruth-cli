@@ -15,19 +15,15 @@ pub struct ReleaseBuildIncludes<'c> {
 
 impl<'c> FromIterator<&'c ReleaseBuildConfig<'c>> for ReleaseBuildMatrix<'c> {
     fn from_iter<T: IntoIterator<Item = &'c ReleaseBuildConfig<'c>>>(value: T) -> Self {
-        let (target, include) = value
-            .into_iter()
-            .map(|&ReleaseBuildConfig { ref target, runner }| {
-                (
-                    target.as_ref(),
-                    ReleaseBuildIncludes {
-                        target: target.as_ref(),
-                        runner,
-                    },
-                )
-            })
-            .unzip();
-        Self { target, include }
+        let mut matrix = ReleaseBuildMatrix {
+            target: Vec::new(),
+            include: Vec::new(),
+        };
+        for &ReleaseBuildConfig { ref target, runner } in value {
+            matrix.target.push(target);
+            matrix.include.push(ReleaseBuildIncludes { target, runner });
+        }
+        matrix
     }
 }
 
