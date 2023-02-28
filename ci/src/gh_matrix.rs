@@ -36,7 +36,6 @@ impl std::fmt::Display for ReleaseBuildMatrix<'_> {
 #[derive(Serialize)]
 pub struct ReleaseTestMatrix<'c> {
     pub os: Vec<TestOs>,
-    pub version: Vec<&'c str>,
     pub include: Vec<ReleaseTestIncludes<'c>>,
 }
 #[derive(Serialize)]
@@ -60,7 +59,6 @@ impl<'c> FromIterator<&'c ReleaseTestConfig<'c>> for ReleaseTestMatrix<'c> {
     fn from_iter<T: IntoIterator<Item = &'c ReleaseTestConfig<'c>>>(value: T) -> Self {
         let mut matrix = ReleaseTestMatrix {
             os: Vec::new(),
-            version: Vec::new(),
             include: Vec::new(),
         };
         for &ReleaseTestConfig {
@@ -71,7 +69,6 @@ impl<'c> FromIterator<&'c ReleaseTestConfig<'c>> for ReleaseTestMatrix<'c> {
         {
             matrix.os.push(os);
             for version in versions {
-                matrix.version.push(version);
                 matrix.include.push(ReleaseTestIncludes {
                     os,
                     runner: RunnerOs::from(os),
