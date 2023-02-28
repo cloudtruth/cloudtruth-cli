@@ -1,9 +1,9 @@
 use crate::config::{InstallType, ReleaseBuildConfig, ReleaseTestConfig, RunnerOs, TestOs};
+use itertools::Itertools;
 use serde::Serialize;
 
 #[derive(Serialize)]
 pub struct ReleaseBuildMatrix<'c> {
-    pub target: Vec<&'c str>,
     pub include: Vec<ReleaseBuildIncludes<'c>>,
 }
 
@@ -15,21 +15,28 @@ pub struct ReleaseBuildIncludes<'c> {
 
 impl<'c> FromIterator<&'c ReleaseBuildConfig<'c>> for ReleaseBuildMatrix<'c> {
     fn from_iter<T: IntoIterator<Item = &'c ReleaseBuildConfig<'c>>>(value: T) -> Self {
-        let mut matrix = ReleaseBuildMatrix {
-            target: Vec::new(),
-            include: Vec::new(),
-        };
-        for &ReleaseBuildConfig { ref target, runner } in value {
-            matrix.target.push(target);
-            matrix.include.push(ReleaseBuildIncludes { target, runner });
-        }
-        matrix
+        let include = value
+            .into_iter()
+            .map(
+                |&ReleaseBuildConfig { ref target, runner }| ReleaseBuildIncludes {
+                    target: target.as_ref(),
+                    runner,
+                },
+            )
+            .collect();
+        ReleaseBuildMatrix { include }
     }
 }
 
 impl std::fmt::Display for ReleaseBuildMatrix<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.target.join(" "))
+        write!(f, "{}", self.include.iter().format(", "))
+    }
+}
+
+impl std::fmt::Display for ReleaseBuildIncludes<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.target)
     }
 }
 
@@ -45,35 +52,37 @@ pub struct ReleaseTestIncludes<'c> {
     pub install_type: InstallType,
 }
 
-impl std::fmt::Display for ReleaseTestMatrix<'_> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        for i in &self.include {
-            write!(f, "{}-{} ", i.os, i.version)?;
-        }
-        std::fmt::Result::Ok(())
+impl<'c> FromIterator<&'c ReleaseTestConfig<'c>> for ReleaseTestMatrix<'c> {
+    fn from_iter<T: IntoIterator<Item = &'c ReleaseTestConfig<'c>>>(value: T) -> Self {
+        let include = value
+            .into_iter()
+            .flat_map(
+                |&ReleaseTestConfig {
+                     os,
+                     ref versions,
+                     install_type,
+                 }| {
+                    versions.iter().map(move |version| ReleaseTestIncludes {
+                        os,
+                        runner: RunnerOs::from(os),
+                        version,
+                        install_type,
+                    })
+                },
+            )
+            .collect();
+        ReleaseTestMatrix { include }
     }
 }
 
-impl<'c> FromIterator<&'c ReleaseTestConfig<'c>> for ReleaseTestMatrix<'c> {
-    fn from_iter<T: IntoIterator<Item = &'c ReleaseTestConfig<'c>>>(value: T) -> Self {
-        let mut matrix = ReleaseTestMatrix {
-            include: Vec::new(),
-        };
-        for &ReleaseTestConfig {
-            os,
-            ref versions,
-            install_type,
-        } in value
-        {
-            for version in versions {
-                matrix.include.push(ReleaseTestIncludes {
-                    os,
-                    runner: RunnerOs::from(os),
-                    version,
-                    install_type,
-                });
-            }
-        }
-        matrix
+impl std::fmt::Display for ReleaseTestMatrix<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.include.iter().format(", "))
+    }
+}
+
+impl std::fmt::Display for ReleaseTestIncludes<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}-{}", self.os, self.version)
     }
 }
