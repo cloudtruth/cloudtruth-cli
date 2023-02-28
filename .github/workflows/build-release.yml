@@ -52,7 +52,7 @@ jobs:
           echo "matrix=$(cat $JSON_FILE)" >> $GITHUB_OUTPUT
 
   build-release:
-    name: Build Packages
+    name: ${{ matrix.target }}
     runs-on: ${{ matrix.runner }}
     needs: [ matrix ]
     defaults:
