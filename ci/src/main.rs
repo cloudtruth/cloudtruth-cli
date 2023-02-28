@@ -96,7 +96,7 @@ impl Cli {
 
     fn write_matrix<V: Serialize + Display>(&self, name: &str, value: V) -> Result<()> {
         if self.verbose {
-            print!("=== Generated matrices for {name} ===\n{value}");
+            println!("=== Generated matrices for {name} ===\n{value}");
         }
         let path = Path::new(matrix_path!()).join(format!("{name}.json"));
         let file = self.open_output_file(path.as_path())?;
