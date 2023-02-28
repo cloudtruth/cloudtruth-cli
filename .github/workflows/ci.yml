@@ -11,7 +11,7 @@ on:
 
 # Cancel in-progress CI runs from the same branch
 concurrency:
-  group: ${{ github.ref }}
+  group: ci-${{ github.ref }}
   cancel-in-progress: true
 
 env:
