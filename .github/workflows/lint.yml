@@ -57,6 +57,7 @@ jobs:
 
       - name: ShellCheck
         uses: ludeeus/action-shellcheck@master
+        if: ${{ !contains(runner.os, 'Windows') }}
         with:
           ignore_paths: |
             client
