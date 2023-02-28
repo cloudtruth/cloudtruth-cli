@@ -23,7 +23,15 @@ env:
 jobs:
   lint:
     name: CLI Lint
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.runner }}
+    defaults:
+      run:
+        shell: bash
+
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [windows-latest, macos-latest, ubuntu-latest]
 
     steps:
       - uses: actions/checkout@v3
@@ -44,14 +52,12 @@ jobs:
 
       - run: cargo fmt --all -- --check
 
-      - uses: actions-rs/clippy-check@v1
-        with:
-          name: Clippy Check
-          token: ${{ github.token }}
-          args: --all-features -- -D warnings
+      - name: Clippy
+        run: cargo clippy --workspace --all-features -- -D warnings
 
       - name: ShellCheck
         uses: ludeeus/action-shellcheck@master
+        if: ${{ !contains(runner.os, 'Windows') }}
         with:
           ignore_paths: |
             client

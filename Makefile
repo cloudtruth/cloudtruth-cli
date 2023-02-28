@@ -96,18 +96,18 @@ lint_python:
 
 lint_rust:
 	cargo fmt --all -- --check
-	cargo clippy --all --all-features -- -D warnings
+	cargo clippy --workspace --all-features -- -D warnings
 
 lint_shell:
 	git ls-files | grep -v -E '^client/' | grep -E '\.sh$$' | xargs shellcheck
 
 # apply linting fixes
 lint_fix:
-	@cargo clippy --all --all-features --fix -- -D warnings; \
+	@cargo clippy --workspace --all-features --fix -- -D warnings; \
 	[ "$$?" -eq 101 ] && read -p 'Force fixes? [y/n]: ' force; \
 	case "$$force" in \
 		[Yy]*) \
-			cargo clippy --all --all-features --fix --allow-staged --allow-dirty -- -D warnings ;; \
+			cargo clippy --workspace --all-features --fix --allow-staged --allow-dirty -- -D warnings ;; \
 		*) \
 			exit 1 ;; \
 	esac;
