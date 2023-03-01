@@ -541,6 +541,7 @@ fn remove_user_option() -> Arg<'static, 'static> {
 
 pub fn build_cli() -> App<'static, 'static> {
     app_from_crate!()
+        .bin_name(crate_name!())
         .setting(AppSettings::SubcommandRequiredElseHelp)
         .arg(api_key_arg())
         .arg(
