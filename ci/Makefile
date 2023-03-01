@@ -27,7 +27,7 @@ default: gha-matrices docker
 all: clean docker gha-matrices help-text
 
 clean:
-	rm -rf $(shell ls gha-matrices/*.json docker/Dockerfile* ../tests/help/*)
+	rm -rf $(shell ls gha-matrices/*.json docker/Dockerfile*)
 # rm ~/.actrc
 
 prerequisites:
@@ -50,6 +50,7 @@ docker: $(docker_files) $(config_files) $(ci_bin)
 	@touch docker
 
 help-text: build
+	rm -rf $(shell ls ../tests/help/*)
 	$(ci_bin) generate help-text --verbose
 
 $(ci_bin) build: RUST_SOURCES #let Cargo detect changes
