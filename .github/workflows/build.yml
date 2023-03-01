@@ -28,6 +28,7 @@ on:
         default: v0-cli-build
 
 env:
+  CI: true
   RUST_BACKTRACE: 1
 
 jobs:

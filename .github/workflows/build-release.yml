@@ -27,7 +27,7 @@ on:
         description: Alphanumeric snapshot string to add to end of RPM version.
         type: string
 env:
-  CI: true
+  # CI: true
   RELEASE_UPLOAD_URL: ${{ inputs.releaseUploadUrl }}
   RELEASE_TAG: ${{ inputs.releaseTag }}
   PACKAGE_VERSION: ${{ inputs.packageVersion }}

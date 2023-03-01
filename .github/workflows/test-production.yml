@@ -17,6 +17,9 @@ on:
         description: "Production API Key"
         required: true
 
+env:
+  CI: true
+
 jobs:
   test:
     name: CLI E2E Test (Production)

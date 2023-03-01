@@ -114,9 +114,3 @@ jobs:
         with:
           event-type: nightly-release
           client-payload: '{"tagName": "${{ needs.create-release.outputs.tagName }}"}'
-
-      
-
-
-
-  
