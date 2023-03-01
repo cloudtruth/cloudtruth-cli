@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth parameter-types set --help
-cloudtruth-parameter-types-set 
+cloudtruth[EXE]-parameter-types-set 
 Set parameter type and rules
 
 USAGE:
-    cloudtruth parameter-types set [FLAGS] [OPTIONS] <NAME>
+    cloudtruth[EXE] parameter-types set [FLAGS] [OPTIONS] <NAME>
 
 FLAGS:
         --no-max        Remove the parameter rule maximum value

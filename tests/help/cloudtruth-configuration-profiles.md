@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth configuration profiles --help
-cloudtruth-configuration-profiles 
+cloudtruth[EXE]-configuration-profiles 
 Work with CloudTruth CLI profiles
 
 USAGE:
-    cloudtruth configuration profiles [SUBCOMMAND]
+    cloudtruth[EXE] configuration profiles [SUBCOMMAND]
 
 FLAGS:
     -h, --help       Prints help information

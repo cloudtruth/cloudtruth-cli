@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth groups list --help
-cloudtruth-groups-list 
+cloudtruth[EXE]-groups-list 
 List CloudTruth user groups
 
 USAGE:
-    cloudtruth groups list [FLAGS] [OPTIONS]
+    cloudtruth[EXE] groups list [FLAGS] [OPTIONS]
 
 FLAGS:
     -h, --help          Prints help information

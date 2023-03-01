@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth users list --help
-cloudtruth-users-list 
+cloudtruth[EXE]-users-list 
 List CloudTruth users
 
 USAGE:
-    cloudtruth users list [FLAGS] [OPTIONS]
+    cloudtruth[EXE] users list [FLAGS] [OPTIONS]
 
 FLAGS:
     -h, --help          Prints help information

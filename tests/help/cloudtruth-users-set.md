@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth users set --help
-cloudtruth-users-set 
+cloudtruth[EXE]-users-set 
 Create/update a CloudTruth service account
 
 USAGE:
-    cloudtruth users set [OPTIONS] <NAME>
+    cloudtruth[EXE] users set [OPTIONS] <NAME>
 
 FLAGS:
     -h, --help       Prints help information

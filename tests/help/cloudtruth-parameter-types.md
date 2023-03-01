@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth parameter-types --help
-cloudtruth-parameter-types 
+cloudtruth[EXE]-parameter-types 
 Manage parameter types in the CloudTruth environment
 
 USAGE:
-    cloudtruth parameter-types [SUBCOMMAND]
+    cloudtruth[EXE] parameter-types [SUBCOMMAND]
 
 FLAGS:
     -h, --help       Prints help information

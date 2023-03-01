@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth projects tree --help
-cloudtruth-projects-tree 
+cloudtruth[EXE]-projects-tree 
 Display CloudTruth project inheritance
 
 USAGE:
-    cloudtruth projects tree
+    cloudtruth[EXE] projects tree
 
 FLAGS:
     -h, --help       Prints help information

@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth parameters unset --help
-cloudtruth-parameters-unset 
+cloudtruth[EXE]-parameters-unset 
 Remove a value/override from the selected project/environment and leaves the parameter in place.
 
 USAGE:
-    cloudtruth parameters unset <KEY>
+    cloudtruth[EXE] parameters unset <KEY>
 
 FLAGS:
     -h, --help       Prints help information

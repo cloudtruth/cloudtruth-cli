@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth versions install --help
-cloudtruth-versions-install 
+cloudtruth[EXE]-versions-install 
 Update to the latest CLI version
 
 USAGE:
-    cloudtruth versions install [FLAGS]
+    cloudtruth[EXE] versions install [FLAGS]
 
 FLAGS:
     -f, --force      Re-install even if already running the latest version

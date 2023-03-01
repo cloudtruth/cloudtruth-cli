@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth templates get --help
-cloudtruth-templates-get 
+cloudtruth[EXE]-templates-get 
 Get an evaluated template from CloudTruth
 
 USAGE:
-    cloudtruth templates get [FLAGS] [OPTIONS] <NAME>
+    cloudtruth[EXE] templates get [FLAGS] [OPTIONS] <NAME>
 
 FLAGS:
     -h, --help       Prints help information

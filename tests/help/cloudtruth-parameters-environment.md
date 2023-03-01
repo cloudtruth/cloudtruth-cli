@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth parameters environment --help
-cloudtruth-parameters-environment 
+cloudtruth[EXE]-parameters-environment 
 Shows the environments with parameter overrides
 
 USAGE:
-    cloudtruth parameters environment [FLAGS] [OPTIONS] <KEY>
+    cloudtruth[EXE] parameters environment [FLAGS] [OPTIONS] <KEY>
 
 FLAGS:
     -a, --all           Show even unset environments.

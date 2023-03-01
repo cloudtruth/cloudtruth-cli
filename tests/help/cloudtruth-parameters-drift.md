@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth parameters drift --help
-cloudtruth-parameters-drift 
+cloudtruth[EXE]-parameters-drift 
 Determine drift between current environment and project parameters
 
 USAGE:
-    cloudtruth parameters drift [FLAGS] [OPTIONS]
+    cloudtruth[EXE] parameters drift [FLAGS] [OPTIONS]
 
 FLAGS:
     -h, --help       Prints help information

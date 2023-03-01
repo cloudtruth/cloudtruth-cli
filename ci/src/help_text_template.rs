@@ -24,12 +24,16 @@ impl<'a, 'b> HelpTextTemplate<'a, 'b> {
                 .filter(|s| !s.is_empty())
                 .chain(once("--help")),
         );
-        let help_text = cmd.read().with_context(|| {
+        let mut help_text = cmd.read().with_context(|| {
             format!(
                 "Error running command {bin_path} {cmd_args}",
                 bin_path = bin_path.display()
             )
         })?;
+        // strip platform-specific extensions from command name
+        let base_cmd = cmd_name.replace(env::consts::EXE_SUFFIX, "");
+        //add the trycmd matcher to match EXE_SUFFIX
+        help_text = help_text.replace(cmd_name, &format!("{base_cmd}[EXE]"));
         Ok(HelpTextTemplate {
             cmd_name,
             cmd_args,

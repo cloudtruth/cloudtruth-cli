@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth integrations --help
-cloudtruth-integrations 
+cloudtruth[EXE]-integrations 
 Work with CloudTruth integrations
 
 USAGE:
-    cloudtruth integrations [SUBCOMMAND]
+    cloudtruth[EXE] integrations [SUBCOMMAND]
 
 FLAGS:
     -h, --help       Prints help information

@@ -1,11 +1,11 @@
 ```console
 $ cloudtruth parameters export --help
-cloudtruth-parameters-export 
+cloudtruth[EXE]-parameters-export 
 Export selected parameters to a known output format. Exported parameters are limited to alphanumeric and underscore  in
 key names. Formats available are: dotenv, docker, and shell.
 
 USAGE:
-    cloudtruth parameters export [FLAGS] [OPTIONS] <FORMAT>
+    cloudtruth[EXE] parameters export [FLAGS] [OPTIONS] <FORMAT>
 
 FLAGS:
         --export     Add 'export' to each declaration

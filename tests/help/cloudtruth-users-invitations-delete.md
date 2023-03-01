@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth users invitations delete --help
-cloudtruth-users-invitations-delete 
+cloudtruth[EXE]-users-invitations-delete 
 Delete a user invitation
 
 USAGE:
-    cloudtruth users invitations delete [FLAGS] <e-mail>
+    cloudtruth[EXE] users invitations delete [FLAGS] <e-mail>
 
 FLAGS:
     -y, --yes        Avoid confirmation prompt(s)

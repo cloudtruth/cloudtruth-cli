@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth logout --help
-cloudtruth-logout 
+cloudtruth[EXE]-logout 
 Removes a CloudTruth configuration profile api_key
 
 USAGE:
-    cloudtruth logout [FLAGS]
+    cloudtruth[EXE] logout [FLAGS]
 
 FLAGS:
     -y, --yes        Avoid confirmation prompt(s)

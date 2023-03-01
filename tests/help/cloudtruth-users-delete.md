@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth users delete --help
-cloudtruth-users-delete 
+cloudtruth[EXE]-users-delete 
 Delete specified CloudTruth account
 
 USAGE:
-    cloudtruth users delete [FLAGS] <NAME>
+    cloudtruth[EXE] users delete [FLAGS] <NAME>
 
 FLAGS:
     -y, --yes        Avoid confirmation prompt(s)

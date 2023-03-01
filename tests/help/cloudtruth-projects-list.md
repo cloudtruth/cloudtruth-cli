@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth projects list --help
-cloudtruth-projects-list 
+cloudtruth[EXE]-projects-list 
 List CloudTruth projects
 
 USAGE:
-    cloudtruth projects list [FLAGS] [OPTIONS]
+    cloudtruth[EXE] projects list [FLAGS] [OPTIONS]
 
 FLAGS:
     -h, --help          Prints help information

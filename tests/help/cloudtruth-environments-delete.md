@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth environments delete --help
-cloudtruth-environments-delete 
+cloudtruth[EXE]-environments-delete 
 Delete specified CloudTruth environment
 
 USAGE:
-    cloudtruth environments delete [FLAGS] <NAME>
+    cloudtruth[EXE] environments delete [FLAGS] <NAME>
 
 FLAGS:
     -y, --yes        Avoid confirmation prompt(s)

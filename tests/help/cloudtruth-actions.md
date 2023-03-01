@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth actions --help
-cloudtruth-actions 
+cloudtruth[EXE]-actions 
 Manage CloudTruth actions
 
 USAGE:
-    cloudtruth actions [SUBCOMMAND]
+    cloudtruth[EXE] actions [SUBCOMMAND]
 
 FLAGS:
     -h, --help       Prints help information

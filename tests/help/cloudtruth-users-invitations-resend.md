@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth users invitations resend --help
-cloudtruth-users-invitations-resend 
+cloudtruth[EXE]-users-invitations-resend 
 Resend the user invitation to the specified user
 
 USAGE:
-    cloudtruth users invitations resend <e-mail>
+    cloudtruth[EXE] users invitations resend <e-mail>
 
 FLAGS:
     -h, --help       Prints help information

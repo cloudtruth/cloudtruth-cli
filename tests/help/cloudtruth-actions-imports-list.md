@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth actions imports list --help
-cloudtruth-actions-imports-list 
+cloudtruth[EXE]-actions-imports-list 
 List CloudTruth imports
 
 USAGE:
-    cloudtruth actions imports list [FLAGS] [OPTIONS]
+    cloudtruth[EXE] actions imports list [FLAGS] [OPTIONS]
 
 FLAGS:
     -h, --help          Prints help information

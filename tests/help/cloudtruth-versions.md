@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth versions --help
-cloudtruth-versions 
+cloudtruth[EXE]-versions 
 Manage CloudTruth CLI versions
 
 USAGE:
-    cloudtruth versions [SUBCOMMAND]
+    cloudtruth[EXE] versions [SUBCOMMAND]
 
 FLAGS:
     -h, --help       Prints help information

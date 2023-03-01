@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth integrations list --help
-cloudtruth-integrations-list 
+cloudtruth[EXE]-integrations-list 
 List CloudTruth integrations
 
 USAGE:
-    cloudtruth integrations list [FLAGS] [OPTIONS]
+    cloudtruth[EXE] integrations list [FLAGS] [OPTIONS]
 
 FLAGS:
     -h, --help          Prints help information

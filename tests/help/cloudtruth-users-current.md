@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth users current --help
-cloudtruth-users-current 
+cloudtruth[EXE]-users-current 
 Display information about current user
 
 USAGE:
-    cloudtruth users current
+    cloudtruth[EXE] users current
 
 FLAGS:
     -h, --help       Prints help information

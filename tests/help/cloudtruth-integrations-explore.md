@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth integrations explore --help
-cloudtruth-integrations-explore 
+cloudtruth[EXE]-integrations-explore 
 Explore integrations by Fully Qualified Name (FQN).
 
 USAGE:
-    cloudtruth integrations explore [FLAGS] [OPTIONS] [FQN]
+    cloudtruth[EXE] integrations explore [FLAGS] [OPTIONS] [FQN]
 
 FLAGS:
     -h, --help       Prints help information

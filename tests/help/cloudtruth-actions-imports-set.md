@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth actions imports set --help
-cloudtruth-actions-imports-set 
+cloudtruth[EXE]-actions-imports-set 
 Create/modify CloudTruth integration import
 
 USAGE:
-    cloudtruth actions imports set [FLAGS] [OPTIONS] <import-name>
+    cloudtruth[EXE] actions imports set [FLAGS] [OPTIONS] <import-name>
 
 FLAGS:
         --dry-run    Check that the import will work without doing it.

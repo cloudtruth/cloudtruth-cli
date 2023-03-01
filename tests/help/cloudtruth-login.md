@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth login --help
-cloudtruth-login 
+cloudtruth[EXE]-login 
 Sets up a CloudTruth configuration profile api_key
 
 USAGE:
-    cloudtruth login [FLAGS]
+    cloudtruth[EXE] login [FLAGS]
 
 FLAGS:
     -y, --yes        Avoid confirmation prompt(s)

@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth templates preview --help
-cloudtruth-templates-preview 
+cloudtruth[EXE]-templates-preview 
 Evaluate the provided local template file without storing
 
 USAGE:
-    cloudtruth templates preview [FLAGS] [OPTIONS] <FILE>
+    cloudtruth[EXE] templates preview [FLAGS] [OPTIONS] <FILE>
 
 FLAGS:
     -h, --help       Prints help information

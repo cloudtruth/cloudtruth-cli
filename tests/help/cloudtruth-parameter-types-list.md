@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth parameter-types list --help
-cloudtruth-parameter-types-list 
+cloudtruth[EXE]-parameter-types-list 
 List CloudTruth parameter types
 
 USAGE:
-    cloudtruth parameter-types list [FLAGS] [OPTIONS]
+    cloudtruth[EXE] parameter-types list [FLAGS] [OPTIONS]
 
 FLAGS:
     -h, --help          Prints help information

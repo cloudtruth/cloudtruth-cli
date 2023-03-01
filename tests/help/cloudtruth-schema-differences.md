@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth schema differences --help
-cloudtruth-schema-differences 
+cloudtruth[EXE]-schema-differences 
 Compare the server and local schemas
 
 USAGE:
-    cloudtruth schema differences [OPTIONS]
+    cloudtruth[EXE] schema differences [OPTIONS]
 
 FLAGS:
     -h, --help       Prints help information

@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth actions imports --help
-cloudtruth-actions-imports 
+cloudtruth[EXE]-actions-imports 
 Manage CloudTruth imports
 
 USAGE:
-    cloudtruth actions imports [SUBCOMMAND]
+    cloudtruth[EXE] actions imports [SUBCOMMAND]
 
 FLAGS:
     -h, --help       Prints help information

@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth actions pushes sync --help
-cloudtruth-actions-pushes-sync 
+cloudtruth[EXE]-actions-pushes-sync 
 Manually initiate action on existing push
 
 USAGE:
-    cloudtruth actions pushes sync [FLAGS] [OPTIONS] <push-name>
+    cloudtruth[EXE] actions pushes sync [FLAGS] [OPTIONS] <push-name>
 
 FLAGS:
         --no-force                 Make sure CloudTruth is the destination owner  [aliases: check-owner]

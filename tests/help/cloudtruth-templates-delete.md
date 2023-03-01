@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth templates delete --help
-cloudtruth-templates-delete 
+cloudtruth[EXE]-templates-delete 
 Delete the CloudTruth template
 
 USAGE:
-    cloudtruth templates delete [FLAGS] <NAME>
+    cloudtruth[EXE] templates delete [FLAGS] <NAME>
 
 FLAGS:
     -y, --yes        Avoid confirmation prompt(s)

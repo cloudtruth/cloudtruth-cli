@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth parameters list --help
-cloudtruth-parameters-list 
+cloudtruth[EXE]-parameters-list 
 List CloudTruth parameters
 
 USAGE:
-    cloudtruth parameters list [FLAGS] [OPTIONS]
+    cloudtruth[EXE] parameters list [FLAGS] [OPTIONS]
 
 FLAGS:
         --children                Display the parameters defined in a child project

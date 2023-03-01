@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth parameters differences --help
-cloudtruth-parameters-differences 
+cloudtruth[EXE]-parameters-differences 
 Show differences between properties from two environments
 
 USAGE:
-    cloudtruth parameters differences [FLAGS] [OPTIONS]
+    cloudtruth[EXE] parameters differences [FLAGS] [OPTIONS]
 
 FLAGS:
     -h, --help                    Prints help information

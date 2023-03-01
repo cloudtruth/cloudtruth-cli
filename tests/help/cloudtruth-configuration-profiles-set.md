@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth configuration profiles set --help
-cloudtruth-configuration-profiles-set 
+cloudtruth[EXE]-configuration-profiles-set 
 Create/modify CLI profile settings
 
 USAGE:
-    cloudtruth configuration profiles set [OPTIONS] <NAME>
+    cloudtruth[EXE] configuration profiles set [OPTIONS] <NAME>
 
 FLAGS:
     -h, --help       Prints help information

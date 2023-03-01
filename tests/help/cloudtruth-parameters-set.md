@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth parameters set --help
-cloudtruth-parameters-set 
+cloudtruth[EXE]-parameters-set 
 Set a value in the selected project/environment for an existing parameter or creates a new one if needed
 
 USAGE:
-    cloudtruth parameters set [FLAGS] [OPTIONS] <KEY>
+    cloudtruth[EXE] parameters set [FLAGS] [OPTIONS] <KEY>
 
 FLAGS:
         --no-max          Remove the parameter rule maximum value

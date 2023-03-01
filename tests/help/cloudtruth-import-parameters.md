@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth import parameters --help
-cloudtruth-import-parameters 
+cloudtruth[EXE]-import-parameters 
 Import parameter values into a specified project and environment
 
 USAGE:
-    cloudtruth import parameters [FLAGS] [OPTIONS] <project> <file>
+    cloudtruth[EXE] import parameters [FLAGS] [OPTIONS] <project> <file>
 
 FLAGS:
     -h, --help          Prints help information

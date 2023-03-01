@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth actions pushes delete --help
-cloudtruth-actions-pushes-delete 
+cloudtruth[EXE]-actions-pushes-delete 
 Delete a CloudTruth push
 
 USAGE:
-    cloudtruth actions pushes delete [FLAGS] [OPTIONS] <push-name>
+    cloudtruth[EXE] actions pushes delete [FLAGS] [OPTIONS] <push-name>
 
 FLAGS:
     -y, --yes        Avoid confirmation prompt(s)

@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth templates --help
-cloudtruth-templates 
+cloudtruth[EXE]-templates 
 Work with CloudTruth templates
 
 USAGE:
-    cloudtruth templates [SUBCOMMAND]
+    cloudtruth[EXE] templates [SUBCOMMAND]
 
 FLAGS:
     -h, --help       Prints help information

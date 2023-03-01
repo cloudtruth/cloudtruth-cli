@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth actions pushes set --help
-cloudtruth-actions-pushes-set 
+cloudtruth[EXE]-actions-pushes-set 
 Create/modify CloudTruth integration push
 
 USAGE:
-    cloudtruth actions pushes set [FLAGS] [OPTIONS] <push-name>
+    cloudtruth[EXE] actions pushes set [FLAGS] [OPTIONS] <push-name>
 
 FLAGS:
         --no-force                 Make sure CloudTruth is the destination owner  [aliases: check-owner]

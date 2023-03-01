@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth audit-logs --help
-cloudtruth-audit-logs 
+cloudtruth[EXE]-audit-logs 
 Display audit logs
 
 USAGE:
-    cloudtruth audit-logs [SUBCOMMAND]
+    cloudtruth[EXE] audit-logs [SUBCOMMAND]
 
 FLAGS:
     -h, --help       Prints help information

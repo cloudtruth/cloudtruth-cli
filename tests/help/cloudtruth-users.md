@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth users --help
-cloudtruth-users 
+cloudtruth[EXE]-users 
 Work with CloudTruth users
 
 USAGE:
-    cloudtruth users [SUBCOMMAND]
+    cloudtruth[EXE] users [SUBCOMMAND]
 
 FLAGS:
     -h, --help       Prints help information

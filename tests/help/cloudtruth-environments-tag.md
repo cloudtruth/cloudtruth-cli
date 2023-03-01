@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth environments tag --help
-cloudtruth-environments-tag 
+cloudtruth[EXE]-environments-tag 
 View and manipulate environment tags
 
 USAGE:
-    cloudtruth environments tag [SUBCOMMAND]
+    cloudtruth[EXE] environments tag [SUBCOMMAND]
 
 FLAGS:
     -h, --help       Prints help information

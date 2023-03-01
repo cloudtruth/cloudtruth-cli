@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth schema local --help
-cloudtruth-schema-local 
+cloudtruth[EXE]-schema-local 
 Show the schema used to compile the CLI
 
 USAGE:
-    cloudtruth schema local [OPTIONS]
+    cloudtruth[EXE] schema local [OPTIONS]
 
 FLAGS:
     -h, --help       Prints help information

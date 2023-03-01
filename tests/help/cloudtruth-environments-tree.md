@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth environments tree --help
-cloudtruth-environments-tree 
+cloudtruth[EXE]-environments-tree 
 Show a tree representation of the environments
 
 USAGE:
-    cloudtruth environments tree [NAME]
+    cloudtruth[EXE] environments tree [NAME]
 
 FLAGS:
     -h, --help       Prints help information

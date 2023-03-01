@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth actions pushes task-steps --help
-cloudtruth-actions-pushes-task-steps 
+cloudtruth[EXE]-actions-pushes-task-steps 
 List task steps for the specified CloudTruth push
 
 USAGE:
-    cloudtruth actions pushes task-steps [FLAGS] [OPTIONS] <push-name>
+    cloudtruth[EXE] actions pushes task-steps [FLAGS] [OPTIONS] <push-name>
 
 FLAGS:
     -h, --help          Prints help information

@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth schema --help
-cloudtruth-schema 
+cloudtruth[EXE]-schema 
 View CloudTruth OpenAPI schema
 
 USAGE:
-    cloudtruth schema [SUBCOMMAND]
+    cloudtruth[EXE] schema [SUBCOMMAND]
 
 FLAGS:
     -h, --help       Prints help information

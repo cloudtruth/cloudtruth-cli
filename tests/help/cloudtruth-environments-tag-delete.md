@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth environments tag delete --help
-cloudtruth-environments-tag-delete 
+cloudtruth[EXE]-environments-tag-delete 
 Delete an environment tag value
 
 USAGE:
-    cloudtruth environments tag delete [FLAGS] <env-name> <tag-name>
+    cloudtruth[EXE] environments tag delete [FLAGS] <env-name> <tag-name>
 
 FLAGS:
     -y, --yes        Avoid confirmation prompt(s)

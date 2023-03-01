@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth generate password --help
-cloudtruth-generate-password 
+cloudtruth[EXE]-generate-password 
 Generate a password and print to console
 
 USAGE:
-    cloudtruth generate password [FLAGS] [OPTIONS]
+    cloudtruth[EXE] generate password [FLAGS] [OPTIONS]
 
 FLAGS:
         --hardware        Require hardware-based entropy

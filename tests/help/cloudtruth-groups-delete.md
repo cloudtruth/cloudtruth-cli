@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth groups delete --help
-cloudtruth-groups-delete 
+cloudtruth[EXE]-groups-delete 
 Delete specified CloudTruth user group
 
 USAGE:
-    cloudtruth groups delete [FLAGS] <NAME>
+    cloudtruth[EXE] groups delete [FLAGS] <NAME>
 
 FLAGS:
     -y, --yes        Avoid confirmation prompt(s)

@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth users invitations set --help
-cloudtruth-users-invitations-set 
+cloudtruth[EXE]-users-invitations-set 
 Create/update a CloudTruth user invitation
 
 USAGE:
-    cloudtruth users invitations set [OPTIONS] <e-mail>
+    cloudtruth[EXE] users invitations set [OPTIONS] <e-mail>
 
 FLAGS:
     -h, --help       Prints help information

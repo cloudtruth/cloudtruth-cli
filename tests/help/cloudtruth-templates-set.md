@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth templates set --help
-cloudtruth-templates-set 
+cloudtruth[EXE]-templates-set 
 Set the CloudTruth template
 
 USAGE:
-    cloudtruth templates set [OPTIONS] <NAME>
+    cloudtruth[EXE] templates set [OPTIONS] <NAME>
 
 FLAGS:
     -h, --help       Prints help information

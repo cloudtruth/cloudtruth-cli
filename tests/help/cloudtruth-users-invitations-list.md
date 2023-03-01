@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth users invitations list --help
-cloudtruth-users-invitations-list 
+cloudtruth[EXE]-users-invitations-list 
 List user invitations
 
 USAGE:
-    cloudtruth users invitations list [FLAGS] [OPTIONS]
+    cloudtruth[EXE] users invitations list [FLAGS] [OPTIONS]
 
 FLAGS:
     -h, --help       Prints help information

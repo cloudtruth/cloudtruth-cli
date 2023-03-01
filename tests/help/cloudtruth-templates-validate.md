@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth templates validate --help
-cloudtruth-templates-validate 
+cloudtruth[EXE]-templates-validate 
 Validate a CloudTruth template
 
 USAGE:
-    cloudtruth templates validate <NAME>
+    cloudtruth[EXE] templates validate <NAME>
 
 FLAGS:
     -h, --help       Prints help information

@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth users invitations --help
-cloudtruth-users-invitations 
+cloudtruth[EXE]-users-invitations 
 Manage user invitations
 
 USAGE:
-    cloudtruth users invitations [SUBCOMMAND]
+    cloudtruth[EXE] users invitations [SUBCOMMAND]
 
 FLAGS:
     -h, --help       Prints help information

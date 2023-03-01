@@ -15,12 +15,17 @@ macro_rules! help_text_path {
     };
 }
 
+#[cfg(not(target_os = "windows"))]
+const BIN_NAME: &str = "cloudtruth";
+#[cfg(target_os = "windows")]
+const BIN_NAME: &str = "cloudtruth.exe";
+
 static HELP_TEXT_DIR: Lazy<PathBuf> =
     Lazy::new(|| Path::new(help_text_path!()).canonicalize().unwrap());
 
 impl Cli {
     pub fn generate_help_text(&self) -> Result<()> {
-        self.walk_cli("cloudtruth")
+        self.walk_cli(BIN_NAME)
     }
 
     fn walk_cli(&self, cmd_name: &str) -> Result<()> {

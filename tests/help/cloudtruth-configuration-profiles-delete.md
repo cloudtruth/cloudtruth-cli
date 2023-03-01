@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth configuration profiles delete --help
-cloudtruth-configuration-profiles-delete 
+cloudtruth[EXE]-configuration-profiles-delete 
 Delete specified CLI profile
 
 USAGE:
-    cloudtruth configuration profiles delete [FLAGS] <NAME>
+    cloudtruth[EXE] configuration profiles delete [FLAGS] <NAME>
 
 FLAGS:
     -y, --yes        Avoid confirmation prompt(s)

@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth import --help
-cloudtruth-import 
+cloudtruth[EXE]-import 
 Perform imports into the CloudTruth environment
 
 USAGE:
-    cloudtruth import [SUBCOMMAND]
+    cloudtruth[EXE] import [SUBCOMMAND]
 
 FLAGS:
     -h, --help       Prints help information

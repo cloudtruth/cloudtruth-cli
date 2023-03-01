@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth projects --help
-cloudtruth-projects 
+cloudtruth[EXE]-projects 
 Work with CloudTruth projects
 
 USAGE:
-    cloudtruth projects [SUBCOMMAND]
+    cloudtruth[EXE] projects [SUBCOMMAND]
 
 FLAGS:
     -h, --help       Prints help information

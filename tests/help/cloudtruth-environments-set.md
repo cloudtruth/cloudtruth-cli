@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth environments set --help
-cloudtruth-environments-set 
+cloudtruth[EXE]-environments-set 
 Create/update a CloudTruth environment
 
 USAGE:
-    cloudtruth environments set [OPTIONS] <NAME>
+    cloudtruth[EXE] environments set [OPTIONS] <NAME>
 
 FLAGS:
     -h, --help       Prints help information

@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth groups --help
-cloudtruth-groups 
+cloudtruth[EXE]-groups 
 Manage CloudTruth user groups 
 
 USAGE:
-    cloudtruth groups [SUBCOMMAND]
+    cloudtruth[EXE] groups [SUBCOMMAND]
 
 FLAGS:
     -h, --help       Prints help information

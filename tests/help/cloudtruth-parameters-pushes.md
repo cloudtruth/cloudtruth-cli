@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth parameters pushes --help
-cloudtruth-parameters-pushes 
+cloudtruth[EXE]-parameters-pushes 
 Show push task steps for parameters
 
 USAGE:
-    cloudtruth parameters pushes [FLAGS] [OPTIONS] [KEY]
+    cloudtruth[EXE] parameters pushes [FLAGS] [OPTIONS] [KEY]
 
 FLAGS:
     -h, --help          Prints help information

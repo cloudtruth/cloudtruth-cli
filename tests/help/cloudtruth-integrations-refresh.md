@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth integrations refresh --help
-cloudtruth-integrations-refresh 
+cloudtruth[EXE]-integrations-refresh 
 Refresh the integration connection status
 
 USAGE:
-    cloudtruth integrations refresh <integration-name>
+    cloudtruth[EXE] integrations refresh <integration-name>
 
 FLAGS:
     -h, --help       Prints help information

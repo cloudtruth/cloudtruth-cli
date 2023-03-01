@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth configuration current --help
-cloudtruth-configuration-current 
+cloudtruth[EXE]-configuration-current 
 Show the current arguments and their sources.
 
 USAGE:
-    cloudtruth configuration current [FLAGS] [OPTIONS]
+    cloudtruth[EXE] configuration current [FLAGS] [OPTIONS]
 
 FLAGS:
     -h, --help       Prints help information

@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth schema server --help
-cloudtruth-schema-server 
+cloudtruth[EXE]-schema-server 
 Show the schema in use by the server
 
 USAGE:
-    cloudtruth schema server [OPTIONS]
+    cloudtruth[EXE] schema server [OPTIONS]
 
 FLAGS:
     -h, --help       Prints help information

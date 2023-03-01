@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth parameters --help
-cloudtruth-parameters 
+cloudtruth[EXE]-parameters 
 Work with CloudTruth parameters
 
 USAGE:
-    cloudtruth parameters [SUBCOMMAND]
+    cloudtruth[EXE] parameters [SUBCOMMAND]
 
 FLAGS:
     -h, --help       Prints help information

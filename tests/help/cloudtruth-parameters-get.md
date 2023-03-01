@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth parameters get --help
-cloudtruth-parameters-get 
+cloudtruth[EXE]-parameters-get 
 Gets value for parameter in the selected environment
 
 USAGE:
-    cloudtruth parameters get [FLAGS] [OPTIONS] <KEY>
+    cloudtruth[EXE] parameters get [FLAGS] [OPTIONS] <KEY>
 
 FLAGS:
     -d, --details    Show all parameter details

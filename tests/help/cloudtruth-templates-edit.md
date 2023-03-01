@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth templates edit --help
-cloudtruth-templates-edit 
+cloudtruth[EXE]-templates-edit 
 Edit the specified template
 
 USAGE:
-    cloudtruth templates edit <NAME>
+    cloudtruth[EXE] templates edit <NAME>
 
 FLAGS:
     -h, --help       Prints help information

@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth actions imports delete --help
-cloudtruth-actions-imports-delete 
+cloudtruth[EXE]-actions-imports-delete 
 Delete a CloudTruth import
 
 USAGE:
-    cloudtruth actions imports delete [FLAGS] [OPTIONS] <import-name>
+    cloudtruth[EXE] actions imports delete [FLAGS] [OPTIONS] <import-name>
 
 FLAGS:
     -y, --yes        Avoid confirmation prompt(s)

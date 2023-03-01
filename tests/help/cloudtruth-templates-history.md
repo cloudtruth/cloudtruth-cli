@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth templates history --help
-cloudtruth-templates-history 
+cloudtruth[EXE]-templates-history 
 Display template history
 
 USAGE:
-    cloudtruth templates history [OPTIONS] [NAME]
+    cloudtruth[EXE] templates history [OPTIONS] [NAME]
 
 FLAGS:
     -h, --help       Prints help information

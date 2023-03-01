@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth generate --help
-cloudtruth-generate 
+cloudtruth[EXE]-generate 
 Generate items using CloudTruth service
 
 USAGE:
-    cloudtruth generate [SUBCOMMAND]
+    cloudtruth[EXE] generate [SUBCOMMAND]
 
 FLAGS:
     -h, --help       Prints help information

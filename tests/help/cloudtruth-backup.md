@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth backup --help
-cloudtruth-backup 
+cloudtruth[EXE]-backup 
 Manage backups of CloudTruth data
 
 USAGE:
-    cloudtruth backup [SUBCOMMAND]
+    cloudtruth[EXE] backup [SUBCOMMAND]
 
 FLAGS:
     -h, --help       Prints help information

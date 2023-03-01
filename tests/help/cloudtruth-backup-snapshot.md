@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth backup snapshot --help
-cloudtruth-backup-snapshot 
+cloudtruth[EXE]-backup-snapshot 
 Take a snapshot of project/environment/type data for external storage
 
 USAGE:
-    cloudtruth backup snapshot [FLAGS] [OPTIONS]
+    cloudtruth[EXE] backup snapshot [FLAGS] [OPTIONS]
 
 FLAGS:
     -y, --yes        Avoid confirmation prompt(s)

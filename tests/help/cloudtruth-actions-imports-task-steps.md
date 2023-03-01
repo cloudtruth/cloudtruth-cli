@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth actions imports task-steps --help
-cloudtruth-actions-imports-task-steps 
+cloudtruth[EXE]-actions-imports-task-steps 
 List task steps for the specified CloudTruth import
 
 USAGE:
-    cloudtruth actions imports task-steps [FLAGS] [OPTIONS] <import-name>
+    cloudtruth[EXE] actions imports task-steps [FLAGS] [OPTIONS] <import-name>
 
 FLAGS:
     -h, --help          Prints help information

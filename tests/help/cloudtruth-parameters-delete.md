@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth parameters delete --help
-cloudtruth-parameters-delete 
+cloudtruth[EXE]-parameters-delete 
 Delete the parameter from the project
 
 USAGE:
-    cloudtruth parameters delete [FLAGS] <KEY>
+    cloudtruth[EXE] parameters delete [FLAGS] <KEY>
 
 FLAGS:
     -y, --yes        Avoid confirmation prompt(s)

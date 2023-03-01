@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth actions pushes list --help
-cloudtruth-actions-pushes-list 
+cloudtruth[EXE]-actions-pushes-list 
 List CloudTruth pushes
 
 USAGE:
-    cloudtruth actions pushes list [FLAGS] [OPTIONS]
+    cloudtruth[EXE] actions pushes list [FLAGS] [OPTIONS]
 
 FLAGS:
     -h, --help          Prints help information

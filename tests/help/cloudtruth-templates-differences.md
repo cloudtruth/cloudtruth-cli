@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth templates differences --help
-cloudtruth-templates-differences 
+cloudtruth[EXE]-templates-differences 
 Show differences between templates
 
 USAGE:
-    cloudtruth templates differences [FLAGS] [OPTIONS] <NAME>
+    cloudtruth[EXE] templates differences [FLAGS] [OPTIONS] <NAME>
 
 FLAGS:
     -h, --help       Prints help information

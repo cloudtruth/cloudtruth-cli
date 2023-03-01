@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth audit-logs list --help
-cloudtruth-audit-logs-list 
+cloudtruth[EXE]-audit-logs-list 
 List audit log details
 
 USAGE:
-    cloudtruth audit-logs list [OPTIONS]
+    cloudtruth[EXE] audit-logs list [OPTIONS]
 
 FLAGS:
     -h, --help       Prints help information

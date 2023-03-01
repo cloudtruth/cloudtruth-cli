@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth projects set --help
-cloudtruth-projects-set 
+cloudtruth[EXE]-projects-set 
 Create/update a CloudTruth project
 
 USAGE:
-    cloudtruth projects set [OPTIONS] <NAME>
+    cloudtruth[EXE] projects set [OPTIONS] <NAME>
 
 FLAGS:
     -h, --help       Prints help information

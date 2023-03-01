@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth run --help
-cloudtruth-run 
+cloudtruth[EXE]-run 
 Run a shell with the parameters in place
 
 USAGE:
-    cloudtruth run [FLAGS] [OPTIONS] [-- <arguments>...]
+    cloudtruth[EXE] run [FLAGS] [OPTIONS] [-- <arguments>...]
 
 FLAGS:
     -h, --help          Prints help information

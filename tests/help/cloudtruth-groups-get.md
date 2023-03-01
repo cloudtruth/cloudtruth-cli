@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth groups get --help
-cloudtruth-groups-get 
+cloudtruth[EXE]-groups-get 
 Get detailed CloudTruth user group information
 
 USAGE:
-    cloudtruth groups get <NAME>
+    cloudtruth[EXE] groups get <NAME>
 
 FLAGS:
     -h, --help       Prints help information

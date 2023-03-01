@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth projects delete --help
-cloudtruth-projects-delete 
+cloudtruth[EXE]-projects-delete 
 Delete specified CloudTruth project
 
 USAGE:
-    cloudtruth projects delete [FLAGS] <NAME>
+    cloudtruth[EXE] projects delete [FLAGS] <NAME>
 
 FLAGS:
     -y, --yes        Avoid confirmation prompt(s)

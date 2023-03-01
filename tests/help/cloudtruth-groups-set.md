@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth groups set --help
-cloudtruth-groups-set 
+cloudtruth[EXE]-groups-set 
 Create/update a CloudTruth user group
 
 USAGE:
-    cloudtruth groups set [OPTIONS] <NAME>
+    cloudtruth[EXE] groups set [OPTIONS] <NAME>
 
 FLAGS:
     -h, --help       Prints help information

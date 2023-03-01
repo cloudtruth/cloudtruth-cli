@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth environments tag set --help
-cloudtruth-environments-tag-set 
+cloudtruth[EXE]-environments-tag-set 
 Create/update an environment tag
 
 USAGE:
-    cloudtruth environments tag set [FLAGS] [OPTIONS] <env-name> <tag-name>
+    cloudtruth[EXE] environments tag set [FLAGS] [OPTIONS] <env-name> <tag-name>
 
 FLAGS:
     -c, --current    Update the tag's time to the current time

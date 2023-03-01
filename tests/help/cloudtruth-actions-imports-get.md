@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth actions imports get --help
-cloudtruth-actions-imports-get 
+cloudtruth[EXE]-actions-imports-get 
 Gets all the information for the specified CloudTruth import
 
 USAGE:
-    cloudtruth actions imports get [OPTIONS] <import-name>
+    cloudtruth[EXE] actions imports get [OPTIONS] <import-name>
 
 FLAGS:
     -h, --help       Prints help information

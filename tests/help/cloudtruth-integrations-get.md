@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth integrations get --help
-cloudtruth-integrations-get 
+cloudtruth[EXE]-integrations-get 
 Gets all the information for the specified integration
 
 USAGE:
-    cloudtruth integrations get <integration-name>
+    cloudtruth[EXE] integrations get <integration-name>
 
 FLAGS:
     -h, --help       Prints help information

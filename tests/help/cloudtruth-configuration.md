@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth configuration --help
-cloudtruth-configuration 
+cloudtruth[EXE]-configuration 
 Configuration options for this application
 
 USAGE:
-    cloudtruth configuration [SUBCOMMAND]
+    cloudtruth[EXE] configuration [SUBCOMMAND]
 
 FLAGS:
     -h, --help       Prints help information

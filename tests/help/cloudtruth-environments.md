@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth environments --help
-cloudtruth-environments 
+cloudtruth[EXE]-environments 
 Work with CloudTruth environments
 
 USAGE:
-    cloudtruth environments [SUBCOMMAND]
+    cloudtruth[EXE] environments [SUBCOMMAND]
 
 FLAGS:
     -h, --help       Prints help information

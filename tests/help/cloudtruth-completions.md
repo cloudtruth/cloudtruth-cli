@@ -1,10 +1,10 @@
 ```console
 $ cloudtruth completions --help
-cloudtruth-completions 
+cloudtruth[EXE]-completions 
 Generate shell completions for this application
 
 USAGE:
-    cloudtruth completions <SHELL>
+    cloudtruth[EXE] completions <SHELL>
 
 FLAGS:
     -h, --help       Prints help information
