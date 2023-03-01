@@ -48,7 +48,7 @@ jobs:
           fetch-depth: 1
       - id: matrix
         run: |
-          JSON_FILE=ci/gh-actions/build-release.json
+          JSON_FILE=ci/gha-matrices/build-release.json
           echo "matrix=$(cat $JSON_FILE)" >> $GITHUB_OUTPUT
 
   build-release:
