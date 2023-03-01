@@ -1,0 +1,25 @@
+# TOML formatting options for taplo
+# taplo is used by the "Even Better TOML" VSCode Extension
+
+exclude = ["client/**/*.toml"]
+
+[schema]
+path = "https://www.schemastore.org/api/json/catalog.json"
+
+[formatting]
+column_width = 120
+
+# [[rule]]
+# include = ["**/Cargo.toml"]
+# keys = ["dependencies", "dev-dependencies"]
+
+# [rule.formatting]
+
+
+[[rule]]
+include = ["**/Cargo.toml", "**/Cross.toml"]
+keys = ["package.metadata"]
+
+[rule.formatting]
+array_auto_expand = false
+array_auto_collapse = false
