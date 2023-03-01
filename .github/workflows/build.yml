@@ -19,9 +19,11 @@ on:
       buildOptions:
         description: options to pass to the Cargo build
         type: string
+        default: --workspace
       testOptions:
         description: options to pass to the Cargo tests
         type: string
+        default: --workspace --tests
       rustCacheKey:
         description: cache ID to use for rust-cache
         type: string
@@ -48,6 +50,8 @@ jobs:
           prefix-key: ${{ inputs.rustCacheKey }}
           shared-key: ${{ runner.os }}
 
+      - uses: taiki-e/install-action@cargo-nextest
+
       - name: Build
         shell: bash
         run: |
@@ -56,7 +60,7 @@ jobs:
       - name: Test
         shell: bash
         run: |
-          cargo test ${{ inputs.testOptions }}
+          cargo nextest run ${{ inputs.testOptions }}
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v3
