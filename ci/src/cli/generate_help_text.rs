@@ -1,13 +1,15 @@
+use anyhow::*;
+use once_cell::sync::Lazy;
+use rayon::iter::ParallelBridge;
+use rayon::prelude::*;
 use std::{
     borrow::Cow,
     path::{Path, PathBuf},
 };
 
-use crate::{collect_file_errors, help_text_template::HelpTextTemplate, Cli};
-use anyhow::*;
-use once_cell::sync::Lazy;
-use rayon::iter::ParallelBridge;
-use rayon::prelude::*;
+use crate::templates::help_text_template::HelpTextTemplate;
+
+use super::{collect_file_errors, Cli};
 
 macro_rules! help_text_path {
     ($($path:expr),*) => {

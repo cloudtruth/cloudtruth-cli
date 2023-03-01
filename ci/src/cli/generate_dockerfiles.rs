@@ -1,7 +1,10 @@
-use crate::{collect_file_errors, config::Config, docker_template::DockerTemplate, Cli};
 use anyhow::*;
 use rayon::prelude::*;
 use std::path::Path;
+
+use crate::{config::Config, templates::docker_template::DockerTemplate};
+
+use super::{collect_file_errors, Cli};
 
 /// Default base path for docker outputs
 macro_rules! docker_path {

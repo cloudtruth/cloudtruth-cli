@@ -1,13 +1,12 @@
 use std::{fmt::Display, io::Write, path::Path};
 
-use crate::{
-    collect_file_errors,
-    config::Config,
-    gh_matrix::{ReleaseBuildMatrix, ReleaseTestMatrix},
-    Cli,
-};
 use anyhow::*;
 use serde::Serialize;
+
+use crate::config::Config;
+use crate::json::gh_matrix::*;
+
+use super::{collect_file_errors, Cli};
 
 /// Default base path for GH matrix outputs
 macro_rules! matrix_path {

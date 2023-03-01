@@ -50,7 +50,7 @@ docker: $(docker_files) $(config_files) $(ci_bin)
 	@touch docker
 
 help-text: build
-	rm -rf $(shell ls ../tests/help/*)
+	@rm -rf $(shell ls ../tests/help/*)
 	$(ci_bin) generate help-text --verbose
 
 $(ci_bin) build: RUST_SOURCES #let Cargo detect changes
