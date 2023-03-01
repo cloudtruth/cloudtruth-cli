@@ -5,55 +5,53 @@
 .PHONY = all
 .PHONY += build
 .PHONY += clean
-.PHONY += cli-check
-.PHONY += cli-gen
 .PHONY += default
 .PHONY += gen
 .PHONY += help
 .PHONY += prerequisites
 .PHONY += precommit
+.PHONY += docker
+.PHONY += gha-matrices
+.PHONY += help-text
 .PHONY += targets
 .PHONY += CLEANED # forces rebuild of generated files when directory is cleaned
 .PHONY += RUST_SOURCES # forces build of Rust sources
 
-actions_files := $(shell ls gh-actions/*.json 2> /dev/null || echo CLEANED)
+actions_files := $(shell ls gha-matrices/*.json 2> /dev/null || echo CLEANED)
 docker_files := $(shell ls docker/Dockerfile* 2> /dev/null || echo CLEANED)
 config_files := config.yaml templates/Dockerfile
 ci_bin := ../target/release/ci
 
-default: gh-actions docker
+default: gha-matrices docker
 
-all: clean docker gh-actions cli-gen
+all: clean docker gha-matrices help-text
 
 clean:
-	rm -rf $(shell ls gh-actions/*.json docker/Dockerfile*)
+	rm -rf $(shell ls gha-matrices/*.json docker/Dockerfile*)
 # rm ~/.actrc
 
 prerequisites:
 # python3 -m pip install --user --upgrade -r requirements.txt
 # curl https://raw.githubusercontent.com/nektos/act/master/install.sh | sudo bash
 
-precommit: default cli-check
+precommit: default
 	@git ls-files -m -mo --exclude-standard |\
-		grep -E '^docker/Dockerfile.*|^gh-actions/.*\.json$$' ||\
+		grep -E '^docker/Dockerfile.*|^gha-matrices/.*\.json$$' ||\
 		exit 0 ;\
 		echo 'Found unstaged changes to generated CI files. Please add them to the commit.' &&\
 		exit 1
 
-
-cli-check:
-	python3 cli_walk.py check
-
-cli-gen:
-	python3 cli_walk.py generate
-
-gh-actions: $(actions_files) $(config_files) $(ci_bin)
-	$(ci_bin) --actions --verbose
-	@touch gh-actions
+gha-matrices: $(actions_files) $(config_files) $(ci_bin)
+	$(ci_bin) generate gha-matrices --verbose
+	@touch gha-matrices
 
 docker: $(docker_files) $(config_files) $(ci_bin)
-	$(ci_bin) --docker --verbose
+	$(ci_bin) generate docker --verbose
 	@touch docker
+
+help-text: build
+	@rm -rf $(shell ls ../tests/help/*)
+	$(ci_bin) generate help-text --verbose
 
 $(ci_bin) build: RUST_SOURCES #let Cargo detect changes
 	cargo build --release
@@ -62,12 +60,12 @@ help: targets
 
 targets:
 	@echo ""
-	@echo "cargo/build	  - build the executable "
+	@echo "build		  - build the executable "
 	@echo "clean          - remove generated docker files"
-	@echo "cli-check      - makes sure help from latest build is unchanged"
-	@echo "cli-gen        - generates the cli help.txt"
-	@echo "precommit      - makes sure cli parameters have not changed"
-	@echo "prerequisites  - install prerequisites"
+	@echo "docker         - generate CI Dockerfiles"
+	@echo "gha-matrices   - generate GHA job matrices"
+	@echo "help-text	  - generate help text test cases"
+	@echo "precommit      - makes sure CI files are up-to-date"
 	@echo ""
 
 # a force target for Rust builds. we can use Cargo to detect source file changes

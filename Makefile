@@ -1,8 +1,6 @@
 #
 # Copyright (C) 2021 CloudTruth, Inc.
 #
-VPATH = src:ci:ci/src:integration-tests
-
 os_name := $(shell uname -s)
 rustup_exists := $(shell which rustup)
 openapi_gen_version := v5.3.1
@@ -16,9 +14,9 @@ subdirs += $(test_dir)
 .PHONY = all
 .PHONY += cargo
 .PHONY += clean
-.PHONY += ci
 .PHONY += cli
 .PHONY += help
+.PHONY += help-text
 .PHONY += image
 .PHONY += integration
 .PHONY += fix
@@ -164,8 +162,8 @@ test:
 integration: cargo
 	make -C $(test_dir) $@
 
-regen: cargo
-	make -C $(ci_dir) $@
+help-text: cargo
+	make -C $(ci_dir) help-text
 
 help: targets
 
@@ -178,11 +176,11 @@ targets:
 	@echo "integration    - runs the integration test against the live server"
 	@echo "fix			  - fix formatting and linting issues:
 	@echo "format "		  - fix formatting issues"
+	@echo "help-text	  - Regenerate help text for test cases"
 	@echo "lint           - checks for formatting and lint issues"
 	@echo "lint_fix"	  - fix linting issues
 	@echo "precommit      - build rust targets, tests, and lints the files"
 	@echo "prerequisites  - install prerequisites"
-	@echo "regen          - regenerate non-build artifacts"
 	@echo "shell          - drop into the cloudtruth/cli docker container for development"
 	@echo "test           - runs the cargo tests"
 	@echo "test_prerequisites - install prerequisites for running integration tests"
