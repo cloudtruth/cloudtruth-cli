@@ -19,6 +19,7 @@ on:
       buildOptions:
         description: options to pass to the Cargo build
         type: string
+        default: --workspace
       testOptions:
         description: options to pass to the Cargo tests
         type: string
