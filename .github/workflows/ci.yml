@@ -53,6 +53,6 @@ jobs:
       runsOn: ${{ matrix.os }}
       artifactId: cloudtruth-ci-${{ matrix.os }}
       testRunnerOptions: ${{ matrix.options }} --reports
-      rustBacktrace: "full"
+      rustBacktrace: "1"
     secrets: inherit
 
