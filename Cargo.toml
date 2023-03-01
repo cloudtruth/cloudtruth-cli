@@ -17,11 +17,11 @@ build = "build.rs"
 
 [package.metadata.deb]
 assets = [
-    ["target/release/cloudtruth", "usr/bin/", "755"],
-    ["target/release/completions/cloudtruth.bash", "usr/share/bash-completion/completions/cloudtruth", "644"],
-    ["target/release/completions/cloudtruth.fish", "usr/share/fish/vendor_completions.d/cloudtruth.fish", "644"],
-    ["target/release/completions/_cloudtruth", "usr/share/zsh/vendor-completions/_cloudtruth", "644"],
-    ["README.md", "usr/share/doc/cloudtruth/", "644"],
+  ["target/release/cloudtruth", "usr/bin/", "755"],
+  ["target/release/completions/cloudtruth.bash", "usr/share/bash-completion/completions/cloudtruth", "644"],
+  ["target/release/completions/cloudtruth.fish", "usr/share/fish/vendor_completions.d/cloudtruth.fish", "644"],
+  ["target/release/completions/_cloudtruth", "usr/share/zsh/vendor-completions/_cloudtruth", "644"],
+  ["README.md", "usr/share/doc/cloudtruth/", "644"],
 ]
 extended-description = """\
 The cloudtruth CLI provides an easy way to script actions related to configuration
@@ -31,11 +31,11 @@ depends = "$auto, ca-certificates"
 
 [package.metadata.generate-rpm]
 assets = [
-    { source = "target/release/cloudtruth",                  dest = "/usr/bin/cloudtruth",                                  mode = "755" },
-    { source = "target/release/completions/cloudtruth.bash", dest = "/usr/share/bash-completion/completions/cloudtruth",    mode = "644" },
-    { source = "target/release/completions/cloudtruth.fish", dest = "/usr/share/fish/vendor_completions.d/cloudtruth.fish", mode = "644" },
-    { source = "target/release/completions/_cloudtruth",     dest = "/usr/share/zsh/vendor-completions/_cloudtruth",        mode = "644" },
-    { source = "README.md",                                  dest = "/usr/share/doc/cloudtruth/README.md",                  mode = "644" }
+  { source = "target/release/cloudtruth", dest = "/usr/bin/cloudtruth", mode = "755" },
+  { source = "target/release/completions/cloudtruth.bash", dest = "/usr/share/bash-completion/completions/cloudtruth", mode = "644" },
+  { source = "target/release/completions/cloudtruth.fish", dest = "/usr/share/fish/vendor_completions.d/cloudtruth.fish", mode = "644" },
+  { source = "target/release/completions/_cloudtruth", dest = "/usr/share/zsh/vendor-completions/_cloudtruth", mode = "644" },
+  { source = "README.md", dest = "/usr/share/doc/cloudtruth/README.md", mode = "644" },
 ]
 auto-req = "no"
 
@@ -63,9 +63,9 @@ indoc = "1.0"
 once_cell = "1.5"
 prettytable-rs = "0.10.0"
 powershell_script = "0.2.1"
-rand_core = {version = "0.6.2", features = ["getrandom"]}
+rand_core = { version = "0.6.2", features = ["getrandom"] }
 # reqwest version must match client package
-reqwest = {version="~0.9", default-features = false, features=["default-tls-vendored"]}
+reqwest = { version = "~0.9", default-features = false, features = ["default-tls-vendored"] }
 rpassword = "5.0.1"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0.64"
@@ -85,6 +85,4 @@ assert_matches = "1.4"
 predicates = "1.0"
 rusty-hook = "0.11"
 serial_test = "0.5"
-
-[dev-dependencies.trycmd]
-version = "0.14"
+trycmd = "0.14"

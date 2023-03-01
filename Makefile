@@ -85,8 +85,9 @@ format:
 	cargo fmt --all
 	python3 -m black .
 	ruff check . --fix
+	taplo fmt
 
-lint: lint_shell lint_rust lint_python
+lint: lint_shell lint_rust lint_python lint_toml
 
 lint_python:
 	python3 -m black --quiet --check .
@@ -99,16 +100,12 @@ lint_rust:
 lint_shell:
 	git ls-files | grep -v -E '^client/' | grep -E '\.sh$$' | xargs shellcheck
 
+lint_toml:
+	taplo check
+
 # apply linting fixes
 lint_fix:
-	@cargo clippy --workspace --all-features --fix -- -D warnings; \
-	[ "$$?" -eq 101 ] && read -p 'Force fixes? [y/n]: ' force; \
-	case "$$force" in \
-		[Yy]*) \
-			cargo clippy --workspace --all-features --fix --allow-staged --allow-dirty -- -D warnings ;; \
-		*) \
-			exit 1 ;; \
-	esac;
+	cargo clippy --workspace --all-features --fix --allow-staged --allow-dirty -- -D warnings
 	python3 -m black .
 
 subdir_action:
@@ -139,6 +136,9 @@ endif
 # for dev environment, install default profile components
 	rustup component add rustfmt clippy rust-docs
 
+	cargo install cargo-binstall
+	cargo binstall --no-confirm taplo-cli cargo-nextest
+
 ifeq ($(os_name),Darwin)
 	brew install shellcheck;
 else ifeq ($(os_name),Linux)
@@ -157,7 +157,7 @@ test_prerequisites:
 	make -C $(test_dir) prerequisites
 
 test:
-	RUST_BACKTRACE=1 cargo test
+	RUST_BACKTRACE=1 cargo nextest run --workspace
 
 integration: cargo
 	make -C $(test_dir) $@
