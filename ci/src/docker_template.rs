@@ -9,8 +9,8 @@ use askama::Template;
 #[template(path = "Dockerfile", escape = "none")]
 //#[template(print = "code")] //uncomment for debugging generated code
 pub struct DockerTemplate<'c> {
-    os: TestOs,
-    version: &'c str,
+    pub os: TestOs,
+    pub version: &'c str,
 }
 
 impl<'c> DockerTemplate<'c> {
