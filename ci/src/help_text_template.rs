@@ -24,29 +24,42 @@ impl<'a, 'b> HelpTextTemplate<'a, 'b> {
                 .filter(|s| !s.is_empty())
                 .chain(once("--help")),
         );
-        let mut help_text = cmd.read().with_context(|| {
+        let help_text = cmd.read().with_context(|| {
             format!(
                 "Error running command {bin_path} {cmd_args}",
                 bin_path = bin_path.display()
             )
         })?;
-        // strip platform-specific extensions from command name
-        let base_cmd = cmd_name.replace(env::consts::EXE_SUFFIX, "");
-        //add the trycmd matcher to match EXE_SUFFIX
-        let cmd_matcher = format!("{base_cmd}[EXE]");
-        // for top-level help, only replace the USAGE string
-        if cmd_args.is_empty() {
-            let usage_str = format!("{cmd_name} [OPTIONS]");
-            let usage_replace = format!("{cmd_matcher} [OPTIONS]");
-            help_text = help_text.replace(&usage_str, &usage_replace);
-        } else {
-            help_text = help_text.replace(cmd_name, &cmd_matcher);
-        }
         Ok(HelpTextTemplate {
             cmd_name,
             cmd_args,
             help_text,
-        })
+        }
+        .process_help_text())
+    }
+
+    // proceeses raw help text to make it suitable as a trycmd test case
+    fn process_help_text(mut self) -> Self {
+        let Self {
+            cmd_name,
+            cmd_args,
+            help_text,
+        } = self;
+        // the trycmd matcher to match EXE_SUFFIX
+        let cmd_matcher = format!(
+            "{base_cmd}[EXE]",
+            base_cmd = cmd_name.replace(env::consts::EXE_SUFFIX, "")
+        );
+        // for top-level help, we need to skip the version and email strings which contain "cloudtruth"
+        // only replace the command name in the USAGE string
+        if cmd_args.is_empty() {
+            let usage_str = format!("{cmd_name} [OPTIONS]");
+            let usage_replace = format!("{cmd_matcher} [OPTIONS]");
+            self.help_text = help_text.replace(&usage_str, &usage_replace);
+        } else {
+            self.help_text = help_text.replace(cmd_name, &cmd_matcher);
+        }
+        self
     }
 
     pub fn subcommands(&self) -> impl Iterator<Item = &str> {
