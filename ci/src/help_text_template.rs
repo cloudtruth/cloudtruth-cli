@@ -33,7 +33,15 @@ impl<'a, 'b> HelpTextTemplate<'a, 'b> {
         // strip platform-specific extensions from command name
         let base_cmd = cmd_name.replace(env::consts::EXE_SUFFIX, "");
         //add the trycmd matcher to match EXE_SUFFIX
-        help_text = help_text.replace(cmd_name, &format!("{base_cmd}[EXE]"));
+        let cmd_matcher = format!("{base_cmd}[EXE]");
+        // for top-level help, only replace the USAGE string
+        if cmd_args.is_empty() {
+            let usage_str = format!("{cmd_name} [OPTIONS]");
+            let usage_replace = format!("{cmd_matcher} [OPTIONS]");
+            help_text = help_text.replace(&usage_str, &usage_replace);
+        } else {
+            help_text = help_text.replace(cmd_name, &cmd_matcher);
+        }
         Ok(HelpTextTemplate {
             cmd_name,
             cmd_args,

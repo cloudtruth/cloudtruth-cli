@@ -1,7 +1,7 @@
 ```console
 $ cloudtruth  --help
-cloudtruth[EXE] 1.2.0
-CloudTruth <support@cloudtruth[EXE].com>
+cloudtruth 1.2.0
+CloudTruth <support@cloudtruth.com>
 A command-line interface to the CloudTruth configuration management service.
 
 USAGE:
