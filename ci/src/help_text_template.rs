@@ -51,7 +51,11 @@ impl<'a, 'b> HelpTextTemplate<'a, 'b> {
     }
 
     pub fn file_name(&self) -> String {
-        format!("{}-{}.md", self.cmd_name, self.cmd_args.replace(' ', "-"))
+        if self.cmd_args.is_empty() {
+            format!("{}.md", self.cmd_name)
+        } else {
+            format!("{}-{}.md", self.cmd_name, self.cmd_args.replace(' ', "-"))
+        }
     }
 
     pub fn write_md<W: Write>(&self, mut writer: W) -> Result<()> {
