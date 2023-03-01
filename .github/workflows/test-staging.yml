@@ -18,6 +18,9 @@ on:
         description: The runner to run the workflow on
         type: string
         default: ubuntu-latest
+      rustBacktrace:
+        description: Value of the RUST_BACKTRACE variable (default no backtrace)
+        type: string
     secrets:
       CT_STAGING_CI_ADMIN_API_KEY:
         description: "Staging API Key"
@@ -27,7 +30,7 @@ env:
   CI: true
   # ID to append to test data to avoid name collisions
   JOB_ID: ${{github.repository_id}}-${{github.run_id}}-${{github.run_attempt}}-${{inputs.runsOn}}
-  RUST_BACKTRACE: 1
+  RUST_BACKTRACE: ${{ inputs.rustBacktrace }}
 
 jobs:
   test:

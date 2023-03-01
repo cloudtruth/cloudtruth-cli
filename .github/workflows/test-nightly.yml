@@ -6,6 +6,9 @@ on:
   repository_dispatch:
     types: [nightly-release]
 
+env:
+  CI: true
+
 jobs:
   test-nightly:
     name: Nightly Test

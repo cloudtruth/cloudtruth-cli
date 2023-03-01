@@ -18,6 +18,9 @@ on:
       CLOUDTRUTH_API_KEY:
         description: CloudTruth API Key
         required: true
+env:
+  CI: true
+
 jobs:
   matrix:
     name: Read Job Matrix

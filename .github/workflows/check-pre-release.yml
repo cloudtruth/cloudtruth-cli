@@ -6,6 +6,9 @@ on:
 name: 'Check Pre-Release'
 run-name: 'Check Pre-Release ${{ github.event.release.tag_name }}'
 
+env:
+  CI: true
+
 jobs:
   test-release:
     name: Test Release
