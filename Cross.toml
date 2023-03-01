@@ -1,4 +1,2 @@
 [build.env]
-passthrough = [
-    "RUST_BACKTRACE"
-]
+passthrough = ["RUST_BACKTRACE"]
