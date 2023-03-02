@@ -1,5 +1,5 @@
 ---
-name: Test Nightly
+name: Nightly Test
 run-name: Test Nightly (${{ github.event.client_payload.tagName }})
 
 on:
