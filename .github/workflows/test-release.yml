@@ -33,7 +33,7 @@ jobs:
           fetch-depth: 1
       - id: matrix
         run: |
-          JSON_FILE=ci/gha-matrices/test-release.json
+          JSON_FILE=ci/gha-matrices/release-tests.json
           echo "matrix=$(cat $JSON_FILE)" >> $GITHUB_OUTPUT
   test-release:
     name: ${{ matrix.os }}-${{ matrix.version }}
