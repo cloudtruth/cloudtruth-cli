@@ -55,4 +55,4 @@ jobs:
       testRunnerOptions: ${{ matrix.options }} --reports
       rustBacktrace: "1"
     secrets:
-      CLOUDTRUTH_API_KEY: CT_STAGING_CI_ADMIN_API_KEY
+      CLOUDTRUTH_API_KEY: ${{ secrets.CT_STAGING_CI_ADMIN_API_KEY }}
