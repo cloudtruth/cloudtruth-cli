@@ -21,6 +21,7 @@ on:
       rustBacktrace:
         description: Value of the RUST_BACKTRACE variable (default no backtrace)
         type: string
+        default: "0"
     secrets:
       CLOUDTRUTH_API_KEY:
         description: "Staging API Key"
