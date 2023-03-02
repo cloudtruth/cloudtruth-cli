@@ -54,5 +54,5 @@ jobs:
       artifactId: cloudtruth-ci-${{ matrix.os }}
       testRunnerOptions: ${{ matrix.options }} --reports
       rustBacktrace: "1"
-    secrets: inherit
-
+    secrets:
+      CLOUDTRUTH_API_KEY: CT_STAGING_CI_ADMIN_API_KEY

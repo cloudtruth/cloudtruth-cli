@@ -22,7 +22,7 @@ on:
         description: Value of the RUST_BACKTRACE variable (default no backtrace)
         type: string
     secrets:
-      CT_STAGING_CI_ADMIN_API_KEY:
+      CLOUDTRUTH_API_KEY:
         description: "Staging API Key"
         required: true
 
@@ -40,7 +40,7 @@ jobs:
     env:
       # these are to run against staging
       CLOUDTRUTH_SERVER_URL: https://api.staging.cloudtruth.io
-      CLOUDTRUTH_API_KEY: ${{ secrets.CT_STAGING_CI_ADMIN_API_KEY }}
+      CLOUDTRUTH_API_KEY: ${{ secrets.CLOUDTRUTH_API_KEY }}
       
     steps:
       - shell: bash

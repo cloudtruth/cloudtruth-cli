@@ -24,4 +24,5 @@ jobs:
     with:
       runsOn: ${{ matrix.os }}
       releaseVersion: ${{ github.event.client_payload.tagName }}
-    secrets: inherit
+    secrets:
+      CLOUDTRUTH_API_KEY: ${{ secrets.CT_STAGING_CI_ADMIN_API_KEY }}
