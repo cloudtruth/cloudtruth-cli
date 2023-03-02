@@ -7,7 +7,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use crate::templates::help_text_template::HelpTextTemplate;
+use crate::templates::HelpTextTemplate;
 
 use super::{collect_file_errors, Cli};
 

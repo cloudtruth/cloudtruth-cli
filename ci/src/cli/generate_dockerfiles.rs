@@ -2,7 +2,7 @@ use anyhow::*;
 use rayon::prelude::*;
 use std::path::Path;
 
-use crate::{config::Config, templates::docker_template::DockerTemplate};
+use crate::{config::Config, templates::DockerTemplate};
 
 use super::{collect_file_errors, Cli};
 

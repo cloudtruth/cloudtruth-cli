@@ -1,6 +1,6 @@
-pub mod generate_actions_matrices;
-pub mod generate_dockerfiles;
-pub mod generate_help_text;
+mod generate_actions_matrices;
+mod generate_dockerfiles;
+mod generate_help_text;
 
 use anyhow::*;
 use clap::Parser;

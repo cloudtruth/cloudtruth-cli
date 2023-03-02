@@ -4,7 +4,7 @@ use anyhow::*;
 use serde::Serialize;
 
 use crate::config::Config;
-use crate::json::gh_matrix::*;
+use crate::json::{ReleaseBuildMatrix, ReleaseTestMatrix};
 
 use super::{collect_file_errors, Cli};
 
