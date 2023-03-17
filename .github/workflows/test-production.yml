@@ -5,6 +5,9 @@ name: Test Production
 on:
   workflow_call:
     inputs:
+      releaseVersion:
+        description: CLI release version to download and install
+        type: string
       runsOn:
         description: The runner to run the workflow on
         type: string
@@ -29,6 +32,7 @@ jobs:
       CLOUDTRUTH_API_KEY: ${{ secrets.CLOUDTRUTH_API_KEY }}
       RUST_BACKTRACE: 1
       JOB_ID: ${{github.repository}}-${{github.run_id}}-${{github.run_attempt}}-cli-prod
+      RELEASE_VERSION: ${{ inputs.releaseVersion }}
 
     steps:
       - uses: actions/checkout@v3
@@ -37,7 +41,7 @@ jobs:
 
       - name: CLI installation
         run: |
-          sudo ./install.sh
+          sudo ./install.sh ${RELEASE_VERSION:+--version "$RELEASE_VERSION"}
           cloudtruth --version
 
       - name: Prerequisites
