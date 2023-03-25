@@ -260,11 +260,11 @@ class TestParameterTypes(TestCase):
         self.assertIsNotNone(entry.get(PROP_MODIFIED))
 
         # invalid constraints -- child cannot be more permissive than parent
-        err_msg = "Rule create error: Maximum constraint is greater than an existing rule's maximum constraint"
+        err_msg = "Rule update error: Maximum constraint is greater than an existing rule's maximum constraint"
         cmd = type_cmd + f"set {type_name2} --max {max_a + 1}"
         result = self.run_cli(cmd_env, cmd)
         self.assertResultError(result, err_msg)
-        err_msg = "Rule create error: Minimum constraint is less than an existing rule's minimum constraint"
+        err_msg = "Rule update error: Minimum constraint is less than an existing rule's minimum constraint"
         cmd = type_cmd + f"set {type_name2} --min {min_a - 1}"
         result = self.run_cli(cmd_env, cmd)
         self.assertResultError(result, err_msg)

@@ -186,13 +186,18 @@ fn proc_param_type_set(
     };
 
     if let Some(details) = details {
-        updated = types.update_type(
-            rest_cfg,
-            final_name,
-            &details.id,
-            description,
-            parent_url.as_deref(),
-        )?;
+        updated = {
+            let mut partial_update = types.update_type(
+                rest_cfg,
+                final_name,
+                &details.id,
+                description,
+                parent_url.as_deref(),
+            )?;
+            // fixes server-side issue where PATCH response does not contain the rules array
+            partial_update.rules = details.rules;
+            partial_update
+        };
         type_added = false;
         action = "Updated";
     } else {
