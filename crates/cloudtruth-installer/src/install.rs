@@ -14,7 +14,7 @@ use {
 #[cfg(target_os = "windows")]
 pub fn install_latest_version(quiet: bool) -> Result<(), InstallError> {
     let text = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../install.ps1"));
-    let result = powershell_script::run(text, false);
+    let result = powershell_script::run(text);
     match result {
         Ok(output) => {
             if !quiet {
