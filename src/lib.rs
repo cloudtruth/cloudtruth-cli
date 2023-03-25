@@ -48,6 +48,7 @@ use crate::utils::{error_message, help_message, warning_message};
 use crate::versions::process_version_command;
 use chrono::Utc;
 use clap::ArgMatches;
+use cli::binary_name;
 use cloudtruth_config::env::ConfigEnv;
 use cloudtruth_config::{Action, Config, Updates, CT_PROFILE, DEFAULT_ENV_NAME};
 use cloudtruth_installer::{binary_version, get_latest_version, install_latest_version};
@@ -57,21 +58,11 @@ use std::process;
 use utils::default;
 use version_compare::Version;
 
-pub fn package_name() -> String {
-    env!("CARGO_PKG_NAME").to_string()
-}
-
-pub fn binary_name() -> String {
-    option_env!("CARGO_BIN_NAME")
-        .unwrap_or("cloudtruth")
-        .to_string()
-}
-
 /// Process the 'completion' sub-command
 fn process_completion_command(subcmd_args: &ArgMatches) {
     let shell = subcmd_args.value_of("SHELL").unwrap();
 
-    cli::build_cli().gen_completions_to(package_name(), shell.parse().unwrap(), &mut io::stdout());
+    cli::build_cli().gen_completions_to(binary_name(), shell.parse().unwrap(), &mut io::stdout());
 }
 
 /// Insures the basic configuration is valid (e.g. API key and server-url exist)

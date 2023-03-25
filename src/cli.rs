@@ -1,9 +1,8 @@
 use clap::{
-    crate_authors, crate_description, crate_version, App, AppSettings, Arg, ArgMatches, Shell,
-    SubCommand,
+    app_from_crate, crate_authors, crate_description, crate_name, crate_version, App, AppSettings,
+    Arg, ArgMatches, Shell, SubCommand,
 };
-
-use crate::binary_name;
+pub use cloudtruth_config::binary_name;
 
 pub const ADD_USER_OPT: &str = "username-to-add";
 pub const API_KEY_OPT: &str = "api_key";
@@ -536,10 +535,7 @@ fn remove_user_option() -> Arg<'static, 'static> {
 }
 
 pub fn build_cli() -> App<'static, 'static> {
-    App::new(binary_name())
-        .version(crate_version!())
-        .author(crate_authors!())
-        .about(crate_description!())
+    app_from_crate!()
         .setting(AppSettings::SubcommandRequiredElseHelp)
         .arg(api_key_arg())
         .arg(

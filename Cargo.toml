@@ -11,14 +11,8 @@ readme = "README.md"
 build = "build.rs"
 
 [workspace]
-members = [
-  "crates/cloudtruth-config",
-  "crates/cloudtruth-installer"
-]
-exclude = [
-  "ci",
-  "crates/cloudtruth-restapi"
-]
+members = ["crates/cloudtruth-config", "crates/cloudtruth-installer"]
+exclude = ["ci", "crates/cloudtruth-restapi"]
 
 [package.metadata.deb]
 assets = [
@@ -49,6 +43,7 @@ ca-certificates = "*"
 
 [build-dependencies]
 clap = "2.33.3"
+cloudtruth-config = { path = "crates/cloudtruth-config", version = "1.2.0" }
 
 [dependencies]
 aes-gcm = "0.9.2"
