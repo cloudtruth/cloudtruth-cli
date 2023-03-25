@@ -6,6 +6,7 @@ rustup_exists := $(shell which rustup)
 openapi_gen_version := v5.3.1
 ci_dir := ci
 test_dir := integration-tests
+client_dir := crates/cloudtruth-restapi
 # convenience for looping
 subdirs := $(ci_dir)
 subdirs += $(test_dir)
@@ -15,6 +16,7 @@ subdirs += $(test_dir)
 .PHONY += cargo
 .PHONY += clean
 .PHONY += cli
+.PHONY += client
 .PHONY += help
 .PHONY += help-text
 .PHONY += image
@@ -60,22 +62,21 @@ cargo: client
 
 clean:
 	rm -rf target/
-	rm -rf client/target/
 
 # client needs to re-generated when the openapi.yaml changes
 client: openapi.yml patch_client.py
-	rm -rf client/src
+	rm -rf $(client_dir)/src
 	docker run --rm \
 		-v "$(shell pwd):/local" \
 		--user "$(shell id -u):$(shell id -g)" \
 		openapitools/openapi-generator-cli:$(openapi_gen_version) generate \
 		-i /local/openapi.yml \
 		-g rust \
-		-o /local/client \
+		-o /local/$(client_dir) \
 		--additional-properties=packageName=cloudtruth-restapi,packageVersion=1.0.0,supportAsync=false,enumUnknownDefaultCase=true \
 		> generator.log
 	python3 patch_client.py
-	cd client && cargo fmt --all && cargo build
+	cd $(client_dir) && cargo fmt --all && cargo build
 
 # apply both formatting fixes and linting fixes
 fix: format lint_fix
@@ -98,7 +99,7 @@ lint_rust:
 	cargo clippy --workspace --all-features -- -D warnings
 
 lint_shell:
-	git ls-files | grep -v -E '^client/' | grep -E '\.sh$$' | xargs shellcheck
+	git ls-files | grep -v -E '^$(client_dir)' | grep -E '\.sh$$' | xargs shellcheck
 
 lint_toml:
 	taplo check

@@ -1,9 +1,8 @@
-use crate::config::Config as CloudTruthConfig;
-
+use cloudtruth_config::Config as CloudTruthConfig;
 use cloudtruth_restapi::apis::configuration::{ApiKey, Configuration};
-use std::env;
+use std::{env, ops::Deref};
 
-pub type OpenApiConfig = Configuration;
+pub struct OpenApiConfig(Configuration);
 
 /// These are used to denote places where paging is not needed, due do filtering
 pub const NO_PAGE_COUNT: Option<i32> = None;
@@ -107,7 +106,7 @@ impl From<&CloudTruthConfig> for OpenApiConfig {
     fn from(ct_cfg: &CloudTruthConfig) -> Self {
         // having a trailing slash confuses the API, so remove any trailing slashes
         let server_url = ct_cfg.server_url.trim_end_matches('/').to_string();
-        OpenApiConfig {
+        OpenApiConfig(Configuration {
             base_path: server_url,
             user_agent: Some(user_agent_name()),
             client: reqwest::Client::builder()
@@ -126,7 +125,15 @@ impl From<&CloudTruthConfig> for OpenApiConfig {
             rest_debug: ct_cfg.rest_debug,
             rest_success: ct_cfg.rest_success.clone(),
             rest_page_size: ct_cfg.rest_page_size,
-        }
+        })
+    }
+}
+
+impl Deref for OpenApiConfig {
+    type Target = Configuration;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
     }
 }
 
@@ -159,44 +166,44 @@ mod tests {
             openapi_cfg.base_path,
             "https://bogushost.com/sna/foo".to_string()
         );
-        assert_eq!(openapi_cfg.api_key.unwrap().key, api_key.to_string());
-        assert_eq!(openapi_cfg.user_agent.unwrap(), user_agent_name());
-        assert_eq!(openapi_cfg.bearer_access_token, None);
-        assert!(openapi_cfg.rest_debug);
+        assert_eq!(openapi_cfg.0.api_key.unwrap().key, api_key.to_string());
+        assert_eq!(openapi_cfg.0.user_agent.unwrap(), user_agent_name());
+        assert_eq!(openapi_cfg.0.bearer_access_token, None);
+        assert!(openapi_cfg.0.rest_debug);
         assert_eq!(
-            openapi_cfg.rest_success,
+            openapi_cfg.0.rest_success,
             vec!["abc".to_string(), "def".to_string()]
         );
-        assert_eq!(openapi_cfg.rest_page_size, Some(2300));
+        assert_eq!(openapi_cfg.0.rest_page_size, Some(2300));
         // unfortunately, no means to interrogate the client to find the timeout
     }
 
     #[test]
     fn openapi_debug_success() {
-        let mut cfg = OpenApiConfig::new();
+        let mut cfg = OpenApiConfig(Configuration::new());
 
         assert!(!cfg.debug_success("foo"));
 
-        cfg.rest_debug = true;
+        cfg.0.rest_debug = true;
         assert!(!cfg.debug_success("foo"));
 
-        cfg.rest_success.push("foo".to_string());
+        cfg.0.rest_success.push("foo".to_string());
         assert!(cfg.debug_success("foo"));
         assert!(!cfg.debug_success("sna"));
 
-        cfg.rest_success.push("sna".to_string());
+        cfg.0.rest_success.push("sna".to_string());
         assert!(cfg.debug_success("foo"));
         assert!(cfg.debug_success("sna"));
 
-        cfg.rest_success.clear();
+        cfg.0.rest_success.clear();
         assert!(!cfg.debug_success("foo"));
         assert!(!cfg.debug_success("sna"));
 
-        cfg.rest_success.push("all".to_string());
+        cfg.0.rest_success.push("all".to_string());
         assert!(cfg.debug_success("foo"));
         assert!(cfg.debug_success("sna"));
 
-        cfg.rest_debug = false;
+        cfg.0.rest_debug = false;
         assert!(!cfg.debug_success("foo"));
         assert!(!cfg.debug_success("sna"));
     }

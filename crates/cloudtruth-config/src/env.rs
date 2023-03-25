@@ -1,5 +1,5 @@
-use crate::config::profiles::Profile;
-use crate::config::{
+use crate::profiles::Profile;
+use crate::{
     CT_ACCEPT_INVALID_CERTS, CT_API_KEY, CT_ENVIRONMENT, CT_PROJECT, CT_REQ_TIMEOUT, CT_REST_DEBUG,
     CT_REST_PAGE_SIZE, CT_REST_SUCCESS, CT_SERVER_URL,
 };

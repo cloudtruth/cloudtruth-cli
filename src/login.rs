@@ -1,7 +1,8 @@
-use crate::cli::{binary_name, CONFIRM_FLAG};
-use crate::config::Config;
+use crate::binary_name;
+use crate::cli::CONFIRM_FLAG;
 use crate::utils::{get_api_access_url, user_confirm, warning_message, API_KEY_PAGE, SEPARATOR};
 use clap::ArgMatches;
+use cloudtruth_config::Config;
 use color_eyre::eyre::Result;
 use indoc::printdoc;
 use std::io::{stdin, stdout, Write};

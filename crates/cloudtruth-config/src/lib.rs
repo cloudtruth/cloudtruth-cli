@@ -1,15 +1,14 @@
 mod config_date;
-pub(crate) mod env;
+pub mod env;
 mod file;
 mod file_errors;
 mod profiles;
 mod update;
 
-use crate::cli::binary_name;
-use crate::config::env::ConfigEnv;
-use crate::config::file::ConfigFile;
-use crate::config::profiles::{Profile, ProfileDetails};
-pub use crate::config::update::{Action, Frequency, Updates};
+use crate::env::ConfigEnv;
+use crate::file::ConfigFile;
+use crate::profiles::{Profile, ProfileDetails};
+pub use crate::update::{Action, Frequency, Updates};
 use color_eyre::eyre::Result;
 use directories::ProjectDirs;
 use indoc::formatdoc;
@@ -86,6 +85,12 @@ const ORGANIZATION_NAME: &str = "cloudtruth";
 
 #[cfg(not(target_os = "macos"))]
 const ORGANIZATION_NAME: &str = "CloudTruth";
+
+pub fn binary_name() -> String {
+    option_env!("CARGO_BIN_NAME")
+        .unwrap_or("cloudtruth")
+        .to_string()
+}
 
 #[derive(Debug)]
 pub struct Config {

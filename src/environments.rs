@@ -3,7 +3,6 @@ use crate::cli::{
     LIST_SUBCMD, NAME_ARG, PARENT_ARG, RENAME_OPT, SET_SUBCMD, SHOW_TIMES_FLAG, TAG_NAME_ARG,
     TAG_SUBCMD, TREE_SUBCMD,
 };
-use crate::config::DEFAULT_ENV_NAME;
 use crate::database::{EnvironmentDetails, Environments, OpenApiConfig};
 use crate::table::Table;
 use crate::utils::{
@@ -11,6 +10,7 @@ use crate::utils::{
     warn_missing_subcommand, warning_message, DEL_CONFIRM,
 };
 use clap::ArgMatches;
+use cloudtruth_config::DEFAULT_ENV_NAME;
 use color_eyre::eyre::Result;
 use std::process;
 

@@ -1,7 +1,9 @@
 use clap::{
-    app_from_crate, crate_authors, crate_description, crate_name, crate_version, App, AppSettings,
-    Arg, ArgMatches, Shell, SubCommand,
+    crate_authors, crate_description, crate_version, App, AppSettings, Arg, ArgMatches, Shell,
+    SubCommand,
 };
+
+use crate::binary_name;
 
 pub const ADD_USER_OPT: &str = "username-to-add";
 pub const API_KEY_OPT: &str = "api_key";
@@ -97,12 +99,6 @@ const REGION_VALUES: &[&str] = &[
     "us-west-1",
     "us-west-2",
 ];
-
-pub fn binary_name() -> String {
-    option_env!("CARGO_PKG_NAME")
-        .unwrap_or("cloudtruth")
-        .to_string()
-}
 
 pub fn true_false_option(input: Option<&str>) -> Option<bool> {
     match input {
@@ -540,7 +536,10 @@ fn remove_user_option() -> Arg<'static, 'static> {
 }
 
 pub fn build_cli() -> App<'static, 'static> {
-    app_from_crate!()
+    App::new(binary_name())
+        .version(crate_version!())
+        .author(crate_authors!())
+        .about(crate_description!())
         .setting(AppSettings::SubcommandRequiredElseHelp)
         .arg(api_key_arg())
         .arg(

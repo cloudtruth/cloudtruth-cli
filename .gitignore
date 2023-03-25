@@ -1,6 +1,6 @@
 # Build Artifacts
 /target
-/client/docs
+/crates/cloudtruth-restapi/docs
 generator.log
 *.pdb
 **/*.rs.bk

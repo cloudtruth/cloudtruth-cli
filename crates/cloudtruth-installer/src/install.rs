@@ -1,10 +1,10 @@
-use crate::installation::InstallError;
+use crate::InstallError;
 use std::io;
 use std::io::Write;
 #[cfg(not(target_os = "windows"))]
 #[rustfmt::skip]
 use {
-    crate::installation::binary_version,
+    crate::version::binary_version,
     std::fs,
     std::process::Command,
     std::str,
@@ -13,7 +13,7 @@ use {
 
 #[cfg(target_os = "windows")]
 pub fn install_latest_version(quiet: bool) -> Result<(), InstallError> {
-    let text = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/install.ps1"));
+    let text = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../install.ps1"));
     let result = powershell_script::run(text, false);
     match result {
         Ok(output) => {
@@ -34,7 +34,7 @@ pub fn install_latest_version(quiet: bool) -> Result<(), InstallError> {
     let tempdir = tempdir()?;
     let fullpath = tempdir.path().join(filename);
     let fullname = fullpath.to_str().unwrap();
-    let text = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/install.sh"));
+    let text = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../install.sh"));
 
     // write the install script to a file to a temporary directory
     fs::write(fullname, text)?;

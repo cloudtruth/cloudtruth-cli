@@ -1,8 +1,3 @@
-[workspace]
-members = ["ci"]
-default-members = ["."]
-exclude = ["client"]
-
 [package]
 name = "cloudtruth"
 version = "1.2.0"
@@ -14,6 +9,16 @@ homepage = "https://cloudtruth.com/"
 repository = "https://github.com/cloudtruth/cloudtruth-cli"
 readme = "README.md"
 build = "build.rs"
+
+[workspace]
+members = [
+  "crates/cloudtruth-config",
+  "crates/cloudtruth-installer"
+]
+exclude = [
+  "ci",
+  "crates/cloudtruth-restapi"
+]
 
 [package.metadata.deb]
 assets = [
@@ -51,7 +56,9 @@ base64 = "0.13.0"
 chacha20poly1305 = "0.8.0"
 chrono = "0.4.23"
 clap = "2.33.3"
-cloudtruth-restapi = { path = "client" }
+cloudtruth-config = { path = "crates/cloudtruth-config", version = "1.2.0" }
+cloudtruth-installer = { path = "crates/cloudtruth-installer", version = "1.2.0" }
+cloudtruth-restapi = { path = "crates/cloudtruth-restapi" }
 color-eyre = "0.5"
 csv = "1.1.6"
 directories = "3.0"

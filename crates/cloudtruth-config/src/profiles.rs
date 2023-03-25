@@ -115,7 +115,7 @@ impl Profile {
 
 #[cfg(test)]
 mod tests {
-    use crate::config::profiles::Profile;
+    use crate::profiles::Profile;
     use indoc::indoc;
 
     #[test]
