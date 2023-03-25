@@ -61,5 +61,5 @@ jobs:
         if: ${{ !contains(runner.os, 'Windows') }}
         with:
           ignore_paths: |
-            client
+            crates/cloudtruth-restapi
             target

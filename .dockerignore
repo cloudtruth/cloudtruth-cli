@@ -1,4 +1,4 @@
 .git
-client/
+crates/cloudtruth-restapi
 target/
 Dockerfile

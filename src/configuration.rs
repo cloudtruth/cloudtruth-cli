@@ -2,15 +2,15 @@ use crate::cli::{
     show_values, API_KEY_OPT, CONFIRM_FLAG, DELETE_SUBCMD, DESCRIPTION_OPT, EDIT_SUBCMD,
     FORMAT_OPT, LIST_SUBCMD, NAME_ARG, SECRETS_FLAG, SET_SUBCMD,
 };
-use crate::config::{
-    Config, ConfigValue, PARAM_API_KEY, PARAM_ORG, PARAM_PROFILE, PARAM_ROLE, PARAM_USER,
-};
 use crate::database::{OpenApiConfig, Users};
 use crate::table::Table;
 use crate::utils::{
     error_message, user_confirm, warn_missing_subcommand, warning_message, DEL_CONFIRM, REDACTED,
 };
 use clap::ArgMatches;
+use cloudtruth_config::{
+    Config, ConfigValue, PARAM_API_KEY, PARAM_ORG, PARAM_PROFILE, PARAM_ROLE, PARAM_USER,
+};
 use color_eyre::eyre::Result;
 use std::process;
 

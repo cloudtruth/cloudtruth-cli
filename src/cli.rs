@@ -2,6 +2,7 @@ use clap::{
     app_from_crate, crate_authors, crate_description, crate_name, crate_version, App, AppSettings,
     Arg, ArgMatches, Shell, SubCommand,
 };
+pub use cloudtruth_config::binary_name;
 
 pub const ADD_USER_OPT: &str = "username-to-add";
 pub const API_KEY_OPT: &str = "api_key";
@@ -97,12 +98,6 @@ const REGION_VALUES: &[&str] = &[
     "us-west-1",
     "us-west-2",
 ];
-
-pub fn binary_name() -> String {
-    option_env!("CARGO_PKG_NAME")
-        .unwrap_or("cloudtruth")
-        .to_string()
-}
 
 pub fn true_false_option(input: Option<&str>) -> Option<bool> {
     match input {

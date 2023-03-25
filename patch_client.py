@@ -512,7 +512,7 @@ def remove_unused_parameter_id(srcdir: str, verbose: bool) -> None:
 
 
 if __name__ == "__main__":
-    client_dir = os.getcwd() + "/client"
+    client_dir = os.getcwd() + "/crates/cloudtruth-restapi"
     srcdir = client_dir + "/src"
     verbose = False
     allow_snake(srcdir, verbose)

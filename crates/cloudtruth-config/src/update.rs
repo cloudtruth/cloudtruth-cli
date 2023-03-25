@@ -1,4 +1,4 @@
-use crate::config::config_date::naive_date_serde;
+use crate::config_date::naive_date_serde;
 use chrono::{Duration, NaiveDate};
 use serde::{Deserialize, Serialize};
 

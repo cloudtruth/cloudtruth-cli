@@ -1,6 +1,6 @@
-use crate::config::file_errors::ConfigFileError;
-use crate::config::profiles::{Profile, ProfileDetails};
-use crate::config::update::Updates;
+use crate::file_errors::ConfigFileError;
+use crate::profiles::{Profile, ProfileDetails};
+use crate::update::Updates;
 use color_eyre::eyre::Result;
 use indoc::indoc;
 use serde::{Deserialize, Serialize};
@@ -341,9 +341,9 @@ impl ConfigFile {
 
 #[cfg(test)]
 mod tests {
-    use crate::config::file::{ConfigFile, ConfigFileError};
-    use crate::config::profiles::ProfileDetails;
-    use crate::config::{Action, Frequency, Updates};
+    use crate::file::{ConfigFile, ConfigFileError};
+    use crate::profiles::ProfileDetails;
+    use crate::{Action, Frequency, Updates};
     use assert_matches::assert_matches;
     use chrono::NaiveDate;
     use indoc::indoc;
@@ -1080,6 +1080,7 @@ mod tests {
     fn update_updates() {
         let original = indoc!(
             r#"
+        ---
         updates:
           check: false
 
@@ -1093,6 +1094,7 @@ mod tests {
         );
         let expected = indoc!(
             r#"
+        ---
         updates:
           check: true
           action: Error

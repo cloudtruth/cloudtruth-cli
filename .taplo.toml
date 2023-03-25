@@ -1,7 +1,7 @@
 # TOML formatting options for taplo
 # taplo is used by the "Even Better TOML" VSCode Extension
 
-exclude = ["client/**/*.toml"]
+exclude = ["crates/cloudtruth-restapi/**/*.toml"]
 
 [schema]
 path = "https://www.schemastore.org/api/json/catalog.json"

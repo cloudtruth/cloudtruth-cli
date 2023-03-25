@@ -1,6 +1,6 @@
-use crate::config::{CT_APP_REMOVABLE_VARS, CT_ENVIRONMENT, CT_PROJECT};
 use crate::database::ResolvedDetails;
 use crate::utils::{default, warn_user};
+use cloudtruth_config::{CT_APP_REMOVABLE_VARS, CT_ENVIRONMENT, CT_PROJECT};
 use color_eyre::eyre::{ErrReport, Result};
 use color_eyre::Report;
 use std::collections::HashMap;
