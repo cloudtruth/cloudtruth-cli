@@ -559,13 +559,13 @@ class TestParameterTypes(TestCase):
 
         # child rules must be more restrictive
         err_msg = (
-            "Rule create error: Maximum length constraint is greater than an existing rule's maximum length constraint"
+            "Rule update error: Maximum length constraint is greater than an existing rule's maximum length constraint"
         )
         cmd = type_cmd + f"set {type_name2} --max-len {max_len_a + 1}"
         result = self.run_cli(cmd_env, cmd)
         self.assertResultError(result, err_msg)
         err_msg = (
-            "Rule create error: Minimum length constraint is less than an existing rule's minimum length constraint"
+            "Rule update error: Minimum length constraint is less than an existing rule's minimum length constraint"
         )
         cmd = type_cmd + f"set {type_name2} --min-len {min_len_a - 1}"
         result = self.run_cli(cmd_env, cmd)
