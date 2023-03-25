@@ -57,14 +57,15 @@ shell:
 ### Commands for either outside or inside the container
 
 # the client must be generated before building the Rust program that uses it
-cargo: client
+cargo: $(client_dir)
 	cargo build
 
 clean:
 	rm -rf target/
 
 # client needs to re-generated when the openapi.yaml changes
-client: openapi.yml patch_client.py
+client: $(client_dir)
+$(client_dir): openapi.yml patch_client.py
 	rm -rf $(client_dir)/src
 	docker run --rm \
 		-v "$(shell pwd):/local" \
