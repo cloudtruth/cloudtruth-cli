@@ -14,10 +14,7 @@ macro_rules! help_text_path {
     };
 }
 
-#[cfg(not(target_os = "windows"))]
 const BIN_NAME: &str = "cloudtruth";
-#[cfg(target_os = "windows")]
-const BIN_NAME: &str = "cloudtruth.exe";
 
 static HELP_TEXT_DIR: Lazy<PathBuf> = Lazy::new(|| {
     fs::canonicalize(help_text_path!())
