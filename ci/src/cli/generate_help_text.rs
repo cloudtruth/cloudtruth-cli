@@ -24,7 +24,6 @@ static HELP_TEXT_DIR: Lazy<PathBuf> = Lazy::new(|| {
 
 impl Cli {
     pub async fn generate_help_text(&self) -> Result<()> {
-        println!("{:?}", std::env::current_dir()?);
         self.walk_cli(BIN_NAME).await
     }
 
