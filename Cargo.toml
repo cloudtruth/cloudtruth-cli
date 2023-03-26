@@ -11,8 +11,9 @@ readme = "README.md"
 build = "build.rs"
 
 [workspace]
-members = ["crates/cloudtruth-config", "crates/cloudtruth-installer"]
-exclude = ["ci", "crates/cloudtruth-restapi"]
+members = ["crates/*", "ci"]
+default-members = ["crates/cloudtruth-config", "crates/cloudtruth-installer"]
+exclude = ["crates/cloudtruth-restapi"]
 
 [package.metadata.deb]
 assets = [

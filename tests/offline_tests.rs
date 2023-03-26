@@ -6,8 +6,8 @@ const BIN_PATH: &str = "target/debug/cloudtruth.exe";
 const BIN_PATH: &str = "target/debug/cloudtruth";
 
 #[test]
-fn help_tests() {
+fn help_text() {
     trycmd::TestCases::new()
         .register_bin("cloudtruth", Path::new(BIN_PATH))
-        .case("tests/help/*.md");
+        .case("examples/help-text/*.md");
 }
