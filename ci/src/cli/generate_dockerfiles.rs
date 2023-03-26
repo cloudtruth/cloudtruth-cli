@@ -1,6 +1,6 @@
 use anyhow::*;
-use rayon::prelude::*;
 use std::path::Path;
+use tokio_stream::{self as stream, StreamExt};
 
 use crate::{config::Config, templates::DockerTemplate};
 
@@ -14,10 +14,10 @@ macro_rules! docker_path {
 }
 
 impl Cli {
-    pub fn generate_dockerfiles(&self, config: &Config) -> Result<()> {
+    pub async fn generate_dockerfiles(&self, config: &Config<'_>) -> Result<()> {
         let docker_base_path = Path::new(docker_path!());
         self.mkdir(docker_base_path)?;
-        let results = DockerTemplate::iter_from_config(&config.release_tests).par_bridge().map(|template| {
+        let results: Vec<Result<()>> = stream::iter(DockerTemplate::iter_from_config(&config.release_tests)).map(|template| {
             let path = docker_base_path.join(template.file_name());
             let file = self.open_output_file(path.as_path())?;
             template.write_dockerfile(file).with_context(|| {
@@ -26,10 +26,10 @@ impl Cli {
                     template_name = template.file_name(),
                 )
             })
-        });
+        }).collect().await;
         collect_file_errors(
             anyhow!("Multiple file errors when generating Dockerfiles"),
-            results.filter_map(Result::err).collect(),
+            results.into_iter().filter_map(Result::err).collect(),
         )
     }
 }

@@ -4,8 +4,8 @@ mod generate_help_text;
 
 use anyhow::*;
 use clap::Parser;
+use futures::future::join_all;
 use once_cell::sync::OnceCell;
-use rayon::prelude::*;
 use std::{
     collections::HashSet,
     fs::{create_dir, File},
@@ -41,7 +41,7 @@ pub enum Commands {
     },
 }
 
-#[derive(clap::ValueEnum, Hash, PartialEq, Eq, Clone, Debug)]
+#[derive(clap::ValueEnum, Hash, PartialEq, Eq, Clone, Debug, Copy)]
 pub enum GenerateActions {
     #[value(help = "Generate Dockerfiles")]
     Docker,
@@ -100,22 +100,32 @@ impl Cli {
         }
         Ok(())
     }
+
+    async fn run_action(&self, action: &GenerateActions) -> Result<()> {
+        match action {
+            GenerateActions::Docker => self.generate_dockerfiles(self.get_config()?).await,
+            GenerateActions::GhaMatrices => self.generate_actions_matrices(self.get_config()?),
+            GenerateActions::HelpText => self.generate_help_text().await,
+        }
+    }
 }
 
-pub fn main() -> Result<()> {
+#[tokio::main]
+pub async fn main() -> Result<()> {
     let cli = Cli::parse();
     let results = match &cli.command {
-        Commands::Generate { actions } => HashSet::<&GenerateActions>::from_iter(actions)
-            .into_par_iter()
-            .map(|action| match action {
-                GenerateActions::Docker => cli.generate_dockerfiles(cli.get_config()?),
-                GenerateActions::GhaMatrices => cli.generate_actions_matrices(cli.get_config()?),
-                GenerateActions::HelpText => cli.generate_help_text(),
-            }),
+        Commands::Generate { actions } => {
+            join_all(
+                HashSet::<&GenerateActions>::from_iter(actions)
+                    .into_iter()
+                    .map(|action| cli.run_action(action)),
+            )
+            .await
+        }
     };
     collect_file_errors(
         anyhow!("Multiple file errors when generating CI files"),
-        results.filter_map(Result::err).collect(),
+        results.into_iter().filter_map(Result::err).collect(),
     )
 }
 
