@@ -1,7 +1,8 @@
 use anyhow::{anyhow, Context, Result};
-use futures::{Stream, StreamExt};
+use futures::{Stream, StreamExt, TryStreamExt};
 use once_cell::sync::Lazy;
-use std::{fs, path::PathBuf, pin::Pin};
+use std::{fs, path::PathBuf, pin::Pin, sync::Arc};
+
 use tokio_stream::{self as stream};
 
 use crate::templates::HelpTextTemplate;
@@ -27,51 +28,56 @@ impl Cli {
         self.walk_cli(BIN_NAME).await
     }
 
-    async fn walk_cli(&self, cmd_name: &str) -> Result<()> {
+    async fn walk_cli(&self, cmd_name: &'static str) -> Result<()> {
         self.mkdir(HELP_TEXT_DIR.as_path())?;
-        let results: Vec<Result<()>> = self.walk_cli_inner(cmd_name, "".to_owned()).collect().await;
+        let results: Vec<Result<()>> = self
+            .walk_cli_subcommands(cmd_name, Arc::new(String::new()))
+            .await
+            .and_then(|template| self.write_template(template))
+            .collect()
+            .await;
         collect_file_errors(
-            anyhow!("Multiple errors when writing to help text files"),
+            anyhow!("Multiple errors when fetching command help text"),
             results.into_iter().filter_map(Result::err).collect(),
         )
     }
 
-    fn walk_cli_inner<'a>(
+    async fn walk_cli_subcommands<'a>(
         &'a self,
-        cmd_name: &'a str,
-        cmd_args: String,
-    ) -> Pin<Box<dyn Stream<Item = Result<()>> + 'a>> {
-        match self.write_template(cmd_name, &cmd_args) {
+        cmd_name: &'static str,
+        cmd_args: Arc<String>,
+    ) -> Pin<Box<dyn Stream<Item = Result<HelpTextTemplate<'static>>> + 'a>> {
+        match HelpTextTemplate::from_cmd_async(cmd_name, cmd_args.clone()).await {
             Err(err) => Box::pin(stream::once(Err(err))),
             Ok(template) => {
                 let subcommands: Vec<String> = template.subcommands().map(String::from).collect();
-                Box::pin(stream::iter(subcommands).flat_map(move |subcommand| {
-                    let args = if cmd_args.is_empty() {
-                        subcommand
-                    } else {
-                        format!("{cmd_args} {subcommand}")
-                    };
-                    self.walk_cli_inner(cmd_name, args)
-                }))
+                Box::pin(
+                    stream::once(Ok(template)).chain(
+                        stream::iter(subcommands)
+                            .then(move |subcommand| {
+                                let args = if cmd_args.is_empty() {
+                                    subcommand
+                                } else {
+                                    format!("{cmd_args} {subcommand}")
+                                };
+                                self.walk_cli_subcommands(cmd_name, Arc::new(args))
+                            })
+                            .flatten(),
+                    ),
+                )
             }
         }
     }
 
-    fn write_template<'a>(
-        &'a self,
-        cmd_name: &'a str,
-        cmd_args: &'a str,
-    ) -> Result<HelpTextTemplate> {
-        let template = HelpTextTemplate::from_cmd(cmd_name, cmd_args)?;
+    async fn write_template(&self, template: HelpTextTemplate<'static>) -> Result<()> {
         if self.verbose {
             println!("{} {}", template.cmd_name, template.cmd_args);
         }
         let path = HELP_TEXT_DIR.join(template.file_name());
         let file = self.open_output_file(path.as_path())?;
-        template.write_md(file).with_context(|| { format!(
+        template.write_md_async(file).await.with_context(|| { format!(
             "Error while rendering help text template {template_name:?} into {path:?}. {template:?}",
             template_name = template.file_name(),
-        )})?;
-        Ok(template)
+        )})
     }
 }

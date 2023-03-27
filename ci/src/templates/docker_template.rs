@@ -3,6 +3,7 @@ use std::io::Write;
 use crate::config::{InstallType, ReleaseTestConfig, TestOs};
 use anyhow::*;
 use askama::Template;
+use tokio::task::spawn_blocking;
 
 /// Template for generating the installation test Dockerfiles
 #[derive(Debug, Template)]
@@ -42,5 +43,13 @@ impl<'c> DockerTemplate<'c> {
     pub fn write_dockerfile<W: Write>(&self, mut writer: W) -> Result<()> {
         writer.write_all(self.render()?.as_bytes())?;
         Ok(())
+    }
+
+    pub async fn write_dockerfile_async<W: Write + Send + 'static>(
+        &self,
+        mut writer: W,
+    ) -> Result<()> {
+        let str = self.render()?;
+        spawn_blocking(move || writer.write_all(str.as_bytes()).map_err(anyhow::Error::new)).await?
     }
 }
