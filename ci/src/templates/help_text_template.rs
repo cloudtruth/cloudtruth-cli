@@ -1,21 +1,31 @@
-use std::{env, io::Write, iter::once, path::PathBuf};
+use std::{env, io::Write, iter::once, path::PathBuf, sync::Arc};
 
 use anyhow::*;
 use askama::Template;
 use duct::cmd;
+use tokio::task::spawn_blocking;
 
 /// Template for generating the installation test Dockerfiles
 #[derive(Debug, Template)]
 #[template(path = "help-text.md", escape = "none")]
 //#[template(print = "code")] //uncomment for debugging generated code
-pub struct HelpTextTemplate<'a, 'b> {
+pub struct HelpTextTemplate<'a> {
     pub cmd_name: &'a str,
-    pub cmd_args: &'b str,
+    pub cmd_args: Arc<String>,
     pub help_text: String,
 }
 
-impl<'a, 'b> HelpTextTemplate<'a, 'b> {
-    pub fn from_cmd(cmd_name: &'a str, cmd_args: &'b str) -> Result<HelpTextTemplate<'a, 'b>> {
+impl HelpTextTemplate<'static> {
+    pub async fn from_cmd_async(
+        cmd_name: &'static str,
+        cmd_args: Arc<String>,
+    ) -> Result<HelpTextTemplate<'static>> {
+        spawn_blocking(move || Self::from_cmd(cmd_name, cmd_args)).await?
+    }
+}
+
+impl<'a> HelpTextTemplate<'a> {
+    pub fn from_cmd(cmd_name: &'a str, cmd_args: Arc<String>) -> Result<HelpTextTemplate<'a>> {
         let bin_path = cargo_bin_str(cmd_name).canonicalize()?;
         let cmd = cmd(
             bin_path.as_path(),
@@ -42,7 +52,7 @@ impl<'a, 'b> HelpTextTemplate<'a, 'b> {
     fn process_help_text(mut self) -> Self {
         let Self {
             cmd_name,
-            cmd_args,
+            ref cmd_args,
             help_text,
         } = self;
         // the trycmd matcher to match EXE_SUFFIX
@@ -86,6 +96,11 @@ impl<'a, 'b> HelpTextTemplate<'a, 'b> {
     pub fn write_md<W: Write>(&self, mut writer: W) -> Result<()> {
         writer.write_all(self.render()?.as_bytes())?;
         Ok(())
+    }
+
+    pub async fn write_md_async<W: Write + Send + 'static>(&self, mut writer: W) -> Result<()> {
+        let str = self.render()?;
+        spawn_blocking(move || writer.write_all(str.as_bytes()).map_err(anyhow::Error::new)).await?
     }
 }
 

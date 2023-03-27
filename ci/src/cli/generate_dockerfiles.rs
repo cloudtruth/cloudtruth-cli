@@ -17,10 +17,10 @@ impl Cli {
     pub async fn generate_dockerfiles(&self, config: &Config<'_>) -> Result<()> {
         let docker_base_path = Path::new(docker_path!());
         self.mkdir(docker_base_path)?;
-        let results: Vec<Result<()>> = stream::iter(DockerTemplate::iter_from_config(&config.release_tests)).map(|template| {
+        let results: Vec<Result<()>> = stream::iter(DockerTemplate::iter_from_config(&config.release_tests)).then(|template| async move {
             let path = docker_base_path.join(template.file_name());
             let file = self.open_output_file(path.as_path())?;
-            template.write_dockerfile(file).with_context(|| {
+            template.write_dockerfile_async(file).await.with_context(|| {
                 format!(
                     "Error while rendering template at {template_name:?} into {path:?}. {template:?}",
                     template_name = template.file_name(),
