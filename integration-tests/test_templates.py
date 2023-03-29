@@ -310,7 +310,7 @@ references = PARAM
 
         # this is before the project exists
         result = self.run_cli(cmd_env, get_cmd + "--as-of 2020-02-02")
-        self.assertResultError(result, "No ProjectLedger matches the given query")
+        self.assertResultError(result, "Did not find environment 'default' at specified time/tag")
 
         ##################
         # check preview
@@ -854,7 +854,7 @@ PARAMETER={{{{{param1}}}}}
         self.assertResultError(result, tag_err)
 
         # before the project exists
-        no_proj_err = "No ProjectLedger matches the given query"
+        no_proj_err = "Did not find environment 'default' at specified time/tag"
         result = self.run_cli(cmd_env, sub_cmd + f"difference '{temp_name}' --as-of 2021-01-20")
         self.assertResultError(result, no_proj_err)
 
