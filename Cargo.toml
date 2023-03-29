@@ -12,7 +12,7 @@ build = "build.rs"
 
 [workspace]
 members = ["crates/*", "ci"]
-default-members = ["crates/cloudtruth-config", "crates/cloudtruth-installer"]
+default-members = [".", "crates/cloudtruth-config", "crates/cloudtruth-installer"]
 exclude = ["crates/cloudtruth-restapi"]
 
 [package.metadata.deb]

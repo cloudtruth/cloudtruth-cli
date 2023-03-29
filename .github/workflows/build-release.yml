@@ -92,11 +92,11 @@ jobs:
         if: contains(runner.os, 'Linux')
 
       - name: Cross build
-        run: cross build --release --target $TARGET
+        run: cross build --release --target $TARGET --bins
         if: contains(runner.os, 'Linux')
 
       - name: Cargo build
-        run: cargo build --release --target $TARGET
+        run: cargo build --release --target $TARGET --bins
         if: ${{ ! contains(runner.os, 'Linux') }}
 
       - name: Strip binaries
