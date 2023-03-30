@@ -1,5 +1,4 @@
 mod harness;
-use miette::miette;
 
 use crate::harness::prelude::*;
 
