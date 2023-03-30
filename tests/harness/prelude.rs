@@ -4,4 +4,3 @@ pub use super::*;
 pub use assert_cmd::prelude::*;
 pub use miette::{IntoDiagnostic, Result, WrapErr};
 pub use predicates::prelude::*;
-pub use pretty_assertions::{assert_eq, assert_ne};

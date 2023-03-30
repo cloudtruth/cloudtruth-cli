@@ -1,3 +1,4 @@
+mod backtrace;
 pub mod command;
 pub mod macros;
 pub mod panic;
