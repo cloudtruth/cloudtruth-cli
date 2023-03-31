@@ -61,7 +61,7 @@ jobs:
       - name: Test
         shell: bash
         run: |
-          cargo nextest run --lib --bins ${{ inputs.testOptions }}
+          cargo nextest run --all-features --workspace --lib --bins ${{ inputs.testOptions }}
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v3

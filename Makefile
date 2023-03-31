@@ -163,7 +163,7 @@ test_prerequisites:
 	make -C $(test_dir) prerequisites
 
 test:
-	RUST_BACKTRACE=1 cargo test --workspace
+	RUST_BACKTRACE=1 cargo test --all-features --workspace --lib --bins
 
 integration: cargo
 	make -C $(test_dir) $@
