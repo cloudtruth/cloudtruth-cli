@@ -11,6 +11,7 @@ use miette::{Diagnostic, NamedSource, Report, SourceOffset, SourceSpan};
 #[derive(Debug, Error, Diagnostic)]
 #[error("Test failure")]
 #[diagnostic()]
+/// A miette report for test case source code snippets
 pub struct TestSourceSpan {
     filename: String,
     line: usize,
@@ -45,6 +46,7 @@ impl TestSourceSpan {
         })
     }
 
+    /// Add an error to the list of related errors
     pub fn add_related<E: Into<Report>>(&mut self, err: E) {
         self.related.push(err.into());
     }

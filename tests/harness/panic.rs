@@ -6,7 +6,7 @@ use thiserror::Error;
 use miette::{Context, Diagnostic, GraphicalTheme, Result, ThemeCharacters, ThemeStyles};
 use owo_colors::Style;
 
-use crate::harness::report::TestSourceSpan;
+use crate::harness::source_span::TestSourceSpan;
 
 const HELP_TEXT: &str = "set the `RUST_BACKTRACE=1` environment variable to display a backtrace.";
 
