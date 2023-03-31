@@ -1,10 +1,6 @@
-mod harness;
+use integration_test_harness::prelude::*;
 
-use crate::harness::prelude::*;
-
-#[test]
+#[integration_test]
 fn project_basic() {
-    // miette::set_panic_hook();
-    set_panic_hook();
     cloudtruth!("projects ls -v").assert().success();
 }

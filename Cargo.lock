@@ -401,7 +401,7 @@ dependencies = [
  "heck",
  "proc-macro2",
  "quote",
- "syn 2.0.10",
+ "syn 2.0.12",
 ]
 
 [[package]]
@@ -429,7 +429,6 @@ dependencies = [
  "aes-gcm",
  "assert_cmd",
  "assert_matches",
- "backtrace",
  "base64 0.13.1",
  "chacha20poly1305",
  "chrono",
@@ -446,9 +445,9 @@ dependencies = [
  "hex",
  "hkdf",
  "indoc 1.0.9",
+ "integration-test-harness",
  "miette",
  "once_cell",
- "owo-colors 3.5.0",
  "powershell_script 0.2.1",
  "predicates 1.0.8",
  "prettytable-rs",
@@ -465,7 +464,6 @@ dependencies = [
  "subprocess",
  "tempfile",
  "termcolor",
- "thiserror",
  "trycmd",
  "urlencoding",
  "version-compare",
@@ -1149,6 +1147,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "float-cmp"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "98de4bbd547a563b716d8dfa9aad1cb19bfab00f4fa09a6a4ed21dbcf44ce9c4"
+dependencies = [
+ "num-traits",
+]
+
+[[package]]
 name = "fnv"
 version = "1.0.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1631,6 +1638,29 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7a5bbe824c507c5da5956355e86a746d82e0e1464f65d862cc5e71da70e94b2c"
 dependencies = [
  "cfg-if 1.0.0",
+]
+
+[[package]]
+name = "integration-test-harness"
+version = "1.2.0"
+dependencies = [
+ "assert_cmd",
+ "backtrace",
+ "commandspec",
+ "integration-test-macros",
+ "miette",
+ "owo-colors 3.5.0",
+ "predicates 3.0.2",
+ "thiserror",
+]
+
+[[package]]
+name = "integration-test-macros"
+version = "1.2.0"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.12",
 ]
 
 [[package]]
@@ -2287,7 +2317,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f49cfaf7fdaa3bfacc6fa3e7054e65148878354a5cfddcf661df4c851f8021df"
 dependencies = [
  "difference",
- "float-cmp",
+ "float-cmp 0.8.0",
  "normalize-line-endings",
  "predicates-core",
  "regex",
@@ -2301,8 +2331,11 @@ checksum = "c575290b64d24745b6c57a12a31465f0a66f3a4799686a6921526a33b0797965"
 dependencies = [
  "anstyle",
  "difflib",
+ "float-cmp 0.9.0",
  "itertools",
+ "normalize-line-endings",
  "predicates-core",
+ "regex",
 ]
 
 [[package]]
@@ -2337,9 +2370,9 @@ dependencies = [
 
 [[package]]
 name = "proc-macro2"
-version = "1.0.53"
+version = "1.0.54"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ba466839c78239c09faf015484e5cc04860f88242cff4d03eb038f04b4699b73"
+checksum = "e472a104799c74b514a57226160104aa483546de37e839ec50e3c2e41dd87534"
 dependencies = [
  "unicode-ident",
 ]
@@ -3046,9 +3079,9 @@ dependencies = [
 
 [[package]]
 name = "syn"
-version = "2.0.10"
+version = "2.0.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5aad1363ed6d37b84299588d62d3a7d95b5a5c2d9aad5c85609fda12afaa1f40"
+checksum = "79d9531f94112cfc3e4c8f5f02cb2b58f72c97b7efd85f70203cc6d8efda5927"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -3153,7 +3186,7 @@ checksum = "f9456a42c5b0d803c8cd86e73dd7cc9edd429499f37a3550d286d5e86720569f"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.10",
+ "syn 2.0.12",
 ]
 
 [[package]]

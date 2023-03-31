@@ -6,4 +6,7 @@ pub mod prelude;
 pub mod source_span;
 
 pub use command::Command;
-pub use panic::set_panic_hook;
+
+pub fn install_harness() {
+    panic::set_panic_hook();
+}

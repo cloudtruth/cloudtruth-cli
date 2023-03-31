@@ -1,12 +1,12 @@
 /// Custom panic handler
 /// This code is heavily based on miette::set_panic_hook (https://github.com/zkat/miette/blob/main/src/panic.rs)
-use crate::harness::backtrace;
+use crate::backtrace;
 use thiserror::Error;
 
 use miette::{Context, Diagnostic, GraphicalTheme, Result, ThemeCharacters, ThemeStyles};
 use owo_colors::Style;
 
-use crate::harness::source_span::TestSourceSpan;
+use crate::source_span::TestSourceSpan;
 
 const HELP_TEXT: &str = "set the `RUST_BACKTRACE=1` environment variable to display a backtrace.";
 

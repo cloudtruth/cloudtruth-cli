@@ -85,12 +85,10 @@ webbrowser = "0.8.3"
 [dev-dependencies]
 assert_cmd = "2.0.10"
 assert_matches = "1.4"
-backtrace = "0.3.67"
-commandspec = "0.12.2"
 miette = { version = "5.6.0", features = ["fancy"] }
-owo-colors = "3.5.0"
+integration-test-harness = { path = "./crates/integration-test-harness" }
 predicates = "1.0"
 rusty-hook = "0.11"
 serial_test = "0.5"
-thiserror = "1.0.40"
 trycmd = "0.14"
+commandspec = "0.12.2"

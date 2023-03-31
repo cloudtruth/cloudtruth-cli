@@ -2,5 +2,6 @@
 ///
 pub use super::*;
 pub use assert_cmd::prelude::*;
-pub use miette::{IntoDiagnostic, Result, WrapErr};
+pub use integration_test_macros::integration_test;
+pub use miette::{Context, IntoDiagnostic, Result};
 pub use predicates::prelude::*;
