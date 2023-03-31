@@ -39,6 +39,12 @@ jobs:
         with:
           repository: cloudtruth/cloudtruth-cli
 
+      ## Running the GH API on GHA runners occassionally fails with rate limiting errors,
+      ## so we cannot rely on it to fetch the latest version. As a workaround, when releaseVersion
+      ## isn't specified, we can instead read the version from the repos Cargo.toml file
+      - if: ${{ inputs.releaseVersion == "" }}
+        run: echo RELEASE_VERSION=$(grep -E '^version =' Cargo.toml  | sed -E 's/^.*"([0-9\.]+)".*$/\1/') >> $GITHUB_ENV
+
       - name: CLI installation
         run: |
           sudo ./install.sh ${RELEASE_VERSION:+--version "$RELEASE_VERSION"}
