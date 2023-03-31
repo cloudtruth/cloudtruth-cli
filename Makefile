@@ -143,7 +143,7 @@ endif
 	rustup component add rustfmt clippy rust-docs
 
 	cargo install cargo-binstall
-	cargo binstall --no-confirm taplo-cli
+	cargo binstall --no-confirm taplo-cli cargo-nextest
 
 ifeq ($(os_name),Darwin)
 	brew install shellcheck;
@@ -163,7 +163,7 @@ test_prerequisites:
 	make -C $(test_dir) prerequisites
 
 test:
-	RUST_BACKTRACE=1 cargo test --all-features --workspace --lib --bins
+	RUST_BACKTRACE=1 cargo nextest run --all-features --workspace --lib --bins
 
 integration: cargo
 	make -C $(test_dir) $@
