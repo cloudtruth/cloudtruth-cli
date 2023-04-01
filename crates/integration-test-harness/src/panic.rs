@@ -29,7 +29,7 @@ pub fn set_panic_hook() {
                 .build(),
         )
     }))
-    .unwrap();
+    .expect("Error installing miette report handler");
     std::panic::set_hook(Box::new(move |info| {
         let payload = info.payload();
         let message = if let Some(msg) = payload.downcast_ref::<&str>() {

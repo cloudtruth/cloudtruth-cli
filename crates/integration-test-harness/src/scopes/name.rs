@@ -8,7 +8,7 @@ fn uuid() -> String {
 
 /// A generic CloudTruth entity name
 #[derive(Display, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
-pub struct Name(pub String);
+pub struct Name(String);
 
 impl Name {
     pub fn new<S: Into<String>>(name: S) -> Self {
