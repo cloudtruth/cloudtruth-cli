@@ -5,7 +5,6 @@ edition = "2021"
 license = "Apache-2.0"
 
 [dependencies]
-anyhow = "1.0.70"
 assert_cmd = "2.0.10"
 backtrace = "0.3.67"
 commandspec = "0.12.2"
