@@ -9,7 +9,7 @@ use super::{collect_file_errors, Cli};
 /// Default base path for docker outputs
 macro_rules! docker_path {
     ($($path:expr),*) => {
-        concat!("./docker/", $($path),*)
+        concat!(env!("CARGO_MANIFEST_DIR"), "/docker/", $($path),*)
     };
 }
 

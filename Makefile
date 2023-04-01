@@ -4,16 +4,17 @@
 os_name := $(shell uname -s)
 rustup_exists := $(shell which rustup)
 openapi_gen_version := v5.3.1
-ci_dir := ci
+xtask_dir := xtask
 test_dir := integration-tests
 client_dir := crates/cloudtruth-restapi
 # convenience for looping
-subdirs := $(ci_dir)
+subdirs := $(xtask_dir)
 subdirs += $(test_dir)
 
 .DEFAULT = all
 .PHONY = all
 .PHONY += cargo
+.PHONY += ci
 .PHONY += clean
 .PHONY += cli
 .PHONY += client
@@ -59,6 +60,9 @@ shell:
 # the client must be generated before building the Rust program that uses it
 cargo: $(client_dir)
 	cargo build
+
+ci:
+	make -C $(xtask_dir)
 
 clean:
 	rm -rf target/
@@ -164,14 +168,15 @@ test:
 integration: cargo
 	make -C $(test_dir) $@
 
-help-text: cargo
-	make -C $(ci_dir) help-text
+help-text:
+	make -C $(xtask_dir) help-text
 
 help: targets
 
 targets:
 	@echo ""
 	@echo "cargo          - builds rust target"
+	@echo "ci             - builds auto-generated CI artifacts"
 	@echo "clean          - clean out build targets"
 	@echo "client         - generate and build the cloudtruth-restapi library"
 	@echo "image          - make the cloudtruth/cli docker container for development"

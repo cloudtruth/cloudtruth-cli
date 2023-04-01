@@ -1,5 +1,5 @@
 use anyhow::*;
 
 fn main() -> Result<()> {
-    ci::cli::main()
+    xtask::cli::main()
 }
