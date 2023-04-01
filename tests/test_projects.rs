@@ -1,4 +1,21 @@
+use std::path::Path;
 use integration_test_harness::prelude::*;
+
+#[test]
+fn project_basic_examples() -> Result<()> {
+    let name = Name::uuid();
+    println!("{}", name);
+    let old_name = name.clone();
+    let new_name = Name::uuid_with_prefix("proj-rename");
+    trycmd::TestCases::new()
+        .register_bin("cloudtruth", Path::new(cli_bin_path!()))
+        .case("examples/basic-usage/projects.md")
+        .insert_var("[NAME]", name)?
+        .insert_var("[OLD]", old_name)?
+        .insert_var("[NEW]", new_name)?
+        .run();
+    Ok(())
+}
 
 #[integration_test]
 fn project_basic() {

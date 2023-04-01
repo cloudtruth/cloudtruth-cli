@@ -1,5 +1,5 @@
 use commandspec::CommandArg;
-use std::ops::Deref;
+use std::{ops::Deref, borrow::Cow};
 use uuid::Uuid;
 
 fn uuid() -> String {
@@ -8,7 +8,7 @@ fn uuid() -> String {
 
 /// A generic CloudTruth entity name
 #[derive(Display, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
-pub struct Name(pub String);
+pub struct Name(String);
 
 impl Name {
     pub fn new<S: Into<String>>(name: S) -> Self {
@@ -49,6 +49,18 @@ impl From<&Name> for CommandArg {
 impl From<&&Name> for CommandArg {
     fn from(name: &&Name) -> Self {
         CommandArg::Literal(name.to_string())
+    }
+}
+
+impl From<Name> for Cow<'static, str> {
+    fn from(name: Name) -> Self {
+        Cow::Owned(name.to_string())
+    }
+}
+
+impl From<&'static Name> for Cow<'static, str> {
+    fn from(name: &'static Name) -> Self {
+        Cow::Borrowed(&name.0)
     }
 }
 
