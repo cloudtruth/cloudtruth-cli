@@ -11,7 +11,7 @@ use super::{collect_file_errors, Cli};
 
 macro_rules! help_text_path {
     ($($path:expr),*) => {
-        concat!("../examples/help-text/", $($path),*)
+        concat!(env!("CARGO_MANIFEST_DIR"),"/../examples/help-text/", $($path),*)
     };
 }
 
@@ -25,6 +25,7 @@ static HELP_TEXT_DIR: Lazy<PathBuf> = Lazy::new(|| {
 
 impl Cli {
     pub async fn generate_help_text(&self) -> Result<()> {
+        fs::remove_dir_all(HELP_TEXT_DIR.as_path())?;
         self.walk_cli(BIN_NAME).await
     }
 

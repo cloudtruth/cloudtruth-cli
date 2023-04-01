@@ -11,7 +11,7 @@ use super::{collect_file_errors, Cli};
 /// Default base path for GH matrix outputs
 macro_rules! matrix_path {
     ($($path:expr),*) => {
-        concat!("./gha-matrices/", $($path),*)
+        concat!(env!("CARGO_MANIFEST_DIR"),"/gha-matrices/", $($path),*)
     };
 }
 

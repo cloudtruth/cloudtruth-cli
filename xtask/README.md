@@ -1,4 +1,27 @@
-This crate contains scripts, configuration, and utilities for CI.
+This crate contains scripts, configuration, and utilities for CI and development related tasks.
+
+You can invoke tasks via the following command:
+
+```console
+cargo xtask <COMMAND>
+```
+
+Full description of commands is provided via `--help` option:
+
+```sh
+Usage: xtask [OPTIONS] <COMMAND>
+
+Commands:
+  generate-docker        Generate Dockerfiles
+  generate-gha-matrices  Generate GitHub Actions job matrix data
+  generate-help-text     Generate test cases for CLI help text
+  help                   Print this message or the help of the given subcommand(s)
+
+Options:
+  -p, --pretty   pretty-print output
+  -v, --verbose  verbose logging
+  -h, --help     Print help
+```
 
 # Configuration 
 The `config.yaml` file is used to configure all of the auto-generated artifacts in this crate.

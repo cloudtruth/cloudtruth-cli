@@ -41,7 +41,7 @@ jobs:
           ref: ${{ inputs.ref }}
 
       - shell: bash
-        run: sh ci/scripts/install-rust.sh
+        run: sh xtask/scripts/install-rust.sh
 
       - shell: bash
         run: rustup component add rustfmt clippy

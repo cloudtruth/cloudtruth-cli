@@ -1,11 +1,11 @@
 #
 # Copyright (C) 2021 CloudTruth, Inc.
 #
-
+.DEFAULT = ci
 .PHONY = all
 .PHONY += build
+.PHONY += ci
 .PHONY += clean
-.PHONY += default
 .PHONY += gen
 .PHONY += help
 .PHONY += prerequisites
@@ -20,9 +20,8 @@
 actions_files := $(shell ls gha-matrices/*.json 2> /dev/null || echo CLEANED)
 docker_files := $(shell ls docker/Dockerfile* 2> /dev/null || echo CLEANED)
 config_files := config.yaml templates/Dockerfile
-ci_bin := ../target/release/ci
 
-default: gha-matrices docker
+ci: gha-matrices docker
 
 all: clean docker gha-matrices help-text
 
@@ -31,29 +30,28 @@ clean:
 # rm ~/.actrc
 
 prerequisites:
-# python3 -m pip install --user --upgrade -r requirements.txt
 # curl https://raw.githubusercontent.com/nektos/act/master/install.sh | sudo bash
 
-precommit: default
+precommit: ci
 	@git ls-files -m -mo --exclude-standard |\
 		grep -E '^docker/Dockerfile.*|^gha-matrices/.*\.json$$' ||\
 		exit 0 ;\
 		echo 'Found unstaged changes to generated CI files. Please add them to the commit.' &&\
 		exit 1
 
-gha-matrices: $(actions_files) $(config_files) $(ci_bin)
-	$(ci_bin) generate gha-matrices --verbose
+gha-matrices: $(actions_files) $(config_files)
+	cargo xtask generate-gha-matrices --verbose
 	@touch gha-matrices
 
-docker: $(docker_files) $(config_files) $(ci_bin)
-	$(ci_bin) generate docker --verbose
+docker: $(docker_files) $(config_files)
+	cargo xtask generate-docker --verbose
 	@touch docker
 
-help-text: build
+help-text:
 	@rm -rf $(shell ls ../examples/help-text/*)
-	$(ci_bin) generate help-text --verbose
+	cargo xtask generate-help-text --verbose
 
-$(ci_bin) build: RUST_SOURCES #let Cargo detect changes
+build:
 	cargo build --release
 
 help: targets
@@ -61,6 +59,7 @@ help: targets
 targets:
 	@echo ""
 	@echo "build		  - build the executable "
+	@echo "ci             - generate CI artifacts (equivalent to make docker and make gha-matrices)"
 	@echo "clean          - remove generated docker files"
 	@echo "docker         - generate CI Dockerfiles"
 	@echo "gha-matrices   - generate GHA job matrices"
@@ -68,7 +67,5 @@ targets:
 	@echo "precommit      - makes sure CI files are up-to-date"
 	@echo ""
 
-# a force target for Rust builds. we can use Cargo to detect source file changes
-RUST_SOURCES:
 # needed when running "make all" so make doesn't complain about missing targets
 $(docker_files) $(actions_files):

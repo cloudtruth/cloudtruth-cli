@@ -11,7 +11,7 @@ readme = "README.md"
 build = "build.rs"
 
 [workspace]
-members = ["crates/*", "ci"]
+members = ["crates/*", "xtask"]
 default-members = [".", "crates/cloudtruth-config", "crates/cloudtruth-installer"]
 exclude = ["crates/cloudtruth-restapi"]
 

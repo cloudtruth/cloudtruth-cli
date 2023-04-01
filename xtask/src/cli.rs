@@ -4,10 +4,8 @@ mod generate_help_text;
 
 use anyhow::*;
 use clap::Parser;
-use futures::future::join_all;
 use once_cell::sync::OnceCell;
 use std::{
-    collections::HashSet,
     fs::{create_dir, File},
     io::Read,
     path::Path,
@@ -29,26 +27,17 @@ pub struct Cli {
     #[arg(long, short, global(true), help = "verbose logging")]
     pub verbose: bool,
     #[command(subcommand)]
-    pub command: Commands,
+    pub task: TaskCommand,
 }
 
 #[derive(clap::Subcommand, Clone, Debug)]
-pub enum Commands {
-    #[command(about = "Generate CI files")]
-    Generate {
-        #[arg(required = true)]
-        actions: Vec<GenerateActions>,
-    },
-}
-
-#[derive(clap::ValueEnum, Hash, PartialEq, Eq, Clone, Debug, Copy)]
-pub enum GenerateActions {
-    #[value(help = "Generate Dockerfiles")]
-    Docker,
-    #[value(help = "Generate GHA matrix files")]
-    GhaMatrices,
-    #[value(help = "Generate Dockerfiles")]
-    HelpText,
+pub enum TaskCommand {
+    #[command(about = "Generate Dockerfiles")]
+    GenerateDocker,
+    #[command(about = "Generate GitHub Actions job matrix data")]
+    GenerateGhaMatrices,
+    #[command(about = "Generate test cases for CLI help text")]
+    GenerateHelpText,
 }
 
 impl Cli {
@@ -101,11 +90,11 @@ impl Cli {
         Ok(())
     }
 
-    async fn run_action(&self, action: &GenerateActions) -> Result<()> {
-        match action {
-            GenerateActions::Docker => self.generate_dockerfiles(self.get_config()?).await,
-            GenerateActions::GhaMatrices => self.generate_actions_matrices(self.get_config()?),
-            GenerateActions::HelpText => self.generate_help_text().await,
+    async fn run_task(&self) -> Result<()> {
+        match &self.task {
+            TaskCommand::GenerateDocker => self.generate_dockerfiles(self.get_config()?).await,
+            TaskCommand::GenerateGhaMatrices => self.generate_actions_matrices(self.get_config()?),
+            TaskCommand::GenerateHelpText => self.generate_help_text().await,
         }
     }
 }
@@ -113,20 +102,7 @@ impl Cli {
 #[tokio::main]
 pub async fn main() -> Result<()> {
     let cli = Cli::parse();
-    let results = match &cli.command {
-        Commands::Generate { actions } => {
-            join_all(
-                HashSet::<&GenerateActions>::from_iter(actions)
-                    .into_iter()
-                    .map(|action| cli.run_action(action)),
-            )
-            .await
-        }
-    };
-    collect_file_errors(
-        anyhow!("Multiple file errors when generating CI files"),
-        results.into_iter().filter_map(Result::err).collect(),
-    )
+    cli.run_task().await
 }
 
 // collects and reports errors

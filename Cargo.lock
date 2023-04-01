@@ -329,25 +329,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "ci"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "askama",
- "clap 4.1.13",
- "duct",
- "futures 0.3.27",
- "itertools",
- "once_cell",
- "serde",
- "serde_json",
- "serde_plain",
- "serde_yaml 0.9.19",
- "tokio 1.26.0",
- "tokio-stream",
-]
-
-[[package]]
 name = "ci_info"
 version = "0.10.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3778,6 +3759,25 @@ checksum = "d59cefebd0c892fa2dd6de581e937301d8552cb44489cdff035c6187cb63fa5e"
 dependencies = [
  "winapi 0.2.8",
  "winapi-build",
+]
+
+[[package]]
+name = "xtask"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "askama",
+ "clap 4.1.13",
+ "duct",
+ "futures 0.3.27",
+ "itertools",
+ "once_cell",
+ "serde",
+ "serde_json",
+ "serde_plain",
+ "serde_yaml 0.9.19",
+ "tokio 1.26.0",
+ "tokio-stream",
 ]
 
 [[package]]
