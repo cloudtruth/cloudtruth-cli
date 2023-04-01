@@ -19,11 +19,11 @@ on:
       buildOptions:
         description: options to pass to the Cargo build
         type: string
-        default: --workspace
+        default: --all-features --workspace
       testOptions:
         description: options to pass to the Cargo tests
         type: string
-        default: --workspace --tests
+        default: --all-features --workspace --lib --bins
       rustCacheKey:
         description: cache ID to use for rust-cache
         type: string
@@ -61,7 +61,7 @@ jobs:
       - name: Test
         shell: bash
         run: |
-          cargo nextest run --all-features --workspace --lib --bins ${{ inputs.testOptions }}
+          cargo nextest run ${{ inputs.testOptions }}
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v3
