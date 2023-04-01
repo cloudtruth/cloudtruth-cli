@@ -1,5 +1,5 @@
 use commandspec::CommandArg;
-use std::{ops::Deref, borrow::Cow};
+use std::{borrow::Cow, ops::Deref};
 use uuid::Uuid;
 
 fn uuid() -> String {

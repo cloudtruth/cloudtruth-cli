@@ -1,5 +1,5 @@
-use std::path::Path;
 use integration_test_harness::prelude::*;
+use std::path::Path;
 
 #[test]
 fn project_basic_examples() -> Result<()> {
