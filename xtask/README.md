@@ -1,14 +1,16 @@
 This crate contains scripts, configuration, and utilities for CI and development related tasks.
 
+# Using cargo xtask
+
 You can invoke tasks via the following command:
 
-```console
+```
 cargo xtask <COMMAND>
 ```
 
 Full description of commands is provided via `--help` option:
 
-```sh
+```
 Usage: xtask [OPTIONS] <COMMAND>
 
 Commands:
@@ -41,7 +43,7 @@ If you change the help text of a command and would like to regenerate the test c
 # Directory Overview
 * `templates` - Various templates used for auto-generation. These are [askama](https://docs.rs/askama/latest/askama/) templates with syntax heavily based on Jinja.
 * `scripts` - POSIX scripts for various CI tasks, mostly used in the GHA workflows.
-* `src` - The Rust crate source code. Contains all the auto-generation code.
+* `src` - The Rust crate source code. Contains all the code xtask commands.
 * Directories for generated artifacts
   * `docker` - Auto-generated Dockerfiles based on `config.yaml` and `templates/Dockerfile`.
   * `gha-matrices` - Auto-generated JSON files used as build matrices in the `build-release.yml` and `test-release.yml` GitHub Actions workflows.
