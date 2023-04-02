@@ -8,7 +8,7 @@ fn project_basic() {
     cloudtruth!("projects ls -v")
         .assert()
         .success()
-        .stdout(contains(&proj_name).not());
+        .stdout(not(contains(&proj_name)));
 
     // create with a description
     cloudtruth!(
@@ -68,7 +68,7 @@ fn project_basic() {
     cloudtruth!("projects list")
         .assert()
         .success()
-        .stdout(contains(&proj_name).and(contains("Updated description").not()));
+        .stdout(contains(&proj_name).and(not(contains("Updated description"))));
 
     // shows create/modified times
     cloudtruth!("projects list --show-times -f csv")
@@ -87,7 +87,7 @@ fn project_basic() {
     cloudtruth!("projects ls -v")
         .assert()
         .success()
-        .stdout(contains(&proj_name).not());
+        .stdout(not(contains(&proj_name)));
 
     // do it again, see we have success and a warning
     cloudtruth!("projects delete {name} --confirm", name = proj_name)

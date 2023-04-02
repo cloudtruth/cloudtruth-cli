@@ -3,33 +3,13 @@
 use crate::backtrace;
 use thiserror::Error;
 
-use miette::{Context, Diagnostic, GraphicalTheme, Result, ThemeCharacters, ThemeStyles};
-use owo_colors::Style;
+use miette::{Context, Diagnostic, Result};
 
 use crate::source_span::TestSourceSpan;
 
 const HELP_TEXT: &str = "set the `RUST_BACKTRACE=1` environment variable to display a backtrace.";
 
 pub fn set_panic_hook() {
-    // set custom miette reporter handler options
-    miette::set_hook(Box::new(|_| {
-        Box::new(
-            miette::MietteHandlerOpts::new()
-                .terminal_links(true)
-                .context_lines(3)
-                .tab_width(4)
-                .with_cause_chain()
-                .graphical_theme(GraphicalTheme {
-                    characters: ThemeCharacters::unicode(),
-                    styles: ThemeStyles {
-                        highlights: vec![Style::new().red().bold()],
-                        ..ThemeStyles::ansi()
-                    },
-                })
-                .build(),
-        )
-    }))
-    .expect("Error installing miette report handler");
     std::panic::set_hook(Box::new(move |info| {
         let payload = info.payload();
         let message = if let Some(msg) = payload.downcast_ref::<&str>() {
