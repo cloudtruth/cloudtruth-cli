@@ -6,7 +6,6 @@ pub fn install_miette_error_handler() {
     miette::set_hook(Box::new(|_| {
         Box::new(
             miette::MietteHandlerOpts::new()
-                .terminal_links(true)
                 .context_lines(3)
                 .tab_width(4)
                 .with_cause_chain()
