@@ -7,9 +7,9 @@ pub mod command;
 pub mod error_handler;
 #[cfg(feature = "macros")]
 pub mod macros;
+pub mod names;
 pub mod panic;
 pub mod prelude;
-pub mod scopes;
 mod source_span;
 
 /// Setup the integration test with error and panic handlers.
