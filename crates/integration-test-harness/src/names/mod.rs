@@ -29,7 +29,7 @@ pub trait DeleteName {
 /// Blanket implementation for names that implement the create and delete traits
 impl<T> NameConstructors for T
 where
-    T: CreateName + DeleteName + From<ScopedName<T>>,
+    T: CreateName + DeleteName + From<ScopedName<T>> + ?Sized,
 {
     fn new<S: Into<String>>(name: S) -> Self {
         Self::from(ScopedName::new(name.into()))
@@ -113,7 +113,7 @@ impl From<&Name> for String {
 #[display(fmt = "{}", name)]
 pub struct ScopedName<T>
 where
-    T: DeleteName,
+    T: DeleteName + ?Sized,
 {
     name: Name,
     _phantom: PhantomData<T>,
@@ -122,7 +122,7 @@ where
 /// Constructors for ScopedName
 impl<T> NameConstructors for ScopedName<T>
 where
-    T: CreateName + DeleteName,
+    T: CreateName + DeleteName + ?Sized,
 {
     ///Generate custom name
     fn new<S: Into<String>>(name: S) -> Self {
@@ -149,7 +149,7 @@ where
 
 impl<T> ScopedName<T>
 where
-    T: DeleteName,
+    T: DeleteName + ?Sized,
 {
     /// Get a reference to the inner Name for this ScopedName
     pub fn name(&self) -> &Name {
@@ -160,7 +160,7 @@ where
 /// Auto derefs to underlying Name reference for convenience.
 impl<T> Deref for ScopedName<T>
 where
-    T: DeleteName,
+    T: DeleteName + ?Sized,
 {
     type Target = Name;
     fn deref(&self) -> &Self::Target {
@@ -170,7 +170,7 @@ where
 
 impl<T> From<ScopedName<T>> for CommandArg
 where
-    T: DeleteName,
+    T: DeleteName + ?Sized,
 {
     fn from(scope: ScopedName<T>) -> Self {
         scope.name.clone().into()
@@ -179,7 +179,7 @@ where
 
 impl<T> From<&ScopedName<T>> for CommandArg
 where
-    T: DeleteName,
+    T: DeleteName + ?Sized,
 {
     fn from(scope: &ScopedName<T>) -> Self {
         scope.name().into()
@@ -188,7 +188,7 @@ where
 
 impl<T> From<&&ScopedName<T>> for CommandArg
 where
-    T: DeleteName,
+    T: DeleteName + ?Sized,
 {
     fn from(scope: &&ScopedName<T>) -> Self {
         scope.name().into()
@@ -199,7 +199,7 @@ where
 /// is called. This is where all cleanup actions occur for scoped test names.
 impl<T> Drop for ScopedName<T>
 where
-    T: DeleteName,
+    T: DeleteName + ?Sized,
 {
     fn drop(&mut self) {
         T::delete_name(&self.name)
