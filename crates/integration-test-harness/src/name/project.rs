@@ -9,19 +9,18 @@ pub struct ScopedProject(ScopedName<ScopedProject>);
 impl CreateName for ScopedProject {
     fn create_name(name: &Name) {
         Command::cargo_bin("cloudtruth")
-            .unwrap()
-            .args(["projects", "set", name.as_str()]);
+            .args(["projects", "set", name.as_str()])
+            .assert()
+            .success();
     }
 }
 
 impl DeleteName for ScopedProject {
     fn delete_name(name: &Name) {
-        Command::cargo_bin("cloudtruth").unwrap().args([
-            "projects",
-            "delete",
-            "--confirm",
-            name.as_str(),
-        ]);
+        Command::cargo_bin("cloudtruth")
+            .args(["projects", "delete", "--confirm", name.as_str()])
+            .assert()
+            .success();
     }
 }
 

@@ -10,10 +10,11 @@ use std::{
 pub struct Command(assert_cmd::Command);
 
 impl Command {
-    pub fn cargo_bin<S: AsRef<str>>(name: S) -> Result<Self> {
+    pub fn cargo_bin<S: AsRef<str>>(name: S) -> Self {
         assert_cmd::Command::cargo_bin(name)
             .into_diagnostic()
             .map(Self::from_assert_cmd)
+            .expect("Couldn't find binary to test")
     }
 
     pub fn from_assert_cmd(cmd: assert_cmd::Command) -> Self {
