@@ -7,7 +7,7 @@ pub mod command;
 pub mod error_handler;
 #[cfg(feature = "macros")]
 pub mod macros;
-pub mod names;
+pub mod name;
 pub mod panic;
 pub mod prelude;
 mod source_span;
