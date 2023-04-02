@@ -5,7 +5,7 @@ os_name := $(shell uname -s)
 rustup_exists := $(shell which rustup)
 openapi_gen_version := v5.3.1
 xtask_dir := xtask
-test_dir := integration-tests
+test_dir := tests
 client_dir := crates/cloudtruth-restapi
 # convenience for looping
 subdirs := $(xtask_dir)
@@ -101,7 +101,7 @@ lint_python:
 
 lint_rust:
 	cargo fmt --all -- --check
-	cargo clippy --workspace --all-features -- -D warnings
+	cargo clippy --workspace --all-features --tests -- -D warnings
 
 lint_shell:
 	git ls-files | grep -v -E '^$(client_dir)' | grep -E '\.sh$$' | xargs shellcheck

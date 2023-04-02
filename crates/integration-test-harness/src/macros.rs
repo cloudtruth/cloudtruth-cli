@@ -1,3 +1,4 @@
+#[cfg(feature = "macros")]
 #[macro_export]
 macro_rules! cli_bin_path {
     () => {
@@ -11,6 +12,7 @@ macro_rules! cli_bin_path {
 ///
 /// Also accepts format! syntax:
 ///     cloudtruth!("projects set {name}", name=expr)
+#[cfg(feature = "macros")]
 #[macro_export]
 macro_rules! cloudtruth {
     ($fmt:expr) => ( cloudtruth!($fmt,) );

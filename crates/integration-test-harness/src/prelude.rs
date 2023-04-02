@@ -1,14 +1,20 @@
 /// Convenience module to re-export stuff that's commonly used in tests
 ///
-// public re-exports
+// exports from harness
 pub use crate::assert::AssertCmdExt;
 pub use crate::command::*;
-#[cfg(feature = "macros")]
-pub use crate::macros::*;
 pub use crate::scopes::*;
-pub use assert_cmd::prelude::*;
+
+// export macros
 #[cfg(feature = "macros")]
-pub use integration_test_macros::integration_test;
+pub use {
+    super::{cli_bin_path, cloudtruth},
+    integration_test_macros::integration_test,
+};
+
+// exports from dependencies
+pub use assert_cmd::prelude::*;
+
 pub use miette::{Context, IntoDiagnostic, Result};
 pub use predicates::boolean::PredicateBooleanExt;
 pub use predicates::prelude::*;
