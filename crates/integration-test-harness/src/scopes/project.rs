@@ -1,4 +1,5 @@
 use command::Command;
+use std::ops::Deref;
 
 use super::name::Name;
 use crate::{command, scopes::ScopedName};
@@ -7,19 +8,6 @@ use crate::{command, scopes::ScopedName};
 pub struct ScopedProject(ScopedName);
 
 impl ScopedProject {
-    fn create_cmd(name: &Name) {
-        Command::cargo_bin("cloudtruth")
-            .unwrap()
-            .args(["projects", "set", name.as_str()]);
-    }
-    fn delete_cmd(name: &Name) {
-        Command::cargo_bin("cloudtruth").unwrap().args([
-            "projects",
-            "delete",
-            "--confirm",
-            name.as_str(),
-        ]);
-    }
     pub fn new<N: Into<Name>>(name: N) -> Self {
         Self(ScopedName::new(
             name.into(),
@@ -41,11 +29,25 @@ impl ScopedProject {
         ))
     }
 
-    pub fn scoped_name(&self) -> &ScopedName {
-        &self.0
+    fn create_cmd(name: &Name) {
+        Command::cargo_bin("cloudtruth")
+            .unwrap()
+            .args(["projects", "set", name.as_str()]);
     }
 
-    pub fn name(&self) -> &Name {
-        self.0.name()
+    fn delete_cmd(name: &Name) {
+        Command::cargo_bin("cloudtruth").unwrap().args([
+            "projects",
+            "delete",
+            "--confirm",
+            name.as_str(),
+        ]);
+    }
+}
+
+impl Deref for ScopedProject {
+    type Target = ScopedName;
+    fn deref(&self) -> &Self::Target {
+        &self.0
     }
 }
