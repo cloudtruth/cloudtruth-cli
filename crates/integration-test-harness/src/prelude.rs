@@ -1,11 +1,13 @@
 /// Convenience module to re-export stuff that's commonly used in tests
 ///
 // public re-exports
-pub use super::*;
 pub use crate::assert::AssertCmdExt;
 pub use crate::command::*;
+#[cfg(feature = "macros")]
+pub use crate::macros::*;
 pub use crate::scopes::*;
 pub use assert_cmd::prelude::*;
+#[cfg(feature = "macros")]
 pub use integration_test_macros::integration_test;
 pub use miette::{Context, IntoDiagnostic, Result};
 pub use predicates::boolean::PredicateBooleanExt;

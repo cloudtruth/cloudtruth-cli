@@ -4,12 +4,16 @@ version = "1.2.0"
 edition = "2021"
 license = "Apache-2.0"
 
+[features]
+default = ["macros"]
+macros = ["dep:integration-test-macros"]
+
 [dependencies]
 assert_cmd = "2.0.10"
 backtrace = "0.3.67"
 commandspec = "0.12.2"
 derive_more = "0.99.17"
-integration-test-macros = { path = "../integration-test-macros" }
+integration-test-macros = { path = "../integration-test-macros", optional = true }
 miette = { version = "5.6.0", features = ["fancy"] }
 owo-colors = "3.5.0"
 predicates = "3.0.2"

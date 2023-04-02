@@ -22,7 +22,7 @@ fn gen_integration_test(test_fn: ItemFn) -> proc_macro2::TokenStream {
         #(#attrs)*
         #vis #sig
         {
-            integration_test_harness::install_harness();
+            integration_test_harness::install();
             {
                 #block
             }
