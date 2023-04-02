@@ -20,9 +20,8 @@ impl Command {
         Self(cmd)
     }
 
-    #[allow(clippy::wrong_self_convention)]
-    pub fn to_assert_cmd(self) -> assert_cmd::Command {
-        self.0
+    pub fn as_assert_cmd(&self) -> &assert_cmd::Command {
+        &self.0
     }
 
     pub fn from_std(cmd: std::process::Command) -> Self {
@@ -52,15 +51,15 @@ impl From<assert_cmd::Command> for Command {
     }
 }
 
-impl From<Command> for assert_cmd::Command {
-    fn from(val: Command) -> Self {
-        val.to_assert_cmd()
-    }
-}
-
 impl From<std::process::Command> for Command {
     fn from(cmd: std::process::Command) -> Self {
         Self::from_std(cmd)
+    }
+}
+
+impl From<Command> for assert_cmd::Command {
+    fn from(cmd: Command) -> Self {
+        cmd.0
     }
 }
 
