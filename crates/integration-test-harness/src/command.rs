@@ -74,8 +74,11 @@ pub fn commandify(cmd: String) -> Result<Command> {
 }
 
 /// Process command argument (used by cloudtruth! macro)
-pub fn command_arg<S: AsRef<str>>(arg: S) -> CommandArg {
-    CommandArg::from(arg.as_ref())
+pub fn command_arg<'a, A>(arg: &'a A) -> CommandArg
+where
+    CommandArg: From<&'a A>,
+{
+    CommandArg::from(arg)
 }
 
 /// Fetches the path to binary for this integration test. Will panic if not found.

@@ -105,7 +105,7 @@ where
     R: Sized + TestResource,
 {
     fn scoped(self) -> Scope<Self> {
-        Scope { resource: self }
+        Scope::new(self)
     }
 }
 

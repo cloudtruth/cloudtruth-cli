@@ -1,10 +1,10 @@
 use crate::command;
 use command::Command;
+use commandspec::CommandArg;
 
 use super::{Name, TestResource};
 
-#[derive(Display, AsRef)]
-#[as_ref(forward)]
+#[derive(Display)]
 pub struct ProjectName(Name);
 
 impl TestResource for ProjectName {
@@ -31,7 +31,31 @@ impl TestResource for ProjectName {
 }
 
 impl From<&ProjectName> for String {
-    fn from(val: &ProjectName) -> Self {
-        val.name().to_string()
+    fn from(name: &ProjectName) -> Self {
+        name.name().into()
+    }
+}
+
+impl From<ProjectName> for CommandArg {
+    fn from(name: ProjectName) -> Self {
+        name.0.into()
+    }
+}
+
+impl From<&ProjectName> for CommandArg {
+    fn from(name: &ProjectName) -> Self {
+        name.name().into()
+    }
+}
+
+impl From<&&ProjectName> for CommandArg {
+    fn from(name: &&ProjectName) -> Self {
+        name.name().into()
+    }
+}
+
+impl From<ProjectName> for String {
+    fn from(name: ProjectName) -> Self {
+        name.0.into()
     }
 }
