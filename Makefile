@@ -45,7 +45,12 @@ all: precommit
 ### Commands for outside the container
 
 image:
+ifeq ($(os_name),Darwin)
+# passing in gid fails on MacOS
+	docker build --build-arg user_uid=$(shell id -u) -t cloudtruth/cli . -f Dockerfile.dev
+else
 	docker build --build-arg user_uid=$(shell id -u) --build-arg user_gid=$(shell id -g) -t cloudtruth/cli . -f Dockerfile.dev
+endif
 
 shell:
 	docker run --rm --privileged=true \
