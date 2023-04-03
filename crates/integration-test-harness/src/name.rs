@@ -1,8 +1,8 @@
 mod project;
-mod scoped;
+mod scope;
 
 pub use project::*;
-pub use scoped::*;
+pub use scope::*;
 
 use commandspec::CommandArg;
 use uuid::Uuid;
