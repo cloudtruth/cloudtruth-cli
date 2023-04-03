@@ -5,10 +5,12 @@ os_name := $(shell uname -s)
 rustup_exists := $(shell which rustup)
 openapi_gen_version := v5.3.1
 xtask_dir := xtask
-test_dir := integration-tests
+pytest_dir := integration-tests
+test_dir := tests
 client_dir := crates/cloudtruth-restapi
 # convenience for looping
 subdirs := $(xtask_dir)
+subdirs := $(pytest_dir)
 subdirs += $(test_dir)
 
 .DEFAULT = all
@@ -106,7 +108,7 @@ lint_python:
 
 lint_rust:
 	cargo fmt --all -- --check
-	cargo clippy --workspace --all-features -- -D warnings
+	cargo clippy --workspace --all-features --tests -- -D warnings
 
 lint_shell:
 	git ls-files | grep -v -E '^$(client_dir)' | grep -E '\.sh$$' | xargs shellcheck
@@ -165,13 +167,13 @@ endif
 
 # This target is used by workflows before running integration tests
 test_prerequisites:
-	make -C $(test_dir) prerequisites
+	make -C $(pytest_dir) prerequisites
 
 test:
-	RUST_BACKTRACE=1 cargo nextest run --workspace
+	RUST_BACKTRACE=1 cargo nextest run --all-features --workspace --lib --bins
 
 integration: cargo
-	make -C $(test_dir) $@
+	make -C $(pytest_dir) $@
 
 help-text:
 	make -C $(xtask_dir) help-text
