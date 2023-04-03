@@ -87,23 +87,23 @@ impl From<&Name> for String {
     }
 }
 
-/// Trait for things that have a name
-pub trait HasName {
-    fn name(&self) -> &Name;
+impl<'a> From<&'a Name> for &'a String {
+    fn from(name: &'a Name) -> Self {
+        &name.0
+    }
 }
 
-impl<N> From<N> for Name
-where
-    N: HasName,
-{
-    fn from(has_name: N) -> Self {
-        has_name.name().to_owned()
+impl AsRef<str> for Name {
+    fn as_ref(&self) -> &str {
+        &self.0
     }
 }
 
 /// Trait for test resources that have a name and can be created and deleted. Used by the Scoped type to initialize
 /// test data in CloudTruth
 pub trait TestResource {
+    /// Access a reference to the Name of this resource
+    fn name(&self) -> &Name;
     /// Construct a test resource from a name
     fn from_name<N: Into<Name>>(name: N) -> Self;
     /// Create the test resource on the server

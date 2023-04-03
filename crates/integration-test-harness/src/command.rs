@@ -4,6 +4,7 @@ use std::{
     env,
     ops::{Deref, DerefMut},
 };
+
 /// A newtype wrapper around assert_cmd::Command so that we can define custom methods.
 /// For convenience it has a Deref impl that allows us to call assert_cmd methods
 #[derive(Debug)]
@@ -73,11 +74,8 @@ pub fn commandify(cmd: String) -> Result<Command> {
 }
 
 /// Process command argument (used by cloudtruth! macro)
-pub fn command_arg<'a, T>(value: &'a T) -> CommandArg
-where
-    CommandArg: From<&'a T>,
-{
-    CommandArg::from(value)
+pub fn command_arg<S: AsRef<str>>(arg: S) -> CommandArg {
+    CommandArg::from(arg.as_ref())
 }
 
 /// Fetches the path to binary for this integration test. Will panic if not found.

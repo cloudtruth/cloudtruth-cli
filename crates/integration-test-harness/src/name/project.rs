@@ -1,18 +1,16 @@
 use crate::command;
 use command::Command;
 
-use super::{HasName, Name, TestResource};
+use super::{Name, TestResource};
 
-#[derive(Display)]
+#[derive(Display, AsRef)]
+#[as_ref(forward)]
 pub struct ProjectName(Name);
 
-impl HasName for ProjectName {
+impl TestResource for ProjectName {
     fn name(&self) -> &Name {
         &self.0
     }
-}
-
-impl TestResource for ProjectName {
     fn from_name<N: Into<Name>>(name: N) -> Self {
         Self(name.into())
     }
@@ -29,5 +27,11 @@ impl TestResource for ProjectName {
             .args(["projects", "delete", "--confirm", self.0.as_str()])
             .assert()
             .success();
+    }
+}
+
+impl From<&ProjectName> for String {
+    fn from(val: &ProjectName) -> Self {
+        val.name().to_string()
     }
 }

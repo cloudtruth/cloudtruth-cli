@@ -17,8 +17,8 @@ macro_rules! cli_bin_path {
 macro_rules! cloudtruth {
     ($fmt:expr) => ( cloudtruth!($fmt,) );
     ($fmt:expr, $( $id:ident = $value:expr ),* $(,)*) => (
-        $crate::command::commandify(format!(concat!("{} ", $fmt), cli_bin_path!(), $( $id = $crate::command::command_arg(&$value) ),*))
-            .wrap_err_with(|| format!(concat!("Invalid command: cloudtruth ", $fmt), $( $id = $crate::command::command_arg(&$value) ),*))
+        $crate::command::commandify(format!(concat!("{} ", $fmt), cli_bin_path!(), $( $id = $crate::command::command_arg(&($value)) ),*))
+            .wrap_err_with(|| format!(concat!("Invalid command: cloudtruth ", $fmt), $( $id = $crate::command::command_arg(&($value)) ),*))
             .unwrap()
     );
 }
