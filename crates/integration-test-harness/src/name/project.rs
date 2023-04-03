@@ -1,31 +1,33 @@
+use crate::command;
 use command::Command;
 
-use super::{CreateName, DeleteName, Name, ScopedName};
-use crate::command;
+use super::{HasName, Name, TestResource};
 
 #[derive(Display)]
-pub struct ScopedProject(ScopedName<ScopedProject>);
+pub struct ProjectName(Name);
 
-impl CreateName for ScopedProject {
-    fn create_name(name: &Name) {
-        Command::cargo_bin("cloudtruth")
-            .args(["projects", "set", name.as_str()])
-            .assert()
-            .success();
+impl HasName for ProjectName {
+    fn name(&self) -> &Name {
+        &self.0
     }
 }
 
-impl DeleteName for ScopedProject {
-    fn delete_name(name: &Name) {
+impl TestResource for ProjectName {
+    fn from_name<N: Into<Name>>(name: N) -> Self {
+        Self(name.into())
+    }
+
+    fn create(&self) {
         Command::cargo_bin("cloudtruth")
-            .args(["projects", "delete", "--confirm", name.as_str()])
+            .args(["projects", "set", self.0.as_str()])
             .assert()
             .success();
     }
-}
 
-impl From<ScopedName<ScopedProject>> for ScopedProject {
-    fn from(value: ScopedName<ScopedProject>) -> Self {
-        Self(value)
+    fn delete(&self) {
+        Command::cargo_bin("cloudtruth")
+            .args(["projects", "delete", "--confirm", self.0.as_str()])
+            .assert()
+            .success();
     }
 }

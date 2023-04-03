@@ -1,45 +1,37 @@
 mod project;
+mod scoped;
 
 pub use project::*;
+pub use scoped::*;
 
 use commandspec::CommandArg;
-use std::{marker::PhantomData, ops::Deref};
 use uuid::Uuid;
-
-/// Trait for name constructors.
-///
-/// A blanket implementation is provided for any types that implement
-/// From<ScopedName<T>> + CreateName + DeleteName so that newtype wrappers for specific entity
-/// types only need to implement those traits to have name constructor functions as well as
-/// the auto-delete scoping behavior via the Drop implementation for ScopedName.
-///
-/// See src/name/project.rs for an example of how this is done.
-pub trait NameConstructors {
-    fn new<S: Into<String>>(name: S) -> Self;
-    fn uuid() -> Self;
-    fn uuid_with_prefix<S: AsRef<str>>(prefix: S) -> Self;
-}
-
-/// Trait for creating a name via cli commands. Used by ScopedName to initialize the name
-/// in CloudTruth.
-pub trait CreateName {
-    fn create_name(name: &Name);
-}
-
-/// Trait for deleting a name via cli commands. Used by ScopedName to drop the name
-/// in CloudTruth.
-pub trait DeleteName {
-    fn delete_name(name: &Name);
-}
 
 /// A newtype wrapper around String representing a generic CloudTruth entity name.
 /// Used as a base for other name types.
 #[derive(Display, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Name(String);
 
+/// Trait for name constructors.
+///
+/// A blanket implementation is provided for any types that implement
+/// TestResource so that newtype wrappers for specific entity
+/// types only need to implement those trait methods to have standardized constructor functions
+/// and the auto-delete behavior via the Drop implementation for Scoped.
+///
+/// See src/name/project.rs for an example of how this is done.
+pub trait NameConstructors {
+    /// Construct a new name directly from a String.
+    fn from_string<S: Into<String>>(name: S) -> Self;
+    /// Construct a new name from a v4 UUID.
+    fn uuid() -> Self;
+    /// Generate new name with a v4 UUID and a fixed prefix.
+    fn uuid_with_prefix<S: AsRef<str>>(prefix: S) -> Self;
+}
+
 /// Name constructors
 impl NameConstructors for Name {
-    fn new<S: Into<String>>(name: S) -> Self {
+    fn from_string<S: Into<String>>(name: S) -> Self {
         Self(name.into())
     }
 
@@ -60,8 +52,8 @@ impl Name {
 }
 
 impl From<String> for Name {
-    fn from(value: String) -> Self {
-        Self::new(value)
+    fn from(string: String) -> Self {
+        Self::from_string(string)
     }
 }
 
@@ -95,121 +87,43 @@ impl From<&Name> for String {
     }
 }
 
-/// A generic CloudTruth entity name scoped via Rust borrow checker.
-/// Used to implement the more specific scoped structs (ex: ScopedProject)
-///
-/// T must implement DeleteName, which is used via the Drop implementation
-/// to delete the entity when the ScopedName is dropped.
-#[derive(Display)]
-#[display(fmt = "{}", name)]
-pub struct ScopedName<T>
-where
-    T: DeleteName + ?Sized,
-{
-    name: Name,
-    _phantom: PhantomData<T>,
+/// Trait for things that have a name
+pub trait HasName {
+    fn name(&self) -> &Name;
 }
 
-/// Constructors for ScopedName
-impl<T> NameConstructors for ScopedName<T>
+impl<N> From<N> for Name
 where
-    T: CreateName + DeleteName + ?Sized,
+    N: HasName,
 {
-    ///Generate custom name
-    fn new<S: Into<String>>(name: S) -> Self {
-        let name = Name::new(name.into());
-        T::create_name(&name);
-        ScopedName {
-            name,
-            _phantom: PhantomData,
-        }
-    }
-
-    ///Generate new name with UUID
-    fn uuid() -> Self {
-        ScopedName::new(Name::uuid())
-    }
-
-    fn uuid_with_prefix<S>(prefix: S) -> Self
-    where
-        S: AsRef<str>,
-    {
-        ScopedName::new(Name::uuid_with_prefix(prefix))
+    fn from(has_name: N) -> Self {
+        has_name.name().to_owned()
     }
 }
 
-impl<T> ScopedName<T>
-where
-    T: DeleteName + ?Sized,
-{
-    /// Get a reference to the inner Name for this ScopedName
-    pub fn name(&self) -> &Name {
-        &self.name
-    }
+/// Trait for test resources that have a name and can be created and deleted. Used by the Scoped type to initialize
+/// test data in CloudTruth
+pub trait TestResource {
+    /// Construct a test resource from a name
+    fn from_name<N: Into<Name>>(name: N) -> Self;
+    /// Create the test resource on the server
+    fn create(&self);
+    /// Delete the test resource from the server
+    fn delete(&self);
 }
 
-/// Auto derefs to underlying Name reference for convenience.
-impl<T> Deref for ScopedName<T>
+/// Blanket implementation of NameConstructors for types that implement TestResource
+impl<Resource> NameConstructors for Resource
 where
-    T: DeleteName + ?Sized,
+    Resource: TestResource,
 {
-    type Target = Name;
-    fn deref(&self) -> &Self::Target {
-        self.name()
-    }
-}
-
-impl<T> From<ScopedName<T>> for CommandArg
-where
-    T: DeleteName + ?Sized,
-{
-    fn from(scope: ScopedName<T>) -> Self {
-        scope.name.clone().into()
-    }
-}
-
-impl<T> From<&ScopedName<T>> for CommandArg
-where
-    T: DeleteName + ?Sized,
-{
-    fn from(scope: &ScopedName<T>) -> Self {
-        scope.name().into()
-    }
-}
-
-impl<T> From<&&ScopedName<T>> for CommandArg
-where
-    T: DeleteName + ?Sized,
-{
-    fn from(scope: &&ScopedName<T>) -> Self {
-        scope.name().into()
-    }
-}
-
-/// When ScopedName is dropped, the associated DeleteName::delete_name function of T
-/// is called. This is where all cleanup actions occur for scoped test names.
-impl<T> Drop for ScopedName<T>
-where
-    T: DeleteName + ?Sized,
-{
-    fn drop(&mut self) {
-        T::delete_name(&self.name)
-    }
-}
-
-/// Blanket implementation of NameConstructors for names that can be constructed from
-/// ScopedName and implement CreateName and DeleteName
-impl<T> NameConstructors for T
-where
-    T: CreateName + DeleteName + From<ScopedName<T>> + ?Sized,
-{
-    fn new<S: Into<String>>(name: S) -> Self {
-        Self::from(ScopedName::new(name.into()))
+    fn from_string<S: Into<String>>(string: S) -> Self {
+        Self::from_name(Name::from_string(string))
     }
     fn uuid() -> Self {
-        Self::from(ScopedName::uuid())
+        Self::from_name(Name::uuid())
     }
     fn uuid_with_prefix<S: AsRef<str>>(prefix: S) -> Self {
-        Self::from(ScopedName::uuid_with_prefix(prefix))
+        Self::from_name(Name::uuid_with_prefix(prefix))
     }
 }
