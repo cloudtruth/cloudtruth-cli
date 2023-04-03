@@ -511,6 +511,21 @@ def remove_unused_parameter_id(srcdir: str, verbose: bool) -> None:
     file_write_content(filename, updated)
 
 
+def patch_client_reqwest_ssl(client_dir: str, verbose: bool) -> None:
+    """
+    Changes reqwest dependency to use the vendored SSL feature
+    """
+    cargoToml = f"{client_dir}/Cargo.toml"
+    orig = file_read_content(cargoToml)
+    updated = orig.replace(
+        'reqwest = "~0.9"',
+        'reqwest = { version = "~0.9", default-features = false, features = ["default-tls-vendored"] }',
+    )
+    file_write_content(cargoToml, updated)
+    if verbose:
+        print("Updating reqwest dependency to use vendored SSL")
+
+
 if __name__ == "__main__":
     client_dir = os.getcwd() + "/crates/cloudtruth-restapi"
     srcdir = client_dir + "/src"
@@ -532,3 +547,4 @@ if __name__ == "__main__":
     optional_enums(srcdir, verbose)
     default_enums(srcdir, verbose)
     remove_unused_parameter_id(srcdir, verbose)
+    patch_client_reqwest_ssl(client_dir, verbose)
