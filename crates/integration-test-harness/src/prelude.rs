@@ -3,7 +3,7 @@
 // exports from harness
 pub use crate::assert::AssertCmdExt;
 pub use crate::command::*;
-pub use crate::name::*;
+pub use crate::data::*;
 
 // export macros
 #[cfg(feature = "macros")]

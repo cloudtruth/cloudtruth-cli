@@ -4,10 +4,10 @@ extern crate derive_more;
 pub mod assert;
 mod backtrace;
 pub mod command;
+pub mod data;
 pub mod error_handler;
 #[cfg(feature = "macros")]
 pub mod macros;
-pub mod name;
 pub mod panic;
 pub mod prelude;
 mod source_span;
