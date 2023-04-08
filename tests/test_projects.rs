@@ -1,5 +1,7 @@
 use integration_test_harness::prelude::*;
 
+const TEST_PAGE_SIZE: usize = 5;
+
 #[integration_test]
 fn project_basic() {
     let mut proj = Project::uuid_with_prefix("proj-name");
@@ -24,6 +26,7 @@ fn project_basic() {
     cloudtruth!("projects set {proj} --desc 'Updated description'")
         .assert()
         .success();
+
     cloudtruth!("projects ls -v -f csv")
         .assert()
         .success()
@@ -142,4 +145,19 @@ fn project_parents() {
         .assert()
         .success()
         .stdout(contains(format!("{proj4},{proj2},My new description")));
+}
+
+#[integration_test]
+fn project_pagination() {
+    let page_size = TEST_PAGE_SIZE;
+    // we store the project names so they're not instantly dropped and deleted
+    let _projects: Vec<ScopedProject> = (1..=page_size)
+        .map(|i| ScopedProject::uuid_with_prefix(format!("proj-page-{}", i)))
+        .collect();
+    cloudtruth!("proj ls")
+        .rest_debug()
+        .page_size(page_size)
+        .assert()
+        .success()
+        .paginated(page_size);
 }
