@@ -97,12 +97,7 @@ mod tests {
     #[serial]
     fn create_profile_from_empty_env() {
         remove_env_vars();
-        assert_eq!(
-            Profile {
-                ..Profile::default()
-            },
-            ConfigEnv::load_profile()
-        );
+        assert_eq!(Profile::default(), ConfigEnv::load_profile());
     }
 
     #[test]
