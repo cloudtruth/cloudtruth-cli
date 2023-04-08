@@ -3,7 +3,7 @@ use owo_colors::Style;
 
 pub fn install_miette_error_handler() {
     // set custom miette reporter handler options
-    miette::set_hook(Box::new(|_| {
+    let _ = miette::set_hook(Box::new(|_| {
         Box::new(
             miette::MietteHandlerOpts::new()
                 .context_lines(3)
@@ -18,6 +18,5 @@ pub fn install_miette_error_handler() {
                 })
                 .build(),
         )
-    }))
-    .expect("Could not install miette error handler");
+    }));
 }
