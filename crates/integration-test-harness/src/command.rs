@@ -1,9 +1,14 @@
 use commandspec::CommandArg;
 use miette::{IntoDiagnostic, Result};
+
 use std::{
     env,
+    ffi::OsStr,
     ops::{Deref, DerefMut},
 };
+
+const CLOUDTRUTH_REST_PAGE_SIZE: &str = "CLOUDTRUTH_REST_PAGE_SIZE";
+const CLOUDTRUTH_REST_DEBUG: &str = "CLOUDTRUTH_REST_DEBUG";
 
 /// A newtype wrapper around assert_cmd::Command so that we can define custom methods.
 /// For convenience it has a Deref impl that allows us to call assert_cmd methods
@@ -28,6 +33,23 @@ impl Command {
 
     pub fn from_std(cmd: std::process::Command) -> Self {
         Self(assert_cmd::Command::from_std(cmd))
+    }
+
+    pub fn env<K, V>(&mut self, key: K, value: V) -> &mut Self
+    where
+        K: AsRef<OsStr>,
+        V: AsRef<OsStr>,
+    {
+        self.0.env(key, value);
+        self
+    }
+
+    pub fn page_size(&mut self, page_size: usize) -> &mut Self {
+        self.env(CLOUDTRUTH_REST_PAGE_SIZE, page_size.to_string())
+    }
+
+    pub fn rest_debug(&mut self) -> &mut Self {
+        self.env(CLOUDTRUTH_REST_DEBUG, "true")
     }
 }
 
