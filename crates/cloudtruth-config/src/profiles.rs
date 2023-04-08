@@ -120,9 +120,7 @@ mod tests {
 
     #[test]
     fn merged_values_take_priority() {
-        let first = Profile {
-            ..Profile::default()
-        };
+        let first = Profile::default();
 
         let second = Profile {
             api_key: Some("new_key".to_string()),
@@ -156,9 +154,7 @@ mod tests {
             ..Profile::default()
         };
 
-        let second = Profile {
-            ..Profile::default()
-        };
+        let second = Profile::default();
 
         assert_eq!(first, first.merge(&second));
     }

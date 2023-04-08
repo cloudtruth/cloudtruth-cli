@@ -9,5 +9,8 @@ build:
 
 precommit: build
 
+prerequisites:
+	@echo "No prerequisites"
+
 test:
 	cargo test --tests

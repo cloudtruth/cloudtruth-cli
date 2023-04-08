@@ -11,12 +11,9 @@ fn project_basic() {
         .stdout(not(contains(&proj)));
 
     // create with a description
-    cloudtruth!(
-        "projects set {name} --desc 'Description on create'",
-        name = proj
-    )
-    .assert()
-    .success();
+    cloudtruth!("projects set {proj} --desc 'Description on create'")
+        .assert()
+        .success();
 
     cloudtruth!("projects ls -v -f csv")
         .assert()
@@ -24,40 +21,30 @@ fn project_basic() {
         .stdout(contains(format!("{proj},,Description on create")));
 
     // update the description
-    cloudtruth!(
-        "projects set {name} --desc 'Updated description'",
-        name = proj
-    )
-    .assert()
-    .success();
+    cloudtruth!("projects set {proj} --desc 'Updated description'")
+        .assert()
+        .success();
     cloudtruth!("projects ls -v -f csv")
         .assert()
         .success()
         .stdout(contains(format!("{proj},,Updated description")));
 
     // idempotent - do it again
-    cloudtruth!(
-        "projects set {name} --desc 'Updated description'",
-        name = proj
-    )
-    .assert()
-    .success();
+    cloudtruth!("projects set {proj} --desc 'Updated description'")
+        .assert()
+        .success();
 
     // rename
     let proj_rename = Project::uuid_with_prefix("proj-rename");
-    cloudtruth!(
-        "projects set {name1} --rename {name2}",
-        name1 = proj,
-        name2 = proj_rename
-    )
-    .assert()
-    .success()
-    .stdout(contains(format!("Updated project '{proj_rename}'")));
+    cloudtruth!("projects set {proj} --rename {proj_rename}")
+        .assert()
+        .success()
+        .stdout(contains(format!("Updated project '{proj_rename}'")));
 
     proj = proj_rename;
 
     // nothing to update
-    cloudtruth!("projects set {name}", name = proj)
+    cloudtruth!("projects set {proj}")
         .assert()
         .success()
         .stderr(contains(format!(
@@ -81,7 +68,7 @@ fn project_basic() {
         );
 
     // delete
-    cloudtruth!("projects delete {name} --confirm", name = proj)
+    cloudtruth!("projects delete {proj} --confirm")
         .assert()
         .success();
     cloudtruth!("projects ls -v")
@@ -90,7 +77,7 @@ fn project_basic() {
         .stdout(not(contains(&proj)));
 
     // do it again, see we have success and a warning
-    cloudtruth!("projects delete {name} --confirm", name = proj)
+    cloudtruth!("projects delete {proj} --confirm")
         .assert()
         .success()
         .stderr(contains(format!("Project '{proj}' does not exist")));
@@ -123,7 +110,7 @@ fn project_parents() {
             "{proj1}\n  {proj2}\n    {proj3}\n    {proj4}"
         )));
 
-    cloudtruth!("proj delete {proj2} --confirm", proj2 = proj2)
+    cloudtruth!("proj delete {proj2} --confirm")
         .assert()
         .failure()
         .stderr(
@@ -135,34 +122,22 @@ fn project_parents() {
 
     let proj5 = Project::uuid_with_prefix("proj-par-5");
     let proj6 = Project::uuid_with_prefix("proj-par-6");
-    cloudtruth!(
-        "proj set '{proj5}' --parent '{proj6}'",
-        proj5 = proj5,
-        proj6 = proj6
-    )
-    .assert()
-    .failure()
-    .stderr(contains(format!("No parent project '{proj6}' found")));
-    cloudtruth!(
-        "proj set '{proj4}' --parent '{proj1}'",
-        proj4 = proj4,
-        proj1 = proj1
-    )
-    .assert()
-    .success()
-    .stdout(contains(format!("Updated project '{proj4}'")));
+    cloudtruth!("proj set '{proj5}' --parent '{proj6}'")
+        .assert()
+        .failure()
+        .stderr(contains(format!("No parent project '{proj6}' found")));
+    cloudtruth!("proj set '{proj4}' --parent '{proj1}'")
+        .assert()
+        .success()
+        .stdout(contains(format!("Updated project '{proj4}'")));
     cloudtruth!("proj ls -v -f csv")
         .assert()
         .success()
         .stdout(contains(format!("{proj4},{proj1},")));
 
-    cloudtruth!(
-        "proj set '{proj4}' --parent '{proj2}' --desc 'My new description'",
-        proj4 = proj4,
-        proj2 = proj2
-    )
-    .assert()
-    .success();
+    cloudtruth!("proj set '{proj4}' --parent '{proj2}' --desc 'My new description'")
+        .assert()
+        .success();
     cloudtruth!("proj ls -v -f csv")
         .assert()
         .success()
