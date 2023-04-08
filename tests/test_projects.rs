@@ -95,3 +95,70 @@ fn project_basic() {
         .success()
         .stderr(contains(format!("Project '{proj_name}' does not exist")));
 }
+
+#[integration_test]
+fn project_parents() {
+    let proj1 = ProjectName::uuid_with_prefix("proj-par-1").scoped();
+    let proj2 = ProjectName::uuid_with_prefix("proj-mid-1").scoped();
+    let proj3 = ProjectName::uuid_with_prefix("proj-chld-3").scoped();
+    let proj4 = ProjectName::uuid_with_prefix("proj-chld-4").scoped();
+
+    cloudtruth!("proj ls -v -f csv").assert().success().stdout(
+        contains(format!("{proj1},,"))
+            .and(contains(format!("{proj2},{proj1},")))
+            .and(contains(format!("{proj3},{proj2},")))
+            .and(contains(format!("{proj4},{proj2},"))),
+    );
+
+    cloudtruth!("proj tree")
+        .assert()
+        .success()
+        .stdout(contains(format!(
+            "{proj1}\n  {proj2}\n    {proj3}\n    {proj4}"
+        )));
+
+    cloudtruth!("proj delete {proj2} --confirm", proj2 = proj2)
+        .assert()
+        .failure()
+        .stderr(
+            contains(format!(
+                "Cannot delete {proj2} because the following projects depend on it"
+            ))
+            .and(contains(&proj3).and(contains(&proj4))),
+        );
+
+    let proj5 = ProjectName::uuid_with_prefix("proj-par-5");
+    let proj6 = ProjectName::uuid_with_prefix("proj-par-6");
+    cloudtruth!(
+        "proj set '{proj5}' --parent '{proj6}",
+        proj5 = proj5,
+        proj6 = proj6
+    )
+    .assert()
+    .failure()
+    .stderr(contains(format!("No parent project '{proj6}' found")));
+    cloudtruth!(
+        "proj set '{proj4}' --parent '{proj1}",
+        proj4 = proj4,
+        proj1 = proj1
+    )
+    .assert()
+    .success()
+    .stdout(contains(format!("Updated parent '{proj4}'")));
+    cloudtruth!("proj ls -v -f csv")
+        .assert()
+        .success()
+        .stdout(contains(format!("{proj4},{proj1},")));
+
+    cloudtruth!(
+        "proj ls '{proj4}' --parent '{proj2} --desc 'My news description'",
+        proj4 = proj4,
+        proj2 = proj2
+    )
+    .assert()
+    .success();
+    cloudtruth!("proj ls -v -f csv")
+        .assert()
+        .success()
+        .stdout(contains(format!("{proj4},{proj1},My new description")));
+}
