@@ -1,6 +1,7 @@
 use assert_cmd::assert::Assert;
 use predicates::{prelude::PredicateBooleanExt, str::is_match};
 
+/// An extension trait for custom assertion methods.
 pub trait AssertCmdExt {
     fn paginated(self, page_size: usize) -> Self;
 }
