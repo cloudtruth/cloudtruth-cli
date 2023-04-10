@@ -37,7 +37,7 @@ impl NameConstructors for Name {
     }
 
     fn uuid() -> Self {
-        Self(uuid())
+        Self(format!("test-{}", uuid()))
     }
 
     fn uuid_with_prefix<S: AsRef<str>>(prefix: S) -> Self {

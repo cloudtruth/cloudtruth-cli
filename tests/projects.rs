@@ -151,8 +151,8 @@ fn test_projects_parents() {
 fn test_projects_pagination() {
     let page_size = TEST_PAGE_SIZE;
     // we store the project names so they're not instantly dropped and deleted
-    let _projects: Vec<ScopedProject> = (1..=page_size)
-        .map(|i| ScopedProject::uuid_with_prefix(format!("proj-page-{}", i)))
+    let _projects: Vec<ScopedProject> = (0..=page_size)
+        .map(|n| ScopedProject::uuid_with_prefix(format!("proj-page-{}", n)))
         .collect();
     cloudtruth!("proj ls")
         .rest_debug()

@@ -21,3 +21,21 @@ macro_rules! cloudtruth {
             .unwrap()
     )
 }
+
+/// Helper macro equivalent to contains(format!(...))
+#[cfg(feature = "macros")]
+#[macro_export]
+macro_rules! contains {
+    ($($fmt:tt)*) => (
+        contains(format!($($fmt)*))
+    )
+}
+
+/// Helper macro equivalent to diff(format!(...))
+#[cfg(feature = "macros")]
+#[macro_export]
+macro_rules! diff {
+    ($($fmt:tt)*) => (
+        contains(format!($($fmt)*))
+    )
+}

@@ -9,7 +9,7 @@ pub trait AssertCmdExt {
 impl AssertCmdExt for Assert {
     fn paginated(self, page_size: usize) -> Self {
         let match_page =
-            |n| is_match(format!(r"URL GET .+?page={n}+&page_size={page_size}")).unwrap();
+            |n| is_match(format!(r"URL GET .+page={n}&page_size={page_size}")).unwrap();
         self.stdout(match_page(1).and(match_page(2)))
     }
 }

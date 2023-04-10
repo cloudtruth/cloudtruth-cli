@@ -17,6 +17,7 @@ pub use assert_cmd::prelude::*;
 
 pub use miette::{Context, IntoDiagnostic, Result};
 pub use predicates::boolean::PredicateBooleanExt;
+pub use predicates::ord::*;
 pub use predicates::prelude::*;
 pub use predicates::str::*;
 
