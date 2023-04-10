@@ -1,4 +1,3 @@
-use commandspec::CommandArg;
 use miette::{IntoDiagnostic, Result};
 
 use std::{
@@ -93,14 +92,6 @@ pub fn commandify(cmd: String) -> Result<Command> {
         .map(Command::from_std)
         .map_err(|e| e.compat())
         .into_diagnostic()
-}
-
-/// Process command argument (used by cloudtruth! macro)
-pub fn command_arg<'a, A>(arg: &'a A) -> CommandArg
-where
-    CommandArg: From<&'a A>,
-{
-    CommandArg::from(arg)
 }
 
 /// Fetches the path to binary for this integration test. Will panic if not found.

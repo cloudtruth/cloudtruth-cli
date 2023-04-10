@@ -1,4 +1,3 @@
-use commandspec::CommandArg;
 use std::env;
 use uuid::Uuid;
 
@@ -56,24 +55,6 @@ impl Name {
 impl From<String> for Name {
     fn from(string: String) -> Self {
         Self::from_string(string)
-    }
-}
-
-impl From<Name> for CommandArg {
-    fn from(name: Name) -> Self {
-        CommandArg::Literal(name.0)
-    }
-}
-
-impl From<&Name> for CommandArg {
-    fn from(name: &Name) -> Self {
-        CommandArg::Literal(name.to_string())
-    }
-}
-
-impl From<&&Name> for CommandArg {
-    fn from(name: &&Name) -> Self {
-        CommandArg::Literal(name.to_string())
     }
 }
 

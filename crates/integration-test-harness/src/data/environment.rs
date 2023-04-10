@@ -1,6 +1,5 @@
 use crate::command;
 use command::Command;
-use commandspec::CommandArg;
 
 use super::{Name, NameConstructors, Scope, Scoped, TestResource};
 
@@ -55,24 +54,6 @@ impl<'d, 'p> TestResource for Environment<'d, 'p> {
 impl<'d, 'p> From<&Environment<'d, 'p>> for String {
     fn from(name: &Environment) -> Self {
         name.name().into()
-    }
-}
-
-impl<'d, 'p> From<Environment<'d, 'p>> for CommandArg {
-    fn from(name: Environment) -> Self {
-        name.name.into()
-    }
-}
-
-impl<'d, 'p> From<&Environment<'d, 'p>> for CommandArg {
-    fn from(environment: &Environment) -> Self {
-        environment.name().into()
-    }
-}
-
-impl<'d, 'p> From<&&Environment<'d, 'p>> for CommandArg {
-    fn from(environment: &&Environment) -> Self {
-        environment.name().into()
     }
 }
 

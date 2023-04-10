@@ -1,6 +1,5 @@
 use crate::command;
 use command::Command;
-use commandspec::CommandArg;
 
 use super::{Name, NameConstructors, Scope, Scoped, TestResource};
 
@@ -55,24 +54,6 @@ impl<'d, 'p> TestResource for Project<'d, 'p> {
 impl<'d, 'p> From<&Project<'d, 'p>> for String {
     fn from(name: &Project) -> Self {
         name.name().into()
-    }
-}
-
-impl<'d, 'p> From<Project<'d, 'p>> for CommandArg {
-    fn from(name: Project) -> Self {
-        name.name.into()
-    }
-}
-
-impl<'d, 'p> From<&Project<'d, 'p>> for CommandArg {
-    fn from(project: &Project) -> Self {
-        project.name().into()
-    }
-}
-
-impl<'d, 'p> From<&&Project<'d, 'p>> for CommandArg {
-    fn from(project: &&Project) -> Self {
-        project.name().into()
     }
 }
 

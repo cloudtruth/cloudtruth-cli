@@ -1,7 +1,5 @@
 use std::ops::Deref;
 
-use commandspec::CommandArg;
-
 use super::{Name, NameConstructors, TestResource};
 
 /// A generic CloudTruth entity name scoped via Rust borrow checker.
@@ -72,15 +70,6 @@ where
     }
 }
 
-impl<R> From<&Scope<R>> for CommandArg
-where
-    R: TestResource,
-{
-    fn from(value: &Scope<R>) -> Self {
-        value.name().into()
-    }
-}
-
 impl<'a, R> From<&'a Scope<R>> for String
 where
     R: TestResource,
@@ -106,15 +95,6 @@ where
 {
     fn scoped(self) -> Scope<Self> {
         Scope::new(self)
-    }
-}
-
-impl<R> From<Scope<R>> for CommandArg
-where
-    R: TestResource,
-{
-    fn from(value: Scope<R>) -> Self {
-        value.name().into()
     }
 }
 
