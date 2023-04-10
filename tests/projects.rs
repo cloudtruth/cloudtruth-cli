@@ -3,7 +3,7 @@ use integration_test_harness::prelude::*;
 const TEST_PAGE_SIZE: usize = 5;
 
 #[integration_test]
-fn project_basic() {
+fn test_projects_basic() {
     let mut proj = Project::uuid_with_prefix("proj-name");
 
     // verify proj_name does not yet exist
@@ -87,7 +87,7 @@ fn project_basic() {
 }
 
 #[integration_test]
-fn project_parents() {
+fn test_projects_parents() {
     let proj1 = ScopedProject::uuid_with_prefix("proj-par-1");
     let proj2 = ProjectBuilder::uuid_with_prefix("proj-mid-1")
         .parent(&proj1)
@@ -148,7 +148,7 @@ fn project_parents() {
 }
 
 #[integration_test]
-fn project_pagination() {
+fn test_projects_pagination() {
     let page_size = TEST_PAGE_SIZE;
     // we store the project names so they're not instantly dropped and deleted
     let _projects: Vec<ScopedProject> = (1..=page_size)
