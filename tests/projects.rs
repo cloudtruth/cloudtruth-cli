@@ -4,7 +4,7 @@ const TEST_PAGE_SIZE: usize = 5;
 
 #[integration_test]
 fn test_projects_basic() {
-    let mut proj = Project::uuid_with_prefix("proj-name");
+    let mut proj = Project::with_prefix("proj-name");
 
     // verify proj_name does not yet exist
     cloudtruth!("projects ls -v")
@@ -38,7 +38,7 @@ fn test_projects_basic() {
         .success();
 
     // rename
-    let proj_rename = Project::uuid_with_prefix("proj-rename");
+    let proj_rename = Project::with_prefix("proj-rename");
     cloudtruth!("projects set {proj} --rename {proj_rename}")
         .assert()
         .success()
@@ -88,14 +88,14 @@ fn test_projects_basic() {
 
 #[integration_test]
 fn test_projects_parents() {
-    let proj1 = ScopedProject::uuid_with_prefix("proj-par-1");
-    let proj2 = ProjectBuilder::uuid_with_prefix("proj-mid-1")
+    let proj1 = ScopedProject::with_prefix("proj-par-1");
+    let proj2 = ProjectBuilder::with_prefix("proj-mid-1")
         .parent(&proj1)
         .build_scoped();
-    let proj3 = ProjectBuilder::uuid_with_prefix("proj-chld-3")
+    let proj3 = ProjectBuilder::with_prefix("proj-chld-3")
         .parent(&proj2)
         .build_scoped();
-    let proj4 = ProjectBuilder::uuid_with_prefix("proj-chld-4")
+    let proj4 = ProjectBuilder::with_prefix("proj-chld-4")
         .parent(&proj2)
         .build_scoped();
 
@@ -119,8 +119,8 @@ fn test_projects_parents() {
                 .and(contains(&proj3).and(contains(&proj4))),
         );
 
-    let proj5 = Project::uuid_with_prefix("proj-par-5");
-    let proj6 = Project::uuid_with_prefix("proj-par-6");
+    let proj5 = Project::with_prefix("proj-par-5");
+    let proj6 = Project::with_prefix("proj-par-6");
     cloudtruth!("proj set '{proj5}' --parent '{proj6}'")
         .assert()
         .failure()
@@ -148,7 +148,7 @@ fn test_projects_pagination() {
     let page_size = TEST_PAGE_SIZE;
     // we store the project names so they're not instantly dropped and deleted
     let _projects: Vec<ScopedProject> = (0..=page_size)
-        .map(|n| ScopedProject::uuid_with_prefix(format!("proj-page-{}", n)))
+        .map(|n| ScopedProject::with_prefix(format!("proj-page-{}", n)))
         .collect();
     cloudtruth!("proj ls")
         .rest_debug()

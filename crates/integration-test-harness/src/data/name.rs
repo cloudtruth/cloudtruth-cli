@@ -1,11 +1,14 @@
 use std::env;
 use uuid::Uuid;
 
+const JOB_ID: &str = "JOB_ID";
 const NEXTEST_RUN_ID: &str = "NEXTEST_RUN_ID";
 
-/// Use NEXTEST_RUN_ID if available, otherwise generate random
-fn uuid() -> String {
-    env::var(NEXTEST_RUN_ID).unwrap_or_else(|_| Uuid::new_v4().to_string())
+/// Use JOB_ID or NEXTEST_RUN_ID if available, otherwise generate random
+fn generated_test_id() -> String {
+    env::var(JOB_ID)
+        .or_else(|_| env::var(NEXTEST_RUN_ID))
+        .unwrap_or_else(|_| Uuid::new_v4().to_string())
 }
 
 /// A newtype wrapper around String representing a generic CloudTruth entity name.
@@ -22,12 +25,12 @@ pub struct Name(String);
 ///
 /// See src/name/project.rs for an example of how this is done.
 pub trait NameConstructors {
-    /// Construct a new name directly from a String.
+    /// Construct a new name exactly from a given String.
     fn from_string<S: Into<String>>(name: S) -> Self;
-    /// Construct a new name from a v4 UUID.
-    fn uuid() -> Self;
-    /// Generate new name with a v4 UUID and a fixed prefix.
-    fn uuid_with_prefix<S: AsRef<str>>(prefix: S) -> Self;
+    /// Construct a new name that's automatically generated
+    fn generated() -> Self;
+    /// Construct a name that's automatically generated with a static prefix
+    fn with_prefix<S: AsRef<str>>(prefix: S) -> Self;
 }
 
 /// Name constructors
@@ -36,12 +39,12 @@ impl NameConstructors for Name {
         Self(name.into())
     }
 
-    fn uuid() -> Self {
-        Self(format!("test-{}", uuid()))
+    fn generated() -> Self {
+        Self(format!("test-{}", generated_test_id()))
     }
 
-    fn uuid_with_prefix<S: AsRef<str>>(prefix: S) -> Self {
-        Self(format!("{}-{}", prefix.as_ref(), uuid()))
+    fn with_prefix<S: AsRef<str>>(prefix: S) -> Self {
+        Self(format!("{}-test-{}", prefix.as_ref(), generated_test_id()))
     }
 }
 

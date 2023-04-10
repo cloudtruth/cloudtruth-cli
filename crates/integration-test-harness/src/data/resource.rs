@@ -21,10 +21,10 @@ where
     fn from_string<S: Into<String>>(string: S) -> Self {
         Self::from_name(Name::from_string(string))
     }
-    fn uuid() -> Self {
-        Self::from_name(Name::uuid())
+    fn generated() -> Self {
+        Self::from_name(Name::generated())
     }
-    fn uuid_with_prefix<S: AsRef<str>>(prefix: S) -> Self {
-        Self::from_name(Name::uuid_with_prefix(prefix))
+    fn with_prefix<S: AsRef<str>>(prefix: S) -> Self {
+        Self::from_name(Name::with_prefix(prefix))
     }
 }
