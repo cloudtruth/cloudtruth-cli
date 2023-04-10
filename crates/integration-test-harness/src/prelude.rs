@@ -8,7 +8,7 @@ pub use crate::data::*;
 // export macros
 #[cfg(feature = "macros")]
 pub use {
-    super::{cli_bin_path, cloudtruth},
+    super::{cli_bin_path, cloudtruth, contains, diff},
     integration_test_macros::integration_test,
 };
 
@@ -17,6 +17,7 @@ pub use assert_cmd::prelude::*;
 
 pub use miette::{Context, IntoDiagnostic, Result};
 pub use predicates::boolean::PredicateBooleanExt;
+pub use predicates::ord::*;
 pub use predicates::prelude::*;
 pub use predicates::str::*;
 

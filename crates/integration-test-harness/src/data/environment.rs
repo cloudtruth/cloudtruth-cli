@@ -5,15 +5,15 @@ use super::{Name, NameConstructors, Scope, Scoped, TestResource};
 
 #[derive(Display)]
 #[display(fmt = "{}", name)]
-pub struct Project<'d, 'p> {
+pub struct Environment<'d, 'p> {
     name: Name,
     description: Option<&'d str>,
     parent: Option<&'p Name>,
 }
 
-pub type ScopedProject<'d, 'p> = Scope<Project<'d, 'p>>;
+pub type ScopedEnvironment<'d, 'p> = Scope<Environment<'d, 'p>>;
 
-impl<'d, 'p> Project<'d, 'p> {
+impl<'d, 'p> Environment<'d, 'p> {
     fn new(name: Name, description: Option<&'d str>, parent: Option<&'p Name>) -> Self {
         Self {
             name,
@@ -23,7 +23,7 @@ impl<'d, 'p> Project<'d, 'p> {
     }
 }
 
-impl<'d, 'p> TestResource for Project<'d, 'p> {
+impl<'d, 'p> TestResource for Environment<'d, 'p> {
     fn name(&self) -> &Name {
         &self.name
     }
@@ -33,7 +33,7 @@ impl<'d, 'p> TestResource for Project<'d, 'p> {
 
     fn create(&self) {
         let mut cmd = Command::cargo_bin("cloudtruth");
-        cmd.args(["projects", "set", self.name.as_str()]);
+        cmd.args(["environments", "set", self.name.as_str()]);
         if let Some(desc) = self.description {
             cmd.args(["--desc", desc]);
         }
@@ -45,33 +45,33 @@ impl<'d, 'p> TestResource for Project<'d, 'p> {
 
     fn delete(&self) {
         Command::cargo_bin("cloudtruth")
-            .args(["projects", "delete", "--confirm", self.name.as_str()])
+            .args(["environments", "delete", "--confirm", self.name.as_str()])
             .assert()
             .success();
     }
 }
 
-impl<'d, 'p> From<&Project<'d, 'p>> for String {
-    fn from(name: &Project) -> Self {
+impl<'d, 'p> From<&Environment<'d, 'p>> for String {
+    fn from(name: &Environment) -> Self {
         name.name().into()
     }
 }
 
-impl<'d, 'p> From<Project<'d, 'p>> for String {
-    fn from(project: Project) -> Self {
-        project.name.into()
+impl<'d, 'p> From<Environment<'d, 'p>> for String {
+    fn from(environment: Environment) -> Self {
+        environment.name.into()
     }
 }
 
-pub struct ProjectBuilder<'d, 'p> {
+pub struct EnvironmentBuilder<'d, 'p> {
     name: Name,
     description: Option<&'d str>,
     parent: Option<&'p Name>,
 }
 
-impl<'d, 'p> NameConstructors for ProjectBuilder<'d, 'p> {
+impl<'d, 'p> NameConstructors for EnvironmentBuilder<'d, 'p> {
     fn from_string<S: Into<String>>(name: S) -> Self {
-        ProjectBuilder {
+        EnvironmentBuilder {
             name: Name::from_string(name),
             description: None,
             parent: None,
@@ -79,7 +79,7 @@ impl<'d, 'p> NameConstructors for ProjectBuilder<'d, 'p> {
     }
 
     fn uuid() -> Self {
-        ProjectBuilder {
+        EnvironmentBuilder {
             name: Name::uuid(),
             description: None,
             parent: None,
@@ -87,7 +87,7 @@ impl<'d, 'p> NameConstructors for ProjectBuilder<'d, 'p> {
     }
 
     fn uuid_with_prefix<S: AsRef<str>>(prefix: S) -> Self {
-        ProjectBuilder {
+        EnvironmentBuilder {
             name: Name::uuid_with_prefix(prefix),
             description: None,
             parent: None,
@@ -95,9 +95,9 @@ impl<'d, 'p> NameConstructors for ProjectBuilder<'d, 'p> {
     }
 }
 
-impl<'d, 'p> ProjectBuilder<'d, 'p> {
+impl<'d, 'p> EnvironmentBuilder<'d, 'p> {
     pub fn new<N: Into<Name>>(name: N) -> Self {
-        ProjectBuilder {
+        EnvironmentBuilder {
             name: name.into(),
             description: None,
             parent: None,
@@ -109,16 +109,16 @@ impl<'d, 'p> ProjectBuilder<'d, 'p> {
         self
     }
 
-    pub fn parent(mut self, parent: &'p Project) -> Self {
+    pub fn parent(mut self, parent: &'p Environment) -> Self {
         self.parent = Some(&parent.name);
         self
     }
 
-    pub fn build_scoped(self) -> Scope<Project<'d, 'p>> {
+    pub fn build_scoped(self) -> Scope<Environment<'d, 'p>> {
         self.build().scoped()
     }
 
-    pub fn build(self) -> Project<'d, 'p> {
-        Project::new(self.name, self.description, self.parent)
+    pub fn build(self) -> Environment<'d, 'p> {
+        Environment::new(self.name, self.description, self.parent)
     }
 }

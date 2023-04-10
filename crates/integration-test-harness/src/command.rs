@@ -1,4 +1,3 @@
-use commandspec::CommandArg;
 use miette::{IntoDiagnostic, Result};
 
 use std::{
@@ -24,7 +23,7 @@ impl Command {
     }
 
     pub fn from_assert_cmd(cmd: assert_cmd::Command) -> Self {
-        Self(cmd)
+        Self(cmd).default_env()
     }
 
     pub fn as_assert_cmd(&self) -> &assert_cmd::Command {
@@ -32,7 +31,7 @@ impl Command {
     }
 
     pub fn from_std(cmd: std::process::Command) -> Self {
-        Self(assert_cmd::Command::from_std(cmd))
+        Self(assert_cmd::Command::from_std(cmd)).default_env()
     }
 
     pub fn env<K, V>(&mut self, key: K, value: V) -> &mut Self
@@ -50,6 +49,12 @@ impl Command {
 
     pub fn rest_debug(&mut self) -> &mut Self {
         self.env(CLOUDTRUTH_REST_DEBUG, "true")
+    }
+
+    // Apply default environment variables
+    fn default_env(mut self) -> Self {
+        self.env("NO_COLOR", "1");
+        self
     }
 }
 
@@ -93,14 +98,6 @@ pub fn commandify(cmd: String) -> Result<Command> {
         .map(Command::from_std)
         .map_err(|e| e.compat())
         .into_diagnostic()
-}
-
-/// Process command argument (used by cloudtruth! macro)
-pub fn command_arg<'a, A>(arg: &'a A) -> CommandArg
-where
-    CommandArg: From<&'a A>,
-{
-    CommandArg::from(arg)
 }
 
 /// Fetches the path to binary for this integration test. Will panic if not found.
