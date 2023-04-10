@@ -1,5 +1,13 @@
 use commandspec::CommandArg;
+use std::env;
 use uuid::Uuid;
+
+const NEXTEST_RUN_ID: &str = "NEXTEST_RUN_ID";
+
+/// Use NEXTEST_RUN_ID if available, otherwise generate random
+fn uuid() -> String {
+    env::var(NEXTEST_RUN_ID).unwrap_or_else(|_| Uuid::new_v4().to_string())
+}
 
 /// A newtype wrapper around String representing a generic CloudTruth entity name.
 /// Used as a base for other name types.
@@ -30,11 +38,11 @@ impl NameConstructors for Name {
     }
 
     fn uuid() -> Self {
-        Self(Uuid::new_v4().to_string())
+        Self(uuid())
     }
 
     fn uuid_with_prefix<S: AsRef<str>>(prefix: S) -> Self {
-        Self(format!("{}-{}", prefix.as_ref(), Uuid::new_v4()))
+        Self(format!("{}-{}", prefix.as_ref(), uuid()))
     }
 }
 
