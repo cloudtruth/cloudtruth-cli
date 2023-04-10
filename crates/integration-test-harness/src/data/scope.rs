@@ -36,15 +36,15 @@ where
         Self::new(R::from_string(string.into()))
     }
 
-    fn uuid() -> Self {
-        Scope::new(R::from_name(Name::uuid()))
+    fn generated() -> Self {
+        Scope::new(R::from_name(Name::generated()))
     }
 
-    fn uuid_with_prefix<S>(prefix: S) -> Self
+    fn with_prefix<S>(prefix: S) -> Self
     where
         S: AsRef<str>,
     {
-        Scope::new(R::from_name(Name::uuid_with_prefix(prefix)))
+        Scope::new(R::from_name(Name::with_prefix(prefix)))
     }
 }
 

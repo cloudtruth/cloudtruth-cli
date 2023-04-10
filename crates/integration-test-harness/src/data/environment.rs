@@ -78,17 +78,17 @@ impl<'d, 'p> NameConstructors for EnvironmentBuilder<'d, 'p> {
         }
     }
 
-    fn uuid() -> Self {
+    fn generated() -> Self {
         EnvironmentBuilder {
-            name: Name::uuid(),
+            name: Name::generated(),
             description: None,
             parent: None,
         }
     }
 
-    fn uuid_with_prefix<S: AsRef<str>>(prefix: S) -> Self {
+    fn with_prefix<S: AsRef<str>>(prefix: S) -> Self {
         EnvironmentBuilder {
-            name: Name::uuid_with_prefix(prefix),
+            name: Name::with_prefix(prefix),
             description: None,
             parent: None,
         }
