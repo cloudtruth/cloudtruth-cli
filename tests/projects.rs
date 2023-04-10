@@ -20,7 +20,7 @@ fn test_projects_basic() {
     cloudtruth!("projects ls -v -f csv")
         .assert()
         .success()
-        .stdout(contains(format!("{proj},,Description on create")));
+        .stdout(contains!("{proj},,Description on create"));
 
     // update the description
     cloudtruth!("projects set {proj} --desc 'Updated description'")
@@ -30,7 +30,7 @@ fn test_projects_basic() {
     cloudtruth!("projects ls -v -f csv")
         .assert()
         .success()
-        .stdout(contains(format!("{proj},,Updated description")));
+        .stdout(contains!("{proj},,Updated description"));
 
     // idempotent - do it again
     cloudtruth!("projects set {proj} --desc 'Updated description'")
@@ -42,7 +42,7 @@ fn test_projects_basic() {
     cloudtruth!("projects set {proj} --rename {proj_rename}")
         .assert()
         .success()
-        .stdout(contains(format!("Updated project '{proj_rename}'")));
+        .stdout(contains!("Updated project '{proj_rename}'"));
 
     proj = proj_rename;
 
@@ -50,9 +50,9 @@ fn test_projects_basic() {
     cloudtruth!("projects set {proj}")
         .assert()
         .success()
-        .stderr(contains(format!(
+        .stderr(contains!(
             "Project '{proj}' not updated: no updated parameters provided"
-        )));
+        ));
 
     // test the list without the values
     cloudtruth!("projects list")
@@ -83,7 +83,7 @@ fn test_projects_basic() {
     cloudtruth!("projects delete {proj} --confirm")
         .assert()
         .success()
-        .stderr(contains(format!("Project '{proj}' does not exist")));
+        .stderr(contains!("Project '{proj}' does not exist"));
 }
 
 #[integration_test]
@@ -100,27 +100,23 @@ fn test_projects_parents() {
         .build_scoped();
 
     cloudtruth!("proj ls -v -f csv").assert().success().stdout(
-        contains(format!("{proj1},,"))
-            .and(contains(format!("{proj2},{proj1},")))
-            .and(contains(format!("{proj3},{proj2},")))
-            .and(contains(format!("{proj4},{proj2},"))),
+        contains!("{proj1},,")
+            .and(contains!("{proj2},{proj1},"))
+            .and(contains!("{proj3},{proj2},"))
+            .and(contains!("{proj4},{proj2},")),
     );
 
     cloudtruth!("proj tree")
         .assert()
         .success()
-        .stdout(contains(format!(
-            "{proj1}\n  {proj2}\n    {proj3}\n    {proj4}"
-        )));
+        .stdout(contains!("{proj1}\n  {proj2}\n    {proj3}\n    {proj4}"));
 
     cloudtruth!("proj delete {proj2} --confirm")
         .assert()
         .failure()
         .stderr(
-            contains(format!(
-                "Cannot delete {proj2} because the following projects depend on it"
-            ))
-            .and(contains(&proj3).and(contains(&proj4))),
+            contains!("Cannot delete {proj2} because the following projects depend on it")
+                .and(contains(&proj3).and(contains(&proj4))),
         );
 
     let proj5 = Project::uuid_with_prefix("proj-par-5");
@@ -128,15 +124,15 @@ fn test_projects_parents() {
     cloudtruth!("proj set '{proj5}' --parent '{proj6}'")
         .assert()
         .failure()
-        .stderr(contains(format!("No parent project '{proj6}' found")));
+        .stderr(contains!("No parent project '{proj6}' found"));
     cloudtruth!("proj set '{proj4}' --parent '{proj1}'")
         .assert()
         .success()
-        .stdout(contains(format!("Updated project '{proj4}'")));
+        .stdout(contains!("Updated project '{proj4}'"));
     cloudtruth!("proj ls -v -f csv")
         .assert()
         .success()
-        .stdout(contains(format!("{proj4},{proj1},")));
+        .stdout(contains!("{proj4},{proj1},"));
 
     cloudtruth!("proj set '{proj4}' --parent '{proj2}' --desc 'My new description'")
         .assert()
@@ -144,7 +140,7 @@ fn test_projects_parents() {
     cloudtruth!("proj ls -v -f csv")
         .assert()
         .success()
-        .stdout(contains(format!("{proj4},{proj2},My new description")));
+        .stdout(contains!("{proj4},{proj2},My new description"));
 }
 
 #[integration_test]

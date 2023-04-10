@@ -21,7 +21,7 @@ fn test_environment_basic() {
     cloudtruth!("environments ls -v -f csv")
         .assert()
         .success()
-        .stdout(contains(format!("{env},default,Description on create")));
+        .stdout(contains!("{env},default,Description on create"));
 
     // update the description
     cloudtruth!("environments set {env} --desc 'Updated description'")
@@ -31,7 +31,7 @@ fn test_environment_basic() {
     cloudtruth!("environments ls -v -f csv")
         .assert()
         .success()
-        .stdout(contains(format!("{env},default,Updated description")));
+        .stdout(contains!("{env},default,Updated description"));
 
     // idempotent - do it again
     cloudtruth!("environments set {env} --desc 'Updated description'")
@@ -43,7 +43,7 @@ fn test_environment_basic() {
     cloudtruth!("environments set {env} --rename {env_rename}")
         .assert()
         .success()
-        .stdout(contains(format!("Updated environment '{env_rename}'")));
+        .stdout(contains!("Updated environment '{env_rename}'"));
 
     env = env_rename;
 
@@ -51,9 +51,9 @@ fn test_environment_basic() {
     cloudtruth!("environments set {env}")
         .assert()
         .success()
-        .stderr(contains(format!(
+        .stderr(contains!(
             "Environment '{env}' not updated: no updated parameters provided"
-        )));
+        ));
 
     // test the list without the values
     cloudtruth!("environments list")
@@ -84,7 +84,7 @@ fn test_environment_basic() {
     cloudtruth!("environments delete {env} --confirm")
         .assert()
         .success()
-        .stderr(contains(format!("Environment '{env}' does not exist")));
+        .stderr(contains!("Environment '{env}' does not exist"));
 }
 
 #[integration_test]
@@ -132,24 +132,21 @@ fn test_environment_parents() {
 
     // Use csv to validate, since the names may be variable
     cloudtruth!("env ls -v -f csv").assert().success().stdout(
-        contains(format!("{env1},default,"))
-            .and(contains(format!("{env2},{env1},")))
-            .and(contains(format!("{env3},{env2},")))
-            .and(contains(format!("{env4},{env2},"))),
+        contains!("{env1},default,")
+            .and(contains!("{env2},{env1},"))
+            .and(contains!("{env3},{env2},"))
+            .and(contains!("{env4},{env2},")),
     );
 
-    cloudtruth!("env tree")
-        .assert()
-        .success()
-        .stdout(contains(format!(
-            "  {env1}\n    {env2}\n      {env3}\n      {env4}\n"
-        )));
+    cloudtruth!("env tree").assert().success().stdout(contains!(
+        "  {env1}\n    {env2}\n      {env3}\n      {env4}\n"
+    ));
 
     // specifying the environment gets a filtered set
     cloudtruth!("env tree {env2}")
         .assert()
         .success()
-        .stdout(contains(format!("{env2}\n  {env3}\n  {env4}\n")));
+        .stdout(contains!("{env2}\n  {env3}\n  {env4}\n"));
 
     // Invalid environment given
     cloudtruth!("env tree 'invalid-env'")
@@ -173,15 +170,13 @@ fn test_environment_parents() {
     cloudtruth!("env set {env5} --parent {env6}")
         .assert()
         .failure()
-        .stderr(diff(format!("No parent environment '{env6}' found\n")));
+        .stderr(contains!("No parent environment '{env6}' found\n"));
 
     // attempt to update parent -- not allowed
     cloudtruth!("environment set {env4} --parent {env1}")
         .assert()
         .failure()
-        .stderr(diff(format!(
-            "Environment '{env4}' parent cannot be updated.\n"
-        )));
+        .stderr(diff!("Environment '{env4}' parent cannot be updated.\n"));
 
     // setting to same parent is ignored
     cloudtruth!("environment set {env4} --parent {env2} --desc 'My new description'")
@@ -191,7 +186,7 @@ fn test_environment_parents() {
     cloudtruth!("environment ls -v -f csv")
         .assert()
         .success()
-        .stdout(contains(format!("{env4},{env2},My new description")));
+        .stdout(contains!("{env4},{env2},My new description"));
 }
 
 #[integration_test]
@@ -223,7 +218,7 @@ fn test_environment_tagging() {
         cloudtruth!("env tag list {env} {format_opts}")
             .assert()
             .success()
-            .stdout(contains(format!("No tags found in environment {env}")));
+            .stdout(contains!("No tags found in environment {env}"));
     }
 
     cloudtruth!("env tag set {env} my-tag -d 'first description'")
@@ -298,9 +293,9 @@ fn test_environment_tagging() {
     cloudtruth!("env tag del {env} renamed-tag --confirm")
         .assert()
         .success()
-        .stderr(diff(format!(
+        .stderr(diff!(
             "Environment '{env}' does not have a tag 'renamed-tag'!\n"
-        )));
+        ));
 
     // unknown environment
     cloudtruth!("env tag list invalid-env")
