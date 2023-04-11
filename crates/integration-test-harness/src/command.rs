@@ -105,6 +105,7 @@ pub fn run_cloudtruth_cmd<P: AsRef<Path>>(bin_path: P, args: String) -> Result<C
     // also escapes backslashes in Windows path names
     let path_str = bin_path.as_ref().to_string_lossy();
     let escaped_bin_path = shlex::quote(&path_str);
+    println!("{:?}", escaped_bin_path);
     let cmd = if args.is_empty() {
         escaped_bin_path.to_string()
     } else {
