@@ -100,11 +100,14 @@ impl From<Command> for assert_cmd::Command {
 
 /// Run a command from a string (used by cloudtruth! macro)
 pub fn run_cloudtruth_cmd(bin_path: String, args: String) -> Result<Command> {
-    commandspec::commandify(format!("{bin_path} {args}"))
+    // Use shlex to escape special characters in the binary path
+    // also escapes backslashes in Windows path names
+    let escaped_bin_path = shlex::quote(&bin_path);
+    commandspec::commandify(format!("{escaped_bin_path} {args}"))
         .map(Command::from_std)
         .map_err(|e| e.compat())
         .into_diagnostic()
-        .wrap_err_with(|| format!("Invalid command: {bin_path} {args}"))
+        .wrap_err_with(|| format!("Invalid command: {escaped_bin_path} {args}"))
 }
 
 /// Attempts to find the cloudtruth binary to test.
@@ -113,13 +116,5 @@ pub fn cli_bin_path<S: AsRef<str>>(name: S) -> String {
     std::env::var("NEXTEST_BIN_EXE_cloudtruth")
         .ok()
         .or(option_env!("CARGO_BIN_EXE_cloudtruth").map(String::from))
-        .unwrap_or_else(|| {
-            // Use shlex to escape special characters in the binary path
-            // also escapes backslashes in Windows path names
-            let path = assert_cmd::cargo::cargo_bin(name);
-            let str = path.to_string_lossy();
-            let s = shlex::quote(&str);
-            println!("{}", s);
-            s.to_string()
-        })
+        .unwrap_or_else(|| assert_cmd::cargo::cargo_bin(name).display().to_string())
 }
