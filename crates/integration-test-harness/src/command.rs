@@ -101,21 +101,19 @@ impl From<Command> for assert_cmd::Command {
 
 /// Run a command from a string (used by cloudtruth! macro)
 pub fn run_cloudtruth_cmd<P: AsRef<Path>>(bin_path: P, args: String) -> Result<Command> {
-    // Use shlex to escape special characters in the binary path
-    // also escapes backslashes in Windows path names
-    let path_str = bin_path.as_ref().to_string_lossy();
-    let escaped_bin_path = shlex::quote(&path_str);
-    println!("{:?}", escaped_bin_path);
-    let cmd = if args.is_empty() {
-        escaped_bin_path.to_string()
+    if args.trim().is_empty() {
+        Ok(std::process::Command::new(bin_path.as_ref()).into())
     } else {
-        format!("{escaped_bin_path} {args}")
-    };
-    commandspec::commandify(cmd)
-        .map(Command::from_std)
-        .map_err(|e| e.compat())
-        .into_diagnostic()
-        .wrap_err_with(|| format!("Invalid command: {escaped_bin_path} {args}"))
+        let path_str = bin_path.as_ref().to_string_lossy();
+        // Use shlex to escape special characters in the binary path
+        // also escapes backslashes in Windows path names
+        let escaped_bin_path = shlex::quote(&path_str);
+        commandspec::commandify(format!("{escaped_bin_path} {args}"))
+            .map(Command::from_std)
+            .map_err(|e| e.compat())
+            .into_diagnostic()
+            .wrap_err_with(|| format!("Invalid command: {escaped_bin_path} {args}"))
+    }
 }
 
 /// Attempts to find the cloudtruth binary to test.
