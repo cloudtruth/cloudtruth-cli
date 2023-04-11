@@ -1670,7 +1670,6 @@ dependencies = [
  "derive_more",
  "integration-test-macros",
  "miette",
- "once_cell",
  "owo-colors 3.5.0",
  "predicates 3.0.2",
  "thiserror",
