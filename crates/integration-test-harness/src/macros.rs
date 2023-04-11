@@ -1,7 +1,7 @@
 /// Locates the cloudtruth binary to test
 #[cfg(feature = "macros")]
 #[macro_export]
-macro_rules! bin_path {
+macro_rules! cli_bin_path {
     () => {
         std::env::var("NEXTEST_BIN_EXE_cloudtruth")
             .ok()
@@ -38,7 +38,7 @@ macro_rules! bin_path {
 #[macro_export]
 macro_rules! cloudtruth {
     ($($fmt:tt)*) => (
-        $crate::command::run_cloudtruth_cmd(bin_path!(), format!($($fmt)*)).unwrap()
+        $crate::command::run_cloudtruth_cmd(cli_bin_path!(), format!($($fmt)*)).unwrap()
     )
 }
 

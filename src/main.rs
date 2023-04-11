@@ -140,7 +140,7 @@ mod main_test {
     #[test]
     fn help_text() {
         trycmd::TestCases::new()
-            .register_bin("cloudtruth", PathBuf::from(bin_path!()))
+            .register_bin("cloudtruth", PathBuf::from(cli_bin_path!()))
             .case("examples/help-text/*.md");
     }
 }
