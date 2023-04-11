@@ -6,8 +6,6 @@ fn main() -> Result<()> {
 
 #[cfg(test)]
 mod main_test {
-    use std::path::PathBuf;
-
     use integration_test_harness::prelude::*;
 
     use cloudtruth_config::{CT_API_KEY, CT_PROFILE};
@@ -140,7 +138,7 @@ mod main_test {
     #[test]
     fn help_text() {
         trycmd::TestCases::new()
-            .register_bin("cloudtruth", PathBuf::from(cli_bin_path!()))
+            .register_bin("cloudtruth", cli_bin_path!())
             .case("examples/help-text/*.md");
     }
 }
