@@ -1,4 +1,4 @@
-use std::env;
+use std::{env, ffi::OsStr};
 use uuid::Uuid;
 
 const JOB_ID: &str = "JOB_ID";
@@ -82,5 +82,11 @@ impl<'a> From<&'a Name> for &'a String {
 impl AsRef<str> for Name {
     fn as_ref(&self) -> &str {
         &self.0
+    }
+}
+
+impl AsRef<OsStr> for Name {
+    fn as_ref(&self) -> &OsStr {
+        OsStr::new(&self.0)
     }
 }

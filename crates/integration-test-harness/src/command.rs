@@ -1,13 +1,11 @@
-use miette::{IntoDiagnostic, Result};
+use cloudtruth_config::{CT_API_KEY, CT_REST_DEBUG, CT_REST_PAGE_SIZE, CT_SERVER_URL};
+use miette::{Context, IntoDiagnostic, Result};
 
 use std::{
-    env,
     ffi::OsStr,
     ops::{Deref, DerefMut},
+    path::{Path, PathBuf},
 };
-
-const CLOUDTRUTH_REST_PAGE_SIZE: &str = "CLOUDTRUTH_REST_PAGE_SIZE";
-const CLOUDTRUTH_REST_DEBUG: &str = "CLOUDTRUTH_REST_DEBUG";
 
 /// A newtype wrapper around assert_cmd::Command so that we can define custom methods.
 /// For convenience it has a Deref impl that allows us to call assert_cmd methods
@@ -44,16 +42,25 @@ impl Command {
     }
 
     pub fn page_size(&mut self, page_size: usize) -> &mut Self {
-        self.env(CLOUDTRUTH_REST_PAGE_SIZE, page_size.to_string())
+        self.env(CT_REST_PAGE_SIZE, page_size.to_string())
     }
 
     pub fn rest_debug(&mut self) -> &mut Self {
-        self.env(CLOUDTRUTH_REST_DEBUG, "true")
+        self.env(CT_REST_DEBUG, "true")
     }
 
     // Apply default environment variables
     fn default_env(mut self) -> Self {
         self.env("NO_COLOR", "1");
+        self
+    }
+
+    // Set environment variables to restrict CLI to offline usage only
+    pub fn offline_env(&mut self) -> &mut Self {
+        // Explicitly clear the API key so an individual dev's personal config isn't used for tests.
+        self.env(CT_API_KEY, "");
+        // Explicitly set the server to a bogus value that a server cannot to
+        self.env(CT_SERVER_URL, "http://0.0.0.0:0");
         self
     }
 }
@@ -93,15 +100,27 @@ impl From<Command> for assert_cmd::Command {
 }
 
 /// Run a command from a string (used by cloudtruth! macro)
-pub fn commandify(cmd: String) -> Result<Command> {
-    commandspec::commandify(cmd)
-        .map(Command::from_std)
-        .map_err(|e| e.compat())
-        .into_diagnostic()
+pub fn run_cloudtruth_cmd<P: AsRef<Path>>(bin_path: P, args: String) -> Result<Command> {
+    if args.trim().is_empty() {
+        Ok(std::process::Command::new(bin_path.as_ref()).into())
+    } else {
+        let path_str = bin_path.as_ref().to_string_lossy();
+        // Use shlex to escape special characters in the binary path
+        // also escapes backslashes in Windows path names
+        let escaped_bin_path = shlex::quote(&path_str);
+        commandspec::commandify(format!("{escaped_bin_path} {args}"))
+            .map(Command::from_std)
+            .map_err(|e| e.compat())
+            .into_diagnostic()
+            .wrap_err_with(|| format!("Invalid command: {escaped_bin_path} {args}"))
+    }
 }
 
-/// Fetches the path to binary for this integration test. Will panic if not found.
-pub fn bin_path() -> String {
-    println!("{:?}", env::var("CARGO_BIN_EXE_cloudtruth"));
-    env::var("CARGO_BIN_EXE_cloudtruth").expect("Could not find cloudtruth binary")
+/// Attempts to find the cloudtruth binary to test.
+/// If not found via environment variables, will try to locate a binary with the given name in the current target directory
+pub fn cli_bin_path<S: AsRef<str>>(name: S) -> PathBuf {
+    std::env::var_os("NEXTEST_BIN_EXE_cloudtruth")
+        .map(PathBuf::from)
+        .or(option_env!("CARGO_BIN_EXE_cloudtruth").map(PathBuf::from))
+        .unwrap_or_else(|| assert_cmd::cargo::cargo_bin(name))
 }

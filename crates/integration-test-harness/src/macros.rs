@@ -1,8 +1,9 @@
+/// Locates the cloudtruth binary to test
 #[cfg(feature = "macros")]
 #[macro_export]
 macro_rules! cli_bin_path {
     () => {
-        env!("CARGO_BIN_EXE_cloudtruth")
+        $crate::command::cli_bin_path(option_env!("CARGO_BIN_NAME").unwrap_or("cloudtruth"))
     };
 }
 
@@ -16,9 +17,7 @@ macro_rules! cli_bin_path {
 #[macro_export]
 macro_rules! cloudtruth {
     ($($fmt:tt)*) => (
-        $crate::command::commandify(format!("{} {}", cli_bin_path!(), format!($($fmt)*)))
-            .wrap_err_with(|| format!("Invalid command: cloudtruth {}", format!($($fmt)*)))
-            .unwrap()
+        $crate::command::run_cloudtruth_cmd($crate::cli_bin_path!(), format!($($fmt)*)).unwrap()
     )
 }
 
