@@ -1665,10 +1665,12 @@ version = "1.2.0"
 dependencies = [
  "assert_cmd",
  "backtrace",
+ "cloudtruth-config",
  "commandspec",
  "derive_more",
  "integration-test-macros",
  "miette",
+ "once_cell",
  "owo-colors 3.5.0",
  "predicates 3.0.2",
  "thiserror",

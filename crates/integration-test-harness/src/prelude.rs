@@ -8,7 +8,7 @@ pub use crate::data::*;
 // export macros
 #[cfg(feature = "macros")]
 pub use {
-    super::{cli_bin_path, cloudtruth, contains, diff},
+    super::{bin_path, cloudtruth, contains, diff},
     integration_test_macros::integration_test,
 };
 

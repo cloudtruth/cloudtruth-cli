@@ -1,7 +1,7 @@
-use miette::{IntoDiagnostic, Result};
+use cloudtruth_config::{CT_API_KEY, CT_SERVER_URL};
+use miette::{Context, IntoDiagnostic, Result};
 
 use std::{
-    env,
     ffi::OsStr,
     ops::{Deref, DerefMut},
 };
@@ -56,6 +56,15 @@ impl Command {
         self.env("NO_COLOR", "1");
         self
     }
+
+    // Set environment variables to restrict CLI to offline usage only
+    pub fn offline_env(&mut self) -> &mut Self {
+        // Explicitly clear the API key so an individual dev's personal config isn't used for tests.
+        self.env(CT_API_KEY, "");
+        // Explicitly set the server to a bogus value that a server cannot to
+        self.env(CT_SERVER_URL, "http://0.0.0.0:0");
+        self
+    }
 }
 
 /// Auto deref references to inner assert_cmd::Command type
@@ -93,15 +102,10 @@ impl From<Command> for assert_cmd::Command {
 }
 
 /// Run a command from a string (used by cloudtruth! macro)
-pub fn commandify(cmd: String) -> Result<Command> {
-    commandspec::commandify(cmd)
+pub fn run_cloudtruth_cmd(bin_path: String, args: String) -> Result<Command> {
+    commandspec::commandify(format!("{bin_path} {args}"))
         .map(Command::from_std)
         .map_err(|e| e.compat())
         .into_diagnostic()
-}
-
-/// Fetches the path to binary for this integration test. Will panic if not found.
-pub fn bin_path() -> String {
-    println!("{:?}", env::var("CARGO_BIN_EXE_cloudtruth"));
-    env::var("CARGO_BIN_EXE_cloudtruth").expect("Could not find cloudtruth binary")
+        .wrap_err_with(|| format!("Invalid command: {bin_path} {args}"))
 }

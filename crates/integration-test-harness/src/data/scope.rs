@@ -1,4 +1,4 @@
-use std::ops::Deref;
+use std::{ffi::OsStr, ops::Deref};
 
 use super::{Name, NameConstructors, TestResource};
 
@@ -104,5 +104,14 @@ where
 {
     fn as_ref(&self) -> &str {
         self.name().as_ref()
+    }
+}
+
+impl<R> AsRef<OsStr> for Scope<R>
+where
+    R: TestResource,
+{
+    fn as_ref(&self) -> &OsStr {
+        OsStr::new(self.name().as_str())
     }
 }
