@@ -113,5 +113,9 @@ pub fn cli_bin_path<S: AsRef<str>>(name: S) -> String {
     std::env::var("NEXTEST_BIN_EXE_cloudtruth")
         .ok()
         .or(option_env!("CARGO_BIN_EXE_cloudtruth").map(String::from))
-        .unwrap_or_else(|| assert_cmd::cargo::cargo_bin(name).display().to_string())
+        .unwrap_or_else(|| {
+            let path = assert_cmd::cargo::cargo_bin(name);
+            println!("{:?}", path);
+            path.display().to_string()
+        })
 }
