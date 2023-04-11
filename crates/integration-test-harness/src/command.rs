@@ -1,13 +1,10 @@
-use cloudtruth_config::{CT_API_KEY, CT_SERVER_URL};
+use cloudtruth_config::{CT_API_KEY, CT_REST_DEBUG, CT_REST_PAGE_SIZE, CT_SERVER_URL};
 use miette::{Context, IntoDiagnostic, Result};
 
 use std::{
     ffi::OsStr,
     ops::{Deref, DerefMut},
 };
-
-const CLOUDTRUTH_REST_PAGE_SIZE: &str = "CLOUDTRUTH_REST_PAGE_SIZE";
-const CLOUDTRUTH_REST_DEBUG: &str = "CLOUDTRUTH_REST_DEBUG";
 
 /// A newtype wrapper around assert_cmd::Command so that we can define custom methods.
 /// For convenience it has a Deref impl that allows us to call assert_cmd methods
@@ -44,11 +41,11 @@ impl Command {
     }
 
     pub fn page_size(&mut self, page_size: usize) -> &mut Self {
-        self.env(CLOUDTRUTH_REST_PAGE_SIZE, page_size.to_string())
+        self.env(CT_REST_PAGE_SIZE, page_size.to_string())
     }
 
     pub fn rest_debug(&mut self) -> &mut Self {
-        self.env(CLOUDTRUTH_REST_DEBUG, "true")
+        self.env(CT_REST_DEBUG, "true")
     }
 
     // Apply default environment variables
@@ -108,4 +105,19 @@ pub fn run_cloudtruth_cmd(bin_path: String, args: String) -> Result<Command> {
         .map_err(|e| e.compat())
         .into_diagnostic()
         .wrap_err_with(|| format!("Invalid command: {bin_path} {args}"))
+}
+
+/// Attempts to find the cloudtruth binary to test.
+/// If not found via environment variables, will try to locate a binary with the given name in the current target directory
+pub fn cli_bin_path<S: AsRef<str>>(name: S) -> String {
+    std::env::var("NEXTEST_BIN_EXE_cloudtruth")
+        .ok()
+        .or(option_env!("CARGO_BIN_EXE_cloudtruth").map(String::from))
+        .or_else(|| {
+            assert_cmd::cargo::cargo_bin(name)
+                .into_os_string()
+                .into_string()
+                .ok()
+        })
+        .expect("Could not find cloudtruth binary")
 }

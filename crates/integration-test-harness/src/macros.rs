@@ -3,28 +3,7 @@
 #[macro_export]
 macro_rules! cli_bin_path {
     () => {
-        std::env::var("NEXTEST_BIN_EXE_cloudtruth")
-            .ok()
-            .or(option_env!("CARGO_BIN_EXE_cloudtruth").map(String::from))
-            .or_else(|| {
-                option_env!("CARGO_BIN_NAME").and_then(|name| {
-                    std::env::current_exe()
-                        .ok()
-                        .map(|mut path| {
-                            path.pop();
-                            if path.ends_with("deps") {
-                                path.pop();
-                            }
-                            path
-                        })
-                        .unwrap()
-                        .join(format!("{}{}", name, std::env::consts::EXE_SUFFIX))
-                        .into_os_string()
-                        .into_string()
-                        .ok()
-                })
-            })
-            .expect("Could not find cloudtruth binary")
+        $crate::command::cli_bin_path(option_env!("CARGO_BIN_NAME").unwrap_or("cloudtruth"))
     };
 }
 
@@ -38,7 +17,7 @@ macro_rules! cli_bin_path {
 #[macro_export]
 macro_rules! cloudtruth {
     ($($fmt:tt)*) => (
-        $crate::command::run_cloudtruth_cmd(cli_bin_path!(), format!($($fmt)*)).unwrap()
+        $crate::command::run_cloudtruth_cmd($crate::cli_bin_path!(), format!($($fmt)*)).unwrap()
     )
 }
 
