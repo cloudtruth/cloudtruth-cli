@@ -3,7 +3,7 @@ use command::Command;
 
 use super::{Name, NameConstructors, Scope, Scoped, TestResource};
 
-#[derive(Display)]
+#[derive(Clone, Debug, Display)]
 #[display(fmt = "{}", name)]
 pub struct Environment<'d, 'p> {
     name: Name,

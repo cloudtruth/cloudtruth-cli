@@ -11,6 +11,7 @@ pub mod macros;
 pub mod panic;
 pub mod prelude;
 mod source_span;
+pub mod util;
 
 /// Setup the integration test with error and panic handlers.
 pub fn install() {
