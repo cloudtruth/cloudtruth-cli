@@ -5,76 +5,67 @@ const TEST_PAGE_SIZE: usize = 5;
 
 #[integration_test]
 fn test_environment_basic() {
-    let mut env = Environment::with_prefix("env-name");
+    // Initialize environment data but do not create yet
+    let env = EnvironmentBuilder::with_prefix("env-name")
+        .description("Description on create")
+        .build();
 
-    // verify env_name does not yet exist
+    // verify env does not yet exist
     cloudtruth!("environments ls -v")
         .assert()
         .success()
         .stdout(not(contains(&env)));
 
-    // create with a description
-    cloudtruth!("environments set {env} --desc 'Description on create'")
-        .assert()
-        .success();
+    // create/delete within scope of this closure
+    env.clone().with_scope(|mut env| {
+        cloudtruth!("environments ls -v -f csv")
+            .assert()
+            .success()
+            .stdout(contains!("{env},default,Description on create"));
 
-    cloudtruth!("environments ls -v -f csv")
-        .assert()
-        .success()
-        .stdout(contains!("{env},default,Description on create"));
+        // update the description
+        cloudtruth!("environments set {env} --desc 'Updated description'")
+            .assert()
+            .success();
 
-    // update the description
-    cloudtruth!("environments set {env} --desc 'Updated description'")
-        .assert()
-        .success();
+        cloudtruth!("environments ls -v -f csv")
+            .assert()
+            .success()
+            .stdout(contains!("{env},default,Updated description"));
 
-    cloudtruth!("environments ls -v -f csv")
-        .assert()
-        .success()
-        .stdout(contains!("{env},default,Updated description"));
+        // idempotent - do it again
+        cloudtruth!("environments set {env} --desc 'Updated description'")
+            .assert()
+            .success();
 
-    // idempotent - do it again
-    cloudtruth!("environments set {env} --desc 'Updated description'")
-        .assert()
-        .success();
+        // rename
+        env.rename(Name::with_prefix("env-rename"));
 
-    // rename
-    let env_rename = Environment::with_prefix("env-rename");
-    cloudtruth!("environments set {env} --rename {env_rename}")
-        .assert()
-        .success()
-        .stdout(contains!("Updated environment '{env_rename}'"));
+        // nothing to update
+        cloudtruth!("environments set {env}")
+            .assert()
+            .success()
+            .stderr(contains!(
+                "Environment '{env}' not updated: no updated parameters provided"
+            ));
 
-    env = env_rename;
+        // test the list without the values
+        cloudtruth!("environments list")
+            .assert()
+            .success()
+            .stdout(contains(&env).and(not(contains("Updated description"))));
 
-    // nothing to update
-    cloudtruth!("environments set {env}")
-        .assert()
-        .success()
-        .stderr(contains!(
-            "Environment '{env}' not updated: no updated parameters provided"
-        ));
-
-    // test the list without the values
-    cloudtruth!("environments list")
-        .assert()
-        .success()
-        .stdout(contains(&env).and(not(contains("Updated description"))));
-
-    // shows create/modified times
-    cloudtruth!("environments list --show-times -f csv")
-        .assert()
-        .success()
-        .stdout(
-            contains("Created At,Modified At")
-                .and(contains(&env))
-                .and(contains("Updated description")),
-        );
-
-    // delete
-    cloudtruth!("environments delete {env} --confirm")
-        .assert()
-        .success();
+        // shows create/modified times
+        cloudtruth!("environments list --show-times -f csv")
+            .assert()
+            .success()
+            .stdout(
+                contains("Created At,Modified At")
+                    .and(contains(&env))
+                    .and(contains("Updated description")),
+            );
+    });
+    // verify deletion
     cloudtruth!("environments ls -v")
         .assert()
         .success()
@@ -176,7 +167,7 @@ fn test_environment_parents() {
     cloudtruth!("environment set {env4} --parent {env1}")
         .assert()
         .failure()
-        .stderr(diff!("Environment '{env4}' parent cannot be updated.\n"));
+        .stderr(diff!("Environment '{env4}' parent cannot be updated."));
 
     // setting to same parent is ignored
     cloudtruth!("environment set {env4} --parent {env2} --desc 'My new description'")
@@ -294,7 +285,7 @@ fn test_environment_tagging() {
         .assert()
         .success()
         .stderr(diff!(
-            "Environment '{env}' does not have a tag 'renamed-tag'!\n"
+            "Environment '{env}' does not have a tag 'renamed-tag'!"
         ));
 
     // unknown environment

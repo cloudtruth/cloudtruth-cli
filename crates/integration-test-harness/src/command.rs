@@ -13,6 +13,9 @@ use std::{
 pub struct Command(assert_cmd::Command);
 
 impl Command {
+    pub fn new<S: AsRef<OsStr>>(program: S) -> Self {
+        Command(assert_cmd::Command::new(program))
+    }
     pub fn cargo_bin<S: AsRef<str>>(name: S) -> Self {
         assert_cmd::Command::cargo_bin(name)
             .into_diagnostic()
