@@ -3,13 +3,15 @@ use std::{
     ops::{Deref, DerefMut},
 };
 
-use super::{Name, NameConstructors, TestResource};
+use crate::data::{Name, NameConstructors, TestResource};
 
-/// A generic CloudTruth entity name scoped via Rust borrow checker.
-/// Used to implement the more specific scoped structs (ex: ScopedProject)
+/// A generic CloudTruth entity scoped via Rust borrow checker.
 ///
-/// T must implement DeleteName, which is used via the Drop implementation
-/// to delete the entity when the ScopedName is dropped.
+/// Scoped entities are automatically created when the Scope is created,
+/// and automatically deleted by the Scope's Drop implementation when the
+/// value leaves scope.
+///
+/// Inner type must be a type that implements TestResource  
 #[derive(Display)]
 #[display(fmt = "{}", resource)]
 pub struct Scope<R>
@@ -23,13 +25,14 @@ impl<R> Scope<R>
 where
     R: TestResource,
 {
+    /// Create a scope from a given TestResource. This calls the resources create() method
     pub fn new(resource: R) -> Self {
         resource.create();
         Scope { resource }
     }
 }
 
-/// Constructors for Scoped
+/// Constructors for Scope. All constructors call the TestResource create() method
 impl<R> NameConstructors for Scope<R>
 where
     R: TestResource + NameConstructors,
@@ -39,8 +42,6 @@ where
     }
 }
 
-/// When ScopedName is dropped, the associated DeleteName::delete_name function of T
-/// is called. This is where all cleanup actions occur for scoped test names.
 impl<R> Drop for Scope<R>
 where
     R: TestResource,
@@ -75,37 +76,9 @@ impl<'a, R> From<&'a Scope<R>> for String
 where
     R: TestResource,
 {
+    /// Convert a Scope reference to a String by cloning. Needed for easy use of predicate functions
     fn from(value: &'a Scope<R>) -> Self {
         value.name().into()
-    }
-}
-
-/// A trait to take a test resource and scope it via the Rust borrow checker.
-///
-/// Blanket implementation provided for TestResource implementors
-pub trait Scoped
-where
-    Self: Sized + TestResource,
-{
-    /// Creates a TestResource and then scopes its lifetime to the lifetime of the returned value.
-    /// When the scoped value is dropped in memory the resource is automatically deleted.
-    fn scoped(self) -> Scope<Self>;
-
-    /// Creates a TestResource for the lifetime of the given closure.
-    fn with_scope<F, R>(self, scope_func: F) -> R
-    where
-        F: FnOnce(Scope<Self>) -> R,
-    {
-        scope_func(self.scoped())
-    }
-}
-
-impl<R> Scoped for R
-where
-    R: Sized + TestResource,
-{
-    fn scoped(self) -> Scope<Self> {
-        Scope::new(self)
     }
 }
 

@@ -16,12 +16,6 @@ impl Command {
     pub fn new<S: AsRef<OsStr>>(program: S) -> Self {
         Command(assert_cmd::Command::new(program))
     }
-    pub fn cargo_bin<S: AsRef<str>>(name: S) -> Self {
-        assert_cmd::Command::cargo_bin(name)
-            .into_diagnostic()
-            .map(Self::from_assert_cmd)
-            .expect("Couldn't find binary to test")
-    }
 
     pub fn from_assert_cmd(cmd: assert_cmd::Command) -> Self {
         Self(cmd).default_env()

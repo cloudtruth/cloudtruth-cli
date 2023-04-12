@@ -1,7 +1,7 @@
-use super::{Name, NameConstructors, Scope, Scoped, TestResource};
 use crate::{
     command::{cli_bin_path, Command},
     contains,
+    data::{Name, NameConstructors, Scope, ScopedTestResourceExt, TestResource},
 };
 
 #[derive(Clone, Debug, Display)]
@@ -72,17 +72,22 @@ impl<'d, 'p> TestResource for Environment<'d, 'p> {
 }
 
 impl<'d, 'p> From<&Environment<'d, 'p>> for String {
+    /// Convert an Environment reference to a String by cloning its name.
+    /// Needed for easy use of predicate functions.
     fn from(name: &Environment) -> Self {
         name.name().into()
     }
 }
 
 impl<'d, 'p> From<Environment<'d, 'p>> for String {
+    /// Convert an Environment to a String of its name.
     fn from(environment: Environment) -> Self {
         environment.name.into()
     }
 }
 
+/// For more complex Environment data, use an EnvironmentBuilder to fill in the values and then call
+/// build() or build_scoped() to create the Environment or Scope<Environment>, respectively.
 pub struct EnvironmentBuilder<'d, 'p> {
     name: Name,
     description: Option<&'d str>,
@@ -91,15 +96,12 @@ pub struct EnvironmentBuilder<'d, 'p> {
 
 impl<'d, 'p> NameConstructors for EnvironmentBuilder<'d, 'p> {
     fn from_name<N: Into<Name>>(name: N) -> Self {
-        EnvironmentBuilder {
-            name: name.into(),
-            description: None,
-            parent: None,
-        }
+        EnvironmentBuilder::new(name)
     }
 }
 
 impl<'d, 'p> EnvironmentBuilder<'d, 'p> {
+    /// Create a EnvironmentBuilder from a name.
     pub fn new<N: Into<Name>>(name: N) -> Self {
         EnvironmentBuilder {
             name: name.into(),
@@ -108,20 +110,26 @@ impl<'d, 'p> EnvironmentBuilder<'d, 'p> {
         }
     }
 
+    /// Set the environments description.
     pub fn description(mut self, description: &'d str) -> Self {
         self.description = Some(description);
         self
     }
 
+    /// Set the environments parent.
     pub fn parent(mut self, parent: &'p Environment) -> Self {
         self.parent = Some(&parent.name);
         self
     }
 
+    /// Build a Scope<Environment>. Equivalent to calling .build().scoped().
+    /// Because creating a Scope around a Environment creates the environment on the server,
+    /// this method does the same.
     pub fn build_scoped(self) -> Scope<Environment<'d, 'p>> {
         self.build().scoped()
     }
 
+    /// Build an Environment. Does not automatically create the Project on the server.
     pub fn build(self) -> Environment<'d, 'p> {
         Environment::new(self.name, self.description, self.parent)
     }

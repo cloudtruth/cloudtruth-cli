@@ -23,24 +23,24 @@ pub trait NameConstructors
 where
     Self: Sized,
 {
-    /// Construct a test resource from an existing name.
+    /// Constructs a value from an existing name.
     fn from_name<N: Into<Name>>(name: N) -> Self;
 
-    /// Construct a new name exactly from a given String.
+    /// Construct a value exactly from a given String.
     fn from_string<S: Into<String>>(string: S) -> Self {
         Self::from_name(Name::from_string(string))
     }
-    /// Construct a new name that's automatically generated
+    /// Construct a value that's given an automatically generated a name
     fn generated() -> Self {
         Self::from_name(Name::generated())
     }
-    /// Construct a name that's automatically generated with a static prefix
+    /// Construct a value that's given an automatically generated name with a static prefix
     fn with_prefix<S: AsRef<str>>(prefix: S) -> Self {
         Self::from_name(Name::with_prefix(prefix))
     }
 }
 
-/// Name constructors
+/// Name constructors for the base Name type
 impl NameConstructors for Name {
     fn from_name<N: Into<Name>>(name: N) -> Self {
         name.into()
@@ -59,33 +59,31 @@ impl NameConstructors for Name {
 }
 
 impl Name {
-    /// Represent name as a string slice
+    /// Represent a Name as a string reference
     pub fn as_str(&self) -> &str {
         &self.0
     }
 }
 
 impl From<String> for Name {
+    /// Convert a String into a Name
     fn from(string: String) -> Self {
         Self::from_string(string)
     }
 }
 
 impl From<Name> for String {
+    /// Convert a Name into a String
     fn from(name: Name) -> Self {
         name.0
     }
 }
 
 impl From<&Name> for String {
+    /// Convert a reference to a Name to a String by cloning it.
+    /// Needed for easy use of predicate functions.
     fn from(name: &Name) -> Self {
         name.0.clone()
-    }
-}
-
-impl<'a> From<&'a Name> for &'a String {
-    fn from(name: &'a Name) -> Self {
-        &name.0
     }
 }
 

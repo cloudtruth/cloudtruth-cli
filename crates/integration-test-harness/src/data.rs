@@ -1,8 +1,8 @@
-mod environment;
-mod name;
-mod project;
-mod resource;
-mod scope;
+pub mod environment;
+pub mod name;
+pub mod project;
+pub mod resource;
+pub mod scope;
 
 pub use environment::*;
 pub use name::*;
