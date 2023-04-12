@@ -4,7 +4,10 @@ const TEST_PAGE_SIZE: usize = 5;
 
 #[integration_test]
 fn test_projects_basic() {
-    let mut proj = Project::with_prefix("proj-name");
+    // Initialize project data but do not create yet
+    let proj = ProjectBuilder::with_prefix("proj-name")
+        .description("Description on create")
+        .build();
 
     // verify proj_name does not yet exist
     cloudtruth!("projects ls -v")
@@ -12,74 +15,56 @@ fn test_projects_basic() {
         .success()
         .stdout(not(contains(&proj)));
 
-    // create with a description
-    cloudtruth!("projects set {proj} --desc 'Description on create'")
-        .assert()
-        .success();
+    // create/delete the project within scope of this closure
+    proj.clone().with_scope(|mut proj| {
+        cloudtruth!("projects ls -v -f csv")
+            .assert()
+            .success()
+            .stdout(contains!("{proj},,Description on create"));
+        // update the description
+        cloudtruth!("projects set {proj} --desc 'Updated description'")
+            .assert()
+            .success();
+        cloudtruth!("projects ls -v -f csv")
+            .assert()
+            .success()
+            .stdout(contains!("{proj},,Updated description"));
+        // idempotent - do it again
+        cloudtruth!("projects set {proj} --desc 'Updated description'")
+            .assert()
+            .success();
+        // rename the project
+        proj.rename(Name::with_prefix("proj-rename"));
+        // nothing to update
+        cloudtruth!("projects set {proj}")
+            .assert()
+            .success()
+            .stderr(contains!(
+                "Project '{proj}' not updated: no updated parameters provided"
+            ));
+        // test the list without the values
+        cloudtruth!("projects list")
+            .assert()
+            .success()
+            .stdout(contains(&proj).and(not(contains("Updated description"))));
+        // shows create/modified times
+        cloudtruth!("projects list --show-times -f csv")
+            .assert()
+            .success()
+            .stdout(
+                contains("Created At,Modified At")
+                    .and(contains(&proj))
+                    .and(contains("Updated description")),
+            );
+    });
 
-    cloudtruth!("projects ls -v -f csv")
-        .assert()
-        .success()
-        .stdout(contains!("{proj},,Description on create"));
-
-    // update the description
-    cloudtruth!("projects set {proj} --desc 'Updated description'")
-        .assert()
-        .success();
-
-    cloudtruth!("projects ls -v -f csv")
-        .assert()
-        .success()
-        .stdout(contains!("{proj},,Updated description"));
-
-    // idempotent - do it again
-    cloudtruth!("projects set {proj} --desc 'Updated description'")
-        .assert()
-        .success();
-
-    // rename
-    let proj_rename = Project::with_prefix("proj-rename");
-    cloudtruth!("projects set {proj} --rename {proj_rename}")
-        .assert()
-        .success()
-        .stdout(contains!("Updated project '{proj_rename}'"));
-
-    proj = proj_rename;
-
-    // nothing to update
-    cloudtruth!("projects set {proj}")
-        .assert()
-        .success()
-        .stderr(contains!(
-            "Project '{proj}' not updated: no updated parameters provided"
-        ));
-
-    // test the list without the values
-    cloudtruth!("projects list")
-        .assert()
-        .success()
-        .stdout(contains(&proj).and(not(contains("Updated description"))));
-
-    // shows create/modified times
-    cloudtruth!("projects list --show-times -f csv")
-        .assert()
-        .success()
-        .stdout(
-            contains("Created At,Modified At")
-                .and(contains(&proj))
-                .and(contains("Updated description")),
-        );
-
-    // delete
-    cloudtruth!("projects delete {proj} --confirm")
-        .assert()
-        .success();
+    // verify deletion
     cloudtruth!("projects ls -v")
         .assert()
         .success()
         .stdout(not(contains(&proj)));
 
-    // do it again, see we have success and a warning
+    // try to delete again, see we have success and a warning
     cloudtruth!("projects delete {proj} --confirm")
         .assert()
         .success()

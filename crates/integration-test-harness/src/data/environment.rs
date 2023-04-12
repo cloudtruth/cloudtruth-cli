@@ -1,7 +1,8 @@
-use crate::command;
-use command::Command;
-
 use super::{Name, NameConstructors, Scope, Scoped, TestResource};
+use crate::{
+    command::{cli_bin_path, Command},
+    contains,
+};
 
 #[derive(Clone, Debug, Display)]
 #[display(fmt = "{}", name)]
@@ -21,6 +22,23 @@ impl<'d, 'p> Environment<'d, 'p> {
             parent,
         }
     }
+
+    pub fn rename<N: Into<Name>>(&mut self, name: N) -> &mut Self {
+        let name = name.into();
+        Command::new(cli_bin_path("cloudtruth"))
+            .args([
+                "environments",
+                "set",
+                self.name.as_str(),
+                "--rename",
+                name.as_str(),
+            ])
+            .assert()
+            .success()
+            .stdout(contains!("Updated environment '{name}'"));
+        self.name = name;
+        self
+    }
 }
 
 impl<'d, 'p> TestResource for Environment<'d, 'p> {
@@ -32,7 +50,7 @@ impl<'d, 'p> TestResource for Environment<'d, 'p> {
     }
 
     fn create(&self) {
-        let mut cmd = Command::cargo_bin("cloudtruth");
+        let mut cmd = Command::new(cli_bin_path("cloudtruth"));
         cmd.args(["environments", "set", self.name.as_str()]);
         if let Some(desc) = self.description {
             cmd.args(["--desc", desc]);
@@ -44,7 +62,7 @@ impl<'d, 'p> TestResource for Environment<'d, 'p> {
     }
 
     fn delete(&self) {
-        Command::cargo_bin("cloudtruth")
+        Command::new(cli_bin_path("cloudtruth"))
             .args(["environments", "delete", "--confirm", self.name.as_str()])
             .assert()
             .success();

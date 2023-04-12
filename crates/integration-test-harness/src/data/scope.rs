@@ -1,4 +1,7 @@
-use std::{ffi::OsStr, ops::Deref};
+use std::{
+    ffi::OsStr,
+    ops::{Deref, DerefMut},
+};
 
 use super::{Name, NameConstructors, TestResource};
 
@@ -67,6 +70,16 @@ where
     type Target = R;
     fn deref(&self) -> &Self::Target {
         &self.resource
+    }
+}
+
+/// Auto derefs to underlying Name reference for convenience.
+impl<R> DerefMut for Scope<R>
+where
+    R: TestResource,
+{
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.resource
     }
 }
 
