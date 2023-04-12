@@ -86,7 +86,17 @@ pub trait Scoped
 where
     Self: Sized + TestResource,
 {
+    /// Creates a TestResource and then scopes its lifetime to the lifetime of the returned value.
+    /// When the scoped value is dropped in memory the resource is automatically deleted.
     fn scoped(self) -> Scope<Self>;
+
+    /// Creates a TestResource for the lifetime of the given closure.
+    fn with_scope<F, R>(self, mut scope_func: F) -> R
+    where
+        F: FnMut(Scope<Self>) -> R,
+    {
+        scope_func(self.scoped())
+    }
 }
 
 impl<R> Scoped for R
