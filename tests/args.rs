@@ -175,7 +175,7 @@ fn test_arg_authentication_errors() {
         "proj ls -v",
         "int ex -v",
         "int ls -v",
-        formatcp!("run -i none -- {DISPLAY_ENV_CMD}"),
+        formatcp!("run -i none -- {}", DISPLAY_ENV_CMD),
     ];
     for cmd in cmds {
         cloudtruth!("--api-key abc123 {cmd}")
