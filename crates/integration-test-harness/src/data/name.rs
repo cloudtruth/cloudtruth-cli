@@ -18,23 +18,33 @@ pub struct Name(String);
 
 /// Trait for name constructors.
 ///
-/// A blanket implementation is provided for any types that implement
-/// TestResource so that newtype wrappers for specific entity
-/// types only need to implement those trait methods to have standardized constructor functions
-/// and the auto-delete behavior via the Drop implementation for Scoped.
-///
-/// See src/name/project.rs for an example of how this is done.
-pub trait NameConstructors {
+/// Default implementations for all other methods are provided as long as from_name is implemented.
+pub trait NameConstructors
+where
+    Self: Sized,
+{
+    /// Construct a test resource from an existing name.
+    fn from_name<N: Into<Name>>(name: N) -> Self;
+
     /// Construct a new name exactly from a given String.
-    fn from_string<S: Into<String>>(name: S) -> Self;
+    fn from_string<S: Into<String>>(string: S) -> Self {
+        Self::from_name(Name::from_string(string))
+    }
     /// Construct a new name that's automatically generated
-    fn generated() -> Self;
+    fn generated() -> Self {
+        Self::from_name(Name::generated())
+    }
     /// Construct a name that's automatically generated with a static prefix
-    fn with_prefix<S: AsRef<str>>(prefix: S) -> Self;
+    fn with_prefix<S: AsRef<str>>(prefix: S) -> Self {
+        Self::from_name(Name::with_prefix(prefix))
+    }
 }
 
 /// Name constructors
 impl NameConstructors for Name {
+    fn from_name<N: Into<Name>>(name: N) -> Self {
+        name.into()
+    }
     fn from_string<S: Into<String>>(name: S) -> Self {
         Self(name.into())
     }

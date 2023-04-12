@@ -32,22 +32,10 @@ where
 /// Constructors for Scoped
 impl<R> NameConstructors for Scope<R>
 where
-    R: TestResource,
+    R: TestResource + NameConstructors,
 {
-    ///Generate custom name
-    fn from_string<S: Into<String>>(string: S) -> Self {
-        Self::new(R::from_string(string.into()))
-    }
-
-    fn generated() -> Self {
-        Scope::new(R::from_name(Name::generated()))
-    }
-
-    fn with_prefix<S>(prefix: S) -> Self
-    where
-        S: AsRef<str>,
-    {
-        Scope::new(R::from_name(Name::with_prefix(prefix)))
+    fn from_name<N: Into<Name>>(name: N) -> Self {
+        Self::new(R::from_name(name))
     }
 }
 
