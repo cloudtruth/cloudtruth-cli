@@ -41,14 +41,16 @@ impl<'d, 'p> Environment<'d, 'p> {
     }
 }
 
+impl<'d, 'p> NameConstructors for Environment<'d, 'p> {
+    fn from_name<N: Into<Name>>(name: N) -> Self {
+        Self::new(name.into(), None, None)
+    }
+}
+
 impl<'d, 'p> TestResource for Environment<'d, 'p> {
     fn name(&self) -> &Name {
         &self.name
     }
-    fn from_name<N: Into<Name>>(name: N) -> Self {
-        Self::new(name.into(), None, None)
-    }
-
     fn create(&self) {
         let mut cmd = Command::new(cli_bin_path("cloudtruth"));
         cmd.args(["environments", "set", self.name.as_str()]);
@@ -88,25 +90,9 @@ pub struct EnvironmentBuilder<'d, 'p> {
 }
 
 impl<'d, 'p> NameConstructors for EnvironmentBuilder<'d, 'p> {
-    fn from_string<S: Into<String>>(name: S) -> Self {
+    fn from_name<N: Into<Name>>(name: N) -> Self {
         EnvironmentBuilder {
-            name: Name::from_string(name),
-            description: None,
-            parent: None,
-        }
-    }
-
-    fn generated() -> Self {
-        EnvironmentBuilder {
-            name: Name::generated(),
-            description: None,
-            parent: None,
-        }
-    }
-
-    fn with_prefix<S: AsRef<str>>(prefix: S) -> Self {
-        EnvironmentBuilder {
-            name: Name::with_prefix(prefix),
+            name: name.into(),
             description: None,
             parent: None,
         }

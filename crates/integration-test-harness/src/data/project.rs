@@ -41,14 +41,16 @@ impl<'d, 'p> Project<'d, 'p> {
     }
 }
 
+impl<'d, 'p> NameConstructors for Project<'d, 'p> {
+    fn from_name<N: Into<Name>>(name: N) -> Self {
+        Self::new(name.into(), None, None)
+    }
+}
+
 impl<'d, 'p> TestResource for Project<'d, 'p> {
     fn name(&self) -> &Name {
         &self.name
     }
-    fn from_name<N: Into<Name>>(name: N) -> Self {
-        Self::new(name.into(), None, None)
-    }
-
     fn create(&self) {
         let mut cmd = Command::new(cli_bin_path("cloudtruth"));
         cmd.args(["projects", "set", self.name.as_str()]);
@@ -88,25 +90,9 @@ pub struct ProjectBuilder<'d, 'p> {
 }
 
 impl<'d, 'p> NameConstructors for ProjectBuilder<'d, 'p> {
-    fn from_string<S: Into<String>>(name: S) -> Self {
+    fn from_name<N: Into<Name>>(name: N) -> Self {
         ProjectBuilder {
-            name: Name::from_string(name),
-            description: None,
-            parent: None,
-        }
-    }
-
-    fn generated() -> Self {
-        ProjectBuilder {
-            name: Name::generated(),
-            description: None,
-            parent: None,
-        }
-    }
-
-    fn with_prefix<S: AsRef<str>>(prefix: S) -> Self {
-        ProjectBuilder {
-            name: Name::with_prefix(prefix),
+            name: name.into(),
             description: None,
             parent: None,
         }
