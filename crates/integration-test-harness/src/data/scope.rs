@@ -92,9 +92,9 @@ where
     fn scoped(self) -> Scope<Self>;
 
     /// Creates a TestResource for the lifetime of the given closure.
-    fn with_scope<F, R>(self, mut scope_func: F) -> R
+    fn with_scope<F, R>(self, scope_func: F) -> R
     where
-        F: FnMut(Scope<Self>) -> R,
+        F: FnOnce(Scope<Self>) -> R,
     {
         scope_func(self.scoped())
     }
