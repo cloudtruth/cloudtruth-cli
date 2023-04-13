@@ -15,7 +15,7 @@ pub struct Project<'d, 'p> {
 pub type ScopedProject<'d, 'p> = Scope<Project<'d, 'p>>;
 
 impl<'d, 'p> Project<'d, 'p> {
-    fn new(name: Name, description: Option<&'d str>, parent: Option<&'p Name>) -> Self {
+    pub fn new(name: Name, description: Option<&'d str>, parent: Option<&'p Name>) -> Self {
         Self {
             name,
             description,
@@ -111,8 +111,8 @@ impl<'d, 'p> ProjectBuilder<'d, 'p> {
     }
 
     /// Set the projects description.
-    pub fn description(mut self, description: &'d str) -> Self {
-        self.description = Some(description);
+    pub fn description<D: AsRef<str> + ?Sized>(mut self, description: &'d D) -> Self {
+        self.description = Some(description.as_ref());
         self
     }
 
