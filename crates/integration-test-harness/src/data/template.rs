@@ -68,7 +68,9 @@ impl<'p, 'd, 'b> TestResource for Template<'p, 'd, 'b> {
             cmd.args(["--desc", desc]);
         }
         cmd.arg("--body").arg(self.body);
-        cmd.assert().success();
+        cmd.assert()
+            .success()
+            .stdout(contains!("Created template '{self}'"));
     }
 
     fn delete(&self) {

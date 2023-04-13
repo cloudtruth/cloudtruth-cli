@@ -60,7 +60,9 @@ impl<'d, 'p> TestResource for Environment<'d, 'p> {
         if let Some(parent) = self.parent {
             cmd.args(["--parent", parent.as_ref()]);
         }
-        cmd.assert().success();
+        cmd.assert()
+            .success()
+            .stdout(contains!("Created environment '{self}'"));
     }
 
     fn delete(&self) {
