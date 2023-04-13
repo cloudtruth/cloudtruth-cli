@@ -1,11 +1,12 @@
 use cloudtruth_config::{CT_API_KEY, CT_REST_DEBUG, CT_REST_PAGE_SIZE, CT_SERVER_URL};
 use miette::{Context, IntoDiagnostic, Result};
-
+use once_cell::sync::OnceCell;
 use std::{
     ffi::OsStr,
     ops::{Deref, DerefMut},
     path::{Path, PathBuf},
 };
+use which::which;
 
 /// A newtype wrapper around assert_cmd::Command so that we can define custom methods.
 /// For convenience it has a Deref impl that allows us to call assert_cmd methods
@@ -113,11 +114,28 @@ pub fn run_cloudtruth_cmd<P: AsRef<Path>>(bin_path: P, args: String) -> Result<C
     }
 }
 
-/// Attempts to find the cloudtruth binary to test.
+/// Attempts to find the CLI binary to test.
 /// If not found via environment variables, will try to locate a binary with the given name in the current target directory
-pub fn cli_bin_path<S: AsRef<str>>(name: S) -> PathBuf {
-    std::env::var_os("NEXTEST_BIN_EXE_cloudtruth")
+/// This logic runs once and then the result is cached for subsequent calls.
+pub fn cli_bin_path<S: AsRef<str>>(name: S) -> &'static Path {
+    static CLI_BIN_PATH: OnceCell<PathBuf> = OnceCell::new();
+    CLI_BIN_PATH
+        .get_or_init(|| {
+            // try to find binary in target directory
+            let bin_path = cargo_bin_path(name.as_ref()).unwrap_or_else(|| {
+                which(OsStr::new(name.as_ref())).expect("Unable to find CLI binary")
+            });
+            println!("Found CLI binary at: {}", bin_path.display());
+            bin_path
+        })
+        .as_ref()
+}
+
+/// Attempts to find the CLI binary in the cargo target directory.
+fn cargo_bin_path<S: AsRef<str>>(name: S) -> Option<PathBuf> {
+    let path = std::env::var_os("NEXTEST_BIN_EXE_cloudtruth")
         .map(PathBuf::from)
         .or(option_env!("CARGO_BIN_EXE_cloudtruth").map(PathBuf::from))
-        .unwrap_or_else(|| assert_cmd::cargo::cargo_bin(name))
+        .unwrap_or_else(|| assert_cmd::cargo::cargo_bin(name.as_ref()));
+    Some(path).filter(|path| path.exists())
 }
