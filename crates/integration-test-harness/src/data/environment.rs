@@ -15,9 +15,9 @@ pub struct Environment<'d, 'p> {
 pub type ScopedEnvironment<'d, 'p> = Scope<Environment<'d, 'p>>;
 
 impl<'d, 'p> Environment<'d, 'p> {
-    fn new(name: Name, description: Option<&'d str>, parent: Option<&'p Name>) -> Self {
+    fn new<N: Into<Name>>(name: N, description: Option<&'d str>, parent: Option<&'p Name>) -> Self {
         Self {
-            name,
+            name: name.into(),
             description,
             parent,
         }
@@ -43,7 +43,7 @@ impl<'d, 'p> Environment<'d, 'p> {
 
 impl<'d, 'p> NameConstructors for Environment<'d, 'p> {
     fn from_name<N: Into<Name>>(name: N) -> Self {
-        Self::new(name.into(), None, None)
+        Self::new(name, None, None)
     }
 }
 
@@ -111,8 +111,8 @@ impl<'d, 'p> EnvironmentBuilder<'d, 'p> {
     }
 
     /// Set the environments description.
-    pub fn description(mut self, description: &'d str) -> Self {
-        self.description = Some(description);
+    pub fn description<D: AsRef<str> + ?Sized>(mut self, description: &'d D) -> Self {
+        self.description = Some(description.as_ref());
         self
     }
 
@@ -129,7 +129,7 @@ impl<'d, 'p> EnvironmentBuilder<'d, 'p> {
         self.build().scoped()
     }
 
-    /// Build an Environment. Does not automatically create the Project on the server.
+    /// Build an Environment. Does not automatically create the Environment on the server.
     pub fn build(self) -> Environment<'d, 'p> {
         Environment::new(self.name, self.description, self.parent)
     }

@@ -1,11 +1,15 @@
 pub mod environment;
+pub mod file;
 pub mod name;
 pub mod project;
 pub mod resource;
 pub mod scope;
+pub mod template;
 
 pub use environment::*;
+pub use file::*;
 pub use name::*;
 pub use project::*;
 pub use resource::*;
 pub use scope::*;
+pub use template::*;
