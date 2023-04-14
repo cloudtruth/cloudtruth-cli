@@ -1,3 +1,4 @@
+use serde_json::Value;
 use std::{env, ffi::OsStr};
 use uuid::Uuid;
 
@@ -96,5 +97,17 @@ impl AsRef<str> for Name {
 impl AsRef<OsStr> for Name {
     fn as_ref(&self) -> &OsStr {
         OsStr::new(&self.0)
+    }
+}
+
+impl From<Name> for Value {
+    fn from(val: Name) -> Self {
+        val.0.into()
+    }
+}
+
+impl From<&Name> for Value {
+    fn from(val: &Name) -> Self {
+        val.as_str().into()
     }
 }

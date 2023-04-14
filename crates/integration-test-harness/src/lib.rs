@@ -9,6 +9,7 @@ pub mod error_handler;
 #[cfg(feature = "macros")]
 pub mod macros;
 pub mod panic;
+pub mod predicates;
 pub mod prelude;
 mod source_span;
 pub mod util;

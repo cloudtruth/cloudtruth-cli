@@ -4,6 +4,7 @@
 pub use crate::assert::AssertCmdExt;
 pub use crate::command::*;
 pub use crate::data::*;
+pub use crate::predicates::*;
 pub use crate::util::*;
 
 // export macros
@@ -23,13 +24,3 @@ pub use predicates::prelude::*;
 pub use predicates::str::*;
 
 // private imports
-use predicates::boolean::NotPredicate;
-
-/// Helper to allow prefix form of not(predicate) instead of predicate.not()
-pub fn not<Predicate, Item>(predicate: Predicate) -> NotPredicate<Predicate, Item>
-where
-    Predicate: PredicateBooleanExt<Item>,
-    Item: ?Sized,
-{
-    predicate.not()
-}

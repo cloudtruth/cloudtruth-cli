@@ -51,7 +51,7 @@ impl<'d, 'p> TestResource for Project<'d, 'p> {
     fn name(&self) -> &Name {
         &self.name
     }
-    fn create(&self) {
+    fn create(&mut self) {
         let mut cmd = Command::new(cli_bin_path("cloudtruth"));
         cmd.args(["projects", "set", self.name.as_str()]);
         if let Some(desc) = self.description {
@@ -65,7 +65,7 @@ impl<'d, 'p> TestResource for Project<'d, 'p> {
             .stdout(contains!("Created project '{self}'"));
     }
 
-    fn delete(&self) {
+    fn delete(&mut self) {
         Command::new(cli_bin_path("cloudtruth"))
             .args(["projects", "delete", "--confirm", self.name.as_str()])
             .assert()

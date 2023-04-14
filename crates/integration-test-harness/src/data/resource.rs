@@ -5,10 +5,14 @@ use crate::data::{Name, Scope};
 pub trait TestResource {
     /// Access a reference to the Name of this resource
     fn name(&self) -> &Name;
+    /// Get a clone of the test resources Name
+    fn to_name(&self) -> Name {
+        self.name().clone()
+    }
     /// Create the test resource on the server
-    fn create(&self);
+    fn create(&mut self);
     /// Delete the test resource from the server
-    fn delete(&self);
+    fn delete(&mut self);
 }
 
 /// Extends test resource with methods to create scoped test data.

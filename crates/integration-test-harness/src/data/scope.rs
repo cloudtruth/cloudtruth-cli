@@ -26,7 +26,7 @@ where
     R: TestResource,
 {
     /// Create a scope from a given TestResource. This calls the resources create() method
-    pub fn new(resource: R) -> Self {
+    pub fn new(mut resource: R) -> Self {
         resource.create();
         Scope { resource }
     }

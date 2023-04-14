@@ -55,7 +55,7 @@ impl<'p, 'd, 'b> TestResource for Template<'p, 'd, 'b> {
         &self.name
     }
 
-    fn create(&self) {
+    fn create(&mut self) {
         let mut cmd = Command::new(cli_bin_path("cloudtruth"));
         cmd.args([
             "--project",
@@ -73,7 +73,7 @@ impl<'p, 'd, 'b> TestResource for Template<'p, 'd, 'b> {
             .stdout(contains!("Created template '{self}'"));
     }
 
-    fn delete(&self) {
+    fn delete(&mut self) {
         Command::new(cli_bin_path("cloudtruth"))
             .args([
                 "--project",
