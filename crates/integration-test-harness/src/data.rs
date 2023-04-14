@@ -5,6 +5,7 @@ pub mod project;
 pub mod resource;
 pub mod scope;
 pub mod template;
+pub mod user;
 
 pub use environment::*;
 pub use file::*;
@@ -13,3 +14,4 @@ pub use project::*;
 pub use resource::*;
 pub use scope::*;
 pub use template::*;
+pub use user::*;

@@ -96,10 +96,10 @@ fn test_environment_cannot_delete_default() {
         .assert()
         .success()
         .stdout(diff(
-            String::from_utf8(before_param_list.get_output().stdout.clone()).unwrap(),
+            String::from_utf8_lossy(&before_param_list.get_output().stdout).to_string(),
         ))
         .stderr(diff(
-            String::from_utf8(before_param_list.get_output().stderr.clone()).unwrap(),
+            String::from_utf8_lossy(&before_param_list.get_output().stderr).to_string(),
         ))
         .code(eq(before_param_list
             .get_output()
