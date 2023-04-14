@@ -56,6 +56,7 @@ fn test_generate_password_basic() {
         .assert()
         .failure()
         .stderr(contains("Password must be 8 or more characters"));
+
     cloudtruth!("generate pw --length 4096")
         .assert()
         .failure()
