@@ -9386,15 +9386,6 @@
                     },
                     {
                         "in": "path",
-                        "name": "parameter_id",
-                        "schema": {
-                            "type": "string",
-                            "format": "uuid"
-                        },
-                        "required": true
-                    },
-                    {
-                        "in": "path",
                         "name": "project_pk",
                         "schema": {
                             "type": "string",
@@ -9457,15 +9448,6 @@
             "post": {
                 "operationId": "projects_parameters_create",
                 "parameters": [
-                    {
-                        "in": "path",
-                        "name": "parameter_id",
-                        "schema": {
-                            "type": "string",
-                            "format": "uuid"
-                        },
-                        "required": true
-                    },
                     {
                         "in": "path",
                         "name": "project_pk",
@@ -10693,15 +10675,6 @@
                     },
                     {
                         "in": "path",
-                        "name": "parameter_id",
-                        "schema": {
-                            "type": "string",
-                            "format": "uuid"
-                        },
-                        "required": true
-                    },
-                    {
-                        "in": "path",
                         "name": "project_pk",
                         "schema": {
                             "type": "string",
@@ -11189,15 +11162,6 @@
                         "schema": {
                             "type": "integer"
                         }
-                    },
-                    {
-                        "in": "path",
-                        "name": "parameter_id",
-                        "schema": {
-                            "type": "string",
-                            "format": "uuid"
-                        },
-                        "required": true
                     },
                     {
                         "in": "path",
@@ -13622,8 +13586,10 @@
                     },
                     "aws_external_id": {
                         "type": "string",
-                        "readOnly": true,
-                        "description": "This is a shared secret between the AWS Administrator who set up your IAM trust relationship and your CloudTruth AWS Integration.  CloudTruth will generate a random value for you to give to your AWS Administrator in order to create the necessary IAM role for proper access."
+                        "description": "This is a shared secret between the AWS Administrator who set up your IAM trust relationship and your CloudTruth AWS Integration.  CloudTruth will generate a random value for you to give to your AWS Administrator in order to create the necessary IAM role for proper access.",
+                        "minLength": 2,
+                        "pattern": "^[\\w+=,.@:/\\-]*$",
+                        "maxLength": 1224
                     },
                     "aws_kms_key_id": {
                         "type": "string",
@@ -13644,7 +13610,6 @@
                     "aws_account_id",
                     "aws_enabled_regions",
                     "aws_enabled_services",
-                    "aws_external_id",
                     "aws_role_name",
                     "created_at",
                     "fqn",
@@ -18808,8 +18773,10 @@
                     },
                     "aws_external_id": {
                         "type": "string",
-                        "readOnly": true,
-                        "description": "This is a shared secret between the AWS Administrator who set up your IAM trust relationship and your CloudTruth AWS Integration.  CloudTruth will generate a random value for you to give to your AWS Administrator in order to create the necessary IAM role for proper access."
+                        "description": "This is a shared secret between the AWS Administrator who set up your IAM trust relationship and your CloudTruth AWS Integration.  CloudTruth will generate a random value for you to give to your AWS Administrator in order to create the necessary IAM role for proper access.",
+                        "minLength": 2,
+                        "pattern": "^[\\w+=,.@:/\\-]*$",
+                        "maxLength": 1224
                     },
                     "aws_kms_key_id": {
                         "type": "string",

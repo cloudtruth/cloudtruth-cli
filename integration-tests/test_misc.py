@@ -33,8 +33,8 @@ class TestMiscellaneous(TestCase):
 
         # check equivalence of the different methods
         self.assertEqual(default_text, yaml_text)  # pre-evaluation should be same
-        self.assertEqual(default_schema, yaml_schema)
-        self.assertEqual(default_schema, json_schema)
+        self.assertDictEqual(default_schema, yaml_schema)
+        self.assertDictEqual(default_schema, json_schema)
 
         # check the version
         result = self.run_cli(cmd_env, base_cmd + "schema server --version")
@@ -60,8 +60,8 @@ class TestMiscellaneous(TestCase):
         local_json = json.loads(result.out())
 
         # check equivalence of the different methods
-        self.assertEqual(local_schema, local_yaml)
-        self.assertEqual(local_schema, local_json)
+        self.assertDictEqual(local_schema, local_yaml)
+        self.assertDictEqual(local_schema, local_json)
         self.assertEqual(local_text, local_yaml_text)
 
         # check the local version
