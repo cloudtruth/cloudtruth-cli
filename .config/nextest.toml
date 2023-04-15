@@ -7,7 +7,7 @@ filter = "kind(test)"
 retries = 3
 
 # Define "slow" tests as being over 90 seconds
-slow-timeout = {period = "90s"}
+slow-timeout = { period = "90s" }
 
 ##### Configuration for CI tests #####
 [profile.ci]

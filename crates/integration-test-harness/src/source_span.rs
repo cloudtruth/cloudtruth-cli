@@ -18,7 +18,7 @@ pub struct TestSourceSpan {
     col: usize,
     #[source_code]
     src: NamedSource,
-    #[label("test failed here")]
+    #[label("Test failure")]
     span: SourceSpan,
     #[related]
     related: Vec<Report>,
@@ -34,8 +34,14 @@ impl TestSourceSpan {
         let mut file = File::open(&filename)?;
         let mut source = String::new();
         file.read_to_string(&mut source)?;
-        let offset = SourceOffset::from_location(&source, line, col).offset();
-        let span = (offset..offset + 1).into();
+        let start_offset = SourceOffset::from_location(&source, line, col).offset();
+        // find byte offset at end of line
+        let end_offset = source[start_offset..]
+            .lines()
+            .next()
+            .map(|line| start_offset + line.trim_end().len())
+            .unwrap_or_else(|| source.trim_end().len());
+        let span = (start_offset..end_offset).into();
         Ok(TestSourceSpan {
             src: NamedSource::new(&filename, source),
             span,
