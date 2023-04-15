@@ -33,7 +33,7 @@ where
                 .find_case(expected, &value)
                 .map(|child| case.add_child(child)),
             (false, Err(err)) => {
-                Some(case.add_product(reflection::Product::new("serde_error", err)))
+                Some(case.add_product(reflection::Product::new("json_error", err)))
             }
             _ => None,
         }
@@ -96,13 +96,13 @@ where
         if !expected && obj.is_none() {
             return Some(
                 reflection::Case::new(Some(self), expected)
-                    .add_product(reflection::Product::new("var.is_object", expected)),
+                    .add_product(reflection::Product::new("var.is_object()", expected)),
             );
         }
         let val = obj?.get(self.key);
         if !expected && val.is_none() {
             return Some(reflection::Case::new(Some(self), expected).add_product(
-                reflection::Product::new(format!("var.contains({})", self.key), expected),
+                reflection::Product::new(format!("var.contains({:?})", self.key), expected),
             ));
         }
         self.predicate
