@@ -32,9 +32,9 @@ fn test_user_basic() {
             .success()
             .stdout(json(prop(
                 "user",
-                array_with_element(
-                    prop("Name", value(user.to_name()))
-                        .and(prop("Type", value("service")))
+                find_entry(
+                    prop("Name", value(user.to_name())),
+                    prop("Type", value("service"))
                         .and(prop("Role", value("viewer")))
                         .and(prop("Description", value("Updated description"))),
                 ),
@@ -70,9 +70,9 @@ fn test_user_basic() {
             .success()
             .stdout(json(prop(
                 "user",
-                array_with_element(
-                    prop("Name", value(user.to_name()))
-                        .and(prop("Type", value("service")))
+                find_entry(
+                    prop("Name", value(user.to_name())),
+                    prop("Type", value("service"))
                         .and(prop("Role", value("contrib")))
                         .and(prop("Description", value("Updated description"))),
                 ),

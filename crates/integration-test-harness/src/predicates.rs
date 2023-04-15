@@ -1,6 +1,9 @@
+use core::fmt;
+
 /// Custom predicates for easier assertions
 use predicates::{
-    boolean::PredicateBooleanExt, constant::always, str::contains, BoxPredicate, Predicate,
+    boolean::PredicateBooleanExt, constant::always, reflection::PredicateReflection, str::contains,
+    BoxPredicate, Predicate,
 };
 
 pub mod json;
@@ -17,8 +20,21 @@ where
 }
 
 /// Predicate over the length of a slice
+struct LenPredicate(usize);
+impl<T> Predicate<[T]> for LenPredicate {
+    fn eval(&self, slice: &[T]) -> bool {
+        slice.len() == self.0
+    }
+}
+impl PredicateReflection for LenPredicate {}
+impl fmt::Display for LenPredicate {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "len({})", self.0)
+    }
+}
+
 pub fn len<T>(length: usize) -> impl Predicate<[T]> {
-    predicates::function::function(move |slice: &[T]| slice.len() == length).fn_name("len")
+    LenPredicate(length)
 }
 
 /// Checks that variable contains all strings from an iterator
