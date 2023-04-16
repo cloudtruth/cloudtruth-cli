@@ -13,7 +13,7 @@ pub struct Project<'d, 'p> {
 }
 
 impl<'d, 'p> Project<'d, 'p> {
-    pub fn new(name: Name, description: Option<&'d str>, parent: Option<&'p Name>) -> Self {
+    fn new(name: Name, description: Option<&'d str>, parent: Option<&'p Name>) -> Self {
         Self {
             name,
             description,

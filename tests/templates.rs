@@ -20,6 +20,7 @@ fn test_template_basic() {
     .assert()
     .success()
     .stdout(contains!("Created template '{temp_name}'"));
+
     cloudtruth!("--project {proj} template ls -v -f csv")
         .assert()
         .success()

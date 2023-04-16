@@ -14,7 +14,7 @@ pub struct User<'d, 'r> {
 }
 
 impl<'d, 'r> User<'d, 'r> {
-    pub fn new(name: Name, description: Option<&'d str>, role: Option<&'r str>) -> Self {
+    fn new(name: Name, description: Option<&'d str>, role: Option<&'r str>) -> Self {
         Self {
             name,
             description,
