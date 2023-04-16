@@ -20,10 +20,7 @@ pub struct Name(String);
 /// Trait for name constructors.
 ///
 /// Default implementations for all other methods are provided as long as from_name is implemented.
-pub trait NameConstructors
-where
-    Self: Sized,
-{
+pub trait NameConstructors: Sized {
     /// Constructs a value from an existing name.
     fn from_name<N: Into<Name>>(name: N) -> Self;
 

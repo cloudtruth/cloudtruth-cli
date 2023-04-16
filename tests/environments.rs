@@ -6,15 +6,13 @@ const TEST_PAGE_SIZE: usize = 5;
 #[integration_test]
 fn test_environment_basic() {
     // Initialize environment data but do not create yet
-    let env = EnvironmentBuilder::with_prefix("env-name")
-        .description("Description on create")
-        .build();
+    let env = Environment::with_prefix("env-name").description("Description on create");
 
     // verify env does not yet exist
     cloudtruth!("environments ls -v")
         .assert()
         .success()
-        .stdout(not(contains(&env)));
+        .stdout(not(contains(env.name())));
 
     // create/delete within scope of this closure
     env.clone().with_scope(|mut env| {
@@ -53,7 +51,7 @@ fn test_environment_basic() {
         cloudtruth!("environments list")
             .assert()
             .success()
-            .stdout(contains(&env).and(not(contains("Updated description"))));
+            .stdout(contains(env.name()).and(not(contains("Updated description"))));
 
         // shows create/modified times
         cloudtruth!("environments list --show-times -f csv")
@@ -61,7 +59,7 @@ fn test_environment_basic() {
             .success()
             .stdout(
                 contains("Created At,Modified At")
-                    .and(contains(&env))
+                    .and(contains(env.name()))
                     .and(contains("Updated description")),
             );
     });
@@ -69,7 +67,7 @@ fn test_environment_basic() {
     cloudtruth!("environments ls -v")
         .assert()
         .success()
-        .stdout(not(contains(&env)));
+        .stdout(not(contains(env.name())));
 
     // do it again, see we have success and a warning
     cloudtruth!("environments delete {env} --confirm")
@@ -80,7 +78,7 @@ fn test_environment_basic() {
 
 #[integration_test]
 fn test_environment_cannot_delete_default() {
-    let proj = ScopedProject::with_prefix("default-env-del");
+    let proj = Project::with_prefix("default-env-del").create();
 
     // get snapshot of params before attempting to delete
     let before_param_list = cloudtruth!("--project {proj} --env default param ls -v")
@@ -110,16 +108,14 @@ fn test_environment_cannot_delete_default() {
 
 #[integration_test]
 fn test_environment_parents() {
-    let env1 = ScopedEnvironment::with_prefix("env-par-1");
-    let env2 = EnvironmentBuilder::with_prefix("env-mid-1")
-        .parent(&env1)
-        .build_scoped();
-    let env3 = EnvironmentBuilder::with_prefix("env-chld-3")
+    let env1 = Environment::with_prefix("env-par-1").create();
+    let env2 = Environment::with_prefix("env-mid-1").parent(&env1).create();
+    let env3 = Environment::with_prefix("env-chld-3")
         .parent(&env2)
-        .build_scoped();
-    let env4 = EnvironmentBuilder::with_prefix("env-chld-4")
+        .create();
+    let env4 = Environment::with_prefix("env-chld-4")
         .parent(&env2)
-        .build_scoped();
+        .create();
 
     // Use csv to validate, since the names may be variable
     cloudtruth!("env ls -v -f csv").assert().success().stdout(
@@ -151,7 +147,7 @@ fn test_environment_parents() {
         .failure()
         .stderr(
             contains("Cannot remove environment because it has children")
-                .and(contains(&env3).and(contains(&env4))),
+                .and(contains(env3.name()).and(contains(env4.name()))),
         );
 
     let env5 = Environment::with_prefix("env-par-5");
@@ -184,8 +180,8 @@ fn test_environment_parents() {
 fn test_environment_pagination() {
     let page_size = TEST_PAGE_SIZE;
     // we store the project names so they're not instantly dropped and deleted
-    let _envs: Vec<ScopedEnvironment> = (0..=page_size)
-        .map(|i| ScopedEnvironment::with_prefix(format!("env-page-{}", i)))
+    let _envs: Vec<Scope<Environment>> = (0..=page_size)
+        .map(|i| Environment::with_prefix(format!("env-page-{}", i)).create())
         .collect();
     cloudtruth!("env ls")
         .rest_debug()
@@ -197,8 +193,8 @@ fn test_environment_pagination() {
 
 #[integration_test]
 fn test_environment_tagging() {
-    let proj = ScopedProject::with_prefix("proj-env-tag");
-    let env = ScopedEnvironment::with_prefix("env-tag");
+    let proj = Project::with_prefix("proj-env-tag").create();
+    let env = Environment::with_prefix("env-tag").create();
 
     cloudtruth!("--env {env} --project {proj} param set my-param -v 'temp value'")
         .assert()
@@ -309,7 +305,7 @@ fn test_environment_tagging() {
 
 #[integration_test]
 fn test_environment_tagging_pagination() {
-    let env = ScopedEnvironment::with_prefix("env-pag-tag");
+    let env = Environment::with_prefix("env-pag-tag").create();
 
     let page_size = TEST_PAGE_SIZE;
     for n in 0..=page_size {

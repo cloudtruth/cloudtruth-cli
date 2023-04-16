@@ -2,14 +2,12 @@ use integration_test_harness::prelude::*;
 
 #[integration_test]
 fn test_user_basic() {
-    let user = UserBuilder::with_prefix("user-name")
-        .description("Description on create")
-        .build();
+    let user = User::with_prefix("user-name").description("Description on create");
 
     cloudtruth!("users ls -v -f csv")
         .assert()
         .success()
-        .stdout(not(contains(&user)));
+        .stdout(not(contains(user.name())));
 
     cloudtruth!("users get {user}")
         .assert()
@@ -114,8 +112,8 @@ fn test_user_basic() {
 
         // check whole line matches
         cloudtruth!("users list").assert().success().stdout(
-            contains(&user)
-                .and(not(contains(&user2)))
+            contains(user.name())
+                .and(not(contains(user2.name())))
                 .and(not(contains("Updated description"))),
         );
 
