@@ -1,6 +1,8 @@
 use std::{
     fs::File,
     io::{self, Read},
+    panic::Location,
+    path::Path,
 };
 
 use backtrace::Backtrace;
@@ -70,17 +72,13 @@ impl TestSourceSpan {
     }
 
     /// Tries to find source information from backtrace.
-    pub fn from_backtrace() -> io::Result<Option<Self>> {
+    pub fn from_backtrace(caller: &Location) -> io::Result<Option<Self>> {
         // A substring of test source file paths
-        const TEST_FILE_SUBSTRING: &str = "/cloudtruth-cli/tests/";
-        // A substring of test harness source file paths
-        const HARNESS_FILE_SUBSTRING: &str = "/cloudtruth-cli/tests/harness";
+        let test_file_substring = Path::new(caller.file()).parent().unwrap().to_string_lossy();
         for frame in Backtrace::new().frames().iter() {
             for symbol in frame.symbols().iter() {
                 if let Some(filename) = symbol.filename().and_then(|f| f.to_str()) {
-                    if filename.contains(TEST_FILE_SUBSTRING)
-                        && !filename.contains(HARNESS_FILE_SUBSTRING)
-                    {
+                    if filename.contains(test_file_substring.as_ref()) {
                         if let (Some(line), Some(col)) = (symbol.lineno(), symbol.colno()) {
                             return Ok(Some(Self::from_location(
                                 filename.into(),

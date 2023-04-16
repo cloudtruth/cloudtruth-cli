@@ -15,6 +15,7 @@ mod source_span;
 pub mod util;
 
 /// Setup the integration test with error and panic handlers.
+#[track_caller]
 pub fn install() {
     error_handler::install_miette_error_handler();
     panic::set_panic_hook();
