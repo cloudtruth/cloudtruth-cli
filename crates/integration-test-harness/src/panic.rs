@@ -1,3 +1,5 @@
+use std::panic::Location;
+
 /// Custom panic handler
 /// This code is heavily based on miette::set_panic_hook (https://github.com/zkat/miette/blob/main/src/panic.rs)
 use crate::backtrace;
@@ -9,7 +11,9 @@ use crate::source_span::TestSourceSpan;
 
 const HELP_TEXT: &str = "set the `RUST_BACKTRACE=1` environment variable to display a backtrace.";
 
+#[track_caller]
 pub fn set_panic_hook() {
+    let caller = Location::caller();
     std::panic::set_hook(Box::new(move |info| {
         let payload = info.payload();
         let message = if let Some(msg) = payload.downcast_ref::<&str>() {
@@ -26,7 +30,7 @@ pub fn set_panic_hook() {
                 format!("Panic at {}:{}:{}", loc.file(), loc.line(), loc.column())
             });
         }
-        if let Ok(Some(mut src_span)) = TestSourceSpan::from_backtrace() {
+        if let Ok(Some(mut src_span)) = TestSourceSpan::from_backtrace(caller) {
             report = report.with_context(|| {
                 format!(
                     "Test failure at {}:{}:{}",
