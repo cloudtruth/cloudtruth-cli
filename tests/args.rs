@@ -12,7 +12,7 @@ fn test_arg_priority() {
 
 #[integration_test]
 fn test_args_missing_subcommands() {
-    let proj = ScopedProject::with_prefix("missing-subarg");
+    let proj = Project::with_prefix("missing-subarg").create();
     let subcmds = [
         ("actions", vec!["action", "act", "ac"]),
         (
@@ -56,7 +56,7 @@ fn test_args_missing_subcommands() {
     for (subcmd, aliases) in subcmds {
         for alias in core::iter::once(subcmd).chain(aliases) {
             cloudtruth!("{alias}")
-                .env(CT_PROJECT, &proj)
+                .env(CT_PROJECT, proj.name())
                 .assert()
                 .success()
                 .stderr(contains!("WARN: No '{subcmd}' sub-command executed."));
@@ -83,11 +83,11 @@ fn test_arg_resolution() {
     cloudtruth!("proj ls -f csv")
         .assert()
         .success()
-        .stdout(not(contains(&proj)));
+        .stdout(not(contains(proj.name())));
     cloudtruth!("env ls -f csv")
         .assert()
         .success()
-        .stdout(not(contains(&env)));
+        .stdout(not(contains(env.name())));
 
     for cmd in checked_commands {
         cloudtruth!("--project {proj} --env {env} {cmd}")
@@ -123,7 +123,7 @@ fn test_arg_resolution() {
     });
 
     // environment present, missing project
-    let env = env.scoped();
+    let env = env.create();
     for cmd in checked_commands {
         cloudtruth!("--project {proj} --env {env} {cmd}")
             .assert()
@@ -136,7 +136,7 @@ fn test_arg_resolution() {
     }
 
     // both present
-    let proj = proj.scoped();
+    let proj = proj.create();
     for cmd in checked_commands {
         cloudtruth!("--project {proj} --env {env} {cmd}")
             .assert()

@@ -1,7 +1,7 @@
 use crate::{
     command::{cli_bin_path, Command},
     contains,
-    data::{Name, NameConstructors, Scope, ScopedTestResourceExt, TestResource},
+    data::{Name, NameConstructors, Scope, TestResource},
 };
 
 #[derive(Clone, Debug, Display)]
@@ -13,10 +13,8 @@ pub struct User<'d, 'r> {
     api_key: Option<String>,
 }
 
-pub type ScopedUser<'d, 'r> = Scope<User<'d, 'r>>;
-
 impl<'d, 'r> User<'d, 'r> {
-    pub fn new(name: Name, description: Option<&'d str>, role: Option<&'r str>) -> Self {
+    fn new(name: Name, description: Option<&'d str>, role: Option<&'r str>) -> Self {
         Self {
             name,
             description,
@@ -31,6 +29,18 @@ impl<'d, 'r> User<'d, 'r> {
             .as_ref()
             .expect("Service account was not created and does not have an API key")
     }
+
+    /// Set the users description.
+    pub fn description<D: AsRef<str> + ?Sized>(mut self, description: &'d D) -> Self {
+        self.description = Some(description.as_ref());
+        self
+    }
+
+    /// Set the users role.
+    pub fn role<R: AsRef<str> + ?Sized>(mut self, role: &'r R) -> Self {
+        self.role = Some(role.as_ref());
+        self
+    }
 }
 
 impl<'d, 'r> NameConstructors for User<'d, 'r> {
@@ -43,7 +53,7 @@ impl<'d, 'r> TestResource for User<'d, 'r> {
     fn name(&self) -> &Name {
         &self.name
     }
-    fn create(&mut self) {
+    fn create(mut self) -> Scope<Self> {
         let mut cmd = Command::new(cli_bin_path("cloudtruth"));
         cmd.args(["users", "set", self.name.as_str()]);
         if let Some(desc) = self.description {
@@ -64,7 +74,8 @@ impl<'d, 'r> TestResource for User<'d, 'r> {
                 .nth(1)
                 .expect("Service account did not provide an API key")
                 .to_string(),
-        )
+        );
+        Scope::new(self)
     }
 
     fn delete(&mut self) {
@@ -72,68 +83,5 @@ impl<'d, 'r> TestResource for User<'d, 'r> {
             .args(["users", "delete", "--confirm", self.name.as_str()])
             .assert()
             .success();
-    }
-}
-
-impl<'d, 'r> From<&User<'d, 'r>> for String {
-    /// Convert a User reference to a String by cloning its name.
-    /// Needed for easy use of predicate functions.
-    fn from(name: &User) -> Self {
-        name.name().into()
-    }
-}
-
-impl<'d, 'r> From<User<'d, 'r>> for String {
-    /// Convert a User to a String representing its name
-    fn from(user: User) -> Self {
-        user.name.into()
-    }
-}
-
-/// For more complex User data, use a UserBuilder to fill in the values and then call
-/// build() or build_scoped() to create the User or Scope<User>, respectively.
-pub struct UserBuilder<'d, 'r> {
-    name: Name,
-    description: Option<&'d str>,
-    role: Option<&'r str>,
-}
-
-impl<'d, 'r> NameConstructors for UserBuilder<'d, 'r> {
-    fn from_name<N: Into<Name>>(name: N) -> Self {
-        UserBuilder::new(name)
-    }
-}
-
-impl<'d, 'r> UserBuilder<'d, 'r> {
-    /// Create a UserBuilder from a name.
-    pub fn new<N: Into<Name>>(name: N) -> Self {
-        UserBuilder {
-            name: name.into(),
-            description: None,
-            role: None,
-        }
-    }
-
-    /// Set the users description.
-    pub fn description<D: AsRef<str> + ?Sized>(mut self, description: &'d D) -> Self {
-        self.description = Some(description.as_ref());
-        self
-    }
-
-    /// Set the users role.
-    pub fn role<R: AsRef<str> + ?Sized>(mut self, role: &'r R) -> Self {
-        self.role = Some(role.as_ref());
-        self
-    }
-
-    /// Build a Scope<User>. Equivalent to calling .build().scoped(). Because creating a Scope around a User creates the user on the server,
-    /// this method does the same.
-    pub fn build_scoped(self) -> Scope<User<'d, 'r>> {
-        self.build().scoped()
-    }
-
-    /// Build a User. Does not automatically create the User on the server.
-    pub fn build(self) -> User<'d, 'r> {
-        User::new(self.name, self.description, self.role)
     }
 }

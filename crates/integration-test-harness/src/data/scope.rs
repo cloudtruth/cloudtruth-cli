@@ -1,15 +1,11 @@
-use std::{
-    ffi::OsStr,
-    ops::{Deref, DerefMut},
-};
+use std::ops::{Deref, DerefMut};
 
 use crate::data::{Name, NameConstructors, TestResource};
 
 /// A generic CloudTruth entity scoped via Rust borrow checker.
 ///
-/// Scoped entities are automatically created when the Scope is created,
-/// and automatically deleted by the Scope's Drop implementation when the
-/// value leaves scope.
+/// Scoped entities are automatically deleted by the Scope's Drop
+/// implementation when the value leaves scope.
 ///
 /// Inner type must be a type that implements TestResource  
 #[derive(Display)]
@@ -25,14 +21,13 @@ impl<R> Scope<R>
 where
     R: TestResource,
 {
-    /// Create a scope from a given TestResource. This calls the resources create() method
-    pub fn new(mut resource: R) -> Self {
-        resource.create();
+    /// Wrap a TestResource in a scope.
+    pub(crate) fn new(resource: R) -> Self {
         Scope { resource }
     }
 }
 
-/// Constructors for Scope. All constructors call the TestResource create() method
+/// Construct new scoped test resources from a name
 impl<R> NameConstructors for Scope<R>
 where
     R: TestResource + NameConstructors,
@@ -69,33 +64,5 @@ where
 {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.resource
-    }
-}
-
-impl<'a, R> From<&'a Scope<R>> for String
-where
-    R: TestResource,
-{
-    /// Convert a Scope reference to a String by cloning. Needed for easy use of predicate functions
-    fn from(value: &'a Scope<R>) -> Self {
-        value.name().into()
-    }
-}
-
-impl<R> AsRef<str> for Scope<R>
-where
-    R: TestResource,
-{
-    fn as_ref(&self) -> &str {
-        self.name().as_ref()
-    }
-}
-
-impl<R> AsRef<OsStr> for Scope<R>
-where
-    R: TestResource,
-{
-    fn as_ref(&self) -> &OsStr {
-        OsStr::new(self.name().as_str())
     }
 }

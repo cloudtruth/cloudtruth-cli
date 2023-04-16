@@ -5,15 +5,13 @@ const TEST_PAGE_SIZE: usize = 5;
 #[integration_test]
 fn test_projects_basic() {
     // Initialize project data but do not create yet
-    let proj = ProjectBuilder::with_prefix("proj-name")
-        .description("Description on create")
-        .build();
+    let proj = Project::with_prefix("proj-name").description("Description on create");
 
     // verify proj_name does not yet exist
     cloudtruth!("projects ls -v")
         .assert()
         .success()
-        .stdout(not(contains(&proj)));
+        .stdout(not(contains(proj.name())));
 
     // create/delete the project within scope of this closure
     proj.clone().with_scope(|mut proj| {
@@ -46,14 +44,14 @@ fn test_projects_basic() {
         cloudtruth!("projects list")
             .assert()
             .success()
-            .stdout(contains(&proj).and(not(contains("Updated description"))));
+            .stdout(contains(proj.name()).and(not(contains("Updated description"))));
         // shows create/modified times
         cloudtruth!("projects list --show-times -f csv")
             .assert()
             .success()
             .stdout(
                 contains("Created At,Modified At")
-                    .and(contains(&proj))
+                    .and(contains(proj.name()))
                     .and(contains("Updated description")),
             );
     });
@@ -62,7 +60,7 @@ fn test_projects_basic() {
     cloudtruth!("projects ls -v")
         .assert()
         .success()
-        .stdout(not(contains(&proj)));
+        .stdout(not(contains(proj.name())));
 
     // try to delete again, see we have success and a warning
     cloudtruth!("projects delete {proj} --confirm")
@@ -73,16 +71,10 @@ fn test_projects_basic() {
 
 #[integration_test]
 fn test_projects_parents() {
-    let proj1 = ScopedProject::with_prefix("proj-par-1");
-    let proj2 = ProjectBuilder::with_prefix("proj-mid-1")
-        .parent(&proj1)
-        .build_scoped();
-    let proj3 = ProjectBuilder::with_prefix("proj-chld-3")
-        .parent(&proj2)
-        .build_scoped();
-    let proj4 = ProjectBuilder::with_prefix("proj-chld-4")
-        .parent(&proj2)
-        .build_scoped();
+    let proj1 = Project::with_prefix("proj-par-1").create();
+    let proj2 = Project::with_prefix("proj-mid-1").parent(&proj1).create();
+    let proj3 = Project::with_prefix("proj-chld-3").parent(&proj2).create();
+    let proj4 = Project::with_prefix("proj-chld-4").parent(&proj2).create();
 
     cloudtruth!("proj ls -v -f csv").assert().success().stdout(
         contains!("{proj1},,")
@@ -101,7 +93,7 @@ fn test_projects_parents() {
         .failure()
         .stderr(
             contains!("Cannot delete {proj2} because the following projects depend on it")
-                .and(contains(&proj3).and(contains(&proj4))),
+                .and(contains(proj3.name()).and(contains(proj4.name()))),
         );
 
     let proj5 = Project::with_prefix("proj-par-5");
@@ -132,8 +124,8 @@ fn test_projects_parents() {
 fn test_projects_pagination() {
     let page_size = TEST_PAGE_SIZE;
     // we store the project names so they're not instantly dropped and deleted
-    let _projects: Vec<ScopedProject> = (0..=page_size)
-        .map(|n| ScopedProject::with_prefix(format!("proj-page-{}", n)))
+    let _projects: Vec<Scope<Project>> = (0..=page_size)
+        .map(|n| Project::with_prefix(format!("proj-page-{}", n)).create())
         .collect();
     cloudtruth!("proj ls")
         .rest_debug()
