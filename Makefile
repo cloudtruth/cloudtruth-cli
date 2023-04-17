@@ -10,7 +10,7 @@ test_dir := tests
 client_dir := crates/cloudtruth-restapi
 # convenience for looping
 subdirs := $(xtask_dir)
-subdirs := $(pytest_dir)
+subdirs += $(pytest_dir)
 subdirs += $(test_dir)
 
 .DEFAULT = all

@@ -5,7 +5,8 @@ rpm_toml_version="version = '${PACKAGE_VERSION}${RPM_SNAPSHOT:+^$RPM_SNAPSHOT}'"
 cargo generate-rpm \
 --arch "$rpm_arch" \
 --target "$TARGET" \
---set-metadata "$rpm_toml_version"
+--set-metadata "$rpm_toml_version" \
+--payload-compress none
 
 #rename RPM to use the github release tag
 rpm_dir="target/$TARGET/generate-rpm/"

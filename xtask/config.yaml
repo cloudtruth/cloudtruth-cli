@@ -19,6 +19,11 @@ release-tests:
     versions:
       - "9"
       - "8"
+  # test CentOS 7 as an approximation of RHEL
+  - os: centos
+    type: docker
+    versions:
+      - "7"
   - os: debian
     type: docker
     versions:
