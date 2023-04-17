@@ -48,7 +48,7 @@ impl From<TestOs> for RunnerOs {
         use RunnerOs::*;
         use TestOs::*;
         match test_os {
-            Alpine | RockyLinux | Debian | Ubuntu => UbuntuLatest,
+            Alpine | RockyLinux | Centos | Debian | Ubuntu => UbuntuLatest,
             Macos => MacosLatest,
             Windows => WindowsLatest,
         }
@@ -60,6 +60,7 @@ impl From<TestOs> for RunnerOs {
 pub enum TestOs {
     Alpine,
     RockyLinux,
+    Centos,
     Debian,
     Ubuntu,
     Macos,
