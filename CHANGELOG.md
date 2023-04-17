@@ -1,3 +1,7 @@
+# 1.2.1 - 2023-04-17
+* Bug fix: workaround to populate rules array on types partial update [#443](https://github.com/cloudtruth/cloudtruth-cli/pull/443)
+* Fix to RPM builds to support CentOS 7 and RHEL 7 [#474](https://github.com/cloudtruth/cloudtruth-cli/pull/474)
+
 # 1.2.0 - 2023-02-16
 * Updates to API client for compatibility with the latest server release
 * Fixed various issues with the install scripts on some platforms and networks
