@@ -3,13 +3,10 @@ use std::{env, ffi::OsStr};
 use uuid::Uuid;
 
 const JOB_ID: &str = "JOB_ID";
-const NEXTEST_RUN_ID: &str = "NEXTEST_RUN_ID";
 
-/// Use JOB_ID or NEXTEST_RUN_ID if available, otherwise generate random
+/// Use JOB_ID if available, otherwise generate random
 fn generated_test_id() -> String {
-    env::var(JOB_ID)
-        .or_else(|_| env::var(NEXTEST_RUN_ID))
-        .unwrap_or_else(|_| Uuid::new_v4().to_string())
+    env::var(JOB_ID).unwrap_or_else(|_| Uuid::new_v4().to_string())
 }
 
 /// A newtype wrapper around String representing a generic CloudTruth entity name.
