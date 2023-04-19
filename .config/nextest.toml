@@ -4,7 +4,7 @@
 filter = "kind(test)"
 
 # Retry failed tests
-retries = 3
+retries = 2
 
 # Define "slow" tests as being over 90 seconds
 slow-timeout = { period = "90s" }
