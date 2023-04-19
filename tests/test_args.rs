@@ -2,8 +2,9 @@ use cloudtruth_config::{CT_PROJECT, CT_REQ_TIMEOUT, CT_SERVER_URL};
 use const_format::formatcp;
 use integration_test_harness::prelude::*;
 
-#[use_harness]
+#[test]
 #[ignore]
+#[use_harness]
 fn test_arg_priority() {
     //TODO: original python test works around limitations of profiles
     //we should improve profile loading from custom file paths to make
