@@ -247,3 +247,169 @@ fn test_parameter_basic_conflicting_options() {
         .assert()
         .stderr(contains("are mutually exclusive"));
 }
+
+#[test]
+#[use_harness]
+fn test_parameter_basic_secret_list() {
+    let proj = Project::with_prefix("param-secret").create();
+    cloudtruth!("--project {proj} parameters list")
+        .assert()
+        .success()
+        .stdout(contains!("No parameters found in project {proj}"));
+    cloudtruth!("--project {proj} parameters list --values ")
+        .assert()
+        .success()
+        .stdout(contains!("No parameters found in project {proj}"));
+    cloudtruth!("--project {proj} parameters list --values --secrets")
+        .assert()
+        .success()
+        .stdout(contains!("No parameters found in project {proj}"));
+    cloudtruth!("--project {proj} parameters set my_param --secret true --value super-SENSITIVE-vAluE --desc 'my secret value'")
+        .assert()
+        .success();
+    cloudtruth!("--project {proj} parameters ls -v")
+        .assert()
+        .success()
+        .stdout(diff(
+            "\
+            +----------+-------+---------+------------+-------+----------+--------+-----------------+\n\
+            | Name     | Value | Source  | Param Type | Rules | Type     | Secret | Description     |\n\
+            +----------+-------+---------+------------+-------+----------+--------+-----------------+\n\
+            | my_param | ***** | default | string     | 0     | internal | true   | my secret value |\n\
+            +----------+-------+---------+------------+-------+----------+--------+-----------------+\n\
+            ",
+        ));
+    cloudtruth!("--project {proj} parameters ls -v -f csv")
+        .assert()
+        .success()
+        .stdout(diff(
+            "\
+            Name,Value,Source,Param Type,Rules,Type,Secret,Description\n\
+            my_param,*****,default,string,0,internal,true,my secret value\n\
+            ",
+        ));
+    cloudtruth!("--project {proj} parameters list --values --secrets")
+        .assert()
+        .success()
+        .stdout(diff(
+            "\
+            +----------+-----------------------+---------+------------+-------+----------+--------+-----------------+\n\
+            | Name     | Value                 | Source  | Param Type | Rules | Type     | Secret | Description     |\n\
+            +----------+-----------------------+---------+------------+-------+----------+--------+-----------------+\n\
+            | my_param | super-SENSITIVE-vAluE | default | string     | 0     | internal | true   | my secret value |\n\
+            +----------+-----------------------+---------+------------+-------+----------+--------+-----------------+\n\
+            "
+        ));
+    cloudtruth!("--project {proj} parameters list --values --secrets --format csv")
+        .assert()
+        .success()
+        .stdout(diff(
+            "\
+            Name,Value,Source,Param Type,Rules,Type,Secret,Description\n\
+            my_param,super-SENSITIVE-vAluE,default,string,0,internal,true,my secret value\n\
+            ",
+        ));
+    cloudtruth!("--project {proj} parameters get my_param")
+        .assert()
+        .success()
+        .stdout(contains("super-SENSITIVE-vAluE"));
+    cloudtruth!("--project {proj} parameters get my_param --details")
+        .assert()
+        .success()
+        .stdout(contains_all([
+            "Name: my_param",
+            "Value: super-SENSITIVE-vAluE",
+            "Source: default",
+            "Secret: true",
+            "Description: my secret value",
+        ]));
+}
+
+#[test]
+#[use_harness]
+fn test_parameter_basic_secret_idempotent() {
+    let proj = Project::with_prefix("param-secret-idempotent").create();
+    cloudtruth!("--project {proj} parameters set my_param --secret true --value super-SENSITIVE-vAluE --desc 'my secret value'")
+        .assert()
+        .success();
+    cloudtruth!("--project {proj} parameters set my_param --value super-SENSITIVE-vAluE")
+        .assert()
+        .success();
+    cloudtruth!("--project {proj} parameters ls -v -s")
+        .assert()
+        .success()
+        .stdout(contains_all([
+            "my_param",
+            "super-SENSITIVE-vAluE",
+            "my secret value",
+        ]));
+    cloudtruth!("--project {proj} parameters get my_param")
+        .assert()
+        .success()
+        .stdout(contains("super-SENSITIVE-vAluE"));
+}
+
+#[test]
+#[use_harness]
+fn test_parameter_basic_secret_update() {
+    let proj = Project::with_prefix("param-secret-update").create();
+    cloudtruth!("--project {proj} parameters set my_param --secret true --value super-SENSITIVE-vAluE --desc 'my secret value'")
+        .assert()
+        .success();
+    cloudtruth!("--project {proj} parameters set my_param --value new_value")
+        .assert()
+        .success();
+    cloudtruth!("--project {proj} parameters ls -v -s")
+        .assert()
+        .success()
+        .stdout(contains_all(["my_param", "new_value", "my secret value"]));
+    cloudtruth!("--project {proj} parameters get my_param")
+        .assert()
+        .success()
+        .stdout(contains("new_value"));
+    cloudtruth!("--project {proj} parameters set my_param -d 'alt description'")
+        .assert()
+        .success();
+    cloudtruth!("--project {proj} parameters ls -v -s")
+        .assert()
+        .success()
+        .stdout(contains_all(["my_param", "new_value", "alt description"]));
+    cloudtruth!("--project {proj} parameters get my_param")
+        .assert()
+        .success()
+        .stdout(contains("new_value"));
+}
+
+#[test]
+#[use_harness]
+fn test_parameter_basic_secret_delete() {
+    let proj = Project::with_prefix("param-secret-delete").create();
+    cloudtruth!("--project {proj} parameters set my_param --secret true --value super-SENSITIVE-vAluE --desc 'my secret value'")
+    .assert()
+    .success();
+    cloudtruth!("--project {proj} parameters delete my_param -y")
+        .assert()
+        .success()
+        .stdout(contains("Removed parameter 'my_param'"));
+    cloudtruth!("--project {proj} parameters list --values --secrets")
+        .assert()
+        .success()
+        .stdout(contains!("No parameters found in project {proj}"));
+    cloudtruth!("--project {proj} parameters delete my_param -y")
+        .assert()
+        .success()
+        .stdout(contains("Did not find parameter 'my_param'"));
+}
+
+#[test]
+#[use_harness]
+fn test_parameter_basic_secret_no_value() {
+    let proj = Project::with_prefix("param-secret-no-value").create();
+    cloudtruth!("--project {proj} parameters set my_param --secret true")
+        .assert()
+        .success();
+    cloudtruth!("--project {proj} parameters list --values -f csv")
+        .assert()
+        .success()
+        .stdout(contains("my_param,-,,string,0,internal,true"));
+}
