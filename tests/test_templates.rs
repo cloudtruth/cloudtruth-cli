@@ -1,6 +1,7 @@
 use integration_test_harness::prelude::*;
 
-#[integration_test]
+#[test]
+#[use_harness]
 fn test_template_basic() {
     let proj = Project::with_prefix("template-proj").create();
 

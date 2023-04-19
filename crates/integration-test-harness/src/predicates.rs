@@ -1,14 +1,18 @@
+/// Custom predicates for easy assertions
+///
 use core::fmt;
 
-/// Custom predicates for easier assertions
-use predicates::{
-    boolean::PredicateBooleanExt, constant::always, reflection::PredicateReflection, str::contains,
-    BoxPredicate, Predicate,
-};
+use predicates::{constant::always, reflection::PredicateReflection, BoxPredicate, Predicate};
 
+// submodules
 pub mod json;
-
 pub use json::*;
+
+// re-export commonly used predicates
+pub use predicates::boolean::PredicateBooleanExt;
+pub use predicates::ord::*;
+pub use predicates::prelude::*;
+pub use predicates::str::*;
 
 /// Helper to allow prefix form of not(predicate) instead of predicate.not()
 pub fn not<P, I>(predicate: P) -> impl Predicate<I>

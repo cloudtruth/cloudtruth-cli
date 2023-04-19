@@ -26,7 +26,7 @@ macro_rules! cloudtruth {
 #[macro_export]
 macro_rules! contains {
     ($($fmt:tt)*) => (
-        predicates::str::contains(format!($($fmt)*))
+        $crate::predicates::contains(format!($($fmt)*))
     )
 }
 
@@ -35,6 +35,6 @@ macro_rules! contains {
 #[macro_export]
 macro_rules! diff {
     ($($fmt:tt)*) => (
-        predicates::str::diff(format!($($fmt)*))
+        $crate::predicates::diff(format!($($fmt)*))
     )
 }
