@@ -1,3 +1,6 @@
+##### Default configuration for all tests #####
+[profile.default]
+
 ##### Configuration overrides for integration tests #####
 [[profile.default.overrides]]
 
@@ -6,10 +9,10 @@ filter = "kind(test)"
 # Retry failed tests
 retries = 2
 
-# Define "slow" tests as being over 90 seconds
-slow-timeout = { period = "90s" }
+# Define "slow" tests as being over 180 seconds
+slow-timeout = { period = "180s" }
 
-##### Configuration for CI tests #####
+##### Configuration for CI runs #####
 [profile.ci]
 
 # show skipped tests in report

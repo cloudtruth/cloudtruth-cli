@@ -1,5 +1,6 @@
 pub mod environment;
 pub mod file;
+pub mod group;
 pub mod name;
 pub mod param_type;
 pub mod project;
@@ -9,6 +10,7 @@ pub mod user;
 
 pub use environment::*;
 pub use file::*;
+pub use group::*;
 pub use name::*;
 pub use param_type::*;
 pub use project::*;
