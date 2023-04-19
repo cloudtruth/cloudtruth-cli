@@ -2,7 +2,7 @@ use cloudtruth_config::{CT_PROJECT, CT_REQ_TIMEOUT, CT_SERVER_URL};
 use const_format::formatcp;
 use integration_test_harness::prelude::*;
 
-#[integration_test]
+#[use_harness]
 #[ignore]
 fn test_arg_priority() {
     //TODO: original python test works around limitations of profiles
@@ -10,7 +10,8 @@ fn test_arg_priority() {
     //this test robust
 }
 
-#[integration_test]
+#[test]
+#[use_harness]
 fn test_args_missing_subcommands() {
     let proj = Project::with_prefix("missing-subarg").create();
     let subcmds = [
@@ -64,7 +65,8 @@ fn test_args_missing_subcommands() {
     }
 }
 
-#[integration_test]
+#[test]
+#[use_harness]
 fn test_arg_resolution() {
     // generate project and environment names but do not create them yet
     let proj = Project::with_prefix("unknown-proj");
@@ -144,7 +146,8 @@ fn test_arg_resolution() {
     }
 }
 
-#[integration_test]
+#[test]
+#[use_harness]
 fn test_arg_configurable_timeout() {
     cloudtruth!("project ls -v")
         .env(CT_REQ_TIMEOUT, "0")
@@ -153,7 +156,8 @@ fn test_arg_configurable_timeout() {
         .stderr(contains("timed out"));
 }
 
-#[integration_test]
+#[test]
+#[use_harness]
 fn test_arg_invalid_server() {
     cloudtruth!("project ls -v")
         .env(CT_SERVER_URL, "0.0.0.0:0")
@@ -167,7 +171,8 @@ fn test_arg_invalid_server() {
         .stderr(contains("error trying to connect"));
 }
 
-#[integration_test]
+#[test]
+#[use_harness]
 fn test_arg_authentication_errors() {
     let cmds = [
         "env ls -v",

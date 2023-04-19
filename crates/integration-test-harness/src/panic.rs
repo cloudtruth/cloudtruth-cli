@@ -13,7 +13,10 @@ const HELP_TEXT: &str = "set the `RUST_BACKTRACE=1` environment variable to disp
 
 #[track_caller]
 pub fn set_panic_hook() {
-    let caller = Location::caller();
+    set_panic_hook_with_caller(Location::caller())
+}
+
+pub fn set_panic_hook_with_caller(caller: &'static Location) {
     std::panic::set_hook(Box::new(move |info| {
         let payload = info.payload();
         let message = if let Some(msg) = payload.downcast_ref::<&str>() {

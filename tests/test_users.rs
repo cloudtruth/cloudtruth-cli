@@ -1,6 +1,7 @@
 use integration_test_harness::prelude::*;
 
-#[integration_test]
+#[test]
+#[use_harness]
 fn test_user_basic() {
     let user = User::with_prefix("user-name").description("Description on create");
 

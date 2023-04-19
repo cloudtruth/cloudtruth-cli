@@ -1,6 +1,7 @@
 use integration_test_harness::prelude::*;
 
-#[integration_test]
+#[test]
+#[use_harness]
 fn test_parameter_basic_empty_list() {
     let proj = Project::with_prefix("param-empty-list").create();
     // check that there are no parameters
@@ -18,7 +19,8 @@ fn test_parameter_basic_empty_list() {
         .stdout(contains!("No parameters found in project {proj}"));
 }
 
-#[integration_test]
+#[test]
+#[use_harness]
 fn test_parameter_basic() {
     let proj = Project::with_prefix("param-basic").create();
 
@@ -114,7 +116,8 @@ fn test_parameter_basic() {
         .success();
 }
 
-#[integration_test]
+#[test]
+#[use_harness]
 fn test_parameter_basic_delete() {
     let proj = Project::with_prefix("param-delete").create();
     // add parameter
@@ -138,7 +141,8 @@ fn test_parameter_basic_delete() {
         .success();
 }
 
-#[integration_test]
+#[test]
+#[use_harness]
 fn test_parameter_basic_no_update() {
     let proj = Project::with_prefix("param-no-update").create();
 
@@ -164,7 +168,8 @@ fn test_parameter_basic_no_update() {
         .stdout(contains("my_value"));
 }
 
-#[integration_test]
+#[test]
+#[use_harness]
 fn test_paramer_basic_rename() {
     let proj = Project::with_prefix("param-rename").create();
 
@@ -191,7 +196,8 @@ fn test_paramer_basic_rename() {
         ]));
 }
 
-#[integration_test]
+#[test]
+#[use_harness]
 fn test_parameter_basic_no_value() {
     let proj = Project::with_prefix("param-basic-no-value").create();
 
@@ -205,7 +211,8 @@ fn test_parameter_basic_no_value() {
         .stdout(contains("no_value,-,,string,0,internal,false"));
 }
 
-#[integration_test]
+#[test]
+#[use_harness]
 fn test_parameter_basic_conflicting_options() {
     let proj = Project::with_prefix("param-basic-conflicting-opts").create();
     // make sure we error out on conflicting arguments

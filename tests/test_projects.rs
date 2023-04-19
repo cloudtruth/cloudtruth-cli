@@ -2,7 +2,8 @@ use integration_test_harness::prelude::*;
 
 const TEST_PAGE_SIZE: usize = 5;
 
-#[integration_test]
+#[test]
+#[use_harness]
 fn test_projects_basic() {
     // Initialize project data but do not create yet
     let proj = Project::with_prefix("proj-name").description("Description on create");
@@ -69,7 +70,8 @@ fn test_projects_basic() {
         .stderr(contains!("Project '{proj}' does not exist"));
 }
 
-#[integration_test]
+#[test]
+#[use_harness]
 fn test_projects_parents() {
     let proj1 = Project::with_prefix("proj-par-1").create();
     let proj2 = Project::with_prefix("proj-mid-1").parent(&proj1).create();
@@ -120,7 +122,8 @@ fn test_projects_parents() {
         .stdout(contains!("{proj4},{proj2},My new description"));
 }
 
-#[integration_test]
+#[test]
+#[use_harness]
 fn test_projects_pagination() {
     let page_size = TEST_PAGE_SIZE;
     // we store the project names so they're not instantly dropped and deleted

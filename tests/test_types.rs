@@ -1,6 +1,7 @@
 use integration_test_harness::prelude::*;
 
-#[integration_test]
+#[test]
+#[use_harness]
 fn test_type_basic() {
     let param_type = ParamType::with_prefix("type-name").description("Description on create");
     cloudtruth!("types ls -v")

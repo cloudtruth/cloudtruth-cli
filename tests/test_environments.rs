@@ -3,7 +3,8 @@ use std::str;
 
 const TEST_PAGE_SIZE: usize = 5;
 
-#[integration_test]
+#[test]
+#[use_harness]
 fn test_environment_basic() {
     // Initialize environment data but do not create yet
     let env = Environment::with_prefix("env-name").description("Description on create");
@@ -76,7 +77,8 @@ fn test_environment_basic() {
         .stderr(contains!("Environment '{env}' does not exist"));
 }
 
-#[integration_test]
+#[test]
+#[use_harness]
 fn test_environment_cannot_delete_default() {
     let proj = Project::with_prefix("default-env-del").create();
 
@@ -106,7 +108,8 @@ fn test_environment_cannot_delete_default() {
             .expect("No status code")));
 }
 
-#[integration_test]
+#[test]
+#[use_harness]
 fn test_environment_parents() {
     let env1 = Environment::with_prefix("env-par-1").create();
     let env2 = Environment::with_prefix("env-mid-1").parent(&env1).create();
@@ -163,7 +166,7 @@ fn test_environment_parents() {
     cloudtruth!("environment set {env4} --parent {env1}")
         .assert()
         .failure()
-        .stderr(diff!("Environment '{env4}' parent cannot be updated."));
+        .stderr(diff!("Environment '{env4}' parent cannot be updated.\n"));
 
     // setting to same parent is ignored
     cloudtruth!("environment set {env4} --parent {env2} --desc 'My new description'")
@@ -176,7 +179,8 @@ fn test_environment_parents() {
         .stdout(contains!("{env4},{env2},My new description"));
 }
 
-#[integration_test]
+#[test]
+#[use_harness]
 fn test_environment_pagination() {
     let page_size = TEST_PAGE_SIZE;
     // we store the project names so they're not instantly dropped and deleted
@@ -191,7 +195,8 @@ fn test_environment_pagination() {
         .paginated(page_size);
 }
 
-#[integration_test]
+#[test]
+#[use_harness]
 fn test_environment_tagging() {
     let proj = Project::with_prefix("proj-env-tag").create();
     let env = Environment::with_prefix("env-tag").create();
@@ -281,7 +286,7 @@ fn test_environment_tagging() {
         .assert()
         .success()
         .stderr(diff!(
-            "Environment '{env}' does not have a tag 'renamed-tag'!"
+            "Environment '{env}' does not have a tag 'renamed-tag'!\n"
         ));
 
     // unknown environment
@@ -303,7 +308,8 @@ fn test_environment_tagging() {
         .stderr(diff("Environment 'invalid-env' does not exist!\n"));
 }
 
-#[integration_test]
+#[test]
+#[use_harness]
 fn test_environment_tagging_pagination() {
     let env = Environment::with_prefix("env-pag-tag").create();
 

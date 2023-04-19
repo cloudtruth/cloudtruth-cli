@@ -1,6 +1,7 @@
 use integration_test_harness::prelude::*;
 
-#[integration_test]
+#[test]
+#[use_harness]
 fn test_generate_password_basic() {
     // default length
     cloudtruth!("generate pw")

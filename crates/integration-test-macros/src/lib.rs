@@ -1,29 +1,12 @@
-use quote::quote;
+mod use_harness;
 use syn::ItemFn;
+use use_harness::gen_use_harness;
 
 #[proc_macro_attribute]
-pub fn integration_test(
+pub fn use_harness(
     _: proc_macro::TokenStream,
     item: proc_macro::TokenStream,
 ) -> proc_macro::TokenStream {
     let test_fn = syn::parse::<ItemFn>(item).expect("Could not parse integration_test function");
-    gen_integration_test(test_fn).into()
-}
-
-fn gen_integration_test(test_fn: ItemFn) -> proc_macro2::TokenStream {
-    let ItemFn {
-        attrs,
-        vis,
-        sig,
-        block,
-    } = test_fn;
-    quote! {
-        #[test]
-        #(#attrs)*
-        #vis #sig
-        {
-            integration_test_harness::install();
-            #block
-        }
-    }
+    gen_use_harness(test_fn).into()
 }

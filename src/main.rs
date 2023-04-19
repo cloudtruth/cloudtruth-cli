@@ -10,7 +10,8 @@ mod main_test {
 
     use cloudtruth_config::{CT_API_KEY, CT_PROFILE};
 
-    #[integration_test]
+    #[test]
+    #[use_harness]
     fn missing_subcommands() {
         let subcmds = [
             ("actions", vec!["action", "act", "ac"]),
@@ -65,7 +66,8 @@ mod main_test {
         }
     }
 
-    #[integration_test]
+    #[test]
+    #[use_harness]
     fn requires_at_least_one_subcommand() {
         // Verify that invoking the CLI app without any arguments sets an error status code and
         // prints out the help message.
@@ -77,7 +79,8 @@ mod main_test {
         no_subcmd.stderr(diff(help_message));
     }
 
-    #[integration_test]
+    #[test]
+    #[use_harness]
     fn completions_work_without_config() {
         cloudtruth!("completions bash")
             .offline_env()
@@ -85,7 +88,8 @@ mod main_test {
             .success();
     }
 
-    #[integration_test]
+    #[test]
+    #[use_harness]
     fn completions_error_with_bad_shell_name() {
         cloudtruth!("completions bad")
             .offline_env()
@@ -94,7 +98,8 @@ mod main_test {
             .stderr(contains("'bad' isn't a valid value"));
     }
 
-    #[integration_test]
+    #[test]
+    #[use_harness]
     fn need_api_key() {
         let commands = &[
             "parameters list",
@@ -118,7 +123,8 @@ mod main_test {
         }
     }
 
-    #[integration_test]
+    #[test]
+    #[use_harness]
     fn missing_profile() {
         let commands = ["projects", "environments", "integrations"];
         for cmd_args in commands {

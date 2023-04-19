@@ -1,6 +1,7 @@
 use integration_test_harness::prelude::*;
 
-#[integration_test]
+#[test]
+#[use_harness]
 fn test_group_basic() {
     let group = Group::with_prefix("group-name").description("Description on create");
     // make sure group doesn't exist
@@ -61,7 +62,8 @@ fn test_group_basic() {
         .stderr(contains!("Group '{group}' does not exist"));
 }
 
-#[integration_test]
+#[test]
+#[use_harness]
 fn test_group_basic_rename() {
     let mut group = Group::with_prefix("group-name")
         .description("Description on create")
