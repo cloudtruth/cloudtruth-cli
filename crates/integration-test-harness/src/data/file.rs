@@ -16,7 +16,7 @@ use tempfile::NamedTempFile;
 /// Display implementation prints the file path as a string, making it easy to reference the file path
 /// in CLI tests.
 #[derive(Debug, Display)]
-#[display(fmt = "{}", "temp_file.path().display()")]
+#[display(fmt = "{:?}", "temp_file.path()")]
 pub struct TestFile {
     temp_file: NamedTempFile,
 }
