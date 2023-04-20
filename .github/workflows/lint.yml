@@ -49,7 +49,6 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           prefix-key: ${{ inputs.rustCacheKey }}
-          shared-key: ${{ runner.os }}
 
       - run: cargo fmt --all -- --check
 
