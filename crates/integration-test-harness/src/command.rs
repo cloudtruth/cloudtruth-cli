@@ -6,6 +6,7 @@ use std::{
     ops::{Deref, DerefMut},
     path::{Path, PathBuf},
 };
+use which::which;
 
 /// A newtype wrapper around assert_cmd::Command so that we can define custom methods.
 /// For convenience it has a Deref impl that allows us to call assert_cmd methods
@@ -101,13 +102,10 @@ pub fn run_cloudtruth_cmd<P: AsRef<Path>>(bin_path: P, args: String) -> Result<C
     if args.trim().is_empty() {
         Ok(std::process::Command::new(bin_path.as_ref()).into())
     } else {
-        let path_str = bin_path
-            .as_ref()
-            .to_str()
-            .expect("Path to binary is not valid Unicode");
+        let path_str = bin_path.as_ref().to_string_lossy();
         // Use shlex to escape special characters in the binary path
         // also escapes backslashes in Windows path names
-        let escaped_bin_path = shlex::quote(path_str);
+        let escaped_bin_path = shlex::quote(&path_str);
         commandspec::commandify(format!("{escaped_bin_path} {args}"))
             .map(Command::from_std)
             .map_err(|e| e.compat())
@@ -124,7 +122,9 @@ pub fn cli_bin_path<S: AsRef<str>>(name: S) -> &'static Path {
     CLI_BIN_PATH
         .get_or_init(|| {
             // try to find binary in target directory
-            let bin_path = cargo_bin_path(name.as_ref());
+            let bin_path = cargo_bin_path(name.as_ref()).unwrap_or_else(|| {
+                which(OsStr::new(name.as_ref())).expect("Unable to find CLI binary")
+            });
             println!("Found CLI binary at: {}", bin_path.display());
             bin_path
         })
@@ -132,8 +132,9 @@ pub fn cli_bin_path<S: AsRef<str>>(name: S) -> &'static Path {
 }
 
 /// Attempts to find the CLI binary in the cargo target directory.
-fn cargo_bin_path<S: AsRef<str>>(name: S) -> PathBuf {
-    std::env::var("NEXTEST_BIN_EXE_cloudtruth")
+fn cargo_bin_path<S: AsRef<str>>(name: S) -> Option<PathBuf> {
+    let path = std::env::var_os("NEXTEST_BIN_EXE_cloudtruth")
         .map(PathBuf::from)
-        .unwrap_or_else(|_| assert_cmd::cargo::cargo_bin(name.as_ref()))
+        .unwrap_or_else(|| assert_cmd::cargo::cargo_bin(name.as_ref()));
+    Some(path).filter(|path| path.exists())
 }
