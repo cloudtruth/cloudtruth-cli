@@ -117,7 +117,7 @@ pub fn from_cmd_args<P: AsRef<Path>>(bin_path: P, args: String) -> Result<Comman
     use std::os::windows::process::CommandExt;
     let mut cmd = std::process::Command::new("cmd");
     let cmd_line = format!("{} {}", bin_path.to_string_lossy(), args);
-    cmd.raw_arg(format!("/C {args}"));
+    cmd.raw_arg(format!("/C {cmd_line}"));
     Ok(Command::from_std(cmd))
 }
 
