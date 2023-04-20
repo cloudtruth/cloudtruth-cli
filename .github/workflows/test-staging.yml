@@ -18,6 +18,10 @@ on:
         description: The runner to run the workflow on
         type: string
         default: ubuntu-latest
+      testRunnerType:
+        type: string
+        description: Which test runner to use. One of "pytest" or "cargo"
+        default: pytest
       rustBacktrace:
         description: Value of the RUST_BACKTRACE variable (default no backtrace)
         type: string
@@ -32,17 +36,15 @@ env:
   # ID to append to test data to avoid name collisions
   JOB_ID: ${{github.repository_id}}-${{github.run_id}}-${{github.run_attempt}}-${{inputs.runsOn}}
   RUST_BACKTRACE: ${{ inputs.rustBacktrace }}
+  CLOUDTRUTH_SERVER_URL: https://api.staging.cloudtruth.io
+  CLOUDTRUTH_API_KEY: ${{ secrets.CLOUDTRUTH_API_KEY }}
 
 jobs:
-  test:
+  pytest:
+    if: inputs.testRunnerType == 'pytest'
     name: CLI E2E Test (Staging)
     runs-on: ${{ inputs.runsOn }}
 
-    env:
-      # these are to run against staging
-      CLOUDTRUTH_SERVER_URL: https://api.staging.cloudtruth.io
-      CLOUDTRUTH_API_KEY: ${{ secrets.CLOUDTRUTH_API_KEY }}
-      
     steps:
       - shell: bash
         if: | 
@@ -95,3 +97,62 @@ jobs:
         if: always()
         working-directory: integration-tests
         run: python3 cleanup.py --confirm "$JOB_ID"
+
+  cargo-test:
+    if: inputs.testRunnerType == 'cargo'
+    name: CLI E2E Test (Staging)
+    runs-on: ${{ inputs.runsOn }}
+
+    env:
+      TEST_ARCHIVE_FILE: integration-test-${{inputs.runsOn}}.tar.zst
+      
+    steps:
+      - shell: bash
+        if: | 
+          inputs.artifactId == '' && inputs.releaseVersion == '' ||
+          inputs.artifactId != '' && inputs.releaseVersion != ''
+        run: | 
+          echo "Workflow input error: exactly one of 'artifactId' or 'releaseVersion' must be provided"
+          exit 1
+
+      - uses: actions/checkout@v3
+        with:
+          repository: cloudtruth/cloudtruth-cli
+          ref: ${{ inputs.ref }}
+
+      - run: sh xtask/scripts/install-rust.sh
+
+      - uses: taiki-e/install-action@cargo-nextest
+
+      - uses: actions/download-artifact@v3
+        if: inputs.artifactId
+        with:
+          name: ${{ inputs.artifactId }}
+          path: target
+
+      # upload-artifact does not preserve permissions
+      - shell: bash
+        if: inputs.artifactId
+        run: find target -type f -name 'cloudtruth*' -exec chmod +x {} +
+
+      - uses: dsaltares/fetch-gh-release-asset@master
+        if: inputs.releaseVersion 
+        with:
+          version: ${{ inputs.releaseVersion }}
+          file: ${{ env.TEST_ARCHIVE_FILE }}
+
+      - name: Setup test variables
+        shell: bash
+        run: |
+          cat integration-tests/staging.env >> $GITHUB_ENV
+
+      - name: E2E Test
+        if: inputs.releaseVersion
+        shell: bash
+        run: cargo nextest run --profile ci --archive-file "$TEST_ARCHIVE_FILE" ${{ inputs.testRunnerOptions }}
+
+      - name: E2E Test
+        if: inputs.artifactId
+        shell: bash
+        run: cargo nextest run --profile ci --all-features --tests ${{ inputs.testRunnerOptions }}
+

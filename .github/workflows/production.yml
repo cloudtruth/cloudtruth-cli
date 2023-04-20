@@ -1,7 +1,7 @@
 # This is the legacy production test workflow that is being kept so that GitHub shows
 # historical job logs. Use test-production.yml workflow instead
 ---
-name: Production (Historical)
+name: Production (Legacy)
 on:
   workflow_dispatch:
     inputs:

@@ -61,7 +61,7 @@ jobs:
       - name: Test
         shell: bash
         run: |
-          cargo nextest run ${{ inputs.testOptions }}
+          cargo nextest run --profile ci ${{ inputs.testOptions }}
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v3

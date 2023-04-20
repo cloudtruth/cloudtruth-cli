@@ -1,7 +1,7 @@
 # This is the legacy staging test workflow that is being kept so that GitHub shows
 # historical job logs. Use test-staging.yml workflow instead
 ---
-name: Staging (Historical)
+name: Staging (Legacy)
 on:
   workflow_dispatch:
     inputs:
