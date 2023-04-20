@@ -78,7 +78,8 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
         with:
-          prefix-key: v0-cloudtruth-release
+          prefix-key: v0-cloudtruth
+          shared-key: ${{ env.TARGET }}
 
       - run: rustup target add "$TARGET"
 
@@ -206,7 +207,7 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
         with:
-          prefix-key: v0-cloudtruth-release
+          prefix-key: v0-cloudtruth
 
       - run: cargo nextest archive --cargo-profile release-debug --all-features --tests --archive-file "$ARCHIVE_FILE"
 
