@@ -7,7 +7,7 @@ on:
 jobs:
   sandbox:
     name: Sandbox
-    uses: ./.github/workflows/test-staging.yml
+    uses: ./.github/workflows/test-staging-cargo.yml
     strategy:
       fail-fast: false
       matrix:

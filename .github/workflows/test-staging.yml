@@ -18,10 +18,6 @@ on:
         description: The runner to run the workflow on
         type: string
         default: ubuntu-latest
-      testRunnerType:
-        type: string
-        description: Which test runner to use. One of "pytest" or "cargo"
-        default: pytest
       rustBacktrace:
         description: Value of the RUST_BACKTRACE variable (default no backtrace)
         type: string
@@ -41,7 +37,6 @@ env:
 
 jobs:
   pytest:
-    if: inputs.testRunnerType == 'pytest'
     name: CLI Test (staging, pytest)
     runs-on: ${{ inputs.runsOn }}
 
@@ -97,65 +92,3 @@ jobs:
         if: always()
         working-directory: integration-tests
         run: python3 cleanup.py --confirm "$JOB_ID"
-
-  cargo-test:
-    if: inputs.testRunnerType == 'cargo'
-    name: CLI Test (staging, cargo-nextest)
-    runs-on: ${{ inputs.runsOn }}
-
-    env:
-      TEST_ARCHIVE_FILE: integration-test-${{inputs.runsOn}}.tar.zst
-      
-    steps:
-      - shell: bash
-        if: | 
-          inputs.artifactId == '' && inputs.releaseVersion == '' ||
-          inputs.artifactId != '' && inputs.releaseVersion != ''
-        run: | 
-          echo "Workflow input error: exactly one of 'artifactId' or 'releaseVersion' must be provided"
-          exit 1
-
-      - uses: actions/checkout@v3
-        with:
-          repository: cloudtruth/cloudtruth-cli
-          ref: ${{ inputs.ref }}
-
-      - run: sh xtask/scripts/install-rust.sh
-
-      - uses: taiki-e/install-action@cargo-nextest
-
-      - uses: actions/download-artifact@v3
-        if: inputs.artifactId
-        with:
-          name: ${{ inputs.artifactId }}
-          path: target
-
-      # upload-artifact does not preserve permissions
-      - shell: bash
-        if: inputs.artifactId
-        run: find target -type f -name 'cloudtruth*' -exec chmod +x {} +
-
-      # fetch pre-built integration test archive
-      - uses: dsaltares/fetch-gh-release-asset@master
-        if: inputs.releaseVersion 
-        with:
-          version: tags/${{ inputs.releaseVersion }}
-          file: ${{ env.TEST_ARCHIVE_FILE }}
-
-      - name: Setup test variables
-        shell: bash
-        run: |
-          cat integration-tests/staging.env >> $GITHUB_ENV
-
-      # run from pre-built archive
-      - name: E2E Test
-        if: inputs.releaseVersion
-        shell: bash
-        run: cargo nextest run --profile ci --archive-file "$TEST_ARCHIVE_FILE" ${{ inputs.testRunnerOptions }}
-
-      # build and run
-      - name: E2E Test
-        if: inputs.artifactId
-        shell: bash
-        run: cargo nextest run --profile ci --all-features --tests ${{ inputs.testRunnerOptions }}
-
