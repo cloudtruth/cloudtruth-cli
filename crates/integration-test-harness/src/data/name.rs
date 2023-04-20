@@ -1,12 +1,9 @@
 use serde_json::Value;
-use std::{env, ffi::OsStr};
+use std::ffi::OsStr;
 use uuid::Uuid;
 
-const JOB_ID: &str = "JOB_ID";
-
-/// Use JOB_ID if available, otherwise generate random
 fn generated_test_id() -> String {
-    env::var(JOB_ID).unwrap_or_else(|_| Uuid::new_v4().to_string())
+    Uuid::new_v4().to_string()
 }
 
 /// A newtype wrapper around String representing a generic CloudTruth entity name.

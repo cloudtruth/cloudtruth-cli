@@ -120,7 +120,7 @@ pub fn cli_bin_path<S: AsRef<str>>(name: S) -> &'static Path {
         .get_or_init(|| {
             // try to find binary in target directory
             let bin_path = dunce::canonicalize(cargo_bin_path(name.as_ref()))
-                .expect("Unable to canonicalize CLI path {:?}");
+                .expect("Unable to canonicalize CLI path");
             println!("Found CLI binary at: {}", bin_path.display());
             bin_path
         })
