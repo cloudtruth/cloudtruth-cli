@@ -139,7 +139,7 @@ jobs:
       - uses: dsaltares/fetch-gh-release-asset@master
         if: inputs.releaseVersion 
         with:
-          version: ${{ inputs.releaseVersion }}
+          version: tags/${{ inputs.releaseVersion }}
           file: ${{ env.TEST_ARCHIVE_FILE }}
 
       - name: Setup test variables
