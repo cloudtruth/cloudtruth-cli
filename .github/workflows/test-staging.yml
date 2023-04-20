@@ -135,6 +135,7 @@ jobs:
         if: inputs.artifactId
         run: find target -type f -name 'cloudtruth*' -exec chmod +x {} +
 
+      # fetch pre-built integration test archive
       - uses: dsaltares/fetch-gh-release-asset@master
         if: inputs.releaseVersion 
         with:
@@ -146,11 +147,13 @@ jobs:
         run: |
           cat integration-tests/staging.env >> $GITHUB_ENV
 
+      # run from pre-built archive
       - name: E2E Test
         if: inputs.releaseVersion
         shell: bash
         run: cargo nextest run --profile ci --archive-file "$TEST_ARCHIVE_FILE" ${{ inputs.testRunnerOptions }}
 
+      # build and run
       - name: E2E Test
         if: inputs.artifactId
         shell: bash

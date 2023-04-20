@@ -68,7 +68,5 @@ jobs:
           name: ${{ inputs.artifactId }}
           if-no-files-found: ignore
           path: |
-            ./target/debug/cloudtruth
-            ./target/debug/cloudtruth.exe
-            ./target/release/cloudtruth
-            ./target/release/cloudtruth.exe
+            ./target
+
