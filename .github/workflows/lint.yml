@@ -17,7 +17,7 @@ on:
       rustCacheKey:
         description: cache ID to use for rust-cache
         type: string
-        default: v0-cli-lint
+        default: v0-cloudtruth
 env:
   CI: true
 
