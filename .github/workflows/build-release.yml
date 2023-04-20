@@ -82,7 +82,6 @@ jobs:
         with:
           prefix-key: v0-cloudtruth-cli
           shared-key: ${{ runner.os }}-${{ env.TARGET }}
-          cache-directories: ${{ env.HOME }}/.cargo/bin
 
       - uses: taiki-e/install-action@cargo-binstall
         if: contains(runner.os, 'Linux')
@@ -188,13 +187,17 @@ jobs:
 
   build-test-archive:
     name: Build Test Archive
-    runs-on: ${{matrix.os}}
+    runs-on: ${{ matrix.os }}
     defaults:
       run:
         shell: bash
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
+        includes:
+          - { os: ubuntu-latest, target: x86_64-unknown-linux-musl }
+          - { os: macos-latest, target: x86_64-apple-darwin }
+          - { os: windows-latest, target: x86_64-pc-windows-msvc }
     env:
       ARCHIVE_FILE: integration-test-${{matrix.os}}.tar.zst
     steps:
@@ -205,6 +208,11 @@ jobs:
       - run: sh xtask/scripts/install-rust.sh
 
       - uses: taiki-e/install-action@cargo-nextest
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: v0-cloudtruth-cli
+          shared-key: ${{ runner.os }}-${{ matrix.target }}
 
       - run: cargo nextest archive --cargo-profile release-debug --all-features --tests --archive-file "$ARCHIVE_FILE"
 
