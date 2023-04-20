@@ -97,18 +97,28 @@ impl From<Command> for assert_cmd::Command {
 }
 
 /// Create a Command from a shell=like command line (used by cloudtruth! macro)
+#[cfg(not(windows))]
 pub fn from_cmd_args<P: AsRef<Path>>(bin_path: P, args: String) -> Result<Command> {
     let bin_path = bin_path.as_ref();
     if args.trim().is_empty() {
         Ok(std::process::Command::new(bin_path).into())
     } else {
-        let bin_path = bin_path.to_string_lossy();
         let args = shlex::split(&args)
             .ok_or_else(|| miette!("Unable to parse command line arguments {:?}", args))?;
-        let mut cmd = Command::new(bin_path.as_ref());
+        let mut cmd = Command::new(bin_path);
         cmd.args(args);
         Ok(cmd)
     }
+}
+
+/// On Widows, we need to handle arguments differently
+#[cfg(windows)]
+pub fn from_cmd_args<P: AsRef<Path>>(bin_path: P, args: String) -> Result<Command> {
+    use std::os::windows::process::CommandExt;
+    let mut cmd = std::process::Command::new("cmd");
+    let cmd_line = format!("{} {}", bin_path.to_string_lossy(), args);
+    cmd.raw_arg(format!("/C {args}"));
+    Ok(Command::from_std(cmd))
 }
 
 /// Attempts to find the CLI binary to test.
