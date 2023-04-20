@@ -107,12 +107,8 @@ pub fn from_cmd_args<P: AsRef<Path>>(bin_path: P, args: String) -> Result<Comman
         let bin_path = bin_path.to_string_lossy();
         let args = shlex::split(&args)
             .ok_or_else(|| miette!("Unable to parse command line arguments {:?}", args))?;
-        // let cd = env::current_dir();
         let mut cmd = Command::new(bin_path.as_ref());
         cmd.args(args);
-        // if let Ok(cd) = cd {
-        //     cmd.current_dir(cd);
-        // }
         Ok(cmd)
     }
 }
