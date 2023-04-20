@@ -20,7 +20,6 @@ jobs:
             options: --partition hash:3/3
     with:
       runsOn: ${{ matrix.os }}
-      testRunnerType: cargo
       testRunnerOptions: -E 'kind(test) & test(basic)' ${{ matrix.options }}
       releaseVersion: staging
     secrets:
