@@ -42,7 +42,7 @@ env:
 jobs:
   pytest:
     if: inputs.testRunnerType == 'pytest'
-    name: CLI E2E Test (Staging)
+    name: CLI Test (staging, pytest)
     runs-on: ${{ inputs.runsOn }}
 
     steps:
@@ -100,7 +100,7 @@ jobs:
 
   cargo-test:
     if: inputs.testRunnerType == 'cargo'
-    name: CLI E2E Test (Staging)
+    name: CLI Test (staging, cargo-nextest)
     runs-on: ${{ inputs.runsOn }}
 
     env:
