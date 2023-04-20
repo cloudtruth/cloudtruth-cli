@@ -12,12 +12,13 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - os: windows-latest
+            options: --partition hash:1/3
           - os: macos-latest
-            options: --partition hash:1/3 
+            options: --partition hash:2/3 
           - os: ubuntu-latest
             options: --partition hash:2/3
-          - os: windows-latest
-            options: --partition hash:3/3
+          
     with:
       runsOn: ${{ matrix.os }}
       testRunnerOptions: -E 'kind(test) & test(basic)' ${{ matrix.options }}
