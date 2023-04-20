@@ -135,7 +135,6 @@ pub fn cli_bin_path<S: AsRef<str>>(name: S) -> &'static Path {
 fn cargo_bin_path<S: AsRef<str>>(name: S) -> Option<PathBuf> {
     let path = std::env::var_os("NEXTEST_BIN_EXE_cloudtruth")
         .map(PathBuf::from)
-        .or(option_env!("CARGO_BIN_EXE_cloudtruth").map(PathBuf::from))
         .unwrap_or_else(|| assert_cmd::cargo::cargo_bin(name.as_ref()));
     Some(path).filter(|path| path.exists())
 }
