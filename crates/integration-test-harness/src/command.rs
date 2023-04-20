@@ -1,9 +1,8 @@
 use cloudtruth_config::{CT_API_KEY, CT_REST_DEBUG, CT_REST_PAGE_SIZE, CT_SERVER_URL};
-use miette::{Context, IntoDiagnostic, Result};
+use miette::{miette, Result};
 use once_cell::sync::OnceCell;
 use std::{
     ffi::OsStr,
-    io,
     ops::{Deref, DerefMut},
     path::{Path, PathBuf},
 };
@@ -15,7 +14,7 @@ pub struct Command(assert_cmd::Command);
 
 impl Command {
     pub fn new<S: AsRef<OsStr>>(program: S) -> Self {
-        Command(assert_cmd::Command::new(program))
+        Self::from_assert_cmd(assert_cmd::Command::new(program))
     }
 
     pub fn from_assert_cmd(cmd: assert_cmd::Command) -> Self {
@@ -97,20 +96,24 @@ impl From<Command> for assert_cmd::Command {
     }
 }
 
-/// Run a command from a string (used by cloudtruth! macro)
-pub fn run_cloudtruth_cmd<P: AsRef<Path>>(bin_path: P, args: String) -> Result<Command> {
+/// Create a Command from a shell=like command line (used by cloudtruth! macro)
+pub fn from_cmd_args<P: AsRef<Path>>(bin_path: P, args: String) -> Result<Command> {
+    let bin_path = bin_path.as_ref();
+    let bin_path = dunce::canonicalize(bin_path)
+        .map_err(|_| miette!("Unable to canonicalize path {:?}", bin_path))?;
     if args.trim().is_empty() {
-        Ok(std::process::Command::new(bin_path.as_ref()).into())
+        Ok(std::process::Command::new(bin_path).into())
     } else {
-        let path_str = bin_path.as_ref().to_string_lossy();
-        // Use shlex to escape special characters in the binary path
-        // also escapes backslashes in Windows path names
-        let escaped_bin_path = shlex::quote(&path_str);
-        commandspec::commandify(format!("{escaped_bin_path} {args}"))
-            .map(Command::from_std)
-            .map_err(|e| e.compat())
-            .into_diagnostic()
-            .wrap_err_with(|| format!("Invalid command: {escaped_bin_path} {args}"))
+        let bin_path = bin_path.to_string_lossy();
+        let args = shlex::split(&args)
+            .ok_or_else(|| miette!("Unable to parse command line arguments {:?}", args))?;
+        // let cd = env::current_dir();
+        let mut cmd = Command::new(bin_path.as_ref());
+        cmd.args(args);
+        // if let Ok(cd) = cd {
+        //     cmd.current_dir(cd);
+        // }
+        Ok(cmd)
     }
 }
 
@@ -122,7 +125,7 @@ pub fn cli_bin_path<S: AsRef<str>>(name: S) -> &'static Path {
     CLI_BIN_PATH
         .get_or_init(|| {
             // try to find binary in target directory
-            let bin_path = cargo_bin_path(name.as_ref()).expect("Unable to find CLI binary path");
+            let bin_path = cargo_bin_path(name.as_ref());
             println!("Found CLI binary at: {}", bin_path.display());
             bin_path
         })
@@ -130,11 +133,9 @@ pub fn cli_bin_path<S: AsRef<str>>(name: S) -> &'static Path {
 }
 
 /// Attempts to find the CLI binary in the cargo target directory.
-fn cargo_bin_path<S: AsRef<str>>(name: S) -> Result<PathBuf, io::Error> {
-    dunce::canonicalize(
-        std::env::var_os("NEXTEST_BIN_EXE_cloudtruth")
-            .map(PathBuf::from)
-            .or(option_env!("CARGO_BIN_EXE_cloudtruth").map(PathBuf::from))
-            .unwrap_or_else(|| assert_cmd::cargo::cargo_bin(name.as_ref())),
-    )
+fn cargo_bin_path<S: AsRef<str>>(name: S) -> PathBuf {
+    std::env::var_os("NEXTEST_BIN_EXE_cloudtruth")
+        .map(PathBuf::from)
+        .or(option_env!("CARGO_BIN_EXE_cloudtruth").map(PathBuf::from))
+        .unwrap_or_else(|| assert_cmd::cargo::cargo_bin(name.as_ref()))
 }

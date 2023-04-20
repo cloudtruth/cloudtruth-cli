@@ -87,13 +87,13 @@ jobs:
           cat integration-tests/staging.env >> $GITHUB_ENV
 
       # run from pre-built archive
-      - name: E2E Test
+      - name: E2E Test (pre-built archive)
         if: inputs.releaseVersion
         shell: bash
         run: cargo nextest run --profile ci --archive-file "$TEST_ARCHIVE_FILE" ${{ inputs.testRunnerOptions }}
 
       # build and run
-      - name: E2E Test
+      - name: E2E Test (compile from source)
         if: inputs.artifactId
         shell: bash
         run: cargo nextest run --profile ci --all-features --tests ${{ inputs.testRunnerOptions }}
