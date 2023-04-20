@@ -16,7 +16,6 @@ jobs:
           - { os: macos-latest, opts: --partition hash:2/3 }
           - { os: windows-latest, opts: --partition hash:3/3 }
     with:
-      testRunnerType: cargo
       runsOn: ${{ matrix.os }}
       testRunnerOptions: -E 'kind(test) & test(basic)' ${{ matrix.opts }}
       releaseVersion: staging
