@@ -21,7 +21,7 @@ on:
       testRunnerType:
         type: string
         description: Which test runner to use. One of "pytest" or "cargo"
-        default: cargo
+        default: pytest
       rustBacktrace:
         description: Value of the RUST_BACKTRACE variable (default no backtrace)
         type: string
