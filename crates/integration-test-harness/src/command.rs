@@ -99,8 +99,6 @@ impl From<Command> for assert_cmd::Command {
 /// Create a Command from a shell=like command line (used by cloudtruth! macro)
 pub fn from_cmd_args<P: AsRef<Path>>(bin_path: P, args: String) -> Result<Command> {
     let bin_path = bin_path.as_ref();
-    let bin_path = dunce::canonicalize(bin_path)
-        .map_err(|_| miette!("Unable to canonicalize path {:?}", bin_path))?;
     if args.trim().is_empty() {
         Ok(std::process::Command::new(bin_path).into())
     } else {
@@ -121,7 +119,8 @@ pub fn cli_bin_path<S: AsRef<str>>(name: S) -> &'static Path {
     CLI_BIN_PATH
         .get_or_init(|| {
             // try to find binary in target directory
-            let bin_path = cargo_bin_path(name.as_ref());
+            let bin_path = dunce::canonicalize(cargo_bin_path(name.as_ref()))
+                .expect("Unable to canonicalize CLI path {:?}");
             println!("Found CLI binary at: {}", bin_path.display());
             bin_path
         })

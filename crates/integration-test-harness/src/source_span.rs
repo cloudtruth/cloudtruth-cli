@@ -74,12 +74,11 @@ impl TestSourceSpan {
     /// Tries to find source information from backtrace.
     pub fn from_backtrace(caller: &Location) -> io::Result<Option<Self>> {
         // A substring of test source file paths
-        let test_path = dunce::canonicalize(Path::new(caller.file()).parent().unwrap())?;
-        let test_path_utf8 = test_path.to_string_lossy();
+        let test_path = Path::new(caller.file()).parent().unwrap().to_string_lossy();
         for frame in Backtrace::new().frames().iter() {
             for symbol in frame.symbols().iter() {
                 if let Some(filename) = symbol.filename().and_then(|f| f.to_str()) {
-                    if filename.contains(test_path_utf8.as_ref()) {
+                    if filename.contains(test_path.as_ref()) {
                         if let (Some(line), Some(col)) = (symbol.lineno(), symbol.colno()) {
                             return Ok(Some(Self::from_location(
                                 filename.into(),
