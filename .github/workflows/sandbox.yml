@@ -7,7 +7,7 @@ on:
 jobs:
   sandbox:
     name: Sandbox
-    uses: cloudtruth/cloudtruth-cli/.github/workflows/test-staging.yml
+    uses: ./.github/workflows/test-staging.yml
     strategy:
       fail-fast: false
       matrix:
