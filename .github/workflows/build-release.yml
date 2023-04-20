@@ -76,11 +76,11 @@ jobs:
 
       - run: xtask/scripts/install-rust.sh
 
-      - run: rustup target add "$TARGET"
-
       - uses: Swatinem/rust-cache@v2
         with:
           prefix-key: v0-cloudtruth-release
+
+      - run: rustup target add "$TARGET"
 
       - uses: taiki-e/install-action@cargo-binstall
         if: contains(runner.os, 'Linux')
