@@ -1,0 +1,9 @@
+---
+name: Sandbox
+
+on:
+  workflow_dispatch:
+jobs:
+  sandbox:
+    name: Sandbox
+    runs-on: ubuntu-latest
