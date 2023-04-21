@@ -62,15 +62,8 @@ jobs:
       - name: Test
         run: cargo nextest run --profile ci ${{ inputs.testOptions }}
 
-      # build integration tests but do not run them
-      # this will store the integration test build in the output artifact, 
-      # so that partitioned test runs are faster to start later in the pipeline
-      - name: Build Integration Tests
-        run: cargo nextest run --no-run --tests
-
-      # compress target directory to speed up artifact upload
-      - name: Compress Artifacts
-        run: tar -czvf target.tar.gz ./target
+      - name: Create Integration Test Archive
+        run: cargo nextest archive --all-features --test --archive-file ./target/integration-test-archive.tar.zst
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v3
@@ -78,5 +71,7 @@ jobs:
           name: ${{ inputs.artifactId }}
           if-no-files-found: ignore
           path: |
-            ./target.tar.gz
+            ./target/debug/cloudtruth
+            ./target/debug/cloudtruth.exe
+            ./target/integration-test-archive.tar.zst
 

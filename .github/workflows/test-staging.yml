@@ -60,9 +60,7 @@ jobs:
         if: inputs.artifactId
         with:
           name: ${{ inputs.artifactId }}
-
-      - name: Decompress Artifact
-        run: tar -xvf target.tar.gz
+          path: target
 
       # upload-artifact does not preserve permissions
       - if: inputs.artifactId
