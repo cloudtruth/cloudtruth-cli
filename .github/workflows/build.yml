@@ -68,11 +68,15 @@ jobs:
       - name: Build Integration Tests
         run: cargo nextest run --no-run --tests
 
+      # compress target directory to speed up artifact upload
+      - name: Compress Artifacts
+        run: tar -czvf target.tar.gz ./target
+
       - name: Upload Artifact
         uses: actions/upload-artifact@v3
         with:
           name: ${{ inputs.artifactId }}
           if-no-files-found: ignore
           path: |
-            ./target
+            ./target.tar.gz
 

@@ -39,10 +39,12 @@ jobs:
   pytest:
     name: CLI Test (staging, pytest)
     runs-on: ${{ inputs.runsOn }}
+    defaults:
+      run:
+        shell: bash
 
     steps:
-      - shell: bash
-        if: | 
+      - if: | 
           inputs.artifactId == '' && inputs.releaseVersion == '' ||
           inputs.artifactId != '' && inputs.releaseVersion != ''
         run: | 
@@ -58,15 +60,15 @@ jobs:
         if: inputs.artifactId
         with:
           name: ${{ inputs.artifactId }}
-          path: target
+
+      - name: Decompress Artifact
+        run: tar -xvf target.tar.gz
 
       # upload-artifact does not preserve permissions
-      - shell: bash
-        if: inputs.artifactId
+      - if: inputs.artifactId
         run: find target -type f -name 'cloudtruth*' -exec chmod +x {} +
 
-      - shell: bash
-        if: inputs.releaseVersion && !contains(runner.os, 'Windows')
+      - if: inputs.releaseVersion && !contains(runner.os, 'Windows')
         run: sudo ./install.sh --version '${{ inputs.releaseVersion }}'
 
       - shell: pwsh
@@ -75,20 +77,16 @@ jobs:
           $ctExe = .\install.ps1 -Version '${{ inputs.releaseVersion }}'
           mv $ctExe .\integration-tests\
 
-      - shell: bash
-        run: make test_prerequisites
+      - run: make test_prerequisites
 
       - name: Setup test variables
-        shell: bash
         run: |
           cat integration-tests/staging.env >> $GITHUB_ENV
 
       - name: E2E Test
-        shell: bash
         working-directory: integration-tests
         run: python3 live_test.py --job-id "$JOB_ID" ${{ inputs.testRunnerOptions }}
 
-      - shell: bash
-        if: always()
+      - if: always()
         working-directory: integration-tests
         run: python3 cleanup.py --confirm "$JOB_ID"
