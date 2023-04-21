@@ -96,5 +96,5 @@ jobs:
       - name: E2E Test (compile from source)
         if: inputs.artifactId
         shell: bash
-        run: cargo nextest run --profile ci --all-features --tests ${{ inputs.testRunnerOptions }}
+        run: cargo nextest run --profile ci --archive-file ./target/integration-test-archive.tar.zst ${{ inputs.testRunnerOptions }}
 
