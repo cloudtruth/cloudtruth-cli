@@ -110,16 +110,6 @@ pub fn from_cmd_args<P: AsRef<Path>>(bin_path: P, args: String) -> Result<Comman
     }
 }
 
-/// On Widows, we need to handle arguments differently
-// #[cfg(windows)]÷
-// pub fn from_cmd_args<P: AsRef<Path>>(bin_path: P, args: String) -> Result<Command> {
-//     use std::os::windows::process::CommandExt;
-//     let mut cmd = std::process::Command::new("cmd");
-//     let cmd_line = format!("{} {}", bin_path.as_ref().to_string_lossy(), args);
-//     // cmd.raw_arg(format!("/C {cmd_line}"));
-//     Ok(Command::from_std(cmd))
-// }
-
 /// Attempts to find the CLI binary to test.
 /// If not found via environment variables, will try to locate a binary with the given name in the current target directory
 /// This logic runs once and then the result is cached for subsequent calls.
