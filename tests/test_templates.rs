@@ -16,7 +16,7 @@ fn test_template_basic() {
 
     // Create template
     cloudtruth!(
-        "--project {proj} templates set {temp_name} --desc 'Description on create' --body {temp_file} "
+        "--project {proj} templates set {temp_name} --desc 'Description on create' --body '{temp_file}' "
     )
     .assert()
     .success()
