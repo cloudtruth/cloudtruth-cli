@@ -1,5 +1,6 @@
 use crate::{
     command::{cli_bin_path, Command},
+    contains,
     data::{Name, NameConstructors, Scope, TestResource},
 };
 
@@ -32,8 +33,8 @@ impl<'d> Group<'d> {
                 name.as_str(),
             ])
             .assert()
-            .success();
-        // .stdout(contains!("Updated group '{name}'"));
+            .success()
+            .stdout(contains!("Updated group '{name}'"));
         self.name = name;
         self
     }
@@ -55,8 +56,9 @@ impl<'d> TestResource for Group<'d> {
         if let Some(desc) = self.description {
             cmd.args(["--desc", desc]);
         }
-        cmd.assert().success();
-        // .stdout(contains!("Created group '{self}'"));
+        cmd.assert()
+            .success()
+            .stdout(contains!("Created group '{self}'"));
         Scope::new(self)
     }
 
@@ -64,6 +66,7 @@ impl<'d> TestResource for Group<'d> {
         Command::new(cli_bin_path("cloudtruth"))
             .args(["groups", "delete", "--confirm", self.name.as_str()])
             .assert()
-            .success();
+            .success()
+            .stdout(contains!("Deleted group '{self}'"));
     }
 }

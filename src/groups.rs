@@ -82,7 +82,7 @@ fn proc_groups_list(
         }
         hdr.push("Users");
         properties.push("users");
-        let mut table = Table::new("group");
+        let mut table = Table::new("groups");
         table.set_header(&hdr);
         for entry in group_list {
             let row = entry.get_properties(&properties);
@@ -127,17 +127,28 @@ fn proc_groups_set(
     let group_name = subcmd_args.value_of(NAME_ARG).unwrap();
     let description = subcmd_args.value_of(DESCRIPTION_OPT);
     let rename = subcmd_args.value_of(RENAME_OPT);
+    let add_user_opt = subcmd_args.values_of(ADD_USER_OPT);
+    let rm_user_opt = subcmd_args.values_of(RM_USER_OPT);
 
     /* Look for existing group */
     let found_group = groups.get_group_by_name(rest_cfg, group_name)?;
     /* Update existing group or create new group if not found */
     let group = if let Some(group) = found_group {
         if description.is_some() || rename.is_some() {
-            groups.update_group(rest_cfg, &group.id, rename, description)?;
+            let name = rename.unwrap_or(group_name);
+            groups.update_group(rest_cfg, &group.id, Some(name), description)?;
+            println!("Updated group '{name}'");
+        } else if add_user_opt.is_none() && rm_user_opt.is_none() {
+            warning_message(format!(
+                "Group '{group_name}' not updated: no updated parameters provided"
+            ));
+            return Ok(());
         }
         group
     } else {
-        groups.create_group(rest_cfg, group_name, description)?
+        let group = groups.create_group(rest_cfg, group_name, description)?;
+        println!("Created group '{group_name}'");
+        group
     };
     /* Convert the provided user names into URLs  */
     let user_name_to_url = |name| {
@@ -146,13 +157,11 @@ fn proc_groups_set(
             .ok_or_else(|| UserError::UserNotFound(name.to_string()))?;
         Ok(user.user_url)
     };
-    let add_user_urls = subcmd_args
-        .values_of(ADD_USER_OPT)
+    let add_user_urls = add_user_opt
         .unwrap_or_default()
         .map(user_name_to_url)
         .collect::<Result<Vec<String>>>()?;
-    let rm_user_urls = subcmd_args
-        .values_of(RM_USER_OPT)
+    let rm_user_urls = rm_user_opt
         .unwrap_or_default()
         .map(user_name_to_url)
         .collect::<Result<Vec<String>>>()?;

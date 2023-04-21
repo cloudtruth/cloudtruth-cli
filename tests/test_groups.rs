@@ -9,11 +9,10 @@ fn test_group_basic() {
         .assert()
         .success()
         .stdout(not(contains(group.name())));
-    //TODO: this should fail
-    // cloudtruth!("groups get {group}")
-    //     .assert()
-    //     .failure()
-    //     .stderr(contains!("The group '{group}' could not be found"));
+    cloudtruth!("groups get {group}")
+        .assert()
+        .failure()
+        .stderr(contains!("The group '{group}' could not be found"));
     // create
     group.clone().with_scope(|group| {
         cloudtruth!("groups list --values --format csv")
@@ -28,7 +27,7 @@ fn test_group_basic() {
             .assert()
             .success()
             .stdout(json(prop(
-                "group", //TODO: this should say groups
+                "groups",
                 find_entry(
                     prop("Name", value(group.name())),
                     prop("Description", value("Updated description")),
