@@ -5,7 +5,7 @@ run-name: Create Draft Release (${{ github.ref_name }})
 on:
   push:
     tags:
-      - '[0-9]+.[0-9]+.[0-9]+-?**'
+      - '[0-9]*([0-9])*(.[0-9]*([0-9]))*'
 
 # prevent multiple releases from running at the same time
 concurrency:
