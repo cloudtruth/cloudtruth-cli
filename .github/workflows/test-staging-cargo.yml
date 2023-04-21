@@ -74,7 +74,8 @@ jobs:
       # fetch pre-built integration test archive
       - uses: dsaltares/fetch-gh-release-asset@master
         if: inputs.releaseVersion 
-        with:
+        with:                  
+          repo: cloudtruth/cloudtruth-cli
           version: tags/${{ inputs.releaseVersion }}
           file: ${{ env.TEST_ARCHIVE_FILE }}
 
