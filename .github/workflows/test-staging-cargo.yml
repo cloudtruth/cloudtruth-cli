@@ -26,6 +26,7 @@ on:
 
 env:
   CI: true
+  RELEASE_VERSION: ${{ inputs.releaseVersion }}
   # ID to append to test data to avoid name collisions
   JOB_ID: ${{github.repository_id}}-${{github.run_id}}-${{github.run_attempt}}-${{inputs.runsOn}}
   RUST_BACKTRACE: ${{ inputs.rustBacktrace }}
@@ -48,16 +49,10 @@ jobs:
           echo "Workflow input error: exactly one of 'artifactId' or 'releaseVersion' must be provided"
           exit 1
 
-      - name: Get checkout ref
-        shell: bash
-        env: 
-          RELEASE_VERSION: ${{ inputs.releaseVersion }}
-        run: REF=${RELEASE_VERSION:+tags/${RELEASE_VERSION}} >> $GITHUB_ENV
-
       - uses: actions/checkout@v3
         with:
           repository: cloudtruth/cloudtruth-cli
-          ref: ${{ env.REF }}
+          ref: ${{ env.RELEASE_VERSION }}
 
       - run: sh xtask/scripts/install-rust.sh
 
