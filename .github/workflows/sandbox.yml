@@ -11,11 +11,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:      
-        partition: [1, 2, 3, 4]
+        partition: [1, 2, 3]
           
     with:
       runsOn: macos-latest
-      testRunnerOptions: -E 'kind(test) & test(basic)' --partition count:${{matrix.partition}}/4
+      testRunnerOptions: -E 'kind(test) & test(basic)' --partition hash:${{matrix.partition}}/4
       releaseVersion: staging
     secrets:
       CLOUDTRUTH_API_KEY: ${{ secrets.CT_STAGING_CI_ADMIN_API_KEY }}
