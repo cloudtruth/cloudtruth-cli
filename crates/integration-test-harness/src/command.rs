@@ -97,7 +97,6 @@ impl From<Command> for assert_cmd::Command {
 }
 
 /// Create a Command from a shell=like command line (used by cloudtruth! macro)
-#[cfg(not(windows))]
 pub fn from_cmd_args<P: AsRef<Path>>(bin_path: P, args: String) -> Result<Command> {
     let bin_path = bin_path.as_ref();
     if args.trim().is_empty() {
@@ -116,10 +115,6 @@ pub fn from_cmd_args<P: AsRef<Path>>(bin_path: P, args: String) -> Result<Comman
 // pub fn from_cmd_args<P: AsRef<Path>>(bin_path: P, args: String) -> Result<Command> {
 //     use std::os::windows::process::CommandExt;
 //     let mut cmd = std::process::Command::new("cmd");
-//     let quoted_args = shlex::split(&args)
-//         .ok_or_else(|| miette!("Unable to parse command line arguments {:?}", args))
-//         .into_iter()
-//         .map(|arg| format!("\"arg\"?
 //     let cmd_line = format!("{} {}", bin_path.as_ref().to_string_lossy(), args);
 //     // cmd.raw_arg(format!("/C {cmd_line}"));
 //     Ok(Command::from_std(cmd))
