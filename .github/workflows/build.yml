@@ -19,7 +19,7 @@ on:
       buildOptions:
         description: options to pass to the Cargo build
         type: string
-        default: --all-features --workspace
+        default: --all-features --workspace --lib --bins
       testOptions:
         description: options to pass to the Cargo tests
         type: string
@@ -27,7 +27,7 @@ on:
       rustCacheKey:
         description: cache ID to use for rust-cache
         type: string
-        default: v0-cli-build
+        default: v0-cloudtruth
 
 env:
   CI: true
@@ -38,30 +38,32 @@ jobs:
     name: CLI Build
     runs-on: ${{ inputs.runsOn }}
 
+    defaults:
+      run:
+        shell: bash
+
     steps:
       - uses: actions/checkout@v3
         with:
           ref: ${{ inputs.ref }}
 
-      - shell: bash
-        run: sh xtask/scripts/install-rust.sh
+      - run: sh xtask/scripts/install-rust.sh
 
       - uses: Swatinem/rust-cache@v2
         with:
           prefix-key: ${{ inputs.rustCacheKey }}
-          shared-key: ${{ runner.os }}
 
       - uses: taiki-e/install-action@cargo-nextest
 
       - name: Build
-        shell: bash
-        run: |
-          cargo build ${{ inputs.buildOptions }}
+        run: cargo build ${{ inputs.buildOptions }}
 
+      # run unit tests
       - name: Test
-        shell: bash
-        run: |
-          cargo nextest run ${{ inputs.testOptions }}
+        run: cargo nextest run --profile ci ${{ inputs.testOptions }}
+
+      - name: Create Integration Test Archive
+        run: cargo nextest archive --all-features --tests --archive-file ./target/integration-test-archive.tar.zst
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v3
@@ -71,5 +73,5 @@ jobs:
           path: |
             ./target/debug/cloudtruth
             ./target/debug/cloudtruth.exe
-            ./target/release/cloudtruth
-            ./target/release/cloudtruth.exe
+            ./target/integration-test-archive.tar.zst
+

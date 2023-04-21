@@ -76,13 +76,12 @@ jobs:
 
       - run: xtask/scripts/install-rust.sh
 
-      - run: rustup target add "$TARGET"
-
       - uses: Swatinem/rust-cache@v2
         with:
-          prefix-key: v0-cloudtruth-cli
-          shared-key: ${{ runner.os }}-${{ env.TARGET }}
-          cache-directories: ${{ env.HOME }}/.cargo/bin
+          prefix-key: v0-cloudtruth
+          shared-key: ${{ env.TARGET }}
+
+      - run: rustup target add "$TARGET"
 
       - uses: taiki-e/install-action@cargo-binstall
         if: contains(runner.os, 'Linux')
@@ -92,11 +91,11 @@ jobs:
         if: contains(runner.os, 'Linux')
 
       - name: Cross build
-        run: cross build --release --target $TARGET --bins
+        run: cross build --release --target $TARGET --all-features --bin cloudtruth
         if: contains(runner.os, 'Linux')
 
       - name: Cargo build
-        run: cargo build --release --target $TARGET --bins
+        run: cargo build --release --target $TARGET --all-features --bin cloudtruth
         if: ${{ ! contains(runner.os, 'Linux') }}
 
       - name: Strip binaries
@@ -185,3 +184,39 @@ jobs:
           asset_name: install.ps1
           asset_content_type: application/octet-stream
           overwrite: true
+
+  build-test-archive:
+    name: Build Test Archive
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    env:
+      ARCHIVE_FILE: integration-test-${{matrix.os}}.tar.zst
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+
+      - run: sh xtask/scripts/install-rust.sh
+
+      - uses: taiki-e/install-action@cargo-nextest
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: v0-cloudtruth
+
+      - run: cargo nextest archive --cargo-profile release-debug --all-features --tests --archive-file "$ARCHIVE_FILE"
+
+      - name: Upload Integration Test Archive
+        uses: shogo82148/actions-upload-release-asset@v1
+        with:
+          upload_url: ${{ env.RELEASE_UPLOAD_URL }}
+          asset_path: ${{ env.ARCHIVE_FILE }}
+          asset_name: ${{ env.ARCHIVE_FILE }}
+          asset_content_type: application/octet-stream
+          overwrite: true
+

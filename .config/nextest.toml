@@ -3,23 +3,22 @@
 
 ##### Configuration overrides for integration tests #####
 [[profile.default.overrides]]
-
 filter = "kind(test)"
 
 # Retry failed tests
 retries = 1
 
-# Define "slow" tests as being over 180 seconds
-slow-timeout = { period = "180s" }
+# Define "slow" tests as being over 90 seconds
+slow-timeout = { period = "90s" }
 
 ##### Configuration for CI runs #####
 [profile.ci]
 
-# show skipped tests in report
-status-level = "all"
+# show passing and failing tests immediately
+status-level = "pass"
 
-# show failure output immediately as well as at the end
-failure-output = "immediate-final"
+# show non-passing tests in final summary
+final-status-level = "slow"
 
 # continue if a test fails
 fail-fast = false

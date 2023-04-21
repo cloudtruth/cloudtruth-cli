@@ -7,7 +7,15 @@ on:
 jobs:
   sandbox:
     name: Sandbox
-    runs-on: ubuntu-latest
-    steps:
-        - run: echo 'Dev Sandbox'
-
+    uses: ./.github/workflows/test-staging-cargo.yml
+    strategy:
+      fail-fast: false
+      matrix:      
+        partition: [1, 2, 3]
+          
+    with:
+      runsOn: macos-latest
+      testRunnerOptions: -E 'kind(test) & test(basic)' --partition hash:${{matrix.partition}}/3
+      releaseVersion: staging
+    secrets:
+      CLOUDTRUTH_API_KEY: ${{ secrets.CT_STAGING_CI_ADMIN_API_KEY }}

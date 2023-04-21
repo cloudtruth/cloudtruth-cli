@@ -17,7 +17,7 @@ macro_rules! cli_bin_path {
 #[macro_export]
 macro_rules! cloudtruth {
     ($($fmt:tt)*) => (
-        $crate::command::run_cloudtruth_cmd($crate::cli_bin_path!(), format!($($fmt)*)).unwrap()
+        $crate::command::from_cmd_args($crate::cli_bin_path!(), format!($($fmt)*)).unwrap()
     )
 }
 
