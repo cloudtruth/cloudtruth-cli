@@ -19,7 +19,7 @@ on:
       buildOptions:
         description: options to pass to the Cargo build
         type: string
-        default: --all-features --workspace
+        default: --all-features --workspace --lib --bins
       testOptions:
         description: options to pass to the Cargo tests
         type: string
@@ -38,13 +38,16 @@ jobs:
     name: CLI Build
     runs-on: ${{ inputs.runsOn }}
 
+    defaults:
+      run:
+        shell: bash
+
     steps:
       - uses: actions/checkout@v3
         with:
           ref: ${{ inputs.ref }}
 
-      - shell: bash
-        run: sh xtask/scripts/install-rust.sh
+      - run: sh xtask/scripts/install-rust.sh
 
       - uses: Swatinem/rust-cache@v2
         with:
@@ -53,14 +56,17 @@ jobs:
       - uses: taiki-e/install-action@cargo-nextest
 
       - name: Build
-        shell: bash
-        run: |
-          cargo build ${{ inputs.buildOptions }}
+        run: cargo build ${{ inputs.buildOptions }}
 
+      # run unit tests
       - name: Test
-        shell: bash
-        run: |
-          cargo nextest run --profile ci ${{ inputs.testOptions }}
+        run: cargo nextest run --profile ci ${{ inputs.testOptions }}
+
+      # build integration tests but do not run them
+      # this will store the integration test build in the output artifact, 
+      # so that partitioned test runs are faster to start later in the pipeline
+      - name: Build Integration Tests
+        run: cargo nextest run --no-run --tests
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v3
