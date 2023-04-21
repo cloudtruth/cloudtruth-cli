@@ -10,7 +10,7 @@ PROP_USERS = "Users"
 
 class TestGroups(TestCase):
     def _get_group_entry(self, cmd_env, group_name: str) -> Dict:
-        entries = self.get_cli_entries(cmd_env, self._base_cmd + "groups ls -v -f json", "group")
+        entries = self.get_cli_entries(cmd_env, self._base_cmd + "groups ls -v -f json", "groups")
         return find_by_prop(entries, PROP_NAME, group_name)[0]
 
     def test_group_basic(self):
