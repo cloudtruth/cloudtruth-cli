@@ -7,7 +7,7 @@ on:
 jobs:
   sandbox:
     name: Sandbox
-    uses: ./.github/workflows/test-staging-cargo.yml
+    uses: ./.github/workflows/test-production-cargo.yml
     strategy:
       fail-fast: false
       matrix:      
@@ -16,6 +16,5 @@ jobs:
     with:
       runsOn: macos-latest
       testRunnerOptions: -E 'kind(test) & test(basic)' --partition hash:${{matrix.partition}}/3
-      releaseVersion: staging
     secrets:
       CLOUDTRUTH_API_KEY: ${{ secrets.CI_ACCT_READWRITE_CT_API_KEY}}
