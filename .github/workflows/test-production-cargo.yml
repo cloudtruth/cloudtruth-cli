@@ -59,4 +59,4 @@ jobs:
 
       # run from pre-built archive
       - name: E2E Test
-        run: cargo nextest run --profile ci --archive-file "$TEST_ARCHIVE_FILE" ${{ inputs.testRunnerOptions }}
+        run: cargo nextest run --profile ci --archive-file "$TEST_ARCHIVE_FILE" ${{ inputs.testRunnerOptions }} --workspace-remap "${GITHUB_WORKSPACE}"
