@@ -88,11 +88,11 @@ jobs:
       - name: E2E Test (pre-built archive)
         if: inputs.releaseVersion
         shell: bash
-        run: cargo nextest run --profile ci --archive-file "$TEST_ARCHIVE_FILE" ${{ inputs.testRunnerOptions }}
+        run: cargo nextest run --profile ci --archive-file "$TEST_ARCHIVE_FILE" ${{ inputs.testRunnerOptions }} --workspace-remap "${GITHUB_WORKSPACE}"
 
       # build and run
       - name: E2E Test (compile from source)
         if: inputs.artifactId
         shell: bash
-        run: cargo nextest run --profile ci --archive-file ./target/integration-test-archive.tar.zst ${{ inputs.testRunnerOptions }}
+        run: cargo nextest run --profile ci --archive-file ./target/integration-test-archive.tar.zst ${{ inputs.testRunnerOptions }} --workspace-remap "${GITHUB_WORKSPACE}"
 
