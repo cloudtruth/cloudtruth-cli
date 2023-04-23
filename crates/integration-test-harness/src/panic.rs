@@ -34,14 +34,6 @@ pub fn set_panic_hook_with_caller(caller: &'static Location) {
             });
         }
         if let Ok(Some(mut src_span)) = TestSourceSpan::from_backtrace(caller) {
-            report = report.with_context(|| {
-                format!(
-                    "Test failure at {}:{}:{}",
-                    src_span.filename(),
-                    src_span.line(),
-                    src_span.col()
-                )
-            });
             src_span.add_related(report.unwrap_err());
             report = Err(src_span.into());
         }

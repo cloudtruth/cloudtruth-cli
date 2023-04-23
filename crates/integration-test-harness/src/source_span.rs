@@ -11,7 +11,7 @@ use thiserror::Error;
 use miette::{Diagnostic, NamedSource, Report, SourceOffset, SourceSpan};
 
 #[derive(Debug, Error, Diagnostic)]
-#[error("Test failure")]
+#[error("Test failure at {}:{}:{}", filename, line, col)]
 #[diagnostic()]
 /// A miette report for test case source code snippets
 pub struct TestSourceSpan {
@@ -57,18 +57,6 @@ impl TestSourceSpan {
     /// Add an error to the list of related errors
     pub fn add_related<E: Into<Report>>(&mut self, err: E) {
         self.related.push(err.into());
-    }
-
-    pub fn filename(&self) -> &str {
-        &self.filename
-    }
-
-    pub fn line(&self) -> usize {
-        self.line
-    }
-
-    pub fn col(&self) -> usize {
-        self.col
     }
 
     /// Tries to find source information from backtrace.
