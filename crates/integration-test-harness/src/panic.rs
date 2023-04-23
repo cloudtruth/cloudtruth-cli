@@ -9,7 +9,7 @@ use miette::{Diagnostic, Report, Result};
 
 use crate::source_span::TestSourceSpan;
 
-const HELP_TEXT: &str = "set the `RUST_BACKTRACE=1` environment variable to display a backtrace.";
+const HELP_TEXT: &str = "run with `RUST_BACKTRACE=1` environment variable to display a backtrace";
 
 #[track_caller]
 pub fn set_panic_hook() {
