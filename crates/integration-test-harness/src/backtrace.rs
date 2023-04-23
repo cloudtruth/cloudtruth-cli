@@ -10,7 +10,6 @@ pub fn is_rust_backtrace_enabled() -> bool {
     }
 }
 
-/// Code adapted from https://github.com/zkat/miette/blob/main/src/panic.rs
 pub fn format_backtrace() -> String {
     // This is all taken from human-panic: https://github.com/rust-cli/human-panic/blob/master/src/report.rs#L55-L107
     const HEX_WIDTH: usize = std::mem::size_of::<usize>() + 2;
