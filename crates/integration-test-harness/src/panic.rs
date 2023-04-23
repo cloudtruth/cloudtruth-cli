@@ -5,7 +5,7 @@ use std::panic::Location;
 use crate::backtrace;
 use thiserror::Error;
 
-use miette::{Diagnostic, Report, Result};
+use miette::{Diagnostic, Report};
 
 use crate::source_span::TestSourceSpan;
 
@@ -27,16 +27,16 @@ pub fn set_panic_hook_with_caller(caller: &'static Location) {
             "Something went wrong".to_string()
         };
         let panic = Panic::new(message);
-        let mut report: Result<(), Report> = if let Some(loc) = info.location() {
-            Err(PanicLocation::new(panic, loc).into())
+        let mut report: Report = if let Some(loc) = info.location() {
+            PanicLocation::new(panic, loc).into()
         } else {
-            Err(panic.into())
+            panic.into()
         };
         if let Ok(Some(mut src_span)) = TestSourceSpan::from_backtrace(caller) {
-            src_span.add_related(report.unwrap_err());
-            report = Err(src_span.into());
+            src_span.add_related(report);
+            report = src_span.into();
         }
-        eprintln!("{:?}", report.unwrap_err());
+        eprintln!("{:?}", report);
     }));
 }
 
