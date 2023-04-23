@@ -14,6 +14,7 @@ pub fn install_miette_error_handler() {
                 miette::MietteHandlerOpts::new()
                     .context_lines(3)
                     .tab_width(4)
+                    .width(200)
                     .with_cause_chain()
                     .graphical_theme(GraphicalTheme {
                         characters: ThemeCharacters::unicode(),
