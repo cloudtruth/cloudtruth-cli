@@ -19820,6 +19820,11 @@
                         "type": "string",
                         "readOnly": true
                     },
+                    "owner": {
+                        "type": "string",
+                        "format": "uri",
+                        "nullable": true
+                    },
                     "user": {
                         "allOf": [
                             {
@@ -20187,6 +20192,11 @@
                         "type": "string",
                         "readOnly": true
                     },
+                    "owner": {
+                        "type": "string",
+                        "format": "uri",
+                        "nullable": true
+                    },
                     "user": {
                         "allOf": [
                             {
@@ -20243,6 +20253,11 @@
                         "type": "string",
                         "writeOnly": true,
                         "description": "The role for the service acount"
+                    },
+                    "owner": {
+                        "type": "string",
+                        "description": "The owner of the service account.",
+                        "maxLength": 128
                     }
                 },
                 "required": [
@@ -20260,6 +20275,11 @@
                     "id": {
                         "type": "string",
                         "readOnly": true
+                    },
+                    "owner": {
+                        "type": "string",
+                        "format": "uri",
+                        "nullable": true
                     },
                     "user": {
                         "allOf": [
@@ -20318,6 +20338,11 @@
                         "type": "string",
                         "readOnly": true,
                         "description": "The role for the service acount"
+                    },
+                    "owner": {
+                        "type": "string",
+                        "description": "The owner of the service account.",
+                        "maxLength": 128
                     }
                 },
                 "required": [

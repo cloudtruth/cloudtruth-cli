@@ -14,6 +14,8 @@ pub struct PatchedServiceAccount {
     pub url: Option<String>,
     #[serde(rename = "id", skip_serializing_if = "Option::is_none")]
     pub id: Option<String>,
+    #[serde(rename = "owner", skip_serializing_if = "Option::is_none")]
+    pub owner: Option<String>,
     #[serde(rename = "user", skip_serializing_if = "Option::is_none")]
     pub user: Option<Box<crate::models::User>>,
     /// An optional description of the process or system using the service account.
@@ -33,6 +35,7 @@ impl PatchedServiceAccount {
         PatchedServiceAccount {
             url: None,
             id: None,
+            owner: None,
             user: None,
             description: None,
             created_at: None,

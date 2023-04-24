@@ -186,6 +186,7 @@ impl Users {
             name: user_name.to_string(),
             description: description.map(String::from),
             role: role.map(String::from),
+            owner: None,
         };
         let response = serviceaccounts_create(rest_cfg, user_create);
         match response {
@@ -207,6 +208,7 @@ impl Users {
             url: None,
             id: None,
             user: None,
+            owner: None,
             description: description.map(String::from),
             created_at: None,
             modified_at: None,

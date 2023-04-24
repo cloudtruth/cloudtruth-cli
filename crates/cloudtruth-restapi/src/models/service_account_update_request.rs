@@ -16,6 +16,9 @@ pub struct ServiceAccountUpdateRequest {
     /// The role for the service acount
     #[serde(rename = "role")]
     pub role: String,
+    /// The owner of the service account.
+    #[serde(rename = "owner", skip_serializing_if = "Option::is_none")]
+    pub owner: Option<String>,
 }
 
 impl ServiceAccountUpdateRequest {
@@ -23,6 +26,7 @@ impl ServiceAccountUpdateRequest {
         ServiceAccountUpdateRequest {
             description: None,
             role,
+            owner: None,
         }
     }
 }

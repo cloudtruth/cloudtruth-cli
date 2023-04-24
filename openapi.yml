@@ -13738,6 +13738,10 @@ components:
         id:
           type: string
           readOnly: true
+        owner:
+          type: string
+          format: uri
+          nullable: true
         user:
           allOf:
           - $ref: '#/components/schemas/User'
@@ -14072,6 +14076,10 @@ components:
         id:
           type: string
           readOnly: true
+        owner:
+          type: string
+          format: uri
+          nullable: true
         user:
           allOf:
           - $ref: '#/components/schemas/User'
@@ -14118,6 +14126,10 @@ components:
           type: string
           writeOnly: true
           description: The role for the service acount
+        owner:
+          type: string
+          description: The owner of the service account.
+          maxLength: 128
       required:
       - name
     ServiceAccountCreateResponse:
@@ -14130,6 +14142,10 @@ components:
         id:
           type: string
           readOnly: true
+        owner:
+          type: string
+          format: uri
+          nullable: true
         user:
           allOf:
           - $ref: '#/components/schemas/User'
@@ -14177,6 +14193,10 @@ components:
           type: string
           readOnly: true
           description: The role for the service acount
+        owner:
+          type: string
+          description: The owner of the service account.
+          maxLength: 128
       required:
       - role
     StateEnum:
