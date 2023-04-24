@@ -77,6 +77,7 @@ clean:
 # client needs to re-generated when the openapi.yaml changes
 client: $(client_dir)
 $(client_dir): openapi.yml patch_client.py
+	docker info
 	rm -rf $(client_dir)/src
 	docker run --rm \
 		-v "$(shell pwd):/local" \
