@@ -19,6 +19,9 @@ pub struct ServiceAccountCreateRequest {
     /// The role for the service acount
     #[serde(rename = "role", skip_serializing_if = "Option::is_none")]
     pub role: Option<String>,
+    /// The owner of the service account.
+    #[serde(rename = "owner", skip_serializing_if = "Option::is_none")]
+    pub owner: Option<String>,
 }
 
 impl ServiceAccountCreateRequest {
@@ -27,6 +30,7 @@ impl ServiceAccountCreateRequest {
             name,
             description: None,
             role: None,
+            owner: None,
         }
     }
 }

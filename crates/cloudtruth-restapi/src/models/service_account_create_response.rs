@@ -14,6 +14,8 @@ pub struct ServiceAccountCreateResponse {
     pub url: String,
     #[serde(rename = "id")]
     pub id: String,
+    #[serde(rename = "owner", skip_serializing_if = "Option::is_none")]
+    pub owner: Option<String>,
     #[serde(rename = "user")]
     pub user: Option<Box<crate::models::User>>,
     /// An optional description of the process or system using the service account.
@@ -44,6 +46,7 @@ impl ServiceAccountCreateResponse {
         ServiceAccountCreateResponse {
             url,
             id,
+            owner: None,
             user: user.map(Box::new),
             description: None,
             created_at,
