@@ -340,6 +340,15 @@ fn proc_env_tag(
     Ok(())
 }
 
+// fn proc_env_copy(
+//     subcmd_args: &ArgMatches,
+//     rest_cfg: &OpenApiConfig,
+//     environments: &Environments,
+// ) -> Result<()> {
+//     let env_name = subcmd_args.value_of(ENV_NAME_ARG).unwrap();
+//     todo!()
+// }
+
 /// Process the 'environment' sub-command
 pub fn process_environment_command(
     subcmd_args: &ArgMatches,
@@ -356,6 +365,8 @@ pub fn process_environment_command(
         proc_env_tree(subcmd_args, rest_cfg, &environments)?;
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(TAG_SUBCMD) {
         proc_env_tag(subcmd_args, rest_cfg, &environments)?;
+    // } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(COPY_SUBCMD) {
+    // proc_env_copy(subcmd_args, rest_cfg, &environments)?;
     } else {
         warn_missing_subcommand("environments");
     }

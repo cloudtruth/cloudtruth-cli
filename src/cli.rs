@@ -58,6 +58,7 @@ pub const TAG_SUBCMD: &str = "tag";
 pub const TASK_STEPS_SUBCMD: &str = "task-steps";
 pub const TASKS_SUBCMD: &str = "tasks";
 pub const TREE_SUBCMD: &str = "tree";
+pub const COPY_SUBCMD: &str = "copy";
 
 const TRUE_FALSE_VALUES: &[&str] = &["true", "false"];
 
@@ -73,6 +74,7 @@ const SYNC_ALIASES: &[&str] = &["syn", "sy"];
 const TASKS_ALIASES: &[&str] = &["task", "ta", "t"];
 const TASK_STEPS_ALIASES: &[&str] = &["steps", "step", "st", "ts"];
 const TREE_ALIASES: &[&str] = &["tr"];
+const COPY_ALIASES: &[&str] = &["cp"];
 
 const REGION_VALUES: &[&str] = &[
     "af-south-1",
@@ -756,6 +758,13 @@ pub fn build_cli() -> App<'static, 'static> {
                             .help("Show this environment with children")
                             .required(false)
                             .default_value("default")),
+                    SubCommand::with_name(COPY_SUBCMD)
+                        .visible_aliases(COPY_ALIASES)
+                        .about("Copy an environment and its children to new environment(s)")
+                        .arg(name_arg()
+                            .help("Name of the destination environment")
+                            .required(true))
+
                 ])
         )
         .subcommand(SubCommand::with_name("login")

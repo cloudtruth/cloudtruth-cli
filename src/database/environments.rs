@@ -477,4 +477,13 @@ impl Environments {
             Err(e) => Err(EnvironmentError::UnhandledError(e.to_string())),
         }
     }
+    // pub fn copy_env(
+    //     &self,
+    //     rest_cfg: &OpenApiConfig,
+    //     src_environment_id: &str,
+    //     name: Option<&str>,
+    //     description: Option<&str>,
+    // ) -> Result<String, EnvironmentError> {
+    //     todo!()
+    // }
 }
