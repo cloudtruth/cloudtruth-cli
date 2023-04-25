@@ -1,3 +1,4 @@
+use cloudtruth_config::{CT_ENVIRONMENT, CT_PROJECT};
 use integration_test_harness::prelude::*;
 
 #[test]
@@ -412,4 +413,118 @@ fn test_parameter_basic_secret_no_value() {
         .assert()
         .success()
         .stdout(contains("my_param,-,,string,0,internal,true"));
+}
+
+#[test]
+fn test_parameter_export() -> Result<()> {
+    let proj = Project::with_prefix("param-export").create();
+    trycmd::TestCases::new()
+        .case("tests/snapshot-tests/parameters/parameter_export.md")
+        .register_bin("cloudtruth", cli_bin_path!())
+        .env("NO_COLOR", "1")
+        .env(CT_PROJECT, proj.to_name())
+        .insert_var("[PROJECT]", proj.to_name())?;
+    Ok(())
+}
+
+#[test]
+fn test_parameter_integration_errors() -> Result<()> {
+    let proj = Project::with_prefix("param-integration-errors").create();
+    trycmd::TestCases::new()
+        .case("tests/snapshot-tests/parameters/parameter_integration_errors.md")
+        .register_bin("cloudtruth", cli_bin_path!())
+        .env("NO_COLOR", "1")
+        .env(CT_PROJECT, proj.to_name())
+        .insert_var("[PROJECT]", proj.to_name())?;
+    Ok(())
+}
+
+#[test]
+fn test_parameter_names() -> Result<()> {
+    let proj = Project::with_prefix("param-names").create();
+    trycmd::TestCases::new()
+        .case("tests/snapshot-tests/parameters/parameter_names.md")
+        .register_bin("cloudtruth", cli_bin_path!())
+        .env("NO_COLOR", "1")
+        .env(CT_PROJECT, proj.to_name())
+        .insert_var("[PROJECT]", proj.to_name())?;
+    Ok(())
+}
+
+#[test]
+fn test_parameter_over_specified() -> Result<()> {
+    let proj = Project::with_prefix("param-overspecified").create();
+    trycmd::TestCases::new()
+        .case("tests/snapshot-tests/parameters/parameter_over_specified.md")
+        .register_bin("cloudtruth", cli_bin_path!())
+        .env("NO_COLOR", "1")
+        .env(CT_PROJECT, proj.to_name())
+        .insert_var("[PROJECT]", proj.to_name())?;
+    Ok(())
+}
+
+#[test]
+fn test_parameter_rules_bool() -> Result<()> {
+    let proj = Project::with_prefix("param-rules-bool").create();
+    let env = Environment::with_prefix("param-rules-bool").create();
+    trycmd::TestCases::new()
+        .case("tests/snapshot-tests/parameters/parameter_rules_bool.md")
+        .register_bin("cloudtruth", cli_bin_path!())
+        .env("NO_COLOR", "1")
+        .env(CT_PROJECT, proj.to_name())
+        .env(CT_ENVIRONMENT, env.to_name())
+        .insert_var("[PROJECT]", proj.to_name())?
+        .insert_var("[ENV]", env.to_name())?;
+    Ok(())
+}
+
+#[test]
+fn test_parameter_rules_string() -> Result<()> {
+    let proj = Project::with_prefix("param-rules-string").create();
+    let env = Environment::with_prefix("param-rules-string").create();
+    trycmd::TestCases::new()
+        .case("tests/snapshot-tests/parameters/parameter_rules_string.md")
+        .register_bin("cloudtruth", cli_bin_path!())
+        .env("NO_COLOR", "1")
+        .env(CT_PROJECT, proj.to_name())
+        .env(CT_ENVIRONMENT, env.to_name())
+        .insert_var("[PROJECT]", proj.to_name())?
+        .insert_var("[ENV]", env.to_name())?;
+    Ok(())
+}
+
+#[test]
+fn test_parameter_secret_switch() -> Result<()> {
+    let proj = Project::with_prefix("param-rules-secret-switch").create();
+    trycmd::TestCases::new()
+        .case("tests/snapshot-tests/parameters/parameter_secret_switch.md")
+        .register_bin("cloudtruth", cli_bin_path!())
+        .env("NO_COLOR", "1")
+        .env(CT_PROJECT, proj.to_name())
+        .insert_var("[PROJECT]", proj.to_name())?;
+    Ok(())
+}
+
+#[test]
+fn test_parameter_table_formats() -> Result<()> {
+    let proj = Project::with_prefix("param-rules-table-formats").create();
+    trycmd::TestCases::new()
+        .case("tests/snapshot-tests/parameters/parameter_table_formats.md")
+        .register_bin("cloudtruth", cli_bin_path!())
+        .env("NO_COLOR", "1")
+        .env(CT_PROJECT, proj.to_name())
+        .insert_var("[PROJECT]", proj.to_name())?;
+    Ok(())
+}
+
+#[test]
+fn test_parameter_types() -> Result<()> {
+    let proj = Project::with_prefix("param-types").create();
+    trycmd::TestCases::new()
+        .case("tests/snapshot-tests/parameters/parameter_types.md")
+        .register_bin("cloudtruth", cli_bin_path!())
+        .env("NO_COLOR", "1")
+        .env(CT_PROJECT, proj.to_name())
+        .insert_var("[PROJECT]", proj.to_name())?;
+    Ok(())
 }
