@@ -26,7 +26,7 @@ $ cloudtruth param ls -sf json
       "Secret": "false",
       "Source": "default",
       "Type": "internal",
-      "Value": "OmTmlN3I3h2m"
+      "Value": "[..]"
     },
     {
       "Description": "",
@@ -36,7 +36,7 @@ $ cloudtruth param ls -sf json
       "Secret": "true",
       "Source": "default",
       "Type": "internal",
-      "Value": "6xusFxMPN9RO"
+      "Value": "[..]"
     }
   ]
 }
@@ -58,7 +58,7 @@ $ cloudtruth param ls -sf json
       "Secret": "false",
       "Source": "default",
       "Type": "internal",
-      "Value": "7O6cD9Yv6RMv"
+      "Value": "[..]"
     },
     {
       "Description": "",
@@ -68,7 +68,7 @@ $ cloudtruth param ls -sf json
       "Secret": "true",
       "Source": "default",
       "Type": "internal",
-      "Value": "0zMgy2AdGQWh"
+      "Value": "[..]"
     }
   ]
 }

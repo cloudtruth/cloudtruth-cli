@@ -428,6 +428,18 @@ fn test_parameter_export() -> Result<()> {
 }
 
 #[test]
+fn test_parameter_generate() -> Result<()> {
+    let proj = Project::with_prefix("param-generate").create();
+    trycmd::TestCases::new()
+        .case("tests/snapshot-tests/parameters/parameter_generate.md")
+        .register_bin("cloudtruth", cli_bin_path!())
+        .env("NO_COLOR", "1")
+        .env(CT_PROJECT, proj.to_name())
+        .insert_var("[PROJECT]", proj.to_name())?;
+    Ok(())
+}
+
+#[test]
 fn test_parameter_integration_errors() -> Result<()> {
     let proj = Project::with_prefix("param-integration-errors").create();
     trycmd::TestCases::new()
