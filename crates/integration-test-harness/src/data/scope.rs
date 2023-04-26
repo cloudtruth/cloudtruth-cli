@@ -22,7 +22,7 @@ where
     R: TestResource,
 {
     /// Wrap a TestResource in a scope.
-    pub(crate) fn new(resource: R) -> Self {
+    pub fn new(resource: R) -> Self {
         Scope { resource }
     }
 }

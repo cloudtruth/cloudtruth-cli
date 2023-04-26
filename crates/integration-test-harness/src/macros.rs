@@ -38,3 +38,18 @@ macro_rules! diff {
         $crate::predicates::diff(format!($($fmt)*))
     )
 }
+
+#[cfg(feature = "macros")]
+#[macro_export]
+/// Helper macro to generate a Vec<BoxPredicate<T>> from a list of predicates
+macro_rules! boxpredicatevec {
+    () => { vec!() };
+    ($($elem:expr),+ $(,)?) => { vec!($($crate::predicates::BoxPredicate::new($elem),)+)}
+}
+
+#[cfg(feature = "macros")]
+#[macro_export]
+/// Helper macro to and() a list of predicates.
+macro_rules! all {
+    ($($arg:tt)*) => { all($crate::boxpredicatevec!($($arg)*))}
+}
