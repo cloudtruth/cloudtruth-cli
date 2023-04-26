@@ -8,8 +8,8 @@ filter = "kind(test)"
 # Retry failed tests
 retries = 1
 
-# Define "slow" tests as being over 90 seconds
-slow-timeout = { period = "90s" }
+# Define "slow" tests as being over 180 seconds
+slow-timeout = { period = "180s" }
 
 ##### Configuration for CI runs #####
 [profile.ci]

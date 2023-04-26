@@ -1660,6 +1660,7 @@ dependencies = [
 name = "integration-test-harness"
 version = "1.2.2"
 dependencies = [
+ "anyhow",
  "assert_cmd",
  "backtrace",
  "cloudtruth-config",

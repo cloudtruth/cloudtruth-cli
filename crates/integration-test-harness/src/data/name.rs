@@ -1,5 +1,5 @@
 use serde_json::Value;
-use std::ffi::OsStr;
+use std::{borrow::Cow, ffi::OsStr};
 use uuid::Uuid;
 
 fn generated_test_id() -> String {
@@ -76,6 +76,12 @@ impl From<&Name> for String {
     /// Needed for easy use of predicate functions.
     fn from(name: &Name) -> Self {
         name.0.clone()
+    }
+}
+
+impl From<Name> for Cow<'static, str> {
+    fn from(name: Name) -> Self {
+        Cow::Owned(name.0)
     }
 }
 

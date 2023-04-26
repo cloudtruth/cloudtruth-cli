@@ -17,4 +17,6 @@ pub use {
 // exports from dependencies
 pub use assert_cmd::prelude::*;
 
-pub use miette::{Context, IntoDiagnostic, Result};
+pub use miette::{Context, IntoDiagnostic};
+
+pub use anyhow::Result;
