@@ -38,3 +38,17 @@ macro_rules! diff {
         $crate::predicates::diff(format!($($fmt)*))
     )
 }
+
+#[cfg(feature = "macros")]
+#[macro_export]
+/// Helper macro to and() a list of predicates.
+macro_rules! all {
+    ($p:expr $(, $ps:expr)* $(,)?) => { $p$(.and($ps))* }
+}
+
+/// Checks that variable contains all strings from an iterator
+#[cfg(feature = "macros")]
+#[macro_export]
+macro_rules! contains_all {
+    ($e:expr $(, $es:expr)* $(,)?) => ( $crate::all!($crate::predicates::contains($e) $(, $crate::predicates::contains($es))*,) )
+}

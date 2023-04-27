@@ -242,3 +242,58 @@ where
         value_predicate,
     }
 }
+
+#[derive(Clone, Debug)]
+pub struct ForAllPredicate<P>(P)
+where
+    P: Predicate<Value>;
+
+impl<P: Predicate<Value>> Predicate<Value> for ForAllPredicate<P> {
+    fn eval(&self, value: &Value) -> bool {
+        value
+            .as_array()
+            .map(|arr| arr.iter().all(|elem| self.0.eval(elem)))
+            .unwrap_or(false)
+    }
+    fn find_case<'a>(&'a self, expected: bool, variable: &Value) -> Option<reflection::Case<'a>> {
+        let arr = variable.as_array();
+        if !expected && arr.is_none() {
+            return Some(
+                reflection::Case::new(Some(self), expected)
+                    .add_product(reflection::Product::new("var.is_array()", expected)),
+            );
+        }
+        arr?.iter()
+            .find_map(|val| match (expected, self.0.find_case(expected, val)) {
+                (true, None) => {
+                    let mut case = reflection::Case::new(Some(self), expected);
+                    if let Some(c) = self.0.find_case(false, val) {
+                        case = case.add_child(c);
+                    };
+                    Some(case)
+                }
+                (false, Some(case)) => {
+                    Some(reflection::Case::new(Some(self), expected).add_child(case))
+                }
+                _ => None,
+            })
+    }
+}
+
+impl<P: Predicate<Value>> PredicateReflection for ForAllPredicate<P> {
+    fn children<'a>(&'a self) -> Box<dyn Iterator<Item = reflection::Child<'a>> + 'a> {
+        let children = vec![reflection::Child::new("predicate", &self.0)];
+        Box::new(children.into_iter())
+    }
+}
+
+impl<P: Predicate<Value>> fmt::Display for ForAllPredicate<P> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "for_all(predicate)")
+    }
+}
+
+/// Predicate is true only if all elements in the array match
+pub fn for_all<P: Predicate<Value>>(pred: P) -> impl Predicate<Value> {
+    ForAllPredicate(pred)
+}

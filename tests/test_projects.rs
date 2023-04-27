@@ -3,6 +3,7 @@ use integration_test_harness::prelude::*;
 const TEST_PAGE_SIZE: usize = 5;
 
 #[test]
+#[use_harness]
 fn test_projects_basic() {
     // Initialize project data but do not create yet
     let proj = Project::with_prefix("proj-name").description("Description on create");
@@ -10,7 +11,7 @@ fn test_projects_basic() {
     // verify proj_name does not yet exist
     cloudtruth!("projects ls -v")
         .assert()
-        .failure()
+        .success()
         .stdout(not(contains(proj.name())));
 
     // create/delete the project within scope of this closure

@@ -2,7 +2,7 @@
 ///
 use core::fmt;
 
-use predicates::{constant::always, reflection::PredicateReflection, BoxPredicate, Predicate};
+use predicates::{constant::always, reflection::PredicateReflection, Predicate};
 
 // submodules
 pub mod json;
@@ -13,6 +13,7 @@ pub use predicates::boolean::PredicateBooleanExt;
 pub use predicates::ord::*;
 pub use predicates::prelude::*;
 pub use predicates::str::*;
+pub use predicates::BoxPredicate;
 
 /// Helper to allow prefix form of not(predicate) instead of predicate.not()
 pub fn not<P, I>(predicate: P) -> impl Predicate<I>
@@ -37,14 +38,27 @@ impl fmt::Display for LenPredicate {
     }
 }
 
+/// Checks that length of input matches given number
 pub fn len<T>(length: usize) -> impl Predicate<[T]> {
     LenPredicate(length)
 }
 
+/// Checks that all predicates in iterator are true
+pub fn all<T, P, I>(predicates: I) -> impl Predicate<T>
+where
+    T: 'static + ?Sized,
+    P: Predicate<T> + Send + Sync + 'static,
+    I: IntoIterator<Item = P>,
+{
+    let mut predicates = predicates.into_iter();
+    let first = match predicates.next() {
+        Some(pred) => BoxPredicate::new(pred),
+        None => BoxPredicate::new(always()),
+    };
+    predicates.fold(first, |accum, pred| BoxPredicate::new(accum.and(pred)))
+}
+
 /// Checks that variable contains all strings from an iterator
 pub fn contains_all<S: Into<String>, I: IntoIterator<Item = S>>(iter: I) -> impl Predicate<str> {
-    iter.into_iter()
-        .fold(BoxPredicate::new(always()), |accum, str| {
-            BoxPredicate::new(accum.and(contains(str)))
-        })
+    all(iter.into_iter().map(|str| BoxPredicate::new(contains(str))))
 }

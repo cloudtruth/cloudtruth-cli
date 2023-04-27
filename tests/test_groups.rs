@@ -38,21 +38,21 @@ fn test_group_basic() {
             .assert()
             .success();
         cloudtruth!("groups get {group}").assert().success().stdout(
-            contains!("Name: {group}").and(contains_all([
+            contains!("Name: {group}").and(contains_all!(
                 "Description: Updated description",
                 "Created At: ",
                 "Modified At: ",
-            ])),
+            )),
         );
         // show modification times
         cloudtruth!("groups list --show-times -f csv")
             .assert()
             .success()
-            .stdout(contains_all([
+            .stdout(contains_all!(
                 "Created At,Modified At",
                 group.name().as_str(),
                 "Updated description",
-            ]));
+            ));
     });
     // try to delete again
     cloudtruth!("groups delete {group} --confirm")
