@@ -41,15 +41,14 @@ macro_rules! diff {
 
 #[cfg(feature = "macros")]
 #[macro_export]
-/// Helper macro to generate a Vec<BoxPredicate<T>> from a list of predicates
-macro_rules! boxpredicatevec {
-    () => { vec!() };
-    ($($elem:expr),+ $(,)?) => { vec!($($crate::predicates::BoxPredicate::new($elem),)+)}
-}
-
-#[cfg(feature = "macros")]
-#[macro_export]
 /// Helper macro to and() a list of predicates.
 macro_rules! all {
-    ($($arg:tt)*) => { all($crate::boxpredicatevec!($($arg)*))}
+    ($p:expr $(, $ps:expr)* $(,)?) => { $p$(.and($ps))* }
+}
+
+/// Checks that variable contains all strings from an iterator
+#[cfg(feature = "macros")]
+#[macro_export]
+macro_rules! contains_all {
+    ($e:expr $(, $es:expr)* $(,)?) => ( $crate::all!($crate::predicates::contains($e) $(, $crate::predicates::contains($es))*,) )
 }

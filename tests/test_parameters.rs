@@ -69,13 +69,13 @@ fn test_parameter_basic() {
     cloudtruth!("--project {proj} parameters get my_param --details")
         .assert()
         .success()
-        .stdout(contains_all([
+        .stdout(contains_all!(
             "Name: my_param",
             "Value: cRaZy value",
             "Source: default",
             "Secret: false",
             "Description: this is just a test description",
-        ]));
+        ));
 
     // idempotent
     cloudtruth!("--project {proj} parameters set my_param --value 'cRaZy value'")
@@ -84,11 +84,11 @@ fn test_parameter_basic() {
     cloudtruth!("--project {proj} parameters ls -v")
         .assert()
         .success()
-        .stdout(contains_all([
+        .stdout(contains_all!(
             "my_param",
             "cRaZy value",
             "this is just a test description",
-        ]));
+        ));
     cloudtruth!("--project {proj} parameters get my_param")
         .assert()
         .success()
@@ -101,11 +101,11 @@ fn test_parameter_basic() {
     cloudtruth!("--project {proj} parameters ls -v")
         .assert()
         .success()
-        .stdout(contains_all([
+        .stdout(contains_all!(
             "my_param",
             "new_value",
             "this is just a test description",
-        ]));
+        ));
     cloudtruth!("--project {proj} parameters get my_param")
         .assert()
         .success()
@@ -162,7 +162,7 @@ fn test_parameter_basic_no_update() {
     cloudtruth!("--project {proj} parameters ls -v")
         .assert()
         .success()
-        .stdout(contains_all(["my_param", "my_value", "test description"]));
+        .stdout(contains_all!("my_param", "my_value", "test description"));
     cloudtruth!("--project {proj} parameters get my_param")
         .assert()
         .success()
@@ -190,11 +190,11 @@ fn test_paramer_basic_rename() {
     cloudtruth!("--project {proj} parameters ls -v")
         .assert()
         .success()
-        .stdout(contains_all([
+        .stdout(contains_all!(
             "renamed_param",
             "value",
             "parameter rename test",
-        ]));
+        ));
 }
 
 #[test]
@@ -317,13 +317,13 @@ fn test_parameter_basic_secret_list() {
     cloudtruth!("--project {proj} parameters get my_param --details")
         .assert()
         .success()
-        .stdout(contains_all([
+        .stdout(contains_all!(
             "Name: my_param",
             "Value: super-SENSITIVE-vAluE",
             "Source: default",
             "Secret: true",
             "Description: my secret value",
-        ]));
+        ));
 }
 
 #[test]
@@ -339,11 +339,11 @@ fn test_parameter_basic_secret_idempotent() {
     cloudtruth!("--project {proj} parameters ls -v -s")
         .assert()
         .success()
-        .stdout(contains_all([
+        .stdout(contains_all!(
             "my_param",
             "super-SENSITIVE-vAluE",
             "my secret value",
-        ]));
+        ));
     cloudtruth!("--project {proj} parameters get my_param")
         .assert()
         .success()
@@ -363,7 +363,7 @@ fn test_parameter_basic_secret_update() {
     cloudtruth!("--project {proj} parameters ls -v -s")
         .assert()
         .success()
-        .stdout(contains_all(["my_param", "new_value", "my secret value"]));
+        .stdout(contains_all!("my_param", "new_value", "my secret value"));
     cloudtruth!("--project {proj} parameters get my_param")
         .assert()
         .success()
@@ -374,7 +374,7 @@ fn test_parameter_basic_secret_update() {
     cloudtruth!("--project {proj} parameters ls -v -s")
         .assert()
         .success()
-        .stdout(contains_all(["my_param", "new_value", "alt description"]));
+        .stdout(contains_all!("my_param", "new_value", "alt description"));
     cloudtruth!("--project {proj} parameters get my_param")
         .assert()
         .success()

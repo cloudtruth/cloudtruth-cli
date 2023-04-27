@@ -6,10 +6,10 @@
 filter = "kind(test)"
 
 # Retry failed tests
-retries = 1
+retries = { count = 2, backoff = "fixed", delay = "5s" }
 
 # Define "slow" tests as being over 180 seconds
-slow-timeout = { period = "180s" }
+slow-timeout = { period = "180s", terminate-after = 3 }
 
 ##### Configuration for CI runs #####
 [profile.ci]
