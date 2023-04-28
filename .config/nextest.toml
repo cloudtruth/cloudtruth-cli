@@ -6,7 +6,7 @@
 filter = "kind(test)"
 
 # Retry failed tests
-retries = { count = 2, backoff = "fixed", delay = "5s" }
+retries = { count = 2, backoff = "fixed", delay = "10s" }
 
 # Define "slow" tests as being over 180 seconds
 slow-timeout = { period = "180s", terminate-after = 3 }
@@ -22,3 +22,10 @@ final-status-level = "slow"
 
 # continue if a test fails
 fail-fast = false
+
+[test-groups]
+parameters = { max-threads = 2 }
+
+[[profile.default.overrides]]
+filter = "kind(test) & test(parameter)"
+test-group = "parameters"
