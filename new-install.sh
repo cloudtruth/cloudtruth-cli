@@ -4,6 +4,8 @@
 # Copyright (C) 2023 CloudTruth, Inc.
 #
 
+set -u
+
 usage() {
     cat <<EOF
 Usage: install.sh [ OPTIONS ] -- [ INSTALLER OPTIONS ]
