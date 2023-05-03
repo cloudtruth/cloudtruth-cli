@@ -158,7 +158,7 @@ download() {
 }
 
 fail() {
-    echo "$1" >&2
+    echo "[error] $1" >&2
     exit 1
 }
 
@@ -171,7 +171,6 @@ require_cmd() {
 check_cmd() {
     command -v "$1" > /dev/null 2>&1
 }
-
 
 require_download_cmd() {
     if ! check_cmd curl && ! check_cmd wget ; then
