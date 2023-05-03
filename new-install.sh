@@ -174,7 +174,7 @@ check_cmd() {
 
 require_download_cmd() {
     if ! check_cmd curl && ! check_cmd wget ; then
-        fail "This install script requires either the curl or wget command, but beither were found."
+        fail "This install script requires either the curl or wget command, but neither were found."
     fi
 }
 
