@@ -571,6 +571,7 @@ dependencies = [
  "clap 4.2.7",
  "color-eyre",
  "derive_more",
+ "is-terminal",
  "itertools",
  "octocrab",
  "once_cell",

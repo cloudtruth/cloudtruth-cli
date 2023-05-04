@@ -1,4 +1,5 @@
 use clap::Parser;
+use is_terminal::IsTerminal;
 use once_cell::sync::OnceCell;
 
 static GLOBALS: OnceCell<Globals> = OnceCell::new();
@@ -6,7 +7,7 @@ static GLOBALS: OnceCell<Globals> = OnceCell::new();
 #[derive(Debug)]
 struct Globals {
     verbose: bool,
-    non_interactive: bool,
+    interactive: bool,
 }
 
 /// Global verbose flag.
@@ -20,9 +21,9 @@ pub fn verbose() -> bool {
 
 /// Global non-interactive flag. Indicates that we should not prompt the user for input.
 /// Initialized after CLI parsing, and set to false otherwise.
-pub fn non_interactive() -> bool {
+pub fn interactive() -> bool {
     match GLOBALS.get() {
-        Some(globals) => globals.non_interactive,
+        Some(globals) => globals.interactive,
         _ => false,
     }
 }
@@ -39,7 +40,9 @@ fn init_globals(cli: &Cli) {
     GLOBALS
         .set(Globals {
             verbose: cli.verbose,
-            non_interactive: cli.non_interactive,
+            interactive: !cli.non_interactive
+                && (cli.interactive
+                    || (std::io::stdin().is_terminal() && std::io::stdout().is_terminal())),
         })
         .expect("CLI globals were initialized twice")
 }
@@ -54,8 +57,11 @@ pub struct Cli {
     /// Show verbose information
     #[arg(global = true, short, long, default_value_t = false)]
     verbose: bool,
-    /// Non-interactive mode, do not prompt or ask for confirmations
-    #[arg(global = true, short = 'y', long, default_value_t = false)]
+    /// Force interactive mode, always prompt and ask for confirmations
+    #[arg(global = true, short = 'i', long, overrides_with = "non_interactive")]
+    interactive: bool,
+    /// Force non-interactive mode, do not prompt or ask for confirmations
+    #[arg(global = true, short = 'n', long, overrides_with = "interactive")]
     non_interactive: bool,
 }
 

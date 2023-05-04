@@ -1,10 +1,9 @@
-use clap::Parser;
-use cloudtruth_installer::{cli, find_package_managers, package_manager::PackageManagerBin, Cli};
+use cloudtruth_installer::{cli, find_package_managers, package_manager::PackageManagerBin};
 
 pub fn main() -> color_eyre::Result<()> {
     color_eyre::install()?;
     cli::parse();
-    let pkg_manager = if cli::non_interactive() {
+    let pkg_manager = if !cli::interactive() {
         // When running non-interactive, take first available package manager
         find_package_managers().next().unwrap()
     } else {

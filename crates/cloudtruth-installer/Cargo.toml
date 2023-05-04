@@ -9,6 +9,7 @@ license = "Apache-2.0"
 clap = { version = "4.0.0", features = ["derive", "env"] }
 color-eyre = "0.6"
 derive_more = "0.99.17"
+is-terminal = "0.4.7"
 itertools = "0.10.5"
 octocrab = "0.21"
 once_cell = "1.17.1"
