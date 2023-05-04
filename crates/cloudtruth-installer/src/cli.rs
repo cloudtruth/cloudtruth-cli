@@ -111,37 +111,7 @@ pub struct GitHubOptions {
 
 /// Helper to detect common CI environment variables
 fn is_ci() -> bool {
-    macro_rules! check_ci_vars {
-        ($name:literal $(,$names:literal)*$(,)?) => { std::env::var_os($name).is_some() $(|| std::env::var_os($names).is_some())* }
-    }
     /// List is from watson/ci-info
     static IS_CI: OnceCell<bool> = OnceCell::new();
-    *IS_CI.get_or_init(|| {
-        check_ci_vars!(
-            "CI",
-            "BUILD_ID",
-            "BUILD_NUMBER",
-            "CI_APP_ID",
-            "CI_BUILD_ID",
-            "CI_BUILD_NUMBER",
-            "CI_NAME",
-            "CONTINUOUS_INTEGRATION",
-            "RUN_ID",
-            "CIRCLECI",
-            "GITLAB_CI",
-            "APPVEYOR",
-            "DRONE",
-            "MAGNUM",
-            "SEMAPHORE",
-            "JENKINS_URL",
-            "bamboo_planKey",
-            "TF_BUILD",
-            "TEAMCITY_VERSION",
-            "BUILDKITE",
-            "HUDSON_URL",
-            "GO_PIPELINE_LABEL",
-            "BITBUCKET_COMMIT",
-            "GITHUB_ACTIONS",
-        )
-    })
+    *IS_CI.get_or_init(ci_info::is_ci)
 }

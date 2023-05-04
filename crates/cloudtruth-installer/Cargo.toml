@@ -6,6 +6,7 @@ edition = "2021"
 license = "Apache-2.0"
 
 [dependencies]
+ci_info = "0.14.10"
 clap = { version = "4.0.0", features = ["derive", "env"] }
 color-eyre = "0.6"
 derive_more = "0.99.17"
