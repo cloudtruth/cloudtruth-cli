@@ -1,3 +1,4 @@
+use clap::Parser;
 use once_cell::sync::OnceCell;
 
 static GLOBALS: OnceCell<Globals> = OnceCell::new();
@@ -26,9 +27,15 @@ pub fn non_interactive() -> bool {
     }
 }
 
+pub fn parse() -> Cli {
+    let cli = Cli::parse();
+    init_globals(&cli);
+    cli
+}
+
 /// initialize global statics (verbosity, non-interactive, etc)
 /// this funciton will panic if called twice
-pub fn init_globals(cli: &Cli) {
+fn init_globals(cli: &Cli) {
     GLOBALS
         .set(Globals {
             verbose: cli.verbose,

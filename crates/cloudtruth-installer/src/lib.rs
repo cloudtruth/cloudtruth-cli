@@ -4,7 +4,7 @@ pub mod install_errors;
 pub mod package_manager;
 pub mod version;
 
-pub use cli::{init_globals, Cli};
+pub use cli::Cli;
 pub use install::install_latest_version;
 pub use install_errors::InstallError;
 pub use package_manager::find_package_managers;
