@@ -19,7 +19,6 @@ pub fn verbose() -> bool {
 
 /// Global non-interactive flag. Indicates that we should not prompt the user for input.
 /// Initialized after CLI parsing, and set to false otherwise.
-#[allow(dead_code)]
 pub fn non_interactive() -> bool {
     match GLOBALS.get() {
         Some(globals) => globals.non_interactive,
