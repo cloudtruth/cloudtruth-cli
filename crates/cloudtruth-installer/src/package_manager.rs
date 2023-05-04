@@ -19,16 +19,28 @@ pub enum PackageManager {
 }
 
 impl PackageManager {
-    pub const ALL: &[PackageManager] = &[
+    #[cfg(not(target_os = "macos"))]
+    pub const LIST: &[PackageManager] = &[
         PackageManager::Apt,
         PackageManager::Apk,
         PackageManager::Yum,
         PackageManager::Zypper,
         PackageManager::Brew,
     ];
+    #[cfg(target_os = "macos")]
+    pub const LIST: &[PackageManager] = &[
+        PackageManager::Brew,
+        PackageManager::Apt,
+        PackageManager::Apk,
+        PackageManager::Yum,
+        PackageManager::Zypper,
+    ];
 
+    /// Iterator over list of possible package managers.
+    /// Ordering is platform-specific based on which package managers
+    /// are commonly used on those systems.
     pub fn iter() -> impl Iterator<Item = Self> {
-        Self::ALL.iter().copied()
+        Self::LIST.iter().copied()
     }
 
     pub fn cmd_name(&self) -> &'static str {
@@ -116,13 +128,12 @@ impl PackageManagerBin {
     }
 }
 
-pub fn find_package_managers() -> Vec<PackageManagerBin> {
+pub fn find_package_managers() -> impl Iterator<Item = PackageManagerBin> {
     PackageManager::iter()
         .inspect(|pm| verbose!("Searching for {pm}"))
         .filter_map(PackageManagerBin::find)
         .inspect(|pm| verbose!("Found {pm}"))
         .filter(PackageManagerBin::check_status)
-        .collect()
 }
 
 mod apt {

@@ -1,8 +1,8 @@
-mod cli;
-mod install;
-mod install_errors;
-mod package_manager;
-mod version;
+pub mod cli;
+pub mod install;
+pub mod install_errors;
+pub mod package_manager;
+pub mod version;
 
 pub use cli::{init_globals, Cli};
 pub use install::install_latest_version;
