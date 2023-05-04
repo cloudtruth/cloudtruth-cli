@@ -97,21 +97,21 @@ impl PackageManagerBin {
 
     pub fn install(&self, package: &Path) -> Result<()> {
         match self.package_manager {
-            PackageManager::Apt => apt_install(self, package),
-            PackageManager::Apk => apk_install(self, package),
-            PackageManager::Yum => yum_install(self, package),
-            PackageManager::Zypper => zypper_install(self, package),
-            PackageManager::Brew => brew_install(self, package),
+            PackageManager::Apt => apt::install(self, package),
+            PackageManager::Apk => apk::install(self, package),
+            PackageManager::Yum => yum::install(self, package),
+            PackageManager::Zypper => zypper::install(self, package),
+            PackageManager::Brew => brew::install(self, package),
         }
     }
 
     pub fn check_status(&self) -> bool {
         match self.package_manager {
-            PackageManager::Apt => apt_status(self),
-            PackageManager::Apk => apk_status(self),
-            PackageManager::Yum => yum_status(self),
-            PackageManager::Zypper => zypper_status(self),
-            PackageManager::Brew => brew_status(self),
+            PackageManager::Apt => apt::status(self),
+            PackageManager::Apk => apk::status(self),
+            PackageManager::Yum => yum::status(self),
+            PackageManager::Zypper => zypper::status(self),
+            PackageManager::Brew => brew::status(self),
         }
     }
 }
@@ -125,44 +125,79 @@ pub fn find_package_managers() -> Vec<PackageManagerBin> {
         .collect()
 }
 
-fn apt_install(_pm: &PackageManagerBin, _package: &Path) -> Result<()> {
-    todo!()
+mod apt {
+    use color_eyre::Result;
+    use std::{path::Path, process::Command};
+
+    use super::PackageManagerBin;
+
+    pub fn install(_pm: &PackageManagerBin, _package: &Path) -> Result<()> {
+        todo!()
+    }
+
+    pub fn status(pm: &PackageManagerBin) -> bool {
+        super::check_status(pm.cmd_name(), &mut Command::new(pm.bin_path()))
+    }
 }
 
-fn apt_status(pm: &PackageManagerBin) -> bool {
-    check_status(pm.cmd_name(), &mut Command::new(pm.bin_path()))
+mod apk {
+    use color_eyre::Result;
+    use std::{path::Path, process::Command};
+
+    use super::PackageManagerBin;
+
+    pub fn install(_pm: &PackageManagerBin, _package: &Path) -> Result<()> {
+        todo!()
+    }
+
+    pub fn status(pm: &PackageManagerBin) -> bool {
+        super::check_status(pm.cmd_name(), &mut Command::new(pm.bin_path()))
+    }
 }
 
-fn apk_install(_pm: &PackageManagerBin, _package: &Path) -> Result<()> {
-    todo!()
+mod yum {
+    use color_eyre::Result;
+    use std::{path::Path, process::Command};
+
+    use super::{check_status, PackageManagerBin};
+
+    pub fn install(_pm: &PackageManagerBin, _package: &Path) -> Result<()> {
+        todo!()
+    }
+
+    pub fn status(pm: &PackageManagerBin) -> bool {
+        check_status(pm.cmd_name(), &mut Command::new(pm.bin_path()))
+    }
 }
 
-fn apk_status(pm: &PackageManagerBin) -> bool {
-    check_status(pm.cmd_name(), &mut Command::new(pm.bin_path()))
+mod zypper {
+    use color_eyre::Result;
+    use std::{path::Path, process::Command};
+
+    use super::{check_status, PackageManagerBin};
+
+    pub fn install(_pm: &PackageManagerBin, _package: &Path) -> Result<()> {
+        todo!()
+    }
+
+    pub fn status(pm: &PackageManagerBin) -> bool {
+        check_status(pm.cmd_name(), &mut Command::new(pm.bin_path()))
+    }
 }
 
-fn yum_install(_pm: &PackageManagerBin, _package: &Path) -> Result<()> {
-    todo!()
-}
+mod brew {
+    use color_eyre::Result;
+    use std::{path::Path, process::Command};
 
-fn yum_status(pm: &PackageManagerBin) -> bool {
-    check_status(pm.cmd_name(), &mut Command::new(pm.bin_path()))
-}
+    use super::{check_status, PackageManagerBin};
 
-fn zypper_install(_pm: &PackageManagerBin, _package: &Path) -> Result<()> {
-    todo!()
-}
+    pub fn install(_pm: &PackageManagerBin, _package: &Path) -> Result<()> {
+        todo!()
+    }
 
-fn zypper_status(pm: &PackageManagerBin) -> bool {
-    check_status(pm.cmd_name(), &mut Command::new(pm.bin_path()))
-}
-
-fn brew_install(_pm: &PackageManagerBin, _package: &Path) -> Result<()> {
-    todo!()
-}
-
-fn brew_status(pm: &PackageManagerBin) -> bool {
-    check_status(pm.cmd_name(), Command::new(pm.bin_path()).arg("commands"))
+    pub fn status(pm: &PackageManagerBin) -> bool {
+        check_status(pm.cmd_name(), Command::new(pm.bin_path()).arg("commands"))
+    }
 }
 
 fn check_status(cmd_name: &str, cmd: &mut Command) -> bool {
