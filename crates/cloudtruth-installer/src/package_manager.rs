@@ -7,7 +7,7 @@ use std::{
 };
 use which::which;
 
-use crate::verbose;
+use crate::{cli, verbose};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Ord, PartialOrd)]
 pub enum PackageManager {
@@ -15,7 +15,7 @@ pub enum PackageManager {
     Apk,
     Yum,
     Zypper,
-    Brew,
+    // Brew,
 }
 
 impl PackageManager {
@@ -25,11 +25,11 @@ impl PackageManager {
         PackageManager::Apk,
         PackageManager::Yum,
         PackageManager::Zypper,
-        PackageManager::Brew,
+        // PackageManager::Brew,
     ];
     #[cfg(target_os = "macos")]
     pub const LIST: &[PackageManager] = &[
-        PackageManager::Brew,
+        // PackageManager::Brew,
         PackageManager::Apt,
         PackageManager::Apk,
         PackageManager::Yum,
@@ -49,7 +49,7 @@ impl PackageManager {
             PackageManager::Apk => "apk",
             PackageManager::Yum => "yum",
             PackageManager::Zypper => "zypper",
-            PackageManager::Brew => "brew",
+            // PackageManager::Brew => "brew",
         }
     }
 
@@ -59,7 +59,7 @@ impl PackageManager {
             PackageManager::Apk => "apk",
             PackageManager::Yum => "rpm",
             PackageManager::Zypper => "rpm",
-            PackageManager::Brew => "bottle.tar.gz",
+            // PackageManager::Brew => "bottle.tar.gz",
         }
     }
 
@@ -91,6 +91,7 @@ impl PackageManagerBin {
             })
     }
 
+    #[allow(dead_code)]
     pub fn package_manager(&self) -> PackageManager {
         self.package_manager
     }
@@ -113,7 +114,7 @@ impl PackageManagerBin {
             PackageManager::Apk => apk::install(self, package),
             PackageManager::Yum => yum::install(self, package),
             PackageManager::Zypper => zypper::install(self, package),
-            PackageManager::Brew => brew::install(self, package),
+            // PackageManager::Brew => brew::install(self, package),
         }
     }
 
@@ -123,7 +124,7 @@ impl PackageManagerBin {
             PackageManager::Apk => apk::status(self),
             PackageManager::Yum => yum::status(self),
             PackageManager::Zypper => zypper::status(self),
-            PackageManager::Brew => brew::status(self),
+            // PackageManager::Brew => brew::status(self),
         }
     }
 }
@@ -134,6 +135,21 @@ pub fn find_package_managers() -> impl Iterator<Item = PackageManagerBin> {
         .filter_map(PackageManagerBin::find)
         .inspect(|pm| verbose!("Found {pm}"))
         .filter(PackageManagerBin::check_status)
+}
+
+pub fn choose_package_manager() -> Option<PackageManagerBin> {
+    if !cli::interactive() {
+        // When running non-interactive, take first available package manager
+        find_package_managers().next()
+    } else {
+        let mut pkg_managers: Vec<PackageManagerBin> = find_package_managers().collect();
+        if pkg_managers.len() == 1 {
+            Some(pkg_managers.swap_remove(0))
+        } else {
+            // TODO: Prompt user for package manager choice
+            pkg_managers.first().map(PackageManagerBin::clone)
+        }
+    }
 }
 
 mod apt {
@@ -196,20 +212,20 @@ mod zypper {
     }
 }
 
-mod brew {
-    use color_eyre::Result;
-    use std::{path::Path, process::Command};
+// mod brew {
+//     use color_eyre::Result;
+//     use std::{path::Path, process::Command};
 
-    use super::{check_status, PackageManagerBin};
+//     use super::{check_status, PackageManagerBin};
 
-    pub fn install(_pm: &PackageManagerBin, _package: &Path) -> Result<()> {
-        todo!()
-    }
+//     pub fn install(_pm: &PackageManagerBin, _package: &Path) -> Result<()> {
+//         todo!()
+//     }
 
-    pub fn status(pm: &PackageManagerBin) -> bool {
-        check_status(pm.cmd_name(), Command::new(pm.bin_path()).arg("commands"))
-    }
-}
+//     pub fn status(pm: &PackageManagerBin) -> bool {
+//         check_status(pm.cmd_name(), Command::new(pm.bin_path()).arg("commands"))
+//     }
+// }
 
 fn check_status(cmd_name: &str, cmd: &mut Command) -> bool {
     verbose!("Checking status of {cmd_name}");

@@ -51,7 +51,7 @@ fn init_globals(cli: &Cli) {
 pub struct Cli {
     /// Subcommands
     #[command(subcommand)]
-    command: Subcommand,
+    pub command: Subcommand,
     /// Show verbose information
     #[arg(global = true, short, long, default_value_t = false)]
     verbose: bool,
@@ -79,10 +79,8 @@ pub enum Subcommand {
 
 #[derive(Debug, clap::Args)]
 pub struct InstallCommand {
-    /// Name of the program to install
-    name: String,
     /// Version of the program to install (defaults to latest)
-    version: Option<String>,
+    pub version: Option<String>,
     #[command(flatten)]
     github_opts: GitHubOptions,
 }

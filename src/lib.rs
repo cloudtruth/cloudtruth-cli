@@ -50,13 +50,11 @@ use chrono::Utc;
 use clap::ArgMatches;
 use cli::binary_name;
 use cloudtruth_config::env::ConfigEnv;
-use cloudtruth_config::{Action, Config, Updates, CT_PROFILE, DEFAULT_ENV_NAME};
-use cloudtruth_installer::{binary_version, get_latest_version, install_latest_version};
+use cloudtruth_config::{Config, Updates, CT_PROFILE, DEFAULT_ENV_NAME};
 use color_eyre::eyre::Result;
 use std::io;
 use std::process;
 use utils::default;
-use version_compare::Version;
 
 /// Process the 'completion' sub-command
 fn process_completion_command(subcmd_args: &ArgMatches) {
@@ -102,35 +100,37 @@ fn check_updates(updates: &Updates) -> Result<()> {
     if let Some(next_update) = updates.next_update() {
         let today = Utc::now().date_naive();
         if today >= next_update {
-            let latest_str = get_latest_version();
-            let latest_ver = Version::from(&latest_str).unwrap();
-            let bin_str = binary_version();
-            let bin_ver = Version::from(&bin_str).unwrap();
+            todo!();
+            // let latest_str = get_latest_version();
+            // let latest_ver = Version::from(&latest_str).unwrap();
+            // let bin_str = binary_version();
+            // let bin_ver = Version::from(&bin_str).unwrap();
 
-            if bin_ver < latest_ver {
-                // NOTE: do not update last_checked date after we detect we're behind...
-                match updates.action.unwrap_or_default() {
-                    Action::Warn => {
-                        warning_message(format!(
-                            "Version {latest_ver} is available, running {bin_ver}"
-                        ));
-                    }
-                    Action::Update => {
-                        println!("Installing version {latest_ver}");
-                        install_latest_version(false)?;
-                    }
-                    Action::Error => {
-                        error_message(format!(
-                            "Version {latest_ver} is available, running {bin_ver}"
-                        ));
-                        process::exit(50);
-                    }
-                }
-            } else {
-                let mut updated = *updates;
-                updated.last_checked = Some(today);
-                Config::set_updates(&updated)?;
-            }
+            // if bin_ver < latest_ver {
+            //     // NOTE: do not update last_checked date after we detect we're behind...
+            //     match updates.action.unwrap_or_default() {
+            //         Action::Warn => {
+            //             warning_message(format!(
+            //                 "Version {latest_ver} is available, running {bin_ver}"
+            //             ));
+            //         }
+            //         Action::Update => {
+            //             println!("Installing version {latest_ver}");
+            //             todo!();
+            //             // install_latest_version(false)?;
+            //         }
+            //         Action::Error => {
+            //             error_message(format!(
+            //                 "Version {latest_ver} is available, running {bin_ver}"
+            //             ));
+            //             process::exit(50);
+            //         }
+            //     }
+            // } else {
+            //     let mut updated = *updates;
+            //     updated.last_checked = Some(today);
+            //     Config::set_updates(&updated)?;
+            // }
         }
     }
     Ok(())

@@ -1,65 +1,43 @@
-use crate::InstallError;
-use std::io;
-use std::io::Write;
-#[cfg(not(target_os = "windows"))]
-#[rustfmt::skip]
-use {
-    crate::version::binary_version,
-    std::fs,
-    std::process::Command,
-    std::str,
-    tempfile::tempdir,
-};
+use crate::{cli::InstallCommand, github, package_manager::choose_package_manager};
 
-#[cfg(target_os = "windows")]
-pub fn install_latest_version(quiet: bool) -> Result<(), InstallError> {
-    let text = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../install.ps1"));
-    let result = powershell_script::run(text);
-    match result {
-        Ok(output) => {
-            if !quiet {
-                if let Some(stdout_str) = output.stdout() {
-                    io::stdout().write_all(stdout_str.as_bytes())?;
-                }
-            }
-            Ok(())
-        }
-        Err(err) => Err(InstallError::InstallFailed(err.to_string())),
-    }
+use color_eyre::Result;
+use flate2::read::GzDecoder;
+use std::{fs::File, path::Path};
+use tar::Archive;
+use tempfile::tempdir;
+
+pub fn unpack_tar_gz(src_file_path: &Path, dest_file_path: &Path) -> Result<()> {
+    let tar_gz = File::open(src_file_path)?;
+    let tar = GzDecoder::new(tar_gz);
+    let mut archive = Archive::new(tar);
+    archive.unpack(dest_file_path)?;
+    Ok(())
 }
 
-#[cfg(not(target_os = "windows"))]
-pub fn install_latest_version(quiet: bool) -> Result<(), InstallError> {
-    let filename = format!("cloudtruth-cli-install-{}.sh", binary_version());
-    let tempdir = tempdir()?;
-    let fullpath = tempdir.path().join(filename);
-    let fullname = fullpath.to_str().unwrap();
-    let text = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../install.sh"));
-
-    // write the install script to a file to a temporary directory
-    fs::write(fullname, text)?;
-
-    // attempt the chmod, and hope for success -- ignore failure
-    let _ = Command::new("chmod").arg("a+x").arg(fullname).output();
-
-    // now, actually run the installation script
-    let result = Command::new(fullname).output();
-    match result {
-        Ok(output) => match output.status.success() {
-            true => {
-                if !quiet {
-                    io::stdout().write_all(&output.stdout)?;
-                }
-                Ok(())
-            }
-            false => {
-                if !quiet {
-                    io::stdout().write_all(&output.stdout)?;
-                }
-                let stderr = str::from_utf8(&output.stderr)?;
-                Err(InstallError::InstallFailed(stderr.to_string()))
-            }
-        },
-        Err(err) => Err(InstallError::FailedToRunInstall(err.to_string())),
-    }
+pub async fn install(cmd: InstallCommand) -> Result<()> {
+    let pkg_manager = choose_package_manager();
+    let version = match cmd.version {
+        Some(version) => version,
+        None => github::get_latest_version().await?,
+    };
+    let tmp_dir = tempdir()?;
+    let ext = if let Some(pkg_manager) = &pkg_manager {
+        pkg_manager.package_ext()
+    } else if cfg!(target_os = "windows") {
+        "zip"
+    } else {
+        "tar.gz"
+    };
+    let asset_name = github::asset_name(&version, ext);
+    let download_path = tmp_dir.path().join(&asset_name);
+    github::download_release_asset(&version, &asset_name, &download_path).await?;
+    if let Some(pkg_manager) = pkg_manager {
+        pkg_manager.install(&download_path)?
+    } else if cfg!(target_os = "windows") {
+        todo!()
+    } else {
+        unpack_tar_gz(&download_path, tmp_dir.path())?;
+        println!("{:?}", tmp_dir.path());
+    };
+    Ok(())
 }
