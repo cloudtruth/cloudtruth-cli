@@ -180,12 +180,12 @@ impl Users {
         rest_cfg: &OpenApiConfig,
         user_name: &str,
         description: Option<&str>,
-        role: Option<&str>,
+        role: Option<RoleEnum>,
     ) -> Result<UserDetails, UserError> {
         let user_create = ServiceAccountCreateRequest {
             name: user_name.to_string(),
             description: description.map(String::from),
-            role: role.map(String::from),
+            role: role.map(|r| r.to_string()),
             owner: None,
         };
         let response = serviceaccounts_create(rest_cfg, user_create);
@@ -224,6 +224,7 @@ impl Users {
         }
     }
 
+    #[allow(dead_code)]
     fn create_membership(
         &self,
         rest_cfg: &OpenApiConfig,
@@ -273,21 +274,14 @@ impl Users {
         &self,
         rest_cfg: &OpenApiConfig,
         user_name: &str,
-        role: &str,
+        role: Option<&str>,
         description: Option<&str>,
     ) -> Result<UserDetails, UserError> {
-        let role_enum = to_role_enum(role)?;
-        let details = self.create_service_account(rest_cfg, user_name, description, None)?;
-
-        // must add membership for the account to show up in the list
-        let response = self.create_membership(rest_cfg, &details.user_url, role_enum);
-        match response {
-            Ok(_) => Ok(details),
-            Err(e) => {
-                self.delete_user(rest_cfg, &details.id)?;
-                Err(e)
-            }
-        }
+        let role_enum = match role {
+            None => RoleEnum::VIEWER,
+            Some(role) => to_role_enum(role)?,
+        };
+        self.create_service_account(rest_cfg, user_name, description, Some(role_enum))
     }
 
     pub fn update_user(
