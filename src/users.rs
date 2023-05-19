@@ -146,8 +146,7 @@ fn proc_users_set(subcmd_args: &ArgMatches, rest_cfg: &OpenApiConfig, users: &Us
             println!("Updated user '{user_name}'");
         }
     } else {
-        let details =
-            users.create_user(rest_cfg, user_name, role.unwrap_or("viewer"), description)?;
+        let details = users.create_user(rest_cfg, user_name, role, description)?;
         println!(
             "Created service account '{}' with api-key:\n{}\n",
             user_name, details.api_key
