@@ -55,7 +55,7 @@ fn test_user_basic() {
             .assert()
             .failure()
             .stderr(contains(
-                "You do not have permission to perform this action",
+                "You do not have permission to perform this action.",
             ));
 
         // update the user role
@@ -108,7 +108,7 @@ fn test_user_basic() {
             .assert()
             .failure()
             .stderr(contains(
-                "You do not have permission to perform this action",
+                "Cannot create membership with more privileges than your own",
             ));
 
         // check whole line matches
