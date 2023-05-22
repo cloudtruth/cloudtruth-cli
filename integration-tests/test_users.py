@@ -57,10 +57,9 @@ class TestUsers(TestCase):
         self.assertResultSuccess(result)
 
         # since the default is a 'viewer' role, see that we cannot set ourself to owner
-        permission_err = "You do not have permission to perform this action"
         cmd = base_cmd + f"--api-key '{api_key}' user set '{user_name}' --role owner"
         result = self.run_cli(cmd_env, cmd)
-        self.assertResultError(result, permission_err)
+        self.assertResultError(result, "You do not have permission to perform this action.")
 
         # update the role
         new_role = "contrib"
@@ -98,9 +97,9 @@ class TestUsers(TestCase):
 
         # try creating a new owner
         user2_name = self.make_name("another")
-        cmd = base_cmd + f"--api-key '{api_key}' user set '{user2_name}'"
+        cmd = base_cmd + f"--api-key '{api_key}' user set '{user2_name}' --role owner"
         result = self.run_cli(cmd_env, cmd)
-        self.assertResultError(result, permission_err)
+        self.assertResultError(result, "Cannot create membership with more privileges than your own")
 
         # test the list without the values -- check whole line matches
         result = self.run_cli(cmd_env, sub_cmd + "list")
@@ -241,9 +240,10 @@ class TestUsers(TestCase):
         api_key = self.add_user(cmd_env, temp_user, role="admin")
 
         # NOTE: must be admin or owner to create a user
+        permission_err = "must have a role in the organization that is not more permissible than the inviter's role"
         cmd = base_cmd + f"-k {api_key} user invite set {email} --role owner"
         result = self.run_cli(cmd_env, cmd)
-        self.assertResultError(result, "You do not have permission to perform this action")
+        self.assertResultError(result, permission_err)
 
         # do one where it succeeds
         cmd = base_cmd + f"-k {api_key} user invite set {email} --role viewer"
