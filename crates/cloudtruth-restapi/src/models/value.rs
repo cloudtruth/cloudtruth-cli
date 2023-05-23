@@ -19,6 +19,15 @@ pub struct Value {
     pub id: String,
     #[serde(rename = "ledger_id")]
     pub ledger_id: String,
+    /// The active environment this Value is viewed under
+    #[serde(rename = "active_environment")]
+    pub active_environment: String,
+    /// The active environment id this Value is viewed under
+    #[serde(rename = "active_environment_id")]
+    pub active_environment_id: String,
+    /// The name of the environment that this environment is viewed under
+    #[serde(rename = "active_environment_name")]
+    pub active_environment_name: String,
     /// The environment this value is set in.
     #[serde(rename = "environment")]
     pub environment: String,
@@ -80,6 +89,9 @@ impl Value {
         url: String,
         id: String,
         ledger_id: String,
+        active_environment: String,
+        active_environment_id: String,
+        active_environment_name: String,
         environment: String,
         environment_id: String,
         environment_name: String,
@@ -100,6 +112,9 @@ impl Value {
             url,
             id,
             ledger_id,
+            active_environment,
+            active_environment_id,
+            active_environment_name,
             environment,
             environment_id,
             environment_name,

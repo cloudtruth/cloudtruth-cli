@@ -30,6 +30,7 @@ Class | Method | HTTP request | Description
 *AuditApi* | [**audit_retrieve**](docs/AuditApi.md#audit_retrieve) | **GET** /api/v1/audit/{id}/ | 
 *AuditApi* | [**audit_summary_retrieve**](docs/AuditApi.md#audit_summary_retrieve) | **GET** /api/v1/audit/summary/ | 
 *BackupApi* | [**backup_snapshot_create**](docs/BackupApi.md#backup_snapshot_create) | **POST** /api/v1/backup/snapshot/ | Get a snapshot of all Projects with parameters
+*EnvironmentsApi* | [**environments_copy_create**](docs/EnvironmentsApi.md#environments_copy_create) | **POST** /api/v1/environments/{id}/copy/ | 
 *EnvironmentsApi* | [**environments_create**](docs/EnvironmentsApi.md#environments_create) | **POST** /api/v1/environments/ | 
 *EnvironmentsApi* | [**environments_destroy**](docs/EnvironmentsApi.md#environments_destroy) | **DELETE** /api/v1/environments/{id}/ | 
 *EnvironmentsApi* | [**environments_list**](docs/EnvironmentsApi.md#environments_list) | **GET** /api/v1/environments/ | 
@@ -90,7 +91,7 @@ Class | Method | HTTP request | Description
 *IntegrationsApi* | [**integrations_aws_scan_create**](docs/IntegrationsApi.md#integrations_aws_scan_create) | **POST** /api/v1/integrations/aws/{id}/scan/ | Evaluate a potential pull pattern and understand what it will match.
 *IntegrationsApi* | [**integrations_aws_update**](docs/IntegrationsApi.md#integrations_aws_update) | **PUT** /api/v1/integrations/aws/{id}/ | 
 *IntegrationsApi* | [**integrations_azure_key_vault_create**](docs/IntegrationsApi.md#integrations_azure_key_vault_create) | **POST** /api/v1/integrations/azure/key_vault/ | Establishes an Azure Key Vault Integration.
-*IntegrationsApi* | [**integrations_azure_key_vault_destroy**](docs/IntegrationsApi.md#integrations_azure_key_vault_destroy) | **DELETE** /api/v1/integrations/azure/key_vault/{id}/ | Delete an AWS integration.
+*IntegrationsApi* | [**integrations_azure_key_vault_destroy**](docs/IntegrationsApi.md#integrations_azure_key_vault_destroy) | **DELETE** /api/v1/integrations/azure/key_vault/{id}/ | Delete an Azure Key Vault integration.
 *IntegrationsApi* | [**integrations_azure_key_vault_list**](docs/IntegrationsApi.md#integrations_azure_key_vault_list) | **GET** /api/v1/integrations/azure/key_vault/ | 
 *IntegrationsApi* | [**integrations_azure_key_vault_partial_update**](docs/IntegrationsApi.md#integrations_azure_key_vault_partial_update) | **PATCH** /api/v1/integrations/azure/key_vault/{id}/ | 
 *IntegrationsApi* | [**integrations_azure_key_vault_pulls_create**](docs/IntegrationsApi.md#integrations_azure_key_vault_pulls_create) | **POST** /api/v1/integrations/azure/key_vault/{akvintegration_pk}/pulls/ | 
@@ -256,6 +257,7 @@ Class | Method | HTTP request | Description
  - [DiscoveredContent](docs/DiscoveredContent.md)
  - [DiscoveryResult](docs/DiscoveryResult.md)
  - [Environment](docs/Environment.md)
+ - [EnvironmentCopy](docs/EnvironmentCopy.md)
  - [EnvironmentCreate](docs/EnvironmentCreate.md)
  - [EnvironmentUpdate](docs/EnvironmentUpdate.md)
  - [FeaturesResponse](docs/FeaturesResponse.md)

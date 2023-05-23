@@ -21,6 +21,9 @@ pub struct PatchedParameterTypeUpdate {
     /// The URL for this parameter type's parent
     #[serde(rename = "parent", skip_serializing_if = "Option::is_none")]
     pub parent: Option<String>,
+    /// Rules applied to this parameter.
+    #[serde(rename = "rules", skip_serializing_if = "Option::is_none")]
+    pub rules: Option<Vec<crate::models::ParameterTypeRule>>,
     #[serde(rename = "created_at", skip_serializing_if = "Option::is_none")]
     pub created_at: Option<String>,
     #[serde(rename = "modified_at", skip_serializing_if = "Option::is_none")]
@@ -34,6 +37,7 @@ impl PatchedParameterTypeUpdate {
             name: None,
             description: None,
             parent: None,
+            rules: None,
             created_at: None,
             modified_at: None,
         }

@@ -178,6 +178,7 @@ impl Types {
             created_at: None,
             modified_at: None,
             parent: parent_url.map(String::from),
+            rules: None,
         };
         let response = types_partial_update(rest_cfg, type_id, Some(type_update));
         match response {

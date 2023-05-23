@@ -43,6 +43,7 @@ docs/BackupTemplate.md
 docs/DiscoveredContent.md
 docs/DiscoveryResult.md
 docs/Environment.md
+docs/EnvironmentCopy.md
 docs/EnvironmentCreate.md
 docs/EnvironmentUpdate.md
 docs/EnvironmentsApi.md
@@ -252,6 +253,7 @@ src/models/backup_template.rs
 src/models/discovered_content.rs
 src/models/discovery_result.rs
 src/models/environment.rs
+src/models/environment_copy.rs
 src/models/environment_create.rs
 src/models/environment_update.rs
 src/models/features_response.rs

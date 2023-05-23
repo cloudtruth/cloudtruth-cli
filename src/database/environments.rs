@@ -420,6 +420,7 @@ impl Environments {
             name: tag_name.to_string(),
             description: description.map(String::from),
             timestamp,
+            immutable: None,
         };
         let response = environments_tags_create(rest_cfg, environment_id, tag_create);
         match response {
@@ -445,6 +446,7 @@ impl Environments {
             name: Some(tag_name.to_string()),
             description: description.map(String::from),
             timestamp,
+            immutable: None,
         };
         let response =
             environments_tags_partial_update(rest_cfg, environment_id, tag_id, Some(tag_update));

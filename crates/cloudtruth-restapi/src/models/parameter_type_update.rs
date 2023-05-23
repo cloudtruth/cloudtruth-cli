@@ -21,6 +21,9 @@ pub struct ParameterTypeUpdate {
     /// The URL for this parameter type's parent
     #[serde(rename = "parent")]
     pub parent: String,
+    /// Rules applied to this parameter.
+    #[serde(rename = "rules")]
+    pub rules: Vec<crate::models::ParameterTypeRule>,
     #[serde(rename = "created_at")]
     pub created_at: String,
     #[serde(rename = "modified_at")]
@@ -32,6 +35,7 @@ impl ParameterTypeUpdate {
         id: String,
         name: String,
         parent: String,
+        rules: Vec<crate::models::ParameterTypeRule>,
         created_at: String,
         modified_at: Option<String>,
     ) -> ParameterTypeUpdate {
@@ -40,6 +44,7 @@ impl ParameterTypeUpdate {
             name,
             description: None,
             parent,
+            rules,
             created_at,
             modified_at,
         }
