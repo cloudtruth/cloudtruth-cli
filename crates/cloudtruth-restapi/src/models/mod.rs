@@ -74,6 +74,8 @@ pub mod discovery_result;
 pub use self::discovery_result::DiscoveryResult;
 pub mod environment;
 pub use self::environment::Environment;
+pub mod environment_copy;
+pub use self::environment_copy::EnvironmentCopy;
 pub mod environment_create;
 pub use self::environment_create::EnvironmentCreate;
 pub mod environment_update;

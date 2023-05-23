@@ -26,6 +26,9 @@ pub struct Tag {
     /// The point in time this tag represents.
     #[serde(rename = "timestamp")]
     pub timestamp: String,
+    /// If True, this tag cannot be modified once it is created.
+    #[serde(rename = "immutable", skip_serializing_if = "Option::is_none")]
+    pub immutable: Option<bool>,
     /// Deprecated. Only shows pushes for aws integrations in /api/v1/.
     #[serde(rename = "pushes")]
     pub pushes: Vec<crate::models::AwsPush>,
@@ -53,6 +56,7 @@ impl Tag {
             name,
             description: None,
             timestamp,
+            immutable: None,
             pushes,
             push_urls,
             usage: usage.map(Box::new),

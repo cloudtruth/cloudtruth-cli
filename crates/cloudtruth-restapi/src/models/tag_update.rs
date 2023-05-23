@@ -24,6 +24,9 @@ pub struct TagUpdate {
     /// The point in time this tag represents.  If explicitly set to `null` then the current time will be used.
     #[serde(rename = "timestamp", skip_serializing_if = "Option::is_none")]
     pub timestamp: Option<String>,
+    /// If True, this tag cannot be modified once it is created.
+    #[serde(rename = "immutable", skip_serializing_if = "Option::is_none")]
+    pub immutable: Option<bool>,
 }
 
 impl TagUpdate {
@@ -34,6 +37,7 @@ impl TagUpdate {
             name,
             description: None,
             timestamp: None,
+            immutable: None,
         }
     }
 }

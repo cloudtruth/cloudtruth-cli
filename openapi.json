@@ -1236,6 +1236,75 @@
                 }
             }
         },
+        "/api/v1/environments/{id}/copy/": {
+            "post": {
+                "operationId": "environments_copy_create",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "description": "A unique identifier for the environment."
+                        },
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "environments"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/EnvironmentCopy"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/EnvironmentCopy"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/EnvironmentCopy"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "JWTAuth": []
+                    },
+                    {
+                        "ApiKeyAuth": []
+                    },
+                    {
+                        "tokenAuth": []
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Environment"
+                                }
+                            }
+                        },
+                        "description": "Environment copied"
+                    },
+                    "400": {
+                        "description": "The Environment copy failed."
+                    },
+                    "403": {
+                        "description": "Permission denied."
+                    }
+                }
+            }
+        },
         "/api/v1/features/": {
             "get": {
                 "operationId": "features_retrieve",
@@ -6435,7 +6504,7 @@
             },
             "delete": {
                 "operationId": "integrations_azure_key_vault_destroy",
-                "summary": "Delete an AWS integration.",
+                "summary": "Delete an Azure Key Vault integration.",
                 "parameters": [
                     {
                         "in": "path",
@@ -10742,15 +10811,6 @@
                     },
                     {
                         "in": "path",
-                        "name": "parameter_id",
-                        "schema": {
-                            "type": "string",
-                            "format": "uuid"
-                        },
-                        "required": true
-                    },
-                    {
-                        "in": "path",
                         "name": "project_pk",
                         "schema": {
                             "type": "string",
@@ -10831,15 +10891,6 @@
                             "type": "string",
                             "format": "uuid",
                             "description": "A unique identifier for the parameter."
-                        },
-                        "required": true
-                    },
-                    {
-                        "in": "path",
-                        "name": "parameter_id",
-                        "schema": {
-                            "type": "string",
-                            "format": "uuid"
                         },
                         "required": true
                     },
@@ -10929,15 +10980,6 @@
                     },
                     {
                         "in": "path",
-                        "name": "parameter_id",
-                        "schema": {
-                            "type": "string",
-                            "format": "uuid"
-                        },
-                        "required": true
-                    },
-                    {
-                        "in": "path",
                         "name": "project_pk",
                         "schema": {
                             "type": "string",
@@ -10989,15 +11031,6 @@
                             "format": "uuid"
                         },
                         "description": "A UUID string identifying this parameter ledger.",
-                        "required": true
-                    },
-                    {
-                        "in": "path",
-                        "name": "parameter_id",
-                        "schema": {
-                            "type": "string",
-                            "format": "uuid"
-                        },
                         "required": true
                     },
                     {
@@ -11264,15 +11297,6 @@
                             "format": "date-time"
                         },
                         "description": "Specify a point in time to retrieve configuration from. Cannot be specified with `tag`."
-                    },
-                    {
-                        "in": "path",
-                        "name": "parameter_id",
-                        "schema": {
-                            "type": "string",
-                            "format": "uuid"
-                        },
-                        "required": true
                     },
                     {
                         "in": "path",
@@ -15707,6 +15731,32 @@
                     "url"
                 ]
             },
+            "EnvironmentCopy": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "The environment name.",
+                        "maxLength": 256
+                    },
+                    "description": {
+                        "type": "string",
+                        "description": "A description of the environment.  You may find it helpful to document how this environment is used to assist others when they need to maintain software that uses this content."
+                    },
+                    "child_environment_names": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "string",
+                            "description": "The name to use for the copied child Environment."
+                        },
+                        "nullable": true,
+                        "description": "When copying child Environments, this indicates what name to use for each Environment.  If no name is provided for a given child Environment, a \"-1\" will be appended to its name.  Note that this name mapping can be used for Environments of any level of depth in the parent-child hierarchy."
+                    }
+                },
+                "required": [
+                    "name"
+                ]
+            },
             "EnvironmentCreate": {
                 "type": "object",
                 "properties": {
@@ -18611,6 +18661,14 @@
                         "format": "uri",
                         "description": "The URL for this parameter type's parent"
                     },
+                    "rules": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ParameterTypeRule"
+                        },
+                        "readOnly": true,
+                        "description": "Rules applied to this parameter."
+                    },
                     "created_at": {
                         "type": "string",
                         "format": "date-time",
@@ -18628,7 +18686,8 @@
                     "id",
                     "modified_at",
                     "name",
-                    "parent"
+                    "parent",
+                    "rules"
                 ]
             },
             "ParameterUpdate": {
@@ -19696,6 +19755,14 @@
                         "format": "uri",
                         "description": "The URL for this parameter type's parent"
                     },
+                    "rules": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ParameterTypeRule"
+                        },
+                        "readOnly": true,
+                        "description": "Rules applied to this parameter."
+                    },
                     "created_at": {
                         "type": "string",
                         "format": "date-time",
@@ -19882,6 +19949,10 @@
                         "format": "date-time",
                         "nullable": true,
                         "description": "The point in time this tag represents.  If explicitly set to `null` then the current time will be used."
+                    },
+                    "immutable": {
+                        "type": "boolean",
+                        "description": "If True, this tag cannot be modified once it is created."
                     }
                 }
             },
@@ -20400,6 +20471,10 @@
                         "format": "date-time",
                         "description": "The point in time this tag represents."
                     },
+                    "immutable": {
+                        "type": "boolean",
+                        "description": "If True, this tag cannot be modified once it is created."
+                    },
                     "pushes": {
                         "type": "array",
                         "items": {
@@ -20455,6 +20530,10 @@
                         "format": "date-time",
                         "nullable": true,
                         "description": "The point in time this tag represents. If not specified then the current time will be used."
+                    },
+                    "immutable": {
+                        "type": "boolean",
+                        "description": "If True, this tag cannot be modified once it is created."
                     }
                 },
                 "required": [
@@ -20513,6 +20592,10 @@
                         "format": "date-time",
                         "nullable": true,
                         "description": "The point in time this tag represents.  If explicitly set to `null` then the current time will be used."
+                    },
+                    "immutable": {
+                        "type": "boolean",
+                        "description": "If True, this tag cannot be modified once it is created."
                     }
                 },
                 "required": [
@@ -21102,6 +21185,21 @@
                         "type": "string",
                         "readOnly": true
                     },
+                    "active_environment": {
+                        "type": "string",
+                        "readOnly": true,
+                        "description": "The active environment this Value is viewed under"
+                    },
+                    "active_environment_id": {
+                        "type": "string",
+                        "readOnly": true,
+                        "description": "The active environment id this Value is viewed under"
+                    },
+                    "active_environment_name": {
+                        "type": "string",
+                        "readOnly": true,
+                        "description": "The name of the environment that this environment is viewed under"
+                    },
                     "environment": {
                         "type": "string",
                         "format": "uri",
@@ -21219,6 +21317,9 @@
                     }
                 },
                 "required": [
+                    "active_environment",
+                    "active_environment_id",
+                    "active_environment_name",
                     "created_at",
                     "environment",
                     "environment_id",
