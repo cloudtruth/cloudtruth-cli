@@ -1,7 +1,7 @@
 use crate::cli::{
-    show_values, CONFIRM_FLAG, DELETE_SUBCMD, DESCRIPTION_OPT, ENV_NAME_ARG, FORMAT_OPT,
-    LIST_SUBCMD, NAME_ARG, PARENT_ARG, RENAME_OPT, SET_SUBCMD, SHOW_TIMES_FLAG, TAG_IMMUTABLE_FLAG,
-    TAG_NAME_ARG, TAG_SUBCMD, TREE_SUBCMD,
+    show_values, CONFIRM_FLAG, COPY_SUBCMD, DELETE_SUBCMD, DESCRIPTION_OPT, ENV_NAME_ARG,
+    ENV_NAME_DEST_ARG, ENV_NAME_SRC_ARG, FORMAT_OPT, LIST_SUBCMD, NAME_ARG, PARENT_ARG, RENAME_OPT,
+    SET_SUBCMD, SHOW_TIMES_FLAG, TAG_IMMUTABLE_FLAG, TAG_NAME_ARG, TAG_SUBCMD, TREE_SUBCMD,
 };
 use crate::database::{EnvironmentDetails, Environments, OpenApiConfig};
 use crate::table::Table;
@@ -340,14 +340,22 @@ fn proc_env_tag(
     Ok(())
 }
 
-// fn proc_env_copy(
-//     subcmd_args: &ArgMatches,
-//     rest_cfg: &OpenApiConfig,
-//     environments: &Environments,
-// ) -> Result<()> {
-//     let env_name = subcmd_args.value_of(ENV_NAME_ARG).unwrap();
-//     todo!()
-// }
+fn proc_env_copy(
+    subcmd_args: &ArgMatches,
+    rest_cfg: &OpenApiConfig,
+    environments: &Environments,
+) -> Result<()> {
+    let src_env_name = subcmd_args.value_of(ENV_NAME_SRC_ARG).unwrap();
+    let dest_env_name = subcmd_args.value_of(ENV_NAME_DEST_ARG).unwrap();
+    let description = subcmd_args.value_of(DESCRIPTION_OPT);
+    if let Some(src_env) = environments.get_details_by_name(rest_cfg, src_env_name)? {
+        environments.copy_env(rest_cfg, &src_env.id, dest_env_name, description)?;
+        println!("Copied environment '{src_env_name}' to '{dest_env_name}'.");
+    } else {
+        warning_message(format!("No environment '{src_env_name}' found"));
+    }
+    Ok(())
+}
 
 /// Process the 'environment' sub-command
 pub fn process_environment_command(
@@ -365,8 +373,8 @@ pub fn process_environment_command(
         proc_env_tree(subcmd_args, rest_cfg, &environments)?;
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(TAG_SUBCMD) {
         proc_env_tag(subcmd_args, rest_cfg, &environments)?;
-    // } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(COPY_SUBCMD) {
-    // proc_env_copy(subcmd_args, rest_cfg, &environments)?;
+    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(COPY_SUBCMD) {
+        proc_env_copy(subcmd_args, rest_cfg, &environments)?;
     } else {
         warn_missing_subcommand("environments");
     }

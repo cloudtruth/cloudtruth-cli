@@ -11,6 +11,8 @@ pub const CONFIRM_FLAG: &str = "confirm";
 pub const DESCRIPTION_OPT: &str = "description";
 pub const ENV_NAME_ARG: &str = "env-name";
 pub const ENV_NAME_OPT: &str = "env";
+pub const ENV_NAME_SRC_ARG: &str = "src-env-name";
+pub const ENV_NAME_DEST_ARG: &str = "dest-env-name";
 pub const FORMAT_OPT: &str = "format";
 pub const IMMEDIATE_PARAMETERS_FLAG: &str = "immediate-parameters";
 pub const INTEGRATION_NAME_ARG: &str = "integration-name";
@@ -761,9 +763,9 @@ pub fn build_cli() -> App<'static, 'static> {
                     SubCommand::with_name(COPY_SUBCMD)
                         .visible_aliases(COPY_ALIASES)
                         .about("Copy an environment and its children to new environment(s)")
-                        .arg(name_arg()
-                            .help("Name of the destination environment")
-                            .required(true))
+                        .arg(description_option())
+                        .arg(Arg::with_name(ENV_NAME_SRC_ARG).required(true).index(1).help("Source environment name for copy"))
+                        .arg(Arg::with_name(ENV_NAME_DEST_ARG).required(true).index(2).help("Destination environment name for copy"))
 
                 ])
         )

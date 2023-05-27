@@ -5,7 +5,7 @@ use crate::database::{
 use cloudtruth_restapi::apis::environments_api::*;
 use cloudtruth_restapi::apis::Error::ResponseError;
 use cloudtruth_restapi::models::{
-    EnvironmentCreate, PatchedEnvironmentUpdate, PatchedTagUpdate, TagCreate,
+    EnvironmentCopy, EnvironmentCreate, PatchedEnvironmentUpdate, PatchedTagUpdate, TagCreate,
 };
 use std::collections::HashMap;
 
@@ -477,13 +477,28 @@ impl Environments {
             Err(e) => Err(EnvironmentError::UnhandledError(e.to_string())),
         }
     }
-    // pub fn copy_env(
-    //     &self,
-    //     rest_cfg: &OpenApiConfig,
-    //     src_environment_id: &str,
-    //     name: Option<&str>,
-    //     description: Option<&str>,
-    // ) -> Result<String, EnvironmentError> {
-    //     todo!()
-    // }
+    pub fn copy_env(
+        &self,
+        rest_cfg: &OpenApiConfig,
+        src_environment_id: &str,
+        name: &str,
+        description: Option<&str>,
+    ) -> Result<String, EnvironmentError> {
+        let response = environments_copy_create(
+            rest_cfg,
+            src_environment_id,
+            EnvironmentCopy {
+                name: name.to_owned(),
+                description: description.map(String::from),
+                child_environment_names: None,
+            },
+        );
+        match response {
+            Ok(env) => Ok(env.id),
+            Err(ResponseError(ref content)) => {
+                Err(response_error(&content.status, &content.content))
+            }
+            Err(e) => Err(EnvironmentError::UnhandledError(e.to_string())),
+        }
+    }
 }
