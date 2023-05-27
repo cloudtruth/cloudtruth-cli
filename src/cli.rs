@@ -40,6 +40,7 @@ pub const SHOW_TIMES_FLAG: &str = "show-time";
 pub const SECRETS_FLAG: &str = "secrets";
 pub const TAG_NAME_OPT: &str = "tag";
 pub const TAG_NAME_ARG: &str = "tag-name";
+pub const TAG_IMMUTABLE_FLAG: &str = "IMMUTABLE";
 pub const TEMPLATE_FILE_OPT: &str = "FILE";
 pub const VALUES_FLAG: &str = "values";
 
@@ -240,6 +241,12 @@ fn tag_name_opt() -> Arg<'static, 'static> {
         .long("tag")
         .short("t")
         .help("Filter by tag name")
+}
+
+fn tag_immutable_flag() -> Arg<'static, 'static> {
+    Arg::with_name(TAG_IMMUTABLE_FLAG)
+        .long("immutable")
+        .help("Prevent tag from being modified")
 }
 
 fn project_name_opt() -> Arg<'static, 'static> {
@@ -728,6 +735,7 @@ pub fn build_cli() -> App<'static, 'static> {
                                 .arg(env_name_arg())
                                 .arg(tag_name_arg())
                                 .arg(description_option().help("Tag's description"))
+                                .arg(tag_immutable_flag())
                                 .arg(rename_option().help("New tag name"))
                                 .arg(Arg::with_name("timestamp")
                                     .takes_value(true)

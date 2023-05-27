@@ -7,9 +7,10 @@ USAGE:
     cloudtruth[EXE] environments tag set [FLAGS] [OPTIONS] <env-name> <tag-name>
 
 FLAGS:
-    -c, --current    Update the tag's time to the current time
-    -h, --help       Prints help information
-    -V, --version    Prints version information
+        --immutable    Prevent tag from being modified
+    -c, --current      Update the tag's time to the current time
+    -h, --help         Prints help information
+    -V, --version      Prints version information
 
 OPTIONS:
     -d, --desc <description>    Tag's description

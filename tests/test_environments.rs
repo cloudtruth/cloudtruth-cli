@@ -325,3 +325,21 @@ fn test_environment_tagging_pagination() {
         .success()
         .paginated(page_size);
 }
+
+#[test]
+#[use_harness]
+fn test_environment_tagging_immutable() {
+    let env = Environment::with_prefix("env-tag-immutable").create();
+
+    cloudtruth!("env tag set --immutable --current {env} immutable-tag")
+        .assert()
+        .success()
+        .stdout(contains!(
+            "Created tag 'immutable-tag' in environment '{env}'"
+        ));
+
+    cloudtruth!("env tag set --time 05/24/2023 {env} immutable-tag")
+        .assert()
+        .failure()
+        .stderr(contains("Tag immutable-tag is immutable"));
+}

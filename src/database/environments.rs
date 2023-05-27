@@ -415,12 +415,13 @@ impl Environments {
         tag_name: &str,
         description: Option<&str>,
         timestamp: Option<String>,
+        immutable: bool,
     ) -> Result<String, EnvironmentError> {
         let tag_create = TagCreate {
             name: tag_name.to_string(),
             description: description.map(String::from),
             timestamp,
-            immutable: None,
+            immutable: Some(immutable),
         };
         let response = environments_tags_create(rest_cfg, environment_id, tag_create);
         match response {
@@ -432,6 +433,7 @@ impl Environments {
         }
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn update_env_tag(
         &self,
         rest_cfg: &OpenApiConfig,
@@ -440,13 +442,14 @@ impl Environments {
         tag_name: &str,
         description: Option<&str>,
         timestamp: Option<String>,
+        immutable: bool,
     ) -> Result<(), EnvironmentError> {
         let tag_update = PatchedTagUpdate {
             id: None,
             name: Some(tag_name.to_string()),
             description: description.map(String::from),
             timestamp,
-            immutable: None,
+            immutable: Some(immutable),
         };
         let response =
             environments_tags_partial_update(rest_cfg, environment_id, tag_id, Some(tag_update));

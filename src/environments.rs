@@ -1,7 +1,7 @@
 use crate::cli::{
     show_values, CONFIRM_FLAG, DELETE_SUBCMD, DESCRIPTION_OPT, ENV_NAME_ARG, FORMAT_OPT,
-    LIST_SUBCMD, NAME_ARG, PARENT_ARG, RENAME_OPT, SET_SUBCMD, SHOW_TIMES_FLAG, TAG_NAME_ARG,
-    TAG_SUBCMD, TREE_SUBCMD,
+    LIST_SUBCMD, NAME_ARG, PARENT_ARG, RENAME_OPT, SET_SUBCMD, SHOW_TIMES_FLAG, TAG_IMMUTABLE_FLAG,
+    TAG_NAME_ARG, TAG_SUBCMD, TREE_SUBCMD,
 };
 use crate::database::{EnvironmentDetails, Environments, OpenApiConfig};
 use crate::table::Table;
@@ -218,7 +218,7 @@ fn proc_env_tag_list(
             println!("{}", list.join("\n"))
         } else {
             let mut table = Table::new("environment-tags");
-            let hdr = vec!["Name", "Timestamp", "Description"];
+            let hdr = vec!["Name", "Timestamp", "Description", "Immutable"];
             // if show_usage {
             //     hdr.push("Last User");
             //     hdr.push("Last Time");
@@ -226,7 +226,12 @@ fn proc_env_tag_list(
             // }
             table.set_header(&hdr);
             for entry in tags {
-                let row = vec![entry.name, entry.timestamp, entry.description];
+                let row = vec![
+                    entry.name,
+                    entry.timestamp,
+                    entry.description,
+                    entry.immutable.map(|i| i.to_string()).unwrap_or_default(),
+                ];
                 // if show_usage {
                 //     row.push(entry.last_use_user);
                 //     row.push(entry.last_use_time);
@@ -252,6 +257,7 @@ fn proc_env_tag_set(
     let env_name = subcmd_args.value_of(ENV_NAME_ARG).unwrap();
     let description = subcmd_args.value_of(DESCRIPTION_OPT);
     let rename = subcmd_args.value_of(RENAME_OPT);
+    let immutable = subcmd_args.is_present(TAG_IMMUTABLE_FLAG);
     let current = subcmd_args.is_present("current");
 
     // make sure the user provided something useful for a timestamp
@@ -272,9 +278,14 @@ fn proc_env_tag_set(
     let environment_id = environments.get_id(rest_cfg, env_name)?;
     if let Some(env_id) = environment_id {
         if let Some(tag_id) = environments.get_tag_id(rest_cfg, &env_id, tag_name)? {
-            if description.is_none() && timestamp.is_none() && rename.is_none() && !current {
+            if description.is_none()
+                && timestamp.is_none()
+                && rename.is_none()
+                && !immutable
+                && !current
+            {
                 warning_message(
-                    "Nothing changed. Please provide a description, time, or current.".to_string(),
+                    "Nothing changed. Please provide description, time, immutable, mutable, or current.".to_string(),
                 );
             } else {
                 let time_value = if current {
@@ -290,12 +301,19 @@ fn proc_env_tag_set(
                     name,
                     description,
                     time_value,
+                    immutable,
                 )?;
                 println!("Updated tag '{name}' in environment '{env_name}'.");
             }
         } else {
-            let _ =
-                environments.create_env_tag(rest_cfg, &env_id, tag_name, description, timestamp)?;
+            let _ = environments.create_env_tag(
+                rest_cfg,
+                &env_id,
+                tag_name,
+                description,
+                timestamp,
+                immutable,
+            )?;
             println!("Created tag '{tag_name}' in environment '{env_name}'.");
         }
     } else {
