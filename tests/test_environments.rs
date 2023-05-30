@@ -110,6 +110,17 @@ fn test_environment_cannot_delete_default() {
 
 #[test]
 #[use_harness]
+fn test_environment_copy() {
+    let env = Environment::with_prefix("env-copy-src").create();
+    let env2 = env.copy(Name::with_prefix("env-copy-dest"));
+    cloudtruth!("env ls")
+        .assert()
+        .success()
+        .stdout(contains(env.name()).and(contains(env2.name())));
+}
+
+#[test]
+#[use_harness]
 fn test_environment_parents() {
     let env1 = Environment::with_prefix("env-par-1").create();
     let env2 = Environment::with_prefix("env-mid-1").parent(&env1).create();

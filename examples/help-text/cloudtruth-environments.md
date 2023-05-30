@@ -11,6 +11,7 @@ FLAGS:
     -V, --version    Prints version information
 
 SUBCOMMANDS:
+    copy      Copy an environment and its children to new environment(s) [aliases: cp]
     delete    Delete specified CloudTruth environment [aliases: del, d]
     help      Prints this message or the help of the given subcommand(s)
     list      List CloudTruth environments [aliases: ls, l]

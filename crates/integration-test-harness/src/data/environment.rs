@@ -38,6 +38,20 @@ impl<'d, 'p> Environment<'d, 'p> {
         self
     }
 
+    pub fn copy<N: Into<Name>>(&self, name: N) -> Scope<Self> {
+        let name = name.into();
+        Command::new(cli_bin_path("cloudtruth"))
+            .args(["environments", "copy", self.name.as_str(), name.as_str()])
+            .assert()
+            .success()
+            .stdout(contains!(
+                "Copied environment '{src_name}' to '{dest_name}",
+                src_name = self.name,
+                dest_name = name
+            ));
+        Scope::new(Environment::new(name, self.description, self.parent))
+    }
+
     /// Set the environments description.
     pub fn description<D: AsRef<str> + ?Sized>(mut self, description: &'d D) -> Self {
         self.description = Some(description.as_ref());
