@@ -416,6 +416,25 @@ fn test_parameter_basic_secret_no_value() {
 }
 
 #[test]
+#[use_harness]
+fn test_parameter_copy() {
+    let proj = Project::with_prefix("param-copy").create();
+    cloudtruth!("--project {proj} parameters set param-src --value my-value")
+        .assert()
+        .success();
+    cloudtruth!("--project {proj} parameters cp param-src param-dest")
+        .assert()
+        .success()
+        .stdout(contains!(
+            "Copied parameter 'param-src' to 'param-dest' in project '{proj}'"
+        ));
+    cloudtruth!("--project {proj} parameters ls -v ")
+        .assert()
+        .success()
+        .stdout(contains_all!("param-src", "param-dest", "my-value"));
+}
+
+#[test]
 fn test_parameter_export() -> Result<()> {
     let proj = Project::with_prefix("param-export").create();
     trycmd::TestCases::new()

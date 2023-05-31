@@ -812,6 +812,12 @@ pub fn build_cli() -> App<'static, 'static> {
                 .visible_aliases(&["parameter", "params", "param", "par", "pa", "p"])
                 .about("Work with CloudTruth parameters")
                 .subcommands(vec![
+                    SubCommand::with_name(COPY_SUBCMD)
+                        .visible_aliases(COPY_ALIASES)
+                        .about("Copy a parameter and its value")
+                        .arg(description_option())
+                        .arg(Arg::with_name(COPY_SRC_NAME_ARG).required(true).index(1).help("Source parameter name to copy"))
+                        .arg(Arg::with_name(COPY_DEST_NAME_ARG).required(true).index(2).help("Destination parameter name for copy")),
                     SubCommand::with_name(DELETE_SUBCMD)
                         .visible_aliases(DELETE_ALIASES)
                         .about("Delete the parameter from the project")

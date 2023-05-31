@@ -11,6 +11,7 @@ FLAGS:
     -V, --version    Prints version information
 
 SUBCOMMANDS:
+    copy           Copy a parameter and its value [aliases: cp]
     delete         Delete the parameter from the project [aliases: del, d]
     differences    Show differences between properties from two environments [aliases: difference, differ, diff, di]
     drift          Determine drift between current environment and project parameters [aliases: dri, dr]
