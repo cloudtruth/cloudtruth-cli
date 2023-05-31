@@ -22,6 +22,9 @@ pub struct EnvironmentCopy {
         skip_serializing_if = "Option::is_none"
     )]
     pub child_environment_names: Option<::std::collections::HashMap<String, String>>,
+    /// If true, copy child environments recursively.  If false, only copy the specified project.
+    #[serde(rename = "recursive", skip_serializing_if = "Option::is_none")]
+    pub recursive: Option<bool>,
 }
 
 impl EnvironmentCopy {
@@ -30,6 +33,7 @@ impl EnvironmentCopy {
             name,
             description: None,
             child_environment_names: None,
+            recursive: None,
         }
     }
 }

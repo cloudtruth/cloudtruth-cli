@@ -491,6 +491,7 @@ impl Environments {
                 name: name.to_owned(),
                 description: description.map(String::from),
                 child_environment_names: None,
+                recursive: None,
             },
         );
         match response {
