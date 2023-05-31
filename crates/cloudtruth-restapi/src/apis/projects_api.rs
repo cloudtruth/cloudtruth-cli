@@ -18,6 +18,7 @@ use crate::apis::{handle_serde_error, ResponseContent};
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum ProjectsCopyCreateError {
+    Status400(),
     UnknownValue(serde_json::Value),
 }
 
@@ -33,6 +34,7 @@ pub enum ProjectsCreateError {
 #[serde(untagged)]
 pub enum ProjectsDestroyError {
     Status409(),
+    Status403(),
     UnknownValue(serde_json::Value),
 }
 
@@ -48,6 +50,14 @@ pub enum ProjectsListError {
 #[serde(untagged)]
 pub enum ProjectsParameterExportListError {
     Status422(crate::models::TemplateLookupError),
+    UnknownValue(serde_json::Value),
+}
+
+/// struct for typed errors of method [`projects_parameters_copy_create`]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum ProjectsParametersCopyCreateError {
+    Status400(),
     UnknownValue(serde_json::Value),
 }
 
@@ -309,7 +319,7 @@ pub enum ProjectsUpdateError {
 pub fn projects_copy_create(
     configuration: &configuration::Configuration,
     id: &str,
-    project: crate::models::Project,
+    project_copy: crate::models::ProjectCopy,
 ) -> Result<crate::models::Project, Error<ProjectsCopyCreateError>> {
     let local_var_configuration = configuration;
 
@@ -342,7 +352,7 @@ pub fn projects_copy_create(
     if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
         local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
     };
-    local_var_req_builder = local_var_req_builder.json(&project);
+    local_var_req_builder = local_var_req_builder.json(&project_copy);
 
     let local_var_req = local_var_req_builder.build()?;
     let method = local_var_req.method().clone();
@@ -753,6 +763,88 @@ pub fn projects_parameter_export_list(
             .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
     } else {
         let local_var_entity: Option<ProjectsParameterExportListError> =
+            serde_json::from_str(&local_var_content).ok();
+        let local_var_error = ResponseContent {
+            status: local_var_status,
+            content: local_var_content,
+            entity: local_var_entity,
+        };
+        if local_var_configuration.rest_debug {
+            println!(
+                "RESP {} {}",
+                &local_var_error.status, &local_var_error.content
+            );
+        }
+        Err(Error::ResponseError(local_var_error))
+    }
+}
+
+pub fn projects_parameters_copy_create(
+    configuration: &configuration::Configuration,
+    id: &str,
+    project_pk: &str,
+    parameter_copy: crate::models::ParameterCopy,
+) -> Result<crate::models::Parameter, Error<ProjectsParametersCopyCreateError>> {
+    let local_var_configuration = configuration;
+
+    let local_var_client = &local_var_configuration.client;
+
+    let local_var_uri_str = format!(
+        "{}/api/v1/projects/{project_pk}/parameters/{id}/copy/",
+        local_var_configuration.base_path,
+        id = crate::apis::urlencode(id),
+        project_pk = crate::apis::urlencode(project_pk)
+    );
+    let mut local_var_req_builder =
+        local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
+
+    if let Some(ref local_var_user_agent) = local_var_configuration.user_agent {
+        local_var_req_builder =
+            local_var_req_builder.header(reqwest::header::USER_AGENT, local_var_user_agent.clone());
+    }
+
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
+    if let Some(ref local_var_apikey) = local_var_configuration.api_key {
+        let local_var_key = local_var_apikey.key.clone();
+        let local_var_value = match local_var_apikey.prefix {
+            Some(ref local_var_prefix) => format!("{} {}", local_var_prefix, local_var_key),
+            None => local_var_key,
+        };
+        local_var_req_builder = local_var_req_builder.header("Authorization", local_var_value);
+    };
+    if let Some(ref local_var_token) = local_var_configuration.bearer_access_token {
+        local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+    };
+    local_var_req_builder = local_var_req_builder.json(&parameter_copy);
+
+    let local_var_req = local_var_req_builder.build()?;
+    let method = local_var_req.method().clone();
+    let start = Instant::now();
+    let mut local_var_resp = local_var_client.execute(local_var_req)?;
+    if local_var_configuration.rest_debug {
+        let duration = start.elapsed();
+        println!(
+            "URL {} {} elapsed: {:?}",
+            method,
+            &local_var_resp.url(),
+            duration
+        );
+    }
+
+    let local_var_status = local_var_resp.status();
+    let local_var_content = local_var_resp.text()?;
+
+    if !local_var_status.is_client_error() && !local_var_status.is_server_error() {
+        if local_var_configuration.debug_success(super::function!()) {
+            println!("RESP {} {}", &local_var_status, &local_var_content);
+        }
+
+        serde_json::from_str(&local_var_content)
+            .map_err(|e| handle_serde_error(e, &method, local_var_resp.url(), &local_var_content))
+    } else {
+        let local_var_entity: Option<ProjectsParametersCopyCreateError> =
             serde_json::from_str(&local_var_content).ok();
         let local_var_error = ResponseContent {
             status: local_var_status,

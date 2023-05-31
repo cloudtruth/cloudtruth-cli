@@ -5593,6 +5593,8 @@ paths:
           description: Project destroyed.
         '409':
           description: The project has dependents and cannot be removed.
+        '403':
+          description: Permission denied.
   /api/v1/projects/{id}/copy/:
     post:
       operationId: projects_copy_create
@@ -5602,7 +5604,7 @@ paths:
         schema:
           type: string
           format: uuid
-        description: A UUID string identifying this project ledger.
+          description: A unique identifier for the project.
         required: true
       tags:
       - projects
@@ -5610,25 +5612,27 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Project'
+              $ref: '#/components/schemas/ProjectCopy'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/Project'
+              $ref: '#/components/schemas/ProjectCopy'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/Project'
+              $ref: '#/components/schemas/ProjectCopy'
         required: true
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
       - tokenAuth: []
       responses:
-        '200':
+        '201':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Project'
-          description: ''
+          description: Project copied
+        '400':
+          description: The Project copy failed.
   /api/v1/projects/{project_pk}/parameter-export/:
     get:
       operationId: projects_parameter_export_list
@@ -6810,6 +6814,51 @@ paths:
       responses:
         '204':
           description: No response body
+  /api/v1/projects/{project_pk}/parameters/{id}/copy/:
+    post:
+      operationId: projects_parameters_copy_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+          description: A unique identifier for the parameter.
+        required: true
+      - in: path
+        name: project_pk
+        schema:
+          type: string
+          format: uuid
+          description: The project that the parameter is within.
+        required: true
+      tags:
+      - projects
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ParameterCopy'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ParameterCopy'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ParameterCopy'
+        required: true
+      security:
+      - JWTAuth: []
+      - ApiKeyAuth: []
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Parameter'
+          description: Parameter copied
+        '400':
+          description: The parameter copy failed.
   /api/v1/projects/{project_pk}/parameters/{id}/timeline/:
     get:
       operationId: projects_parameters_timeline_retrieve
@@ -10358,6 +10407,10 @@ components:
             use for each Environment.  If no name is provided for a given child Environment,
             a "-1" will be appended to its name.  Note that this name mapping can
             be used for Environments of any level of depth in the parent-child hierarchy.
+        recursive:
+          type: boolean
+          description: If true, copy child environments recursively.  If false, only
+            copy the specified project.
       required:
       - name
     EnvironmentCreate:
@@ -12216,6 +12269,26 @@ components:
       - url
       - values
       - values_flat
+    ParameterCopy:
+      type: object
+      description: A single parameter inside of a project.
+      properties:
+        name:
+          type: string
+          description: The parameter name.
+          maxLength: 256
+        description:
+          type: string
+          description: A description of the parameter.  You may find it helpful to
+            document how this parameter is used to assist others when they need to
+            maintain software that uses this content.
+        project:
+          type: string
+          format: uri
+          description: The project url.
+      required:
+      - name
+      - project
     ParameterCreate:
       type: object
       description: A single parameter inside of a project.
@@ -14032,6 +14105,42 @@ components:
       - pushes
       - role
       - url
+    ProjectCopy:
+      type: object
+      properties:
+        name:
+          type: string
+          description: The project name.
+          maxLength: 256
+        description:
+          type: string
+          description: A description of the project.  You may find it helpful to document
+            how this project is used to assist others when they need to maintain software
+            that uses this content.
+        child_project_names:
+          type: object
+          additionalProperties:
+            type: string
+            description: The name to use for the copied child Project.
+          nullable: true
+          description: When copying child Project, this indicates what name to use
+            for each Project.  If no name is provided for a given child Project, a
+            "-1" will be appended to its name.  Note that this name mapping can be
+            used for Projects of any level of depth in the parent-child hierarchy.
+        recursive:
+          type: boolean
+          description: If true, copy child projects recursively.  If false, only copy
+            the specified project.
+        depends_on:
+          type: string
+          format: uri
+          nullable: true
+          description: |-
+            Project dependencies allow projects to be used for shared configuration, for example a database used by many applications needs to advertise its port number.
+
+            Projects can depend on another project which will add the parameters from the parent project into the current project.  All of the parameter names between the two projects must be unique.  When retrieving values or rendering templates, all of the parameters from the parent project will also be available in the current project.
+      required:
+      - name
     ProjectCreate:
       type: object
       properties:

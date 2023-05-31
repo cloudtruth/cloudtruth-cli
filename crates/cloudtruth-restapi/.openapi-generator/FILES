@@ -119,6 +119,7 @@ docs/PaginatedTemplateList.md
 docs/PaginatedUserList.md
 docs/PaginatedValueList.md
 docs/Parameter.md
+docs/ParameterCopy.md
 docs/ParameterCreate.md
 docs/ParameterDuality.md
 docs/ParameterExport.md
@@ -160,6 +161,7 @@ docs/PatchedTagUpdate.md
 docs/PatchedTemplateUpdate.md
 docs/PatchedValueUpdate.md
 docs/Project.md
+docs/ProjectCopy.md
 docs/ProjectCreate.md
 docs/ProjectUpdate.md
 docs/ProjectsApi.md
@@ -321,6 +323,7 @@ src/models/paginated_template_list.rs
 src/models/paginated_user_list.rs
 src/models/paginated_value_list.rs
 src/models/parameter.rs
+src/models/parameter_copy.rs
 src/models/parameter_create.rs
 src/models/parameter_duality.rs
 src/models/parameter_export.rs
@@ -362,6 +365,7 @@ src/models/patched_tag_update.rs
 src/models/patched_template_update.rs
 src/models/patched_value_update.rs
 src/models/project.rs
+src/models/project_copy.rs
 src/models/project_create.rs
 src/models/project_update.rs
 src/models/role_enum.rs
