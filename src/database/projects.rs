@@ -324,7 +324,7 @@ impl Projects {
             },
         );
         match response {
-            Ok(env) => Ok(env.id),
+            Ok(proj) => Ok(proj.id),
             Err(ResponseError(ref content)) => {
                 Err(response_error(&content.status, &content.content))
             }
