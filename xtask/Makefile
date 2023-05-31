@@ -21,7 +21,7 @@ actions_files := $(shell ls gha-matrices/*.json 2> /dev/null || echo CLEANED)
 docker_files := $(shell ls docker/Dockerfile* 2> /dev/null || echo CLEANED)
 config_files := config.yaml templates/Dockerfile
 
-ci: gha-matrices docker
+ci: clean gha-matrices docker
 
 all: clean docker gha-matrices help-text
 
