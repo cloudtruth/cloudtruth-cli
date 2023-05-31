@@ -11,7 +11,9 @@ FLAGS:
     -V, --version    Prints version information
 
 OPTIONS:
-    -d, --desc <description>    
+        --child-names <child-names-mapping>    Child names to copy as source=destination pairs separated by commas
+                                               (Example: foo=bar,baz=qux)
+    -d, --desc <description>                   
 
 ARGS:
     <src-name>     Source environment name for copy

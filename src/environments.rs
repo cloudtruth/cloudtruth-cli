@@ -1,13 +1,14 @@
 use crate::cli::{
-    show_values, CONFIRM_FLAG, COPY_DEST_NAME_ARG, COPY_SRC_NAME_ARG, COPY_SUBCMD, DELETE_SUBCMD,
-    DESCRIPTION_OPT, ENV_NAME_ARG, FORMAT_OPT, LIST_SUBCMD, NAME_ARG, PARENT_ARG, RENAME_OPT,
-    SET_SUBCMD, SHOW_TIMES_FLAG, TAG_IMMUTABLE_FLAG, TAG_NAME_ARG, TAG_SUBCMD, TREE_SUBCMD,
+    show_values, CHILD_NAMES_OPT, CONFIRM_FLAG, COPY_DEST_NAME_ARG, COPY_SRC_NAME_ARG, COPY_SUBCMD,
+    DELETE_SUBCMD, DESCRIPTION_OPT, ENV_NAME_ARG, FORMAT_OPT, LIST_SUBCMD, NAME_ARG, PARENT_ARG,
+    RENAME_OPT, SET_SUBCMD, SHOW_TIMES_FLAG, TAG_IMMUTABLE_FLAG, TAG_NAME_ARG, TAG_SUBCMD,
+    TREE_SUBCMD,
 };
 use crate::database::{EnvironmentDetails, Environments, OpenApiConfig};
 use crate::table::Table;
 use crate::utils::{
-    current_time, error_message, error_no_environment_message, parse_datetime, user_confirm,
-    warn_missing_subcommand, warning_message, DEL_CONFIRM,
+    current_time, error_message, error_no_environment_message, parse_datetime,
+    parse_key_value_pairs, user_confirm, warn_missing_subcommand, warning_message, DEL_CONFIRM,
 };
 use clap::ArgMatches;
 use cloudtruth_config::DEFAULT_ENV_NAME;
@@ -348,8 +349,20 @@ fn proc_env_copy(
     let src_env_name = subcmd_args.value_of(COPY_SRC_NAME_ARG).unwrap();
     let dest_env_name = subcmd_args.value_of(COPY_DEST_NAME_ARG).unwrap();
     let description = subcmd_args.value_of(DESCRIPTION_OPT);
+    let child_names = subcmd_args.value_of(CHILD_NAMES_OPT).map(|child_names| {
+        parse_key_value_pairs(child_names).unwrap_or_else(|| {
+            error_message(format!("Unable to parse key/value pairs: {child_names}"));
+            process::exit(60);
+        })
+    });
     if let Some(src_env) = environments.get_details_by_name(rest_cfg, src_env_name)? {
-        environments.copy_env(rest_cfg, &src_env.id, dest_env_name, description)?;
+        environments.copy_env(
+            rest_cfg,
+            &src_env.id,
+            dest_env_name,
+            description,
+            child_names,
+        )?;
         println!("Copied environment '{src_env_name}' to '{dest_env_name}'.");
     } else {
         warning_message(format!("No environment '{src_env_name}' found"));

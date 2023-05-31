@@ -483,6 +483,7 @@ impl Environments {
         src_environment_id: &str,
         name: &str,
         description: Option<&str>,
+        child_names: Option<HashMap<String, String>>,
     ) -> Result<String, EnvironmentError> {
         let response = environments_copy_create(
             rest_cfg,
@@ -490,7 +491,7 @@ impl Environments {
             EnvironmentCopy {
                 name: name.to_owned(),
                 description: description.map(String::from),
-                child_environment_names: None,
+                child_environment_names: child_names,
                 recursive: None,
             },
         );

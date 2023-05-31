@@ -7,6 +7,7 @@ pub use cloudtruth_config::binary_name;
 pub const ADD_USER_OPT: &str = "username-to-add";
 pub const API_KEY_OPT: &str = "api_key";
 pub const AS_OF_ARG: &str = "datetime|tag";
+pub const CHILD_NAMES_OPT: &str = "child-names-mapping";
 pub const CONFIRM_FLAG: &str = "confirm";
 pub const COPY_SRC_NAME_ARG: &str = "src-name";
 pub const COPY_DEST_NAME_ARG: &str = "dest-name";
@@ -543,6 +544,13 @@ fn remove_user_option() -> Arg<'static, 'static> {
         .multiple(true)
         .takes_value(true)
         .help("Remove user(s) from the group by name")
+}
+
+fn copy_child_names_opt() -> Arg<'static, 'static> {
+    Arg::with_name(CHILD_NAMES_OPT)
+        .long("child-names")
+        .takes_value(true)
+        .help("Child names to copy as source=destination pairs separated by commas (Example: foo=bar,baz=qux)")
 }
 
 pub fn build_cli() -> App<'static, 'static> {
