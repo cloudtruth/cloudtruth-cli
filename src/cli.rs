@@ -8,11 +8,11 @@ pub const ADD_USER_OPT: &str = "username-to-add";
 pub const API_KEY_OPT: &str = "api_key";
 pub const AS_OF_ARG: &str = "datetime|tag";
 pub const CONFIRM_FLAG: &str = "confirm";
+pub const COPY_SRC_NAME_ARG: &str = "src-name";
+pub const COPY_DEST_NAME_ARG: &str = "dest-name";
 pub const DESCRIPTION_OPT: &str = "description";
 pub const ENV_NAME_ARG: &str = "env-name";
 pub const ENV_NAME_OPT: &str = "env";
-pub const ENV_NAME_SRC_ARG: &str = "src-env-name";
-pub const ENV_NAME_DEST_ARG: &str = "dest-env-name";
 pub const FORMAT_OPT: &str = "format";
 pub const IMMEDIATE_PARAMETERS_FLAG: &str = "immediate-parameters";
 pub const INTEGRATION_NAME_ARG: &str = "integration-name";
@@ -764,8 +764,8 @@ pub fn build_cli() -> App<'static, 'static> {
                         .visible_aliases(COPY_ALIASES)
                         .about("Copy an environment and its children to new environment(s)")
                         .arg(description_option())
-                        .arg(Arg::with_name(ENV_NAME_SRC_ARG).required(true).index(1).help("Source environment name for copy"))
-                        .arg(Arg::with_name(ENV_NAME_DEST_ARG).required(true).index(2).help("Destination environment name for copy"))
+                        .arg(Arg::with_name(COPY_SRC_NAME_ARG).required(true).index(1).help("Source environment name for copy"))
+                        .arg(Arg::with_name(COPY_DEST_NAME_ARG).required(true).index(2).help("Destination environment name for copy"))
 
                 ])
         )
@@ -1121,6 +1121,12 @@ pub fn build_cli() -> App<'static, 'static> {
                 .visible_aliases(&["project", "proj"])
                 .about("Work with CloudTruth projects")
                 .subcommands(vec![
+                    SubCommand::with_name(COPY_SUBCMD)
+                        .visible_aliases(COPY_ALIASES)
+                        .about("Copy a project and its children to new project(s)")
+                        .arg(description_option())
+                        .arg(Arg::with_name(COPY_SRC_NAME_ARG).required(true).index(1).help("Source project name to copy"))
+                        .arg(Arg::with_name(COPY_DEST_NAME_ARG).required(true).index(2).help("Destination project name")),
                     SubCommand::with_name(DELETE_SUBCMD)
                         .visible_aliases(DELETE_ALIASES)
                         .about("Delete specified CloudTruth project")

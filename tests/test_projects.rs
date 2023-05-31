@@ -137,3 +137,14 @@ fn test_projects_pagination() {
         .success()
         .paginated(page_size);
 }
+
+#[test]
+#[use_harness]
+fn test_project_copy() {
+    let proj = Project::with_prefix("proj-copy-src").create();
+    let proj2 = proj.copy(Name::with_prefix("proj-copy-dest"));
+    cloudtruth!("proj ls")
+        .assert()
+        .success()
+        .stdout(contains(proj.name()).and(contains(proj2.name())));
+}
