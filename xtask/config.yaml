@@ -27,9 +27,9 @@ release-tests:
   - os: debian
     type: docker
     versions:
-      - bookwork-slim
-      - bullseye-slim
-      - buster-slim
+      - testing-slim
+      - stable-slim
+      - oldstable-slim
   - os: ubuntu
     type: docker
     versions:
