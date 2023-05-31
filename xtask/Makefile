@@ -32,7 +32,7 @@ clean:
 prerequisites:
 # curl https://raw.githubusercontent.com/nektos/act/master/install.sh | sudo bash
 
-precommit: ci
+precommit: gha-matrices docker
 	@git ls-files -m -mo --exclude-standard |\
 		grep -E '^docker/Dockerfile.*|^gha-matrices/.*\.json$$' ||\
 		exit 0 ;\

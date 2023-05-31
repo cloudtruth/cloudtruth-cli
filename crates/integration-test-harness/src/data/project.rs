@@ -38,6 +38,20 @@ impl<'d, 'p> Project<'d, 'p> {
         self
     }
 
+    pub fn copy<N: Into<Name>>(&self, name: N) -> Scope<Self> {
+        let name = name.into();
+        Command::new(cli_bin_path("cloudtruth"))
+            .args(["projects", "copy", self.name.as_str(), name.as_str()])
+            .assert()
+            .success()
+            .stdout(contains!(
+                "Copied project '{src_name}' to '{dest_name}",
+                src_name = self.name,
+                dest_name = name
+            ));
+        Scope::new(Project::new(name, self.description, self.parent))
+    }
+
     /// Set the projects description.
     pub fn description<D: AsRef<str> + ?Sized>(mut self, description: &'d D) -> Self {
         self.description = Some(description.as_ref());

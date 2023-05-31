@@ -5,7 +5,7 @@ use crate::database::{
 
 use cloudtruth_restapi::apis::projects_api::*;
 use cloudtruth_restapi::apis::Error::ResponseError;
-use cloudtruth_restapi::models::{PatchedProjectUpdate, ProjectCreate};
+use cloudtruth_restapi::models::{PatchedProjectUpdate, ProjectCopy, ProjectCreate};
 use std::collections::HashMap;
 use std::result::Result;
 
@@ -298,6 +298,33 @@ impl Projects {
         let response = projects_partial_update(rest_cfg, project_id, Some(proj));
         match response {
             Ok(project) => Ok(Some(project.id)),
+            Err(ResponseError(ref content)) => {
+                Err(response_error(&content.status, &content.content))
+            }
+            Err(e) => Err(ProjectError::UnhandledError(e.to_string())),
+        }
+    }
+
+    pub fn copy_project(
+        &self,
+        rest_cfg: &OpenApiConfig,
+        src_project_id: &str,
+        name: &str,
+        description: Option<&str>,
+    ) -> Result<String, ProjectError> {
+        let response = projects_copy_create(
+            rest_cfg,
+            src_project_id,
+            ProjectCopy {
+                name: name.to_owned(),
+                description: description.map(String::from),
+                child_project_names: None,
+                recursive: None,
+                depends_on: None,
+            },
+        );
+        match response {
+            Ok(proj) => Ok(proj.id),
             Err(ResponseError(ref content)) => {
                 Err(response_error(&content.status, &content.content))
             }

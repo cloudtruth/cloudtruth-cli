@@ -4,7 +4,7 @@ cloudtruth[EXE]-environments-copy
 Copy an environment and its children to new environment(s)
 
 USAGE:
-    cloudtruth[EXE] environments copy [OPTIONS] <src-env-name> <dest-env-name>
+    cloudtruth[EXE] environments copy [OPTIONS] <src-name> <dest-name>
 
 FLAGS:
     -h, --help       Prints help information
@@ -14,7 +14,7 @@ OPTIONS:
     -d, --desc <description>    
 
 ARGS:
-    <src-env-name>     Source environment name for copy
-    <dest-env-name>    Destination environment name for copy
+    <src-name>     Source environment name for copy
+    <dest-name>    Destination environment name for copy
 
 ```

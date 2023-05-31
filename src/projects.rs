@@ -1,6 +1,7 @@
 use crate::cli::{
-    show_values, CONFIRM_FLAG, DELETE_SUBCMD, DESCRIPTION_OPT, FORMAT_OPT, LIST_SUBCMD, NAME_ARG,
-    PARENT_ARG, RENAME_OPT, SET_SUBCMD, SHOW_TIMES_FLAG, TREE_SUBCMD,
+    show_values, CONFIRM_FLAG, COPY_DEST_NAME_ARG, COPY_SRC_NAME_ARG, COPY_SUBCMD, DELETE_SUBCMD,
+    DESCRIPTION_OPT, FORMAT_OPT, LIST_SUBCMD, NAME_ARG, PARENT_ARG, RENAME_OPT, SET_SUBCMD,
+    SHOW_TIMES_FLAG, TREE_SUBCMD,
 };
 use crate::database::{OpenApiConfig, ProjectDetails, Projects};
 use crate::table::Table;
@@ -167,6 +168,23 @@ fn proc_proj_tree(
     Ok(())
 }
 
+fn proc_proj_copy(
+    subcmd_args: &ArgMatches,
+    rest_cfg: &OpenApiConfig,
+    projects: &Projects,
+) -> Result<()> {
+    let src_proj_name = subcmd_args.value_of(COPY_SRC_NAME_ARG).unwrap();
+    let dest_proj_name = subcmd_args.value_of(COPY_DEST_NAME_ARG).unwrap();
+    let description = subcmd_args.value_of(DESCRIPTION_OPT);
+    if let Some(src_proj) = projects.get_details_by_name(rest_cfg, src_proj_name, false)? {
+        projects.copy_project(rest_cfg, &src_proj.id, dest_proj_name, description)?;
+        println!("Copied project '{src_proj_name}' to '{dest_proj_name}'.");
+    } else {
+        warning_message(format!("No project '{src_proj_name}' found"));
+    }
+    Ok(())
+}
+
 /// Process the 'project' sub-command
 pub fn process_project_command(subcmd_args: &ArgMatches, rest_cfg: &OpenApiConfig) -> Result<()> {
     let projects = Projects::new();
@@ -178,6 +196,8 @@ pub fn process_project_command(subcmd_args: &ArgMatches, rest_cfg: &OpenApiConfi
         proc_proj_set(subcmd_args, rest_cfg, &projects)?;
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(TREE_SUBCMD) {
         proc_proj_tree(subcmd_args, rest_cfg, &projects)?;
+    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(COPY_SUBCMD) {
+        proc_proj_copy(subcmd_args, rest_cfg, &projects)?;
     } else {
         warn_missing_subcommand("projects");
     }

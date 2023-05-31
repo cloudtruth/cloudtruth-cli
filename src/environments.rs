@@ -1,6 +1,6 @@
 use crate::cli::{
-    show_values, CONFIRM_FLAG, COPY_SUBCMD, DELETE_SUBCMD, DESCRIPTION_OPT, ENV_NAME_ARG,
-    ENV_NAME_DEST_ARG, ENV_NAME_SRC_ARG, FORMAT_OPT, LIST_SUBCMD, NAME_ARG, PARENT_ARG, RENAME_OPT,
+    show_values, CONFIRM_FLAG, COPY_DEST_NAME_ARG, COPY_SRC_NAME_ARG, COPY_SUBCMD, DELETE_SUBCMD,
+    DESCRIPTION_OPT, ENV_NAME_ARG, FORMAT_OPT, LIST_SUBCMD, NAME_ARG, PARENT_ARG, RENAME_OPT,
     SET_SUBCMD, SHOW_TIMES_FLAG, TAG_IMMUTABLE_FLAG, TAG_NAME_ARG, TAG_SUBCMD, TREE_SUBCMD,
 };
 use crate::database::{EnvironmentDetails, Environments, OpenApiConfig};
@@ -345,8 +345,8 @@ fn proc_env_copy(
     rest_cfg: &OpenApiConfig,
     environments: &Environments,
 ) -> Result<()> {
-    let src_env_name = subcmd_args.value_of(ENV_NAME_SRC_ARG).unwrap();
-    let dest_env_name = subcmd_args.value_of(ENV_NAME_DEST_ARG).unwrap();
+    let src_env_name = subcmd_args.value_of(COPY_SRC_NAME_ARG).unwrap();
+    let dest_env_name = subcmd_args.value_of(COPY_DEST_NAME_ARG).unwrap();
     let description = subcmd_args.value_of(DESCRIPTION_OPT);
     if let Some(src_env) = environments.get_details_by_name(rest_cfg, src_env_name)? {
         environments.copy_env(rest_cfg, &src_env.id, dest_env_name, description)?;
