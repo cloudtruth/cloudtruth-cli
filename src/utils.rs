@@ -1,6 +1,7 @@
 use chrono::{DateTime, NaiveDate, NaiveDateTime, NaiveTime, TimeZone, Utc};
 use color_eyre::eyre::Result;
 use color_eyre::Report;
+use std::collections::HashMap;
 use std::error;
 use std::fmt;
 use std::fmt::Formatter;
@@ -157,6 +158,17 @@ pub fn get_api_access_url(api_url: &str) -> Result<String> {
 pub fn current_time() -> String {
     let now = Utc::now();
     now.format(ISO8601).to_string()
+}
+
+/// Parse a list of key=value pairs separated by commas (example: foo=bar,bar=qux) into a HashMap
+pub fn parse_key_value_pairs(input: &str) -> Option<HashMap<String, String>> {
+    input
+        .split(',')
+        .map(|pair| {
+            pair.split_once('=')
+                .map(|(key, value)| (key.to_string(), value.to_string()))
+        })
+        .collect()
 }
 
 /// Takes an optional CLI argument (`Option<&str>`) attempts to parse it to a valid `DateTime`, and
