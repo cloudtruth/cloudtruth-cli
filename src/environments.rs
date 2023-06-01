@@ -1,8 +1,8 @@
 use crate::cli::{
     show_values, CHILD_NAMES_OPT, CONFIRM_FLAG, COPY_DEST_NAME_ARG, COPY_SRC_NAME_ARG, COPY_SUBCMD,
     DELETE_SUBCMD, DESCRIPTION_OPT, ENV_NAME_ARG, FORMAT_OPT, LIST_SUBCMD, NAME_ARG, PARENT_ARG,
-    RENAME_OPT, SET_SUBCMD, SHOW_TIMES_FLAG, TAG_IMMUTABLE_FLAG, TAG_NAME_ARG, TAG_SUBCMD,
-    TREE_SUBCMD,
+    RECURSIVE_OPT, RENAME_OPT, SET_SUBCMD, SHOW_TIMES_FLAG, TAG_IMMUTABLE_FLAG, TAG_NAME_ARG,
+    TAG_SUBCMD, TREE_SUBCMD,
 };
 use crate::database::{EnvironmentDetails, Environments, OpenApiConfig};
 use crate::table::Table;
@@ -349,10 +349,16 @@ fn proc_env_copy(
     let src_env_name = subcmd_args.value_of(COPY_SRC_NAME_ARG).unwrap();
     let dest_env_name = subcmd_args.value_of(COPY_DEST_NAME_ARG).unwrap();
     let description = subcmd_args.value_of(DESCRIPTION_OPT);
-    let child_names = subcmd_args.value_of(CHILD_NAMES_OPT).map(|child_names| {
+    let recursive = subcmd_args.is_present(RECURSIVE_OPT);
+    let child_names = subcmd_args.value_of(CHILD_NAMES_OPT);
+    if !recursive && child_names.is_some() {
+        error_message("--recursive option is required when using --child-names");
+        process::exit(60);
+    }
+    let child_names = child_names.map(|child_names| {
         parse_key_value_pairs(child_names).unwrap_or_else(|| {
             error_message(format!("Unable to parse key/value pairs: {child_names}"));
-            process::exit(60);
+            process::exit(61);
         })
     });
     if let Some(src_env) = environments.get_details_by_name(rest_cfg, src_env_name)? {
@@ -361,6 +367,7 @@ fn proc_env_copy(
             &src_env.id,
             dest_env_name,
             description,
+            recursive,
             child_names,
         )?;
         println!("Copied environment '{src_env_name}' to '{dest_env_name}'.");

@@ -483,6 +483,7 @@ impl Environments {
         src_environment_id: &str,
         name: &str,
         description: Option<&str>,
+        recursive: bool,
         child_names: Option<HashMap<String, String>>,
     ) -> Result<String, EnvironmentError> {
         let response = environments_copy_create(
@@ -492,7 +493,7 @@ impl Environments {
                 name: name.to_owned(),
                 description: description.map(String::from),
                 child_environment_names: child_names,
-                recursive: None,
+                recursive: Some(recursive),
             },
         );
         match response {
