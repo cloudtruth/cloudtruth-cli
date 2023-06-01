@@ -7,8 +7,8 @@ use cloudtruth_restapi::apis::projects_api::*;
 use cloudtruth_restapi::apis::utils_api::utils_generate_password_create;
 use cloudtruth_restapi::apis::Error::ResponseError;
 use cloudtruth_restapi::models::{
-    ParameterCreate, ParameterRuleCreate, ParameterRuleTypeEnum, PatchedParameterRuleUpdate,
-    PatchedParameterUpdate, PatchedValueUpdate, ValueCreate,
+    ParameterCopy, ParameterCreate, ParameterRuleCreate, ParameterRuleTypeEnum,
+    PatchedParameterRuleUpdate, PatchedParameterUpdate, PatchedValueUpdate, ValueCreate,
 };
 use std::collections::HashMap;
 use std::result::Result;
@@ -522,6 +522,34 @@ impl Parameters {
             projects_parameters_partial_update(rest_cfg, param_id, proj_id, Some(param_update));
         match response {
             Ok(api_param) => Ok(ParameterDetails::from(&api_param)),
+            Err(ResponseError(ref content)) => {
+                Err(response_error(&content.status, &content.content))
+            }
+            Err(e) => Err(ParameterError::UnhandledError(e.to_string())),
+        }
+    }
+
+    pub fn copy_param(
+        &self,
+        rest_cfg: &OpenApiConfig,
+        src_proj_id: &str,
+        src_param_id: &str,
+        dest_param_name: &str,
+        dest_description: Option<&str>,
+        dest_proj_url: &str,
+    ) -> Result<String, ParameterError> {
+        let response = projects_parameters_copy_create(
+            rest_cfg,
+            src_param_id,
+            src_proj_id,
+            ParameterCopy {
+                name: dest_param_name.to_string(),
+                description: dest_description.map(String::from),
+                project: dest_proj_url.to_string(),
+            },
+        );
+        match response {
+            Ok(param) => Ok(param.id),
             Err(ResponseError(ref content)) => {
                 Err(response_error(&content.status, &content.content))
             }

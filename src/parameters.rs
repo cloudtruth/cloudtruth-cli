@@ -1,10 +1,11 @@
 use crate::binary_name;
 use crate::cli::{
-    show_values, true_false_option, AS_OF_ARG, CONFIRM_FLAG, DELETE_SUBCMD, DESCRIPTION_OPT,
-    DIFF_SUBCMD, FORMAT_OPT, GET_SUBCMD, IMMEDIATE_PARAMETERS_FLAG, JMES_PATH_ARG, KEY_ARG,
-    LIST_SUBCMD, PUSH_SUBCMD, RENAME_OPT, RULE_MAX_ARG, RULE_MAX_LEN_ARG, RULE_MIN_ARG,
-    RULE_MIN_LEN_ARG, RULE_NO_MAX_ARG, RULE_NO_MAX_LEN_ARG, RULE_NO_MIN_ARG, RULE_NO_MIN_LEN_ARG,
-    RULE_NO_REGEX_ARG, RULE_REGEX_ARG, SECRETS_FLAG, SET_SUBCMD, SHOW_TIMES_FLAG,
+    show_values, true_false_option, AS_OF_ARG, CONFIRM_FLAG, COPY_DEST_NAME_ARG, COPY_SRC_NAME_ARG,
+    COPY_SUBCMD, DELETE_SUBCMD, DESCRIPTION_OPT, DIFF_SUBCMD, FORMAT_OPT, GET_SUBCMD,
+    IMMEDIATE_PARAMETERS_FLAG, JMES_PATH_ARG, KEY_ARG, LIST_SUBCMD, PUSH_SUBCMD, RENAME_OPT,
+    RULE_MAX_ARG, RULE_MAX_LEN_ARG, RULE_MIN_ARG, RULE_MIN_LEN_ARG, RULE_NO_MAX_ARG,
+    RULE_NO_MAX_LEN_ARG, RULE_NO_MIN_ARG, RULE_NO_MIN_LEN_ARG, RULE_NO_REGEX_ARG, RULE_REGEX_ARG,
+    SECRETS_FLAG, SET_SUBCMD, SHOW_TIMES_FLAG,
 };
 use crate::database::{
     EnvironmentDetails, Environments, OpenApiConfig, ParamExportFormat, ParamExportOptions,
@@ -111,6 +112,48 @@ fn proc_param_delete(
             );
         }
     };
+    Ok(())
+}
+
+fn proc_param_copy(
+    subcmd_args: &ArgMatches,
+    rest_cfg: &OpenApiConfig,
+    parameters: &Parameters,
+    resolved: &ResolvedDetails,
+) -> Result<(), ParameterError> {
+    let src_param_name = subcmd_args.value_of(COPY_SRC_NAME_ARG).unwrap();
+    let dest_param_name = subcmd_args.value_of(COPY_DEST_NAME_ARG).unwrap();
+    let description = subcmd_args.value_of(DESCRIPTION_OPT);
+    let proj_name = resolved.project_display_name();
+    let proj_id = resolved.project_id();
+    let env_id = resolved.environment_id();
+    if let Some(src_param) = parameters.get_details_by_name(
+        rest_cfg,
+        proj_id,
+        env_id,
+        src_param_name,
+        false,
+        false,
+        true,
+        None,
+        None,
+    )? {
+        parameters.copy_param(
+            rest_cfg,
+            proj_id,
+            &src_param.id,
+            dest_param_name,
+            description,
+            &src_param.project_url,
+        )?;
+        println!(
+            "Copied parameter '{src_param_name}' to '{dest_param_name}' in project '{proj_name}'."
+        );
+    } else {
+        warning_message(format!(
+            "No parameter '{src_param_name}' found in project '{proj_name}'."
+        ));
+    }
     Ok(())
 }
 
@@ -1274,6 +1317,8 @@ pub fn process_parameters_command(
         proc_param_set(subcmd_args, rest_cfg, &parameters, resolved)?;
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(DELETE_SUBCMD) {
         proc_param_delete(subcmd_args, rest_cfg, &parameters, resolved)?;
+    } else if let Some(subcmd_args) = subcmd_args.subcommand_matches(COPY_SUBCMD) {
+        proc_param_copy(subcmd_args, rest_cfg, &parameters, resolved)?;
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("export") {
         proc_param_export(subcmd_args, rest_cfg, &parameters, resolved)?;
     } else if let Some(subcmd_args) = subcmd_args.subcommand_matches("unset") {
