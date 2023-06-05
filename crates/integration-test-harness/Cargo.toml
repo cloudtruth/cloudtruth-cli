@@ -16,8 +16,8 @@ cloudtruth-config = { path = "../cloudtruth-config" }
 derive_more = "0.99.17"
 dunce = "1.0.4"
 integration-test-macros = { path = "../integration-test-macros", optional = true }
+michie = "3.0.2"
 miette = { version = "5.6.0", features = ["fancy"] }
-once_cell = "1.17.1"
 owo-colors = "3.5.0"
 predicates = "3.0.2"
 serde_json = "1.0.96"

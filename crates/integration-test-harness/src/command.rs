@@ -1,7 +1,7 @@
 use cloudtruth_config::{CT_API_KEY, CT_REST_DEBUG, CT_REST_PAGE_SIZE, CT_SERVER_URL};
 use miette::{miette, Result};
-use once_cell::sync::OnceCell;
 use std::{
+    collections::HashMap,
     ffi::OsStr,
     ops::{Deref, DerefMut},
     path::{Path, PathBuf},
@@ -113,17 +113,12 @@ pub fn from_cmd_args<P: AsRef<Path>>(bin_path: P, args: String) -> Result<Comman
 /// Attempts to find the CLI binary to test.
 /// If not found via environment variables, will try to locate a binary with the given name in the current target directory
 /// This logic runs once and then the result is cached for subsequent calls.
-pub fn cli_bin_path<S: AsRef<str>>(name: S) -> &'static Path {
-    static CLI_BIN_PATH: OnceCell<PathBuf> = OnceCell::new();
-    CLI_BIN_PATH
-        .get_or_init(|| {
-            // try to find binary in target directory
-            let bin_path = dunce::canonicalize(cargo_bin_path(name.as_ref()))
-                .expect("Unable to canonicalize CLI path");
-            println!("Found CLI binary at: {}", bin_path.display());
-            bin_path
-        })
-        .as_ref()
+#[michie::memoized(key_expr = name.as_ref().as_ptr() as usize, store_type = HashMap<usize, PathBuf>)]
+pub fn cli_bin_path<S: AsRef<str>>(name: S) -> PathBuf {
+    let bin_path = dunce::canonicalize(cargo_bin_path(name.as_ref()))
+        .expect("Unable to canonicalize CLI path");
+    println!("Found CLI binary at: {}", bin_path.display());
+    bin_path
 }
 
 /// Attempts to find the CLI binary in the cargo target directory.
