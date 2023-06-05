@@ -1,5 +1,7 @@
+use std::{borrow::Borrow, iter};
+
 use crate::config::{InstallType, ReleaseBuildConfig, ReleaseTestConfig, RunnerOs, TestOs};
-use itertools::Itertools;
+use itertools::{Either, Itertools};
 use serde::Serialize;
 
 #[derive(Serialize)]
@@ -49,6 +51,7 @@ pub struct ReleaseTestIncludes<'c> {
     pub os: TestOs,
     pub runner: RunnerOs,
     pub version: &'c str,
+    pub platform: Option<&'c str>,
     pub install_type: InstallType,
 }
 
@@ -61,12 +64,22 @@ impl<'c> FromIterator<&'c ReleaseTestConfig<'c>> for ReleaseTestMatrix<'c> {
                      os,
                      ref versions,
                      install_type,
+                     ref platforms,
                  }| {
-                    versions.iter().map(move |version| ReleaseTestIncludes {
-                        os,
-                        runner: RunnerOs::from(os),
-                        version,
-                        install_type,
+                    let platforms = match platforms {
+                        None => Either::Left(iter::once(None)),
+                        Some(platforms) => {
+                            Either::Right(platforms.iter().map(|p| Some(p.borrow())))
+                        }
+                    };
+                    platforms.flat_map(move |platform| {
+                        versions.iter().map(move |version| ReleaseTestIncludes {
+                            os,
+                            runner: RunnerOs::from(os),
+                            version,
+                            platform,
+                            install_type,
+                        })
                     })
                 },
             )

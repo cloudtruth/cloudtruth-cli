@@ -28,6 +28,7 @@ pub struct ReleaseTestConfig<'c> {
     pub install_type: InstallType,
     #[serde(borrow)]
     pub versions: Vec<Cow<'c, str>>,
+    pub platforms: Option<Vec<Cow<'c, str>>>,
 }
 
 /// GitHub Actions runners
