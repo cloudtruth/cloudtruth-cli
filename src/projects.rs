@@ -1,12 +1,13 @@
 use crate::cli::{
-    show_values, CONFIRM_FLAG, COPY_DEST_NAME_ARG, COPY_SRC_NAME_ARG, COPY_SUBCMD, DELETE_SUBCMD,
-    DESCRIPTION_OPT, FORMAT_OPT, LIST_SUBCMD, NAME_ARG, PARENT_ARG, RENAME_OPT, SET_SUBCMD,
-    SHOW_TIMES_FLAG, TREE_SUBCMD,
+    show_values, CHILD_NAMES_OPT, CONFIRM_FLAG, COPY_DEST_NAME_ARG, COPY_SRC_NAME_ARG, COPY_SUBCMD,
+    DELETE_SUBCMD, DESCRIPTION_OPT, FORMAT_OPT, LIST_SUBCMD, NAME_ARG, PARENT_ARG, RECURSIVE_OPT,
+    RENAME_OPT, SET_SUBCMD, SHOW_TIMES_FLAG, TREE_SUBCMD,
 };
 use crate::database::{OpenApiConfig, ProjectDetails, Projects};
 use crate::table::Table;
 use crate::utils::{
-    error_message, user_confirm, warn_missing_subcommand, warning_message, DEL_CONFIRM,
+    error_message, parse_key_value_pairs, user_confirm, warn_missing_subcommand, warning_message,
+    DEL_CONFIRM,
 };
 use clap::ArgMatches;
 use color_eyre::eyre::Result;
@@ -176,8 +177,27 @@ fn proc_proj_copy(
     let src_proj_name = subcmd_args.value_of(COPY_SRC_NAME_ARG).unwrap();
     let dest_proj_name = subcmd_args.value_of(COPY_DEST_NAME_ARG).unwrap();
     let description = subcmd_args.value_of(DESCRIPTION_OPT);
+    let recursive = subcmd_args.is_present(RECURSIVE_OPT);
+    let child_names = subcmd_args.value_of(CHILD_NAMES_OPT);
+    if !recursive && child_names.is_some() {
+        error_message("--recursive option is required when using --child-names");
+        process::exit(60);
+    }
+    let child_names = child_names.map(|child_names| {
+        parse_key_value_pairs(child_names).unwrap_or_else(|| {
+            error_message(format!("Unable to parse key/value pairs: {child_names}"));
+            process::exit(61);
+        })
+    });
     if let Some(src_proj) = projects.get_details_by_name(rest_cfg, src_proj_name, false)? {
-        projects.copy_project(rest_cfg, &src_proj.id, dest_proj_name, description)?;
+        projects.copy_project(
+            rest_cfg,
+            &src_proj.id,
+            dest_proj_name,
+            description,
+            recursive,
+            child_names,
+        )?;
         println!("Copied project '{src_proj_name}' to '{dest_proj_name}'.");
     } else {
         warning_message(format!("No project '{src_proj_name}' found"));

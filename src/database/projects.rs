@@ -311,6 +311,8 @@ impl Projects {
         src_project_id: &str,
         name: &str,
         description: Option<&str>,
+        recursive: bool,
+        child_names: Option<HashMap<String, String>>,
     ) -> Result<String, ProjectError> {
         let response = projects_copy_create(
             rest_cfg,
@@ -318,8 +320,8 @@ impl Projects {
             ProjectCopy {
                 name: name.to_owned(),
                 description: description.map(String::from),
-                child_project_names: None,
-                recursive: None,
+                child_project_names: child_names,
+                recursive: Some(recursive),
                 depends_on: None,
             },
         );

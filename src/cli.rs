@@ -7,6 +7,7 @@ pub use cloudtruth_config::binary_name;
 pub const ADD_USER_OPT: &str = "username-to-add";
 pub const API_KEY_OPT: &str = "api_key";
 pub const AS_OF_ARG: &str = "datetime|tag";
+pub const CHILD_NAMES_OPT: &str = "child-names-mapping";
 pub const CONFIRM_FLAG: &str = "confirm";
 pub const COPY_SRC_NAME_ARG: &str = "src-name";
 pub const COPY_DEST_NAME_ARG: &str = "dest-name";
@@ -25,6 +26,7 @@ pub const PROJECT_NAME_OPT: &str = "project";
 pub const PULL_NAME_ARG: &str = "import-name";
 pub const PUSH_NAME_ARG: &str = "push-name";
 pub const RAW_FLAG: &str = "raw";
+pub const RECURSIVE_OPT: &str = "recursive";
 pub const RENAME_OPT: &str = "new-name";
 pub const RM_USER_OPT: &str = "username-to-remove";
 pub const ROLE_ARG: &str = "role";
@@ -545,6 +547,20 @@ fn remove_user_option() -> Arg<'static, 'static> {
         .help("Remove user(s) from the group by name")
 }
 
+fn recursive_opt() -> Arg<'static, 'static> {
+    Arg::with_name(RECURSIVE_OPT)
+        .long("recursive")
+        .short("r")
+        .help("Copy all descendants")
+}
+
+fn copy_child_names_opt() -> Arg<'static, 'static> {
+    Arg::with_name(CHILD_NAMES_OPT)
+        .long("child-names")
+        .takes_value(true)
+        .help("Child names to copy as source=destination pairs separated by commas (Example: foo=bar,baz=qux). Requires --recursive option.")
+}
+
 pub fn build_cli() -> App<'static, 'static> {
     app_from_crate!()
         .setting(AppSettings::SubcommandRequiredElseHelp)
@@ -764,6 +780,8 @@ pub fn build_cli() -> App<'static, 'static> {
                         .visible_aliases(COPY_ALIASES)
                         .about("Copy an environment and its children to new environment(s)")
                         .arg(description_option())
+                        .arg(copy_child_names_opt())
+                        .arg(recursive_opt())
                         .arg(Arg::with_name(COPY_SRC_NAME_ARG).required(true).index(1).help("Source environment name for copy"))
                         .arg(Arg::with_name(COPY_DEST_NAME_ARG).required(true).index(2).help("Destination environment name for copy"))
 
@@ -1131,6 +1149,8 @@ pub fn build_cli() -> App<'static, 'static> {
                         .visible_aliases(COPY_ALIASES)
                         .about("Copy a project and its children to new project(s)")
                         .arg(description_option())
+                        .arg(copy_child_names_opt())
+                        .arg(recursive_opt())
                         .arg(Arg::with_name(COPY_SRC_NAME_ARG).required(true).index(1).help("Source project name to copy"))
                         .arg(Arg::with_name(COPY_DEST_NAME_ARG).required(true).index(2).help("Destination project name")),
                     SubCommand::with_name(DELETE_SUBCMD)
