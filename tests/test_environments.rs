@@ -268,7 +268,7 @@ fn test_environment_tagging() {
         .assert()
         .success()
         .stderr(diff(
-            "Nothing changed. Please provide a description, time, or current.\n",
+            "Nothing changed. Please provide description, time, immutable, mutable, or current.\n",
         ));
 
     // cannot use --current and --time at the same time
