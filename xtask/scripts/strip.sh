@@ -9,7 +9,7 @@ case $TARGET in
     arm-unknown-linux-gnueabihf)
         STRIP="arm-linux-gnueabihf-strip"
     ;;
-    arm7-unknown-linux-gnueabihf)
+    armv7-unknown-linux-gnueabihf)
         STRIP="arm-linux-gnueabihf-strip"
     ;;
     aarch64-unknown-linux-gnu)
