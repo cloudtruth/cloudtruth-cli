@@ -9,4 +9,8 @@ case $TARGET in
         sudo apt-get -y update
         sudo apt-get -y install gcc-aarch64-linux-gnu
     ;;
+    aarch64-unknown-linux-musl)
+        sudo apt-get -y update
+        sudo apt-get -y install gcc-aarch64-linux-musl
+    ;;
 esac
