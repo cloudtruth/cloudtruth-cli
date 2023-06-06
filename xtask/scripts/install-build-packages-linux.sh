@@ -5,6 +5,10 @@ case $TARGET in
         sudo apt-get -y update
         sudo apt-get -y install gcc-arm-linux-gnueabihf
     ;;
+    armv7-unknown-linux-gnueabihf)
+        sudo apt-get -y update
+        sudo apt-get -y install gcc-7-arm-linux-gnueabihf
+    ;;
     aarch64-unknown-linux-gnu)
         sudo apt-get -y update
         sudo apt-get -y install gcc-aarch64-linux-gnu

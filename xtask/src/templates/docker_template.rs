@@ -16,7 +16,11 @@ pub struct DockerTemplate<'c> {
 
 impl<'c> DockerTemplate<'c> {
     pub fn file_name(&self) -> String {
-        format!("Dockerfile.{}-{}", self.os, self.version)
+        format!(
+            "Dockerfile.{}-{}",
+            self.os.to_string().replace('/', "-"),
+            self.version
+        )
     }
 
     // Generate sequence of Dockerfiles from the release-tests config

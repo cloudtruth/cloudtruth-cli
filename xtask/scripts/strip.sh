@@ -9,11 +9,11 @@ case $TARGET in
     arm-unknown-linux-gnueabihf)
         STRIP="arm-linux-gnueabihf-strip"
     ;;
+    arm7-unknown-linux-gnueabihf)
+        STRIP="arm-linux-gnueabihf-strip"
+    ;;
     aarch64-unknown-linux-gnu)
         STRIP="aarch64-linux-gnu-strip"
-    ;;
-    aarch64-unknown-linux-musl)
-        STRIP="aarch64-linux-musl-strip"
     ;;
 esac;
 # Strip binaries
