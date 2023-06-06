@@ -14,6 +14,9 @@ release-tests:
       - "3.16"
       - "3.15"
       - "3.14"
+    platforms:
+      - linux/386
+      - linux/amd64
   - os: rockylinux
     type: docker
     versions:

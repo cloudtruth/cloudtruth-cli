@@ -62,6 +62,9 @@ jobs:
       CT_TEST_PARAM: INTEGRATION_TEST_RESULT
       CT_TEST_VALUE: Speicla
 
+      # Docker platform from job matrix (if specified)
+      DOCKER_PLATFORM: ${{ matrix.platform }}
+
     steps:
       - uses: actions/checkout@v3
         with:
@@ -74,6 +77,7 @@ jobs:
           TAG="cloudtruth:$VERSION"
           OUT_LOG="$TAG-output.txt"
           docker build . \
+            ${DOCKER_PLATFORM:+ --platform $DOCKER_PLATFORM} \
             --build-arg DOWNLOAD_AUTH_TOKEN="${CT_DOWNLOAD_AUTH_TOKEN}" \
             --build-arg DOWNLOAD_RELEASE_ID="${CT_DOWNLOAD_RELEASE_ID}" \
             --build-arg DOWNLOAD_VERSION="${CT_DOWNLOAD_VERSION}" \
