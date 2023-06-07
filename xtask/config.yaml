@@ -20,18 +20,24 @@ release-tests:
       - "3.18"
       - "3.17"
       - "3.16"
+    platforms:
+      - linux/arm64/v8
   - os: arm32v7/alpine
     type: docker
     versions:
       - "3.18"
       - "3.17"
       - "3.16"
+    platforms:
+      - linux/arm32/v7
   - os: arm32v6/alpine
     type: docker
     versions:
       - "3.18"
       - "3.17"
       - "3.16"
+    platforms:
+      - linux/arm32/v6
   - os: rockylinux
     type: docker
     versions:

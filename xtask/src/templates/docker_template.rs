@@ -6,6 +6,11 @@ use askama::Template;
 use itertools::Either;
 use tokio::task::spawn_blocking;
 
+// Matches path separator characters across platforms
+fn path_separator(c: char) -> bool {
+    c == '/' || c == '\\'
+}
+
 /// Template for generating the installation test Dockerfiles
 #[derive(Debug, Template)]
 #[template(path = "Dockerfile", escape = "none")]
@@ -21,14 +26,14 @@ impl<'c> DockerTemplate<'c> {
         let image = // sanitize slashes in image name
         self.image
                 .to_string()
-                .replace(|c| c == '/' || c == '\\', "-");
-        let version = self.version.as_ref();
+                .replace(path_separator, "-");
+        let version = self.version.as_ref().replace(path_separator, "-");
         let platform_suffix = self
             .platform
             .as_ref()
-            .map(|p| format!("-{p}"))
+            .map(|p| format!(".{p}").replace(path_separator, "-"))
             .unwrap_or_default();
-        format!("Dockerfile.{image}-{version}{platform_suffix}")
+        format!("Dockerfile.{image}.{version}{platform_suffix}")
     }
 
     // Generate sequence of Dockerfiles from the release-tests config
