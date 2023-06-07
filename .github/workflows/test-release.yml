@@ -60,10 +60,7 @@ jobs:
       CLOUDTRUTH_API_KEY: ${{ secrets.CLOUDTRUTH_API_KEY }}
       CT_TEST_PROJECT: TruthStrap
       CT_TEST_PARAM: INTEGRATION_TEST_RESULT
-      CT_TEST_VALUE: Speicla
-
-      # Docker platform from job matrix (if specified)
-      DOCKER_PLATFORM: ${{ matrix.platform }}
+      CT_TEST_VALUE: Speicla      
 
     steps:
       - uses: actions/checkout@v3
@@ -76,6 +73,7 @@ jobs:
           IMAGE='cloudtruth/${{ matrix.os }}'
           VERSION='${{ matrix.version }}'
           DOCKER_FILE='${{ matrix.dockerfile }}'
+          DOCKER_PLATFORM='${{ matrix.platform }}'
           TAG="${IMAGE}:${VERSION}"
           OUT_LOG='docker_build.log'
           docker build . \
