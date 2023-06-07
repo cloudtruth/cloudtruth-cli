@@ -79,13 +79,14 @@ jobs:
           TAG="${IMAGE}:${VERSION}"
           OUT_LOG='docker_build.log'
           docker build . \
-            ${DOCKER_PLATFORM:+ --platform $DOCKER_PLATFORM} \
+            ${DOCKER_PLATFORM:+ --platform "${DOCKER_PLATFORM}"} \
             --build-arg DOWNLOAD_AUTH_TOKEN="${CT_DOWNLOAD_AUTH_TOKEN}" \
             --build-arg DOWNLOAD_RELEASE_ID="${CT_DOWNLOAD_RELEASE_ID}" \
             --build-arg DOWNLOAD_VERSION="${CT_DOWNLOAD_VERSION}" \
              -f "xtask/docker/${DOCKER_FILE}" \
              -t "$TAG"
           docker run --rm \
+            ${DOCKER_PLATFORM:+ --platform "${DOCKER_PLATFORM}"} \
             -i --log-driver=none -a stdout -a stderr \
             -e CLOUDTRUTH_API_KEY \
             ${CLOUDTRUTH_SERVER_URL:+ -e CLOUDTRUTH_SERVER_URL} \

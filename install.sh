@@ -204,11 +204,25 @@ download_draft() {
 
 # alpine, macos - no package format yet, use generic binary
 if [ "${PKG}" = "apk" ] || [ "${PKG}" = "macos" ]; then
-    if [ "${PKG}" = "macos" ]; then
-        if [ "${ARCH}" = "arm64" ]; then
+    # normalize CPU arch
+    case $ARCH in
+        arm64 | armv8l | armv8b)
             ARCH="aarch64"
-        fi
+        ;;
+        armv7l)
+            ARCH="armv7"
+        ;;
+        armv6l)
+            ARCH="arm"
+        ;;
+    esac
+    # determine taret name from OS (default to linux)
+    if [ "${OS}" = "Darwin" ]; then
         TARGET_NAME=apple-darwin
+    elif [ "${ARCH}" = "aarch64" ]; then
+        TARGET_NAME=unknown-linux-gnu
+    elif [ "${ARCH}" = "arm" ] || [ "${ARCH}" = "armv7" ]; then
+        TARGET_NAME=unknown-linux-gnueabihf
     else
         TARGET_NAME=unknown-linux-musl
     fi
