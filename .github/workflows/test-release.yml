@@ -73,9 +73,11 @@ jobs:
       - name: docker
         if: matrix.install_type == 'docker'
         run: |
-          VERSION='${{ matrix.os }}-${{ matrix.version }}'
-          TAG="cloudtruth:$VERSION"
-          OUT_LOG="$TAG-output.txt"
+          IMAGE='cloudtruth/${{ matrix.os }}'
+          VERSION='${{ matrix.version }}'
+          DOCKER_FILE='${{ matrix.dockerfile }}'
+          TAG="${IMAGE}:${VERSION}"
+          OUT_LOG='docker_build.log'
           docker build . \
             ${DOCKER_PLATFORM:+ --platform $DOCKER_PLATFORM} \
             --build-arg DOWNLOAD_AUTH_TOKEN="${CT_DOWNLOAD_AUTH_TOKEN}" \

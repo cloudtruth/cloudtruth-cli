@@ -1,6 +1,9 @@
-use std::{borrow::Borrow, iter};
+use std::{borrow::Cow, iter};
 
-use crate::config::{InstallType, ReleaseBuildConfig, ReleaseTestConfig, RunnerOs, TestOs};
+use crate::{
+    config::{InstallType, ReleaseBuildConfig, ReleaseTestConfig, RunnerOs, TestOs},
+    templates::DockerTemplate,
+};
 use itertools::{Either, Itertools};
 use serde::Serialize;
 
@@ -11,7 +14,7 @@ pub struct ReleaseBuildMatrix<'c> {
 
 #[derive(Serialize)]
 pub struct ReleaseBuildIncludes<'c> {
-    pub target: &'c str,
+    pub target: Cow<'c, str>,
     pub runner: RunnerOs,
 }
 
@@ -21,7 +24,7 @@ impl<'c> FromIterator<&'c ReleaseBuildConfig<'c>> for ReleaseBuildMatrix<'c> {
             .into_iter()
             .map(
                 |&ReleaseBuildConfig { ref target, runner }| ReleaseBuildIncludes {
-                    target: target.as_ref(),
+                    target: Cow::from(target.as_ref()),
                     runner,
                 },
             )
@@ -50,9 +53,10 @@ pub struct ReleaseTestMatrix<'c> {
 pub struct ReleaseTestIncludes<'c> {
     pub os: TestOs,
     pub runner: RunnerOs,
-    pub version: &'c str,
-    pub platform: Option<&'c str>,
+    pub version: Cow<'c, str>,
+    pub platform: Option<Cow<'c, str>>,
     pub install_type: InstallType,
+    pub dockerfile: Cow<'c, str>,
 }
 
 impl<'c> FromIterator<&'c ReleaseTestConfig<'c>> for ReleaseTestMatrix<'c> {
@@ -68,17 +72,28 @@ impl<'c> FromIterator<&'c ReleaseTestConfig<'c>> for ReleaseTestMatrix<'c> {
                  }| {
                     let platforms = match platforms {
                         None => Either::Left(iter::once(None)),
-                        Some(platforms) => {
-                            Either::Right(platforms.iter().map(|p| Some(p.borrow())))
-                        }
+                        Some(platforms) => Either::Right(platforms.iter().map(Option::Some)),
                     };
                     platforms.flat_map(move |platform| {
-                        versions.iter().map(move |version| ReleaseTestIncludes {
-                            os,
-                            runner: RunnerOs::from(os),
-                            version,
-                            platform,
-                            install_type,
+                        versions.iter().map(move |version| {
+                            let platform = platform.map(|p| Cow::from(p.as_ref()));
+                            let version = Cow::from(version.as_ref());
+                            let dockerfile = Cow::Owned(
+                                DockerTemplate {
+                                    image: os,
+                                    version: version.clone(),
+                                    platform: platform.clone(),
+                                }
+                                .file_name(),
+                            );
+                            ReleaseTestIncludes {
+                                os,
+                                runner: RunnerOs::from(os),
+                                version,
+                                platform,
+                                install_type,
+                                dockerfile,
+                            }
                         })
                     })
                 },

@@ -1,4 +1,4 @@
-use std::{borrow::Borrow, io::Write, iter};
+use std::{borrow::Cow, io::Write, iter};
 
 use crate::config::{InstallType, ReleaseTestConfig, TestOs};
 use anyhow::*;
@@ -11,19 +11,24 @@ use tokio::task::spawn_blocking;
 #[template(path = "Dockerfile", escape = "none")]
 //#[template(print = "code")] //uncomment for debugging generated code
 pub struct DockerTemplate<'c> {
-    pub os: TestOs,
-    pub version: &'c str,
-    pub platform: Option<&'c str>,
+    pub image: TestOs,
+    pub version: Cow<'c, str>,
+    pub platform: Option<Cow<'c, str>>,
 }
 
 impl<'c> DockerTemplate<'c> {
     pub fn file_name(&self) -> String {
-        format!(
-            "Dockerfile.{}-{}{}",
-            self.os.to_string().replace('/', "-"),
-            self.version,
-            self.platform.map(|p| format!("-{p}")).unwrap_or_default()
-        )
+        let image = // sanitize slashes in image name
+        self.image
+                .to_string()
+                .replace(|c| c == '/' || c == '\\', "-");
+        let version = self.version.as_ref();
+        let platform_suffix = self
+            .platform
+            .as_ref()
+            .map(|p| format!("-{p}"))
+            .unwrap_or_default();
+        format!("Dockerfile.{image}-{version}{platform_suffix}")
     }
 
     // Generate sequence of Dockerfiles from the release-tests config
@@ -47,13 +52,13 @@ impl<'c> DockerTemplate<'c> {
         } = release_test;
         let platforms = match platforms {
             None => Either::Left(iter::once(None)),
-            Some(platforms) => Either::Right(platforms.iter().map(|p| Some(p.borrow()))),
+            Some(platforms) => Either::Right(platforms.iter().map(Option::Some)),
         };
         platforms.flat_map(move |platform| {
             versions.iter().map(move |version| DockerTemplate {
-                os,
-                version,
-                platform,
+                image: os,
+                version: Cow::from(version.as_ref()),
+                platform: platform.map(|p| Cow::from(p.as_ref())),
             })
         })
     }
