@@ -83,7 +83,7 @@ jobs:
             --build-arg DOWNLOAD_AUTH_TOKEN="${CT_DOWNLOAD_AUTH_TOKEN}" \
             --build-arg DOWNLOAD_RELEASE_ID="${CT_DOWNLOAD_RELEASE_ID}" \
             --build-arg DOWNLOAD_VERSION="${CT_DOWNLOAD_VERSION}" \
-             -f "xtask/docker/Dockerfile.$VERSION" \
+             -f "xtask/docker/${DOCKER_FILE}" \
              -t "$TAG"
           docker run --rm \
             -i --log-driver=none -a stdout -a stderr \
