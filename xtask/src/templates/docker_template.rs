@@ -1,8 +1,9 @@
-use std::io::Write;
+use std::{borrow::Borrow, io::Write, iter};
 
 use crate::config::{InstallType, ReleaseTestConfig, TestOs};
 use anyhow::*;
 use askama::Template;
+use itertools::Either;
 use tokio::task::spawn_blocking;
 
 /// Template for generating the installation test Dockerfiles
@@ -12,14 +13,16 @@ use tokio::task::spawn_blocking;
 pub struct DockerTemplate<'c> {
     pub os: TestOs,
     pub version: &'c str,
+    pub platform: Option<&'c str>,
 }
 
 impl<'c> DockerTemplate<'c> {
     pub fn file_name(&self) -> String {
         format!(
-            "Dockerfile.{}-{}",
+            "Dockerfile.{}-{}{}",
             self.os.to_string().replace('/', "-"),
-            self.version
+            self.version,
+            self.platform.map(|p| format!("-{p}")).unwrap_or_default()
         )
     }
 
@@ -37,11 +40,22 @@ impl<'c> DockerTemplate<'c> {
         release_test: &'c ReleaseTestConfig<'c>,
     ) -> impl Iterator<Item = DockerTemplate<'c>> {
         let &ReleaseTestConfig {
-            os, ref versions, ..
+            os,
+            ref versions,
+            ref platforms,
+            ..
         } = release_test;
-        versions
-            .iter()
-            .map(move |version| DockerTemplate { os, version })
+        let platforms = match platforms {
+            None => Either::Left(iter::once(None)),
+            Some(platforms) => Either::Right(platforms.iter().map(|p| Some(p.borrow()))),
+        };
+        platforms.flat_map(move |platform| {
+            versions.iter().map(move |version| DockerTemplate {
+                os,
+                version,
+                platform,
+            })
+        })
     }
 
     pub fn write_dockerfile<W: Write>(&self, mut writer: W) -> Result<()> {
