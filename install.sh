@@ -220,9 +220,9 @@ if [ "${PKG}" = "apk" ] || [ "${PKG}" = "macos" ]; then
     if [ "${OS}" = "Darwin" ]; then
         TARGET_NAME=apple-darwin
     elif [ "${ARCH}" = "aarch64" ]; then
-        TARGET_NAME=unknown-linux-gnu
+        TARGET_NAME=unknown-linux-musl
     elif [ "${ARCH}" = "arm" ] || [ "${ARCH}" = "armv7" ]; then
-        TARGET_NAME=unknown-linux-gnueabihf
+        TARGET_NAME=unknown-linux-musleabihf
     else
         TARGET_NAME=unknown-linux-musl
     fi
