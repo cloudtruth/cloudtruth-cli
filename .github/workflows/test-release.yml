@@ -76,7 +76,7 @@ jobs:
           DOCKER_PLATFORM='${{ matrix.platform }}'
           TAG="${IMAGE}:${VERSION}"
           OUT_LOG='docker_build.log'
-          docker build . \
+          docker buildx build . \
             ${DOCKER_PLATFORM:+ --platform "${DOCKER_PLATFORM}"} \
             --build-arg DOWNLOAD_AUTH_TOKEN="${CT_DOWNLOAD_AUTH_TOKEN}" \
             --build-arg DOWNLOAD_RELEASE_ID="${CT_DOWNLOAD_RELEASE_ID}" \
