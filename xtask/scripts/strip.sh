@@ -6,14 +6,17 @@ ls -lh "target/$TARGET/release/"
 # Find strip executable
 STRIP="strip"
 case $TARGET in
-    arm-unknown-linux-gnueabihf)
+    arm-unknown-linux-gnueabihf | armv7-unknown-linux-gnueabihf)
         STRIP="arm-linux-gnueabihf-strip"
     ;;
-    armv7-unknown-linux-gnueabihf)
-        STRIP="arm-linux-gnueabihf-strip"
+    arm-unknown-linux-musleabihf | armv7-unknown-linux-musleabihf)
+        STRIP="arm-linux-musleabihf-strip"
     ;;
     aarch64-unknown-linux-gnu)
         STRIP="aarch64-linux-gnu-strip"
+    ;;
+    aarch64-unknown-linux-musl)
+        STRIP="aarch64-linux-musl-strip"
     ;;
 esac;
 # Strip binaries

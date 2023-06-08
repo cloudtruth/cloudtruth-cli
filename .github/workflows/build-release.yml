@@ -35,6 +35,8 @@ env:
   RPM_SNAPSHOT: ${{ inputs.rpmSnapshot }}
   PROJECT_NAME: cloudtruth
   RUST_BACKTRACE: 1
+  # strip debug info from binaries
+  RUSTFLAGS: '-C link-arg=-s'
 
 jobs:
   matrix:
