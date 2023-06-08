@@ -1,4 +1,4 @@
-FROM {{ image }}:{{ version }}
+FROM {% if platform != None %}--platform={{platform.as_ref().unwrap()}} {% endif %}{{ image }}:{{ version }}
 ARG DOWNLOAD_AUTH_TOKEN=""
 ARG DOWNLOAD_RELEASE_ID=""
 ARG DOWNLOAD_VERSION=""
