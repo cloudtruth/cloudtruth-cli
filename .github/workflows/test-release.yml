@@ -36,7 +36,7 @@ jobs:
           JSON_FILE=xtask/gha-matrices/release-tests.json
           echo "matrix=$(cat $JSON_FILE)" >> $GITHUB_OUTPUT
   test-release:
-    name: ${{ matrix.os }}-${{ matrix.version }}
+    name: ${{ matrix.display_name }} 
     runs-on: ${{ matrix.runner }}
     needs: [ matrix ]
     defaults:

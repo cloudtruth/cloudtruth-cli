@@ -51,6 +51,7 @@ pub struct ReleaseTestMatrix<'c> {
 }
 #[derive(Serialize)]
 pub struct ReleaseTestIncludes<'c> {
+    pub display_name: Cow<'c, str>,
     pub os: TestOs,
     pub runner: RunnerOs,
     pub version: Cow<'c, str>,
@@ -87,6 +88,12 @@ impl<'c> FromIterator<&'c ReleaseTestConfig<'c>> for ReleaseTestMatrix<'c> {
                                 .file_name(),
                             );
                             ReleaseTestIncludes {
+                                display_name: release_test_display_name(
+                                    os,
+                                    version.as_ref(),
+                                    platform.as_ref().map(|p| p.as_ref()),
+                                )
+                                .into(),
                                 os,
                                 runner: RunnerOs::from(os),
                                 version,
@@ -113,4 +120,12 @@ impl std::fmt::Display for ReleaseTestIncludes<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}-{}", self.os, self.version)
     }
+}
+
+fn release_test_display_name(os: TestOs, version: &str, platform: Option<&str>) -> String {
+    let platform_suffix = platform
+        .as_ref()
+        .map(|p| format!(" ({p})"))
+        .unwrap_or_default();
+    format!("{os}-{version}{platform_suffix}")
 }
