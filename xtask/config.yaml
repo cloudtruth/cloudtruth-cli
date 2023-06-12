@@ -14,30 +14,35 @@ release-tests:
       - "3.18"
       - "3.17"
       - "3.16"
-  - os: arm64v8/alpine
-    type: docker
-    versions:
-      - "3.18"
-      - "3.17"
-      - "3.16"
     platforms:
+      - linux/amd64
       - linux/arm64/v8
-  - os: arm32v7/alpine
-    type: docker
-    versions:
-      - "3.18"
-      - "3.17"
-      - "3.16"
-    platforms:
       - linux/arm/v7
-  - os: arm32v6/alpine
-    type: docker
-    versions:
-      - "3.18"
-      - "3.17"
-      - "3.16"
-    platforms:
       - linux/arm/v6
+  # - os: arm64v8/alpine
+  #   type: docker
+  #   versions:
+  #     - "3.18"
+  #     - "3.17"
+  #     - "3.16"
+  #   platforms:
+  #     - linux/arm64/v8
+  # - os: arm32v7/alpine
+  #   type: docker
+  #   versions:
+  #     - "3.18"
+  #     - "3.17"
+  #     - "3.16"
+  #   platforms:
+  #     - linux/arm/v7
+  # - os: arm32v6/alpine
+  #   type: docker
+  #   versions:
+  #     - "3.18"
+  #     - "3.17"
+  #     - "3.16"
+  #   platforms:
+  #     - linux/arm/v6
   - os: rockylinux
     type: docker
     versions:
