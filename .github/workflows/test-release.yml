@@ -81,7 +81,7 @@ jobs:
             *arm64*)
               docker run --privileged --rm tonistiigi/binfmt --install arm64
             ;;
-            *arm32*)
+            *arm*)
               docker run --privileged --rm tonistiigi/binfmt --install arm
             ;;
           esac
