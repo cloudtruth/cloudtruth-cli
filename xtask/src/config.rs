@@ -28,6 +28,7 @@ pub struct ReleaseTestConfig<'c> {
     pub install_type: InstallType,
     #[serde(borrow)]
     pub versions: Vec<Cow<'c, str>>,
+    pub platforms: Option<Vec<Cow<'c, str>>>,
 }
 
 /// GitHub Actions runners
@@ -48,9 +49,9 @@ impl From<TestOs> for RunnerOs {
         use RunnerOs::*;
         use TestOs::*;
         match test_os {
-            Alpine | RockyLinux | Centos | Debian | Ubuntu => UbuntuLatest,
             Macos => MacosLatest,
             Windows => WindowsLatest,
+            _ => UbuntuLatest,
         }
     }
 }
@@ -59,6 +60,12 @@ impl From<TestOs> for RunnerOs {
 #[serde(rename_all = "lowercase")]
 pub enum TestOs {
     Alpine,
+    #[serde(rename = "arm32v6/alpine")]
+    AlpineArm32v6,
+    #[serde(rename = "arm32v7/alpine")]
+    AlpineArm32v7,
+    #[serde(rename = "arm64v8/alpine")]
+    AlpineArm64v8,
     RockyLinux,
     Centos,
     Debian,

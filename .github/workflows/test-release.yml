@@ -36,7 +36,7 @@ jobs:
           JSON_FILE=xtask/gha-matrices/release-tests.json
           echo "matrix=$(cat $JSON_FILE)" >> $GITHUB_OUTPUT
   test-release:
-    name: ${{ matrix.os }}-${{ matrix.version }}
+    name: ${{ matrix.display_name }} 
     runs-on: ${{ matrix.runner }}
     needs: [ matrix ]
     defaults:
@@ -60,7 +60,7 @@ jobs:
       CLOUDTRUTH_API_KEY: ${{ secrets.CLOUDTRUTH_API_KEY }}
       CT_TEST_PROJECT: TruthStrap
       CT_TEST_PARAM: INTEGRATION_TEST_RESULT
-      CT_TEST_VALUE: Speicla
+      CT_TEST_VALUE: Speicla      
 
     steps:
       - uses: actions/checkout@v3
@@ -70,16 +70,30 @@ jobs:
       - name: docker
         if: matrix.install_type == 'docker'
         run: |
-          VERSION='${{ matrix.os }}-${{ matrix.version }}'
-          TAG="cloudtruth:$VERSION"
-          OUT_LOG="$TAG-output.txt"
-          docker build . \
+          IMAGE='cloudtruth/${{ matrix.os }}'
+          VERSION='${{ matrix.version }}'
+          DOCKER_FILE='${{ matrix.dockerfile }}'
+          DOCKER_PLATFORM='${{ matrix.platform }}'
+          TAG="${IMAGE}:${VERSION}"
+          OUT_LOG='docker_build.log'
+          # install emulators for ARM if needed
+          case "$DOCKER_PLATFORM" in
+            *arm64*)
+              docker run --privileged --rm tonistiigi/binfmt --install arm64
+            ;;
+            *arm*)
+              docker run --privileged --rm tonistiigi/binfmt --install arm
+            ;;
+          esac
+          docker buildx build . \
+            ${DOCKER_PLATFORM:+ --platform "${DOCKER_PLATFORM}"} \
             --build-arg DOWNLOAD_AUTH_TOKEN="${CT_DOWNLOAD_AUTH_TOKEN}" \
             --build-arg DOWNLOAD_RELEASE_ID="${CT_DOWNLOAD_RELEASE_ID}" \
             --build-arg DOWNLOAD_VERSION="${CT_DOWNLOAD_VERSION}" \
-             -f "xtask/docker/Dockerfile.$VERSION" \
+             -f "xtask/docker/${DOCKER_FILE}" \
              -t "$TAG"
           docker run --rm \
+            ${DOCKER_PLATFORM:+ --platform "${DOCKER_PLATFORM}"} \
             -i --log-driver=none -a stdout -a stderr \
             -e CLOUDTRUTH_API_KEY \
             ${CLOUDTRUTH_SERVER_URL:+ -e CLOUDTRUTH_SERVER_URL} \

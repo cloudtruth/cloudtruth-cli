@@ -1,6 +1,6 @@
 ---
 name: Build Release
-run-name: Build Release (${{ inputs.releaseVersion }})
+run-name: Build Release (${{ inputs.releaseTag }})
 on:
   workflow_call:
     inputs:
@@ -31,7 +31,7 @@ env:
   RELEASE_UPLOAD_URL: ${{ inputs.releaseUploadUrl }}
   RELEASE_TAG: ${{ inputs.releaseTag }}
   PACKAGE_VERSION: ${{ inputs.packageVersion }}
-  DEB_REVISION: ${{ inputs.revision }}
+  DEB_REVISION: ${{ inputs.debRevision }}
   RPM_SNAPSHOT: ${{ inputs.rpmSnapshot }}
   PROJECT_NAME: cloudtruth
   RUST_BACKTRACE: 1
@@ -65,14 +65,13 @@ jobs:
 
     env:
       TARGET: ${{ matrix.target }}
+      # strip debug info from binaries
+      RUSTFLAGS: '-C link-arg=-s'
 
     steps:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 1
-
-      - run: xtask/scripts/install-build-packages-linux.sh
-        if: contains(runner.os, 'Linux')
 
       - run: xtask/scripts/install-rust.sh
 
@@ -97,10 +96,6 @@ jobs:
       - name: Cargo build
         run: cargo build --release --target $TARGET --all-features --bin cloudtruth
         if: ${{ ! contains(runner.os, 'Linux') }}
-
-      - name: Strip binaries
-        run: xtask/scripts/strip.sh
-        if: ${{ !contains(runner.os, 'Windows') }}
 
       - name: Build archive
         run: xtask/scripts/build-release-archive.sh
@@ -196,6 +191,7 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
     env:
       ARCHIVE_FILE: integration-test-${{matrix.os}}.tar.zst
+      RUSTFLAGS: '-C link-arg=-s'
     steps:
       - uses: actions/checkout@v3
         with:
