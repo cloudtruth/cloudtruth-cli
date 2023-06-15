@@ -1,6 +1,5 @@
 # 1.2.3 - 2023-05-15
 * Added the following build targets to the release
-  * `x86_64-unknown-linux-gnu`
   * `arm-unknown-linux-musleabihf`
   * `armv7-unknown-linux-musleabihf`
   * `aarch64-unknown-linux-musl`
