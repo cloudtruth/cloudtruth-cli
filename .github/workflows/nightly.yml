@@ -4,8 +4,8 @@ name: Nightly Release
 on:
   workflow_dispatch:
   schedule:
-    # Run builds on midnight EST
-    - cron: '0 5 * * *'
+    # Run builds on midnight EST on weekdays
+    - cron: '0 5 * * 1-5'
 
 # prevent multiple releases from running at the same time
 concurrency:
@@ -103,7 +103,7 @@ jobs:
       # rotate out old nightly releases
       - uses: dev-drprasad/delete-older-releases@v0.2.0
         with:
-          keep_latest: 3
+          keep_latest: 2
           delete_tag_pattern: nightly
           delete_tags: true
         env:
