@@ -2336,8 +2336,9 @@ dependencies = [
 
 [[package]]
 name = "octocrab"
-version = "0.21.0"
-source = "git+https://github.com/kallisti-dev/octocrab.git?branch=asset-uploader-struct#cf867f9ef6c6a6b32e7ffec791cb9eb8c1382233"
+version = "0.22.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "69d786e42ca4d4d8b297d17fc22ec85e50aa55799a433a9a9e30308381c78830"
 dependencies = [
  "arc-swap",
  "async-trait",
