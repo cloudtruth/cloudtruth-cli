@@ -55,7 +55,7 @@ clap = "2.33.3"
 cloudtruth-config = { path = "crates/cloudtruth-config", version = "1.2.3" }
 cloudtruth-installer = { path = "crates/cloudtruth-installer", version = "1.2.3" }
 cloudtruth-restapi = { path = "crates/cloudtruth-restapi" }
-color-eyre = "0.5"
+color-eyre = "0.6"
 csv = "1.1.6"
 directories = "3.0"
 edit = "0.1.2"
