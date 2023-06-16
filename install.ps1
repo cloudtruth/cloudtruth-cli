@@ -44,8 +44,14 @@ Param(
 
 ### Detection     ############################################################
 
-# TODO: we  only support x86_64 platform right now
-$platform ="x86_64"
+# TODO: we only support 64-bit x86 and ARM
+if ($env:PROCESSOR_ARCHITECTURE -eq "AMD64") {
+    $platform ="x86_64"
+} elseif ($env:PROCESSOR_ARCHITECTURE -eq "ARM64") {
+    $platform = "aarch64"
+} else {
+    throw "Unsupported architecture: ${env:PROCESSOR_ARCHITECTURE}"
+}
 
 ### Prerequisites ############################################################
 
