@@ -9,7 +9,7 @@ set -u
 CT_CLI_VERSION=
 CT_DRAFT_AUTH_TOKEN=
 CT_DRAFT_RELEASE_ID=
-CT_DRY_RUN=0
+CT_DRY_RUN=
 CT_DEBUG=
 
 usage() {
@@ -164,7 +164,7 @@ install_cloudtruth() {
         package="${package_dir}.tar.gz"
         download_cloudtruth "${package}"
         tar xzf "${package}"
-        if [ ${CT_DRY_RUN} -ne 0 ]; then
+        if [ -n "${CT_DRY_RUN}" ]; then
             echo "[dry-run] skipping install of ${package_dir}/cloudtruth"
         else
             install -m 755 -o root "${package_dir}/cloudtruth" /usr/local/bin
@@ -178,7 +178,7 @@ install_cloudtruth() {
         fi
         package=cloudtruth_${CT_CLI_VERSION}_${ARCH}.deb
         download "${package}"
-        if [ ${CT_DRY_RUN} -ne 0 ]; then
+        if [ -n "${CT_DRY_RUN}" ]; then
             echo "[dry-run] skipping install of ${package}"
         else
             dpkg -i "${package}"
@@ -189,14 +189,14 @@ install_cloudtruth() {
     if [ "${PKG}" = "rpm" ]; then
         package=cloudtruth-${CT_CLI_VERSION}-1.${ARCH}.rpm
         download "${package}"
-        if [ ${CT_DRY_RUN} -ne 0 ]; then
+        if [ -n "${CT_DRY_RUN}" ]; then
             echo "[dry-run] skipping install of ${package}"
         else
             rpm -i "${package}"
         fi
     fi
 
-    if [ ${CT_DRY_RUN} -eq 0 ]; then
+    if [ -z "${CT_DRY_RUN}" ]; then
         echo "[cloudtruth] installed: $(cloudtruth --version)"
     fi
 }
