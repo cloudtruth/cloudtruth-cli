@@ -133,6 +133,9 @@ get_version() {
 
 ### Download and install cloudtruth CLI
 install_cloudtruth() {
+    local target_name
+    local package_dir
+    local package
     # alpine, macos - no package format yet, use generic binary
     if [ "${PKG}" = "apk" ] || [ "${PKG}" = "macos" ]; then
         # normalize CPU arch
@@ -149,22 +152,22 @@ install_cloudtruth() {
         esac
         # determine taret name from OS (default to linux)
         if [ "${OS}" = "Darwin" ]; then
-            TARGET_NAME=apple-darwin
+            target_name=apple-darwin
         elif [ "${ARCH}" = "aarch64" ]; then
-            TARGET_NAME=unknown-linux-musl
+            target_name=unknown-linux-musl
         elif [ "${ARCH}" = "arm" ] || [ "${ARCH}" = "armv7" ]; then
-            TARGET_NAME=unknown-linux-musleabihf
+            target_name=unknown-linux-musleabihf
         else
-            TARGET_NAME=unknown-linux-musl
+            target_name=unknown-linux-musl
         fi
-        PACKAGE_DIR="cloudtruth-${CT_CLI_VERSION}-${ARCH}-${TARGET_NAME}"
-        PACKAGE="${PACKAGE_DIR}.tar.gz"
-        download_cloudtruth "${PACKAGE}"
-        tar xzf "${PACKAGE}"
+        package_dir="cloudtruth-${CT_CLI_VERSION}-${ARCH}-${target_name}"
+        package="${package_dir}.tar.gz"
+        download_cloudtruth "${package}"
+        tar xzf "${package}"
         if [ ${CT_DRY_RUN} -ne 0 ]; then
-            echo "[dry-run] skipping install of ${PACKAGE_DIR}/cloudtruth"
+            echo "[dry-run] skipping install of ${package_dir}/cloudtruth"
         else
-            install -m 755 -o root "${PACKAGE_DIR}/cloudtruth" /usr/local/bin
+            install -m 755 -o root "${package_dir}/cloudtruth" /usr/local/bin
         fi
     fi
 
@@ -173,23 +176,23 @@ install_cloudtruth() {
         if [ "${ARCH}" = "x86_64" ]; then
             ARCH="amd64"
         fi
-        PACKAGE=cloudtruth_${CT_CLI_VERSION}_${ARCH}.deb
-        download "${PACKAGE}"
+        package=cloudtruth_${CT_CLI_VERSION}_${ARCH}.deb
+        download "${package}"
         if [ ${CT_DRY_RUN} -ne 0 ]; then
-            echo "[dry-run] skipping install of ${PACKAGE}"
+            echo "[dry-run] skipping install of ${package}"
         else
-            dpkg -i "${PACKAGE}"
+            dpkg -i "${package}"
         fi
     fi
 
     # rpm based
     if [ "${PKG}" = "rpm" ]; then
-        PACKAGE=cloudtruth-${CT_CLI_VERSION}-1.${ARCH}.rpm
-        download "${PACKAGE}"
+        package=cloudtruth-${CT_CLI_VERSION}-1.${ARCH}.rpm
+        download "${package}"
         if [ ${CT_DRY_RUN} -ne 0 ]; then
-            echo "[dry-run] skipping install of ${PACKAGE}"
+            echo "[dry-run] skipping install of ${package}"
         else
-            rpm -i "${PACKAGE}"
+            rpm -i "${package}"
         fi
     fi
 
@@ -209,6 +212,9 @@ download_cloudtruth() {
 
 ### This used to download release assets
 download_release() {
+    local package
+    local base_url
+    local download_url
     package=$1
     base_url="https://github.com/cloudtruth/cloudtruth-cli/releases/download"
     download_url="${base_url}/${CT_CLI_VERSION}/${package}"
@@ -217,6 +223,10 @@ download_release() {
 
 ### This is used to download a draft release during integration testing
 download_draft() {
+    local package
+    local assetfile
+    local asset_id
+    local download_url
     package=$1
     assetfile="${CT_DRAFT_RELEASE_ID}.assets.json"
 
