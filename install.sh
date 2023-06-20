@@ -12,6 +12,7 @@ CT_DRAFT_RELEASE_ID=
 CT_DRY_RUN=
 CT_DEBUG=
 
+### help text
 usage() {
     cat <<EOF
 Usage: install.sh [ OPTIONS ]
@@ -52,7 +53,7 @@ main() {
     cd "${TMP_DIR}" || fail "Could not enter temp directory: ${TMP_DIR}"
     
     get_target_info
-    get_version
+    get_cloudtruth_version
     install_cloudtruth
 }
 
@@ -118,7 +119,7 @@ get_target_info() {
 }
 
 ### Detect which version to install
-get_version() {
+get_cloudtruth_version() {
     local latest_version_url
     if [ -z "${CT_CLI_VERSION}" ]; then
         latest_version_url="https://api.github.com/repos/cloudtruth/cloudtruth-cli/releases/latest"
