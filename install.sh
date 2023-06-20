@@ -323,10 +323,10 @@ download() {
     fi
     if [ "$dl_cmd" = curl ]; then
         out=$(curl \
-            --retry 3 --proto '=https' --tlsv1.2 --silent --show-error --fail \
-            ${CT_DRAFT_AUTH_TOKEN:+ -H "Authorization: token ${CT_DRAFT_AUTH_TOKEN}"} \
+            --retry 3 --proto '=https' --tlsv1.2 --silent --show-error --fail --location \
+            ${CT_DRAFT_AUTH_TOKEN:+ --location-trusted -H "Authorization: token ${CT_DRAFT_AUTH_TOKEN}"} \
             ${CT_DEBUG:+ --verbose} \
-            --location "$1" \
+            "$1" \
             ${2:+ --output "$2"} 2>&1)
         status=$?
     elif [ "$dl_cmd" = wget ]; then
