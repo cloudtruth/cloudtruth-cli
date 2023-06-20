@@ -228,7 +228,7 @@ install_cloudtruth() {
         fi
         package_dir="cloudtruth-${CT_CLI_VERSION}-${ARCH}-${target_name}"
         package="${package_dir}.tar.gz"
-        download_cloudtruth "${package}"
+        download_asset "${package}"
         tar xzf "${package}"
         if [ -n "${CT_DRY_RUN}" ]; then
             echo "[dry-run] skipping install of ${package_dir}/cloudtruth"
@@ -243,7 +243,7 @@ install_cloudtruth() {
             ARCH="amd64"
         fi
         package=cloudtruth_${CT_CLI_VERSION}_${ARCH}.deb
-        download "${package}"
+        download_asset "${package}"
         if [ -n "${CT_DRY_RUN}" ]; then
             echo "[dry-run] skipping install of ${package}"
         else
@@ -254,7 +254,7 @@ install_cloudtruth() {
     # rpm based
     if [ "${PKG}" = "rpm" ]; then
         package=cloudtruth-${CT_CLI_VERSION}-1.${ARCH}.rpm
-        download "${package}"
+        download_asset "${package}"
         if [ -n "${CT_DRY_RUN}" ]; then
             echo "[dry-run] skipping install of ${package}"
         else
@@ -268,7 +268,7 @@ install_cloudtruth() {
 }
 
 ### Download CloudTruth CLI
-download_cloudtruth() {
+download_asset() {
     if [ -z "${CT_DRAFT_RELEASE_ID}" ]; then
       download_release "$1"
     else
