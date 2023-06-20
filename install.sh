@@ -146,6 +146,7 @@ install_prerequisites() {
         return 0
     fi
     # install prereqs
+    dry_run_opt=
     case "$PKG" in
         (apk)
             # alpine - no package format yet, use generic
