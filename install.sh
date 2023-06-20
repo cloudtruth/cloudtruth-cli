@@ -141,6 +141,9 @@ install_prerequisites() {
             prereqs="${prereqs} jq"
         fi
     fi
+    if [ -z "${prereqs}" ]; then
+        return 0
+    fi
     case "$PKG" in
         (apk)
             # alpine - no package format yet, use generic
@@ -381,7 +384,7 @@ require_download_cmd() {
 
 ### Installer must run as root
 check_privs() {
-    if [ "${CT_DRY_RUN}" -eq 0 ] && [ "$(id -u)" -ne 0 ]; then
+    if [ -z "${CT_DRY_RUN}" ] && [ "$(id -u)" -ne 0 ]; then
         fail "This install script requires root privileges. Please run with su or sudo."
     fi
 }
