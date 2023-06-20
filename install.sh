@@ -130,9 +130,10 @@ get_target_info() {
 install_prerequisites() {
     local prereqs
     local dry_run_opt
+    # determine prereqs
     prereqs=
     if ! check_cmd curl; then
-        prereqs="curl"
+        prereqs="${prereqs} curl"
     fi
     if [ -n "${CT_DRAFT_RELEASE_ID}" ]; then
         # additional requirements to handle GitHub draft release integration testing
@@ -140,10 +141,15 @@ install_prerequisites() {
         if ! check_cmd jq; then
             prereqs="${prereqs} jq"
         fi
+    elif [ "${PKG}" = "deb" ]; then
+        # had problems downloading from GitHub on debian buster without ca-certificates update
+        prereqs="${prereqs} ca-certificates"
     fi
+    # skip if all prereqs installed
     if [ -z "${prereqs}" ]; then
         return 0
     fi
+    # install prereqs
     case "$PKG" in
         (apk)
             # alpine - no package format yet, use generic
@@ -154,8 +160,6 @@ install_prerequisites() {
             ;;
         (deb)
             # debian based
-            # had problems downloading from GitHub on debian buster without ca-certificates update
-            prereqs="${prereqs} ca-certificates"
             if [ -n "${CT_DRY_RUN}" ]; then
                 dry_run_opt="--dry-run"
             fi
