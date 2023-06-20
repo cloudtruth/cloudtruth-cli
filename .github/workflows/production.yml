@@ -27,7 +27,7 @@ jobs:
 
       - name: CLI installation
         run: |
-          sudo ./install.sh --version '${{ inputs.version }}'
+          sudo ./install.sh --install-prerequisites --version '${{ inputs.version }}'
           cloudtruth --version
 
       - name: Prerequisites

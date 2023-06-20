@@ -11,6 +11,7 @@ CT_DRAFT_AUTH_TOKEN=
 CT_DRAFT_RELEASE_ID=
 CT_DRY_RUN=
 CT_DEBUG=
+CT_INSTALL_PREREQUISITES=
 
 ### help text
 usage() {
@@ -19,10 +20,11 @@ Usage: install.sh [ OPTIONS ]
 
 OPTIONS:
 
-  -d | --debug             enable shell debug output
-  -h | --help              show usage
-  -v | --version <VER>     use a specific version
-  -y | --dry-run           download but do not install (may fail if prerequisites are missing)
+  -d | --debug                  enable shell debug output
+  -h | --help                   show usage
+  -i | --install-prerequisites  do not attempt to install prerequisites"
+  -v | --version <VER>          use a specific version
+  -y | --dry-run                download but do not install
 
 These options are only used for testing during the CloudTruth release workflow:
 
@@ -53,6 +55,9 @@ main() {
     cd "${TMP_DIR}" || fail "Could not enter temp directory: ${TMP_DIR}"
     
     get_target_info
+    if [ -n "${CT_INSTALL_PREREQUISITES}" ]; then
+        install_prerequisites
+    fi
     get_cloudtruth_version
     install_cloudtruth
 }
@@ -76,6 +81,9 @@ parse_opts() {
         (-h|--help)
             usage
             exit 1;;
+        (-i|--install-prerequisites)
+            CT_INSTALL_PREREQUISITES=1
+            shift;;
         (-r|--release-id)
             CT_DRAFT_RELEASE_ID=$2
             shift 2;;
@@ -116,6 +124,59 @@ get_target_info() {
     if [ -z "${PKG}" ]; then
         fail "[error] cannot determine system package format"
     fi
+}
+
+# shellcheck disable=SC2086
+install_prerequisites() {
+    local prereqs
+    local dry_run_opt
+    prereqs=
+    if ! check_cmd curl; then
+        prereqs="curl"
+    fi
+    if [ -n "${CT_DRAFT_RELEASE_ID}" ]; then
+        # additional requirements to handle GitHub draft release integration testing
+        prereqs="${prereqs} ca-certificates"
+        if ! check_cmd jq; then
+            prereqs="${prereqs} jq"
+        fi
+    fi
+    case "$PKG" in
+        (apk)
+            # alpine - no package format yet, use generic
+            if [ -n "${CT_DRY_RUN}" ]; then
+                dry_run_opt="--simulate"
+            fi
+            apk add ${dry_run_opt} ${prereqs}
+            ;;
+        (deb)
+            # debian based
+            # had problems downloading from GitHub on debian buster without ca-certificates update
+            prereqs="${prereqs} ca-certificates"
+            if [ -n "${CT_DRY_RUN}" ]; then
+                dry_run_opt="--dry-run"
+            fi
+            if [ -f /.dockerenv ]; then
+                apt-get update
+            fi
+            apt-get install --no-install-recommends --yes ${dry_run_opt} ${prereqs}
+            if [ -f /.dockerenv ]; then
+                apt-get purge
+            fi
+            ;;
+        (rpm)
+            # rockylinux, centos, rhel
+            if [ -n "${CT_DRY_RUN}" ]; then
+                dry_run_opt="--setopt tsflags=test"
+            fi
+            if [ -n "${CT_DRAFT_RELEASE_ID}" ] && [ "$(rpm -E "%{rhel}")" -eq 7 ]; then
+              # jq is needed for draft release parsing, jq is in centos7 epel repository
+              yum -y install ${dry_run_opt} epel-release
+              yum repolist
+            fi
+            yum -y install ${dry_run_opt} ${prereqs}
+            ;;
+    esac
 }
 
 ### Detect which version to install

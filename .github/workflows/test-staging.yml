@@ -67,7 +67,7 @@ jobs:
         run: find target -type f -name 'cloudtruth*' -exec chmod +x {} +
 
       - if: inputs.releaseVersion && !contains(runner.os, 'Windows')
-        run: sudo ./install.sh --version '${{ inputs.releaseVersion }}'
+        run: sudo ./install.sh --install-prerequisites --version '${{ inputs.releaseVersion }}'
 
       - shell: pwsh
         if: inputs.releaseVersion && contains(runner.os, 'Windows')

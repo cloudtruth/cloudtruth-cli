@@ -16,6 +16,7 @@ RUN yum install -y --allowerasing curl
 {% endif -%}
 COPY ./install.sh /tmp/ctinstall.sh
 RUN chmod 755 /tmp/ctinstall.sh && /tmp/ctinstall.sh \
+    --install-prerequisites \
     --version "${CT_DOWNLOAD_VERSION}" \
     ${CT_DOWNLOAD_RELEASE_ID:+ --auth-token "${CT_DOWNLOAD_AUTH_TOKEN}" --release-id "${CT_DOWNLOAD_RELEASE_ID}"}
 CMD cloudtruth --version
