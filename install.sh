@@ -35,14 +35,15 @@ EOF
 
 ### entry point for installer script
 main() {
-    # parse options
     parse_opts "$@"
-    # check required privs
     check_privs
-    # check required commands
     require_cmd uname
     require_cmd mktemp
     require_cmd rm
+    get_target_info
+    if [ -n "${CT_INSTALL_PREREQUISITES}" ]; then
+        install_prerequisites
+    fi
     require_download_cmd
     # only required for draft release
     if [ -n "${CT_DRAFT_RELEASE_ID}" ]; then
@@ -53,11 +54,6 @@ main() {
     TMP_DIR=$(mktemp -d)
     trap cleanup EXIT
     cd "${TMP_DIR}" || fail "Could not enter temp directory: ${TMP_DIR}"
-    
-    get_target_info
-    if [ -n "${CT_INSTALL_PREREQUISITES}" ]; then
-        install_prerequisites
-    fi
     get_cloudtruth_version
     install_cloudtruth
 }
