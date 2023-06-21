@@ -286,7 +286,7 @@ download_release() {
     package=$1
     base_url="https://github.com/cloudtruth/cloudtruth-cli/releases/download"
     download_url="${base_url}/${CT_CLI_VERSION}/${package}"
-    download "${download_url}" "${package}"
+    download --binary "${download_url}" "${package}"
 }
 
 ### This is used to download a draft release during integration testing
@@ -308,14 +308,14 @@ download_draft() {
     rm "${assetfile}"
 
     download_url="https://api.github.com/repos/cloudtruth/cloudtruth-cli/releases/assets/${asset_id}"
-    download "${download_url}" "${package}"
+    download --binary "${download_url}" "${package}"
 }
 
 ### Uses either curl or wget to download something, depending on what is available
 download() {
     local dl_cmd
-    local out
     local status
+    local accept_header
     if check_cmd curl; then
         dl_cmd=curl
     elif check_cmd wget; then
@@ -323,38 +323,41 @@ download() {
     else
         require_download_cmd # no downloader; show error message and exit
     fi
+    # check for --binary option
+    if [ "$1" = '--binary' ]; then
+        accept_header='application/octet-stream'
+        shift
+    fi
     if [ "$dl_cmd" = curl ]; then
-        out=$(curl \
+        curl \
             --retry 3 --proto '=https' --tlsv1.2 --silent --show-error --fail --location \
             ${CT_DRAFT_AUTH_TOKEN:+ --location-trusted -H "Authorization: token ${CT_DRAFT_AUTH_TOKEN}"} \
             ${CT_DEBUG:+ --verbose} \
+            ${accept_header:+ -H "Accept: ${accept_header}"} \
             "$1" \
-            ${2:+ --output "$2"} 2>&1)
+            ${2:+ --output "$2"}
         status=$?
     elif [ "$dl_cmd" = wget ]; then
         if check_busybox_wget; then
             echo "Warning: using the BusyBox version of wget.  Not enforcing strong cipher suites for TLS or TLS v1.2, this is potentially less secure"
-            out=$(wget \
+            wget \
                 ${CT_DRAFT_AUTH_TOKEN:+ --header="Authorization: token ${CT_DRAFT_AUTH_TOKEN}"} \
+                ${accept_header:+ --header="Accept: ${accept_header}"} \
                 "$1" \
-                ${2:+ -O "$2" } \
-                2>&1)
+                ${2:+ -O "$2" }
             status=$?
         else
-            out=$(wget \
+            wget \
                 --https-only --secure-protocol=TLSv1_2 \
                 ${CT_DRAFT_AUTH_TOKEN:+ --header="Authorization: token ${CT_DRAFT_AUTH_TOKEN}"} \
+                ${accept_header:+ --header="Accept: ${accept_header}"} \
                 ${CT_DEBUG:+ --verbose} \
                 "$1" \
-                ${2:+ -O "$2" } \
-                2>&1)
+                ${2:+ -O "$2" }
             status=$?
         fi
     else
         fail "Could not find download command '$dl_cmd'"
-    fi
-    if [ -n "$out" ]; then
-        echo "$out"
     fi
     return $status
 }
