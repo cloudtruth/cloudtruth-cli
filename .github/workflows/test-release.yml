@@ -92,6 +92,7 @@ jobs:
             --build-arg DOWNLOAD_AUTH_TOKEN="${CT_DOWNLOAD_AUTH_TOKEN}" \
             --build-arg DOWNLOAD_RELEASE_ID="${CT_DOWNLOAD_RELEASE_ID}" \
             --build-arg DOWNLOAD_VERSION="${CT_DOWNLOAD_VERSION}" \
+            --build-arg INSTALL_PREREQUISITES=1 \
             ${CT_DEBUG:+ --build-arg DEBUG="${CT_DEBUG}"} \
              -f "xtask/docker/${DOCKER_FILE}" \
              -t "$TAG"
