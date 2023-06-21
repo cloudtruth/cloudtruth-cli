@@ -255,7 +255,7 @@ install_cloudtruth() {
             status=$?
         fi
     fi
-    if [ -n "${status}" ]; then
+    if [ "${status}" -ne 0 ]; then
         fail "Couldn't install CloudTruth CLI"
     elif [ -z "${CT_DRY_RUN}" ]; then
         echo "[cloudtruth] installed: $(cloudtruth --version)"
