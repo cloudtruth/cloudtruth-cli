@@ -139,9 +139,9 @@ install_prerequisites() {
         if ! check_cmd jq; then
             prereqs="${prereqs} jq"
         fi
-    elif [ "${PKG}" = "deb" ]; then
-        # had problems downloading from GitHub on debian buster without ca-certificates update
-        prereqs="${prereqs} ca-certificates"
+    # elif [ "${PKG}" = "deb" ]; then
+    #     # had problems downloading from GitHub on debian buster without ca-certificates update
+    #     prereqs="${prereqs} ca-certificates"
     fi
     # skip if all prereqs installed
     if [ -z "${prereqs}" ]; then
