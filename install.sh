@@ -189,6 +189,7 @@ install_cloudtruth() {
     local target_name
     local package_dir
     local package
+    local status
     # alpine, macos - no package format yet, use generic binary
     if [ "${PKG}" = "apk" ] || [ "${PKG}" = "macos" ]; then
         # normalize CPU arch
@@ -219,8 +220,10 @@ install_cloudtruth() {
         tar xzf "${package}" || fail "Couldn't unpack release archive: ${package}"
         if [ -n "${CT_DRY_RUN}" ]; then
             echo "[dry-run] skipping install of ${package_dir}/cloudtruth"
+            status=0
         else
             install -m 755 -o root "${package_dir}/cloudtruth" /usr/local/bin
+            status=$?
         fi
     fi
 
@@ -233,8 +236,10 @@ install_cloudtruth() {
         download_asset "${package}"|| fail "Couldn't download release package: ${package}"
         if [ -n "${CT_DRY_RUN}" ]; then
             echo "[dry-run] skipping install of ${package}"
+            status=0
         else
             dpkg -i "${package}"
+            status=$?
         fi
     fi
 
@@ -244,14 +249,18 @@ install_cloudtruth() {
         download_asset "${package}"|| fail "Couldn't download release package: ${package}"
         if [ -n "${CT_DRY_RUN}" ]; then
             echo "[dry-run] skipping install of ${package}"
+            status=0
         else
             rpm -i "${package}"
+            status=$?
         fi
     fi
-
-    if [ -z "${CT_DRY_RUN}" ]; then
+    if [ -n "${status}" ]; then
+        fail "Couldn't install CloudTruth CLI"
+    elif [ -z "${CT_DRY_RUN}" ]; then
         echo "[cloudtruth] installed: $(cloudtruth --version)"
     fi
+
 }
 
 ### Download CloudTruth CLI
