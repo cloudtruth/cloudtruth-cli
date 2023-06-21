@@ -78,7 +78,7 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           prefix-key: v0-cloudtruth
-          key: ${{ env.TARGET }}
+          shared-key: ${{ env.TARGET }}
 
       - run: rustup target add "$TARGET"
 
