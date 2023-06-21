@@ -4,7 +4,7 @@
 # Copyright (C) 2023 CloudTruth, Inc.
 #
 
-set -ue
+set -u
 
 CT_CLI_VERSION=
 CT_DRAFT_AUTH_TOKEN=
@@ -113,13 +113,14 @@ get_target_info() {
         check_cmd apk && PKG=apk
         check_cmd apt-get && PKG=deb
         check_cmd yum && PKG=rpm
-
     elif [ "${OS}" = "Darwin" ]; then
         PKG=macos
+    else
+        fail "Unsupported operating system: ${OS}"
     fi
 
     if [ -z "${PKG}" ]; then
-        fail "[error] cannot determine system package format"
+        fail "Cannot determine system package format"
     fi
 }
 
@@ -229,8 +230,8 @@ install_cloudtruth() {
         fi
         package_dir="cloudtruth-${CT_CLI_VERSION}-${ARCH}-${target_name}"
         package="${package_dir}.tar.gz"
-        download_asset "${package}"
-        tar xzf "${package}"
+        download_asset "${package}" || fail "Couldn't download release package: ${package}"
+        tar xzf "${package}" || fail "Couldn't unpack release archive: ${package}"
         if [ -n "${CT_DRY_RUN}" ]; then
             echo "[dry-run] skipping install of ${package_dir}/cloudtruth"
         else
@@ -244,7 +245,7 @@ install_cloudtruth() {
             ARCH="amd64"
         fi
         package=cloudtruth_${CT_CLI_VERSION}_${ARCH}.deb
-        download_asset "${package}"
+        download_asset "${package}"|| fail "Couldn't download release package: ${package}"
         if [ -n "${CT_DRY_RUN}" ]; then
             echo "[dry-run] skipping install of ${package}"
         else
@@ -255,7 +256,7 @@ install_cloudtruth() {
     # rpm based
     if [ "${PKG}" = "rpm" ]; then
         package=cloudtruth-${CT_CLI_VERSION}-1.${ARCH}.rpm
-        download_asset "${package}"
+        download_asset "${package}"|| fail "Couldn't download release package: ${package}"
         if [ -n "${CT_DRY_RUN}" ]; then
             echo "[dry-run] skipping install of ${package}"
         else
@@ -320,7 +321,7 @@ download() {
     elif check_cmd wget; then
         dl_cmd=wget
     else
-        require_download_cmd
+        require_download_cmd # no downloader; show error message and exit
     fi
     if [ "$dl_cmd" = curl ]; then
         out=$(curl \
@@ -382,7 +383,7 @@ check_download_cmd() {
     check_cmd curl || check_cmd wget
 }
 
-### Check for a download command on the system
+### Check for a download command on the system and exits with a helpful message if not found
 require_download_cmd() {
     if ! check_download_cmd; then
         fail "This install script requires either the curl or wget command, but neither were found."
