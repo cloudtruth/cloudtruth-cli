@@ -60,7 +60,7 @@ jobs:
       CLOUDTRUTH_API_KEY: ${{ secrets.CLOUDTRUTH_API_KEY }}
       CT_TEST_PROJECT: TruthStrap
       CT_TEST_PARAM: INTEGRATION_TEST_RESULT
-      CT_TEST_VALUE: Speicla      
+      CT_TEST_VALUE: Speicla
 
     steps:
       - uses: actions/checkout@v3
@@ -69,6 +69,8 @@ jobs:
           
       - name: docker
         if: matrix.install_type == 'docker'
+        env:
+          CT_DEBUG: ${{ runner.debug }}
         run: |
           IMAGE='cloudtruth/${{ matrix.os }}'
           VERSION='${{ matrix.version }}'
@@ -90,6 +92,8 @@ jobs:
             --build-arg DOWNLOAD_AUTH_TOKEN="${CT_DOWNLOAD_AUTH_TOKEN}" \
             --build-arg DOWNLOAD_RELEASE_ID="${CT_DOWNLOAD_RELEASE_ID}" \
             --build-arg DOWNLOAD_VERSION="${CT_DOWNLOAD_VERSION}" \
+            --build-arg INSTALL_PREREQUISITES=1 \
+            ${CT_DEBUG:+ --build-arg DEBUG="${CT_DEBUG}"} \
              -f "xtask/docker/${DOCKER_FILE}" \
              -t "$TAG"
           docker run --rm \
@@ -107,6 +111,8 @@ jobs:
         if: matrix.install_type == 'shell'
         run: |
           sudo ./install.sh \
+            --install-prerequisites \
+            ${CT_DEBUG:+ --debug} \
             --version "${CT_DOWNLOAD_VERSION}" \
             ${CT_DOWNLOAD_RELEASE_ID:+ --auth-token "${CT_DOWNLOAD_AUTH_TOKEN}" --release-id "${CT_DOWNLOAD_RELEASE_ID}"}
           cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep "${CT_TEST_PARAM}" | grep "${CT_TEST_VALUE}"
