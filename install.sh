@@ -40,6 +40,7 @@ main() {
     require_cmd uname
     require_cmd mktemp
     require_cmd rm
+    require_cmd tar
     get_target_info
     if [ -n "${CT_INSTALL_PREREQUISITES}" ]; then
         install_prerequisites
@@ -128,7 +129,7 @@ install_prerequisites() {
     local dry_run_opt
     # determine prereqs
     prereqs=
-    if ! check_cmd curl; then
+    if ! check_download_cmd; then
         prereqs="${prereqs} curl"
     fi
     if [ -n "${CT_DRAFT_RELEASE_ID}" ]; then
@@ -284,7 +285,7 @@ download_release() {
     package=$1
     base_url="https://github.com/cloudtruth/cloudtruth-cli/releases/download"
     download_url="${base_url}/${CT_CLI_VERSION}/${package}"
-    download "${download_url}" "${package}" 
+    download "${download_url}" "${package}"
 }
 
 ### This is used to download a draft release during integration testing
@@ -306,7 +307,7 @@ download_draft() {
     rm "${assetfile}"
 
     download_url="https://api.github.com/repos/cloudtruth/cloudtruth-cli/releases/assets/${asset_id}"
-    download "${download_url}" "${package}" 
+    download "${download_url}" "${package}"
 }
 
 ### Uses either curl or wget to download something, depending on what is available
@@ -377,8 +378,13 @@ check_cmd() {
 }
 
 ### Check for a download command on the system
+check_download_cmd() {
+    check_cmd curl || check_cmd wget
+}
+
+### Check for a download command on the system
 require_download_cmd() {
-    if ! check_cmd curl && ! check_cmd wget ; then
+    if ! check_download_cmd; then
         fail "This install script requires either the curl or wget command, but neither were found."
     fi
 }
