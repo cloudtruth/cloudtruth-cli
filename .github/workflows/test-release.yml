@@ -70,7 +70,7 @@ jobs:
       - name: docker
         if: matrix.install_type == 'docker'
         env:
-          CT_DEBUG: ${{ runner.debug }}
+          CT_DEBUG: 1 #${{ runner.debug }}
         run: |
           IMAGE='cloudtruth/${{ matrix.os }}'
           VERSION='${{ matrix.version }}'
