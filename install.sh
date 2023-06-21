@@ -127,17 +127,23 @@ get_target_info() {
 # shellcheck disable=SC2086
 install_prerequisites() {
     local prereqs
-    local dry_run_opt
     # determine prereqs
     prereqs=
+    # check for curl or wget; prefer curl
     if ! check_download_cmd; then
         prereqs="${prereqs} curl"
     fi
+    # additional requirements to handle GitHub draft release integration testing
     if [ -n "${CT_DRAFT_RELEASE_ID}" ]; then
-        # additional requirements to handle GitHub draft release integration testing
         prereqs="${prereqs} ca-certificates"
+        # jq is needed for draft release
         if ! check_cmd jq; then
-            prereqs="${prereqs} jq"
+            # jq is in centos7 epel repository
+            if [ "${PKG}" = "rpm" ] && [ "$(rpm -E "%{rhel}")" -eq 7 ]; then
+              prereqs="${prereqs} epel-release"
+            else
+                prereqs="${prereqs} jq"
+            fi
         fi
     # elif [ "${PKG}" = "deb" ]; then
     #     # had problems downloading from GitHub on debian buster without ca-certificates update
@@ -148,39 +154,25 @@ install_prerequisites() {
         return 0
     fi
     # install prereqs
-    dry_run_opt=
     case "$PKG" in
         (apk)
             # alpine - no package format yet, use generic
-            if [ -n "${CT_DRY_RUN}" ]; then
-                dry_run_opt="--simulate"
-            fi
-            apk add ${dry_run_opt} ${prereqs}
+            apk add ${CT_DRY_RUN:+ --simulate} ${prereqs}
             ;;
         (deb)
             # debian based
-            if [ -n "${CT_DRY_RUN}" ]; then
-                dry_run_opt="--dry-run"
-            fi
+            # fixes issues on Debian and Ubuntu when running in container
             if [ -f /.dockerenv ]; then
                 apt-get update
             fi
-            apt-get install --no-install-recommends --yes ${dry_run_opt} ${prereqs}
+            apt-get install --no-install-recommends --yes ${CT_DRY_RUN:+ --dry-run} ${prereqs}
             if [ -f /.dockerenv ]; then
                 apt-get purge
             fi
             ;;
         (rpm)
             # rockylinux, centos, rhel
-            if [ -n "${CT_DRY_RUN}" ]; then
-                dry_run_opt="--setopt tsflags=test"
-            fi
-            if [ -n "${CT_DRAFT_RELEASE_ID}" ] && [ "$(rpm -E "%{rhel}")" -eq 7 ]; then
-              # jq is needed for draft release parsing, jq is in centos7 epel repository
-              yum -y install ${dry_run_opt} epel-release
-              yum repolist
-            fi
-            yum -y install ${dry_run_opt} ${prereqs}
+            yum -y install ${CT_DRY_RUN:+ --setopt tsflags=test} ${prereqs}
             ;;
     esac
 }
