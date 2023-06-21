@@ -332,11 +332,10 @@ download() {
             ${2:+ --output "$2"} 2>&1)
         status=$?
     elif [ "$dl_cmd" = wget ]; then
-        if [ "$(wget -V 2>&1|head -2|tail -1|cut -f1 -d" ")" = "BusyBox" ]; then
+        if check_busybox_wget; then
             echo "Warning: using the BusyBox version of wget.  Not enforcing strong cipher suites for TLS or TLS v1.2, this is potentially less secure"
             out=$(wget \
                 ${CT_DRAFT_AUTH_TOKEN:+ --header="Authorization: token ${CT_DRAFT_AUTH_TOKEN}"} \
-                ${CT_DEBUG:+ --verbose} \
                 "$1" \
                 ${2:+ -O "$2" } \
                 2>&1)
@@ -395,6 +394,11 @@ check_privs() {
     if [ -z "${CT_DRY_RUN}" ] && [ "$(id -u)" -ne 0 ]; then
         fail "This install script requires root privileges. Please run with su or sudo."
     fi
+}
+
+### Detect BusyBox version of wget
+check_busybox_wget() {
+    [ "$(wget -V 2>&1|head -2|tail -1|cut -f1 -d" ")" = "BusyBox" ]
 }
 
 ### Clean up on exit
