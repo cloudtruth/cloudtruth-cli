@@ -4,7 +4,7 @@
 # Copyright (C) 2023 CloudTruth, Inc.
 #
 
-set -u
+set -ue
 
 CT_CLI_VERSION=
 CT_DRAFT_AUTH_TOKEN=
