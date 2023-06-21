@@ -161,14 +161,7 @@ install_prerequisites() {
             ;;
         (deb)
             # debian based
-            # fixes issues on Debian and Ubuntu when running in container
-            if [ -f /.dockerenv ]; then
-                apt-get update
-            fi
             apt-get install --no-install-recommends --yes ${CT_DRY_RUN:+ --dry-run} ${prereqs}
-            if [ -f /.dockerenv ]; then
-                apt-get purge
-            fi
             ;;
         (rpm)
             # rockylinux, centos, rhel
