@@ -23,10 +23,9 @@ config_files := config.yaml ../xtask/templates/Dockerfile
 
 ci: clean gha-matrices docker
 
-all: clean docker gha-matrices help-text
-
 clean:
-	rm -f $(shell ls ../cicd/gha-matrices/*.json ../cicd/docker/Dockerfile* 2>/dev/null)
+	@echo "Cleaning generated CICD files.."
+	@rm -f $(shell ls ../cicd/gha-matrices/*.json ../cicd/docker/Dockerfile* 2>/dev/null)
 # rm ~/.actrc
 
 prerequisites:
@@ -47,10 +46,6 @@ docker: $(docker_files) $(config_files)
 	cargo xtask generate-docker --verbose
 	@touch docker
 
-help-text:
-	@rm -rf $(shell ls ../examples/help-text/*)
-	cargo xtask generate-help-text --verbose
-
 build:
 	cargo build --release
 
@@ -63,7 +58,6 @@ targets:
 	@echo "clean          - remove generated docker files"
 	@echo "docker         - generate CI Dockerfiles"
 	@echo "gha-matrices   - generate GHA job matrices"
-	@echo "help-text	  - generate help text test cases"
 	@echo "precommit      - makes sure CI files are up-to-date"
 	@echo ""
 

@@ -1,6 +1,6 @@
-This crate contains scripts, configuration, and utilities for CI and development related tasks.
+This crate follows the "cargo xtask" pattern for adding extension scripts to `cargo` for automation of development related tasks.
 
-# Using cargo xtask
+# Using `cargo xtask`
 
 You can invoke tasks via the following command:
 
@@ -25,12 +25,12 @@ Options:
   -h, --help     Print help
 ```
 
-# Configuration 
+# 
 The `config.yaml` file is used to configure all of the auto-generated artifacts in this crate.
 
 # Generating CI Artifacts
 
-Simply running `make` in this directory will build all of the artifacts in the `docker` and `gha-matrices` directories. You can also `make clean` or `make all` if you need to replace old artifacts. Note that `make all` will also run the help text generation, which may not be desired.
+`generate-docker` and `generate-gha-matrices` output generated artiface files in the `cicd` directory of this repo. Refer to the README there for more information about those files.
 
 CI artifacts are built automatically on commit. The precommit script will warn you if it detects unstaged changes to CI artifacts. 
 
@@ -42,11 +42,7 @@ If you change the help text of a command and would like to regenerate the test c
 
 # Directory Overview
 * `templates` - Various templates used for auto-generation. These are [askama](https://docs.rs/askama/latest/askama/) templates with syntax heavily based on Jinja.
-* `scripts` - POSIX scripts for various CI tasks, mostly used in the GHA workflows.
 * `src` - The Rust crate source code. Contains all the code xtask commands.
-* Directories for generated artifacts
-  * `docker` - Auto-generated Dockerfiles based on `config.yaml` and `templates/Dockerfile`.
-  * `gha-matrices` - Auto-generated JSON files used as build matrices in the `build-release.yml` and `test-release.yml` GitHub Actions workflows.
 
 # Templates
 
