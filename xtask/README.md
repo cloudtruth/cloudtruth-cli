@@ -1,4 +1,4 @@
-This crate follows the "cargo xtask" pattern for adding extension scripts to `cargo` for automation of development related tasks.
+This crate follows the [cargo xtask](https://github.com/matklad/cargo-xtask) pattern for adding extension scripts to `cargo` for automation of development related tasks.
 
 # Using `cargo xtask`
 
