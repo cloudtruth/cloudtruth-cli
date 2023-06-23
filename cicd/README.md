@@ -2,7 +2,7 @@ This directory contains scripts, configuration, and generated files for CICD
 
 # Generating CI Artifacts
 
-Simply running `make` in this directory will build all of the artifacts in the `docker` and `gha-matrices` directories. You can also `make clean` or `make all` if you need to replace old artifacts. Note that `make all` will also run the help text generation, which may not be desired.
+Simply running `make` in this directory will build all of the artifacts in the `docker` and `gha-matrices` directories.
 
 CI artifacts are built automatically on commit. The precommit script will warn you if it detects unstaged changes to CI artifacts.
 
