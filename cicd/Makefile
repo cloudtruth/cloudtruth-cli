@@ -19,14 +19,14 @@
 
 actions_files := $(shell ls gha-matrices/*.json 2> /dev/null || echo CLEANED)
 docker_files := $(shell ls docker/Dockerfile* 2> /dev/null || echo CLEANED)
-config_files := config.yaml templates/Dockerfile
+config_files := config.yaml ../xtask/templates/Dockerfile
 
 ci: clean gha-matrices docker
 
 all: clean docker gha-matrices help-text
 
 clean:
-	rm -rf $(shell ls gha-matrices/*.json docker/Dockerfile*)
+	rm -f $(shell ls ../cicd/gha-matrices/*.json ../cicd/docker/Dockerfile* 2>/dev/null)
 # rm ~/.actrc
 
 prerequisites:

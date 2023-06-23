@@ -6,12 +6,13 @@ use std::{fs, path::PathBuf, pin::Pin, sync::Arc};
 use tokio_stream::{self as stream};
 
 use crate::templates::HelpTextTemplate;
+use crate::workspace_dir;
 
 use super::{collect_file_errors, Cli};
 
 macro_rules! help_text_path {
     ($($path:expr),*) => {
-        concat!(env!("CARGO_MANIFEST_DIR"),"/../examples/help-text/", $($path),*)
+        concat!(workspace_dir!(), "/examples/help-text/", $($path),*)
     };
 }
 

@@ -13,10 +13,25 @@ use std::{
 
 use crate::config::Config;
 
-/// Default path to config file
-macro_rules! config_yaml_path {
+#[macro_export]
+macro_rules! workspace_dir {
     () => {
-        "./config.yaml"
+        concat!(env!("CARGO_MANIFEST_DIR"), "/..")
+    };
+}
+
+#[macro_export]
+macro_rules! cicd_dir {
+    () => {
+        concat!($crate::workspace_dir!(), "/cicd")
+    };
+}
+
+/// Default path to config file
+#[macro_export]
+macro_rules! cicd_config_yaml_path {
+    () => {
+        concat!($crate::cicd_dir!(), "/config.yaml")
     };
 }
 
@@ -41,12 +56,12 @@ pub enum TaskCommand {
 }
 
 impl Cli {
-    pub fn get_config(&self) -> Result<&Config> {
+    pub fn get_cicd_config(&self) -> Result<&Config> {
         static CONFIG_YAML: OnceCell<String> = OnceCell::new();
         static CONFIG: OnceCell<Config> = OnceCell::new();
         CONFIG.get_or_try_init(|| {
             let yaml = CONFIG_YAML.get_or_try_init(|| {
-                let config_yaml_path = Path::new(config_yaml_path!());
+                let config_yaml_path = Path::new(cicd_config_yaml_path!()).canonicalize()?;
                 let mut buf = String::new();
                 self.open_input_file(config_yaml_path)?
                     .read_to_string(&mut buf)
@@ -92,8 +107,10 @@ impl Cli {
 
     async fn run_task(&self) -> Result<()> {
         match &self.task {
-            TaskCommand::GenerateDocker => self.generate_dockerfiles(self.get_config()?).await,
-            TaskCommand::GenerateGhaMatrices => self.generate_actions_matrices(self.get_config()?),
+            TaskCommand::GenerateDocker => self.generate_dockerfiles(self.get_cicd_config()?).await,
+            TaskCommand::GenerateGhaMatrices => {
+                self.generate_actions_matrices(self.get_cicd_config()?)
+            }
             TaskCommand::GenerateHelpText => self.generate_help_text().await,
         }
     }

@@ -2,6 +2,7 @@ use anyhow::*;
 use std::path::Path;
 use tokio_stream::{self as stream, StreamExt};
 
+use crate::cicd_dir;
 use crate::{config::Config, templates::DockerTemplate};
 
 use super::{collect_file_errors, Cli};
@@ -9,13 +10,14 @@ use super::{collect_file_errors, Cli};
 /// Default base path for docker outputs
 macro_rules! docker_path {
     ($($path:expr),*) => {
-        concat!(env!("CARGO_MANIFEST_DIR"), "/docker/", $($path),*)
+        concat!(cicd_dir!(), "/docker/", $($path),*)
     };
 }
 
 impl Cli {
     pub async fn generate_dockerfiles(&self, config: &Config<'_>) -> Result<()> {
-        let docker_base_path = Path::new(docker_path!());
+        let docker_base_path = Path::new(docker_path!()).canonicalize()?;
+        let docker_base_path = docker_base_path.as_path();
         self.mkdir(docker_base_path)?;
         let results: Vec<Result<()>> = stream::iter(DockerTemplate::iter_from_config(&config.release_tests)).then(|template| async move {
             let path = docker_base_path.join(template.file_name());

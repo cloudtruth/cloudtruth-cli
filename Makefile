@@ -4,12 +4,12 @@
 os_name := $(shell uname -s)
 rustup_exists := $(shell which rustup)
 openapi_gen_version := v5.3.1
-xtask_dir := xtask
+cicd_dir := cicd
 pytest_dir := integration-tests
 test_dir := tests
 client_dir := crates/cloudtruth-restapi
 # convenience for looping
-subdirs := $(xtask_dir)
+subdirs := $(cicd_dir)
 subdirs += $(pytest_dir)
 subdirs += $(test_dir)
 
@@ -69,7 +69,7 @@ cargo: $(client_dir)
 	cargo build
 
 ci:
-	make -C $(xtask_dir)
+	make -C $(cicd_dir)
 
 clean:
 	rm -rf target/
@@ -177,7 +177,7 @@ integration: cargo
 	make -C $(pytest_dir) $@
 
 help-text:
-	make -C $(xtask_dir) help-text
+	make -C $(cicd_dir) help-text
 
 help: targets
 
