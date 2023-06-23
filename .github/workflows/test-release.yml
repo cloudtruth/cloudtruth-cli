@@ -33,7 +33,7 @@ jobs:
           fetch-depth: 1
       - id: matrix
         run: |
-          JSON_FILE=xtask/gha-matrices/release-tests.json
+          JSON_FILE=cicd/gha-matrices/release-tests.json
           echo "matrix=$(cat $JSON_FILE)" >> $GITHUB_OUTPUT
   test-release:
     name: ${{ matrix.display_name }} 
@@ -94,7 +94,7 @@ jobs:
             --build-arg DOWNLOAD_VERSION="${CT_DOWNLOAD_VERSION}" \
             --build-arg INSTALL_PREREQUISITES=1 \
             ${CT_DEBUG:+ --build-arg DEBUG="${CT_DEBUG}"} \
-             -f "xtask/docker/${DOCKER_FILE}" \
+             -f "cicd/docker/${DOCKER_FILE}" \
              -t "$TAG"
           docker run --rm \
             ${DOCKER_PLATFORM:+ --platform "${DOCKER_PLATFORM}"} \

@@ -48,7 +48,7 @@ jobs:
           fetch-depth: 1
       - id: matrix
         run: |
-          JSON_FILE=xtask/gha-matrices/release-builds.json
+          JSON_FILE=cicd/gha-matrices/release-builds.json
           echo "matrix=$(cat $JSON_FILE)" >> $GITHUB_OUTPUT
 
   build-release:
@@ -73,7 +73,7 @@ jobs:
         with:
           fetch-depth: 1
 
-      - run: xtask/scripts/install-rust.sh
+      - run: cicd/scripts/install-rust.sh
 
       - uses: Swatinem/rust-cache@v2
         with:
@@ -98,7 +98,7 @@ jobs:
         if: ${{ ! contains(runner.os, 'Linux') }}
 
       - name: Build archive
-        run: xtask/scripts/build-release-archive.sh
+        run: cicd/scripts/build-release-archive.sh
 
       - name: Upload release archive
         uses: shogo82148/actions-upload-release-asset@v1
@@ -110,7 +110,7 @@ jobs:
           overwrite: true
 
       - name: Create release checksum
-        run: xtask/scripts/generate-sha512.sh "$ASSET" ASSET_SHA
+        run: cicd/scripts/generate-sha512.sh "$ASSET" ASSET_SHA
 
       - name: Upload release checksum
         uses: shogo82148/actions-upload-release-asset@v1
@@ -126,7 +126,7 @@ jobs:
         if: contains(runner.os, 'Linux')
 
       - name: Build Debian package
-        run: xtask/scripts/build-debian-package.sh
+        run: cicd/scripts/build-debian-package.sh
         if: contains(runner.os, 'Linux')
         
       - name: Upload Debian package
@@ -141,7 +141,7 @@ jobs:
 
       - name: Create Debian package checksum
         if: contains(runner.os, 'Linux')
-        run: xtask/scripts/generate-sha512.sh "$DEB_PATH" DEB_SHA
+        run: cicd/scripts/generate-sha512.sh "$DEB_PATH" DEB_SHA
 
       - name: Upload Debian package checksum
         uses: shogo82148/actions-upload-release-asset@v1
@@ -158,7 +158,7 @@ jobs:
         if: contains(runner.os, 'Linux')
 
       - name: Build RPM package
-        run: xtask/scripts/build-rpm-package.sh
+        run: cicd/scripts/build-rpm-package.sh
         if: contains(runner.os, 'Linux')
 
       - name: Upload RPM package
@@ -173,7 +173,7 @@ jobs:
 
       - name: Create RPM checksum
         if: contains(runner.os, 'Linux')
-        run: xtask/scripts/generate-sha512.sh "$RPM_PATH" RPM_SHA
+        run: cicd/scripts/generate-sha512.sh "$RPM_PATH" RPM_SHA
 
       - name: Upload RPM package checksum
         uses: shogo82148/actions-upload-release-asset@v1
@@ -237,7 +237,7 @@ jobs:
         with:
           fetch-depth: 1
 
-      - run: sh xtask/scripts/install-rust.sh
+      - run: sh cicd/scripts/install-rust.sh
 
       - uses: taiki-e/install-action@cargo-nextest
 

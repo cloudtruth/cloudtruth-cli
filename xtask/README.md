@@ -30,7 +30,7 @@ The `config.yaml` file is used to configure all of the auto-generated artifacts 
 
 # Generating CI Artifacts
 
-`generate-docker` and `generate-gha-matrices` output generated artiface files in the `cicd` directory of this repo. Refer to the README there for more information about those files.
+`generate-docker` and `generate-gha-matrices` output generated artifact files in the `cicd` directory of this repo. Refer to the README there for more information about those files.
 
 CI artifacts are built automatically on commit. The precommit script will warn you if it detects unstaged changes to CI artifacts. 
 

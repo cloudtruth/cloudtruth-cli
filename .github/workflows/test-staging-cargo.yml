@@ -56,7 +56,7 @@ jobs:
         with:
           repository: cloudtruth/cloudtruth-cli
 
-      - run: sh xtask/scripts/install-rust.sh
+      - run: sh cicd/scripts/install-rust.sh
 
       - uses: taiki-e/install-action@cargo-nextest
 
