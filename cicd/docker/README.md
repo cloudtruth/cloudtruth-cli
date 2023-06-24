@@ -1,0 +1,1 @@
+These Dockerfiles are automatically generated from a Dockerfile template according to properties defined in the `cicd/config.yaml`. Do not modify these files directly. Instead modify the template and config YAML.

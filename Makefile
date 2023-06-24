@@ -4,12 +4,12 @@
 os_name := $(shell uname -s)
 rustup_exists := $(shell which rustup)
 openapi_gen_version := v5.3.1
-xtask_dir := xtask
+cicd_dir := cicd
 pytest_dir := integration-tests
 test_dir := tests
 client_dir := crates/cloudtruth-restapi
 # convenience for looping
-subdirs := $(xtask_dir)
+subdirs := $(cicd_dir)
 subdirs += $(pytest_dir)
 subdirs += $(test_dir)
 
@@ -21,11 +21,12 @@ subdirs += $(test_dir)
 .PHONY += cli
 .PHONY += client
 .PHONY += help
-.PHONY += help-text
+.PHONY += help_text
 .PHONY += image
 .PHONY += integration
 .PHONY += fix
 .PHONY += format
+.PHONY += help-text
 .PHONY += lint
 .PHONY += lint_fix
 .PHONY += lint_python
@@ -69,7 +70,7 @@ cargo: $(client_dir)
 	cargo build
 
 ci:
-	make -C $(xtask_dir)
+	make -C $(cicd_dir)
 
 clean:
 	rm -rf target/
@@ -100,6 +101,10 @@ format:
 	python3 -m black .
 	ruff check . --fix
 	taplo fmt
+
+help_text:
+	@rm -rf $(shell ls examples/help-text/*)
+	cargo xtask generate-help-text --verbose
 
 lint: lint_shell lint_rust lint_python lint_toml
 
@@ -176,9 +181,6 @@ test:
 integration: cargo
 	make -C $(pytest_dir) $@
 
-help-text:
-	make -C $(xtask_dir) help-text
-
 help: targets
 
 targets:
@@ -191,7 +193,7 @@ targets:
 	@echo "integration    - runs the integration test against the live server"
 	@echo "fix			  - fix formatting and linting issues:
 	@echo "format "		  - fix formatting issues"
-	@echo "help-text	  - Regenerate help text for test cases"
+	@echo "help_text	  - Regenerate help text for test cases"
 	@echo "lint           - checks for formatting and lint issues"
 	@echo "lint_fix"	  - fix linting issues
 	@echo "precommit      - build rust targets, tests, and lints the files"

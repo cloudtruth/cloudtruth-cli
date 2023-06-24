@@ -3,15 +3,15 @@ use std::{fmt::Display, io::Write, path::Path};
 use anyhow::*;
 use serde::Serialize;
 
+use super::{collect_file_errors, Cli};
+use crate::cicd_dir;
 use crate::config::Config;
 use crate::json::{ReleaseBuildMatrix, ReleaseTestMatrix};
-
-use super::{collect_file_errors, Cli};
 
 /// Default base path for GH matrix outputs
 macro_rules! matrix_path {
     ($($path:expr),*) => {
-        concat!(env!("CARGO_MANIFEST_DIR"),"/gha-matrices/", $($path),*)
+        concat!(cicd_dir!(),"/gha-matrices/", $($path),*)
     };
 }
 
@@ -27,24 +27,32 @@ impl Cli {
         Ok(())
     }
 
-    fn write_matrix<V: Serialize + Display>(&self, name: &str, value: V) -> Result<()> {
+    fn write_matrix<P: AsRef<Path>, V: Serialize + Display>(
+        &self,
+        output_dir: P,
+        matrix_name: &str,
+        json_value: V,
+    ) -> Result<()> {
         if self.verbose {
-            println!("Generated matrices for {name:?}: {value}");
+            println!("Generated matrices for {matrix_name:?}: {matrix_name}");
         }
-        let path = Path::new(matrix_path!()).join(format!("{name}.json"));
+        let path = Path::new(output_dir.as_ref()).join(format!("{matrix_name}.json"));
         let file = self.open_output_file(path.as_path())?;
-        self.write_json(file, &value)
+        self.write_json(file, &json_value)
             .with_context(|| format!("Error while serializing GHA matrix to {path:?}"))
     }
 
     pub fn generate_actions_matrices<'a: 'b, 'b>(&self, config: &'a Config<'b>) -> Result<()> {
-        self.mkdir(matrix_path!())?;
+        let matrix_dir = Path::new(matrix_path!()).canonicalize()?;
+        self.mkdir(&matrix_dir)?;
         let results = vec![
             self.write_matrix(
+                &matrix_dir,
                 "release-builds",
                 ReleaseBuildMatrix::from_iter(&config.release_builds),
             ),
             self.write_matrix(
+                &matrix_dir,
                 "release-tests",
                 ReleaseTestMatrix::from_iter(&config.release_tests),
             ),
