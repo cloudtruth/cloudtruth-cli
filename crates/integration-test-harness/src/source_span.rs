@@ -75,7 +75,6 @@ impl TestSourceSpan {
                             }
                         }
                         if let (Some(line), Some(col)) = (symbol.lineno(), symbol.colno()) {
-                            println!("{:?}", symbol.name());
                             return Ok(Some(Self::from_location(
                                 filename.into(),
                                 line as usize,
