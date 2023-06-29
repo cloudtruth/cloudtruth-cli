@@ -1,3 +1,4 @@
+pub mod audit_logs;
 pub mod environment;
 pub mod file;
 pub mod group;
@@ -8,6 +9,7 @@ pub mod resource;
 pub mod scope;
 pub mod user;
 
+pub use audit_logs::*;
 pub use environment::*;
 pub use file::*;
 pub use group::*;

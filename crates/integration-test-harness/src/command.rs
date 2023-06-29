@@ -38,6 +38,16 @@ impl Command {
         self
     }
 
+    pub fn envs<I, K, V>(&mut self, vars: I) -> &mut Self
+    where
+        I: IntoIterator<Item = (K, V)>,
+        K: AsRef<OsStr>,
+        V: AsRef<OsStr>,
+    {
+        self.0.envs(vars);
+        self
+    }
+
     pub fn page_size(&mut self, page_size: usize) -> &mut Self {
         self.env(CT_REST_PAGE_SIZE, page_size.to_string())
     }
