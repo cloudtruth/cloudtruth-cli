@@ -35,11 +35,29 @@ impl AuditLogEntries {
     /* Find entries whose "Type" field matches the string */
     pub fn find_by_type(
         &self,
-        entry_type: impl AsRef<str>,
+        object_type: impl AsRef<str>,
     ) -> impl Iterator<Item = &AuditLogEntry> {
         self.0
             .iter()
-            .filter(move |entry| entry.entry_type == entry_type.as_ref())
+            .filter(move |entry| entry.object_type == object_type.as_ref())
+    }
+
+    pub fn get_create_delete_count(
+        &self,
+        object_type: impl AsRef<str>,
+        name: impl AsRef<str>,
+    ) -> (usize, usize) {
+        self.iter()
+            .filter(move |entry| {
+                entry.object_type == object_type.as_ref() && entry.object_name == name.as_ref()
+            })
+            .fold((0, 0), |(create_count, delete_count), entry| {
+                match entry.action.as_str() {
+                    "create" => (create_count + 1, delete_count),
+                    "delete" => (create_count, delete_count + 1),
+                    _ => (create_count, delete_count),
+                }
+            })
     }
 }
 
@@ -52,7 +70,7 @@ pub struct AuditLogEntry {
     pub object_name: String,
     pub time: String,
     #[serde(rename = "Type")]
-    pub entry_type: String,
+    pub object_type: String,
     pub user: String,
 }
 

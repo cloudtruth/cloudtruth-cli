@@ -15,66 +15,70 @@ fn test_environment_basic() {
         .success()
         .stdout(not(contains(env.name())));
 
+    let mut env = env.create();
+
     // create/delete within scope of this closure
-    env.clone().with_scope(|mut env| {
-        cloudtruth!("environments ls -v -f csv")
-            .assert()
-            .success()
-            .stdout(contains!("{env},default,Description on create"));
+    cloudtruth!("environments ls -v -f csv")
+        .assert()
+        .success()
+        .stdout(contains!("{env},default,Description on create"));
 
-        // update the description
-        cloudtruth!("environments set {env} --desc 'Updated description'")
-            .assert()
-            .success();
+    // update the description
+    cloudtruth!("environments set {env} --desc 'Updated description'")
+        .assert()
+        .success();
 
-        cloudtruth!("environments ls -v -f csv")
-            .assert()
-            .success()
-            .stdout(contains!("{env},default,Updated description"));
+    cloudtruth!("environments ls -v -f csv")
+        .assert()
+        .success()
+        .stdout(contains!("{env},default,Updated description"));
 
-        // idempotent - do it again
-        cloudtruth!("environments set {env} --desc 'Updated description'")
-            .assert()
-            .success();
+    // idempotent - do it again
+    cloudtruth!("environments set {env} --desc 'Updated description'")
+        .assert()
+        .success();
 
-        // rename
-        env.rename(Name::with_prefix("env-rename"));
+    // rename
+    env.rename(Name::with_prefix("env-rename"));
 
-        // nothing to update
-        cloudtruth!("environments set {env}")
-            .assert()
-            .success()
-            .stderr(contains!(
-                "Environment '{env}' not updated: no updated parameters provided"
-            ));
+    // nothing to update
+    cloudtruth!("environments set {env}")
+        .assert()
+        .success()
+        .stderr(contains!(
+            "Environment '{env}' not updated: no updated parameters provided"
+        ));
 
-        // test the list without the values
-        cloudtruth!("environments list")
-            .assert()
-            .success()
-            .stdout(contains(env.name()).and(not(contains("Updated description"))));
+    // test the list without the values
+    cloudtruth!("environments list")
+        .assert()
+        .success()
+        .stdout(contains(env.name()).and(not(contains("Updated description"))));
 
-        // shows create/modified times
-        cloudtruth!("environments list --show-times -f csv")
-            .assert()
-            .success()
-            .stdout(
-                contains("Created At,Modified At")
-                    .and(contains(env.name()))
-                    .and(contains("Updated description")),
-            );
-    });
+    // shows create/modified times
+    cloudtruth!("environments list --show-times -f csv")
+        .assert()
+        .success()
+        .stdout(
+            contains("Created At,Modified At")
+                .and(contains(env.name()))
+                .and(contains("Updated description")),
+        );
+
+    //explicitly delete
+    let deleted_env = Environment::from_name(env.name().clone());
+    drop(env);
     // verify deletion
     cloudtruth!("environments ls -v")
         .assert()
         .success()
-        .stdout(not(contains(env.name())));
+        .stdout(not(contains(deleted_env.name())));
 
     // do it again, see we have success and a warning
-    cloudtruth!("environments delete {env} --confirm")
+    cloudtruth!("environments delete {deleted_env} --confirm")
         .assert()
         .success()
-        .stderr(contains!("Environment '{env}' does not exist"));
+        .stderr(contains!("Environment '{deleted_env}' does not exist"));
 }
 
 #[test]

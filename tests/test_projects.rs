@@ -14,60 +14,64 @@ fn test_projects_basic() {
         .success()
         .stdout(not(contains(proj.name())));
 
+    let mut proj = proj.create();
+
     // create/delete the project within scope of this closure
-    proj.clone().with_scope(|mut proj| {
-        cloudtruth!("projects ls -v -f csv")
-            .assert()
-            .success()
-            .stdout(contains!("{proj},,Description on create"));
-        // update the description
-        cloudtruth!("projects set {proj} --desc 'Updated description'")
-            .assert()
-            .success();
-        cloudtruth!("projects ls -v -f csv")
-            .assert()
-            .success()
-            .stdout(contains!("{proj},,Updated description"));
-        // idempotent - do it again
-        cloudtruth!("projects set {proj} --desc 'Updated description'")
-            .assert()
-            .success();
-        // rename the project
-        proj.rename(Name::with_prefix("proj-rename"));
-        // nothing to update
-        cloudtruth!("projects set {proj}")
-            .assert()
-            .success()
-            .stderr(contains!(
-                "Project '{proj}' not updated: no updated parameters provided"
-            ));
-        // test the list without the values
-        cloudtruth!("projects list")
-            .assert()
-            .success()
-            .stdout(contains(proj.name()).and(not(contains("Updated description"))));
-        // shows create/modified times
-        cloudtruth!("projects list --show-times -f csv")
-            .assert()
-            .success()
-            .stdout(
-                contains("Created At,Modified At")
-                    .and(contains(proj.name()))
-                    .and(contains("Updated description")),
-            );
-    });
+    cloudtruth!("projects ls -v -f csv")
+        .assert()
+        .success()
+        .stdout(contains!("{proj},,Description on create"));
+    // update the description
+    cloudtruth!("projects set {proj} --desc 'Updated description'")
+        .assert()
+        .success();
+    cloudtruth!("projects ls -v -f csv")
+        .assert()
+        .success()
+        .stdout(contains!("{proj},,Updated description"));
+    // idempotent - do it again
+    cloudtruth!("projects set {proj} --desc 'Updated description'")
+        .assert()
+        .success();
+    // rename the project
+    proj.rename(Name::with_prefix("proj-rename"));
+    // nothing to update
+    cloudtruth!("projects set {proj}")
+        .assert()
+        .success()
+        .stderr(contains!(
+            "Project '{proj}' not updated: no updated parameters provided"
+        ));
+    // test the list without the values
+    cloudtruth!("projects list")
+        .assert()
+        .success()
+        .stdout(contains(proj.name()).and(not(contains("Updated description"))));
+    // shows create/modified times
+    cloudtruth!("projects list --show-times -f csv")
+        .assert()
+        .success()
+        .stdout(
+            contains("Created At,Modified At")
+                .and(contains(proj.name()))
+                .and(contains("Updated description")),
+        );
+
+    // explicitly delete
+    let deleted_proj = Project::from_name(proj.name().clone());
+    drop(proj);
 
     // verify deletion
     cloudtruth!("projects ls -v")
         .assert()
         .success()
-        .stdout(not(contains(proj.name())));
+        .stdout(not(contains(deleted_proj.name())));
 
     // try to delete again, see we have success and a warning
-    cloudtruth!("projects delete {proj} --confirm")
+    cloudtruth!("projects delete {deleted_proj} --confirm")
         .assert()
         .success()
-        .stderr(contains!("Project '{proj}' does not exist"));
+        .stderr(contains!("Project '{deleted_proj}' does not exist"));
 }
 
 #[test]
