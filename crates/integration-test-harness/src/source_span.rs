@@ -63,11 +63,19 @@ impl TestSourceSpan {
     pub fn from_backtrace(caller: &Location) -> io::Result<Option<Self>> {
         // A substring of test source file paths
         let test_path = Path::new(caller.file()).parent().unwrap().to_string_lossy();
-        for frame in Backtrace::new().frames().iter() {
+        /* Go through backtrace in reverse order to get the top-level source snippet */
+        for frame in Backtrace::new().frames().iter().rev() {
             for symbol in frame.symbols().iter() {
                 if let Some(filename) = symbol.filename().and_then(|f| f.to_str()) {
                     if filename.contains(test_path.as_ref()) {
+                        if let Some(name) = symbol.name() {
+                            /* skip attribute macros */
+                            if name.to_string().contains("{{closure}}") {
+                                continue;
+                            }
+                        }
                         if let (Some(line), Some(col)) = (symbol.lineno(), symbol.colno()) {
+                            println!("{:?}", symbol.name());
                             return Ok(Some(Self::from_location(
                                 filename.into(),
                                 line as usize,
