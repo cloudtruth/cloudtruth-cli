@@ -4,6 +4,7 @@
 pub use crate::assert::AssertCmdExt;
 pub use crate::command::*;
 pub use crate::data::*;
+pub use crate::output::*;
 pub use crate::predicates::*;
 pub use crate::util::*;
 
