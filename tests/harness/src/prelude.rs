@@ -11,7 +11,7 @@ pub use crate::util::*;
 #[cfg(feature = "macros")]
 pub use {
     super::{all, cli_bin_path, cloudtruth, contains, contains_all, diff},
-    integration_test_macros::use_harness,
+    cloudtruth_test_macros::use_harness,
 };
 
 // exports from dependencies

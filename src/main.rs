@@ -6,7 +6,7 @@ fn main() -> Result<()> {
 
 #[cfg(test)]
 mod main_test {
-    use integration_test_harness::prelude::*;
+    use cloudtruth_test_harness::prelude::*;
 
     use cloudtruth_config::{CT_API_KEY, CT_PROFILE};
 

@@ -13,7 +13,7 @@ pub(crate) fn gen_use_harness(test_fn: ItemFn) -> proc_macro2::TokenStream {
         #vis #sig
         {
             let _orig_hook = std::panic::take_hook();
-            integration_test_harness::install();
+            cloudtruth_test_harness::install();
             let ret = {
                 #block
             };

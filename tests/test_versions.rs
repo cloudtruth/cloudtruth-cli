@@ -1,4 +1,4 @@
-use integration_test_harness::prelude::*;
+use cloudtruth_test_harness::prelude::*;
 use std::str;
 
 #[test]
