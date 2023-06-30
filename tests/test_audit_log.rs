@@ -1,5 +1,5 @@
 use cloudtruth_config::{CT_API_KEY, CT_ENVIRONMENT, CT_PROJECT};
-use integration_test_harness::prelude::*;
+use cloudtruth_test_harness::prelude::*;
 use maplit::hashmap;
 
 #[use_harness]
@@ -12,7 +12,7 @@ fn test_audit_logs() {
         .env(CT_API_KEY, test_user.api_key())
         .assert()
         .success();
-    let _summary = cmd.get_output();
+    let summary = cmd.get_output();
     /* Create test project */
     let proj = Project::with_prefix("audit-proj").create();
     /* Create test environment */
@@ -42,7 +42,7 @@ fn test_audit_logs() {
         .envs(&env_map)
         .assert()
         .success();
-    let entries = cmd.get_audit_log_entries();
+    let entries = cmd.parse_audit_log_json();
     assert_eq!(4, entries.len());
     assert_eq!(4, entries.find_by_action("create").count());
     assert_eq!(1, entries.find_by_type("Project").count());
@@ -54,7 +54,7 @@ fn test_audit_logs() {
         .envs(&env_map)
         .assert()
         .success();
-    let entries = cmd.get_audit_log_entries();
+    let entries = cmd.parse_audit_log_json();
     assert_eq!(2, entries.len());
     assert_eq!(2, entries.find_by_action("create").count());
     assert_eq!(1, entries.find_by_type("Parameter").count());
@@ -64,35 +64,11 @@ fn test_audit_logs() {
         .envs(&env_map)
         .assert()
         .success();
-    let entries = cmd.get_audit_log_entries();
+    let entries = cmd.parse_audit_log_json();
     assert_eq!(2, entries.len());
     assert_eq!(2, entries.find_by_action("create").count());
     assert_eq!(1, entries.find_by_type("Value").count());
     assert_eq!(1, entries.find_by_type("Environment").count());
-
-    /* Bad filters */
-    cloudtruth!("audit-logs ls --env my-bogus-env")
-        .envs(&env_map)
-        .assert()
-        .failure()
-        .stderr(contains!("Environment 'my-bogus-env' not found"));
-    cloudtruth!("audit-logs ls --project my-bogus-proj")
-        .envs(&env_map)
-        .assert()
-        .failure()
-        .stderr(contains!("Project 'my-bogus-proj' not found"));
-    cloudtruth!("audit-logs ls --project '{proj}' --parameter my-bogus-param")
-        .envs(&env_map)
-        .assert()
-        .failure()
-        .stderr(contains!("Parameter 'my-bogus-param' not found"));
-    cloudtruth!("audit-logs ls --parameter audit-param")
-        .envs(&env_map)
-        .assert()
-        .failure()
-        .stderr(contains!(
-            "Must specify a project when specifying a parameter"
-        ));
 
     /* delete stuff */
     cloudtruth!("template delete my-audit-template --confirm")
@@ -116,7 +92,7 @@ fn test_audit_logs() {
         .envs(&env_map)
         .assert()
         .success();
-    let entries = cmd.get_audit_log_entries();
+    let entries = cmd.parse_audit_log_json();
     assert_eq!(entries.len(), entries.find_by_type("Parameter").count());
     let (create_count, delete_count) = entries.get_create_delete_count("Parameter", "audit-param");
     assert_ne!(0, create_count);
@@ -126,10 +102,10 @@ fn test_audit_logs() {
         .envs(&env_map)
         .assert()
         .success();
-    let entries = cmd.get_audit_log_entries();
+    let entries = cmd.parse_audit_log_json();
     assert_eq!(entries.len(), entries.find_by_type("Template").count());
     let (create_count, delete_count) = cmd
-        .get_audit_log_entries()
+        .parse_audit_log_json()
         .get_create_delete_count("Template", "my-audit-template");
     assert_ne!(0, create_count);
     assert_ne!(0, delete_count);
@@ -138,7 +114,7 @@ fn test_audit_logs() {
         .envs(&env_map)
         .assert()
         .success();
-    let entries = cmd.get_audit_log_entries();
+    let entries = cmd.parse_audit_log_json();
     assert_eq!(entries.len(), entries.find_by_type("Environment").count());
     let (create_count, delete_count) =
         entries.get_create_delete_count("Environment", &old_env_name);
@@ -149,12 +125,79 @@ fn test_audit_logs() {
         .envs(&env_map)
         .assert()
         .success();
-    let entries = cmd.get_audit_log_entries();
+    let entries = cmd.parse_audit_log_json();
     assert_eq!(entries.len(), entries.find_by_type("Value").count());
     let (create_count, delete_count) = entries.get_create_delete_count("Value", &old_env_name);
     assert_eq!(0, create_count);
     assert_eq!(0, delete_count);
 
+    // parse audit summary snapshot
+    let summary = AuditLogSummary::parse(&summary.stdout);
+    let entries = cloudtruth!(
+        "audit ls -f json -m 1 --before {timestamp}",
+        timestamp = summary.earliest_record().to_rfc3339()
+    )
+    .envs(&env_map)
+    .assert()
+    .success()
+    .parse_audit_log_json();
+    assert!(entries.len() < summary.record_count());
+    let newer = entries
+        .iter()
+        .filter(|e| &e.time > summary.earliest_record());
+    assert_eq!(0, newer.count());
+    let entries = cloudtruth!("audit ls -f json -m 3")
+        .envs(&env_map)
+        .assert()
+        .success()
+        .parse_audit_log_json();
+    let after = entries.last().unwrap().time;
+    let entries = cloudtruth!(
+        "audit ls -f json -m 1 --after {ts}",
+        ts = after.to_rfc3339()
+    )
+    .envs(&env_map)
+    .assert()
+    .success()
+    .parse_audit_log_json();
+    assert!(entries.len() < summary.record_count());
+    let older = entries.iter().filter(|e| e.time < after);
+    assert_eq!(older.count(), 0);
+
+    // compare snapshot summary with latest summary
+    let cmd = cloudtruth!("audit summary").assert().success();
+    let final_summary = AuditLogSummary::parse(&cmd.get_output().stdout);
+    assert_ne!(summary, final_summary);
+}
+
+#[use_harness]
+#[test]
+fn test_audit_logs_basic() {
+    let entries = cloudtruth!("audit ls -f json")
+        .assert()
+        .success()
+        .parse_audit_log_json();
+    assert_ne!(0, entries.len());
+}
+#[use_harness]
+#[test]
+fn test_audit_logs_time_filters() {
+    /* time filtered */
+    // nothing found for old date
+    cloudtruth!("audit ls -m 1 --before 2021-10-31")
+        .assert()
+        .success()
+        .stdout(starts_with("No audit log entries"));
+    // nothing found for date in the future
+    cloudtruth!("audit ls -m 1 --after 8084-10-31")
+        .assert()
+        .success()
+        .stdout(starts_with("No audit log entries"));
+}
+
+#[use_harness]
+#[test]
+fn test_audit_logs_type_filters() {
     for object_type in [
         "AwsIntegration",
         "Environment",
@@ -176,25 +219,60 @@ fn test_audit_logs() {
         "Value",
     ] {
         let cmd = cloudtruth!("audit ls -f json -m 5 -t {object_type}")
-            .envs(&env_map)
             .assert()
             .success();
-        let entries = cmd.get_audit_log_entries();
+        let entries = cmd.parse_audit_log_json();
         assert!(5 >= entries.len());
         assert_eq!(entries.len(), entries.find_by_type(object_type).count());
     }
+}
 
-    /* time filtered */
-    // nothing found for old date
-    cloudtruth!("audit ls -m 1 --before 2021-10-31")
-        .envs(&env_map)
+#[use_harness]
+#[test]
+fn test_audit_logs_bad_filters() {
+    cloudtruth!("audit ls --before foo")
+        .assert()
+        .failure()
+        .stderr(contains!("Invalid '--before' value"));
+    cloudtruth!("audit ls --after bar")
+        .assert()
+        .failure()
+        .stderr(contains!("Invalid '--after' value"));
+    cloudtruth!("audit ls --after bar --before foo")
+        .assert()
+        .failure()
+        .stderr(contains_all([
+            "Invalid '--before' value",
+            "Invalid '--after' value",
+        ]));
+    cloudtruth!("audit ls --user 'ricardo.multiban'")
+        .assert()
+        .failure()
+        .stderr(contains!("User 'ricardo.multiban' not found"));
+    cloudtruth!("audit ls --type snafoo")
         .assert()
         .success()
-        .stdout(starts_with("No audit log entries"));
-    // nothing found for date in the future
-    cloudtruth!("audit ls -m 1 --after 8084-10-31")
-        .envs(&env_map)
+        .stderr(contains!(
+            "The specified --type is not one of the recognized values"
+        ));
+    cloudtruth!("audit-logs ls --env my-bogus-env")
         .assert()
-        .success()
-        .stdout(starts_with("No audit log entries"));
+        .failure()
+        .stderr(contains!("Environment 'my-bogus-env' not found"));
+    cloudtruth!("audit-logs ls --project my-bogus-proj")
+        .assert()
+        .failure()
+        .stderr(contains!("Project 'my-bogus-proj' not found"));
+    Project::with_prefix("audit-log-bad-filters").with_scope(|proj| {
+        cloudtruth!("audit-logs ls --project '{proj}' --parameter my-bogus-param")
+            .assert()
+            .failure()
+            .stderr(contains!("Parameter 'my-bogus-param' not found"));
+    });
+    cloudtruth!("audit-logs ls --parameter audit-param")
+        .assert()
+        .failure()
+        .stderr(contains!(
+            "Must specify a project when specifying a parameter"
+        ));
 }

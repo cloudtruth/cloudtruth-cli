@@ -1,6 +1,6 @@
 use cloudtruth_config::{CT_PROJECT, CT_REQ_TIMEOUT, CT_SERVER_URL};
+use cloudtruth_test_harness::prelude::*;
 use const_format::formatcp;
-use integration_test_harness::prelude::*;
 
 #[test]
 #[ignore]

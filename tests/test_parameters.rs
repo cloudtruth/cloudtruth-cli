@@ -1,5 +1,5 @@
 use cloudtruth_config::{CT_ENVIRONMENT, CT_PROJECT};
-use integration_test_harness::prelude::*;
+use cloudtruth_test_harness::prelude::*;
 
 #[test]
 #[use_harness]

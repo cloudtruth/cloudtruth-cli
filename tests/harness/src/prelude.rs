@@ -4,6 +4,7 @@
 pub use crate::assert::AssertCmdExt;
 pub use crate::command::*;
 pub use crate::data::*;
+pub use crate::output::*;
 pub use crate::predicates::*;
 pub use crate::util::*;
 
@@ -11,7 +12,7 @@ pub use crate::util::*;
 #[cfg(feature = "macros")]
 pub use {
     super::{all, cli_bin_path, cloudtruth, contains, contains_all, diff},
-    integration_test_macros::use_harness,
+    cloudtruth_test_macros::use_harness,
 };
 
 // exports from dependencies

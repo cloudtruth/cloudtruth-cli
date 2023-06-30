@@ -8,6 +8,7 @@ pub mod data;
 pub mod error_handler;
 #[cfg(feature = "macros")]
 pub mod macros;
+pub mod output;
 pub mod panic;
 pub mod predicates;
 pub mod prelude;
