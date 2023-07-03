@@ -1,5 +1,3 @@
-use std::borrow::Cow;
-
 use crate::{
     command::{cli_bin_path, Command},
     contains,
@@ -11,7 +9,7 @@ use crate::{
 #[display(fmt = "{}", name)]
 pub struct Profile<'a, 'prof, 'proj> {
     name: Name,
-    api_key: Option<Cow<'a, str>>,
+    api_key: Option<&'a str>,
     source: Option<&'prof Name>,
     project: Option<&'proj Name>,
 }
@@ -27,8 +25,8 @@ impl<'a, 'prof, 'proj> Profile<'a, 'prof, 'proj> {
     }
 
     /// Set the projects description.
-    pub fn api_key<A: Into<Cow<'a, str>>>(mut self, api_key: A) -> Self {
-        self.api_key = Some(api_key.into());
+    pub fn api_key<A: AsRef<str> + ?Sized>(mut self, api_key: &'a A) -> Self {
+        self.api_key = Some(api_key.as_ref());
         self
     }
 
