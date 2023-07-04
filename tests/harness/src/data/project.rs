@@ -60,7 +60,7 @@ impl<'d, 'p> Project<'d, 'p> {
 
     /// Set the projects parent.
     pub fn parent(mut self, parent: &'p Project) -> Self {
-        self.parent = Some(&parent.name);
+        self.parent = Some(parent.name());
         self
     }
 }
@@ -82,7 +82,7 @@ impl<'d, 'p> TestResource for Project<'d, 'p> {
             cmd.args(["--desc", desc]);
         }
         if let Some(parent) = self.parent {
-            cmd.args(["--parent", parent.as_ref()]);
+            cmd.args(["--parent", parent.as_str()]);
         }
         cmd.assert()
             .success()
