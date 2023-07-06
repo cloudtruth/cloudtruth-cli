@@ -56,7 +56,7 @@ mod main_test {
         for (subcmd, aliases) in subcmds {
             for alias in core::iter::once(subcmd).chain(aliases) {
                 cloudtruth!("{alias}")
-                    .offline_env()
+                    .env_offline()
                     .env(CT_API_KEY, "dummy-key")
                     .env(CT_PROFILE, "default")
                     .assert()
@@ -71,8 +71,8 @@ mod main_test {
     fn requires_at_least_one_subcommand() {
         // Verify that invoking the CLI app without any arguments sets an error status code and
         // prints out the help message.
-        let no_subcmd = cloudtruth!("").offline_env().assert().failure();
-        let help_cmd = cloudtruth!("help").offline_env().assert().success();
+        let no_subcmd = cloudtruth!("").env_offline().assert().failure();
+        let help_cmd = cloudtruth!("help").env_offline().assert().success();
         let help_message = std::str::from_utf8(&help_cmd.get_output().stdout)
             .unwrap()
             .to_string();
@@ -83,7 +83,7 @@ mod main_test {
     #[use_harness]
     fn completions_work_without_config() {
         cloudtruth!("completions bash")
-            .offline_env()
+            .env_offline()
             .assert()
             .success();
     }
@@ -92,7 +92,7 @@ mod main_test {
     #[use_harness]
     fn completions_error_with_bad_shell_name() {
         cloudtruth!("completions bad")
-            .offline_env()
+            .env_offline()
             .assert()
             .failure()
             .stderr(contains("'bad' isn't a valid value"));
@@ -114,7 +114,7 @@ mod main_test {
         for cmd_args in commands {
             println!("need_api_key test: {}", cmd_args);
             cloudtruth!("{cmd_args}")
-                .offline_env()
+                .env_offline()
                 .env(CT_API_KEY, "")
                 .env(CT_PROFILE, "default")
                 .assert()
@@ -133,7 +133,7 @@ mod main_test {
             let warn_msg =
                 format!("Profile '{prof_name}' does not exist in your configuration file");
             cloudtruth!("{cmd_args}")
-                .offline_env()
+                .env_offline()
                 .env(CT_API_KEY, "dummy-key")
                 .env(CT_PROFILE, prof_name)
                 .assert()

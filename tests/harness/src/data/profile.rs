@@ -1,26 +1,27 @@
 use crate::{
     command::{cli_bin_path, Command},
     contains,
-    data::{Name, NameConstructors, Scope, TestResource},
-    prelude::Project,
+    data::{Environment, Name, NameConstructors, Project, Scope, TestResource},
 };
 
 #[derive(Clone, Debug, Display)]
 #[display(fmt = "{}", name)]
-pub struct Profile<'a, 'prof, 'proj> {
+pub struct Profile<'a, 'prof, 'proj, 'e> {
     name: Name,
     api_key: Option<&'a str>,
     source: Option<&'prof Name>,
     project: Option<&'proj Name>,
+    env: Option<&'e Name>,
 }
 
-impl<'a, 'prof, 'proj> Profile<'a, 'prof, 'proj> {
+impl<'a, 'prof, 'proj, 'e> Profile<'a, 'prof, 'proj, 'e> {
     fn new(name: Name) -> Self {
         Self {
             name,
             api_key: None,
             source: None,
             project: None,
+            env: None,
         }
     }
 
@@ -41,15 +42,21 @@ impl<'a, 'prof, 'proj> Profile<'a, 'prof, 'proj> {
         self.project = Some(project.name());
         self
     }
+
+    /// Set the profiles default environment
+    pub fn env(mut self, env: &'e Environment) -> Self {
+        self.env = Some(env.name());
+        self
+    }
 }
 
-impl<'a, 'prof, 'proj> NameConstructors for Profile<'a, 'prof, 'proj> {
+impl<'a, 'prof, 'proj, 'e> NameConstructors for Profile<'a, 'prof, 'proj, 'e> {
     fn from_name<N: Into<Name>>(name: N) -> Self {
         Self::new(name.into())
     }
 }
 
-impl<'a, 'prof, 'proj> TestResource for Profile<'a, 'prof, 'proj> {
+impl<'a, 'prof, 'proj, 'e> TestResource for Profile<'a, 'prof, 'proj, 'e> {
     fn name(&self) -> &Name {
         &self.name
     }
@@ -64,6 +71,9 @@ impl<'a, 'prof, 'proj> TestResource for Profile<'a, 'prof, 'proj> {
         }
         if let Some(project) = self.project {
             cmd.args(["-p", project.as_str()]);
+        }
+        if let Some(env) = self.env {
+            cmd.args(["-e", env.as_str()]);
         }
         cmd.assert()
             .success()

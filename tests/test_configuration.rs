@@ -1,4 +1,9 @@
+use cloudtruth_config::{
+    CT_PROFILE, CT_REQ_TIMEOUT, CT_REST_DEBUG, CT_REST_PAGE_SIZE, CT_REST_SUCCESS,
+};
+use cloudtruth_test_harness::output::profile::*;
 use cloudtruth_test_harness::prelude::*;
+use maplit::hashmap;
 
 #[test]
 #[use_harness]
@@ -118,4 +123,202 @@ fn test_configuration_profile() {
         .assert()
         .success()
         .stderr(contains!("Profile '{deleted_profile}' does not exist"));
+}
+
+#[test]
+#[use_harness]
+fn test_configuration_current() {
+    let cmd = cloudtruth!("config current").assert().success();
+    let orig_profile = Profile::from_string(String::from_utf8_lossy(&cmd.get_output().stdout));
+    let test_proj = Project::with_prefix("current-profile-proj");
+    let test_env = Environment::with_prefix("current-profile-env");
+    let test_profile = Profile::with_prefix("current-profile")
+        .api_key("bogus-key-value")
+        .project(&test_proj)
+        .env(&test_env)
+        .create();
+
+    // current profile is unchanged
+    cloudtruth!("config current")
+        .assert()
+        .success()
+        .stdout(eq(orig_profile.name().as_str()));
+
+    // create new environment map
+    let env_map = hashmap! {
+        CT_PROFILE => test_profile.name().as_str()
+    };
+
+    // check current profile with new environment
+    cloudtruth!("config current")
+        .env_clear()
+        .envs(&env_map)
+        .assert()
+        .success()
+        .stdout(ne(orig_profile.name().as_str()).and(contains(test_profile.name())));
+
+    // Check all profile parameters
+
+    let profile_json = cloudtruth!("config current -sf json")
+        .env_clear()
+        .envs(&env_map)
+        .assert()
+        .success()
+        .parse_profile_parameters();
+
+    let expected_param_names = vec![
+        "Profile",
+        "API key",
+        "Organization",
+        "User",
+        "Role",
+        "Project",
+        "Environment",
+    ];
+    let actual_param_names = profile_json.param_names();
+    assert_eq!(expected_param_names, actual_param_names);
+
+    let param = profile_json.find_param("Profile");
+    assert_eq!(param.value, test_profile.name().as_str());
+    assert_eq!(param.source, "shell");
+
+    let param = profile_json.find_param("API key");
+    assert_eq!(param.value, "bogus-key-value");
+    assert_eq!(param.source, format!("profile ({test_profile})"));
+
+    let param = profile_json.find_param("Project");
+    assert_eq!(param.value, test_proj.name().as_str());
+    assert_eq!(param.source, format!("profile ({test_profile})"));
+
+    let param = profile_json.find_param("Environment");
+    assert_eq!(param.value, test_env.name().as_str());
+    assert_eq!(param.source, format!("profile ({test_profile})"));
+
+    let param = profile_json.find_param("Organization");
+    assert_eq!(param.value, "");
+    assert_eq!(param.value, "");
+
+    let param = profile_json.find_param("User");
+    assert_eq!(param.value, "");
+    assert_eq!(param.value, "");
+
+    let param = profile_json.find_param("Role");
+    assert_eq!(param.value, "");
+    assert_eq!(param.value, "");
+
+    // Extended profile configuration
+    let env_map = hashmap! {
+        CT_PROFILE => test_profile.name().as_str(),
+        CT_REST_SUCCESS => "a,b,c,d",
+        CT_REST_DEBUG => "false",
+        CT_REST_PAGE_SIZE => "9",
+        CT_REQ_TIMEOUT => "33"
+    };
+
+    let profile_json = cloudtruth!("config current -xsf json")
+        .env_clear()
+        .envs(&env_map)
+        .assert()
+        .success()
+        .parse_profile_parameters();
+
+    let expected_param_names = vec![
+        "Profile",
+        "API key",
+        "Organization",
+        "User",
+        "Role",
+        "Project",
+        "Environment",
+        "CLI version",
+        "Server URL",
+        "Request timeout",
+        "REST debug",
+        "REST success",
+        "REST page size",
+        "Accept Invalid Certs",
+    ];
+    let actual_param_names = profile_json.param_names();
+    assert_eq!(expected_param_names, actual_param_names);
+
+    let param = profile_json.find_param("REST debug");
+    assert_eq!(param.value, "false");
+    assert_eq!(param.source, "shell");
+
+    let param = profile_json.find_param("REST success");
+    assert_eq!(param.value, "a, b, c, d");
+    assert_eq!(param.source, "shell");
+
+    let param = profile_json.find_param("REST page size");
+    assert_eq!(param.value, "9");
+    assert_eq!(param.source, "shell");
+
+    let param = profile_json.find_param("Request timeout");
+    assert_eq!(param.value, "33");
+    assert_eq!(param.source, "shell");
+
+    // test with command line arguments
+
+    let profile_json = cloudtruth!(
+        "--api-key 'bogus-key-value' --profile '{test_profile}' config current -sf json"
+    )
+    .env_clear()
+    .envs(&env_map)
+    .assert()
+    .success()
+    .parse_profile_parameters();
+
+    let param = profile_json.find_param("Profile");
+    assert_eq!(param.value, test_profile.name().as_str());
+    assert_eq!(param.source, "argument");
+
+    let param = profile_json.find_param("API key");
+    assert_eq!(param.value, "bogus-key-value");
+    assert_eq!(param.source, "argument");
+
+    let param = profile_json.find_param("Organization");
+    assert_eq!(param.value, "");
+    assert_eq!(param.value, "");
+
+    let param = profile_json.find_param("User");
+    assert_eq!(param.value, "");
+    assert_eq!(param.value, "");
+
+    let param = profile_json.find_param("Role");
+    assert_eq!(param.value, "");
+    assert_eq!(param.value, "");
+
+    let deleted_profile = Profile::from_name(test_profile.name().clone());
+    drop(test_profile);
+
+    // when profile is not found, command succeeds without the bits from the config
+    cloudtruth!("config current -s")
+        .env_clear()
+        .env(CT_PROFILE, deleted_profile.name().as_str())
+        .assert()
+        .success()
+        .stdout(
+            contains(deleted_profile.name().as_str())
+                .and(not(contains("bogus-key-value")))
+                .and(not(contains(test_env.name().as_str())))
+                .and(not(contains(test_proj.name().as_str())))
+                .and(not(contains!("profile ({deleted_profile})"))),
+        );
+
+    // use default environment variables
+    let profile_json = cloudtruth!("config current -f json")
+        .assert()
+        .success()
+        .parse_profile_parameters();
+    let param = profile_json.find_param("API key");
+    assert_eq!("*****", param.value);
+    let param = profile_json.find_param("Organization");
+    assert_ne!("", param.value);
+    assert_eq!("API key", param.source);
+    let param = profile_json.find_param("User");
+    assert_ne!("", param.value);
+    assert_eq!("API key", param.source);
+    let param = profile_json.find_param("Role");
+    assert!(["owner", "admin", "contrib"].contains(&param.value.as_str()));
+    assert_eq!("API key", param.source);
 }

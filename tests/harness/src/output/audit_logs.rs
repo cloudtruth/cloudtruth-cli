@@ -77,11 +77,11 @@ pub struct AuditLogEntry {
 }
 
 /* Use an extension trait to extend the assert_cmd::Assert type with a methods for getting parsed audit log entries */
-pub trait GetAuditLogEntriesExt {
+pub trait ParseAuditLogEntriesExt {
     fn parse_audit_log_json(&self) -> AuditLogEntries;
 }
 
-impl GetAuditLogEntriesExt for assert_cmd::assert::Assert {
+impl ParseAuditLogEntriesExt for assert_cmd::assert::Assert {
     fn parse_audit_log_json(&self) -> AuditLogEntries {
         let out = &self.get_output().stdout;
         if out.starts_with(b"No audit log entries") {

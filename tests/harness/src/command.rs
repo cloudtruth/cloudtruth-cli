@@ -18,7 +18,9 @@ impl Command {
     }
 
     pub fn from_assert_cmd(cmd: assert_cmd::Command) -> Self {
-        Self(cmd).default_env()
+        let mut cmd = Self(cmd);
+        cmd.env_default();
+        cmd
     }
 
     pub fn as_assert_cmd(&self) -> &assert_cmd::Command {
@@ -26,7 +28,9 @@ impl Command {
     }
 
     pub fn from_std(cmd: std::process::Command) -> Self {
-        Self(assert_cmd::Command::from_std(cmd)).default_env()
+        let mut cmd = Self(assert_cmd::Command::from_std(cmd));
+        cmd.env_default();
+        cmd
     }
 
     pub fn env<K, V>(&mut self, key: K, value: V) -> &mut Self
@@ -57,13 +61,21 @@ impl Command {
     }
 
     // Apply default environment variables
-    fn default_env(mut self) -> Self {
+    ///
+    fn env_default(&mut self) -> &mut Self {
         self.env("NO_COLOR", "1");
         self
     }
 
+    /// Clear the environment map for the child process
+    pub fn env_clear(&mut self) -> &mut Self {
+        self.0.env_clear();
+        self.env_default();
+        self
+    }
+
     // Set environment variables to restrict CLI to offline usage only
-    pub fn offline_env(&mut self) -> &mut Self {
+    pub fn env_offline(&mut self) -> &mut Self {
         // Explicitly clear the API key so an individual dev's personal config isn't used for tests.
         self.env(CT_API_KEY, "");
         // Explicitly set the server to a bogus value that a server cannot to
