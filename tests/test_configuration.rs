@@ -1,6 +1,7 @@
 use cloudtruth_config::{
     CT_PROFILE, CT_REQ_TIMEOUT, CT_REST_DEBUG, CT_REST_PAGE_SIZE, CT_REST_SUCCESS,
 };
+use cloudtruth_test_harness::output::profile::*;
 use cloudtruth_test_harness::prelude::*;
 use maplit::hashmap;
 
@@ -186,12 +187,12 @@ fn test_configuration_current() {
     assert_eq!(param.source, format!("profile ({test_profile})"));
 
     let param = profile_json.find_param("Project");
-    assert_eq!(param.value, "current-profile-proj");
-    assert_eq!(param.value, format!("profile ({test_profile})"));
+    assert_eq!(param.value, test_proj.name().as_str());
+    assert_eq!(param.source, format!("profile ({test_profile})"));
 
     let param = profile_json.find_param("Environment");
-    assert_eq!(param.value, "current-profile-env");
-    assert_eq!(param.value, format!("profile ({test_profile})"));
+    assert_eq!(param.value, test_env.name().as_str());
+    assert_eq!(param.source, format!("profile ({test_profile})"));
 
     let param = profile_json.find_param("Organization");
     assert_eq!(param.value, "");
@@ -299,8 +300,25 @@ fn test_configuration_current() {
         .stdout(
             contains(deleted_profile.name().as_str())
                 .and(not(contains("bogus-key-value")))
-                .and(not(contains("current-profile-env")))
-                .and(not(contains("current-profile-proj")))
+                .and(not(contains(test_env.name().as_str())))
+                .and(not(contains(test_proj.name().as_str())))
                 .and(not(contains!("profile ({deleted_profile})"))),
         );
+
+    // use default environment variables
+    let profile_json = cloudtruth!("config current -f json")
+        .assert()
+        .success()
+        .parse_profile_parameters();
+    let param = profile_json.find_param("API key");
+    assert_eq!("*****", param.value);
+    let param = profile_json.find_param("Organization");
+    assert_ne!("", param.value);
+    assert_eq!("API key", param.source);
+    let param = profile_json.find_param("User");
+    assert_ne!("", param.value);
+    assert_eq!("API key", param.source);
+    let param = profile_json.find_param("Role");
+    assert!(["owner", "admin", "contrib"].contains(&param.value.as_str()));
+    assert_eq!("API key", param.source);
 }

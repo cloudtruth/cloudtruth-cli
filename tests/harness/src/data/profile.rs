@@ -72,6 +72,9 @@ impl<'a, 'prof, 'proj, 'e> TestResource for Profile<'a, 'prof, 'proj, 'e> {
         if let Some(project) = self.project {
             cmd.args(["-p", project.as_str()]);
         }
+        if let Some(env) = self.env {
+            cmd.args(["-e", env.as_str()]);
+        }
         cmd.assert()
             .success()
             .stdout(contains!("Created profile '{self}'"));
