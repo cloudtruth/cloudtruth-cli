@@ -3,7 +3,7 @@ use cloudtruth_test_harness::prelude::*;
 
 #[test]
 #[use_harness]
-fn test_parameter_basic_empty_list() {
+fn test_parameters_basic_empty_list() {
     let proj = Project::with_prefix("param-empty-list").create();
     // check that there are no parameters
     cloudtruth!("--project {proj} parameters list")
@@ -22,7 +22,7 @@ fn test_parameter_basic_empty_list() {
 
 #[test]
 #[use_harness]
-fn test_parameter_basic() {
+fn test_parameters_basic() {
     let proj = Project::with_prefix("param-basic").create();
 
     // add parameter
@@ -119,7 +119,7 @@ fn test_parameter_basic() {
 
 #[test]
 #[use_harness]
-fn test_parameter_basic_delete() {
+fn test_parameters_basic_delete() {
     let proj = Project::with_prefix("param-delete").create();
     // add parameter
     cloudtruth!("--project {proj} parameters set my_param")
@@ -144,7 +144,7 @@ fn test_parameter_basic_delete() {
 
 #[test]
 #[use_harness]
-fn test_parameter_basic_no_update() {
+fn test_parameters_basic_no_update() {
     let proj = Project::with_prefix("param-no-update").create();
 
     cloudtruth!(
@@ -199,7 +199,7 @@ fn test_paramer_basic_rename() {
 
 #[test]
 #[use_harness]
-fn test_parameter_basic_no_value() {
+fn test_parameters_basic_no_value() {
     let proj = Project::with_prefix("param-basic-no-value").create();
 
     // create a parameter with no value
@@ -214,7 +214,7 @@ fn test_parameter_basic_no_value() {
 
 #[test]
 #[use_harness]
-fn test_parameter_basic_conflicting_options() {
+fn test_parameters_basic_conflicting_options() {
     let proj = Project::with_prefix("param-basic-conflicting-opts").create();
     // make sure we error out on conflicting arguments
     cloudtruth!("--project {proj} parameters list --rules --external")
@@ -251,7 +251,7 @@ fn test_parameter_basic_conflicting_options() {
 
 #[test]
 #[use_harness]
-fn test_parameter_basic_secret_list() {
+fn test_parameters_basic_secret_list() {
     let proj = Project::with_prefix("param-secret").create();
     cloudtruth!("--project {proj} parameters list")
         .assert()
@@ -328,7 +328,7 @@ fn test_parameter_basic_secret_list() {
 
 #[test]
 #[use_harness]
-fn test_parameter_basic_secret_idempotent() {
+fn test_parameters_basic_secret_idempotent() {
     let proj = Project::with_prefix("param-secret-idempotent").create();
     cloudtruth!("--project {proj} parameters set my_param --secret true --value super-SENSITIVE-vAluE --desc 'my secret value'")
         .assert()
@@ -352,7 +352,7 @@ fn test_parameter_basic_secret_idempotent() {
 
 #[test]
 #[use_harness]
-fn test_parameter_basic_secret_update() {
+fn test_parameters_basic_secret_update() {
     let proj = Project::with_prefix("param-secret-update").create();
     cloudtruth!("--project {proj} parameters set my_param --secret true --value super-SENSITIVE-vAluE --desc 'my secret value'")
         .assert()
@@ -383,7 +383,7 @@ fn test_parameter_basic_secret_update() {
 
 #[test]
 #[use_harness]
-fn test_parameter_basic_secret_delete() {
+fn test_parameters_basic_secret_delete() {
     let proj = Project::with_prefix("param-secret-delete").create();
     cloudtruth!("--project {proj} parameters set my_param --secret true --value super-SENSITIVE-vAluE --desc 'my secret value'")
     .assert()
@@ -404,7 +404,7 @@ fn test_parameter_basic_secret_delete() {
 
 #[test]
 #[use_harness]
-fn test_parameter_basic_secret_no_value() {
+fn test_parameters_basic_secret_no_value() {
     let proj = Project::with_prefix("param-secret-no-value").create();
     cloudtruth!("--project {proj} parameters set my_param --secret true")
         .assert()
@@ -417,7 +417,7 @@ fn test_parameter_basic_secret_no_value() {
 
 #[test]
 #[use_harness]
-fn test_parameter_copy() {
+fn test_parameters_copy() {
     let proj = Project::with_prefix("param-copy").create();
     cloudtruth!("--project {proj} parameters set param-src --value my-value")
         .assert()
@@ -435,7 +435,7 @@ fn test_parameter_copy() {
 }
 
 #[test]
-fn test_parameter_export() -> Result<()> {
+fn test_parameters_export() -> Result<()> {
     let proj = Project::with_prefix("param-export").create();
     trycmd::TestCases::new()
         .case("tests/snapshot-tests/parameters/parameter_export.md")
@@ -447,7 +447,7 @@ fn test_parameter_export() -> Result<()> {
 }
 
 #[test]
-fn test_parameter_generate() -> Result<()> {
+fn test_parameters_generate() -> Result<()> {
     let proj = Project::with_prefix("param-generate").create();
     trycmd::TestCases::new()
         .case("tests/snapshot-tests/parameters/parameter_generate.md")
@@ -459,7 +459,7 @@ fn test_parameter_generate() -> Result<()> {
 }
 
 #[test]
-fn test_parameter_integration_errors() -> Result<()> {
+fn test_parameters_integration_errors() -> Result<()> {
     let proj = Project::with_prefix("param-integration-errors").create();
     trycmd::TestCases::new()
         .case("tests/snapshot-tests/parameters/parameter_integration_errors.md")
@@ -471,7 +471,7 @@ fn test_parameter_integration_errors() -> Result<()> {
 }
 
 #[test]
-fn test_parameter_names() -> Result<()> {
+fn test_parameters_names() -> Result<()> {
     let proj = Project::with_prefix("param-names").create();
     trycmd::TestCases::new()
         .case("tests/snapshot-tests/parameters/parameter_names.md")
@@ -483,7 +483,7 @@ fn test_parameter_names() -> Result<()> {
 }
 
 #[test]
-fn test_parameter_over_specified() -> Result<()> {
+fn test_parameters_over_specified() -> Result<()> {
     let proj = Project::with_prefix("param-overspecified").create();
     trycmd::TestCases::new()
         .case("tests/snapshot-tests/parameters/parameter_over_specified.md")
@@ -495,7 +495,7 @@ fn test_parameter_over_specified() -> Result<()> {
 }
 
 #[test]
-fn test_parameter_rules_bool() -> Result<()> {
+fn test_parameters_rules_bool() -> Result<()> {
     let proj = Project::with_prefix("param-rules-bool").create();
     let env = Environment::with_prefix("param-rules-bool").create();
     trycmd::TestCases::new()
@@ -510,7 +510,7 @@ fn test_parameter_rules_bool() -> Result<()> {
 }
 
 #[test]
-fn test_parameter_rules_string() -> Result<()> {
+fn test_parameters_rules_string() -> Result<()> {
     let proj = Project::with_prefix("param-rules-string").create();
     let env = Environment::with_prefix("param-rules-string").create();
     trycmd::TestCases::new()
@@ -525,7 +525,7 @@ fn test_parameter_rules_string() -> Result<()> {
 }
 
 #[test]
-fn test_parameter_secret_switch() -> Result<()> {
+fn test_parameters_secret_switch() -> Result<()> {
     let proj = Project::with_prefix("param-rules-secret-switch").create();
     trycmd::TestCases::new()
         .case("tests/snapshot-tests/parameters/parameter_secret_switch.md")
@@ -537,7 +537,7 @@ fn test_parameter_secret_switch() -> Result<()> {
 }
 
 #[test]
-fn test_parameter_table_formats() -> Result<()> {
+fn test_parameters_table_formats() -> Result<()> {
     let proj = Project::with_prefix("param-rules-table-formats").create();
     trycmd::TestCases::new()
         .case("tests/snapshot-tests/parameters/parameter_table_formats.md")
@@ -549,7 +549,7 @@ fn test_parameter_table_formats() -> Result<()> {
 }
 
 #[test]
-fn test_parameter_types() -> Result<()> {
+fn test_parameters_types() -> Result<()> {
     let proj = Project::with_prefix("param-types").create();
     trycmd::TestCases::new()
         .case("tests/snapshot-tests/parameters/parameter_types.md")

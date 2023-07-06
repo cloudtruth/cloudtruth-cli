@@ -1,5 +1,5 @@
 use cloudtruth_config::{CT_API_KEY, CT_ENVIRONMENT, CT_PROJECT};
-use cloudtruth_test_harness::output::audit_logs::*;
+use cloudtruth_test_harness::output::audit_log::*;
 use cloudtruth_test_harness::prelude::*;
 use maplit::hashmap;
 

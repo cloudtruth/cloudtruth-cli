@@ -2,7 +2,7 @@ use cloudtruth_test_harness::prelude::*;
 
 #[test]
 #[use_harness]
-fn test_type_basic() {
+fn test_types_basic() {
     let param_type = ParamType::with_prefix("type-name").description("Description on create");
     cloudtruth!("types ls -v")
         .assert()

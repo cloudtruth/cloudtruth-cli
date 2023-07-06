@@ -2,7 +2,7 @@ use cloudtruth_test_harness::prelude::*;
 
 #[test]
 #[use_harness]
-fn test_user_basic() {
+fn test_users_basic() {
     let user = User::with_prefix("user-name").description("Description on create");
 
     cloudtruth!("users ls -v -f csv")
