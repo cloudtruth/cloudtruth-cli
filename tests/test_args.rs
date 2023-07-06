@@ -5,7 +5,7 @@ use const_format::formatcp;
 #[test]
 #[ignore]
 #[use_harness]
-fn test_arg_priority() {
+fn test_args_priority() {
     //TODO: original python test works around limitations of profiles
     //we should improve profile loading from custom file paths to make
     //this test robust
@@ -68,7 +68,7 @@ fn test_args_missing_subcommands() {
 
 #[test]
 #[use_harness]
-fn test_arg_resolution() {
+fn test_args_resolution() {
     // generate project and environment names but do not create them yet
     let proj = Project::with_prefix("unknown-proj");
     let env = Environment::with_prefix("env-unknown");
@@ -149,7 +149,7 @@ fn test_arg_resolution() {
 
 #[test]
 #[use_harness]
-fn test_arg_configurable_timeout() {
+fn test_args_configurable_timeout() {
     cloudtruth!("project ls -v")
         .env(CT_REQ_TIMEOUT, "0")
         .assert()
@@ -159,7 +159,7 @@ fn test_arg_configurable_timeout() {
 
 #[test]
 #[use_harness]
-fn test_arg_invalid_server() {
+fn test_args_invalid_server() {
     cloudtruth!("project ls -v")
         .env(CT_SERVER_URL, "0.0.0.0:0")
         .assert()
@@ -174,7 +174,7 @@ fn test_arg_invalid_server() {
 
 #[test]
 #[use_harness]
-fn test_arg_authentication_errors() {
+fn test_args_authentication_errors() {
     let cmds = [
         "env ls -v",
         "param ls -v",

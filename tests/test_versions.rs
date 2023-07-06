@@ -3,7 +3,7 @@ use std::str;
 
 #[test]
 #[use_harness]
-fn test_completions() {
+fn test_versions() {
     let version_cmd = cloudtruth!("--version").assert().success();
     let version = str::from_utf8(&version_cmd.get_output().stdout)
         .unwrap()

@@ -2,7 +2,7 @@ use cloudtruth_test_harness::prelude::*;
 
 #[test]
 #[use_harness]
-fn test_template_basic() {
+fn test_templates_basic() {
     let proj = Project::with_prefix("template-proj").create();
 
     let temp_file = TestFile::with_contents("Text with no params\n").unwrap();

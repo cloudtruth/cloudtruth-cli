@@ -144,7 +144,7 @@ fn test_projects_pagination() {
 
 #[test]
 #[use_harness]
-fn test_project_copy() {
+fn test_projects_copy() {
     let proj = Project::with_prefix("proj-copy-src").create();
     let proj2 = proj.copy(Name::with_prefix("proj-copy-dest"));
     cloudtruth!("proj ls")

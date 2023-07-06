@@ -5,7 +5,7 @@ const TEST_PAGE_SIZE: usize = 5;
 
 #[test]
 #[use_harness]
-fn test_environment_basic() {
+fn test_environments_basic() {
     // Initialize environment data but do not create yet
     let env = Environment::with_prefix("env-name").description("Description on create");
 
@@ -83,7 +83,7 @@ fn test_environment_basic() {
 
 #[test]
 #[use_harness]
-fn test_environment_cannot_delete_default() {
+fn test_environments_cannot_delete_default() {
     let proj = Project::with_prefix("default-env-del").create();
 
     // get snapshot of params before attempting to delete
@@ -114,7 +114,7 @@ fn test_environment_cannot_delete_default() {
 
 #[test]
 #[use_harness]
-fn test_environment_copy() {
+fn test_environments_copy() {
     let env = Environment::with_prefix("env-copy-src").create();
     let env2 = env.copy(Name::with_prefix("env-copy-dest"));
     cloudtruth!("env ls")
@@ -125,7 +125,7 @@ fn test_environment_copy() {
 
 #[test]
 #[use_harness]
-fn test_environment_parents() {
+fn test_environments_parents() {
     let env1 = Environment::with_prefix("env-par-1").create();
     let env2 = Environment::with_prefix("env-mid-1").parent(&env1).create();
     let env3 = Environment::with_prefix("env-chld-3")
@@ -196,7 +196,7 @@ fn test_environment_parents() {
 
 #[test]
 #[use_harness]
-fn test_environment_pagination() {
+fn test_environments_pagination() {
     let page_size = TEST_PAGE_SIZE;
     // we store the project names so they're not instantly dropped and deleted
     let _envs: Vec<Scope<Environment>> = (0..=page_size)
@@ -212,7 +212,7 @@ fn test_environment_pagination() {
 
 #[test]
 #[use_harness]
-fn test_environment_tagging() {
+fn test_environments_tagging() {
     let proj = Project::with_prefix("proj-env-tag").create();
     let env = Environment::with_prefix("env-tag").create();
 
@@ -325,7 +325,7 @@ fn test_environment_tagging() {
 
 #[test]
 #[use_harness]
-fn test_environment_tagging_pagination() {
+fn test_environments_tagging_pagination() {
     let env = Environment::with_prefix("env-pag-tag").create();
 
     let page_size = TEST_PAGE_SIZE;
@@ -343,7 +343,7 @@ fn test_environment_tagging_pagination() {
 
 #[test]
 #[use_harness]
-fn test_environment_tagging_immutable() {
+fn test_environments_tagging_immutable() {
     let env = Environment::with_prefix("env-tag-immutable").create();
 
     cloudtruth!("env tag set --immutable --current {env} immutable-tag")

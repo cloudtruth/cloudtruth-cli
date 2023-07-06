@@ -1,2 +1,2 @@
-pub mod audit_logs;
+pub mod audit_log;
 pub mod profile;
