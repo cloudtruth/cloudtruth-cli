@@ -2,7 +2,7 @@ use cloudtruth_test_harness::prelude::*;
 
 #[test]
 #[use_harness]
-fn test_group_basic() {
+fn test_groups_basic() {
     let group = Group::with_prefix("group-name").description("Description on create");
     // make sure group doesn't exist
     cloudtruth!("groups ls -v -f csv")
@@ -65,7 +65,45 @@ fn test_group_basic() {
 
 #[test]
 #[use_harness]
-fn test_group_basic_rename() {
+fn test_groups_users() {
+    // create group
+    let test_group = Group::with_prefix("group-users").create();
+
+    // create users
+    let test_users: Vec<Scope<User>> = (0..3)
+        .map(|n| User::with_prefix(format!("group-user-{n}")).create())
+        .collect();
+
+    // add users to group
+    for user in test_users.iter() {
+        cloudtruth!("groups set '{test_group}' --add-user {user}")
+            .assert()
+            .success();
+    }
+
+    // verify users in group
+    cloudtruth!("groups get '{test_group}'")
+        .assert()
+        .success()
+        .stdout(contains_all(test_users.iter().map(|u| u.name())));
+
+    // remove users from group
+    for user in test_users.iter() {
+        cloudtruth!("groups set '{test_group}' --remove-user '{user}'")
+            .assert()
+            .success();
+    }
+
+    //verify users not in group
+    cloudtruth!("groups get '{test_group}'")
+        .assert()
+        .success()
+        .stdout(not(contains_any(test_users.iter().map(|u| u.name()))));
+}
+
+#[test]
+#[use_harness]
+fn test_groups_basic_rename() {
     let mut group = Group::with_prefix("group-name")
         .description("Description on create")
         .create();
