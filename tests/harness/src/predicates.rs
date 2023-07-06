@@ -58,7 +58,31 @@ where
     predicates.fold(first, |accum, pred| BoxPredicate::new(accum.and(pred)))
 }
 
+/// Checks that any predicates in iterator are true
+pub fn any<T, P, I>(predicates: I) -> impl Predicate<T>
+where
+    T: 'static + ?Sized,
+    P: Predicate<T> + Send + Sync + 'static,
+    I: IntoIterator<Item = P>,
+{
+    let mut predicates = predicates.into_iter();
+    let first = match predicates.next() {
+        Some(pred) => BoxPredicate::new(pred),
+        None => BoxPredicate::new(always()),
+    };
+    predicates.fold(first, |accum, pred| BoxPredicate::new(accum.or(pred)))
+}
+
 /// Checks that variable contains all strings from an iterator
-pub fn contains_all<S: Into<String>, I: IntoIterator<Item = S>>(iter: I) -> impl Predicate<str> {
-    all(iter.into_iter().map(|str| BoxPredicate::new(contains(str))))
+pub fn contains_all<S: AsRef<str>, I: IntoIterator<Item = S>>(iter: I) -> impl Predicate<str> {
+    all(iter
+        .into_iter()
+        .map(|str| BoxPredicate::new(contains(str.as_ref()))))
+}
+
+/// Checks that variable contains any strings from an iterator
+pub fn contains_any<S: AsRef<str>, I: IntoIterator<Item = S>>(iter: I) -> impl Predicate<str> {
+    any(iter
+        .into_iter()
+        .map(|str| BoxPredicate::new(contains(str.as_ref()))))
 }
