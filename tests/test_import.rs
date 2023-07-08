@@ -25,9 +25,8 @@ secret_2="be veewwy quiet"
 fn test_import_basic() {
     let f = TestFile::with_contents(TEXT1).unwrap();
     // Scope::new is used to add to cleanup without creating
-    let proj = Scope::new(Project::with_prefix("proj-import"));
-    let env1 = Scope::new(Environment::with_prefix("env-import"));
-    let env2 = Environment::with_prefix("env-import-child").parent(&env1);
+    let proj = Project::with_prefix("proj-import");
+    let env1 = Environment::with_prefix("env-import");
 
     //verify project and environment does not exist
     cloudtruth!("proj ls")
@@ -171,6 +170,13 @@ fn test_import_basic() {
         ))),
     )));
 
+    // since the above import commmand created a project and environment,
+    // we must manually create a Scope for the project and environment so that automatic cleanup
+    // happens at end of test
+    // TODO: we may want to have a builder pattern for creating proj/env from param import
+    let proj = Scope::new(proj);
+    let env1 = Scope::new(env1);
+
     //verify project and environment were created
     cloudtruth!("proj ls")
         .assert()
@@ -295,7 +301,10 @@ fn test_import_basic() {
         )
     )));
 
-    let env2 = env2.create();
+    // create child environment
+    let env2 = Environment::with_prefix("env-import-child")
+        .parent(&env1)
+        .create();
     cloudtruth!("import param {proj} {f} --env {env2} --preview --format json --secrets")
         .assert()
         .success()
