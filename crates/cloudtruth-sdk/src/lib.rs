@@ -1,12 +1,16 @@
+use std::sync::Arc;
+
 use once_cell::sync::OnceCell;
 use reqwest::Client;
+
 pub struct CloudtruthSdk {
-    pub client: Client,
+    pub client: Arc<Client>,
 }
+
 impl CloudtruthSdk {
     fn new() -> CloudtruthSdk {
         CloudtruthSdk {
-            client: Client::new(),
+            client: Arc::new(Client::new()),
         }
     }
     pub fn instance() -> &'static CloudtruthSdk {

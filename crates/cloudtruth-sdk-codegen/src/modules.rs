@@ -39,3 +39,8 @@ impl SdkModule {
         Ok(())
     }
 }
+
+pub fn root() -> SdkModule {
+    let root = SdkRoot::new();
+    SdkModule::new(sdk_path!("src/lib.rs"), quote!(#root))
+}
