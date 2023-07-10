@@ -588,6 +588,7 @@ name = "cloudtruth-sdk-codegen"
 version = "0.1.0"
 dependencies = [
  "color-eyre 0.6.2",
+ "dyn-clone",
  "http 0.2.9",
  "indexmap 1.9.2",
  "openapiv3",
@@ -1140,6 +1141,12 @@ name = "dunce"
 version = "1.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "56ce8c6da7551ec6c462cbaf3bfbc75131ebbfa1c944aeaa9dab51ca1c5f0c3b"
+
+[[package]]
+name = "dyn-clone"
+version = "1.0.11"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "68b0cf012f1230e43cd00ebb729c6bb58707ecfa8ad08b52ef3a4ccd2697fc30"
 
 [[package]]
 name = "edit"

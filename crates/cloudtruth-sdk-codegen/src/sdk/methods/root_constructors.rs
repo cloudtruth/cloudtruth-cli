@@ -1,20 +1,23 @@
-use syn::parse_quote;
+use std::rc::Rc;
 
-use crate::sdk::SdkObject;
+use syn::parse_quote;
 
 use super::SdkMethod;
 
-pub struct SdkRootConstructor<'a>(&'a SdkObject<'a>);
+#[derive(Clone)]
+pub struct SdkRootConstructor {
+    root_name: Rc<str>,
+}
 
-impl<'a> SdkRootConstructor<'a> {
-    pub fn new(root: &'a SdkObject<'a>) -> Self {
-        SdkRootConstructor(root)
+impl SdkRootConstructor {
+    pub fn new(root_name: Rc<str>) -> Self {
+        SdkRootConstructor { root_name }
     }
 }
 
-impl<'a> SdkMethod for SdkRootConstructor<'a> {
+impl SdkMethod for SdkRootConstructor {
     fn generate_fn(&self) -> syn::ItemFn {
-        let name = self.0.name();
+        let name = &self.root_name;
         parse_quote! {
             fn new() -> Self {
                 #name {
@@ -25,12 +28,12 @@ impl<'a> SdkMethod for SdkRootConstructor<'a> {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct SdkStaticRootConstructor();
 
 impl SdkStaticRootConstructor {
     pub fn new() -> Self {
-        SdkStaticRootConstructor()
+        SdkStaticRootConstructor::default()
     }
 }
 

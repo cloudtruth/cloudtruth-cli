@@ -1,7 +1,7 @@
-use std::{borrow::BorrowMut, cell::RefCell};
+use std::rc::Rc;
 
 use crate::{
-    api::{ApiOperation, ApiSpec},
+    api::ApiSpec,
     sdk::{
         methods::{SdkRootConstructor, SdkStaticRootConstructor},
         SdkObject,
@@ -30,18 +30,11 @@ impl SdkGenerator {
         self
     }
 
-    fn build_root_object<'a>(&'a self) -> SdkObject<'a> {
-        let mut root = SdkObject::new("CloudtruthSdk");
-        root.add_method(SdkRootConstructor::new(&root));
-        root.add_method(SdkStaticRootConstructor::new());
-        root
-    }
-
-    pub fn build_object_tree<'a>(&'a self) -> SdkObject<'a> {
-        let operations = self.spec.operations().into_iter();
-        let mut root = self.build_root_object();
-        let mut ancestors: Vec<(&str, &mut SdkObject)> = Vec::with_capacity(operations.len());
-        ancestors.push((self.root_prefix.as_ref(), &mut root));
+    pub fn build_object_tree(&self) -> Rc<SdkObject> {
+        let mut root = Rc::new(SdkObject::new("CloudtruthSdk"));
+        let operations = self.spec.operations().iter();
+        let mut ancestors: Vec<(&str, Rc<SdkObject>)> = Vec::with_capacity(operations.len());
+        ancestors.push((self.root_prefix.as_ref(), root.clone()));
         for op in operations {
             let uri = op.uri();
             let prefix = ancestors.last().unwrap().0;
@@ -49,12 +42,11 @@ impl SdkGenerator {
                 // same path, different method
                 Some("") => {}
                 // child path
-                Some(path) => {
-                    let parent = &mut *ancestors.last_mut().unwrap().1;
-                    let current = SdkObject::new("foo");
-                    parent.add_child(current);
-                    ancestors.push((prefix, parent.children_mut().last_mut().unwrap()));
-                    prefix = uri;
+                Some(_path) => {
+                    let mut parent = ancestors.last().unwrap().1.clone();
+                    let current = Rc::new(SdkObject::new("foo"));
+                    Rc::make_mut(&mut parent).add_child(current);
+                    ancestors.push((prefix, parent.children().last().unwrap().clone()));
                 }
                 // unwind stack to find ancestor
                 _ => {
@@ -67,6 +59,9 @@ impl SdkGenerator {
                 }
             }
         }
+        let root_ref = Rc::make_mut(&mut root);
+        root_ref.add_method(SdkRootConstructor::new(root_ref.name().clone()));
+        root_ref.add_method(SdkStaticRootConstructor::new());
         root
     }
 }

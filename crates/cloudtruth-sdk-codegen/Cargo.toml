@@ -13,5 +13,6 @@ openapiv3 = { version = "1" }
 proc-macro2 = "1.0.63"
 quote = "1.0.29"
 serde_json = "1.0"
-syn = "2.0.23"
+syn = { version = "2.0.23", features = ["full"] }
 rfc6570-level-2 = "1.2.0"
+dyn-clone = "1.0.11"

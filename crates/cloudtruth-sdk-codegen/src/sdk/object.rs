@@ -1,17 +1,18 @@
 use proc_macro2::TokenStream;
 use quote::{quote, ToTokens};
-use std::borrow::Cow;
+use std::rc::Rc;
 
 use super::methods::SdkMethod;
 
-pub struct SdkObject<'a> {
-    name: Cow<'a, str>,
+#[derive(Clone)]
+pub struct SdkObject {
+    name: Rc<str>,
     methods: Vec<Box<dyn SdkMethod>>,
-    children: Vec<SdkObject<'a>>,
+    children: Vec<Rc<SdkObject>>,
 }
 
-impl<'a> SdkObject<'a> {
-    pub fn new(name: impl Into<Cow<'a, str>>) -> Self {
+impl SdkObject {
+    pub fn new(name: impl Into<Rc<str>>) -> Self {
         let name = name.into();
         Self {
             name,
@@ -20,7 +21,7 @@ impl<'a> SdkObject<'a> {
         }
     }
 
-    pub fn name(&self) -> &str {
+    pub fn name(&self) -> &Rc<str> {
         &self.name
     }
 
@@ -33,20 +34,20 @@ impl<'a> SdkObject<'a> {
         self
     }
 
-    pub fn children(&self) -> &[SdkObject<'a>] {
+    pub fn children(&self) -> &[Rc<SdkObject>] {
         &self.children
     }
 
-    pub fn children_mut(&mut self) -> &mut [SdkObject<'a>] {
+    pub fn children_mut(&mut self) -> &mut [Rc<SdkObject>] {
         &mut self.children
     }
 
-    pub fn add_child(&mut self, child: SdkObject<'a>) {
+    pub fn add_child(&mut self, child: Rc<SdkObject>) {
         self.children.push(child);
     }
 }
 
-impl<'a> ToTokens for SdkObject<'a> {
+impl ToTokens for SdkObject {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         let SdkObject {
             name: type_name,

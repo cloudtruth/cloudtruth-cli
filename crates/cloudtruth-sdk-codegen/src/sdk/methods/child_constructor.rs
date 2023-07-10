@@ -1,4 +1,4 @@
-use std::borrow::Cow;
+use std::rc::Rc;
 
 use syn::parse_quote;
 
@@ -6,12 +6,13 @@ use crate::sdk::SdkObject;
 
 use super::SdkMethod;
 
-pub struct SdkChildConstructor<'a> {
-    name: Cow<'a, str>,
-    object: &'a SdkObject<'a>,
+#[derive(Clone)]
+pub struct SdkChildConstructor {
+    name: Rc<str>,
+    object: Rc<SdkObject>,
 }
 
-impl<'a> SdkMethod for SdkChildConstructor<'a> {
+impl SdkMethod for SdkChildConstructor {
     fn generate_fn(&self) -> syn::ItemFn {
         let SdkChildConstructor { name, .. } = self;
         parse_quote! {
