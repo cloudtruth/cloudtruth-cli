@@ -36,13 +36,13 @@ impl SdkGenerator {
         // iterator over API operations from the spec (assumed to be sorted)
         let operations = self.spec.operations();
         // a stack of ancestors from pervious iterations
-        let mut ancestors: Vec<(&str, Rc<SdkObject>)> = Vec::with_capacity(operations.len());
+        let mut ancestors = Vec::with_capacity(operations.len());
         // create root SDK object
         let mut root = SdkObject::new("CloudtruthSdk");
         root.add_method(SdkRootConstructor::new(root.name().clone()));
         root.add_method(SdkStaticRootConstructor::new());
         // add root to ancestor stack
-        ancestors.push((self.root_prefix.as_ref(), Rc::new(root)));
+        ancestors.push((self.root_prefix.as_ref(), root));
 
         for op in operations.iter() {
             // println!();
@@ -57,7 +57,7 @@ impl SdkGenerator {
                         // found ancestor, return the descendant path
                         Some(descendant_path) => break descendant_path,
                         // not an ancestor, pop from stack and append to our output list
-                        None => objects.push(ancestors.pop().unwrap().1),
+                        None => objects.push(Rc::new(ancestors.pop().unwrap().1)),
                     },
                     // no valid ancestor (unexpected behavior)
                     None => panic!("No ancestor found for {uri}"),
@@ -69,12 +69,10 @@ impl SdkGenerator {
                 {
                     let size = ancestors.len();
                     if let Some((_, previous_object)) = ancestors.get_mut(size - 1) {
-                        Rc::get_mut(previous_object)
-                            .expect("Could not add method to object because other references to this object were found")
-                            .add_method(SdkApiMethod::new(op.clone()));
+                        previous_object.add_method(SdkApiMethod::new(op.clone()));
                     }
                 } else {
-                    let current_object = Rc::new(SdkObject::new(child_segment));
+                    let current_object = SdkObject::new(child_segment);
                     // append this path segment to current prefix
                     let segment_start = child_segment.as_ptr() as usize - uri.as_ptr() as usize;
                     let segment_end = segment_start + child_segment.len();
@@ -84,7 +82,7 @@ impl SdkGenerator {
             }
         }
         // add any remaining ancestors in stack to output list
-        objects.extend(ancestors.into_iter().map(|(_, ancestor)| ancestor));
+        objects.extend(ancestors.into_iter().map(|(_, ancestor)| Rc::new(ancestor)));
         objects
     }
 }
