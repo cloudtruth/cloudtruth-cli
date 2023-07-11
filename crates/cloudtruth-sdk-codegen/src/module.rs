@@ -1,18 +1,7 @@
-mod root;
-
-pub use root::root;
-
 use std::{borrow::Cow, fs::File, io::Write, path::Path, process::Command};
 
 use color_eyre::{eyre::Context, Result};
 use proc_macro2::TokenStream;
-
-#[macro_export]
-macro_rules! sdk_path {
-    ($($path:expr),* $(,)?) => {
-        std::path::Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/../cloudtruth-sdk/", $($path),*))
-    };
-}
 
 #[derive(Debug, Clone)]
 pub struct SdkModule {
@@ -38,9 +27,4 @@ impl SdkModule {
             .wait()?;
         Ok(())
     }
-}
-
-pub fn root() -> SdkModule {
-    let root = SdkRoot::new();
-    SdkModule::new(sdk_path!("src/lib.rs"), quote!(#root))
 }

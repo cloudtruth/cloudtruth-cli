@@ -1,5 +1,6 @@
 use std::rc::Rc;
 
+use proc_macro2::{Ident, Span};
 use syn::parse_quote;
 
 use crate::api::ApiOperation;
@@ -24,9 +25,9 @@ impl SdkApiMethod {
 
 impl SdkMethod for SdkApiMethod {
     fn generate_fn(&self) -> syn::ItemFn {
-        let name = self.name();
+        let name = Ident::new(self.name(), Span::call_site());
         parse_quote! {
-            pub fn #(#name)() {
+            pub fn #name() {
 
             }
         }

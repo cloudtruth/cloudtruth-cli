@@ -42,7 +42,8 @@ impl SdkGenerator {
         // a stack of ancestors from pervious iterations
         let mut ancestors = Vec::with_capacity(operations.len());
         // create root SDK object
-        let mut root = SdkObject::new("CloudtruthSdk");
+        let mut root = SdkObject::new("CloudtruthSdk", None);
+        root.add_field("client", parse_quote![Arc<Client>]);
         root.add_method(SdkRootConstructor::new(&root));
         root.add_method(SdkStaticRootConstructor::new());
         // add root to ancestor stack
@@ -81,19 +82,20 @@ impl SdkGenerator {
                 } else {
                     child_segment.to_string()
                 };
-                let mut current_object = SdkObject::new(name.as_str());
+                let size = ancestors.len();
+                let parent_object = ancestors.get_mut(size - 1).map(|(_, obj)| obj);
+                let mut current_object = SdkObject::new(name.as_str(), parent_object.as_deref());
                 if is_path_var {
                     current_object.add_field(&name, parse_quote![&str]);
                 }
 
                 // attach getter method to parent object
-                let size = ancestors.len();
-                if let Some((_, previous_object)) = ancestors.get_mut(size - 1) {
-                    let mut method = SdkChildConstructor::new(&current_object);
+                if let Some(parent_object) = parent_object {
+                    let mut method = SdkChildConstructor::new(parent_object, &current_object);
                     if is_path_var {
                         method.add_arg(&name, parse_quote![&str]);
                     }
-                    previous_object.add_method(method);
+                    parent_object.add_method(method);
                 }
                 // append this path segment to current prefix
                 let segment_start = child_segment.as_ptr() as usize - uri.as_ptr() as usize;

@@ -1,5 +1,4 @@
-use std::rc::Rc;
-
+use proc_macro2::Ident;
 use syn::parse_quote;
 
 use crate::sdk::SdkObject;
@@ -8,7 +7,7 @@ use super::SdkMethod;
 
 #[derive(Clone)]
 pub struct SdkRootConstructor {
-    name: Rc<str>,
+    name: Ident,
 }
 
 impl SdkRootConstructor {
@@ -20,7 +19,7 @@ impl SdkRootConstructor {
 
 impl SdkMethod for SdkRootConstructor {
     fn generate_fn(&self) -> syn::ItemFn {
-        let name = &self.name;
+        let Self { name } = self;
         parse_quote! {
             fn new() -> Self {
                 #name {
