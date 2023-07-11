@@ -59,7 +59,7 @@ impl SdkGenerator {
                         // not an ancestor, pop from stack and append to our output list
                         None => objects.push(ancestors.pop().unwrap().1),
                     },
-                    // no valid anceestor (unexpected behavior)
+                    // no valid ancestor (unexpected behavior)
                     None => panic!("No ancestor found for {uri}"),
                 }
             };
