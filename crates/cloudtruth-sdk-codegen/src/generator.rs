@@ -31,10 +31,10 @@ impl SdkGenerator {
     }
 
     pub fn build_objects(&self) -> Vec<Rc<SdkObject>> {
-        // list of objects that we are building
-        let mut objects = Vec::new();
         // iterator over API operations from the spec (assumed to be sorted)
         let operations = self.spec.operations();
+        // list of objects that we are building
+        let mut objects = Vec::with_capacity(operations.len());
         // a stack of ancestors from pervious iterations
         let mut ancestors = Vec::with_capacity(operations.len());
         // create root SDK object
