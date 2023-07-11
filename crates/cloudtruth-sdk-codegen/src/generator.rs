@@ -33,9 +33,9 @@ impl SdkGenerator {
     pub fn build_objects(&self) -> Vec<Rc<SdkObject>> {
         // list of objects that we are building
         let mut objects = Vec::new();
-        // iterator over API operations from the spec (assumed to besorted)
+        // iterator over API operations from the spec (assumed to be sorted)
         let operations = self.spec.operations();
-        // a stack of ancestors from iterations
+        // a stack of ancestors from pervious iterations
         let mut ancestors: Vec<(&str, Rc<SdkObject>)> = Vec::with_capacity(operations.len());
         // create root SDK object
         let mut root = SdkObject::new("CloudtruthSdk");
@@ -47,8 +47,9 @@ impl SdkGenerator {
         for op in operations.iter() {
             // println!();
             let uri = op.uri().trim_end_matches('/');
-            let _method = op.http_method();
+            // let method = op.http_method();
             // println!("{method} {uri}");
+
             // find the ancestor of current path in the stack and get the descendant path segments
             let descendant_path = loop {
                 match ancestors.last() {
