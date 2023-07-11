@@ -1,22 +1,27 @@
-use proc_macro2::TokenStream;
+use proc_macro2::{Span, TokenStream};
 use quote::{quote, ToTokens};
 use std::rc::Rc;
+use syn::{parse_quote, punctuated::Punctuated, token::Comma, Field, Ident, Type};
 
 use super::methods::SdkMethod;
 
 #[derive(Clone)]
 pub struct SdkObject {
     name: Rc<str>,
+    fields: Punctuated<Field, Comma>,
     methods: Vec<Box<dyn SdkMethod>>,
 }
 
 impl SdkObject {
     pub fn new(name: impl Into<Rc<str>>) -> Self {
         let name = name.into();
-        Self {
+        let mut object = Self {
             name,
             methods: Vec::new(),
-        }
+            fields: Punctuated::new(),
+        };
+        object.add_field("client", parse_quote![Arc<Client>]);
+        object
     }
 
     pub fn name(&self) -> &Rc<str> {
@@ -31,19 +36,32 @@ impl SdkObject {
         self.methods.push(Box::new(method));
         self
     }
+
+    pub fn add_field(&mut self, name: &str, field_type: Type) -> &mut Self {
+        self.fields.push(Field {
+            attrs: Vec::new(),
+            vis: syn::Visibility::Inherited,
+            mutability: syn::FieldMutability::None,
+            ident: Some(Ident::new(name, Span::call_site())),
+            colon_token: parse_quote![:],
+            ty: field_type,
+        });
+        self
+    }
 }
 
 impl ToTokens for SdkObject {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         let SdkObject {
-            name: type_name,
+            name,
             methods,
-            ..
+            fields,
         } = self;
         tokens.extend(quote! {
-            pub struct #type_name {
+            pub struct #name {
+                #fields
             }
-            impl #type_name {
+            impl #name {
                 #(#methods)*
             }
         });

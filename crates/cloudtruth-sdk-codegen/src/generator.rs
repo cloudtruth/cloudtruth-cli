@@ -1,9 +1,13 @@
 use std::rc::Rc;
 
+use syn::parse_quote;
+
 use crate::{
     api::ApiSpec,
     sdk::{
-        methods::{SdkApiMethod, SdkRootConstructor, SdkStaticRootConstructor},
+        methods::{
+            SdkApiMethod, SdkChildConstructor, SdkRootConstructor, SdkStaticRootConstructor,
+        },
         SdkObject,
     },
 };
@@ -39,7 +43,7 @@ impl SdkGenerator {
         let mut ancestors = Vec::with_capacity(operations.len());
         // create root SDK object
         let mut root = SdkObject::new("CloudtruthSdk");
-        root.add_method(SdkRootConstructor::new(root.name().clone()));
+        root.add_method(SdkRootConstructor::new(&root));
         root.add_method(SdkStaticRootConstructor::new());
         // add root to ancestor stack
         ancestors.push((self.root_prefix.as_ref(), root));
@@ -63,24 +67,47 @@ impl SdkGenerator {
                     None => panic!("No ancestor found for {uri}"),
                 }
             };
+            // println!("{descendant_path:#}");
             for child_segment in descendant_path.trim_start_matches('/').split('/') {
-                if child_segment.is_empty()
-                    || child_segment.starts_with('{') && child_segment.ends_with('}')
-                {
-                    let size = ancestors.len();
-                    if let Some((_, previous_object)) = ancestors.get_mut(size - 1) {
-                        previous_object.add_method(SdkApiMethod::new(op.clone()));
-                    }
-                } else {
-                    let current_object = SdkObject::new(child_segment);
-                    // append this path segment to current prefix
-                    let segment_start = child_segment.as_ptr() as usize - uri.as_ptr() as usize;
-                    let segment_end = segment_start + child_segment.len();
-                    let path = &uri[..segment_end];
-                    ancestors.push((path, current_object));
+                if child_segment.is_empty() {
+                    continue;
                 }
+                let is_path_var = child_segment.starts_with('{') && child_segment.ends_with('}');
+                let name = if is_path_var {
+                    child_segment
+                        .chars()
+                        .filter(|c| *c == '_' || c.is_alphanumeric())
+                        .collect::<String>()
+                } else {
+                    child_segment.to_string()
+                };
+                let mut current_object = SdkObject::new(name.as_str());
+                if is_path_var {
+                    current_object.add_field(&name, parse_quote![&str]);
+                }
+
+                // attach getter method to parent object
+                let size = ancestors.len();
+                if let Some((_, previous_object)) = ancestors.get_mut(size - 1) {
+                    let mut method = SdkChildConstructor::new(&current_object);
+                    if is_path_var {
+                        method.add_arg(&name, parse_quote![&str]);
+                    }
+                    previous_object.add_method(method);
+                }
+                // append this path segment to current prefix
+                let segment_start = child_segment.as_ptr() as usize - uri.as_ptr() as usize;
+                let segment_end = segment_start + child_segment.len();
+                let path = &uri[..segment_end];
+                // add to ancestors stack
+                ancestors.push((path, current_object));
+            }
+            let size = ancestors.len();
+            if let Some((_, last_object)) = ancestors.get_mut(size - 1) {
+                last_object.add_method(SdkApiMethod::new(op.clone()));
             }
         }
+
         // add any remaining ancestors in stack to output list
         objects.extend(ancestors.into_iter().map(|(_, ancestor)| Rc::new(ancestor)));
         objects

@@ -2,22 +2,25 @@ use std::rc::Rc;
 
 use syn::parse_quote;
 
+use crate::sdk::SdkObject;
+
 use super::SdkMethod;
 
 #[derive(Clone)]
 pub struct SdkRootConstructor {
-    root_name: Rc<str>,
+    name: Rc<str>,
 }
 
 impl SdkRootConstructor {
-    pub fn new(root_name: Rc<str>) -> Self {
-        SdkRootConstructor { root_name }
+    pub fn new(object: &SdkObject) -> Self {
+        let name = object.name().clone();
+        SdkRootConstructor { name }
     }
 }
 
 impl SdkMethod for SdkRootConstructor {
     fn generate_fn(&self) -> syn::ItemFn {
-        let name = &self.root_name;
+        let name = &self.name;
         parse_quote! {
             fn new() -> Self {
                 #name {
