@@ -8,7 +8,6 @@ use super::methods::SdkMethod;
 pub struct SdkObject {
     name: Rc<str>,
     methods: Vec<Box<dyn SdkMethod>>,
-    children: Vec<Rc<SdkObject>>,
 }
 
 impl SdkObject {
@@ -17,7 +16,6 @@ impl SdkObject {
         Self {
             name,
             methods: Vec::new(),
-            children: Vec::new(),
         }
     }
 
@@ -32,18 +30,6 @@ impl SdkObject {
     pub fn add_method(&mut self, method: impl SdkMethod + 'static) -> &mut Self {
         self.methods.push(Box::new(method));
         self
-    }
-
-    pub fn children(&self) -> &[Rc<SdkObject>] {
-        &self.children
-    }
-
-    pub fn children_mut(&mut self) -> &mut [Rc<SdkObject>] {
-        &mut self.children
-    }
-
-    pub fn add_child(&mut self, child: Rc<SdkObject>) {
-        self.children.push(child);
     }
 }
 

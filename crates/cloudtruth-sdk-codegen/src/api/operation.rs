@@ -1,3 +1,5 @@
+use std::rc::Rc;
+
 use color_eyre::{eyre::eyre, Result};
 use indexmap::IndexMap;
 use openapiv3::{Operation, Parameter, RequestBody, Responses};
@@ -8,10 +10,10 @@ use rfc6570_level_2::UriTemplate;
 pub struct ApiOperation {
     path_template: UriTemplate,
     http_method: http::Method,
-    summary: Option<String>,
-    description: Option<String>,
-    operation_id: Option<String>,
-    tags: Vec<String>,
+    summary: Option<Rc<str>>,
+    description: Option<Rc<str>>,
+    operation_id: Option<Rc<str>>,
+    tags: Vec<Rc<str>>,
     deprecated: bool,
     request_body: Option<RequestBody>,
     parameters: Vec<Parameter>,
@@ -42,10 +44,10 @@ impl ApiOperation {
         Ok(ApiOperation {
             path_template: UriTemplate::new(path).map_err(|err| eyre!(Box::new(err)))?, // convert anyhow to eyre
             http_method: method.parse()?,
-            description,
-            summary,
-            operation_id,
-            tags,
+            description: description.map(|s| Rc::from(s.as_str())),
+            summary: summary.map(|s| Rc::from(s.as_str())),
+            operation_id: operation_id.map(|s| Rc::from(s.as_str())),
+            tags: tags.into_iter().map(|s| Rc::from(s.as_str())).collect(),
             deprecated,
             request_body,
             parameters,
@@ -62,19 +64,19 @@ impl ApiOperation {
         &self.http_method
     }
 
-    pub fn summary(&self) -> Option<&str> {
-        self.summary.as_deref()
+    pub fn summary(&self) -> Option<&Rc<str>> {
+        self.summary.as_ref()
     }
 
-    pub fn description(&self) -> Option<&str> {
-        self.description.as_deref()
+    pub fn description(&self) -> Option<&Rc<str>> {
+        self.description.as_ref()
     }
 
-    pub fn operation_id(&self) -> Option<&str> {
-        self.operation_id.as_deref()
+    pub fn operation_id(&self) -> Option<&Rc<str>> {
+        self.operation_id.as_ref()
     }
 
-    pub fn tags(&self) -> &[String] {
+    pub fn tags(&self) -> &[Rc<str>] {
         self.tags.as_ref()
     }
 
