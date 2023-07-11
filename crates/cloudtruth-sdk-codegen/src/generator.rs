@@ -63,7 +63,7 @@ impl SdkGenerator {
                     None => panic!("No ancestor found for {uri}"),
                 }
             };
-            for child_segment in descendant_path.trim_start_matches("/").split('/') {
+            for child_segment in descendant_path.trim_start_matches('/').split('/') {
                 if child_segment.is_empty()
                     || child_segment.starts_with('{') && child_segment.ends_with('}')
                 {
