@@ -1,3 +1,5 @@
+use std::rc::Rc;
+
 use proc_macro2::Ident;
 use syn::parse_quote;
 
@@ -7,7 +9,7 @@ use super::SdkMethod;
 
 #[derive(Clone)]
 pub struct SdkRootConstructor {
-    name: Ident,
+    name: Rc<Ident>,
 }
 
 impl SdkRootConstructor {

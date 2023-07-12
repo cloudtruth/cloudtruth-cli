@@ -1,385 +1,415 @@
+use once_cell::sync::OnceCell;
+use reqwest::blocking::Client;
 use std::sync::Arc;
-pub struct id {
+pub struct IntegrationsAzureKeyVaultAkvintegrationPkPullsAkvpullPkTasksAkvpulltaskPkStepsId {
     client: Arc<Client>,
-    akvintegration_pk: &str,
-    akvpull_pk: &str,
-    akvpulltask_pk: &str,
-    id: &str,
+    akvintegration_pk: Arc<str>,
+    akvpull_pk: Arc<str>,
+    akvpulltask_pk: Arc<str>,
+    id: Arc<str>,
 }
-impl id {
-    pub fn integrations_azure_key_vault_pulls_tasks_steps_retrieve() {}
+impl IntegrationsAzureKeyVaultAkvintegrationPkPullsAkvpullPkTasksAkvpulltaskPkStepsId {
+    pub fn retrieve() {}
 }
-pub struct steps {
+pub struct IntegrationsAzureKeyVaultAkvintegrationPkPullsAkvpullPkTasksAkvpulltaskPkSteps {
     client: Arc<Client>,
-    akvintegration_pk: &str,
-    akvpull_pk: &str,
-    akvpulltask_pk: &str,
+    akvintegration_pk: Arc<str>,
+    akvpull_pk: Arc<str>,
+    akvpulltask_pk: Arc<str>,
 }
-impl steps {
-    pub fn integrations_azure_key_vault_pulls_tasks_steps_list() {}
-    pub fn id(&self, id: &str) -> id {
+impl IntegrationsAzureKeyVaultAkvintegrationPkPullsAkvpullPkTasksAkvpulltaskPkSteps {
+    pub fn list() {}
+    pub fn id(
+        &self,
+        id: impl Into<Arc<str>>,
+    ) -> IntegrationsAzureKeyVaultAkvintegrationPkPullsAkvpullPkTasksAkvpulltaskPkStepsId {
         let Self {
             client,
             akvintegration_pk,
             akvpull_pk,
             akvpulltask_pk,
         } = self;
-        id {
-            client,
-            akvintegration_pk,
-            akvpull_pk,
-            akvpulltask_pk,
-            id,
+        IntegrationsAzureKeyVaultAkvintegrationPkPullsAkvpullPkTasksAkvpulltaskPkStepsId {
+            client: client.clone(),
+            akvintegration_pk: akvintegration_pk.clone(),
+            akvpull_pk: akvpull_pk.clone(),
+            akvpulltask_pk: akvpulltask_pk.clone(),
+            id: id.into(),
         }
     }
 }
-pub struct akvpulltask_pk {
+pub struct IntegrationsAzureKeyVaultAkvintegrationPkPullsAkvpullPkTasksAkvpulltaskPk {
     client: Arc<Client>,
-    akvintegration_pk: &str,
-    akvpull_pk: &str,
-    akvpulltask_pk: &str,
+    akvintegration_pk: Arc<str>,
+    akvpull_pk: Arc<str>,
+    akvpulltask_pk: Arc<str>,
 }
-impl akvpulltask_pk {
-    pub fn steps(&self) -> steps {
+impl IntegrationsAzureKeyVaultAkvintegrationPkPullsAkvpullPkTasksAkvpulltaskPk {
+    pub fn steps(
+        &self,
+    ) -> IntegrationsAzureKeyVaultAkvintegrationPkPullsAkvpullPkTasksAkvpulltaskPkSteps {
         let Self {
             client,
             akvintegration_pk,
             akvpull_pk,
             akvpulltask_pk,
         } = self;
-        steps {
-            client,
-            akvintegration_pk,
-            akvpull_pk,
-            akvpulltask_pk,
+        IntegrationsAzureKeyVaultAkvintegrationPkPullsAkvpullPkTasksAkvpulltaskPkSteps {
+            client: client.clone(),
+            akvintegration_pk: akvintegration_pk.clone(),
+            akvpull_pk: akvpull_pk.clone(),
+            akvpulltask_pk: akvpulltask_pk.clone(),
         }
     }
 }
-pub struct id {
+pub struct IntegrationsAzureKeyVaultAkvintegrationPkPullsAkvpullPkTasksId {
     client: Arc<Client>,
-    akvintegration_pk: &str,
-    akvpull_pk: &str,
-    id: &str,
+    akvintegration_pk: Arc<str>,
+    akvpull_pk: Arc<str>,
+    id: Arc<str>,
 }
-impl id {
-    pub fn integrations_azure_key_vault_pulls_tasks_retrieve() {}
+impl IntegrationsAzureKeyVaultAkvintegrationPkPullsAkvpullPkTasksId {
+    pub fn retrieve() {}
 }
-pub struct tasks {
+pub struct IntegrationsAzureKeyVaultAkvintegrationPkPullsAkvpullPkTasks {
     client: Arc<Client>,
-    akvintegration_pk: &str,
-    akvpull_pk: &str,
+    akvintegration_pk: Arc<str>,
+    akvpull_pk: Arc<str>,
 }
-impl tasks {
-    pub fn integrations_azure_key_vault_pulls_tasks_list() {}
-    pub fn akvpulltask_pk(&self, akvpulltask_pk: &str) -> akvpulltask_pk {
+impl IntegrationsAzureKeyVaultAkvintegrationPkPullsAkvpullPkTasks {
+    pub fn list() {}
+    pub fn akvpulltask_pk(
+        &self,
+        akvpulltask_pk: impl Into<Arc<str>>,
+    ) -> IntegrationsAzureKeyVaultAkvintegrationPkPullsAkvpullPkTasksAkvpulltaskPk {
         let Self {
             client,
             akvintegration_pk,
             akvpull_pk,
         } = self;
-        akvpulltask_pk {
-            client,
-            akvintegration_pk,
-            akvpull_pk,
-            akvpulltask_pk,
+        IntegrationsAzureKeyVaultAkvintegrationPkPullsAkvpullPkTasksAkvpulltaskPk {
+            client: client.clone(),
+            akvintegration_pk: akvintegration_pk.clone(),
+            akvpull_pk: akvpull_pk.clone(),
+            akvpulltask_pk: akvpulltask_pk.into(),
         }
     }
-    pub fn id(&self, id: &str) -> id {
+    pub fn id(
+        &self,
+        id: impl Into<Arc<str>>,
+    ) -> IntegrationsAzureKeyVaultAkvintegrationPkPullsAkvpullPkTasksId {
         let Self {
             client,
             akvintegration_pk,
             akvpull_pk,
         } = self;
-        id {
-            client,
-            akvintegration_pk,
-            akvpull_pk,
-            id,
+        IntegrationsAzureKeyVaultAkvintegrationPkPullsAkvpullPkTasksId {
+            client: client.clone(),
+            akvintegration_pk: akvintegration_pk.clone(),
+            akvpull_pk: akvpull_pk.clone(),
+            id: id.into(),
         }
     }
 }
-pub struct akvpull_pk {
+pub struct IntegrationsAzureKeyVaultAkvintegrationPkPullsAkvpullPk {
     client: Arc<Client>,
-    akvintegration_pk: &str,
-    akvpull_pk: &str,
+    akvintegration_pk: Arc<str>,
+    akvpull_pk: Arc<str>,
 }
-impl akvpull_pk {
-    pub fn tasks(&self) -> tasks {
+impl IntegrationsAzureKeyVaultAkvintegrationPkPullsAkvpullPk {
+    pub fn tasks(&self) -> IntegrationsAzureKeyVaultAkvintegrationPkPullsAkvpullPkTasks {
         let Self {
             client,
             akvintegration_pk,
             akvpull_pk,
         } = self;
-        tasks {
-            client,
-            akvintegration_pk,
-            akvpull_pk,
+        IntegrationsAzureKeyVaultAkvintegrationPkPullsAkvpullPkTasks {
+            client: client.clone(),
+            akvintegration_pk: akvintegration_pk.clone(),
+            akvpull_pk: akvpull_pk.clone(),
         }
     }
 }
-pub struct sync {
+pub struct IntegrationsAzureKeyVaultAkvintegrationPkPullsIdSync {
     client: Arc<Client>,
-    akvintegration_pk: &str,
-    id: &str,
+    akvintegration_pk: Arc<str>,
+    id: Arc<str>,
 }
-impl sync {
-    pub fn integrations_azure_key_vault_pulls_sync_create() {}
+impl IntegrationsAzureKeyVaultAkvintegrationPkPullsIdSync {
+    pub fn create() {}
 }
-pub struct id {
+pub struct IntegrationsAzureKeyVaultAkvintegrationPkPullsId {
     client: Arc<Client>,
-    akvintegration_pk: &str,
-    id: &str,
+    akvintegration_pk: Arc<str>,
+    id: Arc<str>,
 }
-impl id {
-    pub fn integrations_azure_key_vault_pulls_retrieve() {}
-    pub fn integrations_azure_key_vault_pulls_update() {}
-    pub fn integrations_azure_key_vault_pulls_destroy() {}
-    pub fn integrations_azure_key_vault_pulls_partial_update() {}
-    pub fn sync(&self) -> sync {
+impl IntegrationsAzureKeyVaultAkvintegrationPkPullsId {
+    pub fn retrieve() {}
+    pub fn update() {}
+    pub fn destroy() {}
+    pub fn partial_update() {}
+    pub fn sync(&self) -> IntegrationsAzureKeyVaultAkvintegrationPkPullsIdSync {
         let Self {
-            client,
-            akvintegration_pk,
-            id,
-        } = self;
-        sync {
-            client,
-            akvintegration_pk,
-            id,
-        }
-    }
-}
-pub struct pulls {
-    client: Arc<Client>,
-    akvintegration_pk: &str,
-}
-impl pulls {
-    pub fn integrations_azure_key_vault_pulls_list() {}
-    pub fn integrations_azure_key_vault_pulls_create() {}
-    pub fn akvpull_pk(&self, akvpull_pk: &str) -> akvpull_pk {
-        let Self {
-            client,
-            akvintegration_pk,
-        } = self;
-        akvpull_pk {
-            client,
-            akvintegration_pk,
-            akvpull_pk,
-        }
-    }
-    pub fn id(&self, id: &str) -> id {
-        let Self {
-            client,
-            akvintegration_pk,
-        } = self;
-        id {
             client,
             akvintegration_pk,
             id,
+        } = self;
+        IntegrationsAzureKeyVaultAkvintegrationPkPullsIdSync {
+            client: client.clone(),
+            akvintegration_pk: akvintegration_pk.clone(),
+            id: id.clone(),
         }
     }
 }
-pub struct id {
+pub struct IntegrationsAzureKeyVaultAkvintegrationPkPulls {
     client: Arc<Client>,
-    akvintegration_pk: &str,
-    akvpush_pk: &str,
-    akvpushtask_pk: &str,
-    id: &str,
+    akvintegration_pk: Arc<str>,
 }
-impl id {
-    pub fn integrations_azure_key_vault_pushes_tasks_steps_retrieve() {}
+impl IntegrationsAzureKeyVaultAkvintegrationPkPulls {
+    pub fn list() {}
+    pub fn create() {}
+    pub fn akvpull_pk(
+        &self,
+        akvpull_pk: impl Into<Arc<str>>,
+    ) -> IntegrationsAzureKeyVaultAkvintegrationPkPullsAkvpullPk {
+        let Self {
+            client,
+            akvintegration_pk,
+        } = self;
+        IntegrationsAzureKeyVaultAkvintegrationPkPullsAkvpullPk {
+            client: client.clone(),
+            akvintegration_pk: akvintegration_pk.clone(),
+            akvpull_pk: akvpull_pk.into(),
+        }
+    }
+    pub fn id(&self, id: impl Into<Arc<str>>) -> IntegrationsAzureKeyVaultAkvintegrationPkPullsId {
+        let Self {
+            client,
+            akvintegration_pk,
+        } = self;
+        IntegrationsAzureKeyVaultAkvintegrationPkPullsId {
+            client: client.clone(),
+            akvintegration_pk: akvintegration_pk.clone(),
+            id: id.into(),
+        }
+    }
 }
-pub struct steps {
+pub struct IntegrationsAzureKeyVaultAkvintegrationPkPushesAkvpushPkTasksAkvpushtaskPkStepsId {
     client: Arc<Client>,
-    akvintegration_pk: &str,
-    akvpush_pk: &str,
-    akvpushtask_pk: &str,
+    akvintegration_pk: Arc<str>,
+    akvpush_pk: Arc<str>,
+    akvpushtask_pk: Arc<str>,
+    id: Arc<str>,
 }
-impl steps {
-    pub fn integrations_azure_key_vault_pushes_tasks_steps_list() {}
-    pub fn id(&self, id: &str) -> id {
+impl IntegrationsAzureKeyVaultAkvintegrationPkPushesAkvpushPkTasksAkvpushtaskPkStepsId {
+    pub fn retrieve() {}
+}
+pub struct IntegrationsAzureKeyVaultAkvintegrationPkPushesAkvpushPkTasksAkvpushtaskPkSteps {
+    client: Arc<Client>,
+    akvintegration_pk: Arc<str>,
+    akvpush_pk: Arc<str>,
+    akvpushtask_pk: Arc<str>,
+}
+impl IntegrationsAzureKeyVaultAkvintegrationPkPushesAkvpushPkTasksAkvpushtaskPkSteps {
+    pub fn list() {}
+    pub fn id(
+        &self,
+        id: impl Into<Arc<str>>,
+    ) -> IntegrationsAzureKeyVaultAkvintegrationPkPushesAkvpushPkTasksAkvpushtaskPkStepsId {
         let Self {
             client,
             akvintegration_pk,
             akvpush_pk,
             akvpushtask_pk,
         } = self;
-        id {
+        IntegrationsAzureKeyVaultAkvintegrationPkPushesAkvpushPkTasksAkvpushtaskPkStepsId {
+            client: client.clone(),
+            akvintegration_pk: akvintegration_pk.clone(),
+            akvpush_pk: akvpush_pk.clone(),
+            akvpushtask_pk: akvpushtask_pk.clone(),
+            id: id.into(),
+        }
+    }
+}
+pub struct IntegrationsAzureKeyVaultAkvintegrationPkPushesAkvpushPkTasksAkvpushtaskPk {
+    client: Arc<Client>,
+    akvintegration_pk: Arc<str>,
+    akvpush_pk: Arc<str>,
+    akvpushtask_pk: Arc<str>,
+}
+impl IntegrationsAzureKeyVaultAkvintegrationPkPushesAkvpushPkTasksAkvpushtaskPk {
+    pub fn steps(
+        &self,
+    ) -> IntegrationsAzureKeyVaultAkvintegrationPkPushesAkvpushPkTasksAkvpushtaskPkSteps {
+        let Self {
             client,
             akvintegration_pk,
             akvpush_pk,
             akvpushtask_pk,
-            id,
-        }
-    }
-}
-pub struct akvpushtask_pk {
-    client: Arc<Client>,
-    akvintegration_pk: &str,
-    akvpush_pk: &str,
-    akvpushtask_pk: &str,
-}
-impl akvpushtask_pk {
-    pub fn steps(&self) -> steps {
-        let Self {
-            client,
-            akvintegration_pk,
-            akvpush_pk,
-            akvpushtask_pk,
         } = self;
-        steps {
-            client,
-            akvintegration_pk,
-            akvpush_pk,
-            akvpushtask_pk,
+        IntegrationsAzureKeyVaultAkvintegrationPkPushesAkvpushPkTasksAkvpushtaskPkSteps {
+            client: client.clone(),
+            akvintegration_pk: akvintegration_pk.clone(),
+            akvpush_pk: akvpush_pk.clone(),
+            akvpushtask_pk: akvpushtask_pk.clone(),
         }
     }
 }
-pub struct id {
+pub struct IntegrationsAzureKeyVaultAkvintegrationPkPushesAkvpushPkTasksId {
     client: Arc<Client>,
-    akvintegration_pk: &str,
-    akvpush_pk: &str,
-    id: &str,
+    akvintegration_pk: Arc<str>,
+    akvpush_pk: Arc<str>,
+    id: Arc<str>,
 }
-impl id {
-    pub fn integrations_azure_key_vault_pushes_tasks_retrieve() {}
+impl IntegrationsAzureKeyVaultAkvintegrationPkPushesAkvpushPkTasksId {
+    pub fn retrieve() {}
 }
-pub struct tasks {
+pub struct IntegrationsAzureKeyVaultAkvintegrationPkPushesAkvpushPkTasks {
     client: Arc<Client>,
-    akvintegration_pk: &str,
-    akvpush_pk: &str,
+    akvintegration_pk: Arc<str>,
+    akvpush_pk: Arc<str>,
 }
-impl tasks {
-    pub fn integrations_azure_key_vault_pushes_tasks_list() {}
-    pub fn akvpushtask_pk(&self, akvpushtask_pk: &str) -> akvpushtask_pk {
+impl IntegrationsAzureKeyVaultAkvintegrationPkPushesAkvpushPkTasks {
+    pub fn list() {}
+    pub fn akvpushtask_pk(
+        &self,
+        akvpushtask_pk: impl Into<Arc<str>>,
+    ) -> IntegrationsAzureKeyVaultAkvintegrationPkPushesAkvpushPkTasksAkvpushtaskPk {
         let Self {
             client,
             akvintegration_pk,
             akvpush_pk,
         } = self;
-        akvpushtask_pk {
-            client,
-            akvintegration_pk,
-            akvpush_pk,
-            akvpushtask_pk,
+        IntegrationsAzureKeyVaultAkvintegrationPkPushesAkvpushPkTasksAkvpushtaskPk {
+            client: client.clone(),
+            akvintegration_pk: akvintegration_pk.clone(),
+            akvpush_pk: akvpush_pk.clone(),
+            akvpushtask_pk: akvpushtask_pk.into(),
         }
     }
-    pub fn id(&self, id: &str) -> id {
+    pub fn id(
+        &self,
+        id: impl Into<Arc<str>>,
+    ) -> IntegrationsAzureKeyVaultAkvintegrationPkPushesAkvpushPkTasksId {
         let Self {
             client,
             akvintegration_pk,
             akvpush_pk,
         } = self;
-        id {
-            client,
-            akvintegration_pk,
-            akvpush_pk,
-            id,
+        IntegrationsAzureKeyVaultAkvintegrationPkPushesAkvpushPkTasksId {
+            client: client.clone(),
+            akvintegration_pk: akvintegration_pk.clone(),
+            akvpush_pk: akvpush_pk.clone(),
+            id: id.into(),
         }
     }
 }
-pub struct akvpush_pk {
+pub struct IntegrationsAzureKeyVaultAkvintegrationPkPushesAkvpushPk {
     client: Arc<Client>,
-    akvintegration_pk: &str,
-    akvpush_pk: &str,
+    akvintegration_pk: Arc<str>,
+    akvpush_pk: Arc<str>,
 }
-impl akvpush_pk {
-    pub fn tasks(&self) -> tasks {
+impl IntegrationsAzureKeyVaultAkvintegrationPkPushesAkvpushPk {
+    pub fn tasks(&self) -> IntegrationsAzureKeyVaultAkvintegrationPkPushesAkvpushPkTasks {
         let Self {
             client,
             akvintegration_pk,
             akvpush_pk,
         } = self;
-        tasks {
-            client,
-            akvintegration_pk,
-            akvpush_pk,
+        IntegrationsAzureKeyVaultAkvintegrationPkPushesAkvpushPkTasks {
+            client: client.clone(),
+            akvintegration_pk: akvintegration_pk.clone(),
+            akvpush_pk: akvpush_pk.clone(),
         }
     }
 }
-pub struct sync {
+pub struct IntegrationsAzureKeyVaultAkvintegrationPkPushesIdSync {
     client: Arc<Client>,
-    akvintegration_pk: &str,
-    id: &str,
+    akvintegration_pk: Arc<str>,
+    id: Arc<str>,
 }
-impl sync {
-    pub fn integrations_azure_key_vault_pushes_sync_create() {}
+impl IntegrationsAzureKeyVaultAkvintegrationPkPushesIdSync {
+    pub fn create() {}
 }
-pub struct id {
+pub struct IntegrationsAzureKeyVaultAkvintegrationPkPushesId {
     client: Arc<Client>,
-    akvintegration_pk: &str,
-    id: &str,
+    akvintegration_pk: Arc<str>,
+    id: Arc<str>,
 }
-impl id {
-    pub fn integrations_azure_key_vault_pushes_retrieve() {}
-    pub fn integrations_azure_key_vault_pushes_update() {}
-    pub fn integrations_azure_key_vault_pushes_destroy() {}
-    pub fn integrations_azure_key_vault_pushes_partial_update() {}
-    pub fn sync(&self) -> sync {
+impl IntegrationsAzureKeyVaultAkvintegrationPkPushesId {
+    pub fn retrieve() {}
+    pub fn update() {}
+    pub fn destroy() {}
+    pub fn partial_update() {}
+    pub fn sync(&self) -> IntegrationsAzureKeyVaultAkvintegrationPkPushesIdSync {
         let Self {
             client,
             akvintegration_pk,
             id,
         } = self;
-        sync {
-            client,
-            akvintegration_pk,
-            id,
+        IntegrationsAzureKeyVaultAkvintegrationPkPushesIdSync {
+            client: client.clone(),
+            akvintegration_pk: akvintegration_pk.clone(),
+            id: id.clone(),
         }
     }
 }
-pub struct pushes {
+pub struct IntegrationsAzureKeyVaultAkvintegrationPkPushes {
     client: Arc<Client>,
-    akvintegration_pk: &str,
+    akvintegration_pk: Arc<str>,
 }
-impl pushes {
-    pub fn integrations_azure_key_vault_pushes_list() {}
-    pub fn integrations_azure_key_vault_pushes_create() {}
-    pub fn akvpush_pk(&self, akvpush_pk: &str) -> akvpush_pk {
+impl IntegrationsAzureKeyVaultAkvintegrationPkPushes {
+    pub fn list() {}
+    pub fn create() {}
+    pub fn akvpush_pk(
+        &self,
+        akvpush_pk: impl Into<Arc<str>>,
+    ) -> IntegrationsAzureKeyVaultAkvintegrationPkPushesAkvpushPk {
         let Self {
             client,
             akvintegration_pk,
         } = self;
-        akvpush_pk {
-            client,
-            akvintegration_pk,
-            akvpush_pk,
+        IntegrationsAzureKeyVaultAkvintegrationPkPushesAkvpushPk {
+            client: client.clone(),
+            akvintegration_pk: akvintegration_pk.clone(),
+            akvpush_pk: akvpush_pk.into(),
         }
     }
-    pub fn id(&self, id: &str) -> id {
+    pub fn id(&self, id: impl Into<Arc<str>>) -> IntegrationsAzureKeyVaultAkvintegrationPkPushesId {
         let Self {
             client,
             akvintegration_pk,
         } = self;
-        id {
-            client,
-            akvintegration_pk,
-            id,
+        IntegrationsAzureKeyVaultAkvintegrationPkPushesId {
+            client: client.clone(),
+            akvintegration_pk: akvintegration_pk.clone(),
+            id: id.into(),
         }
     }
 }
-pub struct akvintegration_pk {
+pub struct IntegrationsAzureKeyVaultAkvintegrationPk {
     client: Arc<Client>,
-    akvintegration_pk: &str,
+    akvintegration_pk: Arc<str>,
 }
-impl akvintegration_pk {
-    pub fn pulls(&self) -> pulls {
+impl IntegrationsAzureKeyVaultAkvintegrationPk {
+    pub fn pulls(&self) -> IntegrationsAzureKeyVaultAkvintegrationPkPulls {
         let Self {
             client,
             akvintegration_pk,
         } = self;
-        pulls {
-            client,
-            akvintegration_pk,
+        IntegrationsAzureKeyVaultAkvintegrationPkPulls {
+            client: client.clone(),
+            akvintegration_pk: akvintegration_pk.clone(),
         }
     }
-    pub fn pushes(&self) -> pushes {
+    pub fn pushes(&self) -> IntegrationsAzureKeyVaultAkvintegrationPkPushes {
         let Self {
             client,
             akvintegration_pk,
         } = self;
-        pushes {
-            client,
-            akvintegration_pk,
+        IntegrationsAzureKeyVaultAkvintegrationPkPushes {
+            client: client.clone(),
+            akvintegration_pk: akvintegration_pk.clone(),
         }
     }
 }
@@ -396,65 +426,80 @@ impl CloudtruthSdk {
         static ONCE: OnceCell<CloudtruthSdk> = OnceCell::new();
         ONCE.get_or_init(CloudtruthSdk::new)
     }
-    pub fn integrations(&self) -> integrations {
+    pub fn integrations(&self) -> Integrations {
         let Self { client } = self;
-        integrations { client }
-    }
-}
-pub struct integrations {
-    client: Arc<Client>,
-}
-impl integrations {
-    pub fn azure(&self) -> azure {
-        let Self { client } = self;
-        azure { client }
-    }
-}
-pub struct azure {
-    client: Arc<Client>,
-}
-impl azure {
-    pub fn key_vault(&self) -> key_vault {
-        let Self { client } = self;
-        key_vault { client }
-    }
-}
-pub struct key_vault {
-    client: Arc<Client>,
-}
-impl key_vault {
-    pub fn integrations_azure_key_vault_list() {}
-    pub fn integrations_azure_key_vault_create() {}
-    pub fn akvintegration_pk(&self, akvintegration_pk: &str) -> akvintegration_pk {
-        let Self { client } = self;
-        akvintegration_pk {
-            client,
-            akvintegration_pk,
+        Integrations {
+            client: client.clone(),
         }
     }
-    pub fn id(&self, id: &str) -> id {
+}
+pub struct Integrations {
+    client: Arc<Client>,
+}
+impl Integrations {
+    pub fn azure(&self) -> IntegrationsAzure {
         let Self { client } = self;
-        id { client, id }
+        IntegrationsAzure {
+            client: client.clone(),
+        }
     }
 }
-pub struct id {
+pub struct IntegrationsAzure {
     client: Arc<Client>,
-    id: &str,
 }
-impl id {
-    pub fn integrations_azure_key_vault_retrieve() {}
-    pub fn integrations_azure_key_vault_update() {}
-    pub fn integrations_azure_key_vault_destroy() {}
-    pub fn integrations_azure_key_vault_partial_update() {}
-    pub fn scan(&self) -> scan {
+impl IntegrationsAzure {
+    pub fn key_vault(&self) -> IntegrationsAzureKeyVault {
+        let Self { client } = self;
+        IntegrationsAzureKeyVault {
+            client: client.clone(),
+        }
+    }
+}
+pub struct IntegrationsAzureKeyVault {
+    client: Arc<Client>,
+}
+impl IntegrationsAzureKeyVault {
+    pub fn list() {}
+    pub fn create() {}
+    pub fn akvintegration_pk(
+        &self,
+        akvintegration_pk: impl Into<Arc<str>>,
+    ) -> IntegrationsAzureKeyVaultAkvintegrationPk {
+        let Self { client } = self;
+        IntegrationsAzureKeyVaultAkvintegrationPk {
+            client: client.clone(),
+            akvintegration_pk: akvintegration_pk.into(),
+        }
+    }
+    pub fn id(&self, id: impl Into<Arc<str>>) -> IntegrationsAzureKeyVaultId {
+        let Self { client } = self;
+        IntegrationsAzureKeyVaultId {
+            client: client.clone(),
+            id: id.into(),
+        }
+    }
+}
+pub struct IntegrationsAzureKeyVaultId {
+    client: Arc<Client>,
+    id: Arc<str>,
+}
+impl IntegrationsAzureKeyVaultId {
+    pub fn retrieve() {}
+    pub fn update() {}
+    pub fn destroy() {}
+    pub fn partial_update() {}
+    pub fn scan(&self) -> IntegrationsAzureKeyVaultIdScan {
         let Self { client, id } = self;
-        scan { client, id }
+        IntegrationsAzureKeyVaultIdScan {
+            client: client.clone(),
+            id: id.clone(),
+        }
     }
 }
-pub struct scan {
+pub struct IntegrationsAzureKeyVaultIdScan {
     client: Arc<Client>,
-    id: &str,
+    id: Arc<str>,
 }
-impl scan {
-    pub fn integrations_azure_key_vault_scan_create() {}
+impl IntegrationsAzureKeyVaultIdScan {
+    pub fn create() {}
 }

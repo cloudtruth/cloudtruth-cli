@@ -82,31 +82,38 @@ impl SdkGenerator {
                 } else {
                     child_segment.to_string()
                 };
+                // append this path segment to current prefix
+                let segment_start = child_segment.as_ptr() as usize - uri.as_ptr() as usize;
+                let segment_end = segment_start + child_segment.len();
+                let path = &uri[..segment_end];
+                // get parent object
                 let size = ancestors.len();
                 let parent_object = ancestors.get_mut(size - 1).map(|(_, obj)| obj);
-                let mut current_object = SdkObject::new(name.as_str(), parent_object.as_deref());
+                // create SDK obect for this node
+                let mut current_object = SdkObject::new(
+                    path.strip_prefix(&self.root_prefix).unwrap(),
+                    parent_object.as_deref(),
+                );
+                // attach struct field for the path variable
                 if is_path_var {
-                    current_object.add_field(&name, parse_quote![&str]);
+                    current_object.add_field(&name, parse_quote![Arc<str>]);
                 }
 
                 // attach getter method to parent object
                 if let Some(parent_object) = parent_object {
                     let mut method = SdkChildConstructor::new(parent_object, &current_object);
                     if is_path_var {
-                        method.add_arg(&name, parse_quote![&str]);
+                        method.add_arg(&name, parse_quote![impl Into<Arc<str>>]);
                     }
                     parent_object.add_method(method);
                 }
-                // append this path segment to current prefix
-                let segment_start = child_segment.as_ptr() as usize - uri.as_ptr() as usize;
-                let segment_end = segment_start + child_segment.len();
-                let path = &uri[..segment_end];
+
                 // add to ancestors stack
                 ancestors.push((path, current_object));
             }
             let size = ancestors.len();
             if let Some((_, last_object)) = ancestors.get_mut(size - 1) {
-                last_object.add_method(SdkApiMethod::new(op.clone()));
+                last_object.add_method(SdkApiMethod::new(uri, op.clone()));
             }
         }
 
