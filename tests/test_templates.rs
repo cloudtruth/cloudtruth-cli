@@ -123,7 +123,7 @@ fn test_templates_basic() {
 
 #[test]
 #[use_harness]
-fn test_template_evaluate_environments() {
+fn test_templates_evaluate_environments() {
     let proj = Project::with_prefix("temp-eval").create();
     let env1 = Environment::with_prefix("env_eval_a").create();
     let env2 = Environment::with_prefix("env-eval_b").create();
@@ -183,9 +183,12 @@ fn test_template_evaluate_environments() {
         .assert()
         .success()
         .stdout(diff(
-            template_text
-                .replace("{{param1}}", "some val with space")
-                .replace("{{secret1}}", "sssshhhhhhh"),
+            "\
+            # here is a comment\n\
+            // we do not care about what other content you put in\n\
+            simple.param=some val with space\n\
+            ANOTHER_PARAM=sssshhhhhhh\n\
+            ",
         ));
 
     // check raw
@@ -208,10 +211,13 @@ fn test_template_evaluate_environments() {
         .assert()
         .success()
         .stdout(diff(
-            template_text
-                .replace("{{param1}}", "some val with space")
-                .replace("{{secret1}}", "sssshhhhhhh")
-                + "\n",
+            "\
+            # here is a comment\n\
+            // we do not care about what other content you put in\n\
+            simple.param=some val with space\n\
+            ANOTHER_PARAM=sssshhhhhhh\n\
+            \n\
+            ",
         ));
 
     /* check environment 2 */
@@ -230,9 +236,12 @@ fn test_template_evaluate_environments() {
         .assert()
         .success()
         .stdout(diff(
-            template_text
-                .replace("{{param1}}", "diff_env_value")
-                .replace("{{secret1}}", "top-secret"),
+            "\
+            # here is a comment\n\
+            // we do not care about what other content you put in\n\
+            simple.param=diff_env_value\n\
+            ANOTHER_PARAM=top-secret\n\
+            ",
         ));
 
     // check raw
@@ -255,10 +264,13 @@ fn test_template_evaluate_environments() {
         .assert()
         .success()
         .stdout(diff(
-            template_text
-                .replace("{{param1}}", "diff_env_value")
-                .replace("{{secret1}}", "top-secret")
-                + "\n",
+            "\
+            # here is a comment\n\
+            // we do not care about what other content you put in\n\
+            simple.param=diff_env_value\n\
+            ANOTHER_PARAM=top-secret\n\
+            \n\
+            ",
         ));
 
     // see that we cannot delete a parameter with the template using it
@@ -280,4 +292,305 @@ fn test_template_evaluate_environments() {
         .stderr(
             contains("Template contains references that do not exist").and(contains("no_param")),
         );
+}
+
+#[test]
+#[use_harness]
+fn test_templates_as_of_time() {
+    let proj = Project::with_prefix("temp-times").create();
+
+    let vars = hashmap! {
+        CT_PROJECT => proj.name().as_str()
+    };
+
+    cloudtruth!("param set some_param --value 'value first'")
+        .envs(&vars)
+        .assert()
+        .success();
+
+    cloudtruth!("param set another_param --value 'devops'")
+        .envs(&vars)
+        .assert()
+        .success();
+
+    let test_temp = Name::with_prefix("temp-times");
+    let template_text1 = "\
+    # just a different template\n\
+    references = {{some_param}}\n\
+    ";
+    let test_file = TestFile::with_contents(template_text1).unwrap();
+
+    cloudtruth!("template set {test_temp} -b {test_file}")
+        .envs(&vars)
+        .assert()
+        .success();
+
+    let cmd = cloudtruth!("template list --show-times -f json")
+        .envs(&vars)
+        .assert()
+        .success();
+    let json = serde_json::from_slice::<serde_json::Value>(&cmd.get_output().stdout)
+        .expect("Unable to parse template list JSON");
+    let template = json
+        .as_object()
+        .unwrap()
+        .get("template")
+        .unwrap()
+        .as_array()
+        .expect("Expected a JSON array of templates")
+        .first()
+        .expect("Expected at least 1 template, found none");
+    let modified_at = template
+        .get("Modified At")
+        .expect("No property named 'Modified At' found")
+        .as_str()
+        .expect("Expected 'Modified At' to be a string");
+
+    cloudtruth!("param set some_param --value 'value second'")
+        .envs(&vars)
+        .assert()
+        .success();
+
+    cloudtruth!("param set another_param --value 'sre'")
+        .envs(&vars)
+        .assert()
+        .success();
+
+    let template_text2 = "\
+    # just a different template\n\
+    references = {{another_param}}\n\
+    ";
+    let test_file = TestFile::with_contents(template_text2).unwrap();
+    cloudtruth!("template set {test_temp} -b {test_file}")
+        .envs(&vars)
+        .assert()
+        .success();
+
+    cloudtruth!("template get {test_temp}")
+        .envs(&vars)
+        .assert()
+        .success()
+        .stdout(diff(
+            "\
+            # just a different template\n\
+            references = sre\n\
+            ",
+        ));
+
+    cloudtruth!("template get --raw {test_temp}")
+        .envs(&vars)
+        .assert()
+        .success()
+        .stdout(diff(template_text2));
+
+    cloudtruth!("template get --as-of '{modified_at}' {test_temp}")
+        .envs(&vars)
+        .assert()
+        .success()
+        .stdout(diff(
+            "\
+            # just a different template\n\
+            references = value first\n\
+            ",
+        ));
+
+    cloudtruth!("template get --raw --as-of '{modified_at}' {test_temp}")
+        .envs(&vars)
+        .assert()
+        .success()
+        .stdout(diff(template_text1));
+
+    //before project exists
+    cloudtruth!("template get --as-of '2020-02-02' {test_temp}")
+        .envs(&vars)
+        .assert()
+        .failure()
+        .stderr(contains(
+            "Did not find environment 'default' at specified time/tag",
+        ));
+
+    // check preview
+    let preview_template_text = "\
+        # just a comment\n\
+        this.is.a.template.value={{some_param}}\n\
+    ";
+    let preview_file = TestFile::with_contents(preview_template_text).unwrap();
+    cloudtruth!("template set {test_temp} -b {test_file}")
+        .envs(&vars)
+        .assert()
+        .success();
+    cloudtruth!("template preview {preview_file}")
+        .envs(&vars)
+        .assert()
+        .success()
+        .stdout(diff(
+            "\
+            # just a comment\n\
+            this.is.a.template.value=value second\n\
+            \n\
+            ",
+        ));
+    cloudtruth!("template preview {preview_file} --as-of '{modified_at}'")
+        .envs(&vars)
+        .assert()
+        .success()
+        .stdout(diff(
+            "\
+            # just a comment\n\
+            this.is.a.template.value=value first\n\
+            \n\
+            ",
+        ));
+    //before project exists
+    cloudtruth!("template preview {preview_file} --as-of 2020-02-02")
+        .envs(&vars)
+        .assert()
+        .failure()
+        .stderr(contains("No ProjectLedger matches the given query"));
+}
+
+#[test]
+#[use_harness]
+fn test_templates_as_of_tag() {
+    let proj = Project::with_prefix("temp-tag").create();
+    let env = Environment::with_prefix("tag-temp").create();
+
+    let vars = hashmap! {
+        CT_PROJECT => proj.name().as_str(),
+        CT_ENVIRONMENT => env.name().as_str()
+    };
+
+    cloudtruth!("param set some_param --value 'value first'")
+        .envs(&vars)
+        .assert()
+        .success();
+
+    cloudtruth!("param set another_param --value 'devops'")
+        .envs(&vars)
+        .assert()
+        .success();
+
+    let test_temp = Name::with_prefix("temp-times");
+    let template_text1 = "\
+    # just a different template\n\
+    references = {{some_param}}\n\
+    ";
+    let test_file = TestFile::with_contents(template_text1).unwrap();
+
+    cloudtruth!("template set {test_temp} -b {test_file}")
+        .envs(&vars)
+        .assert()
+        .success();
+
+    // create a tag
+    cloudtruth!("env tag set '{env}' 'template-tag'")
+        .envs(&vars)
+        .assert()
+        .success();
+
+    // update template and params
+    let template_text2 = "\
+        # just a different template\n\
+        references = {{another_param}}\n\
+        ";
+    let test_file = TestFile::with_contents(template_text2).unwrap();
+
+    cloudtruth!("template set {test_temp} -b {test_file}")
+        .envs(&vars)
+        .assert()
+        .success();
+
+    cloudtruth!("param set some_param --value 'value second'")
+        .envs(&vars)
+        .assert()
+        .success();
+
+    cloudtruth!("param set another_param --value 'sre'")
+        .envs(&vars)
+        .assert()
+        .success();
+
+    cloudtruth!("template get {test_temp}")
+        .envs(&vars)
+        .assert()
+        .success()
+        .stdout(diff(
+            "\
+            # just a different template\n\
+            references = sre\n\
+            ",
+        ));
+
+    cloudtruth!("template get --raw {test_temp}")
+        .envs(&vars)
+        .assert()
+        .success()
+        .stdout(diff(template_text2));
+
+    cloudtruth!("template get --as-of 'template-tag' {test_temp}")
+        .envs(&vars)
+        .assert()
+        .success()
+        .stdout(diff(
+            "\
+            # just a different template\n\
+            references = value first\n\
+            ",
+        ));
+
+    cloudtruth!("template get --raw --as-of 'template-tag' {test_temp}")
+        .envs(&vars)
+        .assert()
+        .success()
+        .stdout(diff(template_text1));
+
+    //before project exists
+    cloudtruth!("template get --as-of 'my-missing-tag' {test_temp}")
+        .envs(&vars)
+        .assert()
+        .failure()
+        .stderr(contains!(
+            "Tag `my-missing-tag` could not be found in environment `{env}`",
+        ));
+
+    // check preview
+    let preview_template_text = "\
+        # just a comment\n\
+        this.is.a.template.value={{some_param}}\n\
+    ";
+    let preview_file = TestFile::with_contents(preview_template_text).unwrap();
+    cloudtruth!("template set {test_temp} -b {test_file}")
+        .envs(&vars)
+        .assert()
+        .success();
+    cloudtruth!("template preview {preview_file}")
+        .envs(&vars)
+        .assert()
+        .success()
+        .stdout(diff(
+            "\
+            # just a comment\n\
+            this.is.a.template.value=value second\n\
+            \n\
+            ",
+        ));
+    cloudtruth!("template preview {preview_file} --as-of 'template-tag'")
+        .envs(&vars)
+        .assert()
+        .success()
+        .stdout(diff(
+            "\
+            # just a comment\n\
+            this.is.a.template.value=value first\n\
+            \n\
+            ",
+        ));
+    //before project exists
+    cloudtruth!("template preview {preview_file} --as-of 'my-missing-tag'")
+        .envs(&vars)
+        .assert()
+        .failure()
+        .stderr(contains!(
+            "Tag `my-missing-tag` could not be found in environment `{env}`",
+        ));
 }
