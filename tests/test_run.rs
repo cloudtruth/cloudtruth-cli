@@ -93,7 +93,7 @@ fn test_run_inheritance_coordination() {
 #[test]
 #[use_harness]
 fn test_run_permissive() {
-    let proj = Project::with_prefix("run-pmerissive-proj").create();
+    let proj = Project::with_prefix("run-permissive-proj").create();
 
     let mut env_map = hashmap! {
         CT_PROJECT => proj.name().to_string()
@@ -136,17 +136,52 @@ fn test_run_arg_with_spaces() {
         .stderr(contains("command contains spaces, and may fail"));
 }
 
-// #[test]
-// #[use_harness]
-// fn test_run_time() {
-//     let proj = Project::with_prefix("proj-old-run").create();
+#[test]
+#[use_harness]
+fn test_run_time() {
+    let proj = Project::with_prefix("proj-old-run").create();
 
-//     cloudtruth!("--project '{proj}' param set my_param --value fist-value")
-//         .assert()
-//         .success();
+    cloudtruth!("--project '{proj}' param set my_param --value first-value")
+        .assert()
+        .success();
 
-//     todo!() // get modified time
-// }
+    let cmd = cloudtruth!("--project '{proj}' param list -vf json --show-times")
+        .assert()
+        .success();
+    let json = serde_json::from_slice::<serde_json::Value>(&cmd.get_output().stdout)
+        .expect("Unable to parse params JSON");
+    let param = json
+        .as_object()
+        .expect("Expected top-level JSON object")
+        .get("parameter")
+        .expect("No 'parameter' property found")
+        .as_array()
+        .expect("Expected parameters array")
+        .iter()
+        .find(|param| match param.get("Name") {
+            Some(name) => name == "my_param",
+            None => false,
+        })
+        .expect("Could not find paramer 'my_param' in list");
+
+    let orig_time = param
+        .get("Modified At")
+        .expect("Unable to find 'Modified At' property in parameter JSON")
+        .as_str()
+        .expect("Expected 'Modified At' to be a string");
+
+    cloudtruth!("--project '{proj}' param set my_param --value second-value")
+        .assert()
+        .success();
+    cloudtruth!("--project '{proj}' run --as-of '{orig_time}' -- {PRINTENV}")
+        .assert()
+        .success()
+        .stdout(contains("first-value").and(not(contains("second-value"))));
+    cloudtruth!("--project '{proj}' run -- {PRINTENV}")
+        .assert()
+        .success()
+        .stdout(not(contains("first-value")).and(contains("second-value")));
+}
 
 #[test]
 #[use_harness]
