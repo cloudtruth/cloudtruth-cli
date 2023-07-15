@@ -1,4 +1,6 @@
 use cloudtruth_config::{CT_ENVIRONMENT, CT_PROJECT};
+use cloudtruth_test_harness::output::profile::get_current_user;
+use cloudtruth_test_harness::output::template::*;
 use cloudtruth_test_harness::prelude::*;
 use maplit::hashmap;
 
@@ -327,23 +329,7 @@ fn test_templates_as_of_time() {
         .envs(&vars)
         .assert()
         .success();
-    let json = serde_json::from_slice::<serde_json::Value>(&cmd.get_output().stdout)
-        .expect("Unable to parse template list JSON");
-    let template = json
-        .as_object()
-        .unwrap()
-        .get("template")
-        .unwrap()
-        .as_array()
-        .expect("Expected a JSON array of templates")
-        .first()
-        .expect("Expected at least 1 template, found none");
-    let modified_at = template
-        .get("Modified At")
-        .expect("No property named 'Modified At' found")
-        .as_str()
-        .expect("Expected 'Modified At' to be a string");
-
+    let modified_at = cmd.get_template_modified_at(0);
     cloudtruth!("param set some_param --value 'value second'")
         .envs(&vars)
         .assert()
@@ -587,4 +573,130 @@ fn test_templates_as_of_tag() {
         .stderr(contains!(
             "Tag `my-missing-tag` could not be found in environment `{env}`",
         ));
+}
+
+#[test]
+#[use_harness]
+fn test_templates_history() {
+    let proj = Project::with_prefix("temp-history").create();
+    let env = Environment::with_prefix("env-temp-history").create();
+    let vars = hashmap! {
+        CT_PROJECT => proj.name().as_str(),
+        CT_ENVIRONMENT => env.name().as_str()
+    };
+    // check for no template history at start
+    cloudtruth!("template history")
+        .envs(&vars)
+        .assert()
+        .success()
+        .stdout(contains("No template history in project"));
+
+    // create two templates
+    let temp1 = Name::with_prefix("temp1");
+    let temp_file1 = TestFile::with_contents("first body").unwrap();
+    let temp2 = Name::with_prefix("temp2");
+    let temp_file2 = TestFile::with_contents("# bogus text").unwrap();
+    cloudtruth!("templates set {temp1} -b {temp_file1} -d 'simple desc'")
+        .envs(&vars)
+        .assert()
+        .success();
+    cloudtruth!("templates set {temp2} -b {temp_file2}")
+        .envs(&vars)
+        .assert()
+        .success();
+    // get modification timestamp before changes
+    let cmd = cloudtruth!("templates list --show-times -f json")
+        .envs(&vars)
+        .assert()
+        .success();
+    let modified_at = cmd.get_template_modified_at(1);
+    // create a tag before changes
+    cloudtruth!("env tag set {env} stable").assert().success();
+    // update the templates
+    let temp_file1 = TestFile::with_contents("second body").unwrap();
+    let temp_file2 = TestFile::with_contents("different temp text").unwrap();
+    cloudtruth!("template set {temp1} -b {temp_file1}")
+        .envs(&vars)
+        .assert()
+        .success();
+    cloudtruth!("template set {temp2} -b {temp_file2}")
+        .envs(&vars)
+        .assert()
+        .success();
+    // get current user
+    let user = get_current_user();
+    // check all template history
+    cloudtruth!("template history -f csv")
+        .envs(&vars)
+        .assert()
+        .success()
+        .stdout(contains_all!(
+            "Date,User,Action,Name,Changes",
+            format!(",Service Account ({user}),create,{temp1},"),
+            "first body",
+            format!(",Service Account ({user}),update,{temp1},"),
+            "second body",
+            "simple desc",
+            format!(",Service Account ({user}),create,{temp2},"),
+            "# bogus text",
+            format!(",Service Account ({user}),update,{temp2},"),
+            "different temp text"
+        ));
+    // check history of one template
+    cloudtruth!("template history '{temp2}' -f csv")
+        .envs(&vars)
+        .assert()
+        .success()
+        .stdout(
+            not(contains_any!(
+                "Date,User,Action,Name,Changes",
+                "temp1",
+                "first body",
+                "second body",
+                "simple desc"
+            ))
+            .and(contains_all!(
+                "Date,User,Action,Changes",
+                "temp2",
+                "# bogus text",
+                "different temp text"
+            )),
+        );
+    // check history at timestamp
+    cloudtruth!("template history '{temp2}' --as-of '{modified_at}'")
+        .envs(&vars)
+        .assert()
+        .success()
+        .stdout(contains_all!("temp2", "# bogus text").and(not(contains("different temp text"))));
+    // check history at tag
+    cloudtruth!("template history '{temp2}' --as-of stable")
+        .envs(&vars)
+        .assert()
+        .success()
+        .stdout(contains_all!("temp2", "# bogus text").and(not(contains("different temp text"))));
+    // delete both templates
+    cloudtruth!("templates delete -y '{temp2}'")
+        .envs(&vars)
+        .assert()
+        .success();
+    cloudtruth!("templates delete -y '{temp1}'")
+        .envs(&vars)
+        .assert()
+        .success();
+    // check that history shows deletion
+    cloudtruth!("templates history -f csv")
+        .envs(&vars)
+        .assert()
+        .success()
+        .stdout(contains_all!(
+            "Date,User,Action,Name,Changes",
+            format!(",Service Account ({user}),delete,{temp1},"),
+            format!(",Service Account ({user}),delete,{temp2},")
+        ));
+    // check that we fail to resolve the deleted template
+    cloudtruth!("templates history '{temp1}'")
+        .envs(&vars)
+        .assert()
+        .failure()
+        .stderr(contains!("No template '{temp1}' found in project '{proj}'"));
 }

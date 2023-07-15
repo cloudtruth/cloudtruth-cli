@@ -10,7 +10,7 @@ pub use crate::util::*;
 // export macros
 #[cfg(feature = "macros")]
 pub use {
-    super::{all, cli_bin_path, cloudtruth, contains, contains_all, diff},
+    super::{all, any, cli_bin_path, cloudtruth, contains, contains_all, contains_any, diff},
     cloudtruth_test_macros::use_harness,
 };
 
