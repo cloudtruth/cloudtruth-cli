@@ -216,7 +216,6 @@ fn test_templates_evaluate_environments() {
             // we do not care about what other content you put in\n\
             simple.param=some val with space\n\
             ANOTHER_PARAM=sssshhhhhhh\n\
-            \n\
             ",
         ));
 
@@ -269,7 +268,6 @@ fn test_templates_evaluate_environments() {
             // we do not care about what other content you put in\n\
             simple.param=diff_env_value\n\
             ANOTHER_PARAM=top-secret\n\
-            \n\
             ",
         ));
 
@@ -427,7 +425,6 @@ fn test_templates_as_of_time() {
             "\
             # just a comment\n\
             this.is.a.template.value=value second\n\
-            \n\
             ",
         ));
     cloudtruth!("template preview {preview_file} --as-of '{modified_at}'")
@@ -438,7 +435,6 @@ fn test_templates_as_of_time() {
             "\
             # just a comment\n\
             this.is.a.template.value=value first\n\
-            \n\
             ",
         ));
     //before project exists
@@ -571,7 +567,6 @@ fn test_templates_as_of_tag() {
             "\
             # just a comment\n\
             this.is.a.template.value=value second\n\
-            \n\
             ",
         ));
     cloudtruth!("template preview {preview_file} --as-of 'template-tag'")
@@ -582,7 +577,6 @@ fn test_templates_as_of_tag() {
             "\
             # just a comment\n\
             this.is.a.template.value=value first\n\
-            \n\
             ",
         ));
     //before project exists
