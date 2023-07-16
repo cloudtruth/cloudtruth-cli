@@ -164,7 +164,7 @@ fn test_configuration_current() {
         .envs(&env_map)
         .assert()
         .success()
-        .parse_profile_parameters();
+        .parse_current_profile_params();
 
     let expected_param_names = vec![
         "Profile",
@@ -220,7 +220,7 @@ fn test_configuration_current() {
         .envs(&env_map)
         .assert()
         .success()
-        .parse_profile_parameters();
+        .parse_current_profile_params();
 
     let expected_param_names = vec![
         "Profile",
@@ -266,7 +266,7 @@ fn test_configuration_current() {
     .envs(&env_map)
     .assert()
     .success()
-    .parse_profile_parameters();
+    .parse_current_profile_params();
 
     let param = profile_json.find_param("Profile");
     assert_eq!(param.value, test_profile.name().as_str());
@@ -309,7 +309,7 @@ fn test_configuration_current() {
     let profile_json = cloudtruth!("config current -f json")
         .assert()
         .success()
-        .parse_profile_parameters();
+        .parse_current_profile_params();
     let param = profile_json.find_param("API key");
     assert_eq!("*****", param.value);
     let param = profile_json.find_param("Organization");
