@@ -39,6 +39,15 @@ macro_rules! diff {
     )
 }
 
+/// Helper macro equivalent to eq(format!(...))
+#[cfg(feature = "macros")]
+#[macro_export]
+macro_rules! eq {
+    ($($fmt:tt)*) => (
+        $crate::predicates::eq(format!($($fmt)*))
+    )
+}
+
 #[cfg(feature = "macros")]
 #[macro_export]
 /// Helper macro to and() a list of predicates.

@@ -1,7 +1,8 @@
 use cloudtruth_config::{CT_ENVIRONMENT, CT_PROJECT};
-use cloudtruth_test_harness::output::profile::get_current_user;
+use cloudtruth_test_harness::output::profile::{get_current_user, ParseCurrentProfileParamsExt};
 use cloudtruth_test_harness::output::template::*;
 use cloudtruth_test_harness::prelude::*;
+use indoc::{formatdoc, indoc};
 use maplit::hashmap;
 
 #[test]
@@ -11,7 +12,7 @@ fn test_templates_basic() {
 
     let temp_file = TestFile::with_contents("Text with no params\n").unwrap();
 
-    let temp_name = Name::with_prefix("orig-template");
+    let temp_name = Name::from_string("orig-template");
 
     cloudtruth!("--project {proj} template ls -v")
         .assert()
@@ -59,7 +60,7 @@ fn test_templates_basic() {
 
     // rename
     let orig_name = temp_name;
-    let temp_name = Name::with_prefix("renamed-temp");
+    let temp_name = Name::from_string("renamed-temp");
     cloudtruth!("--project {proj} template set {orig_name} --rename {temp_name}")
         .assert()
         .success()
@@ -155,15 +156,15 @@ fn test_templates_evaluate_environments() {
         .assert()
         .success();
 
-    let template_text = "\
-        # here is a comment\n\
-        // we do not care about what other content you put in\n\
-        simple.param={{param1}}\n\
-        ANOTHER_PARAM={{secret1}}\n\
-    ";
+    let template_text = indoc! {"
+        # here is a comment
+        // we do not care about what other content you put in
+        simple.param={{param1}}
+        ANOTHER_PARAM={{secret1}}
+    "};
     let test_file = TestFile::with_contents(template_text).unwrap();
 
-    let temp_name = Name::with_prefix("eval-env-temp");
+    let temp_name = Name::from_string("eval-env-temp");
     cloudtruth!("template set {temp_name} -b {test_file}")
         .envs(&vars)
         .assert()
@@ -184,14 +185,13 @@ fn test_templates_evaluate_environments() {
         .envs(&vars)
         .assert()
         .success()
-        .stdout(diff(
-            "\
-            # here is a comment\n\
-            // we do not care about what other content you put in\n\
-            simple.param=some val with space\n\
-            ANOTHER_PARAM=sssshhhhhhh\n\
+        .stdout(diff(indoc! {"
+            # here is a comment
+            // we do not care about what other content you put in
+            simple.param=some val with space
+            ANOTHER_PARAM=sssshhhhhhh
             ",
-        ));
+        }));
 
     // check raw
     cloudtruth!("template get -r {temp_name}")
@@ -212,14 +212,12 @@ fn test_templates_evaluate_environments() {
         .envs(&vars)
         .assert()
         .success()
-        .stdout(diff(
-            "\
-            # here is a comment\n\
-            // we do not care about what other content you put in\n\
-            simple.param=some val with space\n\
-            ANOTHER_PARAM=sssshhhhhhh\n\
-            ",
-        ));
+        .stdout(diff(indoc! {"
+            # here is a comment
+            // we do not care about what other content you put in
+            simple.param=some val with space
+            ANOTHER_PARAM=sssshhhhhhh
+        "}));
 
     /* check environment 2 */
     vars.insert(CT_ENVIRONMENT, env2.name().as_str());
@@ -236,14 +234,12 @@ fn test_templates_evaluate_environments() {
         .envs(&vars)
         .assert()
         .success()
-        .stdout(diff(
-            "\
-            # here is a comment\n\
-            // we do not care about what other content you put in\n\
-            simple.param=diff_env_value\n\
-            ANOTHER_PARAM=top-secret\n\
-            ",
-        ));
+        .stdout(diff(indoc! {"
+            # here is a comment
+            // we do not care about what other content you put in
+            simple.param=diff_env_value
+            ANOTHER_PARAM=top-secret
+        "}));
 
     // check raw
     cloudtruth!("template get -r {temp_name}")
@@ -264,14 +260,12 @@ fn test_templates_evaluate_environments() {
         .envs(&vars)
         .assert()
         .success()
-        .stdout(diff(
-            "\
-            # here is a comment\n\
-            // we do not care about what other content you put in\n\
-            simple.param=diff_env_value\n\
-            ANOTHER_PARAM=top-secret\n\
-            ",
-        ));
+        .stdout(diff(indoc! {"
+            # here is a comment
+            // we do not care about what other content you put in
+            simple.param=diff_env_value
+            ANOTHER_PARAM=top-secret
+        "}));
 
     // see that we cannot delete a parameter with the template using it
     cloudtruth!("param del -y param1")
@@ -313,11 +307,11 @@ fn test_templates_as_of_time() {
         .assert()
         .success();
 
-    let test_temp = Name::with_prefix("temp-times");
-    let template_text1 = "\
-    # just a different template\n\
-    references = {{some_param}}\n\
-    ";
+    let test_temp = Name::from_string("temp-times");
+    let template_text1 = indoc! {"
+        # just a different template
+        references = {{some_param}}
+    "};
     let test_file = TestFile::with_contents(template_text1).unwrap();
 
     cloudtruth!("template set {test_temp} -b {test_file}")
@@ -340,10 +334,10 @@ fn test_templates_as_of_time() {
         .assert()
         .success();
 
-    let template_text2 = "\
-    # just a different template\n\
-    references = {{another_param}}\n\
-    ";
+    let template_text2 = indoc! {"
+        # just a different template
+        references = {{another_param}}
+    "};
     let test_file = TestFile::with_contents(template_text2).unwrap();
     cloudtruth!("template set {test_temp} -b {test_file}")
         .envs(&vars)
@@ -354,12 +348,10 @@ fn test_templates_as_of_time() {
         .envs(&vars)
         .assert()
         .success()
-        .stdout(diff(
-            "\
-            # just a different template\n\
-            references = sre\n\
-            ",
-        ));
+        .stdout(diff(indoc! {"
+            # just a different template
+            references = sre
+        "}));
 
     cloudtruth!("template get --raw {test_temp}")
         .envs(&vars)
@@ -371,12 +363,10 @@ fn test_templates_as_of_time() {
         .envs(&vars)
         .assert()
         .success()
-        .stdout(diff(
-            "\
-            # just a different template\n\
-            references = value first\n\
-            ",
-        ));
+        .stdout(diff(indoc! {"
+            # just a different template
+            references = value first
+        "}));
 
     cloudtruth!("template get --raw --as-of '{modified_at}' {test_temp}")
         .envs(&vars)
@@ -394,10 +384,10 @@ fn test_templates_as_of_time() {
         ));
 
     // check preview
-    let preview_template_text = "\
-        # just a comment\n\
-        this.is.a.template.value={{some_param}}\n\
-    ";
+    let preview_template_text = indoc! {"
+        # just a comment
+        this.is.a.template.value={{some_param}}
+    "};
     let preview_file = TestFile::with_contents(preview_template_text).unwrap();
     cloudtruth!("template set {test_temp} -b {test_file}")
         .envs(&vars)
@@ -407,22 +397,18 @@ fn test_templates_as_of_time() {
         .envs(&vars)
         .assert()
         .success()
-        .stdout(diff(
-            "\
-            # just a comment\n\
-            this.is.a.template.value=value second\n\
-            ",
-        ));
+        .stdout(diff(indoc! {"
+            # just a comment
+            this.is.a.template.value=value second
+        "}));
     cloudtruth!("template preview {preview_file} --as-of '{modified_at}'")
         .envs(&vars)
         .assert()
         .success()
-        .stdout(diff(
-            "\
-            # just a comment\n\
-            this.is.a.template.value=value first\n\
-            ",
-        ));
+        .stdout(diff(indoc! {"
+            # just a comment
+            this.is.a.template.value=value first
+        "}));
     //before project exists
     cloudtruth!("template preview {preview_file} --as-of 2020-02-02")
         .envs(&vars)
@@ -452,11 +438,11 @@ fn test_templates_as_of_tag() {
         .assert()
         .success();
 
-    let test_temp = Name::with_prefix("temp-times");
-    let template_text1 = "\
-    # just a different template\n\
-    references = {{some_param}}\n\
-    ";
+    let test_temp = Name::from_string("temp-times");
+    let template_text1 = indoc! {"
+        # just a different template
+        references = {{some_param}}
+    "};
     let test_file = TestFile::with_contents(template_text1).unwrap();
 
     cloudtruth!("template set {test_temp} -b {test_file}")
@@ -471,10 +457,10 @@ fn test_templates_as_of_tag() {
         .success();
 
     // update template and params
-    let template_text2 = "\
-        # just a different template\n\
-        references = {{another_param}}\n\
-        ";
+    let template_text2 = indoc! {"
+        # just a different template
+        references = {{another_param}}
+    "};
     let test_file = TestFile::with_contents(template_text2).unwrap();
 
     cloudtruth!("template set {test_temp} -b {test_file}")
@@ -496,12 +482,10 @@ fn test_templates_as_of_tag() {
         .envs(&vars)
         .assert()
         .success()
-        .stdout(diff(
-            "\
-            # just a different template\n\
-            references = sre\n\
-            ",
-        ));
+        .stdout(diff(indoc! {"
+            # just a different template
+            references = sre
+        "}));
 
     cloudtruth!("template get --raw {test_temp}")
         .envs(&vars)
@@ -513,12 +497,10 @@ fn test_templates_as_of_tag() {
         .envs(&vars)
         .assert()
         .success()
-        .stdout(diff(
-            "\
-            # just a different template\n\
-            references = value first\n\
-            ",
-        ));
+        .stdout(diff(indoc! {"
+            # just a different template
+            references = value first
+        "}));
 
     cloudtruth!("template get --raw --as-of 'template-tag' {test_temp}")
         .envs(&vars)
@@ -536,10 +518,10 @@ fn test_templates_as_of_tag() {
         ));
 
     // check preview
-    let preview_template_text = "\
-        # just a comment\n\
-        this.is.a.template.value={{some_param}}\n\
-    ";
+    let preview_template_text = indoc! {"
+        # just a comment
+        this.is.a.template.value={{some_param}}
+    "};
     let preview_file = TestFile::with_contents(preview_template_text).unwrap();
     cloudtruth!("template set {test_temp} -b {test_file}")
         .envs(&vars)
@@ -549,22 +531,18 @@ fn test_templates_as_of_tag() {
         .envs(&vars)
         .assert()
         .success()
-        .stdout(diff(
-            "\
-            # just a comment\n\
-            this.is.a.template.value=value second\n\
-            ",
-        ));
+        .stdout(diff(indoc! {"
+            # just a comment
+            this.is.a.template.value=value second
+        "}));
     cloudtruth!("template preview {preview_file} --as-of 'template-tag'")
         .envs(&vars)
         .assert()
         .success()
-        .stdout(diff(
-            "\
-            # just a comment\n\
-            this.is.a.template.value=value first\n\
-            ",
-        ));
+        .stdout(diff(indoc! {"
+            # just a comment
+            this.is.a.template.value=value first
+        "}));
     //before project exists
     cloudtruth!("template preview {preview_file} --as-of 'my-missing-tag'")
         .envs(&vars)
@@ -592,9 +570,9 @@ fn test_templates_history() {
         .stdout(contains("No template history in project"));
 
     // create two templates
-    let temp1 = Name::with_prefix("temp1");
+    let temp1 = Name::from_string("temp1");
     let temp_file1 = TestFile::with_contents("first body").unwrap();
-    let temp2 = Name::with_prefix("temp2");
+    let temp2 = Name::from_string("temp2");
     let temp_file2 = TestFile::with_contents("# bogus text").unwrap();
     cloudtruth!("templates set {temp1} -b {temp_file1} -d 'simple desc'")
         .envs(&vars)
@@ -699,4 +677,331 @@ fn test_templates_history() {
         .assert()
         .failure()
         .stderr(contains!("No template '{temp1}' found in project '{proj}'"));
+}
+
+#[test]
+#[use_harness]
+fn test_templates_diff() {
+    let proj = Project::with_prefix("template-diff").create();
+    let env1 = Environment::with_prefix("ttag-diff-env1").create();
+    let env2 = Environment::with_prefix("ttag-diff-env2").create();
+    let vars = hashmap! {
+        CT_PROJECT => proj.name().as_str()
+    };
+    cloudtruth!("--env '{env1}' param set param1 --value some_value")
+        .envs(&vars)
+        .assert()
+        .success();
+    cloudtruth!("--env '{env1}' param set secret1 --secret true --value ssshhhh")
+        .envs(&vars)
+        .assert()
+        .success();
+    let template_text = indoc! {"
+        # This us a comment common to all environments/times
+        SECRET={{secret1}}
+        
+        # this is a longer comment to
+        # demonstrated that text
+        # gets clipped in
+        # a unified diff (by default)
+        # it is not important what is here
+        # just that the unified diff
+        # does not show
+        # every line
+        # even when there
+        # are
+        # too
+        # many
+        # lines
+        PARAMETER={{param1}}
+        
+    "};
+    let temp = Name::from_string("my-template");
+    let temp_file = TestFile::with_contents(template_text).unwrap();
+    cloudtruth!("template set {temp} -b {temp_file}")
+        .envs(&vars)
+        .assert()
+        .success();
+    cloudtruth!("template diff '{temp}' -e '{env1}' --env '{env2}'")
+        .envs(&vars)
+        .assert()
+        .success()
+        .stdout(eq(""));
+    let profile = cloudtruth!("config current -f json")
+        .envs(&vars)
+        .assert()
+        .success()
+        .parse_current_profile_params();
+    let default_env = Environment::from_string(&profile.find_param("Environment").value);
+    cloudtruth!("param set param1 --value different")
+        .envs(&vars)
+        .assert()
+        .success();
+    cloudtruth!("param set secret1 --secret true --value 'be qwiet'")
+        .envs(&vars)
+        .assert()
+        .success();
+    cloudtruth!("templates diff '{temp}' -e '{env1}' -s")
+        .envs(&vars)
+        .assert()
+        .success()
+        .stdout(diff(formatdoc!(
+            "\
+            --- {temp} ({env1} at current)
+            +++ {temp} ({default_env} at current)
+            @@ -1,5 +1,5 @@
+             # This us a comment common to all environments/times
+            -SECRET=ssshhhh
+            +SECRET=be qwiet
+             
+             # this is a longer comment to
+             # demonstrated that text
+            @@ -14,5 +14,5 @@
+             # too
+             # many
+             # lines
+            -PARAMETER=some_value
+            +PARAMETER=different
+             
+            "
+        )));
+    cloudtruth!("--env '{env1}' param set param1 --value matchers")
+        .envs(&vars)
+        .assert()
+        .success();
+    cloudtruth!("--env '{env2}' param set param1 --value matchers")
+        .envs(&vars)
+        .assert()
+        .success();
+    cloudtruth!("--env '{env2}' param set secret1 --value 'im hunting wabbits'")
+        .envs(&vars)
+        .assert()
+        .success();
+    cloudtruth!("template diff '{temp}' -e '{env1}' -e '{env2}' -s --context 1000")
+        .envs(&vars)
+        .assert()
+        .success()
+        .stdout(diff(formatdoc! {"
+            --- {temp} ({env1} at current)
+            +++ {temp} ({env2} at current)
+            @@ -1,18 +1,18 @@
+             # This us a comment common to all environments/times
+            -SECRET=ssshhhh
+            +SECRET=im hunting wabbits
+             
+             # this is a longer comment to
+             # demonstrated that text
+             # gets clipped in
+             # a unified diff (by default)
+             # it is not important what is here
+             # just that the unified diff
+             # does not show
+             # every line
+             # even when there
+             # are
+             # too
+             # many
+             # lines
+             PARAMETER=matchers
+             
+        "}));
+    cloudtruth!("template diff '{temp}' -e '{env1}' -e '{env2}' -s --raw")
+        .envs(&vars)
+        .assert()
+        .success()
+        .stdout(eq(""));
+    cloudtruth!("template diff '{temp}' -e '{env1}' -e '{env2}' -s --raw -c 100")
+        .envs(&vars)
+        .assert()
+        .success()
+        .stdout(eq(""));
+    let modified_at = cloudtruth!("template ls --show-times -f json")
+        .envs(&vars)
+        .assert()
+        .success()
+        .get_template_modified_at(0);
+    let template_text = indoc! {"
+        # This us a comment common to all environments/times
+        SECRET={{secret1}}
+        PARAMETER={{param1}}
+
+    "};
+    let temp_file = TestFile::with_contents(template_text).unwrap();
+    cloudtruth!("template set {temp} -b {temp_file}")
+        .envs(&vars)
+        .assert()
+        .success();
+    cloudtruth!("template diff '{temp}' --as-of '{modified_at}' --raw")
+        .envs(&vars)
+        .assert()
+        .success()
+        .stdout(diff(formatdoc! {"
+            --- {temp} ({default_env} at {modified_at})
+            +++ {temp} ({default_env} at current)
+            @@ -1,18 +1,4 @@
+             # This us a comment common to all environments/times
+             SECRET={{{{secret1}}}}
+            -
+            -# this is a longer comment to
+            -# demonstrated that text
+            -# gets clipped in
+            -# a unified diff (by default)
+            -# it is not important what is here
+            -# just that the unified diff
+            -# does not show
+            -# every line
+            -# even when there
+            -# are
+            -# too
+            -# many
+            -# lines
+             PARAMETER={{{{param1}}}}
+             
+        "}));
+    cloudtruth!("temp diff '{temp}' --as-of '{modified_at}' --env {env1} -s")
+        .envs(&vars)
+        .assert()
+        .success()
+        .stdout(diff(formatdoc! {"
+            --- {temp} ({env1} at {modified_at})
+            +++ {temp} ({default_env} at current)
+            @@ -1,18 +1,4 @@
+             # This us a comment common to all environments/times
+            -SECRET=ssshhhh
+            -
+            -# this is a longer comment to
+            -# demonstrated that text
+            -# gets clipped in
+            -# a unified diff (by default)
+            -# it is not important what is here
+            -# just that the unified diff
+            -# does not show
+            -# every line
+            -# even when there
+            -# are
+            -# too
+            -# many
+            -# lines
+            -PARAMETER=some_value
+            +SECRET=be qwiet
+            +PARAMETER=different
+             
+        "}));
+    cloudtruth!("env tag set {env2} my-tag")
+        .envs(&vars)
+        .assert()
+        .success();
+    cloudtruth!("template diff '{temp}' -e {env2} --as-of my-tag -s")
+        .envs(&vars)
+        .assert()
+        .success()
+        .stdout(diff(formatdoc! {"
+            --- {temp} ({env2} at my-tag)
+            +++ {temp} ({default_env} at current)
+            @@ -1,4 +1,4 @@
+             # This us a comment common to all environments/times
+            -SECRET=im hunting wabbits
+            -PARAMETER=matchers
+            +SECRET=be qwiet
+            +PARAMETER=different
+             
+        "}));
+    cloudtruth!("temp diff '{temp}' -e {env2} --as-of my-tag -e {env2} -s")
+        .envs(&vars)
+        .assert()
+        .success()
+        .stdout(eq(""));
+    cloudtruth!("temp diff {temp} -s --env {env2} --as-of my-tag --env {env1} --as-of 2034-10-12")
+        .envs(&vars)
+        .assert()
+        .success()
+        .stdout(diff(formatdoc! {"
+        --- {temp} ({env2} at my-tag)
+        +++ {temp} ({env1} at 2034-10-12)
+        @@ -1,4 +1,4 @@
+         # This us a comment common to all environments/times
+        -SECRET=im hunting wabbits
+        +SECRET=ssshhhh
+         PARAMETER=matchers
+         
+        "}));
+    /* error cases */
+    cloudtruth!("template diff my-missing-temp --env {env1}")
+        .envs(&vars)
+        .assert()
+        .failure()
+        .stderr(contains!(
+            "No template 'my-missing-temp' found in project '{proj}'"
+        ));
+    cloudtruth!("template diff {temp} -c foo --env {env1}")
+        .envs(&vars)
+        .assert()
+        .failure()
+        .stderr(contains("invalid digit found in string"));
+    cloudtruth!("template diff {temp} -e {env2} --as-of no-such-tag -e {env2}")
+        .envs(&vars)
+        .assert()
+        .failure()
+        .stderr(contains!(
+            "Tag `no-such-tag` could not be found in environment `{env2}`"
+        ));
+    cloudtruth!("template diff {temp} -e {env1} --as-of my-tag")
+        .envs(&vars)
+        .assert()
+        .failure()
+        .stderr(contains!(
+            "Tag `my-tag` could not be found in environment `{env1}`"
+        ));
+    cloudtruth!("template diff '{temp}' --as-of 2021-01-20")
+        .envs(&vars)
+        .assert()
+        .failure()
+        .stderr(contains(
+            "Did not find environment 'default' at specified time/tag",
+        ));
+    cloudtruth!("template diff '{temp}'")
+        .envs(&vars)
+        .assert()
+        .success()
+        .stderr(contains("Invalid comparing an environment to itself"));
+    cloudtruth!("template diff 'does-not-exist'")
+        .envs(&vars)
+        .assert()
+        .success()
+        .stderr(contains("Invalid comparing an environment to itself"));
+    cloudtruth!("template diff {temp} -e {env1} -e {env1}")
+        .envs(&vars)
+        .assert()
+        .success()
+        .stderr(contains("Invalid comparing an environment to itself"));
+    cloudtruth!("template diff {temp} --as-of 2021-08-27 --as-of 2021-08-27")
+        .envs(&vars)
+        .assert()
+        .success()
+        .stderr(contains("Invalid comparing an environment to itself"));
+    cloudtruth!("template diff {temp} --as-of 2021-08-27 --as-of 2021-08-27 -e {env1} -e {env1}")
+        .envs(&vars)
+        .assert()
+        .success()
+        .stderr(contains("Invalid comparing an environment to itself"));
+    cloudtruth!("template diff '{temp}' -e 'charlie-foxtrot' -e {env2}")
+        .envs(&vars)
+        .assert()
+        .failure()
+        .stderr(contains("Did not find environment 'charlie-foxtrot'"));
+    cloudtruth!("template diff '{temp}' -e {env1} -e 'missing'")
+        .envs(&vars)
+        .assert()
+        .failure()
+        .stderr(contains("Did not find environment 'missing'"));
+    cloudtruth!("template diff {temp} -e env1 -env env2 -e env3")
+        .envs(&vars)
+        .assert()
+        .success()
+        .stderr(contains("Can specify a maximum of 2 environment values"));
+    cloudtruth!("template diff {temp} --as-of 2021-08-01 --as-of 2021-08-02 --as-of 2021-08-03")
+        .envs(&vars)
+        .assert()
+        .success()
+        .stderr(contains("Can specify a maximum of 2 as-of values"));
 }
