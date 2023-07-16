@@ -1,25 +1,11 @@
 use cloudtruth_config::{CT_API_KEY, CT_PROFILE, CT_PROJECT};
-use cloudtruth_test_harness::prelude::*;
+use cloudtruth_test_harness::{output::profile::ParseProfileListExt, prelude::*};
 use maplit::hashmap;
 
 #[cfg(not(target_os = "windows"))]
 const PRINTENV: &str = "printenv";
 #[cfg(target_os = "windows")]
 const PRINTENV: &str = "SET";
-
-fn get_profile(prof_name: impl AsRef<str>) -> Option<serde_json::Value> {
-    let prof_name = prof_name.as_ref();
-    let cmd = cloudtruth!("config prof list --values --format json -s")
-        .assert()
-        .success();
-    let mut json = serde_json::from_slice::<serde_json::Value>(&cmd.get_output().stdout).ok()?;
-    let profiles = json.as_object_mut()?.get_mut("profile")?.as_array_mut()?;
-    let (profile_index, _) = profiles
-        .iter()
-        .enumerate()
-        .find_map(|(index, prof)| Some((index, prof.get("Name")? == prof_name)))?;
-    Some(profiles.swap_remove(profile_index))
-}
 
 #[test]
 #[use_harness]
@@ -96,20 +82,20 @@ fn test_run_permissive() {
     let proj = Project::with_prefix("run-permissive-proj").create();
 
     let mut env_map = hashmap! {
-        CT_PROJECT => proj.name().to_string()
+        CT_PROJECT => proj.name().as_str()
     };
 
+    let profiles;
     if std::env::var_os(CT_API_KEY).is_none() {
+        profiles = cloudtruth!("config profile list -vsf json")
+            .assert()
+            .success()
+            .parse_profile_list();
         let prof_name = std::env::var(CT_PROFILE).unwrap_or("default".into());
-        let profile = get_profile(prof_name).expect("Could not find profile");
-        let api_key = profile
-            .as_object()
-            .expect("Profile JSON is not an object")
-            .get("API")
-            .expect("No property named 'API' found in profile JSON")
-            .as_str()
-            .expect("Value of property 'API' in profile JSON is not a string");
-        env_map.insert(CT_API_KEY, api_key.to_string());
+        let profile = profiles
+            .find_by_name(&prof_name)
+            .unwrap_or_else(|| panic!("Could not find profile named '{prof_name}'"));
+        env_map.insert(CT_API_KEY, profile.api.as_str());
     }
 
     cloudtruth!("run -- {PRINTENV}")
