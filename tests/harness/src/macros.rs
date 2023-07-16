@@ -52,3 +52,17 @@ macro_rules! all {
 macro_rules! contains_all {
     ($e:expr $(, $es:expr)* $(,)?) => ( $crate::all!($crate::predicates::contains($e) $(, $crate::predicates::contains($es))*,) )
 }
+
+#[cfg(feature = "macros")]
+#[macro_export]
+/// Helper macro to or() a list of predicates.
+macro_rules! any {
+    ($p:expr $(, $ps:expr)* $(,)?) => { $p$(.or($ps))* }
+}
+
+/// Checks that variable contains all strings from an iterator
+#[cfg(feature = "macros")]
+#[macro_export]
+macro_rules! contains_any {
+    ($e:expr $(, $es:expr)* $(,)?) => ( $crate::any!($crate::predicates::contains($e) $(, $crate::predicates::contains($es))*,) )
+}

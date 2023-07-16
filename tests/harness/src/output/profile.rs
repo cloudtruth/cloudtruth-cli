@@ -1,5 +1,7 @@
 use serde::Deserialize;
 
+use crate::cloudtruth;
+
 #[derive(Debug, Clone, Deserialize)]
 pub struct ProfileRoot {
     profile: ProfileParameters,
@@ -56,4 +58,12 @@ impl ParseProfileParametersExt for assert_cmd::assert::Assert {
             .expect("Invalid profile JSON")
             .profile
     }
+}
+
+pub fn get_current_user() -> String {
+    let profile = cloudtruth!("config current -f json")
+        .assert()
+        .success()
+        .parse_profile_parameters();
+    profile.find_param("User").value.to_string()
 }
