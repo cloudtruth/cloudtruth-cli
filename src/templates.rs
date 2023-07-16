@@ -293,7 +293,12 @@ fn proc_template_preview(
     let tag = parse_tag(subcmd_args.value_of(AS_OF_ARG));
     let result =
         templates.preview_template(rest_cfg, proj_id, env_name, &body, show_secrets, as_of, tag)?;
-    println!("{result}");
+    if result.ends_with('\n') {
+        print!("{result}");
+    } else {
+        println!("{result}");
+    }
+
     Ok(())
 }
 
