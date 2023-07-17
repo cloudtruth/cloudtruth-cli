@@ -1,4 +1,5 @@
 use cloudtruth_config::{CT_ENVIRONMENT, CT_PROJECT};
+use cloudtruth_test_harness::output::parameter::ParseParamListExt;
 use cloudtruth_test_harness::output::profile::{get_current_user, ParseCurrentProfileParamsExt};
 use cloudtruth_test_harness::output::template::*;
 use cloudtruth_test_harness::prelude::*;
@@ -1004,4 +1005,83 @@ fn test_templates_diff() {
         .assert()
         .success()
         .stderr(contains("Can specify a maximum of 2 as-of values"));
+}
+
+#[test]
+#[use_harness]
+fn test_templates_ref_by_param() {
+    let proj = Project::with_prefix("temp-ref-param").create();
+    let vars = hashmap! {
+        CT_PROJECT => proj.name().as_str()
+    };
+
+    let temp = Name::from_string("param_template");
+    let temp_file = TestFile::with_contents("nothing to evaluate here").unwrap();
+    cloudtruth!("template set {temp} -b {temp_file}")
+        .envs(&vars)
+        .assert()
+        .success();
+    cloudtruth!(
+        "param set my_parameter --value '{{{{ cloudtruth.templates.{temp} }}}}' --evaluate true"
+    )
+    .envs(&vars)
+    .assert()
+    .success();
+    let params = cloudtruth!("param list -v -f json --evaluated")
+        .envs(&vars)
+        .assert()
+        .success()
+        .parse_param_list();
+    let param = params
+        .find_by_name("my_parameter")
+        .expect("Could not find parameter 'my_parameter'");
+    assert_eq!(&param.name, "my_parameter");
+    assert_eq!(&param.value, "nothing to evaluate here");
+    assert_eq!(param.raw, format!("{{{{ cloudtruth.templates.{temp} }}}}"));
+
+    cloudtruth!("template del -y {temp}")
+        .envs(&vars)
+        .assert()
+        .failure()
+        .stderr(contains("my_parameter").and(contains!(
+            "Cannot delete {temp} because it is referenced by the following dynamic values"
+        )));
+    let temp_file = TestFile::with_contents("new-param-name = {{my_parameter}}").unwrap();
+    cloudtruth!("template set {temp} -b {temp_file}")
+        .envs(&vars)
+        .assert()
+        .failure()
+        .stderr(contains("introduces a dependency loop"));
+    cloudtruth!("param set param2 --value 'sample value'")
+        .envs(&vars)
+        .assert()
+        .success();
+    let temp_file = TestFile::with_contents("new-param-name = {{ param2 }}").unwrap();
+    cloudtruth!("template set {temp} -b {temp_file}")
+        .envs(&vars)
+        .assert()
+        .success();
+    let params = cloudtruth!("params list -v -f json")
+        .envs(&vars)
+        .assert()
+        .success()
+        .parse_param_list();
+    assert_eq!(2, params.len());
+    let param1 = params
+        .find_by_name("param1")
+        .expect("Could not find parameter 'param1'");
+    let param2 = params
+        .find_by_name("param2")
+        .expect("Could not find parameter 'param2'");
+    assert_eq!("new-param-name = sample value", param1.value);
+    assert_eq!("sample value", param2.value);
+    let params = cloudtruth!("param list -v -f json --evaluated")
+        .assert()
+        .success()
+        .parse_param_list();
+    let param = params
+        .find_by_name("param1")
+        .expect("Could not find parameter 'param1'");
+    assert_eq!("new-param-name = sample value", param.value);
+    assert_eq!(format!("{{{{ cloudtruth.templates.{temp} }}}}"), param.raw);
 }
