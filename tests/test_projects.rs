@@ -1,7 +1,5 @@
 use cloudtruth_test_harness::prelude::*;
 
-const TEST_PAGE_SIZE: usize = 5;
-
 #[test]
 #[use_harness]
 fn test_projects_basic() {
@@ -129,17 +127,17 @@ fn test_projects_parents() {
 #[test]
 #[use_harness]
 fn test_projects_pagination() {
-    let page_size = TEST_PAGE_SIZE;
+    const PAGE_SIZE: usize = 5;
     // we store the project names so they're not instantly dropped and deleted
-    let _projects: Vec<Scope<Project>> = (0..=page_size)
+    let _projects: Vec<Scope<Project>> = (0..=PAGE_SIZE)
         .map(|n| Project::with_prefix(format!("proj-page-{}", n)).create())
         .collect();
     cloudtruth!("proj ls")
         .rest_debug()
-        .page_size(page_size)
+        .page_size(PAGE_SIZE)
         .assert()
         .success()
-        .paginated(page_size);
+        .paginated(PAGE_SIZE);
 }
 
 #[test]

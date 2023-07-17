@@ -1085,3 +1085,22 @@ fn test_templates_ref_by_param() {
     assert_eq!("new-param-name = sample value", param.value);
     assert_eq!(format!("{{{{ cloudtruth.templates.{temp} }}}}"), param.raw);
 }
+
+#[test]
+#[use_harness]
+fn test_templates_pagination() {
+    const PAGE_SIZE: usize = 5;
+    let proj = Project::with_prefix("temp-paged").create();
+    let temp_file = TestFile::with_contents("Nothing to evaluate here").unwrap();
+    for i in 0..=PAGE_SIZE {
+        cloudtruth!("--project '{proj}' template set temp-{i} -b {temp_file}")
+            .assert()
+            .success();
+    }
+    cloudtruth!("--project '{proj}' template ls")
+        .rest_debug()
+        .page_size(PAGE_SIZE)
+        .assert()
+        .success()
+        .paginated(PAGE_SIZE);
+}

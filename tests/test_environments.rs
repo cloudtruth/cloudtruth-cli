@@ -1,8 +1,6 @@
 use cloudtruth_test_harness::prelude::*;
 use std::str;
 
-const TEST_PAGE_SIZE: usize = 5;
-
 #[test]
 #[use_harness]
 fn test_environments_basic() {
@@ -197,17 +195,17 @@ fn test_environments_parents() {
 #[test]
 #[use_harness]
 fn test_environments_pagination() {
-    let page_size = TEST_PAGE_SIZE;
+    const PAGE_SIZE: usize = 5;
     // we store the project names so they're not instantly dropped and deleted
-    let _envs: Vec<Scope<Environment>> = (0..=page_size)
+    let _envs: Vec<Scope<Environment>> = (0..=PAGE_SIZE)
         .map(|i| Environment::with_prefix(format!("env-page-{}", i)).create())
         .collect();
     cloudtruth!("env ls")
         .rest_debug()
-        .page_size(page_size)
+        .page_size(PAGE_SIZE)
         .assert()
         .success()
-        .paginated(page_size);
+        .paginated(PAGE_SIZE);
 }
 
 #[test]
@@ -328,17 +326,17 @@ fn test_environments_tagging() {
 fn test_environments_tagging_pagination() {
     let env = Environment::with_prefix("env-pag-tag").create();
 
-    let page_size = TEST_PAGE_SIZE;
-    for n in 0..=page_size {
+    const PAGE_SIZE: usize = 5;
+    for n in 0..=PAGE_SIZE {
         let tag = Name::with_prefix(format!("tag-{n}"));
         cloudtruth!("env tag set {env} {tag}").assert().success();
     }
     cloudtruth!("env tag ls {env}")
         .rest_debug()
-        .page_size(page_size)
+        .page_size(PAGE_SIZE)
         .assert()
         .success()
-        .paginated(page_size);
+        .paginated(PAGE_SIZE);
 }
 
 #[test]
