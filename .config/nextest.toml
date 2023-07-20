@@ -5,27 +5,31 @@
 [[profile.default.overrides]]
 filter = "kind(test)"
 
-# Retry failed tests
-retries = { count = 2, backoff = "fixed", delay = "10s" }
-
 # Define "slow" tests as being over 180 seconds
-slow-timeout = { period = "180s", terminate-after = 3 }
+slow-timeout = { period = "240s", terminate-after = 3 }
 
 ##### Configuration for CI runs #####
 [profile.ci]
 
-# show passing and failing tests immediately
+# show passing and failing tests immediately in CI
 status-level = "pass"
 
-# show non-passing tests in final summary
+# show non-passing tests in final summary of CI
 final-status-level = "slow"
 
-# continue if a test fails
+# continue if a test fails in CI
 fail-fast = false
 
+##### Configuration overrides for integration tests in CI runs #####
+[[profile.ci.overrides]]
+filter = "kind(test)"
+# Retry failed tests in CI
+retries = { count = 2, backoff = "fixed", delay = "15s" }
+
 [test-groups]
+# limit concurrency of parameter tests to avoid Gateway Timeout errors
 parameters = { max-threads = 2 }
 
 [[profile.default.overrides]]
-filter = "kind(test) & test(parameter)"
+filter = "kind(test) & test(test_parameters)"
 test-group = "parameters"

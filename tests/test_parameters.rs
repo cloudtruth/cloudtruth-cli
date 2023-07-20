@@ -1,5 +1,7 @@
 use cloudtruth_config::{CT_ENVIRONMENT, CT_PROJECT};
 use cloudtruth_test_harness::prelude::*;
+use indoc::{formatdoc, indoc};
+use maplit::hashmap;
 
 #[test]
 #[use_harness]
@@ -558,4 +560,533 @@ fn test_parameters_types() -> Result<()> {
         .env(CT_PROJECT, proj.to_name())
         .insert_var("[PROJECT]", proj.to_name())?;
     Ok(())
+}
+
+#[test]
+#[use_harness]
+fn test_parameters_project_separation() {
+    let proj1 = Project::with_prefix("proj-separation1").create();
+    let proj2 = Project::with_prefix("proj-separation2").create();
+
+    cloudtruth!("param set sna --value foo")
+        .env(CT_PROJECT, proj1.name())
+        .assert()
+        .success();
+    cloudtruth!("param set sensitive --value classified --secret true")
+        .env(CT_PROJECT, proj1.name())
+        .assert()
+        .success();
+    cloudtruth!("param set sna --value fu")
+        .env(CT_PROJECT, proj2.name())
+        .assert()
+        .success();
+    cloudtruth!("param set sensitive --value top-secret --secret true")
+        .env(CT_PROJECT, proj2.name())
+        .assert()
+        .success();
+    cloudtruth!("--project {proj1} param ls -v -s")
+        .assert()
+        .success()
+        .stdout(diff(
+            "\
+    +-----------+------------+---------+------------+-------+----------+--------+-------------+\n\
+    | Name      | Value      | Source  | Param Type | Rules | Type     | Secret | Description |\n\
+    +-----------+------------+---------+------------+-------+----------+--------+-------------+\n\
+    | sensitive | classified | default | string     | 0     | internal | true   |             |\n\
+    | sna       | foo        | default | string     | 0     | internal | false  |             |\n\
+    +-----------+------------+---------+------------+-------+----------+--------+-------------+\n\
+    ",
+        ));
+    cloudtruth!("--project {proj2} param ls -v -s")
+        .assert()
+        .success()
+        .stdout(diff(
+            "\
+    +-----------+------------+---------+------------+-------+----------+--------+-------------+\n\
+    | Name      | Value      | Source  | Param Type | Rules | Type     | Secret | Description |\n\
+    +-----------+------------+---------+------------+-------+----------+--------+-------------+\n\
+    | sensitive | top-secret | default | string     | 0     | internal | true   |             |\n\
+    | sna       | fu         | default | string     | 0     | internal | false  |             |\n\
+    +-----------+------------+---------+------------+-------+----------+--------+-------------+\n\
+    ",
+        ));
+    cloudtruth!("--project {proj1} param export docker -s")
+        .assert()
+        .success()
+        .stdout(diff(indoc! {"
+            SENSITIVE=classified
+            SNA=foo
+
+        "}));
+    cloudtruth!("--project {proj2} param export docker -s")
+        .assert()
+        .success()
+        .stdout(diff(indoc! {"
+            SENSITIVE=top-secret
+            SNA=fu
+
+        "}));
+}
+
+#[test]
+#[use_harness]
+fn test_parameters_environment_separation() {
+    let proj = Project::with_prefix("env-separation").create();
+    // env1 is "default"
+    let env2 = Environment::with_prefix("env-separation2").create();
+    let env3 = Environment::with_prefix("env-separation3")
+        .parent(&env2)
+        .create();
+    let envs = hashmap! {
+        CT_PROJECT => proj.name().as_str()
+    };
+    cloudtruth!("param set base --value first")
+        .envs(&envs)
+        .assert()
+        .success();
+    cloudtruth!("param set pitch --value slider")
+        .envs(&envs)
+        .assert()
+        .success();
+    cloudtruth!("param ls -v -s -f csv")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains!("base,first,default").and(contains!("pitch,slider,default")));
+    cloudtruth!("--env {env2} param ls -v -s -f csv")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains!("base,first,default").and(contains!("pitch,slider,default")));
+    cloudtruth!("--env {env3} param ls -v -s -f csv")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains!("base,first,default").and(contains!("pitch,slider,default")));
+    cloudtruth!("param env 'no-such-parameter' -f csv")
+        .envs(&envs)
+        .assert()
+        .failure()
+        .stderr(contains("Parameter 'no-such-parameter' was not found"));
+    cloudtruth!("param env base -f csv")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains!("default,first,,").and(not(contains(env2.name()))));
+    cloudtruth!("param env base -f csv --all")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains!("default,first,,").and(contains!("{env2},-,,")));
+    cloudtruth!("--env {env2} param set base --value second")
+        .envs(&envs)
+        .assert()
+        .success();
+    cloudtruth!("--env {env2} param set pitch --value split --secret true")
+        .envs(&envs)
+        .assert()
+        .success();
+    cloudtruth!("--env {env3} param set base --value third")
+        .envs(&envs)
+        .assert()
+        .success();
+    cloudtruth!("--env {env3} param set pitch --value heater --secret true")
+        .envs(&envs)
+        .assert()
+        .success();
+    cloudtruth!("param environment 'pitch' -f csv")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(
+            contains!("default,*****,,")
+                .and(contains!("{env2},*****,,"))
+                .and(contains!("{env3},*****,,")),
+        );
+    cloudtruth!("param environment 'pitch' -f csv -s")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(
+            contains!("default,slider,,")
+                .and(contains!("{env2},split,,"))
+                .and(contains!("{env3},heater,,")),
+        );
+    cloudtruth!("param ls -v -s -f csv")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains("base,first,default").and(contains("pitch,slider,default")));
+    cloudtruth!("--env {env2} param ls -v -s -f csv")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains!("base,second,{env2}").and(contains!("pitch,split,{env2}")));
+    cloudtruth!("--env {env3} param ls -v -s -f csv")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains!("base,third,{env3}").and(contains!("pitch,heater,{env3}")));
+    cloudtruth!("param export docker -s")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(diff(indoc! {"
+            BASE=first
+            PITCH=slider
+            
+        "}));
+    cloudtruth!("--env {env2} param export docker -s")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(diff(indoc! {"
+            BASE=second
+            PITCH=split
+            
+        "}));
+    cloudtruth!("--env {env3} param export docker -s")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(diff(indoc! {"
+            BASE=third
+            PITCH=heater
+            
+        "}));
+    cloudtruth!("--env {env2} param unset base")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(
+            contains("Removed parameter value 'base'").and(contains!("for environment '{env2}'")),
+        );
+    cloudtruth!("--env {env3} param ls -v -s -f csv")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains!("base,third,{env3}"));
+    cloudtruth!("--env {env2} param ls -v -s -f csv")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains("base,first,default"));
+    cloudtruth!("param ls -v -s -f csv")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains("base,first,default"));
+    cloudtruth!("--env {env3} param unset base")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(
+            contains("Removed parameter value 'base'").and(contains!("for environment '{env3}'")),
+        );
+    cloudtruth!("--env {env3} param ls -v -s -f csv")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains("base,first,default"));
+    cloudtruth!("--env {env2} param ls -v -s -f csv")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains("base,first,default"));
+    cloudtruth!("param ls -v -s -f csv")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains("base,first,default"));
+}
+
+#[test]
+#[use_harness]
+fn test_parameters_local_file() {
+    let file = TestFile::with_contents("static val from file").unwrap();
+    let proj = Project::with_prefix("local-file").create();
+    let envs = hashmap! {
+        CT_PROJECT => proj.name().as_str()
+    };
+    cloudtruth!("parameters list --values --secrets")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains!("No parameters found in project {proj}"));
+    cloudtruth!("param set my_param --input {file} --desc 'param set from file input'")
+        .envs(&envs)
+        .assert()
+        .success();
+    cloudtruth!("param ls -v")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(diff(indoc! {"
+            +----------+----------------------+---------+------------+-------+----------+--------+---------------------------+
+            | Name     | Value                | Source  | Param Type | Rules | Type     | Secret | Description               |
+            +----------+----------------------+---------+------------+-------+----------+--------+---------------------------+
+            | my_param | static val from file | default | string     | 0     | internal | false  | param set from file input |
+            +----------+----------------------+---------+------------+-------+----------+--------+---------------------------+
+        "}));
+    cloudtruth!("param set my_param --value update-from-value")
+        .envs(&envs)
+        .assert()
+        .success();
+    cloudtruth!("param ls -v")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(diff(indoc! {"
+            +----------+-------------------+---------+------------+-------+----------+--------+---------------------------+
+            | Name     | Value             | Source  | Param Type | Rules | Type     | Secret | Description               |
+            +----------+-------------------+---------+------------+-------+----------+--------+---------------------------+
+            | my_param | update-from-value | default | string     | 0     | internal | false  | param set from file input |
+            +----------+-------------------+---------+------------+-------+----------+--------+---------------------------+
+        "}));
+    let file = TestFile::with_contents("another-static-file").unwrap();
+    cloudtruth!("param set my_param --input '{file}'")
+        .envs(&envs)
+        .assert()
+        .success();
+    cloudtruth!("param ls -v")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(diff(indoc! {"
+            +----------+---------------------+---------+------------+-------+----------+--------+---------------------------+
+            | Name     | Value               | Source  | Param Type | Rules | Type     | Secret | Description               |
+            +----------+---------------------+---------+------------+-------+----------+--------+---------------------------+
+            | my_param | another-static-file | default | string     | 0     | internal | false  | param set from file input |
+            +----------+---------------------+---------+------------+-------+----------+--------+---------------------------+
+        "}));
+}
+
+#[test]
+#[use_harness]
+fn test_parameters_project_inheritance() {
+    let parent = Project::with_prefix("param-parent").create();
+    let child1 = Project::with_prefix("param-child1")
+        .parent(&parent)
+        .create();
+    let child2 = Project::with_prefix("param-child2")
+        .parent(&parent)
+        .create();
+
+    cloudtruth!("--project {parent} params ls -v --children")
+        .assert()
+        .success()
+        .stdout(contains(
+            "No parameters from a child project found in project",
+        ));
+    cloudtruth!("--project {child1} params ls -v --children")
+        .assert()
+        .success()
+        .stdout(contains(
+            "No parameters from a child project found in project",
+        ));
+    cloudtruth!("--project {child2} params ls -v --children")
+        .assert()
+        .success()
+        .stdout(contains(
+            "No parameters from a child project found in project",
+        ));
+    cloudtruth!("--project {child1} param set param1 --value some_value")
+        .assert()
+        .success();
+    cloudtruth!("--project {child1} param set secret2 --value ssshhhh --secret true")
+        .assert()
+        .success();
+    cloudtruth!("--project {parent} param ls -v")
+        .assert()
+        .success()
+        .stdout(contains("No parameters found in project"));
+    cloudtruth!("--project {child1} param ls -v")
+        .assert()
+        .success()
+        .stdout(contains_all!("param1", "secret2"));
+    cloudtruth!("--project {child2} param ls -v")
+        .assert()
+        .success()
+        .stdout(contains("No parameters found in project"));
+    cloudtruth!("--project {parent} params ls -v --parents")
+        .assert()
+        .success()
+        .stdout(contains(
+            "No parameters from a parent project found in project",
+        ));
+    cloudtruth!("--project {child1} params ls -v --parents")
+        .assert()
+        .success()
+        .stdout(contains(
+            "No parameters from a parent project found in project",
+        ));
+    cloudtruth!("--project {child2} params ls -v --parents")
+        .assert()
+        .success()
+        .stdout(contains(
+            "No parameters from a parent project found in project",
+        ));
+    cloudtruth!("--project {parent} params ls -v -f csv --children")
+        .assert()
+        .success()
+        .stdout(contains(formatdoc! {"
+            Name,Value,Project
+            param1,some_value,{child1}
+            secret2,*****,{child1}
+        "}));
+    cloudtruth!("--project {child1} params ls -v -f csv --children")
+        .assert()
+        .success()
+        .stdout(contains(
+            "No parameters from a child project found in project",
+        ));
+    cloudtruth!("--project {child2} params ls -v -f csv --children")
+        .assert()
+        .success()
+        .stdout(contains(
+            "No parameters from a child project found in project",
+        ));
+    cloudtruth!("--project {parent} param set param3 --value some_value")
+        .assert()
+        .success();
+    cloudtruth!("--project {parent} param set secret4 --value 'be vewy vewy quiet' --secret true")
+        .assert()
+        .success();
+    cloudtruth!("--project {parent} params ls -v -f csv --parents")
+        .assert()
+        .success()
+        .stdout(contains(
+            "No parameters from a parent project found in project",
+        ));
+    cloudtruth!("--project {child1} params ls -v -f csv --parents")
+        .assert()
+        .success()
+        .stdout(contains(formatdoc! {"
+            Name,Value,Project
+            param3,some_value,{parent}
+            secret4,*****,{parent}
+        "}));
+    cloudtruth!("--project {child2} params ls -v -f csv --parents")
+        .assert()
+        .success()
+        .stdout(contains(formatdoc! {"
+            Name,Value,Project
+            param3,some_value,{parent}
+            secret4,*****,{parent}
+        "}));
+    cloudtruth!("--project {parent} params ls -v -s -f csv --parents")
+        .assert()
+        .success()
+        .stdout(contains(
+            "No parameters from a parent project found in project",
+        ));
+    cloudtruth!("--project {child1} params ls -v -s -f csv --parents")
+        .assert()
+        .success()
+        .stdout(contains(formatdoc! {"
+            Name,Value,Project
+            param3,some_value,{parent}
+            secret4,be vewy vewy quiet,{parent}
+        "}));
+    cloudtruth!("--project {child2} params ls -v -s -f csv --parents")
+        .assert()
+        .success()
+        .stdout(contains(formatdoc! {"
+            Name,Value,Project
+            param3,some_value,{parent}
+            secret4,be vewy vewy quiet,{parent}
+        "}));
+    let grandchild = Project::with_prefix("params-grandchild")
+        .parent(&child1)
+        .create();
+    cloudtruth!("--project {child1} params ls -v -s -f csv --parents")
+        .assert()
+        .success()
+        .stdout(contains(formatdoc! {"
+            Name,Value,Project
+            param3,some_value,{parent}
+            secret4,be vewy vewy quiet,{parent}
+        "}));
+    cloudtruth!("--project {grandchild} param set param5 --value grand")
+        .assert()
+        .success();
+    cloudtruth!(
+        "--project {grandchild} param set secret6 --value 'im hunting wabbits' --secret true"
+    )
+    .assert()
+    .success();
+    cloudtruth!("--project {parent} params ls -v -f csv --children")
+        .assert()
+        .success()
+        .stdout(contains(formatdoc! {"
+            Name,Value,Project
+            param1,some_value,{child1}
+            secret2,*****,{child1}
+            param5,grand,{grandchild}
+            secret6,*****,{grandchild}
+        "}));
+    cloudtruth!("--project {child1} params ls -v -f csv --children")
+        .assert()
+        .success()
+        .stdout(contains(formatdoc! {"
+            Name,Value,Project
+            param5,grand,{grandchild}
+            secret6,*****,{grandchild}
+        "}));
+    cloudtruth!("--project {grandchild} param del -y param1")
+        .assert()
+        .failure()
+        .stderr(contains!(
+            "Parameter 'param1' must be deleted from project '{child1}'"
+        ));
+    cloudtruth!("--project {grandchild} param set param1 -d 'new desc'")
+        .assert()
+        .failure()
+        .stderr(contains!(
+            "Parameter 'param1' must be set from project '{child1}'"
+        ));
+    cloudtruth!("--project {grandchild} param set param1 -v 'next value'")
+        .assert()
+        .failure()
+        .stderr(contains!(
+            "Parameter 'param1' must be set from project '{child1}'"
+        ));
+    cloudtruth!("--project {child2} param set param5 --value slam")
+        .assert()
+        .success();
+    cloudtruth!("--project {child2} param set secret6 --value 'kill the wabbit'") //NOTE: not a secret
+        .assert()
+        .success();
+    cloudtruth!("--project {parent} params ls -v -f csv --children")
+        .assert()
+        .success()
+        .stdout(diff(formatdoc! {"
+            Name,Value,Project
+            param1,some_value,{child1}
+            secret2,*****,{child1}
+            param5,grand,{grandchild}
+            secret6,*****,{grandchild}
+            param5,slam,{child2}
+            secret6,kill the wabbit,{child2}
+        "}));
+}
+
+#[test]
+#[use_harness]
+fn test_parameters_pagination() {
+    const PAGE_SIZE: usize = 5;
+    let proj = Project::with_prefix("param-pagination").create();
+    for i in 0..=PAGE_SIZE {
+        cloudtruth!("param set param{i}")
+            .env(CT_PROJECT, proj.name())
+            .assert()
+            .success();
+    }
+    cloudtruth!("param ls")
+        .env(CT_PROJECT, proj.name())
+        .rest_debug()
+        .page_size(PAGE_SIZE)
+        .assert()
+        .success()
+        .paginated(PAGE_SIZE);
 }
