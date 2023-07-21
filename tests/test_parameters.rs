@@ -1,5 +1,5 @@
 use cloudtruth_config::{CT_ENVIRONMENT, CT_PROJECT};
-use cloudtruth_test_harness::prelude::*;
+use cloudtruth_test_harness::{output::parameter::ParseParamListExt, prelude::*};
 use indoc::{formatdoc, indoc};
 use maplit::hashmap;
 
@@ -1089,4 +1089,158 @@ fn test_parameters_pagination() {
         .assert()
         .success()
         .paginated(PAGE_SIZE);
+}
+
+#[test]
+#[use_harness]
+fn test_parameters_as_of_tag() {
+    let proj = Project::with_prefix("param-tags").create();
+    let env = Environment::with_prefix("param-tags").create();
+    let mut envs = hashmap! {
+        CT_PROJECT => proj.name().as_str(),
+        CT_ENVIRONMENT => env.name().as_str()
+    };
+    cloudtruth!("param set param1 --value original")
+        .envs(&envs)
+        .assert()
+        .success();
+    let param1 = cloudtruth!("param list --show-times -f json")
+        .envs(&envs)
+        .assert()
+        .success()
+        .get_param("param1")
+        .unwrap();
+    cloudtruth!("param set param1 --value updated")
+        .envs(&envs)
+        .assert()
+        .success();
+    let param2 = cloudtruth!("param list --show-times -f json")
+        .envs(&envs)
+        .assert()
+        .success()
+        .get_param("param1")
+        .unwrap();
+    cloudtruth!("env tag set {env} my-tag --desc 'quick tag'")
+        .envs(&envs)
+        .assert()
+        .success();
+    cloudtruth!("param set param1 --value final")
+        .envs(&envs)
+        .assert()
+        .success();
+    let result = cloudtruth!("param list --show-times -f json --as-of my-tag")
+        .envs(&envs)
+        .assert()
+        .success()
+        .get_param("param1")
+        .unwrap();
+    assert_eq!(result, param2);
+    let modified_at = param1.modified_at.as_deref().unwrap();
+    let result = cloudtruth!("param list --show-times -f json --as-of '{modified_at}'")
+        .envs(&envs)
+        .assert()
+        .success()
+        .get_param("param1")
+        .unwrap();
+    assert_eq!(result, param1);
+    cloudtruth!("env tag set {env} my-tag --time '2021-01-20'")
+        .envs(&envs)
+        .assert()
+        .success();
+    cloudtruth!("param ls -v --as-of my-tag")
+        .envs(&envs)
+        .assert()
+        .failure()
+        .stderr(contains("No ProjectLedger matches the given query"));
+    cloudtruth!("param diff --as-of my-tag")
+        .envs(&envs)
+        .assert()
+        .failure()
+        .stderr(contains("No ProjectLedger matches the given query"));
+    cloudtruth!("param env param1 --as-of my-tag")
+        .envs(&envs)
+        .assert()
+        .failure()
+        .stderr(contains("No ProjectLedger matches the given query"));
+    cloudtruth!("param export docker --as-of my-tag")
+        .envs(&envs)
+        .assert()
+        .failure()
+        .stderr(contains("No ProjectLedger matches the given query"));
+    cloudtruth!("param get param1 --as-of my-tag")
+        .envs(&envs)
+        .assert()
+        .failure()
+        .stderr(contains("No ProjectLedger matches the given query"));
+    cloudtruth!("param ls -v --as-of no-such-tag")
+        .envs(&envs)
+        .assert()
+        .failure()
+        .stderr(contains!(
+            "Tag `no-such-tag` could not be found in environment `{env}`"
+        ));
+    cloudtruth!("param diff --as-of no-such-tag")
+        .envs(&envs)
+        .assert()
+        .failure()
+        .stderr(contains!(
+            "Tag `no-such-tag` could not be found in environment `{env}`"
+        ));
+    cloudtruth!("param env param1 --as-of no-such-tag")
+        .envs(&envs)
+        .assert()
+        .failure()
+        .stderr(contains!(
+            "Tag `no-such-tag` could not be found in environment `{env}`"
+        ));
+    cloudtruth!("param export docker --as-of no-such-tag")
+        .envs(&envs)
+        .assert()
+        .failure()
+        .stderr(contains!(
+            "Tag `no-such-tag` could not be found in environment `{env}`"
+        ));
+    cloudtruth!("param get param1 --as-of no-such-tag")
+        .envs(&envs)
+        .assert()
+        .failure()
+        .stderr(contains!(
+            "Tag `no-such-tag` could not be found in environment `{env}`"
+        ));
+    envs.insert(CT_ENVIRONMENT, "default");
+    cloudtruth!("param ls -v --as-of my-tag")
+        .envs(&envs)
+        .assert()
+        .failure()
+        .stderr(contains(
+            "Tag `my-tag` could not be found in environment `default`",
+        ));
+    cloudtruth!("param diff --as-of my-tag")
+        .envs(&envs)
+        .assert()
+        .failure()
+        .stderr(contains(
+            "Tag `my-tag` could not be found in environment `default`",
+        ));
+    cloudtruth!("param env param1 --as-of my-tag")
+        .envs(&envs)
+        .assert()
+        .failure()
+        .stderr(contains(
+            "Tag `my-tag` could not be found in environment `default`",
+        ));
+    cloudtruth!("param export docker --as-of my-tag")
+        .envs(&envs)
+        .assert()
+        .failure()
+        .stderr(contains(
+            "Tag `my-tag` could not be found in environment `default`",
+        ));
+    cloudtruth!("param get param1 --as-of my-tag")
+        .envs(&envs)
+        .assert()
+        .failure()
+        .stderr(contains(
+            "Tag `my-tag` could not be found in environment `default`",
+        ));
 }
