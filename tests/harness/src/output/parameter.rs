@@ -29,16 +29,28 @@ impl ParamList {
     }
 }
 
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Ord, PartialOrd)]
 #[serde(rename_all = "PascalCase")]
 pub struct Param {
     pub name: String,
     pub value: String,
-    pub raw: String,
+    pub raw: Option<String>,
+    #[serde(rename = "Modified At")]
+    pub modified_at: Option<String>,
+    #[serde(rename = "Created At")]
+    pub created_at: Option<String>,
 }
 
 pub trait ParseParamListExt {
     fn parse_param_list(&self) -> ParamList;
+    fn get_param(&self, name: &str) -> Option<Param> {
+        let mut params = self.parse_param_list();
+        let (index, _) = params
+            .iter()
+            .enumerate()
+            .find(|(_, param)| param.name == name)?;
+        Some(params.swap_remove(index))
+    }
 }
 
 impl ParseParamListExt for assert_cmd::assert::Assert {

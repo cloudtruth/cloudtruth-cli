@@ -1037,7 +1037,10 @@ fn test_templates_ref_by_param() {
         .expect("Could not find parameter 'my_parameter'");
     assert_eq!(&param.name, "my_parameter");
     assert_eq!(&param.value, "nothing to evaluate here");
-    assert_eq!(param.raw, format!("{{{{ cloudtruth.templates.{temp} }}}}"));
+    assert_eq!(
+        param.raw,
+        Some(format!("{{{{ cloudtruth.templates.{temp} }}}}"))
+    );
 
     cloudtruth!("template del -y {temp}")
         .envs(&vars)
@@ -1083,7 +1086,10 @@ fn test_templates_ref_by_param() {
         .find_by_name("param1")
         .expect("Could not find parameter 'param1'");
     assert_eq!("new-param-name = sample value", param.value);
-    assert_eq!(format!("{{{{ cloudtruth.templates.{temp} }}}}"), param.raw);
+    assert_eq!(
+        Some(format!("{{{{ cloudtruth.templates.{temp} }}}}")),
+        param.raw
+    );
 }
 
 #[test]
