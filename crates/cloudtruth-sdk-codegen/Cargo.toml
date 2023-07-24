@@ -1,0 +1,18 @@
+[package]
+name = "cloudtruth-sdk-codegen"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+color-eyre = "0.6.2"
+http = "0.2.9"
+indexmap = "1"
+openapiv3 = { version = "1" }
+proc-macro2 = "1.0.63"
+quote = "1.0.29"
+serde_json = "1.0"
+syn = { version = "2.0.23", features = ["full"] }
+rfc6570-level-2 = "1.2.0"
+dyn-clone = "1.0.11"
