@@ -140,7 +140,7 @@ install_prerequisites() {
         if ! check_cmd jq; then
             # jq is in centos7 epel repository
             if [ "${PKG}" = "rpm" ] && [ "$(rpm -E "%{rhel}")" -eq 7 ]; then
-              prereqs="${prereqs} epel-release"
+              yum -y install ${CT_DRY_RUN:+ --setopt tsflags=test} epel-release
             fi
             prereqs="${prereqs} jq"
         fi
