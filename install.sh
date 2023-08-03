@@ -250,11 +250,7 @@ install_cloudtruth() {
             echo "[dry-run] skipping install of ${package}"
             status=0
         else
-            if [ "$(rpm -E "%{rhel}")" -eq 7 ]; then
-                rpm -i "${package}" --nofiledigest --nodigest
-            else
-                rpm -i "${package}"
-            fi
+            rpm -i "${package}"
             status=$?
         fi
     fi
