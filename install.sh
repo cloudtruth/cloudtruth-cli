@@ -140,10 +140,9 @@ install_prerequisites() {
         if ! check_cmd jq; then
             # jq is in centos7 epel repository
             if [ "${PKG}" = "rpm" ] && [ "$(rpm -E "%{rhel}")" -eq 7 ]; then
-              prereqs="${prereqs} epel-release"
-            else
-                prereqs="${prereqs} jq"
+              yum -y install ${CT_DRY_RUN:+ --setopt tsflags=test} epel-release
             fi
+            prereqs="${prereqs} jq"
         fi
     # elif [ "${PKG}" = "deb" ]; then
     #     # had problems downloading from GitHub on debian buster without ca-certificates update
