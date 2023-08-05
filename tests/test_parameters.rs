@@ -1599,3 +1599,223 @@ fn test_parameters_diff() {
         .success()
         .stderr(contains("Can specify a maximum of 2 as-of values"));
 }
+
+#[test]
+#[use_harness]
+fn test_parameters_evaluated() {
+    let proj = Project::with_prefix("evaluated").create();
+    let env1 = Environment::with_prefix("eval1").create();
+    let env2 = Environment::with_prefix("eval2").create();
+    let envs = hashmap! {
+        CT_PROJECT => proj.name().as_str()
+    };
+    cloudtruth!("params set param1 --value 'first value'")
+        .envs(&envs)
+        .env(CT_ENVIRONMENT, env1.name())
+        .assert()
+        .success();
+    cloudtruth!("params set param1 --value 'other value'")
+        .envs(&envs)
+        .env(CT_ENVIRONMENT, env2.name())
+        .assert()
+        .success();
+    cloudtruth!("parameters list --evaluated")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains!("No evaluated parameters found in project {proj}"));
+    cloudtruth!("parameters list --evaluated -v -s --show-times")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains!("No evaluated parameters found in project {proj}"));
+    cloudtruth!("params set param2 --value my-value --evaluate true")
+        .envs(&envs)
+        .env(CT_ENVIRONMENT, env1.name())
+        .assert()
+        .success();
+    cloudtruth!("params set param2 --value your-value")
+        .envs(&envs)
+        .env(CT_ENVIRONMENT, env2.name())
+        .assert()
+        .success();
+    cloudtruth!("params list -v -f csv")
+        .envs(&envs)
+        .env(CT_ENVIRONMENT, env1.name())
+        .assert()
+        .success()
+        .stdout(
+            contains!("param1,first value,{env1},string,0,internal,false").and(contains!(
+                "param2,my-value,{env1},string,0,internal-evaluated,false"
+            )),
+        );
+    cloudtruth!("params list -v -f csv")
+        .envs(&envs)
+        .env(CT_ENVIRONMENT, env2.name())
+        .assert()
+        .success()
+        .stdout(
+            contains!("param1,other value,{env2},string,0,internal,false").and(contains!(
+                "param2,your-value,{env2},string,0,internal,false"
+            )),
+        );
+    cloudtruth!("param set param3 --value '{{{{ param1 }}}}' --evaluate true")
+        .envs(&envs)
+        .env(CT_ENVIRONMENT, env1.name())
+        .assert()
+        .success();
+    cloudtruth!("param set param3 --value '{{{{ param2 }}}}' --evaluate true")
+        .envs(&envs)
+        .env(CT_ENVIRONMENT, env2.name())
+        .assert()
+        .success();
+    cloudtruth!("param get param3")
+        .envs(&envs)
+        .env(CT_ENVIRONMENT, env1.name())
+        .assert()
+        .success()
+        .stdout(contains("first value"));
+    cloudtruth!("param list -v -f csv")
+        .envs(&envs)
+        .env(CT_ENVIRONMENT, env1.name())
+        .assert()
+        .success()
+        .stdout(contains_all!(
+            format!("param1,first value,{env1},string,0,internal,false"),
+            format!("param2,my-value,{env1},string,0,internal-evaluated,false"),
+            format!("param3,first value,{env1},string,0,internal-evaluated,false")
+        ));
+    cloudtruth!("param list -v -f csv")
+        .envs(&envs)
+        .env(CT_ENVIRONMENT, env2.name())
+        .assert()
+        .success()
+        .stdout(contains_all!(
+            format!("param1,other value,{env2},string,0,internal,false"),
+            format!("param2,your-value,{env2},string,0,internal,false"),
+            format!("param3,your-value,{env2},string,0,internal-evaluated,false")
+        ));
+    cloudtruth!("param set param4 --value '{{{{ param3 }}}}' --evaluate true")
+        .envs(&envs)
+        .env(CT_ENVIRONMENT, env1.name())
+        .assert()
+        .success();
+    cloudtruth!("param list -v -f csv --evaluated")
+        .envs(&envs)
+        .env(CT_ENVIRONMENT, env1.name())
+        .assert()
+        .success()
+        .stdout(contains!("param4,first value,{{{{ param3 }}}}"));
+
+    cloudtruth!("param set param3 --value '{{{{ cloudtruth.parameters.unknown }}}}'")
+        .envs(&envs)
+        .env(CT_ENVIRONMENT, env1.name())
+        .assert()
+        .failure()
+        .stderr(contains_all!(
+            "Evaluation error",
+            "contains references that do not exist",
+            "unknown"
+        ));
+    cloudtruth!("param list -f csv")
+        .envs(&envs)
+        .env(CT_ENVIRONMENT, env1.name())
+        .assert()
+        .success()
+        .stdout(contains!(
+            "param3,first value,{env1},string,0,internal-evaluated,false"
+        ));
+
+    cloudtruth!("param set param3 --evaluate false")
+        .envs(&envs)
+        .env(CT_ENVIRONMENT, env1.name())
+        .assert()
+        .success();
+    cloudtruth!("param list -f csv")
+        .envs(&envs)
+        .env(CT_ENVIRONMENT, env1.name())
+        .assert()
+        .success()
+        .stdout(contains_all!(
+            format!("param1,first value,{env1},string,0,internal,false"),
+            format!("param2,my-value,{env1},string,0,internal-evaluated,false"),
+            format!("param3,{{{{ param1 }}}},{env1},string,0,internal,false"),
+            format!("param4,{{{{ param1 }}}},{env1},string,0,internal-evaluated,false")
+        ));
+    cloudtruth!("param list -f csv")
+        .envs(&envs)
+        .env(CT_ENVIRONMENT, env2.name())
+        .assert()
+        .success()
+        .stdout(contains_all!(
+            format!("param1,other value,{env2},string,0,internal,false"),
+            format!("param2,your-value,{env2},string,0,internal,false"),
+            format!("param3,your-value,{env2},string,0,internal-evaluated,false"),
+            format!("param4,-,,string,0,internal,false")
+        ));
+    cloudtruth!("param get param3 --details")
+        .envs(&envs)
+        .env(CT_ENVIRONMENT, env1.name())
+        .assert()
+        .success()
+        .stdout(contains_all!(
+            "Name: param3",
+            "Value: {{ param1 }}",
+            format!("Source: {env1}"),
+            "Evaluated: false"
+        ));
+    cloudtruth!("param get param3 --details")
+        .envs(&envs)
+        .env(CT_ENVIRONMENT, env2.name())
+        .assert()
+        .success()
+        .stdout(contains_all!(
+            "Name: param3",
+            "Value: your-value",
+            format!("Source: {env2}"),
+            "Evaluated: true",
+            "Raw: {{ param2 }}"
+        ));
+
+    cloudtruth!("param set param3 --evaluate false")
+        .envs(&envs)
+        .env(CT_ENVIRONMENT, env2.name())
+        .assert()
+        .success();
+    cloudtruth!("param list -f csv")
+        .envs(&envs)
+        .env(CT_ENVIRONMENT, env1.name())
+        .assert()
+        .success()
+        .stdout(contains_all!(
+            format!("param1,first value,{env1},string,0,internal,false"),
+            format!("param2,my-value,{env1},string,0,internal-evaluated,false"),
+            format!("param3,{{{{ param1 }}}},{env1},string,0,internal,false"),
+            format!("param4,{{{{ param1 }}}},{env1},string,0,internal-evaluated,false"),
+        ));
+    cloudtruth!("param list -f csv")
+        .envs(&envs)
+        .env(CT_ENVIRONMENT, env2.name())
+        .assert()
+        .success()
+        .stdout(contains_all!(
+            format!("param1,other value,{env2},string,0,internal,false"),
+            format!("param2,your-value,{env2},string,0,internal,false"),
+            format!("param3,{{{{ param2 }}}},{env2},string,0,internal,false"),
+            format!("param4,-,,string,0,internal,false"),
+        ));
+    cloudtruth!("param set param3 --value '{{{{ cloudtruth.environment }}}}' --evaluate true")
+        .envs(&envs)
+        .env(CT_ENVIRONMENT, env1.name())
+        .assert()
+        .success();
+    cloudtruth!("param list -v -f csv --evaluated")
+        .envs(&envs)
+        .env(CT_ENVIRONMENT, env1.name())
+        .assert()
+        .success()
+        .stdout(contains_all!(
+            "param2,my-value,my-value",
+            format!("param3,{env1},{{{{ cloudtruth.environment }}}}")
+        ));
+}
