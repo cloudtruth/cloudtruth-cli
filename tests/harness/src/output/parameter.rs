@@ -60,3 +60,53 @@ impl ParseParamListExt for assert_cmd::assert::Assert {
             .parameter
     }
 }
+
+#[derive(Clone, Debug, Deserialize)]
+struct ParamDriftRoot {
+    #[serde(rename = "parameter-drift")]
+    parameter_drift: ParamDrift,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct ParamDrift(Vec<ParamDriftEntry>);
+
+impl Deref for ParamDrift {
+    type Target = Vec<ParamDriftEntry>;
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl DerefMut for ParamDrift {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
+impl ParamDrift {
+    pub fn find_by_name(&self, name: &str) -> Option<&ParamDriftEntry> {
+        self.iter().find(|param| param.name == name)
+    }
+}
+
+#[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "PascalCase")]
+pub struct ParamDriftEntry {
+    pub name: String,
+    #[serde(rename = "CloudTruth")]
+    pub cloudtruth: String,
+    pub shell: String,
+    pub difference: String,
+}
+
+pub trait ParseParamDriftExt {
+    fn parse_param_drift(&self) -> ParamDrift;
+}
+
+impl ParseParamDriftExt for assert_cmd::assert::Assert {
+    fn parse_param_drift(&self) -> ParamDrift {
+        serde_json::from_slice::<ParamDriftRoot>(&self.get_output().stdout)
+            .expect("Invalid parameter drift JSON")
+            .parameter_drift
+    }
+}
