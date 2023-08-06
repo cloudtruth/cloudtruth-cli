@@ -1,5 +1,8 @@
 use cloudtruth_config::{CT_ENVIRONMENT, CT_PROJECT};
-use cloudtruth_test_harness::{output::parameter::ParseParamListExt, prelude::*};
+use cloudtruth_test_harness::{
+    output::parameter::{ParseParamDriftExt, ParseParamListExt},
+    prelude::*,
+};
 use indoc::{formatdoc, indoc};
 use maplit::hashmap;
 
@@ -1243,4 +1246,136 @@ fn test_parameters_as_of_tag() {
         .stderr(contains(
             "Tag `my-tag` could not be found in environment `default`",
         ));
+}
+
+#[test]
+#[use_harness]
+fn test_parameters_drift() {
+    let proj = Project::with_prefix("param-drift").create();
+    let envs = hashmap! {
+        CT_PROJECT => proj.name().as_str()
+    };
+    cloudtruth!(" param set PARAM1 --value my-param-value")
+        .envs(&envs)
+        .assert()
+        .success();
+    cloudtruth!(" param set PARAM2 --value ssssshhhhh --secret true")
+        .envs(&envs)
+        .assert()
+        .success();
+    cloudtruth!(" param set PARAM3 --value another-param-value")
+        .envs(&envs)
+        .assert()
+        .success();
+    cloudtruth!(" param set PARAM4 --value 'be vewwwwy qwiet' --secret true")
+        .envs(&envs)
+        .assert()
+        .success();
+    cloudtruth!(" param set PARAM5 --value vanilla")
+        .envs(&envs)
+        .assert()
+        .success();
+    cloudtruth!(" param set PARAM6 --value ssssshhhhhh --secret true")
+        .envs(&envs)
+        .assert()
+        .success();
+    let envs = hashmap! {
+        CT_PROJECT => proj.name().as_str(),
+        "PARAM1" => "my-param-value",
+        "PARAM2" => "ssssshhhhh",
+        "PARAM3" => "different in shell",
+        "PARAM4" => "im hunting wabbits",
+        "PARAM7" => "env-value"
+    };
+    cloudtruth!("param drift")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(not(contains_any!("PARAM1", "PARAM2")).and(
+            contains_all!("PARAM3", "PARAM4", "PARAM5", "PARAM6", "PARAM7",).and(not(
+                contains_any!(
+                    "\nHOME\n",
+                    "PWD",
+                    "CLOUDTRUTH_PROFILE",
+                    "CLOUDTRUTH_PROJECT",
+                    "CLOUDTRUTH_ENVIRONMENT",
+                    "CLOUDTRUTH_API_KEY"
+                ),
+            )),
+        ));
+    let json = cloudtruth!("param drift -f json")
+        .env_clear()
+        .envs(&envs)
+        .assert()
+        .success()
+        .parse_param_drift();
+    assert!(json.find_by_name("PARAM1").is_none());
+    assert!(json.find_by_name("PARAM2").is_none());
+    let entry = json.find_by_name("PARAM3").unwrap();
+    assert_eq!(entry.difference, "changed");
+    assert_eq!(entry.shell, "different in shell");
+    assert_eq!(entry.cloudtruth, "another-param-value");
+    let entry = json.find_by_name("PARAM3").unwrap();
+    assert_eq!(entry.difference, "changed");
+    assert_eq!(entry.shell, "different in shell");
+    assert_eq!(entry.cloudtruth, "another-param-value");
+    let entry = json.find_by_name("PARAM4").unwrap();
+    assert_eq!(entry.difference, "changed");
+    assert_eq!(entry.shell, "*****");
+    assert_eq!(entry.cloudtruth, "*****");
+    let entry = json.find_by_name("PARAM5").unwrap();
+    assert_eq!(entry.difference, "removed");
+    assert_eq!(entry.shell, "");
+    assert_eq!(entry.cloudtruth, "vanilla");
+    let entry = json.find_by_name("PARAM6").unwrap();
+    assert_eq!(entry.difference, "removed");
+    assert_eq!(entry.shell, "");
+    assert_eq!(entry.cloudtruth, "*****");
+    let entry = json.find_by_name("PARAM7").unwrap();
+    assert_eq!(entry.difference, "added");
+    assert_eq!(entry.shell, "env-value");
+    assert_eq!(entry.cloudtruth, "");
+    let json = cloudtruth!("param drift -sf json")
+        .env_clear()
+        .envs(&envs)
+        .assert()
+        .success()
+        .parse_param_drift();
+    assert!(json.find_by_name("PARAM1").is_none());
+    assert!(json.find_by_name("PARAM2").is_none());
+    let entry = json.find_by_name("PARAM3").unwrap();
+    assert_eq!(entry.difference, "changed");
+    assert_eq!(entry.shell, "different in shell");
+    assert_eq!(entry.cloudtruth, "another-param-value");
+    let entry = json.find_by_name("PARAM3").unwrap();
+    assert_eq!(entry.difference, "changed");
+    assert_eq!(entry.shell, "different in shell");
+    assert_eq!(entry.cloudtruth, "another-param-value");
+    let entry = json.find_by_name("PARAM4").unwrap();
+    assert_eq!(entry.difference, "changed");
+    assert_eq!(entry.shell, "im hunting wabbits");
+    assert_eq!(entry.cloudtruth, "be vewwwwy qwiet");
+    let entry = json.find_by_name("PARAM5").unwrap();
+    assert_eq!(entry.difference, "removed");
+    assert_eq!(entry.shell, "");
+    assert_eq!(entry.cloudtruth, "vanilla");
+    let entry = json.find_by_name("PARAM6").unwrap();
+    assert_eq!(entry.difference, "removed");
+    assert_eq!(entry.shell, "");
+    assert_eq!(entry.cloudtruth, "ssssshhhhhh");
+    let entry = json.find_by_name("PARAM7").unwrap();
+    assert_eq!(entry.difference, "added");
+    assert_eq!(entry.shell, "env-value");
+    assert_eq!(entry.cloudtruth, "");
+
+    let cloudtruth_cmd = cli_bin_path!().display();
+    let json = cloudtruth!("run --permissive -c '{cloudtruth_cmd} param drift -vf json'")
+        .envs(&envs)
+        .assert()
+        .success()
+        .parse_param_drift();
+    assert_eq!(
+        json.len(),
+        json.iter().filter(|p| p.difference == "added").count(),
+    );
 }
