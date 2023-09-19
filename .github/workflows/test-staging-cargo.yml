@@ -19,6 +19,10 @@ on:
         description: Value of the RUST_BACKTRACE variable (default no backtrace)
         type: string
         default: "0"
+      serverUrl:
+        description: The CloudTruth server URL to use for testing
+        type: string
+        default: https://api.staging.cloudtruth.io
     secrets:
       CLOUDTRUTH_API_KEY:
         description: "Staging API Key"
@@ -30,7 +34,7 @@ env:
   # ID to append to test data to avoid name collisions
   JOB_ID: ${{github.repository_id}}-${{github.run_id}}-${{github.run_attempt}}-${{inputs.runsOn}}
   RUST_BACKTRACE: ${{ inputs.rustBacktrace }}
-  CLOUDTRUTH_SERVER_URL: https://api.staging.cloudtruth.io
+  CLOUDTRUTH_SERVER_URL: ${{ inputs.serverUrl }}
   CLOUDTRUTH_API_KEY: ${{ secrets.CLOUDTRUTH_API_KEY }}
   TEST_ARCHIVE_FILE: integration-test-${{inputs.runsOn}}.tar.zst
 
