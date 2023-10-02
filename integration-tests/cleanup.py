@@ -4,6 +4,7 @@ import subprocess
 import sys
 from datetime import datetime
 from typing import List
+from time import sleep
 
 from testcase import get_cli_base_cmd
 from testcase import Result
@@ -36,11 +37,14 @@ def parse_args(*args) -> argparse.Namespace:
     )
     parser.add_argument("-v", "--verbose", dest="verbose", action="store_true", help="Detailed output")
     parser.add_argument("--confirm", "--yes", dest="confirm", action="store_true", help="Skip confirmation prompt")
+    parser.add_argument("--profile", dest="profile", action="store", help="CLI profile to use")
     return parser.parse_args(*args)
 
 
-def cli(cmd: str) -> Result:
-    updated = base_cmd + cmd.replace("'", '"')  # allows this to work on Windows
+def cli(cmd: str, profile: str = None) -> Result:
+    if profile:
+        updated = base_cmd + f" --profile {profile} "
+    updated = updated + cmd.replace("'", '"')  # allows this to work on Windows
     start = datetime.now()
     process = subprocess.run(updated, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     delta = datetime.now() - start
@@ -73,7 +77,8 @@ def cloudtruth_cleanup(*args):
         args.quiet = False
         args.verbose = False
 
-    result = cli("config curr -x")
+    profile = args.profile
+    result = cli("config curr -x", profile=profile)
     print(result.command)
     print(result.out())
 
@@ -92,7 +97,7 @@ def cloudtruth_cleanup(*args):
     for elem in elements:
         if not args.quiet:
             print(f"Looking for matching {elem.name}...")
-        result = cli(elem.list_cmd)
+        result = cli(elem.list_cmd, profile=profile)
 
         # use reverse order to accommodate the ordering `tree` commands
         for line in reversed(result.stdout):
@@ -128,7 +133,8 @@ def cloudtruth_cleanup(*args):
         if not elem.items:
             continue
         for item in elem.items:
-            result = cli(elem.del_cmd + f" '{item}'")
+            result = cli(elem.del_cmd + f" '{item}'", profile=profile)
+            sleep(5)
             if args.verbose:
                 print(result.command)
             if result.return_value != 0:
