@@ -42,8 +42,9 @@ def parse_args(*args) -> argparse.Namespace:
 
 
 def cli(cmd: str, profile: str = None) -> Result:
+    updated = base_cmd
     if profile:
-        updated = base_cmd + f" --profile {profile} "
+        updated = updated + f" --profile {profile} "
     updated = updated + cmd.replace("'", '"')  # allows this to work on Windows
     start = datetime.now()
     process = subprocess.run(updated, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
