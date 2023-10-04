@@ -1,5 +1,9 @@
-use std::ops::{Deref, DerefMut};
+use std::{
+    borrow::Cow,
+    ops::{Deref, DerefMut},
+};
 
+use indexmap::IndexMap;
 use serde::Deserialize;
 
 #[derive(Clone, Debug, Deserialize)]
@@ -57,6 +61,55 @@ impl ParseParamListExt for assert_cmd::assert::Assert {
     fn parse_param_list(&self) -> ParamList {
         serde_json::from_slice::<ParamListRoot>(&self.get_output().stdout)
             .expect("Invalid parameter list JSON")
+            .parameter
+    }
+}
+
+#[derive(Clone, Debug, Deserialize)]
+struct ParamDiffRoot {
+    parameter: ParamDiff,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct ParamDiff(Vec<ParamDiffEntry>);
+
+impl Deref for ParamDiff {
+    type Target = Vec<ParamDiffEntry>;
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl DerefMut for ParamDiff {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct ParamDiffEntry {
+    #[serde(rename = "Parameter")]
+    pub parameter: String,
+    #[serde(flatten)]
+    pub envs: IndexMap<String, String>,
+}
+
+impl ParamDiffEntry {
+    pub fn split_fields(&self, env: impl AsRef<str>) -> impl Iterator<Item = Cow<str>> {
+        self.envs[env.as_ref()]
+            .split(',')
+            .map(|s| s.replace(|c| c == '"' || c == '\n', "").into())
+    }
+}
+
+pub trait ParseParamDiffExt {
+    fn parse_param_diff(&self) -> ParamDiff;
+}
+
+impl ParseParamDiffExt for assert_cmd::assert::Assert {
+    fn parse_param_diff(&self) -> ParamDiff {
+        serde_json::from_slice::<ParamDiffRoot>(&self.get_output().stdout)
+            .expect("Invalid parameter diff JSON")
             .parameter
     }
 }
