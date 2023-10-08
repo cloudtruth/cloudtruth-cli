@@ -155,13 +155,13 @@ endif
 # for dev environment, install default profile components
 	rustup component add rustfmt clippy rust-docs
 
-	cargo install cargo-binstall
-	cargo binstall --no-confirm taplo-cli cargo-nextest
+	cargo +stable install cargo-binstall
+	cargo +stable binstall --no-confirm taplo-cli cargo-nextest
 
 ifeq ($(os_name),Darwin)
-	brew install shellcheck;
+	brew install shellcheck
 else ifeq ($(os_name),Linux)
-	sudo apt-get install shellcheck pkg-config;
+	sudo apt-get install shellcheck pkg-config
 else
 	@echo "Did not install shellcheck"
 endif
