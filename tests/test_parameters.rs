@@ -1,6 +1,9 @@
+use std::borrow::Cow;
+
+use chrono::{DateTime, Utc};
 use cloudtruth_config::{CT_ENVIRONMENT, CT_PROJECT};
 use cloudtruth_test_harness::{
-    output::parameter::{ParseParamDriftExt, ParseParamListExt},
+    output::parameter::{ParseParamDiffExt, ParseParamDriftExt, ParseParamListExt},
     prelude::*,
 };
 use indoc::{formatdoc, indoc};
@@ -1378,4 +1381,221 @@ fn test_parameters_drift() {
         json.len(),
         json.iter().filter(|p| p.difference == "added").count(),
     );
+}
+
+#[test]
+#[use_harness]
+fn test_parameters_diff() {
+    let proj = Project::with_prefix("param-cmp").create();
+    let env1 = Environment::with_prefix("param-left").create();
+    let env2 = Environment::with_prefix("param-right").create();
+    let envs = hashmap! {
+        CT_PROJECT => proj.name().as_str()
+    };
+    cloudtruth!("param list -vsf csv")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains!("No parameters found in project {proj}"));
+    cloudtruth!("param set param1 --value some_value")
+        .envs(&envs)
+        .env(CT_ENVIRONMENT, env1.name())
+        .assert()
+        .success();
+    cloudtruth!("param set secret1 --value ssshhhh --secret true")
+        .envs(&envs)
+        .env(CT_ENVIRONMENT, env1.name())
+        .assert()
+        .success();
+    cloudtruth!("param diff -e {env1} --env {env2} -f csv")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(diff(formatdoc! {"
+            Parameter,{env1},{env2}
+            param1,some_value,-
+            secret1,*****,-
+        "}));
+    cloudtruth!("param diff -e {env1} -e {env2} -f csv -s")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(diff(formatdoc! {"
+            Parameter,{env1},{env2}
+            param1,some_value,-
+            secret1,ssshhhh,-
+        "}));
+    cloudtruth!("param set param1 --value different")
+        .envs(&envs)
+        .assert()
+        .success();
+    cloudtruth!("param set secret1 --value 'be qwiet' --secret true")
+        .envs(&envs)
+        .assert()
+        .success();
+    cloudtruth!("param diff -e {env1} -e {env2} -f csv -s")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(diff(formatdoc! {"
+            Parameter,{env1},{env2}
+            param1,some_value,different
+            secret1,ssshhhh,be qwiet
+        "}));
+    cloudtruth!("param diff -e {env1} -e {env2} -f csv -s -p value -p environment")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(diff(formatdoc! {"
+            Parameter,{env1},{env2}
+            param1,\"some_value,\n{env1}\",\"different,\ndefault\"
+            secret1,\"ssshhhh,\n{env1}\",\"be qwiet,\ndefault\"
+        "}));
+    cloudtruth!("param set param1 --value matchers")
+        .envs(&envs)
+        .env(CT_ENVIRONMENT, env1.name())
+        .assert()
+        .success();
+    cloudtruth!("param set param1 --value matchers")
+        .envs(&envs)
+        .env(CT_ENVIRONMENT, env2.name())
+        .assert()
+        .success();
+    cloudtruth!("param set secret1 --value 'im hunting wabbits'")
+        .envs(&envs)
+        .env(CT_ENVIRONMENT, env2.name())
+        .assert()
+        .success();
+    cloudtruth!("param set secret1 --value 'im hunting wabbits'")
+        .envs(&envs)
+        .env(CT_ENVIRONMENT, env2.name())
+        .assert()
+        .success();
+    cloudtruth!("param diff -e {env1} -e {env2} -f csv -s")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(diff(formatdoc! {"
+            Parameter,{env1},{env2}
+            secret1,ssshhhh,im hunting wabbits
+        "}));
+    let json = cloudtruth!("param diff -e {env1} -e {env2} -f json -p created-at -p modified-at")
+        .envs(&envs)
+        .assert()
+        .parse_param_diff();
+    let entry1 = &json[0];
+    assert_eq!(entry1.parameter, "param1");
+    let fields1 = entry1.split_fields(env1.name()).collect::<Vec<Cow<str>>>();
+    let [created_at1, modified_at1, ..] = fields1.as_slice()
+        else { panic!("Invalid timestamp fields in diff") };
+    let fields2 = entry1.split_fields(env2.name()).collect::<Vec<Cow<str>>>();
+    let [created_at2, modified_at2, ..] = fields2.as_slice()
+        else { panic!("Invalid timestamp fields in diff") };
+    assert!(created_at1.parse::<DateTime<Utc>>().is_ok());
+    assert!(modified_at1.parse::<DateTime<Utc>>().is_ok());
+    assert!(created_at2.parse::<DateTime<Utc>>().is_ok());
+    assert!(modified_at2.parse::<DateTime<Utc>>().is_ok());
+    let entry2 = &json[1];
+    let fields1 = entry2.split_fields(env1.name()).collect::<Vec<Cow<str>>>();
+    let [created_at1, modified_at1, ..] = fields1.as_slice()
+        else { panic!("Invalid timestamp fields in diff") };
+    let fields2 = entry2.split_fields(env2.name()).collect::<Vec<Cow<str>>>();
+    let [created_at2, modified_at2, ..] = fields2.as_slice()
+        else { panic!("Invalid timestamp fields in diff") };
+    assert!(created_at1.parse::<DateTime<Utc>>().is_ok());
+    assert!(modified_at1.parse::<DateTime<Utc>>().is_ok());
+    assert!(created_at2.parse::<DateTime<Utc>>().is_ok());
+    assert!(modified_at2.parse::<DateTime<Utc>>().is_ok());
+    cloudtruth!("param diff -e {env1} -e {env2} --property fqn")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains(
+            "No parameters or differences in compared properties found",
+        ));
+    cloudtruth!("param diff -f csv --as-of '{modified_at1}'")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(diff(formatdoc! {"
+            Parameter,Current,{modified_at1}
+            param1,different,-
+            secret1,*****,-
+        "}));
+    cloudtruth!("param diff -f csv -s --as-of '{modified_at1}' --as-of '{modified_at2}'")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(diff(formatdoc! {"
+            Parameter,{modified_at1},{modified_at2}
+            param1,-,different
+            secret1,-,be qwiet
+        "}));
+    cloudtruth!("param diff -f csv --as-of '{created_at2}' --as-of '{modified_at2}'")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains(
+            "No parameters or differences in compared properties found.",
+        ));
+    cloudtruth!("param diff -f csv -e {env1} --as-of '{modified_at1}'")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(diff(formatdoc! {"
+            Parameter,default,{env1} ({modified_at1})
+            param1,different,some_value
+        "}));
+    cloudtruth!(
+        "param diff -f csv -s -e {env1} --as-of {modified_at1} -e {env2} --as-of {modified_at2}"
+    )
+    .envs(&envs)
+    .assert()
+    .success()
+    .stdout(diff(formatdoc! {"
+            Parameter,{env1} ({modified_at1}),{env2} ({modified_at2})
+            param1,some_value,matchers
+            secret1,ssshhhh,im hunting wabbits
+        "}));
+
+    cloudtruth!("param difference")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stderr(contains("Invalid comparing an environment to itself"));
+    cloudtruth!("param difference -e {env1} -e {env1}")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stderr(contains("Invalid comparing an environment to itself"));
+    cloudtruth!("param difference --as-of 2021-08-27 --as-of 2021-08-27")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stderr(contains("Invalid comparing an environment to itself"));
+    cloudtruth!("param difference -e {env1} -e {env1} --as-of 2021-08-27 --as-of 2021-08-27")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stderr(contains("Invalid comparing an environment to itself"));
+    cloudtruth!("param difference -e 'charlie-foxtrot' -e {env2}")
+        .envs(&envs)
+        .assert()
+        .failure()
+        .stderr(contains("Did not find environment 'charlie-foxtrot'"));
+    cloudtruth!("param difference -e {env2} -e 'missing'")
+        .envs(&envs)
+        .assert()
+        .failure()
+        .stderr(contains("Did not find environment 'missing'"));
+    cloudtruth!("param difference -e env1 --env env2 -e env3")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stderr(contains("Can specify a maximum of 2 environment values"));
+    cloudtruth!("param difference --as-of 2021-08-01 --as-of 2021-08-02 --as-of 2021-08-03")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stderr(contains("Can specify a maximum of 2 as-of values"));
 }
