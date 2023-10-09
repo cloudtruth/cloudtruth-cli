@@ -3,7 +3,9 @@ use std::borrow::Cow;
 use chrono::{DateTime, Utc};
 use cloudtruth_config::{CT_ENVIRONMENT, CT_PROJECT};
 use cloudtruth_test_harness::{
-    output::parameter::{ParseParamDiffExt, ParseParamDriftExt, ParseParamListExt},
+    output::parameter::{
+        ParseParamDiffExt, ParseParamDriftExt, ParseParamEnvExt, ParseParamListExt,
+    },
     prelude::*,
 };
 use indoc::{formatdoc, indoc};
@@ -1818,4 +1820,216 @@ fn test_parameters_evaluated() {
             "param2,my-value,my-value",
             format!("param3,{env1},{{{{ cloudtruth.environment }}}}")
         ));
+}
+
+#[test]
+#[use_harness]
+fn test_parameters_as_of_time() {
+    let proj = Project::with_prefix("param-times").create();
+    let env_a = Environment::with_prefix("env-a-param-times").create();
+    let env_b = Environment::with_prefix("env-b-param-times").create();
+    let envs = hashmap! {
+        CT_PROJECT => proj.name()
+    };
+    /* Create parameter in two environments */
+    cloudtruth!("--env {env_a} param set some_param --value 'value a - first'")
+        .envs(&envs)
+        .assert()
+        .success();
+    cloudtruth!("--env {env_b} param set some_param --value 'value B1'")
+        .envs(&envs)
+        .assert()
+        .success();
+    let param_a1 = cloudtruth!("--env {env_a} param list --format json --show-times")
+        .envs(&envs)
+        .assert()
+        .success()
+        .get_param("some_param")
+        .unwrap();
+    assert_eq!(param_a1.value, "value a - first");
+    let param_b1 = cloudtruth!("--env {env_b} param list --format json --show-times")
+        .envs(&envs)
+        .assert()
+        .success()
+        .get_param("some_param")
+        .unwrap();
+    assert_eq!(param_b1.value, "value B1");
+    let modified_at_a1 = param_a1.modified_at.as_deref().unwrap();
+    let modified_at_b1 = param_b1.modified_at.as_deref().unwrap();
+    /* Update the parameters */
+    cloudtruth!("--env {env_a} param set some_param --value 'value b - second'")
+        .envs(&envs)
+        .assert()
+        .success();
+    cloudtruth!("--env {env_b} param set some_param --value 'value B2'")
+        .envs(&envs)
+        .assert()
+        .success();
+    let param_a2 = cloudtruth!("--env {env_a} param list --format json --show-times")
+        .envs(&envs)
+        .assert()
+        .success()
+        .get_param("some_param")
+        .unwrap();
+    assert_eq!(param_a2.value, "value b - second");
+    let param_b2 = cloudtruth!("--env {env_b} param list --format json --show-times")
+        .envs(&envs)
+        .assert()
+        .success()
+        .get_param("some_param")
+        .unwrap();
+    assert_eq!(param_b2.value, "value B2");
+    let modified_at_a2 = param_a2.modified_at.as_deref().unwrap();
+    let modified_at_b2 = param_b2.modified_at.as_deref().unwrap();
+    /* Verify `param get` command works with --as-of */
+    cloudtruth!("--env {env_a} param get some_param --as-of '{modified_at_a1}'")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains("value a - first"));
+    cloudtruth!("--env {env_b} param get some_param --as-of '{modified_at_b1}'")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains("value B1"));
+    cloudtruth!("--env {env_a} param get some_param --as-of '{modified_at_a2}'")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains("value b - second"));
+    cloudtruth!("--env {env_b} param get some_param --as-of '{modified_at_b2}'")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains("value B2"));
+    cloudtruth!("--env {env_a} param get some_param -d")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains_all!(
+            format!(
+                "Created At: {created_at}",
+                created_at = param_a2.created_at.as_deref().unwrap()
+            ),
+            format!("Modified At: {modified_at_a2}"),
+            format!("Value: value b - second")
+        ));
+    cloudtruth!("--env {env_b} param get some_param --details --as-of '{modified_at_b1}'")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains_all!(
+            format!(
+                "Created At: {created_at}",
+                created_at = param_b1.created_at.as_deref().unwrap()
+            ),
+            format!("Modified At: {modified_at_b1}"),
+            format!("Value: value B1")
+        ));
+    /* Verify `param list` command works with --as-of */
+    assert_eq!(
+        param_a2,
+        cloudtruth!("--env {env_a} param list --format json --show-times")
+            .envs(&envs)
+            .assert()
+            .success()
+            .get_param("some_param")
+            .unwrap()
+    );
+    assert_eq!(
+        param_b2,
+        cloudtruth!("--env {env_b} param list --format json --show-times")
+            .envs(&envs)
+            .assert()
+            .success()
+            .get_param("some_param")
+            .unwrap()
+    );
+    assert_eq!(
+        param_a1,
+        cloudtruth!(
+            "--env {env_a} param list --format json --show-times --as-of '{modified_at_a1}'"
+        )
+        .envs(&envs)
+        .assert()
+        .success()
+        .get_param("some_param")
+        .unwrap()
+    );
+    assert_eq!(
+        param_b1,
+        cloudtruth!(
+            "--env {env_b} param list --format json --show-times --as-of '{modified_at_b1}'"
+        )
+        .envs(&envs)
+        .assert()
+        .success()
+        .get_param("some_param")
+        .unwrap()
+    );
+    /* Verify `param environments` command with --as-of */
+    let entries = cloudtruth!("param env some_param --show-times --format json")
+        .envs(&envs)
+        .assert()
+        .success()
+        .parse_param_env();
+    let entry_a = entries.find_by_env(env_a.name()).unwrap();
+    assert_eq!(entry_a.value, param_a2.value);
+    assert_eq!(entry_a.created_at, param_a2.created_at);
+    assert_eq!(entry_a.modified_at, param_a2.modified_at);
+    let entry_b = entries.find_by_env(env_b.name()).unwrap();
+    assert_eq!(entry_b.value, param_b2.value);
+    assert_eq!(entry_b.created_at, param_b2.created_at);
+    assert_eq!(entry_b.modified_at, param_b2.modified_at);
+    let entries =
+        cloudtruth!("param env some_param --show-times --format json --as-of '{modified_at_b1}'")
+            .envs(&envs)
+            .assert()
+            .success()
+            .parse_param_env();
+    let entry_a = entries.find_by_env(env_a.name()).unwrap();
+    assert_eq!(entry_a.value, param_a1.value);
+    assert_eq!(entry_a.created_at, param_a1.created_at);
+    assert_eq!(entry_a.modified_at, param_a1.modified_at);
+    let entry_b = entries.find_by_env(env_b.name()).unwrap();
+    assert_eq!(entry_b.value, param_b1.value);
+    assert_eq!(entry_b.created_at, param_b1.created_at);
+    assert_eq!(entry_b.modified_at, param_b1.modified_at);
+    /* Verify `param export docker` with --as-of */
+    cloudtruth!("--env {env_a} param export docker")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains!("SOME_PARAM=value b - second"));
+    cloudtruth!("--env {env_a} param export docker --as-of '{modified_at_a1}'")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains!("SOME_PARAM=value a - first"));
+    /* Error cases */
+    cloudtruth!("param ls -v --as-of 3/24/2021")
+        .envs(&envs)
+        .assert()
+        .failure()
+        .stderr(contains("No ProjectLedger matches the given query"));
+    cloudtruth!("param diff --as-of 3/24/2021")
+        .envs(&envs)
+        .assert()
+        .failure()
+        .stderr(contains("No ProjectLedger matches the given query"));
+    cloudtruth!("param env some_param --as-of 3/24/2021")
+        .envs(&envs)
+        .assert()
+        .failure()
+        .stderr(contains("No ProjectLedger matches the given query"));
+    cloudtruth!("param export shell --as-of 3/24/2021")
+        .envs(&envs)
+        .assert()
+        .failure()
+        .stderr(contains("No EnvironmentLedger matches the given query"));
+    cloudtruth!("param get some_param --as-of 3/24/2021")
+        .envs(&envs)
+        .assert()
+        .failure()
+        .stderr(contains("No ProjectLedger matches the given query"));
 }

@@ -163,3 +163,55 @@ impl ParseParamDriftExt for assert_cmd::assert::Assert {
             .parameter_drift
     }
 }
+
+#[derive(Clone, Debug, Deserialize)]
+struct ParamEnvRoot {
+    parameter: ParamEnv,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct ParamEnv(Vec<ParamEnvEntry>);
+
+impl Deref for ParamEnv {
+    type Target = Vec<ParamEnvEntry>;
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl DerefMut for ParamEnv {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
+impl ParamEnv {
+    pub fn find_by_env(&self, env_name: impl AsRef<str>) -> Option<&ParamEnvEntry> {
+        self.iter()
+            .find(|param| param.environment == env_name.as_ref())
+    }
+}
+
+#[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "PascalCase")]
+pub struct ParamEnvEntry {
+    pub value: String,
+    pub raw: Option<String>,
+    #[serde(rename = "Modified At")]
+    pub modified_at: Option<String>,
+    #[serde(rename = "Created At")]
+    pub created_at: Option<String>,
+    pub environment: String,
+}
+
+pub trait ParseParamEnvExt {
+    fn parse_param_env(&self) -> ParamEnv;
+}
+
+impl ParseParamEnvExt for assert_cmd::assert::Assert {
+    fn parse_param_env(&self) -> ParamEnv {
+        serde_json::from_slice::<ParamEnvRoot>(&self.get_output().stdout)
+            .expect("Invalid parameter drift JSON")
+            .parameter
+    }
+}
