@@ -2033,3 +2033,226 @@ fn test_parameters_as_of_time() {
         .failure()
         .stderr(contains("No ProjectLedger matches the given query"));
 }
+
+#[test]
+#[use_harness]
+fn test_parameters_rules_integer() {
+    let proj = Project::with_prefix("integer-rules").create();
+    let env = Environment::with_prefix("integer-rules").create();
+    let envs = hashmap! {
+        CT_PROJECT => proj.name(),
+        CT_ENVIRONMENT => env.name()
+    };
+    /* Create a basic parameter without a value, so the rule cannot be violated */
+    cloudtruth!("param set param1 --value 2154 --type integer")
+        .envs(&envs)
+        .assert()
+        .success();
+    cloudtruth!("param unset param1")
+        .envs(&envs)
+        .assert()
+        .success();
+    /* See no rules */
+    cloudtruth!("param list --rules -vf csv")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains("No parameter rules found in project"));
+    /* Create parameter with constraints */
+    cloudtruth!("param set param1 --min 1000 --max 3000")
+        .envs(&envs)
+        .assert()
+        .success();
+    /* See the 2 rules are registered */
+    cloudtruth!("param ls -v -f csv")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains("param1,-,,integer,2,internal,false"));
+    cloudtruth!("param ls --rules -v -f csv")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains_all!(
+            "param1,integer,max,3000",
+            "param1,integer,min,1000"
+        ));
+    cloudtruth!("param list --rules")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(diff("param1\n"));
+    /* test min and max */
+    cloudtruth!("param set param1 -v 999")
+        .envs(&envs)
+        .assert()
+        .failure()
+        .stderr(contains("Value is less than the minimum value of 1000"));
+    cloudtruth!("param set param1 -v 3001")
+        .envs(&envs)
+        .assert()
+        .failure()
+        .stderr(contains("Value is greater than the maximum value of 3000"));
+    /* test middle value */
+    cloudtruth!("param set param1 -v 2000")
+        .envs(&envs)
+        .assert()
+        .success();
+    cloudtruth!("param ls -v -f csv")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains!("param1,2000,{env},integer,2,internal,false"));
+    /* Update the rules */
+    cloudtruth!("param set param1 --min 500")
+        .envs(&envs)
+        .assert()
+        .success();
+    cloudtruth!("param set param1 --max 6000")
+        .envs(&envs)
+        .assert()
+        .success();
+    cloudtruth!("param ls -v -f csv")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains!("param1,2000,{env},integer,2,internal,false"));
+    cloudtruth!("param ls --rules -v -f csv")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains_all!(
+            "param1,integer,max,6000",
+            "param1,integer,min,500"
+        ));
+    /* Remove the rules */
+    cloudtruth!("param set param1 --no-max")
+        .envs(&envs)
+        .assert()
+        .success();
+    cloudtruth!("param ls -v -f csv")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains!("param1,2000,{env},integer,1,internal,false"));
+    cloudtruth!("param ls --rules -v -f csv")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains("param1,integer,min,500"));
+    cloudtruth!("param set param1 --no-min")
+        .envs(&envs)
+        .assert()
+        .success();
+    cloudtruth!("param ls -v -f csv")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains!("param1,2000,{env},integer,0,internal,false"));
+    cloudtruth!("param ls --rules -v -f csv")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains("No parameter rules found in project"));
+    /* Failed create rules while values in place */
+    cloudtruth!("param set param1 --min 2002")
+        .envs(&envs)
+        .assert()
+        .failure()
+        .stderr(contains_all!(
+            "Rule create error: Rule may not be applied to param1",
+            "Value is less than the minimum value"
+        ));
+    cloudtruth!("param set param1 --max 1998")
+        .envs(&envs)
+        .assert()
+        .failure()
+        .stderr(contains_all!(
+            "Rule create error: Rule may not be applied to param1",
+            "Value is greater than the maximum value"
+        ));
+    cloudtruth!("param set param1 --min 1990")
+        .envs(&envs)
+        .assert()
+        .success();
+    cloudtruth!("param set param1 --min 2003")
+        .envs(&envs)
+        .assert()
+        .failure()
+        .stderr(contains_all!(
+            "Rule update error: Rule may not be applied to param1",
+            "Value is less than the minimum value"
+        ));
+    cloudtruth!("param set param1 --max 2010")
+        .envs(&envs)
+        .assert()
+        .success();
+    cloudtruth!("param set param1 --max 1998")
+        .envs(&envs)
+        .assert()
+        .failure()
+        .stderr(contains_all!(
+            "Rule update error: Rule may not be applied to param1",
+            "Value is greater than the maximum value"
+        ));
+    /* Invalid rules */
+    cloudtruth!("param set param1 --max 1989")
+        .envs(&envs)
+        .assert()
+        .failure()
+        .stderr(contains("Rule update error: Maximum constraint is less than an existing rule's minimum constraint"));
+    cloudtruth!("param set param1 --min 2011")
+        .envs(&envs)
+        .assert()
+        .failure()
+        .stderr(contains("Rule update error: Minimum constraint is greater than an existing rule's maximum constraint"));
+    /* Delete the rules */
+    cloudtruth!("param set param1 --no-min")
+        .envs(&envs)
+        .assert()
+        .success();
+    cloudtruth!("param set param1 --no-max")
+        .envs(&envs)
+        .assert()
+        .success();
+    /* Error cases */
+    cloudtruth!("param set param1 --max-len -10 --min-len -1 --regex 'abc.*'")
+        .envs(&envs)
+        .assert()
+        .failure()
+        .stderr(contains_all!(
+            "max-len rules not valid for integer parameters",
+            "min-len rules not valid for integer parameters",
+            "regex rules not valid for integer parameters"
+        ));
+    cloudtruth!("param set param1 --min-len 10")
+        .envs(&envs)
+        .assert()
+        .failure()
+        .stderr(contains("min-len rules not valid for integer parameters"));
+    cloudtruth!("param ls -v -f csv")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains!("param1,2000,{env},integer,0,internal,false"));
+    cloudtruth!("param ls --rules -v -f csv")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains("No parameter rules found in project"));
+    /* See we don't leave any parameter behind when creating a parameter with an invalid rule */
+    cloudtruth!("param del -y param1")
+        .envs(&envs)
+        .assert()
+        .success();
+    cloudtruth!("param set param1 --type integer --value 9 --max-len 100")
+        .envs(&envs)
+        .assert()
+        .failure()
+        .stderr(contains("max-len rules not valid for integer parameters"));
+    cloudtruth!("param ls -v -f csv")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains!("No parameters found in project {proj}"));
+}
