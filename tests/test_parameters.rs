@@ -520,18 +520,258 @@ fn test_parameters_rules_bool() -> Result<()> {
 }
 
 #[test]
-fn test_parameters_rules_string() -> Result<()> {
-    let proj = Project::with_prefix("param-rules-string").create();
-    let env = Environment::with_prefix("param-rules-string").create();
-    trycmd::TestCases::new()
-        .case("tests/snapshot-tests/parameters/parameter_rules_string.md")
-        .register_bin("cloudtruth", cli_bin_path!())
-        .env("NO_COLOR", "1")
-        .env(CT_PROJECT, proj.to_name())
-        .env(CT_ENVIRONMENT, env.to_name())
-        .insert_var("[PROJECT]", proj.to_name())?
-        .insert_var("[ENV]", env.to_name())?;
-    Ok(())
+#[use_harness]
+fn test_parameters_rules_string() {
+    let proj = Project::with_prefix("string-rules").create();
+    let env = Environment::with_prefix("string-rules").create();
+    let envs = hashmap! {
+        CT_PROJECT => proj.name(),
+        CT_ENVIRONMENT => env.name()
+    };
+    /* Create a basic parameter without a value, so the rule cannot be violated */
+    cloudtruth!("param set param1 --value 'some value'")
+        .envs(&envs)
+        .assert()
+        .success();
+    cloudtruth!("param unset param1")
+        .envs(&envs)
+        .assert()
+        .success();
+    /* See no rules */
+    cloudtruth!("param list --rules -vf csv")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains("No parameter rules found in project"));
+    /* Create parameter with constraints */
+    cloudtruth!("param set param1 --regex 'abc.*' --min-len 10 --max-len 15")
+        .envs(&envs)
+        .assert()
+        .success();
+    /* See the 2 rules are registered */
+    cloudtruth!("param ls -v -f csv")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains("param1,-,,string,3,internal,false"));
+    cloudtruth!("param ls --rules -v -f csv")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains_all!(
+            "param1,string,regex,abc.*",
+            "param1,string,min-len,10",
+            "param1,string,max-len,15"
+        ));
+    cloudtruth!("param list --rules")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(diff("param1\n"));
+    /* test min and max */
+    cloudtruth!("param set param1 -v aaaaaaaaa")
+        .envs(&envs)
+        .assert()
+        .failure()
+        .stderr(contains("Value must be at least 10 characters"));
+    cloudtruth!("param set param1 -v aaaaaaaaaaaaaaaa")
+        .envs(&envs)
+        .assert()
+        .failure()
+        .stderr(contains("Value must be at most 15 characters"));
+    cloudtruth!("param set param1 -v aaaaaaaaaaaaaaa")
+        .envs(&envs)
+        .assert()
+        .failure()
+        .stderr(contains("Value does not match regular expression abc.*"));
+    /* test middle value */
+    cloudtruth!("param set param1 -v abcabcabcabc")
+        .envs(&envs)
+        .assert()
+        .success();
+    cloudtruth!("param ls -v -f csv")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains!(
+            "param1,abcabcabcabc,{env},string,3,internal,false"
+        ));
+    /* Update the rules */
+    cloudtruth!("param set param1 --min-len 5")
+        .envs(&envs)
+        .assert()
+        .success();
+    cloudtruth!("param set param1 --max-len 30")
+        .envs(&envs)
+        .assert()
+        .success();
+    cloudtruth!("param set param1 --regex 'a.*'")
+        .envs(&envs)
+        .assert()
+        .success();
+    cloudtruth!("param ls -v -f csv")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains!(
+            "param1,abcabcabcabc,{env},string,3,internal,false"
+        ));
+    cloudtruth!("param ls --rules -v -f csv")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains_all!(
+            "param1,string,regex,a.*",
+            "param1,string,min-len,5",
+            "param1,string,max-len,30"
+        ));
+    /* Remove the rules */
+    cloudtruth!("param set param1 --no-regex")
+        .envs(&envs)
+        .assert()
+        .success();
+    cloudtruth!("param ls -v -f csv")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains!(
+            "param1,abcabcabcabc,{env},string,2,internal,false"
+        ));
+    cloudtruth!("param ls --rules -v -f csv")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains_all!(
+            "param1,string,min-len,5",
+            "param1,string,max-len,30"
+        ));
+    cloudtruth!("param set param1 --no-max-len")
+        .envs(&envs)
+        .assert()
+        .success();
+    cloudtruth!("param ls -v -f csv")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains!(
+            "param1,abcabcabcabc,{env},string,1,internal,false"
+        ));
+    cloudtruth!("param ls --rules -v -f csv")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains("param1,string,min-len,5"));
+    cloudtruth!("param set param1 --no-min-len")
+        .envs(&envs)
+        .assert()
+        .success();
+    cloudtruth!("param ls -v -f csv")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains!(
+            "param1,abcabcabcabc,{env},string,0,internal,false"
+        ));
+    cloudtruth!("param ls --rules -v -f csv")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains("No parameter rules found in project"));
+    /* Failed create rules while values in place */
+    cloudtruth!("param set param1 --min-len 15")
+        .envs(&envs)
+        .assert()
+        .failure()
+        .stderr(contains_all!(
+            "Rule create error: Rule may not be applied to param1",
+            "Value must be at least 15 characters"
+        ));
+    cloudtruth!("param set param1 --max-len 10")
+        .envs(&envs)
+        .assert()
+        .failure()
+        .stderr(contains_all!(
+            "Rule create error: Rule may not be applied to param1",
+            "Value must be at most 10 characters"
+        ));
+    cloudtruth!("param set param1 --min-len 2")
+        .envs(&envs)
+        .assert()
+        .success();
+    cloudtruth!("param set param1 --min-len 15")
+        .envs(&envs)
+        .assert()
+        .failure()
+        .stderr(contains_all!(
+            "Rule update error: Rule may not be applied to param1",
+            "Value must be at least 15 characters"
+        ));
+    cloudtruth!("param set param1 --max-len 22")
+        .envs(&envs)
+        .assert()
+        .success();
+    cloudtruth!("param set param1 --max-len 10")
+        .envs(&envs)
+        .assert()
+        .failure()
+        .stderr(contains_all!(
+            "Rule update error: Rule may not be applied to param1",
+            "Value must be at most 10 characters"
+        ));
+    /* Delete the rules */
+    cloudtruth!("param set param1 --no-min-len")
+        .envs(&envs)
+        .assert()
+        .success();
+    cloudtruth!("param set param1 --no-max-len")
+        .envs(&envs)
+        .assert()
+        .success();
+    cloudtruth!("param set param1 --no-regex")
+        .envs(&envs)
+        .assert()
+        .success();
+    /* Error cases */
+    cloudtruth!("param set param1 --max 10 --min -1")
+        .envs(&envs)
+        .assert()
+        .failure()
+        .stderr(contains_all!(
+            "max rules not valid for string parameters",
+            "min rules not valid for string parameters"
+        ));
+    cloudtruth!("param set param1 --max -10")
+        .envs(&envs)
+        .assert()
+        .failure()
+        .stderr(contains("max rules not valid for string parameters"));
+    cloudtruth!("param ls -v -f csv")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains!(
+            "param1,abcabcabcabc,{env},string,0,internal,false"
+        ));
+    cloudtruth!("param ls --rules -v -f csv")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains("No parameter rules found in project"));
+    /* See we don't leave any parameter behind when creating a parameter with an invalid rule */
+    cloudtruth!("param del -y param1")
+        .envs(&envs)
+        .assert()
+        .success();
+    cloudtruth!("param set param1 --type string --value 9 --max 10")
+        .envs(&envs)
+        .assert()
+        .failure()
+        .stderr(contains("max rules not valid for string parameters"));
+    cloudtruth!("param ls -v -f csv")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains!("No parameters found in project {proj}"));
 }
 
 #[test]
