@@ -1,3 +1,4 @@
+mod cleanup;
 mod generate_actions_matrices;
 mod generate_dockerfiles;
 mod generate_help_text;
@@ -47,6 +48,15 @@ pub struct Cli {
 
 #[derive(clap::Subcommand, Clone, Debug)]
 pub enum TaskCommand {
+    #[command(
+        about = "Bulk Data Cleanup",
+        disable_help_flag = true,
+        disable_help_subcommand = true
+    )]
+    Cleanup {
+        #[arg(trailing_var_arg = true, allow_hyphen_values = true)]
+        args: Vec<String>,
+    },
     #[command(about = "Generate Dockerfiles")]
     GenerateDocker,
     #[command(about = "Generate GitHub Actions job matrix data")]
@@ -107,6 +117,7 @@ impl Cli {
 
     async fn run_task(&self) -> Result<()> {
         match &self.task {
+            TaskCommand::Cleanup { args } => self.cleanup(args),
             TaskCommand::GenerateDocker => self.generate_dockerfiles(self.get_cicd_config()?).await,
             TaskCommand::GenerateGhaMatrices => {
                 self.generate_actions_matrices(self.get_cicd_config()?)
