@@ -1,6 +1,9 @@
 use std::ops::{Deref, DerefMut};
 
-use crate::data::{Name, NameConstructors, TestResource};
+use crate::{
+    data::{DeleteTestResource, Name, NameConstructors, TestResource},
+    sigint_handler::{SigintHandler, SigintResourceHandle},
+};
 
 /// A generic CloudTruth entity scoped via Rust borrow checker.
 ///
@@ -15,6 +18,7 @@ where
     R: TestResource,
 {
     resource: R,
+    sigint_handle: SigintResourceHandle,
 }
 
 impl<R> Scope<R>
@@ -23,7 +27,14 @@ where
 {
     /// Wrap a TestResource in a scope.
     pub fn new(resource: R) -> Self {
-        Scope { resource }
+        let sigint_handle = SigintHandler::get_instance()
+            .lock()
+            .unwrap()
+            .register_resource(&resource);
+        Scope {
+            resource,
+            sigint_handle,
+        }
     }
 }
 

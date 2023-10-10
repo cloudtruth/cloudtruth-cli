@@ -62,11 +62,9 @@ impl<'d> TestResource for Group<'d> {
         Scope::new(self)
     }
 
-    fn delete(&mut self) {
-        Command::new(cli_bin_path("cloudtruth"))
-            .args(["groups", "delete", "--confirm", self.name.as_str()])
-            .assert()
-            .success()
-            .stdout(contains!("Deleted group '{self}'"));
+    fn delete_cmd(&self) -> std::process::Command {
+        let mut cmd = std::process::Command::new(cli_bin_path("cloudtruth"));
+        cmd.args(["groups", "delete", "--confirm", self.name.as_str()]);
+        cmd
     }
 }
