@@ -2,7 +2,7 @@ use std::process::Command;
 
 macro_rules! pytest_dir {
     () => {
-        concat!(env!("CARGO_MANIFEST_DIR"), "/tests/pytest")
+        concat!(env!("CARGO_MANIFEST_DIR"), "/pytest")
     };
 }
 
