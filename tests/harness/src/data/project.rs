@@ -90,10 +90,9 @@ impl<'d, 'p> TestResource for Project<'d, 'p> {
         Scope::new(self)
     }
 
-    fn delete(&mut self) {
-        Command::new(cli_bin_path("cloudtruth"))
-            .args(["projects", "delete", "--confirm", self.name.as_str()])
-            .assert()
-            .success();
+    fn delete_cmd(&self) -> std::process::Command {
+        let mut cmd = std::process::Command::new(cli_bin_path("cloudtruth"));
+        cmd.args(["projects", "delete", "--confirm", self.name.as_str()]);
+        cmd
     }
 }

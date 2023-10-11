@@ -76,10 +76,9 @@ impl<'d, 'p> TestResource for ParamType<'d, 'p> {
         Scope::new(self)
     }
 
-    fn delete(&mut self) {
-        Command::new(cli_bin_path("cloudtruth"))
-            .args(["types", "delete", "--confirm", self.name.as_str()])
-            .assert()
-            .success();
+    fn delete_cmd(&self) -> std::process::Command {
+        let mut cmd = std::process::Command::new(cli_bin_path("cloudtruth"));
+        cmd.args(["types", "delete", "--confirm", self.name.as_str()]);
+        cmd
     }
 }

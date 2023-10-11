@@ -6,7 +6,7 @@
 filter = "kind(test)"
 
 # Define "slow" tests as being over 180 seconds
-slow-timeout = { period = "240s", terminate-after = 3 }
+slow-timeout = { period = "240s", terminate-after = 3, grace-period = "30s" }
 
 ##### Configuration for CI runs #####
 [profile.ci]

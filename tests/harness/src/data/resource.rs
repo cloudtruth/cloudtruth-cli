@@ -11,8 +11,9 @@ pub trait TestResource: Sized {
     }
     /// Create the test resource on the server
     fn create(self) -> Scope<Self>;
-    /// Delete the test resource from the server
-    fn delete(&mut self);
+
+    /// Returns a command that will delete the test resource from the server when executed
+    fn delete_cmd(&self) -> std::process::Command;
 
     /// Creates a TestResource for the lifetime of the given closure.
     fn with_scope<F, R>(self, scope_func: F) -> R
@@ -20,5 +21,16 @@ pub trait TestResource: Sized {
         F: FnOnce(Scope<Self>) -> R,
     {
         scope_func(self.create())
+    }
+}
+
+// An object-safe trait that allows creation of trait objects to delete TestResources
+pub trait DeleteTestResource {
+    fn delete(&self);
+}
+
+impl<R: TestResource> DeleteTestResource for R {
+    fn delete(&self) {
+        let _result = self.delete_cmd().spawn().and_then(|mut h| h.wait());
     }
 }
