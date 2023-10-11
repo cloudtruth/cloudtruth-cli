@@ -2,6 +2,8 @@ use std::{process::Command, sync::Mutex, thread};
 
 use indexmap::IndexMap;
 use once_cell::sync::OnceCell;
+use signal_hook::consts::SIGINT;
+use signal_hook::iterator::Signals;
 
 use crate::data::TestResource;
 
@@ -28,18 +30,13 @@ impl SigintHandler {
     }
 
     /* Initializes thread that listens for SIGINT. Should be called once at the start of the program */
-    #[cfg(not(target_os = "windows"))]
     fn start_thread() {
-        use signal_hook::consts::SIGINT;
-        use signal_hook::iterator::Signals;
         thread::spawn(move || {
             let mut signals = Signals::new([SIGINT]).unwrap();
             signals.forever().next();
             Self::get_instance().lock().unwrap().handle_sigint();
         });
     }
-    #[cfg(target_os = "windows")]
-    fn start_thread() {}
 
     fn handle_sigint(&mut self) {
         for (_, cmd) in self.resources.iter_mut().rev() {

@@ -12,6 +12,7 @@ pub mod output;
 pub mod panic;
 pub mod predicates;
 pub mod prelude;
+#[cfg(not(target_os = "windows"))]
 mod sigint_handler;
 mod source_span;
 pub mod util;

@@ -1,5 +1,6 @@
 use crate::data::{DeleteTestResource, Name, NameConstructors, TestResource};
-use crate::sigint_handler::SigintResourceHandle;
+#[cfg(not(target_os = "windows"))]
+use crate::sigint_handler::{SigintHandler, SigintResourceHandle};
 use std::ops::{Deref, DerefMut};
 
 /// A generic CloudTruth entity scoped via Rust borrow checker.
@@ -15,7 +16,8 @@ where
     R: TestResource,
 {
     resource: R,
-    sigint_handle: Option<SigintResourceHandle>,
+    #[cfg(not(target_os = "windows"))]
+    sigint_handle: SigintResourceHandle,
 }
 
 impl<R> Scope<R>
@@ -23,11 +25,20 @@ where
     R: TestResource,
 {
     /// Wrap a TestResource in a scope.
+    #[cfg(not(target_os = "windows"))]
     pub fn new(resource: R) -> Self {
+        let sigint_handle = SigintHandler::get_instance()
+            .lock()
+            .unwrap()
+            .register_resource(&resource);
         Scope {
-            sigint_handle: get_siginit_handle(&resource),
+            sigint_handle,
             resource,
         }
+    }
+    #[cfg(target_os = "windows")]
+    pub fn new(resource: R) -> Self {
+        Scope { resource }
     }
 }
 
@@ -69,19 +80,4 @@ where
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.resource
     }
-}
-
-#[cfg(not(target_os = "windows"))]
-fn get_siginit_handle<R: TestResource>(resource: &R) -> Option<SigintResourceHandle> {
-    use crate::sigint_handler::SigintHandler;
-    Some(
-        SigintHandler::get_instance()
-            .lock()
-            .unwrap()
-            .register_resource(resource),
-    )
-}
-#[cfg(target_os = "windows")]
-fn get_siginit_handle<R: TestResource>(_resource: &R) -> Option<SigintResourceHandle> {
-    None
 }
