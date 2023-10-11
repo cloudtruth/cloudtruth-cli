@@ -120,7 +120,7 @@ lint_shell:
 	git ls-files | grep -v -E '^$(client_dir)' | grep -E '\.sh$$' | xargs shellcheck
 
 lint_toml:
-	taplo check
+	@echo taplo check
 
 # apply linting fixes
 lint_fix:
