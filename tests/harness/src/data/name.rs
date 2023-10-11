@@ -42,11 +42,15 @@ impl NameConstructors for Name {
     }
 
     fn generated() -> Self {
-        Self(format!("test-{}", generated_test_id()))
+        Self(format!("cli-test-{}", generated_test_id()))
     }
 
     fn with_prefix<S: AsRef<str>>(prefix: S) -> Self {
-        Self(format!("{}-test-{}", prefix.as_ref(), generated_test_id()))
+        Self(format!(
+            "{}-cli-test-{}",
+            prefix.as_ref(),
+            generated_test_id()
+        ))
     }
 }
 

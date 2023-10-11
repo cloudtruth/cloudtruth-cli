@@ -6,6 +6,7 @@ use signal_hook::consts::SIGINT;
 use signal_hook::iterator::Signals;
 
 use crate::data::TestResource;
+use crate::util::retry_cmd_with_backoff;
 
 static SIGINT_HANDLER: OnceCell<Mutex<SigintHandler>> = OnceCell::new();
 
@@ -40,7 +41,7 @@ impl SigintHandler {
 
     fn handle_sigint(&mut self) {
         for (_, cmd) in self.resources.iter_mut().rev() {
-            let _result = cmd.spawn().and_then(|mut h| h.wait());
+            let _res = retry_cmd_with_backoff(cmd);
         }
     }
 
