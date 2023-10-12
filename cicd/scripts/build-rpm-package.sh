@@ -5,6 +5,7 @@ rpm_toml_version="version = '${PACKAGE_VERSION}${RPM_SNAPSHOT:+^$RPM_SNAPSHOT}'"
 cargo generate-rpm \
 --arch "$rpm_arch" \
 --target "$TARGET" \
+--profile "$CARGO_PROFILE" \
 --set-metadata "$rpm_toml_version" \
 --payload-compress none
 

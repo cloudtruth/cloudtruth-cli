@@ -1,5 +1,9 @@
 #!/usr/bin/env sh
 set -e
+# cargo-deb only works with release profile so we need to copy everything to the release dir
+if [ "$CARGO_PROFILE" != release ]; then
+    cp -r "target/$TARGET/$CARGO_PROFILE" "target/$TARGET/release"  
+fi
 cargo deb --no-build --no-strip \
 --target "$TARGET" \
 --deb-version "$PACKAGE_VERSION" \
