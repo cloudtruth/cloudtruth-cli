@@ -88,25 +88,13 @@ $ cloudtruth param set param3 --generate
 ? 1
 Error: 
    0: [91mRule violation: Value is not of type boolean[0m
-
-Location:
-   [35msrc/parameters.rs[0m:[35m1001[0m
-
-Backtrace omitted.
-Run with RUST_BACKTRACE=1 environment variable to display it.
-Run with RUST_BACKTRACE=full to include source snippets.
+...
 
 $ cloudtruth param set param4 --generate
 ? 1
 Error: 
    0: [91mRule violation: Value is not of type integer[0m
-
-Location:
-   [35msrc/parameters.rs[0m:[35m1001[0m
-
-Backtrace omitted.
-Run with RUST_BACKTRACE=1 environment variable to display it.
-Run with RUST_BACKTRACE=full to include source snippets.
+...
 
 ```
 
@@ -117,12 +105,6 @@ $ cloudtruth param set param5 --min-len 50 --generate
 ? 1
 Error: 
    0: [91mRule violation: Value must be at least 50 characters[0m
-
-Location:
-   [35msrc/parameters.rs[0m:[35m998[0m
-
-Backtrace omitted.
-Run with RUST_BACKTRACE=1 environment variable to display it.
-Run with RUST_BACKTRACE=full to include source snippets.
+...
 
 ```
