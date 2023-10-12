@@ -39,9 +39,9 @@ release-tests:
   - os: ubuntu
     type: docker
     versions:
-      - lunar
-      - kinetic
-      - jammy
+      - latest
+      - rolling
+      - devel
   - os: macos
     type: shell
     versions:
