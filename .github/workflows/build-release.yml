@@ -26,6 +26,10 @@ on:
       rpmSnapshot:
         description: Alphanumeric snapshot string to add to end of RPM version.
         type: string
+      cargoProfile:
+        description: 'Cargo build profile (default: release)'
+        type: string
+        default: release
 env:
   # CI: true
   RELEASE_UPLOAD_URL: ${{ inputs.releaseUploadUrl }}
@@ -33,6 +37,7 @@ env:
   PACKAGE_VERSION: ${{ inputs.packageVersion }}
   DEB_REVISION: ${{ inputs.debRevision }}
   RPM_SNAPSHOT: ${{ inputs.rpmSnapshot }}
+  CARGO_PROFILE: ${{ inputs.cargoProfile }}
   PROJECT_NAME: cloudtruth
   RUST_BACKTRACE: 1
 
