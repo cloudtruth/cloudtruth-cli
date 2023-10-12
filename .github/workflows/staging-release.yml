@@ -60,6 +60,7 @@ jobs:
       packageVersion: ${{ needs.create-release.outputs.cargoPackageVersion }}
       debRevision: ${{ github.sha }}
       rpmSnapshot: ${{ github.sha }}
+      cargoProfile: release-debug
 
   test-release:
     name: Test Release
