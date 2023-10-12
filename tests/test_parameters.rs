@@ -775,15 +775,39 @@ fn test_parameters_rules_string() {
 }
 
 #[test]
-fn test_parameters_secret_switch() -> Result<()> {
-    let proj = Project::with_prefix("param-rules-secret-switch").create();
-    trycmd::TestCases::new()
-        .case("tests/snapshot-tests/parameters/parameter_secret_switch.md")
-        .register_bin("cloudtruth", cli_bin_path!())
-        .env("NO_COLOR", "1")
-        .env(CT_PROJECT, proj.to_name())
-        .insert_var("[PROJECT]", proj.to_name())?;
-    Ok(())
+#[use_harness]
+fn test_parameters_secret_switch() {
+    let proj = Project::with_prefix("secret-switch").create();
+    let envs = hashmap! {
+        CT_PROJECT => proj.name()
+    };
+    cloudtruth!("parameters list --values --secrets")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains!("No parameters found in project {proj}"));
+    cloudtruth!(
+        "params set my_param --value 'cRaZy value' --desc 'this is just a test description'"
+    )
+    .envs(&envs)
+    .assert()
+    .success();
+    /* Cannot change a non-secret to a secret */
+    cloudtruth!("params set my_param --secret true")
+        .envs(&envs)
+        .assert()
+        .failure()
+        .stderr(contains("A parameter's secret status cannot be changed"));
+    /* Try to change a secret to a non-secret */
+    cloudtruth!("params set my_secret --value 'secret value' --secret true")
+        .envs(&envs)
+        .assert()
+        .success();
+    cloudtruth!("params set my_secret --secret false")
+        .envs(&envs)
+        .assert()
+        .failure()
+        .stderr(contains("A parameter's secret status cannot be changed"));
 }
 
 #[test]
@@ -930,7 +954,7 @@ fn test_parameters_environment_separation() {
         .envs(&envs)
         .assert()
         .success();
-    cloudtruth!("--env {env2} param set pitch --value split --secret true")
+    cloudtruth!("--env {env2} param set pitch --value split")
         .envs(&envs)
         .assert()
         .success();
@@ -938,7 +962,7 @@ fn test_parameters_environment_separation() {
         .envs(&envs)
         .assert()
         .success();
-    cloudtruth!("--env {env3} param set pitch --value heater --secret true")
+    cloudtruth!("--env {env3} param set pitch --value heater")
         .envs(&envs)
         .assert()
         .success();
@@ -947,20 +971,11 @@ fn test_parameters_environment_separation() {
         .assert()
         .success()
         .stdout(
-            contains!("default,*****,,")
-                .and(contains!("{env2},*****,,"))
-                .and(contains!("{env3},*****,,")),
-        );
-    cloudtruth!("param environment 'pitch' -f csv -s")
-        .envs(&envs)
-        .assert()
-        .success()
-        .stdout(
             contains!("default,slider,,")
                 .and(contains!("{env2},split,,"))
                 .and(contains!("{env3},heater,,")),
         );
-    cloudtruth!("param ls -v -s -f csv")
+    cloudtruth!("param ls -v -f csv")
         .envs(&envs)
         .assert()
         .success()
@@ -970,12 +985,12 @@ fn test_parameters_environment_separation() {
         .assert()
         .success()
         .stdout(contains!("base,second,{env2}").and(contains!("pitch,split,{env2}")));
-    cloudtruth!("--env {env3} param ls -v -s -f csv")
+    cloudtruth!("--env {env3} param ls -v -f csv")
         .envs(&envs)
         .assert()
         .success()
         .stdout(contains!("base,third,{env3}").and(contains!("pitch,heater,{env3}")));
-    cloudtruth!("param export docker -s")
+    cloudtruth!("param export docker")
         .envs(&envs)
         .assert()
         .success()
@@ -984,7 +999,7 @@ fn test_parameters_environment_separation() {
             PITCH=slider
             
         "}));
-    cloudtruth!("--env {env2} param export docker -s")
+    cloudtruth!("--env {env2} param export docker")
         .envs(&envs)
         .assert()
         .success()
@@ -993,7 +1008,7 @@ fn test_parameters_environment_separation() {
             PITCH=split
             
         "}));
-    cloudtruth!("--env {env3} param export docker -s")
+    cloudtruth!("--env {env3} param export docker")
         .envs(&envs)
         .assert()
         .success()
@@ -1009,17 +1024,17 @@ fn test_parameters_environment_separation() {
         .stdout(
             contains("Removed parameter value 'base'").and(contains!("for environment '{env2}'")),
         );
-    cloudtruth!("--env {env3} param ls -v -s -f csv")
+    cloudtruth!("--env {env3} param ls -v -f csv")
         .envs(&envs)
         .assert()
         .success()
         .stdout(contains!("base,third,{env3}"));
-    cloudtruth!("--env {env2} param ls -v -s -f csv")
+    cloudtruth!("--env {env2} param ls -v -f csv")
         .envs(&envs)
         .assert()
         .success()
         .stdout(contains("base,first,default"));
-    cloudtruth!("param ls -v -s -f csv")
+    cloudtruth!("param ls -v -f csv")
         .envs(&envs)
         .assert()
         .success()
@@ -1031,12 +1046,12 @@ fn test_parameters_environment_separation() {
         .stdout(
             contains("Removed parameter value 'base'").and(contains!("for environment '{env3}'")),
         );
-    cloudtruth!("--env {env3} param ls -v -s -f csv")
+    cloudtruth!("--env {env3} param ls -v -f csv")
         .envs(&envs)
         .assert()
         .success()
         .stdout(contains("base,first,default"));
-    cloudtruth!("--env {env2} param ls -v -s -f csv")
+    cloudtruth!("--env {env2} param ls -v -f csv")
         .envs(&envs)
         .assert()
         .success()
