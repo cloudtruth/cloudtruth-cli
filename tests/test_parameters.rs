@@ -786,13 +786,13 @@ fn test_parameters_secret_switch() {
         .assert()
         .success()
         .stdout(contains!("No parameters found in project {proj}"));
+    /* Try to change a non-secret to a secret */
     cloudtruth!(
         "params set my_param --value 'cRaZy value' --desc 'this is just a test description'"
     )
     .envs(&envs)
     .assert()
     .success();
-    /* Cannot change a non-secret to a secret */
     cloudtruth!("params set my_param --secret true")
         .envs(&envs)
         .assert()
