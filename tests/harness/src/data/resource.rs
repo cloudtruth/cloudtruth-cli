@@ -1,4 +1,7 @@
-use crate::data::{Name, Scope};
+use crate::{
+    data::{Name, Scope},
+    util::retry_cmd_with_backoff,
+};
 
 /// Trait for test resources that have a name and can be created and deleted.
 /// Used by the Scope struct to construct/cleanup test data server-side
@@ -31,6 +34,7 @@ pub trait DeleteTestResource {
 
 impl<R: TestResource> DeleteTestResource for R {
     fn delete(&self) {
-        let _result = self.delete_cmd().spawn().and_then(|mut h| h.wait());
+        let mut cmd = self.delete_cmd();
+        let _res = retry_cmd_with_backoff(&mut cmd);
     }
 }

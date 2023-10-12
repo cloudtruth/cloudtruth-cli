@@ -57,7 +57,7 @@ where
     R: TestResource,
 {
     fn drop(&mut self) {
-        self.resource.delete()
+        self.resource.delete();
     }
 }
 

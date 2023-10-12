@@ -362,13 +362,13 @@ fn test_types_integers() {
         .assert()
         .failure()
         .stderr(contains!(
-            "Rule update error: Rule may not be applied to {child}: param1"
+            "Rule update error: Rule may not be applied to {child}: param2"
         ));
     cloudtruth!("type set {child} --min 47")
         .assert()
         .failure()
         .stderr(contains!(
-            "Rule update error: Rule may not be applied to {child}: param1"
+            "Rule update error: Rule may not be applied to {child}: param2"
         ));
     cloudtruth!("type set {parent} --no-min --no-max")
         .assert()
