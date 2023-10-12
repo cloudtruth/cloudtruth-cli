@@ -41,7 +41,7 @@ env:
 
 jobs:
   cargo-test:
-    name: CLI Test (staging, cargo-nextest)
+    name: CLI Test (staging)
     runs-on: ${{ inputs.runsOn }}
 
     steps:

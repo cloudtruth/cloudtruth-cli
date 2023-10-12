@@ -1,0 +1,59 @@
+# This runs a small set of basic tests against the production deployment, using the latest released
+# CLI image.
+---
+name: Test Production
+on:
+  workflow_call:
+    inputs:
+      releaseVersion:
+        description: CLI release version to download and install
+        type: string
+      runsOn:
+        description: The runner to run the workflow on
+        type: string
+        default: macos-latest
+      testRunnerOptions:
+        description: string of command-line options to pass to the test runner
+        type: string
+    secrets:
+      CLOUDTRUTH_API_KEY:
+        description: "Production API Key"
+        required: true
+
+env:
+  CI: true
+
+jobs:
+  test:
+    name: CLI Test (production, pytest)
+    runs-on: ${{ inputs.runsOn }}
+
+    env:
+      CLOUDTRUTH_API_KEY: ${{ secrets.CLOUDTRUTH_API_KEY }}
+      RUST_BACKTRACE: 1
+      JOB_ID: ${{github.repository}}-${{github.run_id}}-${{github.run_attempt}}-cli-prod
+      RELEASE_VERSION: ${{ inputs.releaseVersion }}
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          repository: cloudtruth/cloudtruth-cli
+
+      ## Running the GH API on GHA runners occassionally fails with rate limiting errors,
+      ## so we cannot rely on it to fetch the latest version. As a workaround, when releaseVersion
+      ## isn't specified, we can instead read the version from the repos Cargo.toml file
+      - if: ${{ inputs.releaseVersion == '' }}
+        run: echo RELEASE_VERSION=$(grep -E '^version =' Cargo.toml  | sed -E 's/^.*"([0-9\.]+)".*$/\1/') >> $GITHUB_ENV
+
+      - name: CLI installation
+        run: |
+          sudo ./install.sh --install-prerequisites ${RELEASE_VERSION:+--version "$RELEASE_VERSION"}
+          cloudtruth --version
+
+      - name: Prerequisites
+        run: make test_prerequisites
+
+      - name: Integration Test
+        shell: bash
+        working-directory: integration-tests
+        run: python3 live_test.py --job-id "$JOB_ID" ${{ inputs.testRunnerOptions }}
