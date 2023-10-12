@@ -143,7 +143,7 @@ mod tests {
         update.check = true;
 
         // different date with 31 days in the month (even in the future!)
-        update.last_checked = Some(NaiveDate::from_ymd_opt(2050, 3, 1)).unwrap();
+        update.last_checked = NaiveDate::from_ymd_opt(2050, 3, 1);
         update.frequency = Some(Frequency::Daily);
         assert_eq!(
             update.next_update().unwrap(),

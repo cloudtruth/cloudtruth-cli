@@ -630,7 +630,7 @@ fn proc_param_list(
         }
     }
 
-    let view_flags = vec![
+    let view_flags = [
         show_rules,
         show_external,
         show_evaluated,

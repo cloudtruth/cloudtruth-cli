@@ -1728,22 +1728,26 @@ fn test_parameters_diff() {
     let entry1 = &json[0];
     assert_eq!(entry1.parameter, "param1");
     let fields1 = entry1.split_fields(env1.name()).collect::<Vec<Cow<str>>>();
-    let [created_at1, modified_at1, ..] = fields1.as_slice()
-        else { panic!("Invalid timestamp fields in diff") };
+    let [created_at1, modified_at1, ..] = fields1.as_slice() else {
+        panic!("Invalid timestamp fields in diff")
+    };
     let fields2 = entry1.split_fields(env2.name()).collect::<Vec<Cow<str>>>();
-    let [created_at2, modified_at2, ..] = fields2.as_slice()
-        else { panic!("Invalid timestamp fields in diff") };
+    let [created_at2, modified_at2, ..] = fields2.as_slice() else {
+        panic!("Invalid timestamp fields in diff")
+    };
     assert!(created_at1.parse::<DateTime<Utc>>().is_ok());
     assert!(modified_at1.parse::<DateTime<Utc>>().is_ok());
     assert!(created_at2.parse::<DateTime<Utc>>().is_ok());
     assert!(modified_at2.parse::<DateTime<Utc>>().is_ok());
     let entry2 = &json[1];
     let fields1 = entry2.split_fields(env1.name()).collect::<Vec<Cow<str>>>();
-    let [created_at1, modified_at1, ..] = fields1.as_slice()
-        else { panic!("Invalid timestamp fields in diff") };
+    let [created_at1, modified_at1, ..] = fields1.as_slice() else {
+        panic!("Invalid timestamp fields in diff")
+    };
     let fields2 = entry2.split_fields(env2.name()).collect::<Vec<Cow<str>>>();
-    let [created_at2, modified_at2, ..] = fields2.as_slice()
-        else { panic!("Invalid timestamp fields in diff") };
+    let [created_at2, modified_at2, ..] = fields2.as_slice() else {
+        panic!("Invalid timestamp fields in diff")
+    };
     assert!(created_at1.parse::<DateTime<Utc>>().is_ok());
     assert!(modified_at1.parse::<DateTime<Utc>>().is_ok());
     assert!(created_at2.parse::<DateTime<Utc>>().is_ok());
