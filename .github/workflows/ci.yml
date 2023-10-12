@@ -43,16 +43,16 @@ jobs:
       matrix:
         include:
           - os: macos-latest
-            options: --before test_parameter
+            options: --partition hash:1/3
           - os: ubuntu-latest
-            options: --after test_parameter --before test_project
+            options: --partition hash:2/3
           - os: windows-latest
-            options: --after test_project
+            options: --partition hash:3/3
 
     with:
       runsOn: ${{ matrix.os }}
       artifactId: cloudtruth-ci-${{ matrix.os }}
-      testRunnerOptions: ${{ matrix.options }} --reports
+      testRunnerOptions: ${{ matrix.options }} -E 'kind(test)'
       rustBacktrace: "1"
     secrets:
       CLOUDTRUTH_API_KEY: ${{ secrets.CT_STAGING_CI_ADMIN_API_KEY }}

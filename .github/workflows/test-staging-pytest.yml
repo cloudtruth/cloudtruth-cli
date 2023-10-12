@@ -8,6 +8,9 @@ on:
       releaseVersion:
         description: A release tag to download with the install script. Either artifactId or releaseVersion should be provided
         type: string
+      ref:
+        description: the git ref to checkout from cloudtruth-cli (defaults to current ref)
+        type: string
       testRunnerOptions:
         description: string of command-line options to pass to the test runner
         type: string
@@ -19,10 +22,6 @@ on:
         description: Value of the RUST_BACKTRACE variable (default no backtrace)
         type: string
         default: "0"
-      serverUrl:
-        description: The CloudTruth server URL to use for testing
-        type: string
-        default: https://api.staging.cloudtruth.io
     secrets:
       CLOUDTRUTH_API_KEY:
         description: "Staging API Key"
@@ -30,39 +29,32 @@ on:
 
 env:
   CI: true
-  RELEASE_VERSION: ${{ inputs.releaseVersion }}
   # ID to append to test data to avoid name collisions
   JOB_ID: ${{github.repository_id}}-${{github.run_id}}-${{github.run_attempt}}-${{inputs.runsOn}}
   RUST_BACKTRACE: ${{ inputs.rustBacktrace }}
-  CLOUDTRUTH_SERVER_URL: ${{ inputs.serverUrl }}
+  CLOUDTRUTH_SERVER_URL: https://api.staging.cloudtruth.io
   CLOUDTRUTH_API_KEY: ${{ secrets.CLOUDTRUTH_API_KEY }}
-  TEST_ARCHIVE_FILE: integration-test-${{inputs.runsOn}}.tar.zst
-
 
 jobs:
-  cargo-test:
-    name: CLI Test (staging, cargo-nextest)
+  pytest:
+    name: CLI Test (staging, pytest)
     runs-on: ${{ inputs.runsOn }}
+    defaults:
+      run:
+        shell: bash
 
     steps:
-      - shell: bash
-        if: | 
+      - if: | 
           inputs.artifactId == '' && inputs.releaseVersion == '' ||
           inputs.artifactId != '' && inputs.releaseVersion != ''
         run: | 
           echo "Workflow input error: exactly one of 'artifactId' or 'releaseVersion' must be provided"
           exit 1
 
-      # it's likely safe to assume that current/latest ref is close enough
-      # to staging release, but we may need to bump a "staging" tag to track
-      # the staging release accurately
       - uses: actions/checkout@v3
         with:
           repository: cloudtruth/cloudtruth-cli
-
-      - run: sh cicd/scripts/install-rust.sh
-
-      - uses: taiki-e/install-action@cargo-nextest
+          ref: ${{ inputs.ref }}
 
       - uses: actions/download-artifact@v3
         if: inputs.artifactId
@@ -71,32 +63,28 @@ jobs:
           path: target
 
       # upload-artifact does not preserve permissions
-      - shell: bash
-        if: inputs.artifactId
+      - if: inputs.artifactId
         run: find target -type f -name 'cloudtruth*' -exec chmod +x {} +
 
-      # fetch pre-built integration test archive
-      - uses: dsaltares/fetch-gh-release-asset@master
-        if: inputs.releaseVersion 
-        with:                  
-          repo: cloudtruth/cloudtruth-cli
-          version: tags/${{ inputs.releaseVersion }}
-          file: ${{ env.TEST_ARCHIVE_FILE }}
+      - if: inputs.releaseVersion && !contains(runner.os, 'Windows')
+        run: sudo ./install.sh --install-prerequisites --version '${{ inputs.releaseVersion }}'
+
+      - shell: pwsh
+        if: inputs.releaseVersion && contains(runner.os, 'Windows')
+        run: |
+          $ctExe = .\install.ps1 -Version '${{ inputs.releaseVersion }}'
+          mv $ctExe .\integration-tests\
+
+      - run: make test_prerequisites
 
       - name: Setup test variables
-        shell: bash
         run: |
           cat integration-tests/staging.env >> $GITHUB_ENV
 
-      # run from pre-built archive
-      - name: E2E Test (pre-built archive)
-        if: inputs.releaseVersion
-        shell: bash
-        run: cargo nextest run --profile ci --archive-file "$TEST_ARCHIVE_FILE" ${{ inputs.testRunnerOptions }} --workspace-remap "${GITHUB_WORKSPACE}"
+      - name: E2E Test
+        working-directory: integration-tests
+        run: python3 live_test.py --job-id "$JOB_ID" ${{ inputs.testRunnerOptions }}
 
-      # build and run
-      - name: E2E Test (compile from source)
-        if: inputs.artifactId
-        shell: bash
-        run: cargo nextest run --profile ci --archive-file ./target/integration-test-archive.tar.zst ${{ inputs.testRunnerOptions }} --workspace-remap "${GITHUB_WORKSPACE}"
-
+      - if: always()
+        working-directory: integration-tests
+        run: python3 cleanup.py --confirm "$JOB_ID"
