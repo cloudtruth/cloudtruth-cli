@@ -95,11 +95,11 @@ jobs:
         if: contains(runner.os, 'Linux')
 
       - name: Cross build
-        run: cross build --release --target $TARGET --all-features --bin cloudtruth
+        run: cross build --profile "$CARGO_PROFILE" --target "$TARGET" --all-features --bin cloudtruth
         if: contains(runner.os, 'Linux')
 
       - name: Cargo build
-        run: cargo build --release --target $TARGET --all-features --bin cloudtruth
+        run: cargo build --profile "$CARGO_PROFILE" --target "$TARGET" --all-features --bin cloudtruth
         if: ${{ ! contains(runner.os, 'Linux') }}
 
       - name: Build archive
