@@ -159,7 +159,7 @@ jobs:
           overwrite: true
 
       - name: Install cargo-generate-rpm
-        run: cargo install cargo-generate-rpm --version 0.10.2
+        run: cargo install cargo-generate-rpm
         if: contains(runner.os, 'Linux')
 
       - name: Build RPM package
