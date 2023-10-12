@@ -2,7 +2,7 @@
 ///
 use core::fmt;
 
-use predicates::{constant::always, reflection::PredicateReflection, Predicate};
+use predicates::{constant::always, reflection::PredicateReflection};
 
 // submodules
 pub mod json;
