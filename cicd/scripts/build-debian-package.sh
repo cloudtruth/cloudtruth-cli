@@ -2,7 +2,7 @@
 set -e
 # cargo-deb only works with release profile so we need to copy everything to the release dir
 if [ "$CARGO_PROFILE" != release ]; then
-    cp -r "target/$TARGET/$CARGO_PROFILE" "target/$TARGET/release"  
+    mv "target/$TARGET/$CARGO_PROFILE" "target/$TARGET/release"  
 fi
 cargo deb --no-build --no-strip \
 --target "$TARGET" \
@@ -15,3 +15,7 @@ dest_deb_path=$(echo "$src_deb_path" | sed -E "s/${PACKAGE_VERSION}/${RELEASE_TA
 mv -f "$src_deb_path" "$dest_deb_path" || true
 echo "DEB_PATH=$dest_deb_path" >> "$GITHUB_ENV"
 echo "DEB_NAME=$(basename "$DEB_PATH")" >> "$GITHUB_ENV"
+# if non-release profile, move back to original dir
+if [ "$CARGO_PROFILE" != release ]; then
+    mv "target/$TARGET/release" "target/$TARGET/$CARGO_PROFILE"
+fi
