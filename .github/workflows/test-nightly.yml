@@ -27,3 +27,17 @@ jobs:
       testRunnerOptions: -E 'kind(test)'
     secrets:
       CLOUDTRUTH_API_KEY: ${{ secrets.CT_STAGING_CI_ADMIN_API_KEY }}
+
+  cleanup-nightly:
+    name: Nightly Cleanup
+    needs: test-nightly
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          repository: cloudtruth/cloudtruth-cli
+
+      - run: sh cicd/scripts/install-rust.sh
+
+      - run: cargo xtask cleanup --confirm cli-test
