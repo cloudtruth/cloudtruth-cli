@@ -267,7 +267,7 @@ fn test_types_integers() {
     assert_eq!(parent.name().as_str(), rule.parent);
     assert_ne!(None, rule.created_at);
     assert_ne!(None, rule.modified_at);
-    cloudtruth!("type  set {child} --max 101")
+    cloudtruth!("type set {child} --max 101")
         .assert()
         .failure()
         .stderr(contains(
@@ -373,7 +373,7 @@ fn test_types_integers() {
     cloudtruth!("type set {parent} --no-min --no-max")
         .assert()
         .success();
-    cloudtruth!("ls -f csv")
+    cloudtruth!("type ls -f csv")
         .assert()
         .success()
         .stdout(contains!("{parent},integer,0,").and(contains!("{child},{parent},2,")));
