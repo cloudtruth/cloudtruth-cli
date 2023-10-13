@@ -1,3 +1,5 @@
+use std::process::Stdio;
+
 use crate::{
     data::{Name, Scope},
     util::retry_cmd_with_backoff,
@@ -35,6 +37,7 @@ pub trait DeleteTestResource {
 impl<R: TestResource> DeleteTestResource for R {
     fn delete(&self) {
         let mut cmd = self.delete_cmd();
+        cmd.stdout(Stdio::null());
         let _res = retry_cmd_with_backoff(&mut cmd);
     }
 }

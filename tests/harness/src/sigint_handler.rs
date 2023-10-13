@@ -1,3 +1,4 @@
+use std::process::Stdio;
 use std::{process::Command, sync::Mutex, thread};
 
 use indexmap::IndexMap;
@@ -40,8 +41,9 @@ impl SigintHandler {
     }
 
     fn handle_sigint(&mut self) {
-        for (_, cmd) in self.resources.iter_mut().rev() {
-            let _res = retry_cmd_with_backoff(cmd);
+        while let Some((_, mut cmd)) = self.resources.pop() {
+            cmd.stdout(Stdio::null());
+            let _res = retry_cmd_with_backoff(&mut cmd);
         }
     }
 
