@@ -1,6 +1,14 @@
 #!/usr/bin/env sh
 set -e
 ARCHIVE_NAME="$PROJECT_NAME-$RELEASE_TAG-$TARGET"
+case $TARGET in
+    *windows*)
+        EXE_SUFFIX=.exe
+    ;;
+    *)
+        EXE_SUFFIX=
+    ;;
+esac
 mkdir -p "$ARCHIVE_NAME"
 
 # Find where the build script put the generated completions files.
@@ -12,7 +20,7 @@ mv "$src_completions_dir" "$dst_completions_dir"
 
 cp README.md LICENSE "$ARCHIVE_NAME/"
 cp -a "$dst_completions_dir" "$ARCHIVE_NAME/"
-cp "target/$TARGET/release/$PROJECT_NAME"* "$ARCHIVE_NAME/"
+cp "target/$TARGET/release/${PROJECT_NAME}${EXE_SUFFIX}" "$ARCHIVE_NAME/"
 
 case $TARGET in
     *windows*)
