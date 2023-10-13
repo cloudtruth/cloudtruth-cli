@@ -53,6 +53,7 @@ use cloudtruth_config::env::ConfigEnv;
 use cloudtruth_config::{Action, Config, Updates, CT_PROFILE, DEFAULT_ENV_NAME};
 use cloudtruth_installer::{binary_version, get_latest_version, install_latest_version};
 use color_eyre::eyre::Result;
+use is_terminal::IsTerminal;
 use std::io;
 use std::process;
 use utils::default;
@@ -137,7 +138,16 @@ fn check_updates(updates: &Updates) -> Result<()> {
 }
 
 pub fn main() -> Result<()> {
-    color_eyre::install()?;
+    /* color_eyre does not check NO_COLOR so we need to check */
+    if !std::io::stderr().is_terminal()
+        || matches!(std::env::var("NO_COLOR"), Ok(no_color) if no_color != "0")
+    {
+        color_eyre::config::HookBuilder::new()
+            .theme(color_eyre::config::Theme::new())
+            .install()?;
+    } else {
+        color_eyre::install()?;
+    };
     env_logger::init();
 
     let profile_env = ConfigEnv::get_override(CT_PROFILE);

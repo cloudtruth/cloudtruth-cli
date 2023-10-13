@@ -81,6 +81,7 @@ termcolor = "1.1"
 urlencoding = "2.1.0"
 version-compare = "0.1.0"
 webbrowser = "0.8.3"
+is-terminal = "0.4.9"
 
 [dev-dependencies]
 cloudtruth-test-harness = { path = "./tests/harness" }
