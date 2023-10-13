@@ -2,7 +2,6 @@
 extern crate derive_more;
 
 pub mod assert;
-mod backtrace;
 pub mod command;
 pub mod data;
 pub mod error_handler;

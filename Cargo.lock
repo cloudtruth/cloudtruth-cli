@@ -219,6 +219,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "backtrace-ext"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "537beee3be4a18fb023b570f80e3ae28003db9167a751266b259926e25539d50"
+dependencies = [
+ "backtrace",
+]
+
+[[package]]
 name = "base64"
 version = "0.10.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -525,6 +534,7 @@ dependencies = [
  "anyhow",
  "assert_cmd",
  "backtrace",
+ "backtrace-ext",
  "chrono",
  "cloudtruth-config",
  "cloudtruth-test-macros",
