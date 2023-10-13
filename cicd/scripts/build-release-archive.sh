@@ -7,7 +7,7 @@ mkdir -p "$ARCHIVE_NAME"
 src_completions_dir="$(find . -name cloudtruth.bash -print0 | xargs -0 ls -t | head -n 1 | xargs dirname)"
 
 # Move the generated shell completion files to a location cargo-deb will read from.
-dst_completions_dir="target/$TARGET/$CARGO_PROFILE/completions"
+dst_completions_dir="target/$TARGET/release/completions"
 mv "$src_completions_dir" "$dst_completions_dir"
 
 cp README.md LICENSE "$ARCHIVE_NAME/"

@@ -26,10 +26,11 @@ on:
       rpmSnapshot:
         description: Alphanumeric snapshot string to add to end of RPM version.
         type: string
-      cargoProfile:
-        description: 'Cargo build profile (default: release)'
+      rustFlags:
+        description: 'Compiler flags to pass to rustc'
         type: string
-        default: release
+        # strip debug info from binaries
+        default: '-C link-arg=-s'
 env:
   # CI: true
   RELEASE_UPLOAD_URL: ${{ inputs.releaseUploadUrl }}
@@ -37,7 +38,6 @@ env:
   PACKAGE_VERSION: ${{ inputs.packageVersion }}
   DEB_REVISION: ${{ inputs.debRevision }}
   RPM_SNAPSHOT: ${{ inputs.rpmSnapshot }}
-  CARGO_PROFILE: ${{ inputs.cargoProfile }}
   PROJECT_NAME: cloudtruth
   RUST_BACKTRACE: 1
 
@@ -70,8 +70,7 @@ jobs:
 
     env:
       TARGET: ${{ matrix.target }}
-      # strip debug info from binaries
-      RUSTFLAGS: '-C link-arg=-s'
+      RUSTFLAGS: ${{ inputs.rustFlags }}
 
     steps:
       - uses: actions/checkout@v3
@@ -95,11 +94,11 @@ jobs:
         if: contains(runner.os, 'Linux')
 
       - name: Cross build
-        run: cross build --profile "$CARGO_PROFILE" --target "$TARGET" --all-features --bin cloudtruth
+        run: cross build --release --target "$TARGET" --all-features --bin cloudtruth
         if: contains(runner.os, 'Linux')
 
       - name: Cargo build
-        run: cargo build --profile "$CARGO_PROFILE" --target "$TARGET" --all-features --bin cloudtruth
+        run: cargo build --release --target "$TARGET" --all-features --bin cloudtruth
         if: ${{ ! contains(runner.os, 'Linux') }}
 
       - name: Build archive
