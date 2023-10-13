@@ -18,10 +18,6 @@ on:
         description: The runner to run the workflow on
         type: string
         default: ubuntu-latest
-      rustBacktrace:
-        description: Value of the RUST_BACKTRACE variable (default no backtrace)
-        type: string
-        default: "0"
     secrets:
       CLOUDTRUTH_API_KEY:
         description: "Staging API Key"
@@ -31,7 +27,6 @@ env:
   CI: true
   # ID to append to test data to avoid name collisions
   JOB_ID: ${{github.repository_id}}-${{github.run_id}}-${{github.run_attempt}}-${{inputs.runsOn}}
-  RUST_BACKTRACE: ${{ inputs.rustBacktrace }}
   CLOUDTRUTH_SERVER_URL: https://api.staging.cloudtruth.io
   CLOUDTRUTH_API_KEY: ${{ secrets.CLOUDTRUTH_API_KEY }}
 

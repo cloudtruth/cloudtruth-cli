@@ -30,7 +30,6 @@ jobs:
 
     env:
       CLOUDTRUTH_API_KEY: ${{ secrets.CLOUDTRUTH_API_KEY }}
-      RUST_BACKTRACE: 1
       JOB_ID: ${{github.repository}}-${{github.run_id}}-${{github.run_attempt}}-cli-prod
       RELEASE_VERSION: ${{ inputs.releaseVersion }}
 

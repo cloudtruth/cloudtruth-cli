@@ -64,6 +64,7 @@ impl Command {
     ///
     fn env_default(&mut self) -> &mut Self {
         self.env("NO_COLOR", "1");
+        self.env("RUST_BACKTRACE", "1");
         self
     }
 

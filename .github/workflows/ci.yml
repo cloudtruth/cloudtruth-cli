@@ -53,6 +53,5 @@ jobs:
       runsOn: ${{ matrix.os }}
       artifactId: cloudtruth-ci-${{ matrix.os }}
       testRunnerOptions: ${{ matrix.options }} -E 'kind(test)'
-      rustBacktrace: "1"
     secrets:
       CLOUDTRUTH_API_KEY: ${{ secrets.CT_STAGING_CI_ADMIN_API_KEY }}
