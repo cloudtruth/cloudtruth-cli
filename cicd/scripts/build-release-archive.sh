@@ -12,7 +12,7 @@ mv "$src_completions_dir" "$dst_completions_dir"
 
 cp README.md LICENSE "$ARCHIVE_NAME/"
 cp -a "$dst_completions_dir" "$ARCHIVE_NAME/"
-cp "target/$TARGET/$CARGO_PROFILE/$PROJECT_NAME"* "$ARCHIVE_NAME/"
+cp "target/$TARGET/release/$PROJECT_NAME"* "$ARCHIVE_NAME/"
 
 case $TARGET in
     *windows*)
