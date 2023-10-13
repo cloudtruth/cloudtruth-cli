@@ -44,6 +44,7 @@ jobs:
           updateOnlyUnreleased: true # prevent modifying any non-draft non-prerelease
           removeArtifacts: true # deletes any existing artifacts when modifying
           draft: true
+          prerelease: true
           tag: ${{ env.TAG_NAME }}
           name: ${{ env.RELEASE_NAME }}
           commit: ${{ github.sha }} # need commit because tag doesn't exist yet
