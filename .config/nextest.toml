@@ -4,6 +4,7 @@
 ##### Configuration overrides for integration tests #####
 [[profile.default.overrides]]
 filter = "kind(test)"
+test-group = "integration-tests"
 
 # Define "slow" tests as being over 180 seconds
 slow-timeout = { period = "240s", terminate-after = 3, grace-period = "30s" }
@@ -26,10 +27,13 @@ filter = "kind(test)"
 # Retry failed tests in CI
 retries = { count = 2, backoff = "fixed", delay = "10s" }
 
-[test-groups]
-# limit concurrency of parameter tests to avoid Gateway Timeout errors
-parameters = { max-threads = 4 }
-
 [[profile.default.overrides]]
 filter = "kind(test) & test(test_parameters)"
-test-group = "parameters"
+test-group = "parameter-tests"
+
+[test-groups]
+# limit concurrency of parameter tests to avoid Gateway Timeout errors
+integration-tests = { max-threads = 4 }
+parameter-tests = { max-threads = 2 }
+
+
