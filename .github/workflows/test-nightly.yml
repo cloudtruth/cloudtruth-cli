@@ -40,4 +40,6 @@ jobs:
 
       - run: sh cicd/scripts/install-rust.sh
 
-      - run: cargo xtask cleanup --confirm cli-test
+      - run: sudo ./install.sh --install-prerequisites
+
+      - run: cargo run --release --package xtask -- cleanup --confirm cli-test
