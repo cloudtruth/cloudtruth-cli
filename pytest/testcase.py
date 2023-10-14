@@ -64,6 +64,10 @@ def get_cli_base_cmd() -> str:
     during __init__(). It returns the path to the executable (presumably) with the trailing
     space to allow for easier consumption.
     """
+    # look for cargo and cargo-nextest environment variables
+    exec_name = os.environ.get("NEXTEST_BIN_EXE_cloudtruth") or os.environ.get("CARGO_BIN_EXE_cloudtruth")
+    if exec_name:
+        return exec_name + " "
     # walk back up looking for top of projects, and goto `target/debug/cloudtruth`
     curr = Path(__file__).absolute()
     exec_name = "cloudtruth.exe" if os.name == "nt" else "cloudtruth"
