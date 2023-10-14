@@ -95,3 +95,9 @@ jobs:
         shell: bash
         run: cargo nextest run --profile ci --archive-file ./target/integration-test-archive.tar.zst ${{ inputs.testRunnerOptions }} --workspace-remap "${GITHUB_WORKSPACE}"
 
+      - name: Publish Test Report
+        uses: mikepenz/action-junit-report@v4
+        if: success() || failure()
+        with:
+          report_paths: 'target/nextest/ci/*.xml'
+
