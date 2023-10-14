@@ -1551,18 +1551,25 @@ fn test_parameters_drift() {
         .envs(&envs)
         .assert()
         .success()
-        .stdout(not(contains_any!("PARAM1", "PARAM2")).and(
-            contains_all!("PARAM3", "PARAM4", "PARAM5", "PARAM6", "PARAM7",).and(not(
-                contains_any!(
+        .stdout(
+            not(contains_any!("\nPARAM1\n", "\nPARAM2\n")).and(
+                contains_all!(
+                    "\nPARAM3\n",
+                    "\nPARAM4\n",
+                    "\nPARAM5\n",
+                    "\nPARAM6\n",
+                    "\nPARAM7\n",
+                )
+                .and(not(contains_any!(
                     "\nHOME\n",
-                    "PWD",
-                    "CLOUDTRUTH_PROFILE",
-                    "CLOUDTRUTH_PROJECT",
-                    "CLOUDTRUTH_ENVIRONMENT",
-                    "CLOUDTRUTH_API_KEY"
-                ),
-            )),
-        ));
+                    "\nPWD\n",
+                    "\nCLOUDTRUTH_PROFILE\n",
+                    "\nCLOUDTRUTH_PROJECT\n",
+                    "\nCLOUDTRUTH_ENVIRONMENT\n",
+                    "\nCLOUDTRUTH_API_KEY\n"
+                ))),
+            ),
+        );
     let json = cloudtruth!("param drift -f json")
         .env_clear()
         .envs(&envs)
