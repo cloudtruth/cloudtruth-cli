@@ -37,6 +37,7 @@ jobs:
     name: Test
     uses: ./.github/workflows/test-staging.yml
     needs: [build]
+    concurrency: ${{ github.workflow_ref }}-test
 
     strategy:
       fail-fast: false
