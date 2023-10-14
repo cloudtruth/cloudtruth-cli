@@ -25,7 +25,7 @@ fail-fast = false
 [[profile.ci.overrides]]
 filter = "kind(test)"
 # Retry failed tests in CI
-retries = { count = 2, backoff = "fixed", delay = "10s" }
+retries = { count = 2, backoff = "exponential", delay = "10s" }
 
 [[profile.default.overrides]]
 filter = "kind(test) & test(test_parameters)"

@@ -250,7 +250,7 @@ jobs:
           prefix-key: v0-cloudtruth-cargo-nextest
           shared-key: ${{ matrix.os }}
 
-      - run: cargo nextest archive --release --all-features --tests --archive-file "$ARCHIVE_FILE"
+      - run: cargo nextest archive --release --all-features --archive-file "$ARCHIVE_FILE"
 
       - name: Upload Integration Test Archive
         uses: shogo82148/actions-upload-release-asset@v1
