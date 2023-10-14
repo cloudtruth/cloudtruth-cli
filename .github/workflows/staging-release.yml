@@ -60,7 +60,7 @@ jobs:
       packageVersion: ${{ needs.create-release.outputs.cargoPackageVersion }}
       debRevision: ${{ github.sha }}
       rpmSnapshot: ${{ github.sha }}
-      rustFlags: '-C debuginfo=2 -C strip=none' 
+      rustFlags: '-C debuginfo=2 -C strip=none'
 
   test-release:
     name: Test Release

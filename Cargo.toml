@@ -91,7 +91,5 @@ trycmd = "0.14"
 const_format = "0.2.30"
 maplit = "1.0"
 
-[profile.release-debug]
-inherits = "release"
-strip = false
-debug = true
+[profile.release]
+debug = "line-tables-only"
