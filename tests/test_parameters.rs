@@ -1571,7 +1571,6 @@ fn test_parameters_drift() {
             ),
         );
     let json = cloudtruth!("param drift -f json")
-        .env_clear()
         .envs(&envs)
         .assert()
         .success()
