@@ -81,7 +81,7 @@ jobs:
       - name: Setup test variables
         shell: bash
         run: |
-          cat integration-tests/staging.env >> $GITHUB_ENV
+          cat cicd/staging.env >> $GITHUB_ENV
 
       # run from pre-built archive
       - name: E2E Test (pre-built archive)

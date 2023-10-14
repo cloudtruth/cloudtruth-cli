@@ -74,7 +74,7 @@ jobs:
 
       - name: Setup test variables
         run: |
-          cat integration-tests/staging.env >> $GITHUB_ENV
+          cat cicd/staging.env >> $GITHUB_ENV
 
       - name: E2E Test
         working-directory: integration-tests
