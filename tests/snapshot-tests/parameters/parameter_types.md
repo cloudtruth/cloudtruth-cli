@@ -24,7 +24,7 @@ try to set value to non-bool value
 $ cloudtruth param set param1 -v not-a-bool
 ? 1
 Error: 
-   0: [91mRule violation: Value is not of type boolean[0m
+   0: Rule violation: Value is not of type boolean
 ...
 ```
 
@@ -76,7 +76,7 @@ try to set value to non-integer value
 $ cloudtruth param set param2 -v not-an-integer
 ? 1
 Error: 
-   0: [91mRule violation: Value is not of type integer[0m
+   0: Rule violation: Value is not of type integer
 ...
 ```
 
@@ -112,7 +112,7 @@ NOTE: no real need to test 'string' types, since that is the default and no ille
 $ cloudtruth param set param3 --type foo
 ? 1
 Error: 
-   0: [91mNot Found (404): No ParameterType matches the given query.[0m
+   0: Not Found (404): No ParameterType matches the given query.
 ...
 
 $ cloudtruth param ls -v -f csv

@@ -43,7 +43,7 @@ poorly structured FQN
 $ cloudtruth parameters set "param1" --fqn "GitHub::bogus::repo::directory::file"
 ? 1
 Error: 
-   0: [91mUnhandled error: No integration provider available for `GitHub::bogus::repo::directory::file`.[0m
+   0: Unhandled error: No integration provider available for `GitHub::bogus::repo::directory::file`.
 ...
 ```
 
@@ -53,7 +53,7 @@ again, with a JMES path
 $ cloudtruth parameters set "param1" --fqn "GitHub::bogus::repo::directory::file" --jmes "foo.bar"
 ? 1
 Error: 
-   0: [91mUnhandled error: No integration provider available for `GitHub::bogus::repo::directory::file`.[0m
+   0: Unhandled error: No integration provider available for `GitHub::bogus::repo::directory::file`.
 ...
 ```
 
@@ -63,7 +63,7 @@ no such FQN provider
 $ cloudtruth parameters set "param1" --fqn "foobar://bogus::repo::directory::file"
 ? 1
 Error: 
-   0: [91mUnhandled error: No integration provider available for `foobar://bogus::repo::directory::file`.[0m
+   0: Unhandled error: No integration provider available for `foobar://bogus::repo::directory::file`.
 ...
 ```
 
@@ -73,7 +73,7 @@ again, with a JMES path
 $ cloudtruth parameters set "param1" --fqn "foobar://bogus::repo::directory::file" --jmes "foo.bar"
 ? 1
 Error: 
-   0: [91mUnhandled error: No integration provider available for `foobar://bogus::repo::directory::file`.[0m
+   0: Unhandled error: No integration provider available for `foobar://bogus::repo::directory::file`.
 ...
 ```
 
@@ -83,7 +83,7 @@ no such FQN, but a legit provider
 $ cloudtruth parameters set "param1" --fqn "github://this-is-a-crazy/repo-path/that/does/not/exist"
 ? 1
 Error: 
-   0: [91mUnhandled error: No integration available for `github://this-is-a-crazy/repo-path/that/does/not/exist`.[0m
+   0: Unhandled error: No integration available for `github://this-is-a-crazy/repo-path/that/does/not/exist`.
 ...
 ```
 
@@ -93,7 +93,7 @@ again, with a JMES path
 $ cloudtruth parameters set "param1" --fqn "github://this-is-a-crazy/repo-path/that/does/not/exist" --jmes "foo.bar"
 ? 1
 Error: 
-   0: [91mUnhandled error: No integration available for `github://this-is-a-crazy/repo-path/that/does/not/exist`.[0m
+   0: Unhandled error: No integration available for `github://this-is-a-crazy/repo-path/that/does/not/exist`.
 ...
 
 $ cloudtruth parameters list --values --secrets -f csv

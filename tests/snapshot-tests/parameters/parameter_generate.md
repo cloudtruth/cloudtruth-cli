@@ -87,13 +87,13 @@ Set parameter 'param4' in project '[PROJECT]' for environment 'default'.
 $ cloudtruth param set param3 --generate
 ? 1
 Error: 
-   0: [91mRule violation: Value is not of type boolean[0m
+   0: Rule violation: Value is not of type boolean
 ...
 
 $ cloudtruth param set param4 --generate
 ? 1
 Error: 
-   0: [91mRule violation: Value is not of type integer[0m
+   0: Rule violation: Value is not of type integer
 ...
 
 ```
@@ -104,7 +104,7 @@ does not work with rules... should possibly change next iteration
 $ cloudtruth param set param5 --min-len 50 --generate
 ? 1
 Error: 
-   0: [91mRule violation: Value must be at least 50 characters[0m
+   0: Rule violation: Value must be at least 50 characters
 ...
 
 ```
