@@ -1,8 +1,8 @@
 use std::{
+    env,
     fs::File,
     io::{self, Read},
-    panic::Location,
-    path::Path,
+    path::PathBuf,
 };
 
 use backtrace::Backtrace;
@@ -60,14 +60,17 @@ impl TestSourceSpan {
     }
 
     /// Tries to find source information from backtrace.
-    pub fn from_backtrace(caller: &Location) -> io::Result<Option<Self>> {
+    pub fn from_backtrace() -> io::Result<Option<Self>> {
         // A substring of test source file paths
-        let test_path = Path::new(caller.file()).parent().unwrap().to_string_lossy();
+        let test_path = env::var("CARGO_MANIFEST_DIR")
+            .map(PathBuf::from)
+            .or(env::current_dir())
+            .unwrap();
         /* Go through backtrace in reverse order to get the top-level source snippet */
         for frame in Backtrace::new().frames().iter().rev() {
             for symbol in frame.symbols().iter() {
-                if let Some(filename) = symbol.filename().and_then(|f| f.to_str()) {
-                    if filename.contains(test_path.as_ref()) {
+                if let Some(filename) = symbol.filename() {
+                    if filename.starts_with(&test_path) {
                         if let Some(name) = symbol.name() {
                             /* skip attribute macros */
                             if name.to_string().contains("{{closure}}") {
@@ -76,7 +79,7 @@ impl TestSourceSpan {
                         }
                         if let (Some(line), Some(col)) = (symbol.lineno(), symbol.colno()) {
                             return Ok(Some(Self::from_location(
-                                filename.into(),
+                                filename.to_string_lossy().into(),
                                 line as usize,
                                 col as usize,
                             )?));
