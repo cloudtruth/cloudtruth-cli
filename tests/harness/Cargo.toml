@@ -11,7 +11,7 @@ macros = ["dep:cloudtruth-test-macros"]
 [dependencies]
 anyhow = "1.0.70"
 assert_cmd = "2.0.10"
-backtrace = "0.3.67"
+backtrace = { version = "0.3.69" }
 cloudtruth-config = { path = "../../crates/cloudtruth-config" }
 derive_more = "0.99.17"
 dunce = "1.0.4"

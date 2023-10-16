@@ -66,17 +66,23 @@ impl TestSourceSpan {
             .map(PathBuf::from)
             .or(env::current_dir())
             .unwrap();
+        eprintln!("{test_path:?}");
         /* Go through backtrace in reverse order to get the top-level source snippet */
         for frame in Backtrace::new().frames().iter().rev() {
             for symbol in frame.symbols().iter() {
                 if let Some(filename) = symbol.filename() {
+                    eprintln!("{filename:?}");
                     if filename.starts_with(&test_path) {
                         if let Some(name) = symbol.name() {
                             /* skip attribute macros */
-                            if name.to_string().contains("{{closure}}") {
+                            if 
+                                cfg!(target_os = "windows") && name.to_string().contains("::closure$0")
+                                || name.to_string().contains("::{{closure}}")
+                                 {
                                 continue;
                             }
                         }
+                        eprintln!("{symbol:?}");
                         if let (Some(line), Some(col)) = (symbol.lineno(), symbol.colno()) {
                             return Ok(Some(Self::from_location(
                                 filename.to_string_lossy().into(),
