@@ -35,5 +35,3 @@ test-group = "parameter-tests"
 # limit concurrency of parameter tests to avoid Gateway Timeout errors
 integration-tests = { max-threads = 4 }
 parameter-tests = { max-threads = 2 }
-
-

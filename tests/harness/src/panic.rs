@@ -10,10 +10,6 @@ use crate::source_span::TestSourceSpan;
 /// This code is heavily based on miette::set_panic_hook (https://github.com/zkat/miette/blob/main/src/panic.rs)
 #[track_caller]
 pub fn set_panic_hook() {
-    set_panic_hook_with_caller(Location::caller())
-}
-
-pub fn set_panic_hook_with_caller(caller: &'static Location) {
     std::panic::set_hook(Box::new(move |info| {
         let payload = info.payload();
         let message = if let Some(msg) = payload.downcast_ref::<&str>() {
@@ -29,7 +25,7 @@ pub fn set_panic_hook_with_caller(caller: &'static Location) {
         } else {
             panic.into()
         };
-        if let Ok(Some(mut src_span)) = TestSourceSpan::from_backtrace(caller) {
+        if let Ok(Some(mut src_span)) = TestSourceSpan::from_backtrace() {
             src_span.add_related(report);
             report = src_span.into();
         }
