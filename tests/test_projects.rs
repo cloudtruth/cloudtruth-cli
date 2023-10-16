@@ -3,7 +3,6 @@ use cloudtruth_test_harness::prelude::*;
 #[test]
 #[use_harness]
 fn test_projects_basic() {
-    panic!();
     // Initialize project data but do not create yet
     let proj = Project::with_prefix("proj-name").description("Description on create");
 
