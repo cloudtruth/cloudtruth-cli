@@ -1602,7 +1602,6 @@ fn test_parameters_drift() {
     assert_eq!(entry.shell, "env-value");
     assert_eq!(entry.cloudtruth, "");
     let json = cloudtruth!("param drift -sf json")
-        .env_clear()
         .envs(&envs)
         .assert()
         .success()
