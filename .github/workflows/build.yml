@@ -78,5 +78,7 @@ jobs:
             ./integration-test-archive.tar.zst
 
       - name: Unit Tests
+        env:
+          RUSTFLAGS: ${{ contains(runner.os, 'macOS') && '-C split-debuginfo=packed' || '' }}
         run: cargo nextest run --profile ci ${{ inputs.testOptions }}
 
