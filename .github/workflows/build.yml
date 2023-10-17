@@ -64,7 +64,7 @@ jobs:
         run: cargo nextest run --profile ci ${{ inputs.testOptions }}
 
       - name: Create Integration Test Archive
-        run: cargo nextest archive --all-features --archive-file ./target/integration-test-archive.tar.zst
+        run: cargo nextest archive --all-features --archive-file ./integration-test-archive.tar.zst
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v3
