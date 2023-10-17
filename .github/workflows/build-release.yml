@@ -255,6 +255,8 @@ jobs:
         run: sh ./cicd/clean-debug-info.sh
 
       - run: cargo nextest archive --release --all-features --archive-file "$ARCHIVE_FILE"
+        env:
+          RUSTFLAGS: ${{ contains(runner.os, 'macOS') && '-C split-debuginfo=packed' || '' }}
 
       - name: Add Debug Files to Test Archive
         if: ${{ !contains(runner.os, 'Linux') }}

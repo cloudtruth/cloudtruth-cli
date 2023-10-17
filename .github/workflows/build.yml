@@ -33,7 +33,6 @@ env:
   CI: true
   ARCHIVE_FILE: integration-test-archive.tar.zst
   RUST_BACKTRACE: 1
-  RUSTFLAGS: ${{ inputs.runsOn == 'macos-latest' && '-C split-debuginfo=packed' || ''}}
 
 jobs:
   build:
@@ -62,6 +61,8 @@ jobs:
         run: sh ./cicd/clean-debug-info.sh
 
       - name: Build and Create Test Archive
+        env:
+          RUSTFLAGS: ${{ contains(runner.os, 'macOS') && '-C split-debuginfo=packed' || '' }}
         run: cargo nextest archive ${{ inputs.buildOptions }} --archive-file $ARCHIVE_FILE
 
       - name: Add Debug Files to Test Archive
