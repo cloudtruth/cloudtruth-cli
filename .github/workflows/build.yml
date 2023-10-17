@@ -32,6 +32,7 @@ on:
 env:
   CI: true
   RUST_BACKTRACE: 1
+  RUSTFLAGS: ${{ inputs.runsOn == 'macos-latest' && '-C split-debuginfo=packed' || ''}}
 
 jobs:
   build:
@@ -63,7 +64,7 @@ jobs:
         run: cargo nextest run --profile ci ${{ inputs.testOptions }}
 
       - name: Create Integration Test Archive
-        run: cargo nextest archive --all-features --tests --archive-file ./target/integration-test-archive.tar.zst
+        run: cargo nextest archive --all-features --archive-file ./target/integration-test-archive.tar.zst
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v3
@@ -72,6 +73,6 @@ jobs:
           if-no-files-found: ignore
           path: |
             ./integration-test-archive.tar.zst
-            ./target/debug/**/*.d
+            ./target/debug/**/*.dSYM
             ./target/debug/**/*.pdb
 
