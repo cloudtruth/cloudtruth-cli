@@ -57,6 +57,11 @@ jobs:
 
       - uses: taiki-e/install-action@cargo-nextest
 
+      - name: Clean Debug Files
+        if: ${{ !contains(runner.os, 'Linux') }}
+        run: |
+          find target -path '*/*.dSYM/*' -or -name '*.pdb' -delete
+
       - name: Build and Create Test Archive
         run: cargo nextest archive ${{ inputs.buildOptions }} --archive-file $ARCHIVE_FILE
 
