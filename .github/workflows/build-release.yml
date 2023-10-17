@@ -251,7 +251,7 @@ jobs:
 
       - name: Clean Debug Files
         if: ${{ !contains(runner.os, 'Linux') }}
-        run: sh ./cicd/clean-debug-info.sh
+        run: sh ./cicd/scripts/clean-debug-info.sh
 
       - run: cargo nextest archive --release --all-features --archive-file "$ARCHIVE_FILE"
         env:
@@ -259,7 +259,7 @@ jobs:
 
       - name: Add Debug Files to Test Archive
         if: ${{ !contains(runner.os, 'Linux') }}
-        run: sh ./cicd/archive-debug-info.sh "$ARCHIVE_FILE"
+        run: sh ./cicd/scripts/archive-debug-info.sh "$ARCHIVE_FILE"
 
       - name: Upload Integration Test Archive
         uses: shogo82148/actions-upload-release-asset@v1
