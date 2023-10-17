@@ -235,7 +235,6 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
     env:
       ARCHIVE_FILE: integration-test-${{matrix.os}}.tar.zst
-      RUSTFLAGS: '-C debuginfo=2 -C strip=none' 
     steps:
       - uses: actions/checkout@v3
         with:
@@ -256,7 +255,7 @@ jobs:
 
       - run: cargo nextest archive --release --all-features --archive-file "$ARCHIVE_FILE"
         env:
-          RUSTFLAGS: ${{ contains(runner.os, 'macOS') && '-C split-debuginfo=packed' || '' }}
+          RUSTFLAGS: "-C debuginfo=2 -C strip=none ${{ contains(runner.os, 'macOS') && '-C split-debuginfo=packed' || '' }}"
 
       - name: Add Debug Files to Test Archive
         if: ${{ !contains(runner.os, 'Linux') }}
