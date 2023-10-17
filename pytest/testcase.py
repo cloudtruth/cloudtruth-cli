@@ -69,7 +69,7 @@ def get_cli_base_cmd() -> str:
     if exec_name:
         # on Windows, remove "long path" prefix
         if os.name == "nt":
-            exec_name = exec_name.replace("\\\\?", "")
+            exec_name = exec_name.replace("\\\\?\\", "")
         return exec_name + " "
     # walk back up looking for top of projects, and goto `target/debug/cloudtruth`
     curr = Path(__file__).absolute()

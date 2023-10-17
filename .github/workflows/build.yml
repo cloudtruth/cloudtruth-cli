@@ -68,6 +68,7 @@ jobs:
         run: cargo nextest archive --all-features --archive-file $ARCHIVE_FILE
 
       - name: Add Debug Files to Test Archive
+        if: ${{ !contains(runner.os, 'Linux') }}
         run: |
           zstd -d $ARCHIVE_FILE -o integration-test-archive.tar
           tar rf integration-test-archive.tar $(find target -path '/*.dSYM/*' -o -name '*.pdb')
