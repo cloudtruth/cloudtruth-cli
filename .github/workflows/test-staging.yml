@@ -63,12 +63,6 @@ jobs:
         if: inputs.artifactId
         with:
           name: ${{ inputs.artifactId }}
-          path: target
-
-      # upload-artifact does not preserve permissions
-      - shell: bash
-        if: inputs.artifactId
-        run: find target -type f -name 'cloudtruth*' -exec chmod +x {} +
 
       # fetch pre-built integration test archive
       - uses: dsaltares/fetch-gh-release-asset@master
@@ -93,5 +87,5 @@ jobs:
       - name: E2E Test (compile from source)
         if: inputs.artifactId
         shell: bash
-        run: cargo nextest run --profile ci --archive-file ./target/integration-test-archive.tar.zst ${{ inputs.testRunnerOptions }} --workspace-remap "${GITHUB_WORKSPACE}"
+        run: cargo nextest run --profile ci --archive-file ./integration-test-archive.tar.zst ${{ inputs.testRunnerOptions }} --workspace-remap "${GITHUB_WORKSPACE}"
 
