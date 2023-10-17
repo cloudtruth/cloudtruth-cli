@@ -1,4 +1,6 @@
 #!/usr/bin/env sh
 set -e
 
-find target \( -name '*.dSYM' -or -name '*.pdb' \) -exec rm -rf {} \;
+if [ -d target ]; then
+    find target \( -name '*.dSYM' -or -name '*.pdb' \) -exec rm -rf {} \;
+fi
