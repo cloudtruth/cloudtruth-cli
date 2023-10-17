@@ -19,7 +19,7 @@ on:
       buildOptions:
         description: options to pass to the Cargo build
         type: string
-        default: --all-features --workspace --lib --bins
+        default: --all-features --workspace --lib --bins --tests
       testOptions:
         description: options to pass to the Cargo tests
         type: string
@@ -31,6 +31,7 @@ on:
 
 env:
   CI: true
+  ARCHIVE_FILE: integration-test-archive.tar.zst
   RUST_BACKTRACE: 1
   RUSTFLAGS: ${{ inputs.runsOn == 'macos-latest' && '-C split-debuginfo=packed' || ''}}
 
@@ -64,7 +65,13 @@ jobs:
         run: cargo nextest run --profile ci ${{ inputs.testOptions }}
 
       - name: Create Integration Test Archive
-        run: cargo nextest archive --all-features --archive-file ./integration-test-archive.tar.zst
+        run: cargo nextest archive --all-features --archive-file $ARCHIVE_FILE
+
+      - name: Add Debug Files to Test Archive
+        run: |
+          zstd -d $ARCHIVE_FILE -o integration-test-archive.tar
+          tar rf integration-test-archive.tar $(find target -path '/*.dSYM/*' -o -name '*.pdb')
+          zstd --rm -f integration-test-archive.tar -o $ARCHIVE_FILE
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v3
@@ -73,6 +80,4 @@ jobs:
           if-no-files-found: ignore
           path: |
             ./integration-test-archive.tar.zst
-            ./target/debug/**/*.dSYM
-            ./target/debug/**/*.pdb
 
