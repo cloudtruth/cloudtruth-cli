@@ -71,7 +71,7 @@ jobs:
         if: ${{ !contains(runner.os, 'Linux') }}
         run: |
           zstd -d $ARCHIVE_FILE -o integration-test-archive.tar
-          tar rf integration-test-archive.tar $(find target -path '/*.dSYM/*' -o -name '*.pdb')
+          tar rf integration-test-archive.tar $(find target -path '*/*.dSYM/*' -o -name '*.pdb')
           zstd --rm -f integration-test-archive.tar -o $ARCHIVE_FILE
 
       - name: Upload Artifact
