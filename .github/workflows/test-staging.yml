@@ -33,7 +33,6 @@ env:
   CLOUDTRUTH_API_KEY: ${{ secrets.CLOUDTRUTH_API_KEY }}
   TEST_ARCHIVE_FILE: integration-test-${{inputs.runsOn}}.tar.zst
 
-
 jobs:
   cargo-test:
     name: CLI Test (staging)
@@ -63,12 +62,6 @@ jobs:
         if: inputs.artifactId
         with:
           name: ${{ inputs.artifactId }}
-          path: target
-
-      # upload-artifact does not preserve permissions
-      - shell: bash
-        if: inputs.artifactId
-        run: find target -type f -name 'cloudtruth*' -exec chmod +x {} +
 
       # fetch pre-built integration test archive
       - uses: dsaltares/fetch-gh-release-asset@master
@@ -84,14 +77,14 @@ jobs:
           cat cicd/staging.env >> $GITHUB_ENV
 
       # run from pre-built archive
-      - name: E2E Test (pre-built archive)
+      - name: E2E Test (from pre-release assets)
         if: inputs.releaseVersion
         shell: bash
         run: cargo nextest run --profile ci --archive-file "$TEST_ARCHIVE_FILE" ${{ inputs.testRunnerOptions }} --workspace-remap "${GITHUB_WORKSPACE}"
 
       # build and run
-      - name: E2E Test (compile from source)
+      - name: E2E Test (from workflow artifacts)
         if: inputs.artifactId
         shell: bash
-        run: cargo nextest run --profile ci --archive-file ./target/integration-test-archive.tar.zst ${{ inputs.testRunnerOptions }} --workspace-remap "${GITHUB_WORKSPACE}"
+        run: cargo nextest run --profile ci --archive-file ./integration-test-archive.tar.zst ${{ inputs.testRunnerOptions }} --workspace-remap "${GITHUB_WORKSPACE}"
 

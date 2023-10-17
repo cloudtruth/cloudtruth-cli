@@ -73,15 +73,18 @@ impl TestSourceSpan {
                     if filename.starts_with(&test_path) {
                         if let Some(name) = symbol.name() {
                             /* skip attribute macros */
-                            if name.to_string().contains("{{closure}}") {
+                            if cfg!(target_os = "windows")
+                                && name.to_string().contains("::closure$0")
+                                || name.to_string().contains("::{{closure}}")
+                            {
                                 continue;
                             }
                         }
-                        if let (Some(line), Some(col)) = (symbol.lineno(), symbol.colno()) {
+                        if let Some(line) = symbol.lineno() {
                             return Ok(Some(Self::from_location(
                                 filename.to_string_lossy().into(),
                                 line as usize,
-                                col as usize,
+                                symbol.colno().unwrap_or(1) as usize,
                             )?));
                         }
                     }

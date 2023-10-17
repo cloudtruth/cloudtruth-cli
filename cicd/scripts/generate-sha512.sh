@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-
+set -e
 INPUT_FILE="$1"
 OUTPUT_VAR="$2"
 

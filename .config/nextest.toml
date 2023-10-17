@@ -23,6 +23,7 @@ fail-fast = false
 ##### Configuration overrides for integration tests in CI runs #####
 [[profile.ci.overrides]]
 filter = "kind(test)"
+
 # Retry failed tests in CI
 retries = { count = 2, backoff = "exponential", delay = "10s" }
 

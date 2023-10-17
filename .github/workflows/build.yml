@@ -19,7 +19,7 @@ on:
       buildOptions:
         description: options to pass to the Cargo build
         type: string
-        default: --all-features --workspace --lib --bins
+        default: --all-features --workspace --lib --bins --tests
       testOptions:
         description: options to pass to the Cargo tests
         type: string
@@ -31,6 +31,7 @@ on:
 
 env:
   CI: true
+  ARCHIVE_FILE: integration-test-archive.tar.zst
   RUST_BACKTRACE: 1
 
 jobs:
@@ -55,15 +56,18 @@ jobs:
 
       - uses: taiki-e/install-action@cargo-nextest
 
-      - name: Build
-        run: cargo build ${{ inputs.buildOptions }}
+      - name: Clean Debug Files
+        if: ${{ !contains(runner.os, 'Linux') }}
+        run: sh ./cicd/scripts/clean-debug-info.sh
 
-      # run unit tests
-      - name: Test
-        run: cargo nextest run --profile ci ${{ inputs.testOptions }}
+      - name: Build and Create Test Archive
+        env:
+          RUSTFLAGS: ${{ contains(runner.os, 'macOS') && '-C split-debuginfo=packed' || '' }}
+        run: cargo nextest archive ${{ inputs.buildOptions }} --archive-file $ARCHIVE_FILE
 
-      - name: Create Integration Test Archive
-        run: cargo nextest archive --all-features --tests --archive-file ./target/integration-test-archive.tar.zst
+      - name: Add Debug Files to Test Archive
+        if: ${{ !contains(runner.os, 'Linux') }}
+        run: sh ./cicd/scripts/archive-debug-info.sh "$ARCHIVE_FILE"
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v3
@@ -71,7 +75,10 @@ jobs:
           name: ${{ inputs.artifactId }}
           if-no-files-found: ignore
           path: |
-            ./target/debug/cloudtruth
-            ./target/debug/cloudtruth.exe
-            ./target/integration-test-archive.tar.zst
+            ./integration-test-archive.tar.zst
+
+      - name: Unit Tests
+        env:
+          RUSTFLAGS: ${{ contains(runner.os, 'macOS') && '-C split-debuginfo=packed' || '' }}
+        run: cargo nextest run --profile ci ${{ inputs.testOptions }}
 
