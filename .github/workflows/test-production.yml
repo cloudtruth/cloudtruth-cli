@@ -38,7 +38,6 @@
         JOB_ID: ${{github.repository}}-${{github.run_id}}-${{github.run_attempt}}-cli-prod
         RELEASE_VERSION: ${{ inputs.releaseVersion }}
         TEST_ARCHIVE_FILE: integration-test-${{inputs.runsOn}}.tar.zst
-        RUST_BACKTRACE: 1
   
       steps:
         - uses: actions/checkout@v3
