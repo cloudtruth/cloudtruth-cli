@@ -32,7 +32,7 @@ env:
   CLOUDTRUTH_SERVER_URL: ${{ inputs.serverUrl }}
   CLOUDTRUTH_API_KEY: ${{ secrets.CLOUDTRUTH_API_KEY }}
   TEST_ARCHIVE_FILE: integration-test-${{inputs.runsOn}}.tar.zst
-
+  RUST_BACKTRACE: 1
 
 jobs:
   cargo-test:
