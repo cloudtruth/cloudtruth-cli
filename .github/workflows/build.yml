@@ -61,6 +61,7 @@ jobs:
         if: ${{ !contains(runner.os, 'Linux') }}
         run: |
           find target -name '*.dSYM' -or -name '*.pdb' -exec rm -rf {} \;
+
       - name: Build and Create Test Archive
         run: cargo nextest archive ${{ inputs.buildOptions }} --archive-file $ARCHIVE_FILE
 
