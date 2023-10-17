@@ -60,18 +60,14 @@ jobs:
       - name: Clean Debug Files
         if: ${{ !contains(runner.os, 'Linux') }}
         run: |
-          find target -path '*/*.dSYM/*' -or -name '*.pdb' -delete
-
+          find target -name '*.dSYM' -or -name '*.pdb' -exec rm -rf {} \;
       - name: Build and Create Test Archive
         run: cargo nextest archive ${{ inputs.buildOptions }} --archive-file $ARCHIVE_FILE
-
-      - name: Unit Tests
-        run: cargo nextest run --profile ci ${{ inputs.testOptions }}
 
       - name: Add Debug Files to Test Archive
         if: ${{ !contains(runner.os, 'Linux') }}
         run: |
-          DEBUG_FILES=$(find target -path '*/cloudtruth*.dSYM/*' -or -path '*/test_*.dSYM/*' -or -name '*.pdb')
+          DEBUG_FILES=$(find target -name 'cloudtruth*.dSYM' -or -name 'test_*.dSYM' -or -name '*.pdb')
           if [ -n "$DEBUG_FILES" ]; then
             zstd -d $ARCHIVE_FILE -o tmp-archive.tar
             tar rvf tmp-archive.tar $DEBUG_FILES
@@ -85,4 +81,7 @@ jobs:
           if-no-files-found: ignore
           path: |
             ./integration-test-archive.tar.zst
+
+      - name: Unit Tests
+        run: cargo nextest run --profile ci ${{ inputs.testOptions }}
 
