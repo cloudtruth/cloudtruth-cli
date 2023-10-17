@@ -57,15 +57,11 @@ jobs:
 
       - uses: taiki-e/install-action@cargo-nextest
 
-      - name: Build
-        run: cargo build ${{ inputs.buildOptions }}
+      - name: Build and Create Test Archive
+        run: cargo nextest archive ${{ inputs.buildOptions }} --archive-file $ARCHIVE_FILE
 
-      # run unit tests
-      - name: Test
+      - name: Unit Tests
         run: cargo nextest run --profile ci ${{ inputs.testOptions }}
-
-      - name: Create Integration Test Archive
-        run: cargo nextest archive --all-features --archive-file $ARCHIVE_FILE
 
       - name: Add Debug Files to Test Archive
         if: ${{ !contains(runner.os, 'Linux') }}
