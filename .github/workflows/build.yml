@@ -70,9 +70,12 @@ jobs:
       - name: Add Debug Files to Test Archive
         if: ${{ !contains(runner.os, 'Linux') }}
         run: |
-          zstd -d $ARCHIVE_FILE -o integration-test-archive.tar
-          tar rf integration-test-archive.tar $(find target -path '*/*.dSYM/*' -o -name '*.pdb')
-          zstd --rm -f integration-test-archive.tar -o $ARCHIVE_FILE
+          DEBUG_FILES=$(find target -path '*/cloudtruth*.dSYM/*' -or -path '*/test_*.dSYM/*' -or -name '*.pdb')
+          if [ -n "$DEBUG_FILES" ]; then
+            zstd -d $ARCHIVE_FILE -o tmp-archive.tar
+            tar rvf tmp-archive.tar $DEBUG_FILES
+            zstd --rm -f tmp-archive.tar -o $ARCHIVE_FILE
+          fi
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v3
