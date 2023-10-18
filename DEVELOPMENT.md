@@ -1,4 +1,4 @@
-CloudTruth CLI Development
+CloudTruth CLI Development Guide
 ==========================
 
 Getting Started
@@ -10,7 +10,7 @@ The quickest way to install everything you need is to use the [Makefile](Makefil
 
 `make prerequisites`
 
-This will:
+This will set up everything you need to make new commits:
 * Setup the Rust development toolchain
   * install [rustup](https://rustup.rs/), a tool for managing Rust toolchain versions
   * install the Rust toolchain version configured in the [rust-toolchain.toml](rust-toolchain.toml) file
@@ -25,7 +25,7 @@ This will:
   * [yamllint](https://github.com/adrienverge/yamllint), for linting YAML files
   * [ruff](https://docs.astral.sh/ruff/), for linting Python scripts
 
-### Configuring The CLI
+### Configuration
 
 To use the CLI, you'll need to configure a profile with a server URL and API key. Details for how to do this can be found in the [README](README.md)
 
