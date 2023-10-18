@@ -2,5 +2,5 @@
 set -e
 
 if [ -d target ]; then
-    find target \( -name '*.dSYM' -or -name '*.pdb' \) -print -exec rm -rf {} \;
+    find target \( -name '*.dSYM' -or -name '*.pdb' \) -print -exec rm -rf {} +
 fi
