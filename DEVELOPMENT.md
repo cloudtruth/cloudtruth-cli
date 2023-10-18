@@ -1,48 +1,64 @@
 CloudTruth CLI Development
 ==========================
 
-The CloudTruth CLI is an open source project designed for interacting with the 
-[CloudTruth configuration management service](https://cloudtruth.com).
+Getting Started
+--------
 
-You are free to build it yourself, fork it as you see fit, or propose changes via the GitHub Pull 
-Request mechanism.
+### Installing The Development Environment
+
+The quickest way to install everything you need is to use the [Makefile](Makefile):
+
+`make prerequisites`
+
+This will:
+* Setup the Rust development toolchain
+  * install [rustup](https://rustup.rs/), a tool for managing Rust toolchain versions
+  * use rustup to install the Rust toolchain version configured in the [rust-toolchain.toml](rust-toolchain.toml) file
+  * install additional Rust toolchain components for formatting, linting, and docs
+* Install Rust crates that are used during development
+  * cargo-binstall, a utility for quickly installing Rust crates from pre-built binaries rather than compiling from source
+  * taplo-cli, a TOML file linter and formatter
+  * cargo-nextest, a test runner
+* Install Shellcheck, for checking shell scripts
+* Install Python modules used for developing Python scripts
+  * black, an autoformatter for Python
+  * yamllint, for linting YAML files
+  * ruff, for linting Python scripts
+
+### Configuring The CLI
+
+To use the CLI, you'll need to configure a profile with a server URL and API key. Details for how to do this can be found in the [README](README.md)
 
 Building
 --------
 
-The CloudTruth CLI tool is written in Rust, using the Rust 2018 edition.
-While we don't actively pick the latest Rust features to use, we also haven't guaranteed it will 
-build with older versions of Rust either.
-If you have difficulties building, please check to see if a newer Rust will work.
-The target rustc version is configured in the `rust-toolchain` file
+The CloudTruth CLI is written in Rust, using the Rust 2021 edition. The target rustc version is configured in the [rust-toolchain.toml](rust-toolchain.toml) file. To build the application with debug info, check out the source code and then run:
 
-To build the application, check out the source code and then run:
+`cargo build`
+
+To build with release optimizations, run:
 
 `cargo build --release`
+
 
 Developing
 ----------
 
 This project uses [rusty-hook](https://github.com/swellaby/rusty-hook) to help ensure commits pass 
-tests and conform to the project's code style.
-These checks are run automatically as a git pre-commit hook to help cut down on "fix formatting" or 
-"address linter" commits.
-You do not need to explicitly write your own git pre-commit hook &mdash; rusty-hook will take care 
-of that for you the first time you build the project.
-The pre-commit checks use `shellcheck` to check the `install.sh`.  You can run `make prerequisites` 
-to install `shellcheck`.
+tests and conform to the project's code style. These checks are run automatically as a git pre-commit hook to help cut down on "fix formatting" or "address linter" commits.
+
+You do not need to explicitly write your own git pre-commit hook &mdash; rusty-hook will take care of that for you the first time you build the project. The pre-commit checks use `shellcheck` to check shell scripts.  You can run `make prerequisites` to install `shellcheck`.
 
 ### Formatting
 
-The project uses `rustfmt` to maintain consistency with the prevailing formatting standard.
-It can be invoked with:
+The project uses `rustfmt` to maintain consistency with the prevailing formatting standard. It can be invoked with:
 
 `cargo fmt`
 
 ### Linting
 
-The project uses `clippy` to catch potentially problematic code patterns and ensure a consistent 
-approach to solving problems.
+The project uses `clippy` to catch potentially problematic code patterns and ensure a consistent approach to solving problems.
+
 It can be invoked with either of the following:
 
 ```
@@ -51,6 +67,7 @@ make lint
 ```
 
 To automatically fix linter issues you can run:
+
 ```
 cargo clippy --fix
 ```
@@ -62,55 +79,53 @@ The project has unit and integration tests. More details about each test variety
 
 ### Unit Tests
 
-The unit tests are the preferred place to check that code is functioning properly. It should be 
-easiest to do negative testing in the unit test framework. We are making efforts to increase the
-ability to unit test blocks of code.
-
-The unit tests can be run with either:
+The unit tests can be run with:
 
 ```
-cargo test
-make test
+cargo nextest run -E 'kind(lib) + kind(bin)'
 ```
 
-If you run into test failures, try this remedy:
+for convenience you can use the shorthand alias `cargo xtest` (defined in [.cargo/config.toml](.cargo/config.toml))
 
-- unset `CLOUDTRUTH_API_KEY`
-- `cargo test`
+```
+cargo xtest
+```
 
 ### Integration Tests
 
-The integration tests run against the CloudTruth service, and verify a wide range of CLI 
-functionality. The integration test requires an API key with write access.  Here's a quick sampling
-of the functions validated by the integration test:
-* Project create/update/delete
-* Environment create/update/delete
-* Parameter set/get/update/export
-* Run inheritance validation
-* Argument project/environment resolution
+The integration tests run against the CloudTruth service, and verify a wide range of CLI functionality. To run the tests, you'll need an API key with admin access.
 
-The integration test lives in `integration-tests` and can be run using one of the following:
+The tests live in the `tests` directory and can be run using cargo-nextest:
+
 ```
-python3 integration-tests/live_test.py
-make test
+cargo nextest run -E 'kind(test)'
 ```
 
-The `live_test.py` has many options for filtering tests, debugging, and displaying output.
+Nextest has many options for filtering tests and configuring output. See the [Nextest docs](https://nexte.st/index.html) for more information.
+
+#### Cleaning Up Test Data
+
+The integration tests generate a lot of test data. It makes a best effort to clean up after itself, but some data might leak after the test finishes. To make deleting test data faster, you can use the cleanup script in the `xtask` directory.
+
+To run from command line:
+
+```
+cargo xtask cleanup [substrings ...]
+```
+
+The script will search for all test data whose names contain one of the given substrings and then ask you if you'd like to delete them.
 
 Debugging
 ---------
 
-This project makes use of the semi-standard Rust [log crate](https://crates.io/crates/log) to 
-provide runtime logging.
-In order to see the log, you can set the `RUST_LOG` environment value to a 
-[standard log level value](https://docs.rs/log/0.4.14/log/enum.Level.html).
-Notably, our HTTP client library will emit a lot of helpful information about the request and 
-response cycle at the _trace_ level.
+This project makes use of the semi-standard Rust [log crate](https://crates.io/crates/log) to provide runtime logging. In order to see the log, you can set the `RUST_LOG` environment value to a [standard log level value](https://docs.rs/log/0.4.14/log/enum.Level.html). Notably, our HTTP client library will emit a lot of helpful information about the request and response cycle at the _trace_ level.
 
-Artifact Generation
+You can also use the `CLOUDTRUTH_REST_DEBUG` environment variable to configuring logging of API requests. Setting the value to `true` will log all requests, and setting it to a specific string will filter logs to only show that particular request ID.
+
+Releases
 -------------------
 
-Generation of build artifacts is done using a GitHub Actions workflow and in many cases cannot be 
+Generation of release artifacts is done using a GitHub Actions workflow and in many cases cannot be 
 done in a local development environment.  To test changes to the artifact output, you can follow 
 this workflow:
 
@@ -120,16 +135,15 @@ this workflow:
    a. The GitHub actions install on several platforms, and verify the `cloudtruth` command can
       fetch a small set of data using the ci@cloudtruth.com account.
 4. You can delete the draft release and the artifacts after you are done, then submit a pull request
-   to get your changes into the _master_ branch.
+   to get your changes into the _main_ branch.
 
-Running a multi-command scenario with debugging in VS Code
-===========================================================
+Debugging
+-----------------------------------------------------------
 
-With vscode-lldb you can debug Rust programs in VS Code. However, the launch configuration only has support for running
-a single executable file. For debugging a complex multi-command scenario, you need to invoke the debugger via external
-commands.
+### Running a multi-command scenario with debugging in VS Code
+With vscode-lldb you can debug Rust programs in VS Code. However, the launch configuration only has support for running a single executable file. For debugging a complex multi-command scenario, you need to invoke the debugger via external commands.
 
-The following is an example script that you can use as a tempate. You'll need the vscode-lldb extension installed for this to work.
+The following is an example script that you can use as a template. You'll need the vscode-lldb extension installed for this to work.
 
 ```sh
 #!/usr/bin/env sh
@@ -161,17 +175,17 @@ debugcloudtruth () {
 # use `cloudtruth` to run commands without debugging
 cloudtruth --version
 
-# use `debugcloudtruth`to attach the debugger
+# use `debugcloudtruth` to attach the debugger
 debugcloudtruth --version
 ```
 
 Windows builds on Linux/MacOS with MingGW
 ------------------------------------------
 
-If you'd like to verify that your code builds on Windows from a local Linux or MacOS machine, you can
-install and configure the mingw-w64 runtime as a target for the compiler.
+If you'd like to verify that your code builds on Windows from a local Linux or MacOS machine, you can install and configure the mingw-w64 runtime as a target for the compiler.
 
 First you need to install mingw-w64. Use your OS package manager (`apt-get` for Debian/Ubuntu, `brew` for MacOS)
+
 ```
 brew install mingw-w64
 sudo apt-get install mingw-w64

@@ -176,7 +176,7 @@ test_prerequisites:
 	make -C $(pytest_dir) prerequisites
 
 test:
-	RUST_BACKTRACE=1 cargo nextest run --all-features --workspace --lib --bins
+	RUST_BACKTRACE=1 cargo xtest
 
 integration: cargo
 	make -C $(pytest_dir) $@
