@@ -10,17 +10,17 @@ The quickest way to install everything you need is to use the [Makefile](Makefil
 
 `make prerequisites`
 
-This will set up everything you need to make new commits:
-* Setup the Rust development toolchain
-  * install [rustup](https://rustup.rs/), a tool for managing Rust toolchain versions
-  * install the Rust toolchain version configured in the [rust-toolchain.toml](rust-toolchain.toml) file
-  * install additional Rust toolchain components for formatting, linting, and docs
-* Install Rust crates that are used by pre-commit hooks
+This will set up everything you need to make new commits, including:
+* Setting up the Rust development toolchain
+  * Installing [rustup](https://rustup.rs/), a tool for managing Rust toolchain versions
+  * Installing the Rust toolchain version configured in the [rust-toolchain.toml](rust-toolchain.toml) file
+  * Installingadditional Rust toolchain components for formatting, linting, and docs
+* Installing Rust crates that are used by pre-commit hooks
   * [cargo-binstall](https://github.com/cargo-bins/cargo-binstall), a utility for quickly installing Rust crates from pre-built binaries rather than compiling from source
   * [taplo-cli](https://taplo.tamasfe.dev/cli/introduction.html), a TOML file linter and formatter
   * [cargo-nextest](https://nexte.st/), a test runner
-* Install Shellcheck, for checking shell scripts
-* Install Python modules that are used by pre-commit hooks
+* Installing Shellcheck, for checking shell scripts
+* Installing Python modules that are used by pre-commit hooks
   * [black](https://pypi.org/project/black/), an autoformatter for Python
   * [yamllint](https://github.com/adrienverge/yamllint), for linting YAML files
   * [ruff](https://docs.astral.sh/ruff/), for linting Python scripts
