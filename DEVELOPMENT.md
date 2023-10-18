@@ -31,7 +31,6 @@ This will set up everything you need to make new commits, including:
 * Setting up the Rust development toolchain
   * Installing [rustup](https://rustup.rs/), a tool for managing Rust toolchain versions
   * Installing the Rust toolchain version configured in the [rust-toolchain.toml](rust-toolchain.toml) file
-  * Installingadditional Rust toolchain components for formatting, linting, and docs
 * Installing Rust crates that are used by pre-commit hooks
   * [cargo-binstall](https://github.com/cargo-bins/cargo-binstall), a utility for quickly installing Rust crates from pre-built binaries rather than compiling from source
   * [taplo-cli](https://taplo.tamasfe.dev/cli/introduction.html), a TOML file linter and formatter
