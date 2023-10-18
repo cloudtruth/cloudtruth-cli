@@ -115,13 +115,6 @@ cargo xtask cleanup [substrings ...]
 
 The script will search for all test data whose names contain one of the given substrings and then ask you if you'd like to delete them.
 
-Debugging
----------
-
-This project makes use of the semi-standard Rust [log crate](https://crates.io/crates/log) to provide runtime logging. In order to see the log, you can set the `RUST_LOG` environment value to a [standard log level value](https://docs.rs/log/0.4.14/log/enum.Level.html). Notably, our HTTP client library will emit a lot of helpful information about the request and response cycle at the _trace_ level.
-
-You can also use the `CLOUDTRUTH_REST_DEBUG` environment variable to configuring logging of API requests. Setting the value to `true` will log all requests, and setting it to a specific string will filter logs to only show that particular request ID.
-
 Releases
 -------------------
 
@@ -137,8 +130,15 @@ this workflow:
 4. You can delete the draft release and the artifacts after you are done, then submit a pull request
    to get your changes into the _main_ branch.
 
+
 Debugging
------------------------------------------------------------
+---------
+
+### Configuring Logs
+
+This project makes use of the semi-standard Rust [log crate](https://crates.io/crates/log) to provide runtime logging. In order to see the log, you can set the `RUST_LOG` environment value to a [standard log level value](https://docs.rs/log/0.4.14/log/enum.Level.html). Notably, our HTTP client library will emit a lot of helpful information about the request and response cycle at the _trace_ level.
+
+You can also use the `CLOUDTRUTH_REST_DEBUG` environment variable to configuring logging of API requests. Setting the value to `true` will log all requests, and setting it to a specific string will filter logs to only show that particular request ID.
 
 ### Running a multi-command scenario with debugging in VS Code
 With vscode-lldb you can debug Rust programs in VS Code. However, the launch configuration only has support for running a single executable file. For debugging a complex multi-command scenario, you need to invoke the debugger via external commands.
