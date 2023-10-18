@@ -15,15 +15,15 @@ This will:
   * install [rustup](https://rustup.rs/), a tool for managing Rust toolchain versions
   * use rustup to install the Rust toolchain version configured in the [rust-toolchain.toml](rust-toolchain.toml) file
   * install additional Rust toolchain components for formatting, linting, and docs
-* Install Rust crates that are used during development
-  * cargo-binstall, a utility for quickly installing Rust crates from pre-built binaries rather than compiling from source
-  * taplo-cli, a TOML file linter and formatter
-  * cargo-nextest, a test runner
+* Install Rust crates that are used by pre-commit hooks
+  * [cargo-binstall](https://github.com/cargo-bins/cargo-binstall), a utility for quickly installing Rust crates from pre-built binaries rather than compiling from source
+  * [taplo-cli](https://taplo.tamasfe.dev/cli/introduction.html), a TOML file linter and formatter
+  * [cargo-nextest](https://nexte.st/), a test runner
 * Install Shellcheck, for checking shell scripts
-* Install Python modules used for developing Python scripts
-  * black, an autoformatter for Python
-  * yamllint, for linting YAML files
-  * ruff, for linting Python scripts
+* Install Python modules that are used by pre-commit hooks
+  * [black](https://pypi.org/project/black/), an autoformatter for Python
+  * [yamllint](https://github.com/adrienverge/yamllint), for linting YAML files
+  * [ruff](https://docs.astral.sh/ruff/), for linting Python scripts
 
 ### Configuring The CLI
 
