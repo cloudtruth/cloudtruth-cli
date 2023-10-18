@@ -62,9 +62,7 @@ Developing
 ----------
 
 This project uses [rusty-hook](https://github.com/swellaby/rusty-hook) to help ensure commits pass 
-tests and conform to the project's code style. These checks are run automatically as a git pre-commit hook to help cut down on "fix formatting" or "address linter" commits.
-
-You do not need to explicitly write your own git pre-commit hook &mdash; rusty-hook will take care of that for you the first time you build the project. The pre-commit checks use `shellcheck` to check shell scripts.  You can run `make prerequisites` to install `shellcheck`.
+tests and conform to the project's code style. These checks are run automatically as a git pre-commit hook.
 
 ### Formatting
 
