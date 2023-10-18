@@ -35,7 +35,7 @@ This will set up everything you need to make new commits, including:
   * [cargo-binstall](https://github.com/cargo-bins/cargo-binstall), a utility for quickly installing Rust crates from pre-built binaries rather than compiling from source
   * [taplo-cli](https://taplo.tamasfe.dev/cli/introduction.html), a TOML file linter and formatter
   * [cargo-nextest](https://nexte.st/), a test runner
-* Installing Shellcheck, for checking shell scripts
+* Installing [Shellcheck](https://www.shellcheck.net/), for checking shell scripts
 * Installing Python modules that are used by pre-commit hooks
   * [black](https://pypi.org/project/black/), an autoformatter for Python
   * [yamllint](https://github.com/adrienverge/yamllint), for linting YAML files
