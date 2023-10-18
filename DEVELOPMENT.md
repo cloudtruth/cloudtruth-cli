@@ -1,5 +1,22 @@
 CloudTruth CLI Development Guide
 ==========================
+- [CloudTruth CLI Development Guide](#cloudtruth-cli-development-guide)
+  - [Getting Started](#getting-started)
+    - [Installing The Development Environment](#installing-the-development-environment)
+    - [Configuration](#configuration)
+  - [Building](#building)
+  - [Developing](#developing)
+    - [Formatting](#formatting)
+    - [Linting](#linting)
+  - [Testing](#testing)
+    - [Unit Tests](#unit-tests)
+    - [Integration Tests](#integration-tests)
+      - [Cleaning Up Test Data](#cleaning-up-test-data)
+  - [Releases](#releases)
+  - [Debugging](#debugging)
+    - [Configuring Logs](#configuring-logs)
+    - [Running a multi-command scenario with debugging in VS Code](#running-a-multi-command-scenario-with-debugging-in-vs-code)
+  - [Windows builds on Linux/MacOS with MingGW](#windows-builds-on-linuxmacos-with-minggw)
 
 Getting Started
 --------

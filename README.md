@@ -5,6 +5,16 @@ The CloudTruth CLI tool is used for interacting with the [CloudTruth configurati
 
 In order to use this utility you must have an active CloudTruth account and generate a personal access token for authenticating with the API.
 
+- [CloudTruth CLI](#cloudtruth-cli)
+  - [Prerequisites](#prerequisites)
+  - [Configuration](#configuration)
+    - [File-based Configuration](#file-based-configuration)
+    - [Environment-based Configuration](#environment-based-configuration)
+    - [Argument-based Configuration](#argument-based-configuration)
+  - [Running](#running)
+    - [Switching Active Configuration Profile](#switching-active-configuration-profile)
+    - [Switching Active CloudTruth Environment](#switching-active-cloudtruth-environment)
+
 Prerequisites
 -------------
 
