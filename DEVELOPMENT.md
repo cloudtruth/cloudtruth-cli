@@ -11,12 +11,12 @@ CloudTruth CLI Development Guide
   - [Testing](#testing)
     - [Unit Tests](#unit-tests)
     - [Integration Tests](#integration-tests)
-      - [Cleaning Up Test Data](#cleaning-up-test-data)
+    - [Cleaning Up Test Data](#cleaning-up-test-data)
   - [Releases](#releases)
   - [Debugging](#debugging)
     - [Configuring Logs](#configuring-logs)
     - [Running a multi-command scenario with debugging in VS Code](#running-a-multi-command-scenario-with-debugging-in-vs-code)
-  - [Windows builds on Linux/MacOS with MingGW](#windows-builds-on-linuxmacos-with-minggw)
+    - [Windows builds on Linux/MacOS with MingGW](#windows-builds-on-linuxmacos-with-minggw)
 
 Getting Started
 --------
@@ -120,7 +120,7 @@ cargo nextest run -E 'kind(test)'
 
 Nextest has many options for filtering tests and configuring output. See the [Nextest docs](https://nexte.st/index.html) for more information.
 
-#### Cleaning Up Test Data
+### Cleaning Up Test Data
 
 The integration tests generate a lot of test data. It makes a best effort to clean up after itself, but some data might leak after the test finishes. To make deleting test data faster, you can use the cleanup script in the `xtask` directory.
 
@@ -196,8 +196,7 @@ cloudtruth --version
 debugcloudtruth --version
 ```
 
-Windows builds on Linux/MacOS with MingGW
-------------------------------------------
+### Windows builds on Linux/MacOS with MingGW
 
 If you'd like to verify that your code builds on Windows from a local Linux or MacOS machine, you can install and configure the mingw-w64 runtime as a target for the compiler.
 
