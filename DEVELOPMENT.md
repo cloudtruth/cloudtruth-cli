@@ -27,7 +27,7 @@ This will set up everything you need to make new commits, including:
 
 ### Configuration
 
-To use the CLI, you'll need to configure a profile with a server URL and API key. Details for how to do this can be found in the [README](README.md)
+To use the CLI, you'll need to configure a profile with a server URL and API key. Details for how to do this can be found in the configuration section of the [README](README.md#file-based-configuration)
 
 Building
 --------
