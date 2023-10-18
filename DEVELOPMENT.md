@@ -13,7 +13,7 @@ The quickest way to install everything you need is to use the [Makefile](Makefil
 This will:
 * Setup the Rust development toolchain
   * install [rustup](https://rustup.rs/), a tool for managing Rust toolchain versions
-  * use rustup to install the Rust toolchain version configured in the [rust-toolchain.toml](rust-toolchain.toml) file
+  * install the Rust toolchain version configured in the [rust-toolchain.toml](rust-toolchain.toml) file
   * install additional Rust toolchain components for formatting, linting, and docs
 * Install Rust crates that are used by pre-commit hooks
   * [cargo-binstall](https://github.com/cargo-bins/cargo-binstall), a utility for quickly installing Rust crates from pre-built binaries rather than compiling from source
