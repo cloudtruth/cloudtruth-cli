@@ -1,16 +1,14 @@
-use std::process::Command;
-
-macro_rules! pytest_dir {
-    () => {
-        concat!(env!("CARGO_MANIFEST_DIR"), "/pytest")
-    };
-}
+use std::{env, error::Error, path::PathBuf, process::Command};
 
 #[test]
-fn test_integrations_pytest() -> std::io::Result<()> {
+fn test_integrations_pytest() -> Result<(), Box<dyn Error>> {
+    let live_test = PathBuf::from(env::var("CARGO_MANIFEST_DIR")?).join("pytest/live_test.py");
     let mut handle = Command::new("python3")
-        .current_dir(pytest_dir!())
-        .args(["live_test.py", "--file", "test_integrations.py"])
+        .args([
+            live_test.to_string_lossy().as_ref(),
+            "--file",
+            "test_integrations.py",
+        ])
         .spawn()?;
     let status = handle.wait()?;
     assert!(status.success());
