@@ -1,8 +1,9 @@
 use std::{
+    borrow::Cow,
     env,
     fs::File,
-    io::{self, Read},
-    path::PathBuf,
+    io::Read,
+    path::{Path, PathBuf},
 };
 
 use backtrace::Backtrace;
@@ -60,33 +61,41 @@ impl TestSourceSpan {
     }
 
     /// Tries to find source information from backtrace.
-    pub fn from_backtrace() -> io::Result<Option<Self>> {
-        // A substring of test source file paths
-        let test_path = env::var("CARGO_MANIFEST_DIR")
-            .map(PathBuf::from)
-            .or(env::current_dir())
-            .unwrap();
+    pub fn from_backtrace() -> anyhow::Result<Option<Self>> {
+        // run-time CARGO_MANIFEST_DIR refers to the root workspace path
+        let runtime_manifest_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR")?);
+        // build-time CARGO_MANIFEST_DIR refers to the test harness crate itself
+        let mut build_manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        // refer to the root workspace by removing tests/harness from the path
+        build_manifest_dir.pop();
+        build_manifest_dir.pop();
         /* Go through backtrace in reverse order to get the top-level source snippet */
         for frame in Backtrace::new().frames().iter().rev() {
             for symbol in frame.symbols().iter() {
                 if let Some(filename) = symbol.filename() {
-                    if filename.starts_with(&test_path) {
-                        if let Some(name) = symbol.name() {
-                            /* skip attribute macros */
-                            if cfg!(target_os = "windows")
-                                && name.to_string().contains("::closure$0")
-                                || name.to_string().contains("::{{closure}}")
-                            {
-                                continue;
-                            }
+                    /* check if filename exists in workspace dir, then remap build manifest dir to runtime manifest dir */
+                    let remapped_filename: Cow<Path> =
+                        if filename.starts_with(&runtime_manifest_dir) {
+                            Cow::Borrowed(filename)
+                        } else if let Ok(prefix) = filename.strip_prefix(&build_manifest_dir) {
+                            Cow::Owned(runtime_manifest_dir.join(prefix))
+                        } else {
+                            continue;
+                        };
+                    if let Some(name) = symbol.name() {
+                        /* skip attribute macros */
+                        if cfg!(target_os = "windows") && name.to_string().contains("::closure$0")
+                            || name.to_string().contains("::{{closure}}")
+                        {
+                            continue;
                         }
-                        if let Some(line) = symbol.lineno() {
-                            return Ok(Some(Self::from_location(
-                                filename.to_string_lossy().into(),
-                                line as usize,
-                                symbol.colno().unwrap_or(1) as usize,
-                            )?));
-                        }
+                    }
+                    if let Some(line) = symbol.lineno() {
+                        return Ok(Some(Self::from_location(
+                            remapped_filename.to_string_lossy().into(),
+                            line as usize,
+                            symbol.colno().unwrap_or(1) as usize,
+                        )?));
                     }
                 }
             }
