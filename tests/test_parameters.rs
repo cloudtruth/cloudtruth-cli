@@ -481,15 +481,61 @@ fn test_parameters_integration_errors() -> Result<()> {
 }
 
 #[test]
-fn test_parameters_names() -> Result<()> {
+#[use_harness]
+fn test_parameters_names() {
     let proj = Project::with_prefix("param-names").create();
-    trycmd::TestCases::new()
-        .case("tests/snapshot-tests/parameters/parameter_names.md")
-        .register_bin("cloudtruth", cli_bin_path!())
-        .env("NO_COLOR", "1")
-        .env(CT_PROJECT, proj.to_name())
-        .insert_var("[PROJECT]", proj.to_name())?;
-    Ok(())
+    let envs = hashmap! {
+        CT_PROJECT => proj.name()
+    };
+    /* check that there are no parameters */
+    cloudtruth!("param list -vsf csv")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains!("No parameters found in project {proj}"));
+    let parameter_names = [
+        "simple_underscore",
+        "simple.dot",
+        "simple/slash",
+        "simple space",
+        "MixCase",
+    ];
+    for name in parameter_names {
+        /* create the initial parameter */
+        cloudtruth!("param set '{name}' --value something")
+            .envs(&envs)
+            .assert()
+            .success();
+        cloudtruth!("param get '{name}'")
+            .envs(&envs)
+            .assert()
+            .success()
+            .stdout(diff("something\n"));
+        /* rename it */
+        cloudtruth!("param set -r foo '{name}'")
+            .envs(&envs)
+            .assert()
+            .success();
+        cloudtruth!("param get foo")
+            .envs(&envs)
+            .assert()
+            .success()
+            .stdout(diff("something\n"));
+        /* back to the original name */
+        cloudtruth!("param set -r '{name}' foo")
+            .envs(&envs)
+            .assert()
+            .success();
+        cloudtruth!("param get '{name}'")
+            .envs(&envs)
+            .assert()
+            .success()
+            .stdout(diff("something\n"));
+        cloudtruth!("param delete -y '{name}'")
+            .envs(&envs)
+            .assert()
+            .success();
+    }
 }
 
 #[test]
