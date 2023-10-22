@@ -493,15 +493,31 @@ fn test_parameters_names() -> Result<()> {
 }
 
 #[test]
-fn test_parameters_over_specified() -> Result<()> {
+#[use_harness]
+fn test_parameters_over_specified() {
     let proj = Project::with_prefix("param-overspecified").create();
-    trycmd::TestCases::new()
-        .case("tests/snapshot-tests/parameters/parameter_over_specified.md")
-        .register_bin("cloudtruth", cli_bin_path!())
-        .env("NO_COLOR", "1")
-        .env(CT_PROJECT, proj.to_name())
-        .insert_var("[PROJECT]", proj.to_name())?;
-    Ok(())
+    let test_file = TestFile::with_contents("bogus value from file").unwrap();
+    let file_option = format!("-i {test_file}");
+    let options = [
+        file_option.as_str(),
+        "-v value",
+        "--prompt",
+        "--generate",
+        "--fqn github://cloudtruth/cloudtruth-cli/main/README.md",
+    ];
+    for (index1, first_option) in options.iter().enumerate() {
+        for (index2, second_option) in options.iter().enumerate() {
+            if index1 == index2 {
+                continue;
+            }
+            cloudtruth!("--project {proj} param set param1 {first_option} {second_option}")
+                .assert()
+                .failure()
+                .stderr(contains(
+                    "Conflicting arguments: cannot specify more than one",
+                ));
+        }
+    }
 }
 
 #[test]
