@@ -34,7 +34,7 @@ fn test_audit_logs() {
 
     /* Create test template */
     let temp_file = TestFile::with_contents("# this template has just fixed text").unwrap();
-    cloudtruth!("template set my-audit-template -b '{temp_file}'")
+    cloudtruth!("template set my-audit-template -b {temp_file}")
         .envs(&env_map)
         .assert()
         .success();
