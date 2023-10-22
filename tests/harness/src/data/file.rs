@@ -16,7 +16,10 @@ use tempfile::NamedTempFile;
 /// Display implementation prints the file path as a string, making it easy to reference the file path
 /// in CLI tests.
 #[derive(Debug, Display)]
-#[display(fmt = "{}", "temp_file.path().display()")]
+#[display(
+    fmt = "{}",
+    "shlex::quote(temp_file.path().to_string_lossy().as_ref())"
+)]
 pub struct TestFile {
     temp_file: NamedTempFile,
 }
