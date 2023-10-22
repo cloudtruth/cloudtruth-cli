@@ -457,15 +457,100 @@ fn test_parameters_export() -> Result<()> {
 }
 
 #[test]
-fn test_parameters_generate() -> Result<()> {
+#[use_harness]
+fn test_parameters_generate() {
     let proj = Project::with_prefix("param-generate").create();
-    trycmd::TestCases::new()
-        .case("tests/snapshot-tests/parameters/parameter_generate.md")
-        .register_bin("cloudtruth", cli_bin_path!())
-        .env("NO_COLOR", "1")
-        .env(CT_PROJECT, proj.to_name())
-        .insert_var("[PROJECT]", proj.to_name())?;
-    Ok(())
+    let cmd1 = cloudtruth!("--project {proj} param set param1 --generate")
+        .assert()
+        .success()
+        .stdout(contains!(
+            "Set parameter 'param1' in project '{proj}' for environment 'default'"
+        ));
+    let cmd2 = cloudtruth!("--project {proj} param set param2 --generate --secret true")
+        .assert()
+        .success()
+        .stdout(contains!(
+            "Set parameter 'param2' in project '{proj}' for environment 'default'"
+        ));
+    /* see secrets are secret, but generated valued do not need to be secret */
+    let params = cloudtruth!("--project {proj} param ls -sf json")
+        .assert()
+        .success()
+        .parse_param_list();
+    let param1 = params
+        .find_by_name("param1")
+        .expect("param1 not found in JSON");
+    assert_eq!(param1.value.len(), 12);
+    assert_eq!(param1.secret, "false");
+    let param2 = params
+        .find_by_name("param2")
+        .expect("param1 not found in JSON");
+    assert_eq!(param2.value.len(), 12);
+    assert_eq!(param2.secret, "true");
+    assert_ne!(param1.value, param2.value);
+    /* Check that values were not shown during generation */
+    cmd1.stdout(not(contains(&param1.value)));
+    cmd2.stdout(not(contains(&param2.value)));
+
+    /* Update the values */
+    cloudtruth!("--project {proj} param set param1 --generate")
+        .assert()
+        .success()
+        .stdout(contains!(
+            "Updated parameter 'param1' in project '{proj}' for environment 'default'"
+        ));
+    cloudtruth!("--project {proj} param set param2 --generate --secret true")
+        .assert()
+        .success()
+        .stdout(contains!(
+            "Updated parameter 'param2' in project '{proj}' for environment 'default'"
+        ));
+    /* see secrets are secret, but generated valued do not need to be secret */
+    let params_updated = cloudtruth!("--project {proj} param ls -sf json")
+        .assert()
+        .success()
+        .parse_param_list();
+    let param1_updated = params_updated
+        .find_by_name("param1")
+        .expect("param1 not found in JSON");
+    assert_eq!(param1_updated.value.len(), 12);
+    assert_eq!(param1_updated.secret, "false");
+    let param2_updated = params_updated
+        .find_by_name("param2")
+        .expect("param1 not found in JSON");
+    assert_eq!(param2_updated.value.len(), 12);
+    assert_eq!(param2_updated.secret, "true");
+
+    /* Make sure updated values are different from original */
+    assert_ne!(param1.value, param1_updated.value);
+    assert_ne!(param2.value, param2_updated.value);
+
+    /* Does not work with boolean/integer types */
+    cloudtruth!("--project {proj} param set param3 --value true --type boolean")
+        .assert()
+        .success()
+        .stdout(contains!(
+            "Set parameter 'param3' in project '{proj}' for environment 'default'"
+        ));
+    cloudtruth!("--project {proj} param set param4 --value 123456 --type integer")
+        .assert()
+        .success()
+        .stdout(contains!(
+            "Set parameter 'param4' in project '{proj}' for environment 'default'"
+        ));
+    cloudtruth!("--project {proj} param set param3 --generate")
+        .assert()
+        .failure()
+        .stderr(contains("Value is not of type boolean"));
+    cloudtruth!("--project {proj} param set param4 --generate")
+        .assert()
+        .failure()
+        .stderr(contains("Value is not of type integer"));
+    /* Does not work with rules */
+    cloudtruth!("--project {proj} param set param5 --min-len 50 --generate")
+        .assert()
+        .failure()
+        .stderr(contains("Value must be at least 50 characters"));
 }
 
 #[test]
