@@ -554,15 +554,121 @@ fn test_parameters_generate() {
 }
 
 #[test]
-fn test_parameters_integration_errors() -> Result<()> {
+#[use_harness]
+fn test_parameters_integration_errors() {
     let proj = Project::with_prefix("param-integration-errors").create();
-    trycmd::TestCases::new()
-        .case("tests/snapshot-tests/parameters/parameter_integration_errors.md")
-        .register_bin("cloudtruth", cli_bin_path!())
-        .env("NO_COLOR", "1")
-        .env(CT_PROJECT, proj.to_name())
-        .insert_var("[PROJECT]", proj.to_name())?;
-    Ok(())
+    let envs = hashmap! {
+        CT_PROJECT => proj.name()
+    };
+    /* check that there are no parameters */
+    cloudtruth!("parameters list --values --secrets")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains!("No parameters found in project {proj}"));
+    /* verify over specifying */
+    cloudtruth!("params set param1 -v value --fqn 'GitHub::bogus::repo::directory::file'")
+        .envs(&envs)
+        .assert()
+        .failure()
+        .stderr(contains(
+            "Conflicting arguments: cannot specify more than one of:",
+        ));
+    cloudtruth!("params set param1 --prompt --fqn 'GitHub::bogus::repo::directory::file'")
+        .envs(&envs)
+        .assert()
+        .failure()
+        .stderr(contains(
+            "Conflicting arguments: cannot specify more than one of:",
+        ));
+    cloudtruth!(
+        "params set param1 --input missing.txt --fqn 'GitHub::bogus::repo::directory::file'"
+    )
+    .envs(&envs)
+    .assert()
+    .failure()
+    .stderr(contains(
+        "Conflicting arguments: cannot specify more than one of:",
+    ));
+    cloudtruth!("params set param1 --prompt --jmes 'foo.bar'")
+        .envs(&envs)
+        .assert()
+        .failure()
+        .stderr(contains(
+            "Conflicting arguments: cannot specify more than one of:",
+        ));
+    /* Check that nothing was added */
+    cloudtruth!("parameters list --values --secrets")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains!("No parameters found in project {proj}"));
+    /* poorly structured FQN */
+    cloudtruth!("params set param1 --fqn 'GitHub::bogus::repo::directory::file'")
+        .envs(&envs)
+        .assert()
+        .failure()
+        .stderr(contains("No integration provider available"));
+    cloudtruth!("params set param1 --fqn 'GitHub::bogus::repo::directory::file' --jmes 'foo.bar'")
+        .envs(&envs)
+        .assert()
+        .failure()
+        .stderr(contains("No integration provider available"));
+    /* no such FQN provider */
+    cloudtruth!("params set param1 --fqn 'foobar://bogus::repo::directory::file'")
+        .envs(&envs)
+        .assert()
+        .failure()
+        .stderr(contains("No integration provider available"));
+    cloudtruth!("params set param1 --fqn 'foobar://bogus::repo::directory::file' --jmes 'foo.bar'")
+        .envs(&envs)
+        .assert()
+        .failure()
+        .stderr(contains("No integration provider available"));
+    /* no such FQN, but a legit provider */
+    cloudtruth!("params set param1 --fqn 'github://this-is-a-crazy/repo-path/that/does/not/exist'")
+        .envs(&envs)
+        .assert()
+        .failure()
+        .stderr(contains("No integration available"));
+    cloudtruth!("params set param1 --fqn 'github://this-is-a-crazy/repo-path/that/does/not/exist' --jmes 'foo.bar'")
+        .envs(&envs)
+        .assert()
+        .failure()
+        .stderr(contains("No integration available"));
+    /* Check that nothing was added */
+    cloudtruth!("parameters list --values --secrets")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains!("No parameters found in project {proj}"));
+    /* verify --external flag causes specialized warning */
+    cloudtruth!("params list --external")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains!("No external parameters found in project {proj}"));
+    cloudtruth!("params list --external -v")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains!("No external parameters found in project {proj}"));
+    cloudtruth!("params list --external -v -s")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains!("No external parameters found in project {proj}"));
+    cloudtruth!("params list --external -v -s --show-times")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains!("No external parameters found in project {proj}"));
+    /* test backward compatibility (--dynamic flag still works) */
+    cloudtruth!("params list --dynamic -v -s --show-times")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains!("No external parameters found in project {proj}"));
 }
 
 #[test]
