@@ -12,7 +12,7 @@ pub fn install_miette_error_handler() {
         miette::set_hook(Box::new(|_| {
             Box::new(
                 miette::MietteHandlerOpts::new()
-                    .context_lines(5)
+                    .context_lines(10)
                     .tab_width(4)
                     .width(200)
                     .with_cause_chain()
