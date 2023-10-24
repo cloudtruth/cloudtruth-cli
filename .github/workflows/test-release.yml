@@ -101,7 +101,7 @@ jobs:
             ${CLOUDTRUTH_SERVER_URL:+ -e CLOUDTRUTH_SERVER_URL} \
             -v $(pwd):/truth \
             "$TAG" \
-            cloudtruth schema server \
+            cloudtruth schema diff \
           | tee "$OUT_LOG"
      
       - name: install.sh
@@ -113,7 +113,7 @@ jobs:
             ${CT_DEBUG:+ --debug} \
             --version "${CT_DOWNLOAD_VERSION}" \
             ${CT_DOWNLOAD_RELEASE_ID:+ --auth-token "${CT_DOWNLOAD_AUTH_TOKEN}" --release-id "${CT_DOWNLOAD_RELEASE_ID}"}
-          cloudtruth schema server
+          cloudtruth schema diff
      
       - name: install.ps1
         if: matrix.install_type == 'powershell'
@@ -127,4 +127,4 @@ jobs:
               $install_opts['authToken'] = $ENV:CT_DOWNLOAD_AUTH_TOKEN
           }
           $ctExe = .\install.ps1 @install_opts
-          & $ctExe schema server
+          & $ctExe schema diff
