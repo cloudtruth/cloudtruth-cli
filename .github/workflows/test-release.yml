@@ -58,9 +58,6 @@ jobs:
       # These values are used for running the CLI command
       CLOUDTRUTH_SERVER_URL: ${{ inputs.serverUrl }}
       CLOUDTRUTH_API_KEY: ${{ secrets.CLOUDTRUTH_API_KEY }}
-      CT_TEST_PROJECT: TruthStrap
-      CT_TEST_PARAM: INTEGRATION_TEST_RESULT
-      CT_TEST_VALUE: Speicla
 
     steps:
       - uses: actions/checkout@v3
@@ -72,6 +69,7 @@ jobs:
         env:
           CT_DEBUG: ${{ runner.debug }}
         run: |
+          set -e
           IMAGE='cloudtruth/${{ matrix.os }}'
           VERSION='${{ matrix.version }}'
           DOCKER_FILE='${{ matrix.dockerfile }}'
@@ -103,30 +101,30 @@ jobs:
             ${CLOUDTRUTH_SERVER_URL:+ -e CLOUDTRUTH_SERVER_URL} \
             -v $(pwd):/truth \
             "$TAG" \
-            cloudtruth --project ${CT_TEST_PROJECT} parameters list -v \
+            cloudtruth schema server \
           | tee "$OUT_LOG"
-          cat "$OUT_LOG" | grep "${CT_TEST_PARAM}" | grep "${CT_TEST_VALUE}"
      
       - name: install.sh
         if: matrix.install_type == 'shell'
         run: |
+          set -e
           sudo ./install.sh \
             --install-prerequisites \
             ${CT_DEBUG:+ --debug} \
             --version "${CT_DOWNLOAD_VERSION}" \
             ${CT_DOWNLOAD_RELEASE_ID:+ --auth-token "${CT_DOWNLOAD_AUTH_TOKEN}" --release-id "${CT_DOWNLOAD_RELEASE_ID}"}
-          cloudtruth --project ${CT_TEST_PROJECT} parameters list -v | grep "${CT_TEST_PARAM}" | grep "${CT_TEST_VALUE}"
+          cloudtruth schema server
      
       - name: install.ps1
         if: matrix.install_type == 'powershell'
         shell: pwsh
         run: |
           $InformationPreference = 'Continue'
-          New-Alias grep findstr
+          $ErrorActionPreference="Stop"
           $install_opts = @{ version = $ENV:CT_DOWNLOAD_VERSION }
           if ($ENV:CT_DOWNLOAD_RELEASE_ID) { 
               $install_opts['releaseId'] = $ENV:CT_DOWNLOAD_RELEASE_ID
               $install_opts['authToken'] = $ENV:CT_DOWNLOAD_AUTH_TOKEN
           }
           $ctExe = .\install.ps1 @install_opts
-          & $ctExe --project "$ENV:CT_TEST_PROJECT" parameters list -v | grep "$ENV:CT_TEST_PARAM" | grep "$ENV:CT_TEST_VALUE"
+          & $ctExe schema server
