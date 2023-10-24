@@ -181,7 +181,7 @@ fn test_parameters_basic_no_update() {
 
 #[test]
 #[use_harness]
-fn test_paramer_basic_rename() {
+fn test_parameters_basic_rename() {
     let proj = Project::with_prefix("param-rename").create();
 
     // add parameter
