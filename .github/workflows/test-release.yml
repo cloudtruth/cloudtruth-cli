@@ -69,13 +69,11 @@ jobs:
         env:
           CT_DEBUG: ${{ runner.debug }}
         run: |
-          set -e
           IMAGE='cloudtruth/${{ matrix.os }}'
           VERSION='${{ matrix.version }}'
           DOCKER_FILE='${{ matrix.dockerfile }}'
           DOCKER_PLATFORM='${{ matrix.platform }}'
           TAG="${IMAGE}:${VERSION}"
-          OUT_LOG='docker_build.log'
           # install emulators for ARM if needed
           case "$DOCKER_PLATFORM" in
             *arm64*)
@@ -101,13 +99,11 @@ jobs:
             ${CLOUDTRUTH_SERVER_URL:+ -e CLOUDTRUTH_SERVER_URL} \
             -v $(pwd):/truth \
             "$TAG" \
-            cloudtruth schema diff \
-          | tee "$OUT_LOG"
+            cloudtruth schema diff
      
       - name: install.sh
         if: matrix.install_type == 'shell'
         run: |
-          set -e
           sudo ./install.sh \
             --install-prerequisites \
             ${CT_DEBUG:+ --debug} \
