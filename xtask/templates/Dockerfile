@@ -12,6 +12,8 @@ ENV CT_INSTALL_PREREQUISITES=${INSTALL_PREREQUISITES}
 {% if image == TestOs::Ubuntu || image == TestOs::Debian -%}
 # fixes apt-get issue on Debian and Ubuntu images where packages were missing
 RUN apt-get update
+# fixes issue with missing certs on Debian and Ubuntu
+RUN apt-get install ca-certificates
 {% endif -%}
 COPY ./install.sh /tmp/ctinstall.sh
 RUN chmod 755 /tmp/ctinstall.sh && /tmp/ctinstall.sh \
