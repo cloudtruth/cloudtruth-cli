@@ -39,7 +39,7 @@ pub struct Param {
     pub name: String,
     pub value: String,
     pub raw: Option<String>,
-    pub secret: String,
+    pub secret: Option<String>,
     #[serde(rename = "Modified At")]
     pub modified_at: Option<String>,
     #[serde(rename = "Created At")]

@@ -481,12 +481,12 @@ fn test_parameters_generate() {
         .find_by_name("param1")
         .expect("param1 not found in JSON");
     assert_eq!(param1.value.len(), 12);
-    assert_eq!(param1.secret, "false");
+    assert_eq!(param1.secret.as_deref(), Some("false"));
     let param2 = params
         .find_by_name("param2")
         .expect("param1 not found in JSON");
     assert_eq!(param2.value.len(), 12);
-    assert_eq!(param2.secret, "true");
+    assert_eq!(param2.secret.as_deref(), Some("true"));
     assert_ne!(param1.value, param2.value);
     /* Check that values were not shown during generation */
     cmd1.stdout(not(contains(&param1.value)));
@@ -514,12 +514,12 @@ fn test_parameters_generate() {
         .find_by_name("param1")
         .expect("param1 not found in JSON");
     assert_eq!(param1_updated.value.len(), 12);
-    assert_eq!(param1_updated.secret, "false");
+    assert_eq!(param1_updated.secret.as_deref(), Some("false"));
     let param2_updated = params_updated
         .find_by_name("param2")
         .expect("param1 not found in JSON");
     assert_eq!(param2_updated.value.len(), 12);
-    assert_eq!(param2_updated.secret, "true");
+    assert_eq!(param2_updated.secret.as_deref(), Some("true"));
 
     /* Make sure updated values are different from original */
     assert_ne!(param1.value, param1_updated.value);
