@@ -1,6 +1,6 @@
 
-.DEFAULT = test
-.PHONY = test
+.DEFAULT = integration-test
+.PHONY = integration-test
 .PHONY += precommit
 .PHONY += build
 
@@ -9,8 +9,5 @@ build:
 
 precommit: build
 
-prerequisites:
-	@echo "No prerequisites"
-
-test:
-	cargo test --tests
+integration-test:
+	cargo nextest run -E 'kind(test)'

@@ -8,7 +8,6 @@
 .PHONY += clean
 .PHONY += gen
 .PHONY += help
-.PHONY += prerequisites
 .PHONY += precommit
 .PHONY += docker
 .PHONY += gha-matrices
@@ -27,9 +26,6 @@ clean:
 	@echo "Cleaning generated CICD files.."
 	@rm -f $(shell ls ../cicd/gha-matrices/*.json ../cicd/docker/Dockerfile* 2>/dev/null)
 # rm ~/.actrc
-
-prerequisites:
-# curl https://raw.githubusercontent.com/nektos/act/master/install.sh | sudo bash
 
 precommit: gha-matrices docker
 	@git ls-files -m -mo --exclude-standard |\

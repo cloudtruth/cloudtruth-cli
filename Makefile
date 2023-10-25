@@ -5,12 +5,10 @@ os_name := $(shell uname -s)
 rustup_exists := $(shell which rustup)
 openapi_gen_version := v5.3.1
 cicd_dir := cicd
-pytest_dir := integration-tests
 test_dir := tests
 client_dir := crates/cloudtruth-restapi
 # convenience for looping
 subdirs := $(cicd_dir)
-subdirs += $(pytest_dir)
 subdirs += $(test_dir)
 
 .DEFAULT = all
@@ -38,10 +36,8 @@ subdirs += $(test_dir)
 .PHONY += subdir_action
 .PHONY += subdir_lint
 .PHONY += subdir_precommit
-.PHONY += subdir_prereq
 .PHONY += targets
 .PHONY += test
-.PHONY += test_prerequisites
 
 all: precommit
 
@@ -135,12 +131,9 @@ subdir_action:
 subdir_precommit:
 	make subdir_action SUBDIR_ACTION=precommit
 
-subdir_prereq:
-	make subdir_action SUBDIR_ACTION=prerequisites
-
 precommit: cargo test lint subdir_precommit
 
-prerequisites: subdir_prereq
+prerequisites:
 ifeq ($(rustup_exists),'')
 	curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 endif
@@ -170,35 +163,29 @@ ifeq ('',$(shell which ruff))
 	$(error Need to add python packages to your PATH)
 endif
 
-
-# This target is used by workflows before running integration tests
-test_prerequisites:
-	make -C $(pytest_dir) prerequisites
-
 test:
 	RUST_BACKTRACE=1 cargo xtest
 
-integration: cargo
-	make -C $(pytest_dir) $@
+integration-test:
+	make -C $(test_dir) $@
 
 help: targets
 
 targets:
 	@echo ""
-	@echo "cargo          - builds rust target"
-	@echo "ci             - builds auto-generated CI artifacts"
-	@echo "clean          - clean out build targets"
-	@echo "client         - generate and build the cloudtruth-restapi library"
-	@echo "image          - make the cloudtruth/cli docker container for development"
-	@echo "integration    - runs the integration test against the live server"
-	@echo "fix			  - fix formatting and linting issues:
-	@echo "format "		  - fix formatting issues"
-	@echo "help_text	  - Regenerate help text for test cases"
-	@echo "lint           - checks for formatting and lint issues"
-	@echo "lint_fix"	  - fix linting issues
-	@echo "precommit      - build rust targets, tests, and lints the files"
-	@echo "prerequisites  - install prerequisites"
-	@echo "shell          - drop into the cloudtruth/cli docker container for development"
-	@echo "test           - runs the cargo tests"
-	@echo "test_prerequisites - install prerequisites for running integration tests"
+	@echo "cargo            - builds rust target"
+	@echo "ci               - builds auto-generated CI artifacts"
+	@echo "clean            - clean out build targets"
+	@echo "client           - generate and build the cloudtruth-restapi library"
+	@echo "image            - make the cloudtruth/cli docker container for development"
+	@echo "integration-test - runs the integration test against the live server"
+	@echo "fix			    - fix formatting and linting issues:"
+	@echo "format		    - fix formatting issues"
+	@echo "help_text	    - Regenerate help text for test cases"
+	@echo "lint             - checks for formatting and lint issues"
+	@echo "lint_fix		    - fix linting issues"
+	@echo "precommit        - build rust targets, tests, and lints the files"
+	@echo "prerequisites    - install prerequisites"
+	@echo "shell            - drop into the cloudtruth/cli docker container for development"
+	@echo "test             - runs the cargo tests"
 	@echo ""

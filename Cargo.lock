@@ -461,7 +461,6 @@ dependencies = [
  "const_format",
  "csv",
  "directories 3.0.2",
- "dunce",
  "edit",
  "env_logger",
  "hex",

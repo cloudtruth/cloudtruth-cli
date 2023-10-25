@@ -90,7 +90,6 @@ serial_test = "0.5"
 trycmd = "0.14"
 const_format = "0.2.30"
 maplit = "1.0"
-dunce = "1.0.4"
 
 [profile.release]
 debug = "line-tables-only"
