@@ -1,3 +1,16 @@
+# 1.2.4 - 2023-10-25
+* added [NO_COLOR](https://no-color.org/) support for CLI error messages
+* made improvements to the `install.sh` script 
+  * will now use wget if curl is not found on the system
+  * enforces download with TLS 1.2
+    * Note: BusyBox wget does not support enforcing TLS and a warning is emitted instead 
+  * error handling and reporting improvements 
+    * checks that script is ran with elevated privileges and alerts user prior to doing anything
+    * checks for required shell commands and alerts user if they are missing (ex. `tar`, `uname`, `mktemp`)
+    * better error handling when attempting to create or enter the temp install directory
+    * alerts user with a message when download fails (instead of just showing curl status code)
+* added checksums to releases
+
 # 1.2.3 - 2023-05-15
 * Added the following build targets to the release
   * `arm-unknown-linux-musleabihf`
