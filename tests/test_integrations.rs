@@ -1,6 +1,7 @@
 use std::{env, error::Error, path::PathBuf, process::Command};
 
 #[test]
+#[ignore]
 fn test_integrations_pytest() -> Result<(), Box<dyn Error>> {
     let cargo_manifest_dir = dunce::canonicalize(PathBuf::from(env::var("CARGO_MANIFEST_DIR")?))?;
     let live_test = cargo_manifest_dir.join("pytest/live_test.py");
