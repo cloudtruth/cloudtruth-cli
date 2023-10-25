@@ -27,7 +27,7 @@ pub struct ParameterType {
     #[serde(rename = "rules")]
     pub rules: Vec<crate::models::ParameterTypeRule>,
     /// The URL for this parameter type's parent
-    #[serde(rename = "parent", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "parent")]
     pub parent: Option<String>,
     /// Name of the parent ParameterType (if any).
     #[serde(rename = "parent_name")]
@@ -45,6 +45,7 @@ impl ParameterType {
         ledger_id: String,
         name: String,
         rules: Vec<crate::models::ParameterTypeRule>,
+        parent: Option<String>,
         parent_name: Option<String>,
         created_at: String,
         modified_at: Option<String>,
@@ -56,7 +57,7 @@ impl ParameterType {
             name,
             description: None,
             rules,
-            parent: None,
+            parent,
             parent_name,
             created_at,
             modified_at,
