@@ -1,6 +1,7 @@
 # 1.2.4 - 2023-10-25
-* added [NO_COLOR](https://no-color.org/) support for CLI error messages
-* made improvements to the `install.sh` script 
+* added [NO_COLOR](https://no-color.org/) support for CLI error messages [#564](https://github.com/cloudtruth/cloudtruth-cli/pull/564)
+* made trailing newline behavior of `cloudtruth templates preview` consistent with `cloudtruth templates get` [#530](https://github.com/cloudtruth/cloudtruth-cli/pull/530)
+* made improvements to the `install.sh` script [#513](https://github.com/cloudtruth/cloudtruth-cli/pull/513) [#515](https://github.com/cloudtruth/cloudtruth-cli/pull/515/files)
   * will now use wget if curl is not found on the system
   * enforces download with TLS 1.2
     * Note: BusyBox wget does not support enforcing TLS and a warning is emitted instead 
@@ -9,7 +10,7 @@
     * checks for required shell commands and alerts user if they are missing (ex. `tar`, `uname`, `mktemp`)
     * better error handling when attempting to create or enter the temp install directory
     * alerts user with a message when download fails (instead of just showing curl status code)
-* added checksums to releases
+* added checksums to releases [#511](https://github.com/cloudtruth/cloudtruth-cli/pull/511)
 
 # 1.2.3 - 2023-05-15
 * Added the following build targets to the release
