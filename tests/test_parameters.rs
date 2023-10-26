@@ -1360,7 +1360,7 @@ fn test_parameters_local_file() {
             +----------+-------------------+---------+------------+-------+----------+--------+---------------------------+
         "}));
     let file = TestFile::with_contents("another-static-file").unwrap();
-    cloudtruth!("param set my_param --input '{file}'")
+    cloudtruth!("param set my_param --input {file}")
         .envs(&envs)
         .assert()
         .success();
