@@ -83,7 +83,7 @@ fn test_templates_basic() {
     // change the body
     let body = TestFile::with_contents("different fixed value\n").unwrap();
 
-    cloudtruth!("--project {proj} template set {temp_name} --body '{body}'")
+    cloudtruth!("--project {proj} template set {temp_name} --body {body}")
         .assert()
         .success()
         .stdout(contains!("Updated template '{temp_name}'"));

@@ -260,7 +260,7 @@ PARAMETER_2 = PARAM2
         self.assertIn(body.replace("PARAM2\n", ""), result.out())  # evaluated to an unknown value
 
         # create the template
-        result = self.run_cli(cmd_env, temp_cmd + f"set '{temp_name}' --body '{filename}'")
+        result = self.run_cli(cmd_env, temp_cmd + f"set '{temp_name}' --body {filename}")
         self.assertResultSuccess(result)
 
         # get the evaluated template
