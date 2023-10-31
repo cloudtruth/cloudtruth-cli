@@ -64,7 +64,7 @@ jobs:
   cleanup-nightly:
     name: Nightly Cleanup
     needs: [get-tag, test-nightly]
-    if: ${{ always() }}
+    if: ${{ always() && needs.test-nightly.result != 'skipped' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
