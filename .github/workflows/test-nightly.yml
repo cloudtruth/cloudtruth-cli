@@ -1,6 +1,6 @@
 ---
 name: Nightly Test
-run-name: Test Nightly (${{ github.event.client_payload.tagName }})
+run-name: Test Nightly (${{ inputs.tagName || github.event.client_payload.tagName || 'latest' }})
 
 on:
   repository_dispatch:
