@@ -28,6 +28,22 @@ jobs:
     secrets:
       CLOUDTRUTH_API_KEY: ${{ secrets.CT_STAGING_CI_ADMIN_API_KEY }}
 
+  slack-notification:
+    name: Slack Notification
+    needs: test-nightly
+    # do not run on skipped or cancelled
+    if: ${{ success() || failure() }} 
+    runs-on: ubuntu-latest
+    steps:
+      - uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_TITLE: CLI Nightly Test
+          SLACK_CHANNEL: dev-notifications
+          SLACK_USERNAME: ${{ github.repository }}
+          SLACK_COLOR: ${{ needs.test-nightly.result }}
+          SLACK_ICON_EMOJI: ":crab:"
+          SLACK_MESSAGE: ${{ needs.test-nightly.result == 'success' && '✅ Passed' || needs.test-nightly.result == 'failure' && '❌ Failed' }}
+
   cleanup-nightly:
     name: Nightly Cleanup
     needs: test-nightly
