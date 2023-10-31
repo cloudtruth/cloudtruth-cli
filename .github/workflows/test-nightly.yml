@@ -32,7 +32,7 @@ jobs:
     name: Slack Notification
     needs: test-nightly
     # do not run on skipped or cancelled
-    if: ${{ success() || failure() }} 
+    if: ${{ always() && (success() || failure()) }} 
     runs-on: ubuntu-latest
     steps:
       - uses: rtCamp/action-slack-notify@v2
