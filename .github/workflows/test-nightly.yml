@@ -5,14 +5,31 @@ run-name: Test Nightly (${{ github.event.client_payload.tagName }})
 on:
   repository_dispatch:
     types: [nightly-release]
+  workflow_dispatch:
+    inputs:
+      tagName: 
+        description: Release tag to use for this test run.
+        type: string
 
 env:
   CI: true
 
 jobs:
+  get-tag:
+    name: Get Release Tag
+    runs-on: ubuntu-latest
+    outputs:
+      tagName: ${{ inputs.tagName || github.event.client_payload.tagName || steps.defaultTagName.outputs.tagName }}
+    steps:
+      - name: Create Default Tag Name
+        id: defaultTagName
+        if: ${{ !inputs.tagName && !github.event.client_payload.tagName }}
+        run: |
+          echo "tagName=nightly-$(date +%d-%m-%Y)" >> $GITHUB_OUTPUT
+
   test-nightly:
     name: Nightly Test
-
+    needs: get-tag
     uses: ./.github/workflows/test-staging.yml
     strategy:
       fail-fast: false
@@ -23,14 +40,30 @@ jobs:
           - os: windows-latest
     with:
       runsOn: ${{ matrix.os }}
-      releaseVersion: ${{ github.event.client_payload.tagName }}
+      releaseVersion: ${{ needs.get-tag.outputs.tagName }}
       testRunnerOptions: -E 'kind(test)'
     secrets:
       CLOUDTRUTH_API_KEY: ${{ secrets.CT_STAGING_CI_ADMIN_API_KEY }}
 
+  slack-notification:
+    name: Slack Notification
+    needs: test-nightly
+    # do not run on skipped or cancelled
+    if: ${{ always() && (success() || failure()) }} 
+    runs-on: ubuntu-latest
+    steps:
+      - uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_TITLE: CLI Nightly Test
+          SLACK_CHANNEL: dev-notifications
+          SLACK_USERNAME: ${{ github.repository }}
+          SLACK_COLOR: ${{ needs.test-nightly.result }}
+          SLACK_ICON_EMOJI: ":crab:"
+          SLACK_MESSAGE: ${{ needs.test-nightly.result == 'success' && '✅ Passed' || needs.test-nightly.result == 'failure' && '❌ Failed' }}
+
   cleanup-nightly:
     name: Nightly Cleanup
-    needs: test-nightly
+    needs: [get-tag, test-nightly]
     if: ${{ always() }}
     runs-on: ubuntu-latest
     steps:
@@ -40,6 +73,6 @@ jobs:
 
       - run: sh cicd/scripts/install-rust.sh
 
-      - run: sudo ./install.sh --install-prerequisites --version '${{ github.event.client_payload.tagName }}' || sudo ./install.sh --install-prerequisites
+      - run: sudo ./install.sh --install-prerequisites --version '${{ needs.get-tag.outputs.tagName }}' || sudo ./install.sh --install-prerequisites
 
       - run: cargo run --release --package xtask -- cleanup --confirm cli-test
