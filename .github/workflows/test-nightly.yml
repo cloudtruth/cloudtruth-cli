@@ -19,9 +19,10 @@ jobs:
     name: Get Release Tag
     runs-on: ubuntu-latest
     outputs:
-      tagName: ${{ inputs.tagName || github.event.client_payload.tagName || steps.getTagName.outputs.tagName }}
+      tagName: ${{ inputs.tagName || github.event.client_payload.tagName || steps.defaultTagName.outputs.tagName }}
     steps:
-      - id: getTagName
+      - name: Create Default Tag Name
+        id: defaultTagName
         if: ${{ !inputs.tagName && !github.event.client_payload.tagName }}
         run: |
           echo "tagName=nightly-$(date +%d-%m-%Y)" >> $GITHUB_OUTPUT
