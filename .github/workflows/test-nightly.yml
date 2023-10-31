@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       tagName: 
-        description: Release tag to use for this test run.
+        description: Release tag to use for this test run. Defaults to today's nightly release.
         type: string
 
 env:
