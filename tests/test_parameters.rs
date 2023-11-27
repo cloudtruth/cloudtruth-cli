@@ -445,15 +445,136 @@ fn test_parameters_copy() {
 }
 
 #[test]
-fn test_parameters_export() -> Result<()> {
+#[use_harness]
+fn test_parameters_export() {
     let proj = Project::with_prefix("param-export").create();
-    trycmd::TestCases::new()
-        .case("tests/snapshot-tests/parameters/parameter_export.md")
-        .register_bin("cloudtruth", cli_bin_path!())
-        .env("NO_COLOR", "1")
-        .env(CT_PROJECT, proj.to_name())
-        .insert_var("[PROJECT]", proj.to_name())?;
-    Ok(())
+    let envs = hashmap! {
+        CT_PROJECT => proj.name()
+    };
+    // make sure there are no parameters at start
+    cloudtruth!("parameters list")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains!("No parameters found in project {proj}"));
+    // create first param
+    cloudtruth!("param set first_param --value posix_compliant_value")
+        .envs(&envs)
+        .assert()
+        .success();
+    // create param with spaces in value
+    cloudtruth!("param set SECOND_PARAM --value 'a value with spaces'")
+        .envs(&envs)
+        .assert()
+        .success();
+    // create param with non-posix key
+    cloudtruth!("param set 'non.posix.key' --value posix_value_invalid_key")
+        .envs(&envs)
+        .assert()
+        .success();
+    // create secret params
+    cloudtruth!("param set FIRST_PARAM_SECRET --value 'top-secret-sci' --secret true")
+        .envs(&envs)
+        .assert()
+        .success();
+    cloudtruth!("param set second_secret --value 'sensitive value with spaces' --secret true")
+        .envs(&envs)
+        .assert()
+        .success();
+    // docker export
+    cloudtruth!("param export docker")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(diff("*****\n"));
+    cloudtruth!("param export docker --secrets")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(diff(indoc! {"
+            FIRST_PARAM=posix_compliant_value
+            FIRST_PARAM_SECRET=top-secret-sci
+            SECOND_PARAM=a value with spaces
+            SECOND_SECRET=sensitive value with spaces
+
+        "}));
+    // --starts-with option
+    cloudtruth!("param export docker --secrets --starts-with SECOND")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(diff(indoc! {"
+            SECOND_PARAM=a value with spaces
+            SECOND_SECRET=sensitive value with spaces
+
+        "}));
+    // filter without secrets
+    cloudtruth!("param export docker --starts-with FIRST")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(diff("*****\n"));
+    // filter with secrets
+    cloudtruth!("param export docker --secrets --starts-with FIRST")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(diff(indoc! {"
+            FIRST_PARAM=posix_compliant_value
+            FIRST_PARAM_SECRET=top-secret-sci
+
+        "}));
+    // search is case insensitive
+    cloudtruth!("param export docker --contains param -s")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(diff(indoc! {"
+            FIRST_PARAM=posix_compliant_value
+            FIRST_PARAM_SECRET=top-secret-sci
+            SECOND_PARAM=a value with spaces
+
+        "}));
+    // see if filter picks up non-posix
+    cloudtruth!("param export docker --contains posix -s")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(diff("\n"));
+    // .env export
+    cloudtruth!("param export dotenv")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(diff("*****\n"));
+    cloudtruth!("param export dotenv -s")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(diff(indoc! {r#"
+            FIRST_PARAM="posix_compliant_value"
+            FIRST_PARAM_SECRET="top-secret-sci"
+            SECOND_PARAM="a value with spaces"
+            SECOND_SECRET="sensitive value with spaces"
+            
+        "#}));
+    // shell export
+    cloudtruth!("param export shell")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(diff("*****\n"));
+    cloudtruth!("param export shell -s")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(diff(indoc! {"
+            FIRST_PARAM=posix_compliant_value
+            FIRST_PARAM_SECRET=top-secret-sci
+            SECOND_PARAM='a value with spaces'
+            SECOND_SECRET='sensitive value with spaces'
+            
+        "}));
 }
 
 #[test]
