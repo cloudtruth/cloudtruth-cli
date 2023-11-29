@@ -1185,15 +1185,175 @@ fn test_parameters_secret_switch() {
 }
 
 #[test]
-fn test_parameters_table_formats() -> Result<()> {
+#[use_harness]
+fn test_parameters_table_formats() {
     let proj = Project::with_prefix("param-rules-table-formats").create();
-    trycmd::TestCases::new()
-        .case("tests/snapshot-tests/parameters/parameter_table_formats.md")
-        .register_bin("cloudtruth", cli_bin_path!())
-        .env("NO_COLOR", "1")
-        .env(CT_PROJECT, proj.to_name())
-        .insert_var("[PROJECT]", proj.to_name())?;
-    Ok(())
+    let envs = hashmap! {
+        CT_PROJECT => proj.name()
+    };
+    cloudtruth!("parameters list")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains!("No parameters found in project {proj}"));
+    cloudtruth!("param set speicla3 --value 'beef brocolli, pork fried rice' --desc 'Jade lunch'")
+        .envs(&envs)
+        .assert()
+        .success();
+    cloudtruth!("param set speicla14 --value 'cueey-chicken' --secret true --desc 'Jade secret'")
+        .envs(&envs)
+        .assert()
+        .success();
+    cloudtruth!("parameters ls -v")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(diff(indoc!{"
+            +-----------+--------------------------------+---------+------------+-------+----------+--------+-------------+
+            | Name      | Value                          | Source  | Param Type | Rules | Type     | Secret | Description |
+            +-----------+--------------------------------+---------+------------+-------+----------+--------+-------------+
+            | speicla14 | *****                          | default | string     | 0     | internal | true   | Jade secret |
+            | speicla3  | beef brocolli, pork fried rice | default | string     | 0     | internal | false  | Jade lunch  |
+            +-----------+--------------------------------+---------+------------+-------+----------+--------+-------------+
+        "}));
+    cloudtruth!("parameters ls -v -s")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(diff(indoc!{"
+            +-----------+--------------------------------+---------+------------+-------+----------+--------+-------------+
+            | Name      | Value                          | Source  | Param Type | Rules | Type     | Secret | Description |
+            +-----------+--------------------------------+---------+------------+-------+----------+--------+-------------+
+            | speicla14 | cueey-chicken                  | default | string     | 0     | internal | true   | Jade secret |
+            | speicla3  | beef brocolli, pork fried rice | default | string     | 0     | internal | false  | Jade lunch  |
+            +-----------+--------------------------------+---------+------------+-------+----------+--------+-------------+
+    "}));
+    cloudtruth!("parameters ls -v -f csv")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(diff(indoc! {r#"
+            Name,Value,Source,Param Type,Rules,Type,Secret,Description
+            speicla14,*****,default,string,0,internal,true,Jade secret
+            speicla3,"beef brocolli, pork fried rice",default,string,0,internal,false,Jade lunch
+        "#}));
+    cloudtruth!("parameters ls -v -s -f csv")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(diff(indoc! {r#"
+            Name,Value,Source,Param Type,Rules,Type,Secret,Description
+            speicla14,cueey-chicken,default,string,0,internal,true,Jade secret
+            speicla3,"beef brocolli, pork fried rice",default,string,0,internal,false,Jade lunch
+        "#}));
+    cloudtruth!("parameters ls -v -f json")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(diff(indoc! {r#"
+          {
+            "parameter": [
+              {
+                "Description": "Jade secret",
+                "Name": "speicla14",
+                "Param Type": "string",
+                "Rules": "0",
+                "Secret": "true",
+                "Source": "default",
+                "Type": "internal",
+                "Value": "*****"
+              },
+              {
+                "Description": "Jade lunch",
+                "Name": "speicla3",
+                "Param Type": "string",
+                "Rules": "0",
+                "Secret": "false",
+                "Source": "default",
+                "Type": "internal",
+                "Value": "beef brocolli, pork fried rice"
+              }
+            ]
+          }
+        "#}));
+    cloudtruth!("parameters ls -v -s -f json")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(diff(indoc! {r#"
+          {
+            "parameter": [
+              {
+                "Description": "Jade secret",
+                "Name": "speicla14",
+                "Param Type": "string",
+                "Rules": "0",
+                "Secret": "true",
+                "Source": "default",
+                "Type": "internal",
+                "Value": "cueey-chicken"
+              },
+              {
+                "Description": "Jade lunch",
+                "Name": "speicla3",
+                "Param Type": "string",
+                "Rules": "0",
+                "Secret": "false",
+                "Source": "default",
+                "Type": "internal",
+                "Value": "beef brocolli, pork fried rice"
+              }
+            ]
+          }
+        "#}));
+    cloudtruth!("parameters ls -v -f yaml")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(diff(indoc! {r#"
+        ---
+        parameter:
+          - Description: Jade secret
+            Name: speicla14
+            Param Type: string
+            Rules: "0"
+            Secret: "true"
+            Source: default
+            Type: internal
+            Value: "*****"
+          - Description: Jade lunch
+            Name: speicla3
+            Param Type: string
+            Rules: "0"
+            Secret: "false"
+            Source: default
+            Type: internal
+            Value: "beef brocolli, pork fried rice"
+        "#}));
+    cloudtruth!("parameters ls -v -s -f yaml")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(diff(indoc! {r#"
+        ---
+        parameter:
+          - Description: Jade secret
+            Name: speicla14
+            Param Type: string
+            Rules: "0"
+            Secret: "true"
+            Source: default
+            Type: internal
+            Value: cueey-chicken
+          - Description: Jade lunch
+            Name: speicla3
+            Param Type: string
+            Rules: "0"
+            Secret: "false"
+            Source: default
+            Type: internal
+            Value: "beef brocolli, pork fried rice"
+        "#}));
 }
 
 #[test]
