@@ -879,18 +879,69 @@ fn test_parameters_over_specified() {
 }
 
 #[test]
-fn test_parameters_rules_bool() -> Result<()> {
+#[use_harness]
+fn test_parameters_rules_bool() {
     let proj = Project::with_prefix("param-rules-bool").create();
-    let env = Environment::with_prefix("param-rules-bool").create();
-    trycmd::TestCases::new()
-        .case("tests/snapshot-tests/parameters/parameter_rules_bool.md")
-        .register_bin("cloudtruth", cli_bin_path!())
-        .env("NO_COLOR", "1")
-        .env(CT_PROJECT, proj.to_name())
-        .env(CT_ENVIRONMENT, env.to_name())
-        .insert_var("[PROJECT]", proj.to_name())?
-        .insert_var("[ENV]", env.to_name())?;
-    Ok(())
+    let envs = hashmap! {
+        CT_PROJECT => proj.name()
+    };
+    cloudtruth!("param set param1 --value true --type boolean")
+        .envs(&envs)
+        .assert()
+        .success();
+    cloudtruth!("param unset param1")
+        .envs(&envs)
+        .assert()
+        .success();
+    cloudtruth!("param ls --rules -f csv -v")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains!("No parameter rules found in project {proj}"));
+    cloudtruth!("param set param1 --max 100 --min 10 --max-len -10 --min-len -1 --regex 'abc.*'")
+        .envs(&envs)
+        .assert()
+        .failure()
+        .stderr(contains_all!(
+            "Rule create error: max rules not valid for boolean parameters",
+            "Rule create error: min rules not valid for boolean parameters",
+            "Rule create error: max-len rules not valid for boolean parameters",
+            "Rule create error: min-len rules not valid for boolean parameters",
+            "Rule create error: regex rules not valid for boolean parameters",
+        ));
+    cloudtruth!("param set param1 --min-len 10")
+        .envs(&envs)
+        .assert()
+        .failure()
+        .stderr(contains(
+            "Rule create error: min-len rules not valid for boolean parameters",
+        ));
+    cloudtruth!("param ls -v -f csv")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains("param1,-,,boolean,0,internal,false,"));
+    cloudtruth!("param ls --rules -f csv -v")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains!("No parameter rules found in project {proj}"));
+    cloudtruth!("param delete -y param1")
+        .envs(&envs)
+        .assert()
+        .success();
+    cloudtruth!("param set param1 --type boolean --value true --max 10")
+        .envs(&envs)
+        .assert()
+        .failure()
+        .stderr(contains(
+            "Rule create error: max rules not valid for boolean parameters",
+        ));
+    cloudtruth!("param ls --rules -f csv -v")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains!("No parameter rules found in project {proj}"));
 }
 
 #[test]
