@@ -1408,15 +1408,97 @@ fn test_parameters_table_formats() {
 }
 
 #[test]
-fn test_parameters_types() -> Result<()> {
+#[use_harness]
+fn test_parameters_types() {
     let proj = Project::with_prefix("param-types").create();
-    trycmd::TestCases::new()
-        .case("tests/snapshot-tests/parameters/parameter_types.md")
-        .register_bin("cloudtruth", cli_bin_path!())
-        .env("NO_COLOR", "1")
-        .env(CT_PROJECT, proj.to_name())
-        .insert_var("[PROJECT]", proj.to_name())?;
-    Ok(())
+    let envs = hashmap! {
+        CT_PROJECT => proj.name()
+    };
+    // boolean tests
+    cloudtruth!("param set param1 -t boolean -v true")
+        .envs(&envs)
+        .assert()
+        .success();
+    cloudtruth!("param ls -v -f csv")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains("param1,true,default,boolean,0,internal,false,"));
+    // try to set to non-bool value
+    cloudtruth!("param set param1 -v not-a-bool")
+        .envs(&envs)
+        .assert()
+        .failure()
+        .stderr(contains("Rule violation: Value is not of type boolean"));
+    // change type to string
+    cloudtruth!("param set param1 --value true --type string")
+        .envs(&envs)
+        .assert()
+        .success();
+    cloudtruth!("param ls -v -f csv")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains("param1,true,default,string,0,internal,false,"));
+    // change type back to bool
+    cloudtruth!("param set param1 --value true --type boolean")
+        .envs(&envs)
+        .assert()
+        .success();
+    cloudtruth!("param ls -v -f csv")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains("param1,true,default,boolean,0,internal,false,"));
+    // integer tests
+    cloudtruth!("param set param2 -t integer -v -1234")
+        .envs(&envs)
+        .assert()
+        .success();
+    cloudtruth!("param ls -v -f csv")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains("param2,-1234,default,integer,0,internal,false,"));
+    // try to set to non-bool value
+    cloudtruth!("param set param2 -v not-an-integer")
+        .envs(&envs)
+        .assert()
+        .failure()
+        .stderr(contains("Rule violation: Value is not of type integer"));
+    // change the type to string
+    cloudtruth!("param set param2 --value '-1234' --type string")
+        .envs(&envs)
+        .assert()
+        .success();
+    cloudtruth!("param ls -v -f csv")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains("param2,-1234,default,string,0,internal,false,"));
+    // change the type back to integer
+    cloudtruth!("param set param2 --value '-1234' --type integer")
+        .envs(&envs)
+        .assert()
+        .success();
+    cloudtruth!("param ls -v -f csv")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(contains("param2,-1234,default,integer,0,internal,false,"));
+    // NOTE: no need for string tests, since this is the default
+    // try to set invalid type
+    cloudtruth!("param set param3 --type foo")
+        .envs(&envs)
+        .assert()
+        .failure()
+        .stderr(contains("No ParameterType matches the given query."));
+    // verify invalid param was not created
+    cloudtruth!("param ls -v -f csv")
+        .envs(&envs)
+        .assert()
+        .success()
+        .stdout(not(contains("param3")));
 }
 
 #[test]
