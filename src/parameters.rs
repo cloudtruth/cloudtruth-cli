@@ -655,7 +655,7 @@ fn proc_param_list(
     } else if show_rules {
         // NOTE: do NOT worry about errors, since we're only concerned with params (not values)
         let mut table = Table::new("parameter");
-        let mut hdr = vec!["Name", "Param Type", "Rule Type", "Constraint"];
+        let mut hdr = vec!["ID", "Name", "Param Type", "Rule Type", "Constraint"];
         if show_times {
             hdr.push("Created At");
             hdr.push("Modified At");
@@ -685,16 +685,17 @@ fn proc_param_list(
 
         // setup the table headers and properties
         if show_external {
-            hdr = vec!["Name", "FQN", "JMES"];
-            properties = vec!["name", "fqn", "jmes-path"];
+            hdr = vec!["ID", "Name", "FQN", "JMES"];
+            properties = vec!["id", "name", "fqn", "jmes-path"];
         } else if show_evaluated {
-            hdr = vec!["Name", "Value", "Raw"];
-            properties = vec!["name", "value", "raw"];
+            hdr = vec!["ID", "Name", "Value", "Raw"];
+            properties = vec!["id", "name", "value", "raw"];
         } else if show_parents || show_children {
-            hdr = vec!["Name", "Value", "Project"];
-            properties = vec!["name", "value", "project-name"];
+            hdr = vec!["ID", "Name", "Value", "Project"];
+            properties = vec!["id", "name", "value", "project-name"];
         } else {
             hdr = vec![
+                "ID",
                 "Name",
                 "Value",
                 "Source",
@@ -705,6 +706,7 @@ fn proc_param_list(
                 "Description",
             ];
             properties = vec![
+                "id",
                 "name",
                 "value",
                 "environment",

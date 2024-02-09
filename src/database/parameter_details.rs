@@ -37,6 +37,7 @@ pub struct ParameterDetails {
 impl ParameterDetails {
     pub fn get_property(&self, property_name: &str) -> String {
         match property_name {
+            "id" => self.id.clone(),
             "name" => self.key.clone(),
             "value" => self.value.clone(),
             "type" => self.param_type.clone(),

@@ -8,6 +8,7 @@ use std::fmt::Formatter;
 use std::io::{stdin, stdout, Write};
 use std::str;
 use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
+use url::Url;
 
 // The `DEL_CONFIRM` is the default value for delete confirmation across different types
 pub const DEL_CONFIRM: Option<bool> = Some(false);
@@ -211,6 +212,23 @@ pub fn parse_tag(input: Option<&str>) -> Option<String> {
         None
     } else {
         input.map(String::from)
+    }
+}
+
+pub fn get_uuid_from_url(url: &str) -> String {
+    if let Ok(url) = Url::parse(url) {
+        let path_segments: Vec<_> = url.path_segments().unwrap().collect();
+        if let Some(uuid_segment) = path_segments.get(3) {
+            if uuid_segment.len() == 36 {
+                uuid_segment.to_string()
+            } else {
+                "".to_string()
+            }
+        } else {
+            "".to_string()
+        }
+    } else {
+        "".to_string()
     }
 }
 
