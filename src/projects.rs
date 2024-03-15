@@ -6,8 +6,8 @@ use crate::cli::{
 use crate::database::{OpenApiConfig, ProjectDetails, Projects};
 use crate::table::Table;
 use crate::utils::{
-    error_message, get_uuid_from_url, parse_key_value_pairs, user_confirm, warn_missing_subcommand,
-    warning_message, DEL_CONFIRM,
+    error_message, get_project_uuid_from_url, parse_key_value_pairs, user_confirm,
+    warn_missing_subcommand, warning_message, DEL_CONFIRM,
 };
 use clap::ArgMatches;
 use color_eyre::eyre::Result;
@@ -71,7 +71,7 @@ fn proc_proj_list(
                 entry.id,
                 entry.name,
                 entry.parent_name,
-                get_uuid_from_url(&entry.parent_url.clone()),
+                get_project_uuid_from_url(&entry.parent_url).unwrap_or_default(),
                 entry.description,
             ];
             if show_times {

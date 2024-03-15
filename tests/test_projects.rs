@@ -18,7 +18,7 @@ fn test_projects_basic() {
     cloudtruth!("projects ls -v -f csv")
         .assert()
         .success()
-        .stdout(contains!("{proj},,Description on create"));
+        .stdout(contains!("{proj},,,Description on create"));
     // update the description
     cloudtruth!("projects set {proj} --desc 'Updated description'")
         .assert()
@@ -26,7 +26,7 @@ fn test_projects_basic() {
     cloudtruth!("projects ls -v -f csv")
         .assert()
         .success()
-        .stdout(contains!("{proj},,Updated description"));
+        .stdout(contains!("{proj},,,Updated description"));
     // idempotent - do it again
     cloudtruth!("projects set {proj} --desc 'Updated description'")
         .assert()
@@ -121,7 +121,11 @@ fn test_projects_parents() {
     cloudtruth!("proj ls -v -f csv")
         .assert()
         .success()
-        .stdout(contains!("{proj4},{proj2},My new description"));
+        .stdout(contains_all!(
+            format!("{proj4}"),
+            format!("{proj2}"),
+            "My new description"
+        ));
 }
 
 #[test]

@@ -665,6 +665,7 @@ fn proc_param_list(
             for rule in entry.rules {
                 let mut row: Vec<String>;
                 row = vec![
+                    entry.id.clone(),
                     entry.key.clone(),
                     entry.param_type.to_string(),
                     rule.rule_type.to_string(),

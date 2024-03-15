@@ -19,6 +19,7 @@ pub const FILE_READ_ERR: &str = "Failed to read value from file.";
 pub const ISO8601: &str = "%Y-%m-%dT%H:%M:%S%.6fZ";
 pub const SEPARATOR: &str = "=========================";
 pub const API_KEY_PAGE: &str = "\"API Access\"";
+pub const UUID_LEN: usize = 36;
 
 #[derive(Clone, Debug)]
 pub enum ApplicationError {
@@ -215,20 +216,14 @@ pub fn parse_tag(input: Option<&str>) -> Option<String> {
     }
 }
 
-pub fn get_uuid_from_url(url: &str) -> String {
-    if let Ok(url) = Url::parse(url) {
-        let path_segments: Vec<_> = url.path_segments().unwrap().collect();
-        if let Some(uuid_segment) = path_segments.get(3) {
-            if uuid_segment.len() == 36 {
-                uuid_segment.to_string()
-            } else {
-                "".to_string()
-            }
-        } else {
-            "".to_string()
-        }
+pub fn get_project_uuid_from_url(url: &str) -> Option<String> {
+    let url = Url::parse(url).ok()?;
+    let path_segments: Vec<_> = url.path_segments()?.collect();
+    let uuid_segment = path_segments.get(3)?;
+    if uuid_segment.len() == UUID_LEN {
+        Some(uuid_segment.to_string())
     } else {
-        "".to_string()
+        None
     }
 }
 
