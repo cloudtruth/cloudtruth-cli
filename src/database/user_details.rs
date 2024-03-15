@@ -27,6 +27,7 @@ pub struct UserDetails {
 impl UserDetails {
     pub fn get_property(&self, property_name: &str) -> String {
         match property_name {
+            "id" => self.id.clone(),
             "name" => self.name.clone(),
             "type" => self.account_type.clone(),
             "email" => match self.account_type.as_str() {
