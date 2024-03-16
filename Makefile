@@ -27,7 +27,6 @@ subdirs += $(test_dir)
 .PHONY += help-text
 .PHONY += lint
 .PHONY += lint_fix
-.PHONY += lint_python
 .PHONY += lint_rust
 .PHONY += lint_shell
 .PHONY += precommit
@@ -94,19 +93,13 @@ fix: format lint_fix
 # apply formatting fixes to the working directory
 format:
 	cargo fmt --all
-	python3 -m black .
-	ruff check . --fix
 	taplo fmt
 
 help_text:
 	@rm -rf $(shell ls examples/help-text/*)
 	cargo xtask generate-help-text --verbose
 
-lint: lint_shell lint_rust lint_python lint_toml
-
-lint_python:
-	python3 -m black --quiet --check .
-	ruff check .
+lint: lint_shell lint_rust lint_toml
 
 lint_rust:
 	cargo fmt --all -- --check
@@ -121,7 +114,6 @@ lint_toml:
 # apply linting fixes
 lint_fix:
 	cargo clippy --workspace --all-features --fix --allow-staged --allow-dirty -- -D warnings
-	python3 -m black .
 
 subdir_action:
 	@for sd in $(subdirs) ; do \
@@ -157,10 +149,6 @@ else ifeq ($(os_name),Linux)
 	sudo apt-get install shellcheck pkg-config
 else
 	@echo "Did not install shellcheck"
-endif
-	python3 -m pip install --user --upgrade black yamllint ruff
-ifeq ('',$(shell which ruff))
-	$(error Need to add python packages to your PATH)
 endif
 
 test:
