@@ -20,42 +20,41 @@
         CLOUDTRUTH_API_KEY:
           description: "Production API Key"
           required: true
-  
+
   env:
     CI: true
-  
+
   jobs:
     test:
       name: CLI Test (production)
       runs-on: ${{ inputs.runsOn }}
-  
+
       defaults:
         run:
           shell: bash
-  
+
       env:
         CLOUDTRUTH_API_KEY: ${{ secrets.CLOUDTRUTH_API_KEY }}
         JOB_ID: ${{github.repository}}-${{github.run_id}}-${{github.run_attempt}}-cli-prod
         RELEASE_VERSION: ${{ inputs.releaseVersion }}
         TEST_ARCHIVE_FILE: integration-test-${{inputs.runsOn}}.tar.zst
-  
+
       steps:
         - uses: actions/checkout@v3
           with:
             repository: cloudtruth/cloudtruth-cli
-        
+
         - run: sh cicd/scripts/install-rust.sh
-  
+
         - uses: taiki-e/install-action@cargo-nextest
-  
+
         # fetch pre-built integration test archive
-        - uses: dsaltares/fetch-gh-release-asset@master
+        - uses: dsaltares/fetch-gh-release-asset@1.1.1
           with:
             repo: cloudtruth/cloudtruth-cli
             version: tags/${{ env.RELEASE_VERSION }}
             file: ${{ env.TEST_ARCHIVE_FILE }}
-  
+
         # run from pre-built archive
         - name: E2E Test
           run: cargo nextest run --profile ci --archive-file "$TEST_ARCHIVE_FILE" ${{ inputs.testRunnerOptions }} --workspace-remap "${GITHUB_WORKSPACE}"
-  
