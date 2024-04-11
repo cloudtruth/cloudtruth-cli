@@ -45,10 +45,10 @@ jobs:
     runs-on: ${{ inputs.runsOn }}
     steps:
       - shell: bash
-        if: | 
+        if: |
           inputs.artifactId == '' && inputs.releaseVersion == '' ||
           inputs.artifactId != '' && inputs.releaseVersion != ''
-        run: | 
+        run: |
           echo "Workflow input error: exactly one of 'artifactId' or 'releaseVersion' must be provided"
           exit 1
 
@@ -69,9 +69,9 @@ jobs:
           name: ${{ inputs.artifactId }}
 
       # fetch pre-built integration test archive
-      - uses: dsaltares/fetch-gh-release-asset@master
-        if: inputs.releaseVersion 
-        with:                  
+      - uses: dsaltares/fetch-gh-release-asset@1.1.1
+        if: inputs.releaseVersion
+        with:
           repo: cloudtruth/cloudtruth-cli
           version: tags/${{ inputs.releaseVersion }}
           file: ${{ env.TEST_ARCHIVE_FILE }}
