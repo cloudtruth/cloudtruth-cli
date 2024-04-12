@@ -7,7 +7,7 @@ on:
     types: [nightly-release]
   workflow_dispatch:
     inputs:
-      tagName: 
+      tagName:
         description: Release tag to use for this test run. Defaults to today's nightly release.
         type: string
 
@@ -33,11 +33,9 @@ jobs:
     uses: ./.github/workflows/test-staging.yml
     strategy:
       fail-fast: false
+      max-parallel: 1
       matrix:
-        include:
-          - os: macos-latest
-          - os: ubuntu-latest
-          - os: windows-latest
+        os: [macos-latest, ubuntu-latest, windows-latest]
     with:
       runsOn: ${{ matrix.os }}
       releaseVersion: ${{ needs.get-tag.outputs.tagName }}
@@ -49,7 +47,7 @@ jobs:
   #   name: Slack Notification
   #   needs: test-nightly
   #   # do not run on skipped or cancelled
-  #   if: ${{ always() && (success() || failure()) }} 
+  #   if: ${{ always() && (success() || failure()) }}
   #   runs-on: ubuntu-latest
   #   steps:
   #     - uses: rtCamp/action-slack-notify@v2
