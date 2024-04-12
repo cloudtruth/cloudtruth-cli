@@ -11,7 +11,7 @@ pub const DISPLAY_ENV_CMD: &str = "printenv";
 pub const DISPLAY_ENV_CMD: &str = "SET";
 
 pub fn retry_cmd_with_backoff(cmd: &mut Command) -> std::io::Result<ExitStatus> {
-    const MAX_FAILURES: u32 = 3;
+    const MAX_FAILURES: u32 = 1;
     const BASE_DELAY_SECS: u64 = 2;
     let mut failure_count: u32 = 0;
     let mut result;
