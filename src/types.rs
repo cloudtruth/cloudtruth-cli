@@ -66,7 +66,7 @@ fn proc_param_type_list(
             .collect::<Vec<String>>();
         println!("{}", list.join("\n"));
     } else if show_rules {
-        let mut hdr = vec!["Name", "Parent", "Rule Type", "Constraint"];
+        let mut hdr = vec!["ID", "Name", "Parent", "Rule Type", "Constraint"];
         if show_times {
             hdr.push("Created At");
             hdr.push("Modified At");
@@ -90,8 +90,8 @@ fn proc_param_type_list(
         }
         table.render(fmt)?;
     } else {
-        let mut hdr = vec!["Name", "Parent", "Rules", "Description"];
-        let mut props = vec!["name", "parent-name", "rule-count", "description"];
+        let mut hdr = vec!["ID", "Name", "Parent", "Rules", "Description"];
+        let mut props = vec!["id", "name", "parent-name", "rule-count", "description"];
         if show_times {
             hdr.push("Created At");
             hdr.push("Modified At");
