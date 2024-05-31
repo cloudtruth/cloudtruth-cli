@@ -72,7 +72,7 @@ fn default_user() -> &'static User {
         picture_url: None,
         created_at: "".to_string(),
         modified_at: None,
-        chatgpt_threads: HashMap::new(), // TODO: Pretty sure this is because of a bug in the OpenAPI generator
+        chatgpt_threads: None,
     })
 }
 
@@ -184,9 +184,8 @@ mod test {
 
     #[test]
     fn service_account_null_last_used_by() {
-        let data = r#"{"count":1,"next":null,"previous":null,"results":[{"url":"https://api.staging.cloudtruth.io/api/v1/serviceaccounts/auth0%7C61949e36c0baff006a6d1aea/","id":"auth0|61949e36c0baff006a6d1aea","user":{"url":"https://api.staging.cloudtruth.io/api/v1/users/auth0%7C61949e36c0baff006a6d1aea/","id":"auth0|61949e36c0baff006a6d1aea","type":"service","name":"test-user-name-Linux-37","email":"serviceaccount+ajwflw8wzpc1quhp@cloudtruth.com","picture_url":null,"created_at":"2021-11-17T06:16:24.082794Z","modified_at":"2021-11-17T06:16:24.548713Z","chatgpt_threads":{},"description":"Description on create",created_at":"2021-11-17T06:16:24.558748Z","modified_at":"2021-11-17T06:16:24.558748Z","last_used_at":null}]}"#;
+        let data = r#"{"count":1,"next":null,"previous":null,"results":[{"url":"https://api.staging.cloudtruth.io/api/v1/serviceaccounts/auth0%7C61949e36c0baff006a6d1aea/","id":"auth0|61949e36c0baff006a6d1aea","user":{"url":"https://api.staging.cloudtruth.io/api/v1/users/auth0%7C61949e36c0baff006a6d1aea/","id":"auth0|61949e36c0baff006a6d1aea","type":"service","name":"test-user-name-Linux-37","email":"serviceaccount+ajwflw8wzpc1quhp@cloudtruth.com","picture_url":null,"created_at":"2021-11-17T06:16:24.082794Z","modified_at":"2021-11-17T06:16:24.548713Z","chatgpt_threads":{"foo":{"bar": "baz"}},"description":"Description on create",created_at":"2021-11-17T06:16:24.558748Z","modified_at":"2021-11-17T06:16:24.558748Z","last_used_at":null}]}"#;
         let result: serde_json::Result<PaginatedServiceAccountList> = serde_json::from_str(data);
-        println!("{:?}", result);
         assert!(result.is_ok());
         let list = result.unwrap();
         assert_eq!(1, list.count.unwrap_or(-1));

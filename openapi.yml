@@ -15358,6 +15358,7 @@ components:
           description: Membership identifier for user.
         chatgpt_threads:
           type: object
+          nullable: true
           additionalProperties: {}
           readOnly: true
           description: The threads this user is participating in with ChatGPT.

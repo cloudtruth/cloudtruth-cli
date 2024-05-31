@@ -21812,6 +21812,7 @@
                     "chatgpt_threads": {
                         "type": "object",
                         "additionalProperties": {},
+                        "nullable": true,
                         "readOnly": true,
                         "description": "The threads this user is participating in with ChatGPT."
                     },
