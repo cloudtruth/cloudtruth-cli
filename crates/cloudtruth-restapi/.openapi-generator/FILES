@@ -47,6 +47,7 @@ docs/EnvironmentCopy.md
 docs/EnvironmentCreate.md
 docs/EnvironmentUpdate.md
 docs/EnvironmentsApi.md
+docs/FeaturesAiChatResponse.md
 docs/FeaturesApi.md
 docs/FeaturesResponse.md
 docs/GeneratedPasswordResponse.md
@@ -56,6 +57,7 @@ docs/GitHubPull.md
 docs/GitHubPullTask.md
 docs/GitHubPullTaskStep.md
 docs/Grant.md
+docs/GrantUpdate.md
 docs/GrantsApi.md
 docs/Group.md
 docs/GroupsApi.md
@@ -146,7 +148,7 @@ docs/PatchedAzureKeyVaultPull.md
 docs/PatchedAzureKeyVaultPushUpdate.md
 docs/PatchedEnvironmentUpdate.md
 docs/PatchedGitHubPull.md
-docs/PatchedGrant.md
+docs/PatchedGrantUpdate.md
 docs/PatchedGroup.md
 docs/PatchedInvitation.md
 docs/PatchedMembership.md
@@ -159,6 +161,7 @@ docs/PatchedProjectUpdate.md
 docs/PatchedServiceAccount.md
 docs/PatchedTagUpdate.md
 docs/PatchedTemplateUpdate.md
+docs/PatchedUpdateUser.md
 docs/PatchedValueUpdate.md
 docs/Project.md
 docs/ProjectCopy.md
@@ -167,8 +170,10 @@ docs/ProjectUpdate.md
 docs/ProjectsApi.md
 docs/RoleEnum.md
 docs/ServiceAccount.md
+docs/ServiceAccountApiKey.md
 docs/ServiceAccountCreateRequest.md
 docs/ServiceAccountCreateResponse.md
+docs/ServiceAccountRekeyRequest.md
 docs/ServiceAccountUpdateRequest.md
 docs/ServiceaccountsApi.md
 docs/StateEnum.md
@@ -189,6 +194,7 @@ docs/TemplateTimelineEntry.md
 docs/TemplateTimelineEntryTemplate.md
 docs/TemplateUpdate.md
 docs/TypesApi.md
+docs/UpdateUser.md
 docs/User.md
 docs/UsersApi.md
 docs/UtilsApi.md
@@ -258,6 +264,7 @@ src/models/environment.rs
 src/models/environment_copy.rs
 src/models/environment_create.rs
 src/models/environment_update.rs
+src/models/features_ai_chat_response.rs
 src/models/features_response.rs
 src/models/generated_password_response.rs
 src/models/git_hub_integration.rs
@@ -266,6 +273,7 @@ src/models/git_hub_pull.rs
 src/models/git_hub_pull_task.rs
 src/models/git_hub_pull_task_step.rs
 src/models/grant.rs
+src/models/grant_update.rs
 src/models/group.rs
 src/models/history_model_enum.rs
 src/models/history_type_enum.rs
@@ -350,7 +358,7 @@ src/models/patched_azure_key_vault_pull.rs
 src/models/patched_azure_key_vault_push_update.rs
 src/models/patched_environment_update.rs
 src/models/patched_git_hub_pull.rs
-src/models/patched_grant.rs
+src/models/patched_grant_update.rs
 src/models/patched_group.rs
 src/models/patched_invitation.rs
 src/models/patched_membership.rs
@@ -363,6 +371,7 @@ src/models/patched_project_update.rs
 src/models/patched_service_account.rs
 src/models/patched_tag_update.rs
 src/models/patched_template_update.rs
+src/models/patched_update_user.rs
 src/models/patched_value_update.rs
 src/models/project.rs
 src/models/project_copy.rs
@@ -370,8 +379,10 @@ src/models/project_create.rs
 src/models/project_update.rs
 src/models/role_enum.rs
 src/models/service_account.rs
+src/models/service_account_api_key.rs
 src/models/service_account_create_request.rs
 src/models/service_account_create_response.rs
+src/models/service_account_rekey_request.rs
 src/models/service_account_update_request.rs
 src/models/state_enum.rs
 src/models/status_enum.rs
@@ -390,6 +401,7 @@ src/models/template_timeline.rs
 src/models/template_timeline_entry.rs
 src/models/template_timeline_entry_template.rs
 src/models/template_update.rs
+src/models/update_user.rs
 src/models/user.rs
 src/models/value.rs
 src/models/value_create.rs
