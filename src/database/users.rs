@@ -207,9 +207,10 @@ impl Users {
         let user_update = PatchedServiceAccount {
             url: None,
             id: None,
-            user: None,
             owner: None,
+            user: None,
             description: description.map(String::from),
+            keys: None,
             created_at: None,
             modified_at: None,
             last_used_at: None,

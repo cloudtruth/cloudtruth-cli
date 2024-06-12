@@ -222,11 +222,13 @@ impl Environments {
         env_name: &str,
         description: Option<&str>,
         parent_url: &str,
+        copy_rbac: Option<bool>,
     ) -> Result<Option<String>, EnvironmentError> {
         let new_env = EnvironmentCreate {
             name: env_name.to_string(),
             description: description.map(String::from),
             parent: Some(parent_url.to_string()),
+            copy_rbac: Some(copy_rbac.unwrap_or(false)),
         };
         let response = environments_create(rest_cfg, new_env);
         match response {
