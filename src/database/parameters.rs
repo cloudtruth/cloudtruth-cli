@@ -587,15 +587,14 @@ impl Parameters {
             external_filter: jmes_path.map(|v| v.to_string()),
             interpolated: evaluated,
         };
-        let response =
-            projects_parameters_values_create(
-                rest_cfg,
-                param_id,
-                proj_id,
-                value_create,
-                None,
-                None,
-            );
+        let response = projects_parameters_values_create(
+            rest_cfg,
+            param_id,
+            proj_id,
+            value_create,
+            None,
+            None,
+        );
         match response {
             Ok(api_value) => Ok(api_value.id),
             Err(ResponseError(ref content)) => match content.status.as_u16() {

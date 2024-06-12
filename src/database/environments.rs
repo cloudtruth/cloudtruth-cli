@@ -228,7 +228,7 @@ impl Environments {
             name: env_name.to_string(),
             description: description.map(String::from),
             parent: Some(parent_url.to_string()),
-            copy_rbac: copy_rbac,
+            copy_rbac: Some(copy_rbac.unwrap_or(false)),
         };
         let response = environments_create(rest_cfg, new_env);
         match response {
