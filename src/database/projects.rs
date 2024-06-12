@@ -246,6 +246,7 @@ impl Projects {
             description: description.map(String::from),
             depends_on: parent_url.map(String::from),
             parameter_name_pattern: parameter_name_pattern.map(String::from),
+            copy_rbac: None,
         };
         let response = projects_create(rest_cfg, proj);
         match response {

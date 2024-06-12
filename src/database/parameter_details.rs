@@ -29,6 +29,7 @@ pub struct ParameterDetails {
     pub raw_value: String, // the unevaluated value
     pub created_at: String,
     pub modified_at: String,
+    pub expires_at: String,
 
     // captures errors when fetching external parameters
     pub error: String,
@@ -123,6 +124,7 @@ impl Default for ParameterDetails {
             created_at: "".to_string(),
             modified_at: "".to_string(),
             error: "".to_string(),
+            expires_at: "".to_string(),
         }
     }
 }
@@ -156,6 +158,7 @@ fn default_param_value() -> &'static Value {
         created_at: "".to_owned(),
         modified_at: None,
         external_error: None,
+        expires_at: None,
     })
 }
 
@@ -170,7 +173,7 @@ impl From<&Parameter> for ParameterDetails {
         ParameterDetails {
             id: api_param.id.clone(),
             key: api_param.name.clone(),
-            secret: api_param.secret.unwrap_or(false) || env_value.secret.unwrap_or(false),
+            secret: api_param.secret || env_value.secret.unwrap_or(false),
             description: api_param.description.clone().unwrap_or_default(),
             param_type: api_param._type.clone().unwrap_or_default(),
             project_url: api_param.project.clone(),
@@ -194,6 +197,7 @@ impl From<&Parameter> for ParameterDetails {
             modified_at: env_value.modified_at.clone().unwrap_or_default(),
 
             error: env_value.external_error.clone().unwrap_or_default(),
+            expires_at: env_value.expires_at.clone().unwrap_or_default(),
         }
     }
 }

@@ -65,6 +65,7 @@ fn default_user() -> &'static User {
         name: Some("Unknown".to_string()),
         organization_name: None,
         membership_id: None,
+        chatgpt_threads: Default::default(),
         role: None,
         email: None,
         picture_url: None,
