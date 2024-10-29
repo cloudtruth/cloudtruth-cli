@@ -44,7 +44,7 @@ jobs:
         shell: bash
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           ref: ${{ inputs.ref }}
 
@@ -70,7 +70,7 @@ jobs:
         run: sh ./cicd/scripts/archive-debug-info.sh "$ARCHIVE_FILE"
 
       - name: Upload Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.artifactId }}
           if-no-files-found: ignore

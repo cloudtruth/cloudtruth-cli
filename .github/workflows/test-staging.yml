@@ -55,7 +55,7 @@ jobs:
       # it's likely safe to assume that current/latest ref is close enough
       # to staging release, but we may need to bump a "staging" tag to track
       # the staging release accurately
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: cloudtruth/cloudtruth-cli
 

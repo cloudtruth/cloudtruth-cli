@@ -65,7 +65,7 @@ jobs:
     if: ${{ always() && needs.test-nightly.result != 'skipped' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: cloudtruth/cloudtruth-cli
 

@@ -40,7 +40,7 @@
         TEST_ARCHIVE_FILE: integration-test-${{inputs.runsOn}}.tar.zst
 
       steps:
-        - uses: actions/checkout@v3
+        - uses: actions/checkout@v4
           with:
             repository: cloudtruth/cloudtruth-cli
 

@@ -19,7 +19,7 @@ jobs:
       contents: write
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 1
 
@@ -103,7 +103,7 @@ jobs:
           commit: ${{ github.sha }}
 
       # rotate out old nightly releases
-      - uses: dev-drprasad/delete-older-releases@v0.3.3
+      - uses: dev-drprasad/delete-older-releases@v0.3.4
         with:
           keep_latest: 2
           delete_expired_data: 3
@@ -113,7 +113,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # dispatch repo event to trigger test-nightly.yml
-      - uses: peter-evans/repository-dispatch@v2
+      - uses: peter-evans/repository-dispatch@v3
         with:
           event-type: nightly-release
           client-payload: '{"tagName": "${{ needs.create-release.outputs.tagName }}"}'
