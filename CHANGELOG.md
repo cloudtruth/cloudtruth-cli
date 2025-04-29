@@ -1,3 +1,6 @@
+# 1.2.5 - 2025-04-29
+* fixed bug where overriding parameters would not correctly set values
+
 # 1.2.4 - 2023-10-25
 * added [NO_COLOR](https://no-color.org/) support for CLI error messages [#564](https://github.com/cloudtruth/cloudtruth-cli/pull/564)
 * made trailing newline behavior of `cloudtruth templates preview` consistent with `cloudtruth templates get` [#530](https://github.com/cloudtruth/cloudtruth-cli/pull/530)
