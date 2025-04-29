@@ -1,6 +1,6 @@
 [package]
 name = "cloudtruth"
-version = "1.2.4"
+version = "1.2.5"
 description = "A command-line interface to the CloudTruth configuration management service."
 authors = ["CloudTruth <support@cloudtruth.com>"]
 edition = "2021"
@@ -44,7 +44,7 @@ ca-certificates = "*"
 
 [build-dependencies]
 clap = "2.33.3"
-cloudtruth-config = { path = "crates/cloudtruth-config", version = "1.2.4" }
+cloudtruth-config = { path = "crates/cloudtruth-config", version = "1.2.5" }
 
 [dependencies]
 aes-gcm = "0.9.2"
@@ -52,8 +52,8 @@ base64 = "0.13.0"
 chacha20poly1305 = "0.8.0"
 chrono = "0.4.23"
 clap = "2.33.3"
-cloudtruth-config = { path = "crates/cloudtruth-config", version = "1.2.4" }
-cloudtruth-installer = { path = "crates/cloudtruth-installer", version = "1.2.4" }
+cloudtruth-config = { path = "crates/cloudtruth-config", version = "1.2.5" }
+cloudtruth-installer = { path = "crates/cloudtruth-installer", version = "1.2.5" }
 cloudtruth-restapi = { path = "crates/cloudtruth-restapi" }
 color-eyre = "0.5"
 csv = "1.1.6"
