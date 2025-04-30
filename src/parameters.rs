@@ -1028,9 +1028,13 @@ fn proc_param_set(
     // don't do anything if there's nothing to do
     if value_field_update {
         env_changed = format!(" for environment '{}'", resolved.environment_display_name());
-        // if any existing environment does not match the desired environment
-        // or we created a new parameter to override an inherited one
-        if !updated.env_url.contains(env_id) || param_added {
+        // if we created a new parameter to override an inherited one
+        // or any existing environment does not match the desired environment
+        // or the current environment value is in a different project
+        if param_added
+            || !updated.env_url.contains(env_id)
+            || !updated.val_url.contains(updated.project_url.as_str())
+        {
             set_action = "Set";
             let value_add_result = parameters.create_parameter_value(
                 rest_cfg, proj_id, env_id, param_id, value, fqn, jmes_path, evaluated,

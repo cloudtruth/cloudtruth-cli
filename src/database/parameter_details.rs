@@ -20,6 +20,7 @@ pub struct ParameterDetails {
     // these come from the value for the specified environment
     pub val_id: String,
     pub value: String,
+    pub val_url: String,
     pub env_url: String,
     pub env_name: String,
     pub external: bool,
@@ -76,6 +77,7 @@ impl ParameterDetails {
     pub fn set_value(&mut self, env_value: &Value) {
         self.val_id = env_value.id.clone();
         self.value = env_value.value.clone().unwrap_or_default();
+        self.val_url = env_value.url.clone();
         self.env_url = env_value.environment.replace("http://", "https://");
         self.external = env_value.external.unwrap_or(false);
         self.fqn = env_value.external_fqn.clone().unwrap_or_default();
@@ -113,6 +115,7 @@ impl Default for ParameterDetails {
             project_name: "".to_string(),
             val_id: "".to_string(),
             value: DEFAULT_VALUE.to_string(),
+            val_url: "".to_string(),
             env_url: "".to_string(),
             env_name: "".to_string(),
             external: false,
@@ -183,6 +186,7 @@ impl From<&Parameter> for ParameterDetails {
 
             val_id: env_value.id.clone(),
             value: env_value.value.clone().unwrap_or_default(),
+            val_url: env_value.url.clone(),
             env_url: env_value.environment.clone(),
             env_name: env_value.environment_name.clone(),
             external: env_value.external.unwrap_or(false),
