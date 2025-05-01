@@ -6,8 +6,8 @@ use crate::cli::{
 use crate::database::{OpenApiConfig, ProjectDetails, Projects};
 use crate::table::Table;
 use crate::utils::{
-    error_message, parse_key_value_pairs, user_confirm, warn_missing_subcommand, warning_message,
-    DEL_CONFIRM,
+    error_message, get_project_uuid_from_url, parse_key_value_pairs, user_confirm,
+    warn_missing_subcommand, warning_message, DEL_CONFIRM,
 };
 use clap::ArgMatches;
 use color_eyre::eyre::Result;
@@ -60,14 +60,20 @@ fn proc_proj_list(
         println!("{}", list.join("\n"));
     } else {
         let mut table = Table::new("project");
-        let mut hdr = vec!["Name", "Parent", "Description"];
+        let mut hdr = vec!["ID", "Name", "Parent", "Parent_ID", "Description"];
         if show_times {
             hdr.push("Created At");
             hdr.push("Modified At");
         }
         table.set_header(&hdr);
         for entry in details {
-            let mut row = vec![entry.name, entry.parent_name, entry.description];
+            let mut row = vec![
+                entry.id,
+                entry.name,
+                entry.parent_name,
+                get_project_uuid_from_url(&entry.parent_url).unwrap_or_default(),
+                entry.description,
+            ];
             if show_times {
                 row.push(entry.created_at);
                 row.push(entry.modified_at);

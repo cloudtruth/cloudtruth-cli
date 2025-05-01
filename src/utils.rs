@@ -8,6 +8,7 @@ use std::fmt::Formatter;
 use std::io::{stdin, stdout, Write};
 use std::str;
 use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
+use url::Url;
 
 // The `DEL_CONFIRM` is the default value for delete confirmation across different types
 pub const DEL_CONFIRM: Option<bool> = Some(false);
@@ -18,6 +19,7 @@ pub const FILE_READ_ERR: &str = "Failed to read value from file.";
 pub const ISO8601: &str = "%Y-%m-%dT%H:%M:%S%.6fZ";
 pub const SEPARATOR: &str = "=========================";
 pub const API_KEY_PAGE: &str = "\"API Access\"";
+pub const UUID_LEN: usize = 36;
 
 #[derive(Clone, Debug)]
 pub enum ApplicationError {
@@ -211,6 +213,17 @@ pub fn parse_tag(input: Option<&str>) -> Option<String> {
         None
     } else {
         input.map(String::from)
+    }
+}
+
+pub fn get_project_uuid_from_url(url: &str) -> Option<String> {
+    let url = Url::parse(url).ok()?;
+    let path_segments: Vec<_> = url.path_segments()?.collect();
+    let uuid_segment = path_segments.get(3)?;
+    if uuid_segment.len() == UUID_LEN {
+        Some(uuid_segment.to_string())
+    } else {
+        None
     }
 }
 

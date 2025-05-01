@@ -485,6 +485,7 @@ dependencies = [
  "tempfile",
  "termcolor",
  "trycmd",
+ "url 2.3.1",
  "urlencoding",
  "version-compare",
  "webbrowser",
