@@ -114,6 +114,7 @@ fn proc_env_set(
                 env_name,
                 description,
                 parent_details.url.as_str(),
+                None,
             )?;
             println!("Created environment '{env_name}'");
         } else {
