@@ -173,7 +173,7 @@ impl From<&Parameter> for ParameterDetails {
         ParameterDetails {
             id: api_param.id.clone(),
             key: api_param.name.clone(),
-            secret: api_param.secret.unwrap_or(false) || env_value.secret.unwrap_or(false),
+            secret: api_param.secret || env_value.secret.unwrap_or(false),
             description: api_param.description.clone().unwrap_or_default(),
             param_type: api_param._type.clone().unwrap_or_default(),
             project_url: api_param.project.clone(),

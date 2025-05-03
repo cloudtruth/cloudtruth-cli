@@ -33,7 +33,7 @@ pub struct Project {
     #[serde(rename = "dependents")]
     pub dependents: Vec<String>,
     /// Project dependencies allow projects to be used for shared configuration, for example a database used by many applications needs to advertise its port number.  Projects can depend on another project which will add the parameters from the parent project into the current project.  All of the parameter names between the two projects must be unique.  When retrieving values or rendering templates, all of the parameters from the parent project will also be available in the current project.
-    #[serde(rename = "depends_on", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "depends_on")]
     pub depends_on: Option<String>,
     /// Indicates if access control is being enforced through grants.
     #[serde(rename = "access_controlled", skip_serializing_if = "Option::is_none")]
@@ -41,10 +41,10 @@ pub struct Project {
     /// Your role in the project, if the project is access-controlled.
     #[serde(rename = "role")]
     pub role: Option<Box<crate::models::RoleEnum>>,
-    /// Deprecated. Only shows pushes for aws integrations in /api/v1/.
+    /// Deprecated. Blank.
     #[serde(rename = "pushes")]
-    pub pushes: Vec<crate::models::AwsPush>,
-    /// Push actions associated with the project.
+    pub pushes: Vec<String>,
+    /// Deprecated. Blank.
     #[serde(rename = "push_urls")]
     pub push_urls: Vec<String>,
     #[serde(rename = "created_at")]
@@ -60,8 +60,9 @@ impl Project {
         ledger_id: String,
         name: String,
         dependents: Vec<String>,
+        depends_on: Option<String>,
         role: Option<crate::models::RoleEnum>,
-        pushes: Vec<crate::models::AwsPush>,
+        pushes: Vec<String>,
         push_urls: Vec<String>,
         created_at: String,
         modified_at: Option<String>,
@@ -74,7 +75,7 @@ impl Project {
             parameter_name_pattern: None,
             description: None,
             dependents,
-            depends_on: None,
+            depends_on,
             access_controlled: None,
             role: role.map(Box::new),
             pushes,
