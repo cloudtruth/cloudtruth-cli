@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: CloudTruth Management API
-  version: v1
+  version: ''
   description: CloudTruth centralizes your configuration parameters and secrets making
     them easier to manage and use as a team.
   contact:
@@ -163,6 +163,7 @@ paths:
           enum:
           - create
           - delete
+          - expired
           - pull
           - push
           - update
@@ -852,6 +853,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/FeaturesResponse'
           description: ''
+  /api/v1/features/aichat/:
+    get:
+      operationId: features_aichat_retrieve
+      description: Returns details about enabled features for AI Chat
+      tags:
+      - features
+      security:
+      - JWTAuth: []
+      - ApiKeyAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeaturesAiChatResponse'
+          description: ''
   /api/v1/grants/:
     get:
       operationId: grants_list
@@ -1007,13 +1025,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Grant'
+              $ref: '#/components/schemas/GrantUpdate'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/Grant'
+              $ref: '#/components/schemas/GrantUpdate'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/Grant'
+              $ref: '#/components/schemas/GrantUpdate'
         required: true
       security:
       - JWTAuth: []
@@ -1050,13 +1068,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PatchedGrant'
+              $ref: '#/components/schemas/PatchedGrantUpdate'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PatchedGrant'
+              $ref: '#/components/schemas/PatchedGrantUpdate'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PatchedGrant'
+              $ref: '#/components/schemas/PatchedGrantUpdate'
       security:
       - JWTAuth: []
       - ApiKeyAuth: []
@@ -6064,7 +6082,7 @@ paths:
         schema:
           type: string
           format: uuid
-        description: A UUID string identifying this parameter rule ledger.
+        description: A UUID string identifying this parameter rule.
         required: true
       - in: path
         name: parameter_pk
@@ -6240,6 +6258,13 @@ paths:
         description: Specify a point in time to retrieve configuration from. Cannot
           be specified with `tag`.
       - in: query
+        name: environment
+        schema:
+          type: string
+        description: |-
+          When fetching a single value, if that value is dynamic and evaluate is true, uses this environment for template evaluation.  If none is specified, uses the value's environment.  Note that the value must be active in the specified environment.
+          No effect on values that are not dynamic.
+      - in: query
         name: evaluate
         schema:
           type: boolean
@@ -6314,6 +6339,13 @@ paths:
       summary: Set a value.
       parameters:
       - in: query
+        name: environment
+        schema:
+          type: string
+        description: |-
+          When fetching a single value, if that value is dynamic and evaluate is true, uses this environment for template evaluation.  If none is specified, uses the value's environment.  Note that the value must be active in the specified environment.
+          No effect on values that are not dynamic.
+      - in: query
         name: evaluate
         schema:
           type: boolean
@@ -6373,6 +6405,13 @@ paths:
           format: date-time
         description: Specify a point in time to retrieve configuration from. Cannot
           be specified with `tag`.
+      - in: query
+        name: environment
+        schema:
+          type: string
+        description: |-
+          When fetching a single value, if that value is dynamic and evaluate is true, uses this environment for template evaluation.  If none is specified, uses the value's environment.  Note that the value must be active in the specified environment.
+          No effect on values that are not dynamic.
       - in: query
         name: evaluate
         schema:
@@ -6443,6 +6482,13 @@ paths:
       summary: Update a value.
       parameters:
       - in: query
+        name: environment
+        schema:
+          type: string
+        description: |-
+          When fetching a single value, if that value is dynamic and evaluate is true, uses this environment for template evaluation.  If none is specified, uses the value's environment.  Note that the value must be active in the specified environment.
+          No effect on values that are not dynamic.
+      - in: query
         name: evaluate
         schema:
           type: boolean
@@ -6501,6 +6547,13 @@ paths:
       summary: Update a value.
       parameters:
       - in: query
+        name: environment
+        schema:
+          type: string
+        description: |-
+          When fetching a single value, if that value is dynamic and evaluate is true, uses this environment for template evaluation.  If none is specified, uses the value's environment.  Note that the value must be active in the specified environment.
+          No effect on values that are not dynamic.
+      - in: query
         name: evaluate
         schema:
           type: boolean
@@ -6558,6 +6611,13 @@ paths:
       description: Destroy the value of a parameter in an environment.
       summary: Destroy a value.
       parameters:
+      - in: query
+        name: environment
+        schema:
+          type: string
+        description: |-
+          When fetching a single value, if that value is dynamic and evaluate is true, uses this environment for template evaluation.  If none is specified, uses the value's environment.  Note that the value must be active in the specified environment.
+          No effect on values that are not dynamic.
       - in: query
         name: evaluate
         schema:
@@ -7677,6 +7737,11 @@ paths:
           description: ''
     put:
       operationId: serviceaccounts_update
+      description: "\n            Updates a ServiceAccount.  A ServiceAccount is a\
+        \ user record intended\n            for machine use (such as a build system).\
+        \  It does not have a username/password\n            but is instead accessed\
+        \ using an API key.\n            "
+      summary: Update a ServiceAccount user.
       parameters:
       - in: path
         name: id
@@ -7759,6 +7824,40 @@ paths:
       responses:
         '204':
           description: No response body
+  /api/v1/serviceaccounts/{id}/rekey/:
+    post:
+      operationId: serviceaccounts_rekey_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        description: A unique value identifying this service account.
+        required: true
+      tags:
+      - serviceaccounts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServiceAccountRekeyRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ServiceAccountRekeyRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ServiceAccountRekeyRequest'
+      security:
+      - JWTAuth: []
+      - ApiKeyAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceAccountRekeyRequest'
+          description: ''
   /api/v1/types/:
     get:
       operationId: types_list
@@ -7929,7 +8028,7 @@ paths:
         schema:
           type: string
           format: uuid
-        description: A UUID string identifying this parameter type rule ledger.
+        description: A UUID string identifying this parameter type rule.
         required: true
       - in: path
         name: parametertype_pk
@@ -8069,7 +8168,7 @@ paths:
         schema:
           type: string
           format: uuid
-        description: A UUID string identifying this parameter type ledger.
+          description: A unique identifier for the parameter type.
         required: true
       tags:
       - types
@@ -8233,6 +8332,73 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/User'
+          description: ''
+    put:
+      operationId: users_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          description: The unique identifier of a user.
+        required: true
+      tags:
+      - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUser'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UpdateUser'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UpdateUser'
+        required: true
+      security:
+      - JWTAuth: []
+      - ApiKeyAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateUser'
+          description: ''
+    patch:
+      operationId: users_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          description: The unique identifier of a user.
+        required: true
+      tags:
+      - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedUpdateUser'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedUpdateUser'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedUpdateUser'
+      security:
+      - JWTAuth: []
+      - ApiKeyAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateUser'
           description: ''
     delete:
       operationId: users_destroy
@@ -8519,13 +8685,11 @@ components:
           description: The AWS services to integrate with.
         aws_external_id:
           type: string
+          readOnly: true
           description: This is a shared secret between the AWS Administrator who set
             up your IAM trust relationship and your CloudTruth AWS Integration.  CloudTruth
             will generate a random value for you to give to your AWS Administrator
             in order to create the necessary IAM role for proper access.
-          minLength: 2
-          pattern: ^[\w+=,.@:/\-]*$
-          maxLength: 1224
         aws_kms_key_id:
           type: string
           nullable: true
@@ -8544,10 +8708,15 @@ components:
           pattern: ^[\w+=,.@\-]+$
           maxLength: 64
           minLength: 2
+        resource_tags:
+          type: object
+          additionalProperties: {}
+          description: A list of tags to be set on all integration resources.
       required:
       - aws_account_id
       - aws_enabled_regions
       - aws_enabled_services
+      - aws_external_id
       - aws_role_name
       - created_at
       - fqn
@@ -8611,6 +8780,10 @@ components:
           pattern: ^[\w+=,.@\-]+$
           maxLength: 64
           minLength: 2
+        resource_tags:
+          type: object
+          additionalProperties: {}
+          description: A list of tags to be set on all integration resources.
       required:
       - aws_account_id
       - aws_enabled_regions
@@ -9403,6 +9576,10 @@ components:
         writable:
           type: boolean
           description: Allow actions to write to the integration.
+        resource_tags:
+          type: object
+          additionalProperties: {}
+          description: A list of tags to be set on all integration resources.
         vault_name:
           type: string
           readOnly: true
@@ -9434,6 +9611,10 @@ components:
         writable:
           type: boolean
           description: Allow actions to write to the integration.
+        resource_tags:
+          type: object
+          additionalProperties: {}
+          description: A list of tags to be set on all integration resources.
         vault_name:
           type: string
           description: The Azure Key Vault name.
@@ -10346,6 +10527,7 @@ components:
         parent:
           type: string
           format: uri
+          readOnly: true
           nullable: true
           description: Environments can inherit from a single parent environment which
             provides values for parameters when specific environments do not have
@@ -10383,6 +10565,7 @@ components:
       - ledger_id
       - modified_at
       - name
+      - parent
       - role
       - url
     EnvironmentCopy:
@@ -10433,6 +10616,15 @@ components:
             provides values for parameters when specific environments do not have
             a value set.  Every organization has one default environment that cannot
             be removed.
+        copy_rbac:
+          type: boolean
+          writeOnly: true
+          default: false
+          description: If parent has RBAC enabled and this field is True, RBAC will
+            be enabled and grants from the parent are copied to this environment.  If
+            parent has RBAC enabled and this field is False, RBAC will be enabled
+            but only the minimal necessary grants will be assigned to the newly created
+            environment.   Not used when RBAC is not enabled for the parent.
       required:
       - name
     EnvironmentUpdate:
@@ -10490,6 +10682,14 @@ components:
       - modified_at
       - name
       - role
+    FeaturesAiChatResponse:
+      type: object
+      properties:
+        chatgpt:
+          type: object
+          additionalProperties: {}
+      required:
+      - chatgpt
     FeaturesResponse:
       type: object
       properties:
@@ -10859,6 +11059,49 @@ components:
       - success
       - url
     Grant:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+          readOnly: true
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+          description: A unique identifier for the grant.
+        principal:
+          type: string
+          format: uri
+          description: The URI of a principal for the grant; this must reference a
+            user or group.
+        scope:
+          type: string
+          format: uri
+          description: The URI of a scope for the grant; this must reference a project
+            or environment.
+        role:
+          allOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          description: The role that the principal has in the given scope.
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        modified_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+      required:
+      - created_at
+      - id
+      - modified_at
+      - principal
+      - role
+      - scope
+      - url
+    GrantUpdate:
       type: object
       properties:
         url:
@@ -11311,6 +11554,9 @@ components:
           - $ref: '#/components/schemas/VersionEnum'
           readOnly: true
           description: The current version of this Organization
+        notification_config:
+          type: object
+          additionalProperties: {}
         current:
           type: boolean
           readOnly: true
@@ -12161,10 +12407,13 @@ components:
           type: string
         secret:
           type: boolean
+          readOnly: true
         type:
           type: string
-          default: string
-          description: The type of this Parameter.
+          description: "\n        The type of this Parameter.  If not provided, this\
+            \ will default to\n        a string for Parameters that are not overrides\
+            \ or to the overridden\n        Parameter's type for Parameters that are\
+            \ overrides.\n        "
         rules:
           type: array
           items:
@@ -12254,8 +12503,23 @@ components:
           format: date-time
           readOnly: true
           nullable: true
+        expires:
+          type: string
+          nullable: true
+        expiration_action:
+          type: object
+          additionalProperties: {}
+          nullable: true
+        expired_status:
+          type: object
+          additionalProperties: {}
+          nullable: true
+          readOnly: true
+          description: If this parameter expires, the status of the last attempt to
+            handle its expiration
       required:
       - created_at
+      - expired_status
       - id
       - ledger_id
       - modified_at
@@ -12266,6 +12530,7 @@ components:
       - referencing_templates
       - referencing_values
       - rules
+      - secret
       - url
       - values
       - values_flat
@@ -12310,8 +12575,17 @@ components:
             used.
         type:
           type: string
-          default: string
-          description: The type of this Parameter.
+          description: "\n        The type of this Parameter.  If not provided, this\
+            \ will default to\n        a string for Parameters that are not overrides\
+            \ or to the overridden\n        Parameter's type for Parameters that are\
+            \ overrides.\n        "
+        expires:
+          type: string
+          nullable: true
+        expiration_action:
+          type: object
+          additionalProperties: {}
+          nullable: true
       required:
       - name
     ParameterDuality:
@@ -12365,9 +12639,7 @@ components:
           description: The URL for the parameter rule.
         id:
           type: string
-          readOnly: true
-        ledger_id:
-          type: string
+          format: uuid
           readOnly: true
         parameter:
           type: string
@@ -12392,7 +12664,6 @@ components:
       - constraint
       - created_at
       - id
-      - ledger_id
       - modified_at
       - parameter
       - type
@@ -12437,6 +12708,7 @@ components:
       properties:
         id:
           type: string
+          format: uuid
           readOnly: true
         parameter:
           type: string
@@ -12567,10 +12839,9 @@ components:
           description: The URL for the parameter type.
         id:
           type: string
+          format: uuid
           readOnly: true
-        ledger_id:
-          type: string
-          readOnly: true
+          description: A unique identifier for the parameter type.
         name:
           type: string
           description: The parameter type name.
@@ -12588,6 +12859,7 @@ components:
         parent:
           type: string
           format: uri
+          readOnly: true
           nullable: true
           description: The URL for this parameter type's parent
         parent_name:
@@ -12607,9 +12879,9 @@ components:
       required:
       - created_at
       - id
-      - ledger_id
       - modified_at
       - name
+      - parent
       - parent_name
       - rules
       - url
@@ -12649,9 +12921,7 @@ components:
           description: The URL for the project.
         id:
           type: string
-          readOnly: true
-        ledger_id:
-          type: string
+          format: uuid
           readOnly: true
         parameter_type:
           type: string
@@ -12676,7 +12946,6 @@ components:
       - constraint
       - created_at
       - id
-      - ledger_id
       - modified_at
       - parameter_type
       - type
@@ -12713,6 +12982,7 @@ components:
       properties:
         id:
           type: string
+          format: uuid
           readOnly: true
         parameter_type:
           type: string
@@ -12745,7 +13015,9 @@ components:
       properties:
         id:
           type: string
+          format: uuid
           readOnly: true
+          description: A unique identifier for the parameter type.
         name:
           type: string
           description: The parameter type name.
@@ -12798,14 +13070,17 @@ components:
             maintain software that uses this content.
         secret:
           type: boolean
+          readOnly: true
           description: Indicates if this content is secret or not.  External values
             are inspected on-demand to ensure they align with the parameter's secret
             setting and if they do not, those external values are not allowed to be
             used.
         type:
           type: string
-          default: string
-          description: The type of this Parameter.
+          description: "\n        The type of this Parameter.  If not provided, this\
+            \ will default to\n        a string for Parameters that are not overrides\
+            \ or to the overridden\n        Parameter's type for Parameters that are\
+            \ overrides.\n        "
         project:
           type: string
           format: uri
@@ -12820,12 +13095,28 @@ components:
           format: date-time
           readOnly: true
           nullable: true
+        expires:
+          type: string
+          nullable: true
+        expiration_action:
+          type: object
+          additionalProperties: {}
+          nullable: true
+        expired_status:
+          type: object
+          additionalProperties: {}
+          nullable: true
+          readOnly: true
+          description: If this parameter expires, the status of the last attempt to
+            handle its expiration
       required:
       - created_at
+      - expired_status
       - id
       - modified_at
       - name
       - project
+      - secret
     PatchedAwsIntegration:
       type: object
       properties:
@@ -12899,13 +13190,11 @@ components:
           description: The AWS services to integrate with.
         aws_external_id:
           type: string
+          readOnly: true
           description: This is a shared secret between the AWS Administrator who set
             up your IAM trust relationship and your CloudTruth AWS Integration.  CloudTruth
             will generate a random value for you to give to your AWS Administrator
             in order to create the necessary IAM role for proper access.
-          minLength: 2
-          pattern: ^[\w+=,.@:/\-]*$
-          maxLength: 1224
         aws_kms_key_id:
           type: string
           nullable: true
@@ -12924,6 +13213,10 @@ components:
           pattern: ^[\w+=,.@\-]+$
           maxLength: 64
           minLength: 2
+        resource_tags:
+          type: object
+          additionalProperties: {}
+          description: A list of tags to be set on all integration resources.
     PatchedAwsPull:
       type: object
       description: |-
@@ -13151,6 +13444,10 @@ components:
         writable:
           type: boolean
           description: Allow actions to write to the integration.
+        resource_tags:
+          type: object
+          additionalProperties: {}
+          description: A list of tags to be set on all integration resources.
         vault_name:
           type: string
           readOnly: true
@@ -13437,7 +13734,7 @@ components:
             A pattern pull uses a pattern-matching resource string with mustache-style markers to identify the project, parameter, and environment names, or with a Python regular expression that uses named capture groups that define the same three concepts.
 
             A mapped pull uses a specific resource and JMESpath expression to deliver a value to a specific project, parameter, and environment.  This leverages external value linkages made in the value editor, and there is one mapped pull per integration provided by the system so that you can trigger external value pull synchronizations.
-    PatchedGrant:
+    PatchedGrantUpdate:
       type: object
       properties:
         url:
@@ -13623,6 +13920,9 @@ components:
           - $ref: '#/components/schemas/VersionEnum'
           readOnly: true
           description: The current version of this Organization
+        notification_config:
+          type: object
+          additionalProperties: {}
         current:
           type: boolean
           readOnly: true
@@ -13677,6 +13977,7 @@ components:
       properties:
         id:
           type: string
+          format: uuid
           readOnly: true
         parameter:
           type: string
@@ -13710,6 +14011,7 @@ components:
       properties:
         id:
           type: string
+          format: uuid
           readOnly: true
         parameter_type:
           type: string
@@ -13735,7 +14037,9 @@ components:
       properties:
         id:
           type: string
+          format: uuid
           readOnly: true
+          description: A unique identifier for the parameter type.
         name:
           type: string
           description: The parameter type name.
@@ -13781,14 +14085,17 @@ components:
             maintain software that uses this content.
         secret:
           type: boolean
+          readOnly: true
           description: Indicates if this content is secret or not.  External values
             are inspected on-demand to ensure they align with the parameter's secret
             setting and if they do not, those external values are not allowed to be
             used.
         type:
           type: string
-          default: string
-          description: The type of this Parameter.
+          description: "\n        The type of this Parameter.  If not provided, this\
+            \ will default to\n        a string for Parameters that are not overrides\
+            \ or to the overridden\n        Parameter's type for Parameters that are\
+            \ overrides.\n        "
         project:
           type: string
           format: uri
@@ -13803,6 +14110,20 @@ components:
           format: date-time
           readOnly: true
           nullable: true
+        expires:
+          type: string
+          nullable: true
+        expiration_action:
+          type: object
+          additionalProperties: {}
+          nullable: true
+        expired_status:
+          type: object
+          additionalProperties: {}
+          nullable: true
+          readOnly: true
+          description: If this parameter expires, the status of the last attempt to
+            handle its expiration
     PatchedProjectUpdate:
       type: object
       properties:
@@ -13870,6 +14191,11 @@ components:
           type: string
           description: An optional description of the process or system using the
             service account.
+        keys:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceAccountAPIKey'
+          readOnly: true
         created_at:
           type: string
           format: date-time
@@ -13951,6 +14277,14 @@ components:
           format: date-time
           readOnly: true
           nullable: true
+    PatchedUpdateUser:
+      type: object
+      properties:
+        chatgpt_threads:
+          type: object
+          additionalProperties: {}
+          nullable: true
+          description: The threads this user is participating in with ChatGPT.
     PatchedValueUpdate:
       type: object
       description: |-
@@ -14058,6 +14392,7 @@ components:
         depends_on:
           type: string
           format: uri
+          readOnly: true
           nullable: true
           description: |-
             Project dependencies allow projects to be used for shared configuration, for example a database used by many applications needs to advertise its port number.
@@ -14075,16 +14410,15 @@ components:
         pushes:
           type: array
           items:
-            $ref: '#/components/schemas/AwsPush'
+            type: string
           readOnly: true
-          description: Deprecated. Only shows pushes for aws integrations in /api/v1/.
+          description: Deprecated. Blank.
         push_urls:
           type: array
           items:
             type: string
-            format: uri
           readOnly: true
-          description: Push actions associated with the project.
+          description: Deprecated. Blank.
         created_at:
           type: string
           format: date-time
@@ -14097,6 +14431,7 @@ components:
       required:
       - created_at
       - dependents
+      - depends_on
       - id
       - ledger_id
       - modified_at
@@ -14165,6 +14500,16 @@ components:
             Project dependencies allow projects to be used for shared configuration, for example a database used by many applications needs to advertise its port number.
 
             Projects can depend on another project which will add the parameters from the parent project into the current project.  All of the parameter names between the two projects must be unique.  When retrieving values or rendering templates, all of the parameters from the parent project will also be available in the current project.
+        copy_rbac:
+          type: boolean
+          writeOnly: true
+          default: false
+          description: If depends_on is set and has RBAC enabled and this field is
+            True, RBAC will be enabled and grants from the dependency are copied to
+            this project.  If depends_on is set and has RBAC enabled and this field
+            is False, RBAC will be enabled but only the minimal necessary grants will
+            be assigned to the newly created project.   Not used when depends_on is
+            not set or RBAC is not enabled for the dependency.
       required:
       - name
     ProjectUpdate:
@@ -14247,6 +14592,11 @@ components:
           type: string
           description: An optional description of the process or system using the
             service account.
+        keys:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceAccountAPIKey'
+          readOnly: true
         created_at:
           type: string
           format: date-time
@@ -14266,10 +14616,43 @@ components:
       required:
       - created_at
       - id
+      - keys
       - last_used_at
       - modified_at
       - url
       - user
+    ServiceAccountAPIKey:
+      type: object
+      properties:
+        name:
+          type: string
+          description: A free-form name for the API key. Need not be unique. 50 characters
+            max.
+          maxLength: 50
+        prefix:
+          type: string
+          readOnly: true
+        revoked:
+          type: boolean
+          description: If the API key is revoked, clients cannot use it anymore. (This
+            cannot be undone.)
+        has_expired:
+          type: boolean
+          readOnly: true
+        created:
+          type: string
+          format: date-time
+          readOnly: true
+        expiry_date:
+          type: string
+          format: date-time
+          nullable: true
+          title: Expires
+          description: Once API key expires, clients cannot use it anymore.
+      required:
+      - created
+      - has_expired
+      - prefix
     ServiceAccountCreateRequest:
       type: object
       properties:
@@ -14313,6 +14696,11 @@ components:
           type: string
           description: An optional description of the process or system using the
             service account.
+        keys:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceAccountAPIKey'
+          readOnly: true
         created_at:
           type: string
           format: date-time
@@ -14337,10 +14725,19 @@ components:
       - apikey
       - created_at
       - id
+      - keys
       - last_used_at
       - modified_at
       - url
       - user
+    ServiceAccountRekeyRequest:
+      type: object
+      properties:
+        expire_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: The date and time the previous API key will expire.
     ServiceAccountUpdateRequest:
       type: object
       properties:
@@ -14383,6 +14780,7 @@ components:
           type: string
           format: uri
           readOnly: true
+          description: The URL for the tag.
         id:
           type: string
           format: uuid
@@ -14412,7 +14810,7 @@ components:
           items:
             $ref: '#/components/schemas/AwsPush'
           readOnly: true
-          description: Deprecated. Only shows pushes for aws integrations in /api/v1/.
+          description: Deprecated. Use `push_urls` instead.
         push_urls:
           type: array
           items:
@@ -14919,6 +15317,16 @@ components:
       - id
       - modified_at
       - name
+    UpdateUser:
+      type: object
+      properties:
+        chatgpt_threads:
+          type: object
+          additionalProperties: {}
+          nullable: true
+          description: The threads this user is participating in with ChatGPT.
+      required:
+      - chatgpt_threads
     User:
       type: object
       properties:
@@ -14948,6 +15356,12 @@ components:
           nullable: true
           readOnly: true
           description: Membership identifier for user.
+        chatgpt_threads:
+          type: object
+          nullable: true
+          additionalProperties: {}
+          readOnly: true
+          description: The threads this user is participating in with ChatGPT.
         role:
           type: string
           nullable: true
@@ -14972,6 +15386,7 @@ components:
           readOnly: true
           nullable: true
       required:
+      - chatgpt_threads
       - created_at
       - email
       - id
@@ -15116,6 +15531,11 @@ components:
           format: date-time
           readOnly: true
           nullable: true
+        expires_at:
+          type: string
+          format: date-time
+          nullable: true
+          readOnly: true
       required:
       - active_environment
       - active_environment_id
@@ -15125,6 +15545,7 @@ components:
       - environment_id
       - environment_name
       - evaluated
+      - expires_at
       - external_error
       - external_status
       - id
@@ -15259,6 +15680,7 @@ components:
       - 1
       - 2
       - 3
+      - 4
       type: integer
   securitySchemes:
     ApiKeyAuth:
@@ -15296,4 +15718,3 @@ components:
       scheme: bearer
 externalDocs:
   url: https://docs.cloudtruth.com/
-

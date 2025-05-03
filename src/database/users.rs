@@ -213,6 +213,7 @@ impl Users {
             created_at: None,
             modified_at: None,
             last_used_at: None,
+            keys: None,
         };
         let response = serviceaccounts_partial_update(rest_cfg, user_id, Some(user_update));
         match response {
