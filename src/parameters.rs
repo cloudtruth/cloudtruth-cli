@@ -941,8 +941,10 @@ fn proc_param_set(
                 secret,
                 param_type,
             )?;
-            // copy a few fields to insure we detect the correct environment
+            // copy a few fields to ensure we detect the correct environment
             updated.val_id = original.val_id;
+            updated.val_url = original.val_url;
+            updated.project_url = original.project_url;
             updated.env_url = original.env_url;
             updated.env_name = original.env_name;
         } else {
