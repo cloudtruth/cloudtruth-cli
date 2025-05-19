@@ -8,7 +8,7 @@
         releaseVersion:
           description: CLI release version to download and install
           type: string
-          default: '1.2.6'
+          default: '1.2.7'
         runsOn:
           description: The runner to run the workflow on
           type: string

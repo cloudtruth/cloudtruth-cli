@@ -446,7 +446,7 @@ dependencies = [
 
 [[package]]
 name = "cloudtruth"
-version = "1.2.6"
+version = "1.2.7"
 dependencies = [
  "aes-gcm",
  "base64 0.13.1",
@@ -492,7 +492,7 @@ dependencies = [
 
 [[package]]
 name = "cloudtruth-config"
-version = "1.2.6"
+version = "1.2.7"
 dependencies = [
  "assert_matches",
  "chrono",
@@ -508,7 +508,7 @@ dependencies = [
 
 [[package]]
 name = "cloudtruth-installer"
-version = "1.2.6"
+version = "1.2.7"
 dependencies = [
  "powershell_script 1.0.4",
  "reqwest",
@@ -529,7 +529,7 @@ dependencies = [
 
 [[package]]
 name = "cloudtruth-test-harness"
-version = "1.2.6"
+version = "1.2.7"
 dependencies = [
  "anyhow",
  "assert_cmd",
@@ -556,7 +556,7 @@ dependencies = [
 
 [[package]]
 name = "cloudtruth-test-macros"
-version = "1.2.6"
+version = "1.2.7"
 dependencies = [
  "proc-macro2",
  "quote",

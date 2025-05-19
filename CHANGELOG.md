@@ -1,3 +1,6 @@
+# 1.2.7 - 2025-05-19
+* updated parameters will now properly update their values
+
 # 1.2.6 - 2025-04-29
 * fixed bug where values of overridden parameters were not updated correctly
 
