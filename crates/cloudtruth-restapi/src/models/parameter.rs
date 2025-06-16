@@ -24,9 +24,9 @@ pub struct Parameter {
     pub name: String,
     #[serde(rename = "description", skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
-    #[serde(rename = "secret", skip_serializing_if = "Option::is_none")]
-    pub secret: Option<bool>,
-    /// The type of this Parameter.
+    #[serde(rename = "secret")]
+    pub secret: bool,
+    ///          The type of this Parameter.  If not provided, this will default to         a string for Parameters that are not overrides or to the overridden         Parameter's type for Parameters that are overrides.         
     #[serde(rename = "type", skip_serializing_if = "Option::is_none")]
     pub _type: Option<String>,
     /// Rules applied to this parameter.
@@ -66,6 +66,7 @@ impl Parameter {
         id: String,
         ledger_id: String,
         name: String,
+        secret: bool,
         rules: Vec<crate::models::ParameterRule>,
         project: String,
         project_name: String,
@@ -83,7 +84,7 @@ impl Parameter {
             ledger_id,
             name,
             description: None,
-            secret: None,
+            secret,
             _type: None,
             rules,
             project,

@@ -2452,6 +2452,7 @@ pub fn projects_parameters_values_create(
     parameter_pk: &str,
     project_pk: &str,
     value_create: crate::models::ValueCreate,
+    environment: Option<&str>,
     evaluate: Option<bool>,
 ) -> Result<crate::models::Value, Error<ProjectsParametersValuesCreateError>> {
     let local_var_configuration = configuration;
@@ -2467,6 +2468,10 @@ pub fn projects_parameters_values_create(
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::POST, local_var_uri_str.as_str());
 
+    if let Some(ref local_var_str) = environment {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("environment", &local_var_str.to_string())]);
+    }
     if let Some(ref local_var_str) = evaluate {
         local_var_req_builder =
             local_var_req_builder.query(&[("evaluate", &local_var_str.to_string())]);
@@ -2540,6 +2545,7 @@ pub fn projects_parameters_values_destroy(
     id: &str,
     parameter_pk: &str,
     project_pk: &str,
+    environment: Option<&str>,
     evaluate: Option<bool>,
 ) -> Result<(), Error<ProjectsParametersValuesDestroyError>> {
     let local_var_configuration = configuration;
@@ -2556,6 +2562,10 @@ pub fn projects_parameters_values_destroy(
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::DELETE, local_var_uri_str.as_str());
 
+    if let Some(ref local_var_str) = environment {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("environment", &local_var_str.to_string())]);
+    }
     if let Some(ref local_var_str) = evaluate {
         local_var_req_builder =
             local_var_req_builder.query(&[("evaluate", &local_var_str.to_string())]);
@@ -2627,6 +2637,7 @@ pub fn projects_parameters_values_list(
     parameter_pk: &str,
     project_pk: &str,
     as_of: Option<String>,
+    environment: Option<&str>,
     evaluate: Option<bool>,
     exclude: Option<&str>,
     include: Option<&str>,
@@ -2651,6 +2662,10 @@ pub fn projects_parameters_values_list(
     if let Some(ref local_var_str) = as_of {
         local_var_req_builder =
             local_var_req_builder.query(&[("as_of", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = environment {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("environment", &local_var_str.to_string())]);
     }
     if let Some(ref local_var_str) = evaluate {
         local_var_req_builder =
@@ -2747,6 +2762,7 @@ pub fn projects_parameters_values_partial_update(
     id: &str,
     parameter_pk: &str,
     project_pk: &str,
+    environment: Option<&str>,
     evaluate: Option<bool>,
     patched_value_update: Option<crate::models::PatchedValueUpdate>,
 ) -> Result<crate::models::ValueUpdate, Error<ProjectsParametersValuesPartialUpdateError>> {
@@ -2764,6 +2780,10 @@ pub fn projects_parameters_values_partial_update(
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::PATCH, local_var_uri_str.as_str());
 
+    if let Some(ref local_var_str) = environment {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("environment", &local_var_str.to_string())]);
+    }
     if let Some(ref local_var_str) = evaluate {
         local_var_req_builder =
             local_var_req_builder.query(&[("evaluate", &local_var_str.to_string())]);
@@ -2838,6 +2858,7 @@ pub fn projects_parameters_values_retrieve(
     parameter_pk: &str,
     project_pk: &str,
     as_of: Option<String>,
+    environment: Option<&str>,
     evaluate: Option<bool>,
     exclude: Option<&str>,
     include: Option<&str>,
@@ -2861,6 +2882,10 @@ pub fn projects_parameters_values_retrieve(
     if let Some(ref local_var_str) = as_of {
         local_var_req_builder =
             local_var_req_builder.query(&[("as_of", &local_var_str.to_string())]);
+    }
+    if let Some(ref local_var_str) = environment {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("environment", &local_var_str.to_string())]);
     }
     if let Some(ref local_var_str) = evaluate {
         local_var_req_builder =
@@ -2949,6 +2974,7 @@ pub fn projects_parameters_values_update(
     id: &str,
     parameter_pk: &str,
     project_pk: &str,
+    environment: Option<&str>,
     evaluate: Option<bool>,
     value_update: Option<crate::models::ValueUpdate>,
 ) -> Result<crate::models::ValueUpdate, Error<ProjectsParametersValuesUpdateError>> {
@@ -2966,6 +2992,10 @@ pub fn projects_parameters_values_update(
     let mut local_var_req_builder =
         local_var_client.request(reqwest::Method::PUT, local_var_uri_str.as_str());
 
+    if let Some(ref local_var_str) = environment {
+        local_var_req_builder =
+            local_var_req_builder.query(&[("environment", &local_var_str.to_string())]);
+    }
     if let Some(ref local_var_str) = evaluate {
         local_var_req_builder =
             local_var_req_builder.query(&[("evaluate", &local_var_str.to_string())]);
