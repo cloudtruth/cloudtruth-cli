@@ -61,14 +61,14 @@ fn proc_env_list(
         println!("{}", list.join("\n"));
     } else {
         let mut table = Table::new("environment");
-        let mut hdr = vec!["Name", "Parent", "Description"];
+        let mut hdr = vec!["ID", "Name", "Parent", "Description"];
         if show_times {
             hdr.push("Created At");
             hdr.push("Modified At");
         }
         table.set_header(&hdr);
         for entry in details {
-            let mut row = vec![entry.name, entry.parent_name, entry.description];
+            let mut row = vec![entry.id, entry.name, entry.parent_name, entry.description];
             if show_times {
                 row.push(entry.created_at);
                 row.push(entry.modified_at);
@@ -219,7 +219,14 @@ fn proc_env_tag_list(
             println!("{}", list.join("\n"))
         } else {
             let mut table = Table::new("environment-tags");
-            let hdr = vec!["Name", "Timestamp", "Description", "Immutable"];
+            let hdr = vec![
+                "ID",
+                "Name",
+                "Timestamp",
+                "Description",
+                "Immutable",
+                "Environment_ID",
+            ];
             // if show_usage {
             //     hdr.push("Last User");
             //     hdr.push("Last Time");
@@ -228,10 +235,12 @@ fn proc_env_tag_list(
             table.set_header(&hdr);
             for entry in tags {
                 let row = vec![
+                    entry.id,
                     entry.name,
                     entry.timestamp,
                     entry.description,
                     entry.immutable.map(|i| i.to_string()).unwrap_or_default(),
+                    env_id.clone(),
                 ];
                 // if show_usage {
                 //     row.push(entry.last_use_user);
