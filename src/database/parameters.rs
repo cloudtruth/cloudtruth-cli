@@ -142,6 +142,7 @@ impl Parameters {
                     &details.id,
                     proj_id,
                     None,
+                    None,
                 );
                 match del_resp {
                     Ok(_) => Ok(Some(details.val_id)),
@@ -483,6 +484,8 @@ impl Parameters {
             description: description.map(String::from),
             secret,
             _type: param_type.map(String::from),
+            expiration_action: None,
+            expires: None,
         };
         let response = projects_parameters_create(rest_cfg, proj_id, param_new);
         match response {
@@ -517,6 +520,9 @@ impl Parameters {
             created_at: None,
             modified_at: None,
             project: None,
+            expiration_action: None,
+            expires: None,
+            expired_status: None,
         };
         let response =
             projects_parameters_partial_update(rest_cfg, param_id, proj_id, Some(param_update));
@@ -581,8 +587,14 @@ impl Parameters {
             external_filter: jmes_path.map(|v| v.to_string()),
             interpolated: evaluated,
         };
-        let response =
-            projects_parameters_values_create(rest_cfg, param_id, proj_id, value_create, None);
+        let response = projects_parameters_values_create(
+            rest_cfg,
+            param_id,
+            proj_id,
+            value_create,
+            None,
+            None,
+        );
         match response {
             Ok(api_value) => Ok(api_value.id),
             Err(ResponseError(ref content)) => match content.status.as_u16() {
@@ -626,6 +638,7 @@ impl Parameters {
             value_id,
             param_id,
             proj_id,
+            None,
             None,
             Some(value_update),
         );
