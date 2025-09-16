@@ -109,3 +109,9 @@ jobs:
           #> ${NEXTEST_OUTPUT_JSON_FILE}
 
 
+      - name: Publish Test Report
+        uses: mikepenz/action-junit-report@v4
+        if: success() || failure()
+        with:
+          report_paths: 'target/nextest/ci/*.xml'
+

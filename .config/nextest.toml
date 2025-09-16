@@ -20,6 +20,9 @@ final-status-level = "slow"
 # continue if a test fails in CI
 fail-fast = false
 
+# output JUnit XML report
+junit = { path = "report.xml" }
+
 ##### Configuration overrides for integration tests in CI runs #####
 [[profile.ci.overrides]]
 filter = "kind(test)"
