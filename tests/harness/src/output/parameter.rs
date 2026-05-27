@@ -96,10 +96,10 @@ pub struct ParamDiffEntry {
 }
 
 impl ParamDiffEntry {
-    pub fn split_fields(&self, env: impl AsRef<str>) -> impl Iterator<Item = Cow<str>> {
+    pub fn split_fields(&self, env: impl AsRef<str>) -> impl Iterator<Item = Cow<'_, str>> {
         self.envs[env.as_ref()]
             .split(',')
-            .map(|s| s.replace(|c| c == '"' || c == '\n', "").into())
+            .map(|s| s.replace(['"', '\n'], "").into())
     }
 }
 

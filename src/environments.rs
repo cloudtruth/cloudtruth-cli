@@ -147,7 +147,7 @@ fn proc_env_tree(
 ) -> Result<()> {
     let start = subcmd_args.value_of(NAME_ARG).unwrap();
     let details = environments.get_environment_details(rest_cfg)?;
-    if details.iter().filter(|x| x.name == start).last().is_some() {
+    if details.iter().rfind(|x| x.name == start).is_some() {
         println!("{start}");
         print_children(1, start, &details);
     } else {

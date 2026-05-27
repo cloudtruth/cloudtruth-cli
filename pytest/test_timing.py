@@ -7,7 +7,6 @@ from typing import List
 from testcase import TestCase
 from testcase import CT_REST_DEBUG
 
-
 # some environment variables for test control (without file modification)
 CT_PERSIST = "CLOUDTRUTH_TEST_PERSIST"
 CT_PARAM_COUNT = "CLOUDTRUTH_TEST_PARAMETER_COUNT"

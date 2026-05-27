@@ -2,15 +2,17 @@ use crate::config_date::naive_date_serde;
 use chrono::{Duration, NaiveDate};
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Debug, Copy, Clone, PartialOrd, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Debug, Copy, Clone, PartialOrd, PartialEq, Eq, Default)]
 pub enum Frequency {
     Daily,
+    #[default]
     Weekly,
     Monthly,
 }
 
-#[derive(Serialize, Deserialize, Debug, Copy, Clone, PartialOrd, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Debug, Copy, Clone, PartialOrd, PartialEq, Eq, Default)]
 pub enum Action {
+    #[default]
     Warn,
     Error,
     Update,
@@ -35,18 +37,6 @@ impl Frequency {
             Self::Weekly => 7,
             Self::Monthly => 30,
         }
-    }
-}
-
-impl Default for Frequency {
-    fn default() -> Self {
-        Self::Weekly
-    }
-}
-
-impl Default for Action {
-    fn default() -> Self {
-        Self::Warn
     }
 }
 

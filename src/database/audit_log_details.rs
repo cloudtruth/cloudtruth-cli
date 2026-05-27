@@ -1,6 +1,7 @@
 use cloudtruth_restapi::models::AuditTrail;
 
 #[derive(Clone, Debug)]
+#[allow(dead_code)]
 pub struct AuditLogDetails {
     pub id: String,
     pub action: String,

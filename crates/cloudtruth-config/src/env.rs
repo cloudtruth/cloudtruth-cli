@@ -27,11 +27,7 @@ impl ConfigEnv {
     pub fn get_override(config_name: &str) -> Option<String> {
         let value = env::var(config_name);
 
-        if let Ok(value) = value {
-            Some(value)
-        } else {
-            None
-        }
+        value.ok()
     }
 
     pub fn get_duration_override() -> Option<u64> {
@@ -67,10 +63,7 @@ impl ConfigEnv {
 
     pub fn get_rest_page_size() -> Option<i32> {
         match Self::get_override(CT_REST_PAGE_SIZE) {
-            Some(env_value) => match env_value.trim().parse() {
-                Ok(int_value) => Some(int_value),
-                _ => None,
-            },
+            Some(env_value) => env_value.trim().parse().ok(),
             _ => None,
         }
     }

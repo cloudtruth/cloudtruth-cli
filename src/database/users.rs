@@ -139,7 +139,7 @@ impl Users {
         user_accounts.retain(|x| x.account_type != "service");
         total.append(&mut user_accounts);
 
-        total.sort_by(|l, r| l.name.to_lowercase().cmp(&r.name.to_lowercase()));
+        total.sort_by_key(|l| l.name.to_lowercase());
         Ok(total)
     }
 

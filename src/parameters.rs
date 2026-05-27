@@ -327,8 +327,7 @@ fn get_env_order_for(parent_name: &str, environments: &[EnvironmentDetails]) -> 
 fn get_env_order(environments: &[EnvironmentDetails]) -> Vec<String> {
     let default_url = environments
         .iter()
-        .filter(|v| v.name == DEFAULT_ENV_NAME)
-        .last()
+        .rfind(|v| v.name == DEFAULT_ENV_NAME)
         .unwrap()
         .url
         .clone();

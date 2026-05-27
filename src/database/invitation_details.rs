@@ -2,6 +2,7 @@ use cloudtruth_restapi::models::Invitation;
 
 /// This is to provide a unified view of users that includes `ServiceAccount` and `User` properties.
 #[derive(Clone, Debug)]
+#[allow(dead_code)]
 pub struct InvitationDetails {
     pub id: String,
     pub url: String,

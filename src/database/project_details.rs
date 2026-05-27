@@ -1,6 +1,7 @@
 use cloudtruth_restapi::models::Project;
 
 #[derive(Clone, Debug)]
+#[allow(dead_code)]
 pub struct ProjectDetails {
     pub id: String,
     pub url: String,

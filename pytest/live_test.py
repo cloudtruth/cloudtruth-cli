@@ -21,7 +21,6 @@ from testcase import CT_TEST_JOB_ID, CT_TEST_LOG_COMMANDS, CT_TEST_LOG_OUTPUT
 from testcase import CT_TEST_LOG_COMMANDS_ON_FAILURE, CT_TEST_LOG_OUTPUT_ON_FAILURE
 from testcase import CT_TEST_KNOWN_ISSUES
 
-
 # NOTE: these constants are used to determine tag names
 ERROR = "error"
 FAILURE = "failure"

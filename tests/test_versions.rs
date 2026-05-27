@@ -8,7 +8,7 @@ fn test_versions() {
     let version = str::from_utf8(&version_cmd.get_output().stdout)
         .unwrap()
         .split(' ')
-        .last()
+        .next_back()
         .unwrap()
         .trim()
         .to_string();

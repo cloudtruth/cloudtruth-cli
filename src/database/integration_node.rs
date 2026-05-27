@@ -2,6 +2,7 @@ use crate::database::last_from_url;
 use cloudtruth_restapi::models::IntegrationNode as IntegrationExplorer;
 
 #[derive(Debug)]
+#[allow(dead_code)]
 pub struct IntegrationNode {
     pub fqn: String,
     pub jmes_path: String,

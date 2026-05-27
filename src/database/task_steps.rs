@@ -1,5 +1,6 @@
 use cloudtruth_restapi::models::{AwsPullTaskStep, AwsPushTaskStep, GitHubPullTaskStep, TaskStep};
 
+#[allow(dead_code)]
 pub struct TaskStepDetails {
     pub url: String,
     pub id: String,

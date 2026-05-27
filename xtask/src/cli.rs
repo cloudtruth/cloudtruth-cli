@@ -66,7 +66,7 @@ pub enum TaskCommand {
 }
 
 impl Cli {
-    pub fn get_cicd_config(&self) -> Result<&Config> {
+    pub fn get_cicd_config(&self) -> Result<&Config<'_>> {
         static CONFIG_YAML: OnceCell<String> = OnceCell::new();
         static CONFIG: OnceCell<Config> = OnceCell::new();
         CONFIG.get_or_try_init(|| {

@@ -35,11 +35,11 @@ pub fn extract_from_json(value: &serde_json::Value) -> String {
         // this handles produces output for a TemplateLookupError -- parameter_id and error_code go unused
         let param_name = obj.get("parameter_name");
         let detail = obj.get("error_detail");
-        if param_name.is_some() && detail.is_some() {
+        if let (Some(param_name), Some(detail)) = (param_name, detail) {
             return format!(
                 "{}: {}",
-                param_name.unwrap().as_str().unwrap(),
-                detail.unwrap().as_str().unwrap()
+                param_name.as_str().unwrap(),
+                detail.as_str().unwrap()
             );
         }
 
@@ -77,10 +77,7 @@ pub fn response_message(status: &reqwest::StatusCode, content: &str) -> String {
 
 /// Gets the last part of the URL as the identifier
 pub fn last_from_url(url: &str) -> &str {
-    url.split('/')
-        .filter(|&x| !x.is_empty())
-        .last()
-        .unwrap_or_default()
+    url.split('/').rfind(|&x| !x.is_empty()).unwrap_or_default()
 }
 
 pub fn parent_id_from_url<'a>(url: &'a str, child: &'a str) -> &'a str {

@@ -1,5 +1,6 @@
 use cloudtruth_restapi::models::ImportParameter;
 
+#[allow(dead_code)]
 pub struct ImportDetails {
     pub project_name: String,
     pub project_id: String,

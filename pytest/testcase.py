@@ -12,7 +12,6 @@ from typing import Dict
 from typing import List
 from typing import Optional
 
-
 # These are environment variable names used by the application
 CT_API_KEY = "CLOUDTRUTH_API_KEY"
 CT_ENV = "CLOUDTRUTH_ENVIRONMENT"

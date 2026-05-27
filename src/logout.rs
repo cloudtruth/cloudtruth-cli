@@ -60,7 +60,7 @@ pub fn process_logout_command(subcmd_args: &ArgMatches, config: &Config) -> Resu
         }
         if open_page {
             let open_result = webbrowser::open(&api_key_url);
-            if open_result.is_err() {
+            if let Err(err) = open_result {
                 printdoc!(
                     r#"
                     "Failed to open browser:
@@ -69,7 +69,7 @@ pub fn process_logout_command(subcmd_args: &ArgMatches, config: &Config) -> Resu
                     You can manually open '{}' to delete an API key/token.
 
                     "#,
-                    open_result.unwrap_err().to_string(),
+                    err.to_string(),
                     api_key_url,
                 );
             }
