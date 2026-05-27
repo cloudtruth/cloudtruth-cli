@@ -1,7 +1,7 @@
 ```console
 $ cloudtruth groups delete --help
 cloudtruth[EXE]-groups-delete 
-Delete specified CloudTruth user group
+Delete specified Sigma Config user group
 
 USAGE:
     cloudtruth[EXE] groups delete [FLAGS] <NAME>

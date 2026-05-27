@@ -1,7 +1,7 @@
 ```console
 $ cloudtruth backup --help
 cloudtruth[EXE]-backup 
-Manage backups of CloudTruth data
+Manage backups of Sigma Config data
 
 USAGE:
     cloudtruth[EXE] backup [SUBCOMMAND]

@@ -1,7 +1,7 @@
 ```console
 $ cloudtruth users get --help
 cloudtruth[EXE]-users-get 
-Get detailed CloudTruth user information
+Get detailed Sigma Config user information
 
 USAGE:
     cloudtruth[EXE] users get <NAME>

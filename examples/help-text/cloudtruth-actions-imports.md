@@ -1,7 +1,7 @@
 ```console
 $ cloudtruth actions imports --help
 cloudtruth[EXE]-actions-imports 
-Manage CloudTruth imports
+Manage Sigma Config imports
 
 USAGE:
     cloudtruth[EXE] actions imports [SUBCOMMAND]
@@ -11,13 +11,13 @@ FLAGS:
     -V, --version    Prints version information
 
 SUBCOMMANDS:
-    delete        Delete a CloudTruth import [aliases: del, d]
-    get           Gets all the information for the specified CloudTruth import
+    delete        Delete a Sigma Config import [aliases: del, d]
+    get           Gets all the information for the specified Sigma Config import
     help          Prints this message or the help of the given subcommand(s)
-    list          List CloudTruth imports [aliases: ls, l]
-    set           Create/modify CloudTruth integration import [aliases: s]
+    list          List Sigma Config imports [aliases: ls, l]
+    set           Create/modify Sigma Config integration import [aliases: s]
     sync          Manually initiate action on existing import [aliases: syn, sy]
-    task-steps    List task steps for the specified CloudTruth import [aliases: steps, step, st, ts]
-    tasks         List tasks for the specified CloudTruth import [aliases: task, ta, t]
+    task-steps    List task steps for the specified Sigma Config import [aliases: steps, step, st, ts]
+    tasks         List tasks for the specified Sigma Config import [aliases: task, ta, t]
 
 ```

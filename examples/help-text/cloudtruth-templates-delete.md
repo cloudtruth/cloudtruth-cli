@@ -1,7 +1,7 @@
 ```console
 $ cloudtruth templates delete --help
 cloudtruth[EXE]-templates-delete 
-Delete the CloudTruth template
+Delete the Sigma Config template
 
 USAGE:
     cloudtruth[EXE] templates delete [FLAGS] <NAME>

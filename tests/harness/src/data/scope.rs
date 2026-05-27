@@ -3,7 +3,7 @@ use crate::data::{DeleteTestResource, Name, NameConstructors, TestResource};
 use crate::sigint_handler::{SigintHandler, SigintResourceHandle};
 use std::ops::{Deref, DerefMut};
 
-/// A generic CloudTruth entity scoped via Rust borrow checker.
+/// A generic Sigma Config entity scoped via Rust borrow checker.
 ///
 /// Scoped entities are automatically deleted by the Scope's Drop
 /// implementation when the value leaves scope.

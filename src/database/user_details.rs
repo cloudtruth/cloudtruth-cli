@@ -73,7 +73,7 @@ fn default_user() -> &'static User {
     })
 }
 
-/// Converts from the OpenApi `User` model to the CloudTruth `UserDetails`
+/// Converts from the OpenApi `User` model to the Sigma Config `UserDetails`
 impl From<&User> for UserDetails {
     fn from(api: &User) -> Self {
         Self {
@@ -96,7 +96,7 @@ impl From<&User> for UserDetails {
     }
 }
 
-/// Converts from the OpenApi `ServiceAccount` model to the CloudTruth `UserDetails`
+/// Converts from the OpenApi `ServiceAccount` model to the Sigma Config `UserDetails`
 impl From<&ServiceAccount> for UserDetails {
     fn from(api: &ServiceAccount) -> Self {
         let user: &User;

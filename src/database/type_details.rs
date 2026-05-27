@@ -14,7 +14,7 @@ pub struct TypeDetails {
     pub modified_at: String,
 }
 
-/// Converts from the OpenApi `ParameterType` model to the CloudTruth `TypeDetails`
+/// Converts from the OpenApi `ParameterType` model to the Sigma Config `TypeDetails`
 impl From<&ParameterType> for TypeDetails {
     fn from(api_ptype: &ParameterType) -> Self {
         Self {
@@ -35,7 +35,7 @@ impl From<&ParameterType> for TypeDetails {
     }
 }
 
-/// Converts from the OpenApi `ParameterTypeUpdate` model to the CloudTruth `TypeDetails`
+/// Converts from the OpenApi `ParameterTypeUpdate` model to the Sigma Config `TypeDetails`
 impl From<&ParameterTypeUpdate> for TypeDetails {
     fn from(api_ptype: &ParameterTypeUpdate) -> Self {
         Self {

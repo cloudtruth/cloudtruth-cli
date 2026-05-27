@@ -1,7 +1,7 @@
 ```console
 $ cloudtruth groups set --help
 cloudtruth[EXE]-groups-set 
-Create/update a CloudTruth user group
+Create/update a Sigma Config user group
 
 USAGE:
     cloudtruth[EXE] groups set [OPTIONS] <NAME>

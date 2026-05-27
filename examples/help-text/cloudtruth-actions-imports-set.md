@@ -1,7 +1,7 @@
 ```console
 $ cloudtruth actions imports set --help
 cloudtruth[EXE]-actions-imports-set 
-Create/modify CloudTruth integration import
+Create/modify Sigma Config integration import
 
 USAGE:
     cloudtruth[EXE] actions imports set [FLAGS] [OPTIONS] <import-name>

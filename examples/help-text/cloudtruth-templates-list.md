@@ -1,7 +1,7 @@
 ```console
 $ cloudtruth templates list --help
 cloudtruth[EXE]-templates-list 
-List CloudTruth templates
+List Sigma Config templates
 
 USAGE:
     cloudtruth[EXE] templates list [FLAGS] [OPTIONS]

@@ -1247,7 +1247,7 @@ fn proc_param_drift(
 
     let mut deltas: Vec<DriftDetails> = vec![];
 
-    // loop through the CloudTruth environment and add items changed in or not present in the shell
+    // loop through the Sigma Config environment and add items changed in or not present in the shell
     for (k, details) in &param_map {
         let show_this = show_secrets || !details.secret;
         if !env_vars.contains_key(k) {
@@ -1272,7 +1272,7 @@ fn proc_param_drift(
         }
     }
 
-    // loop through shell environment, and add items not in the CloudTruth environment
+    // loop through shell environment, and add items not in the Sigma Config environment
     for (k, v) in &env_vars {
         if !param_map.contains_key(k) {
             deltas.push(DriftDetails {
@@ -1296,7 +1296,7 @@ fn proc_param_drift(
             .collect::<Vec<String>>();
         println!("{}", list.join("\n"));
     } else {
-        let hdr = vec!["Name", "Difference", "CloudTruth", "Shell"];
+        let hdr = vec!["Name", "Difference", "Sigma Config", "Shell"];
         let props = vec!["name", "action", "server", "current"];
         let mut table = Table::new("parameter-drift");
         table.set_header(&hdr);

@@ -1,7 +1,7 @@
 ```console
 $ cloudtruth actions pushes --help
 cloudtruth[EXE]-actions-pushes 
-Manage CloudTruth pushes
+Manage Sigma Config pushes
 
 USAGE:
     cloudtruth[EXE] actions pushes [SUBCOMMAND]
@@ -11,13 +11,13 @@ FLAGS:
     -V, --version    Prints version information
 
 SUBCOMMANDS:
-    delete        Delete a CloudTruth push [aliases: del, d]
-    get           Gets all the information for the specified CloudTruth push
+    delete        Delete a Sigma Config push [aliases: del, d]
+    get           Gets all the information for the specified Sigma Config push
     help          Prints this message or the help of the given subcommand(s)
-    list          List CloudTruth pushes [aliases: ls, l]
-    set           Create/modify CloudTruth integration push [aliases: s]
+    list          List Sigma Config pushes [aliases: ls, l]
+    set           Create/modify Sigma Config integration push [aliases: s]
     sync          Manually initiate action on existing push [aliases: syn, sy]
-    task-steps    List task steps for the specified CloudTruth push [aliases: steps, step, st, ts]
-    tasks         List tasks for the specified CloudTruth push [aliases: task, ta, t]
+    task-steps    List task steps for the specified Sigma Config push [aliases: steps, step, st, ts]
+    tasks         List tasks for the specified Sigma Config push [aliases: task, ta, t]
 
 ```

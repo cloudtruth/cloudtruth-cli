@@ -1,7 +1,7 @@
 ```console
 $ cloudtruth actions imports list --help
 cloudtruth[EXE]-actions-imports-list 
-List CloudTruth imports
+List Sigma Config imports
 
 USAGE:
     cloudtruth[EXE] actions imports list [FLAGS] [OPTIONS]

@@ -1,7 +1,7 @@
 ```console
 $ cloudtruth groups list --help
 cloudtruth[EXE]-groups-list 
-List CloudTruth user groups
+List Sigma Config user groups
 
 USAGE:
     cloudtruth[EXE] groups list [FLAGS] [OPTIONS]

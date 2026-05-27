@@ -1,8 +1,8 @@
-CloudTruth CLI Integration Test
+Sigma Config CLI Integration Test
 ===============================
 
-The CloudTruth CLI Integration, `live_test.py`, is a Python program designed to exercise the CLI and
-CloudTruth service.
+The Sigma Config CLI Integration, `live_test.py`, is a Python program designed to exercise the CLI and
+Sigma Config service.
 
 Sometimes the tests leave around remnants that can be cleaned up with `cleanup.py`. By default, it uses
 common filters to determine which items should be cleaned up, but the filters are an argument. Basically, the

@@ -1,7 +1,7 @@
 ```console
 $ cloudtruth import --help
 cloudtruth[EXE]-import 
-Perform imports into the CloudTruth environment
+Perform imports into the Sigma Config environment
 
 USAGE:
     cloudtruth[EXE] import [SUBCOMMAND]

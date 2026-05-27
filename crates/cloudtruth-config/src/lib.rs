@@ -37,7 +37,7 @@ pub const DEFAULT_PROF_NAME: &str = "default";
 /*************************************************************************
  Environment variables - all should start with (CLOUDTRUTH_).
 ************************************************************************/
-/// Environment variable name used to specify the CloudTruth API value, so it does not need to be
+/// Environment variable name used to specify the Sigma Config API value, so it does not need to be
 /// specified on the command line.
 pub const CT_API_KEY: &str = "CLOUDTRUTH_API_KEY";
 

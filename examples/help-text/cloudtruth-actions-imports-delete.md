@@ -1,7 +1,7 @@
 ```console
 $ cloudtruth actions imports delete --help
 cloudtruth[EXE]-actions-imports-delete 
-Delete a CloudTruth import
+Delete a Sigma Config import
 
 USAGE:
     cloudtruth[EXE] actions imports delete [FLAGS] [OPTIONS] <import-name>

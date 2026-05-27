@@ -6,7 +6,7 @@ fn generated_test_id() -> String {
     Uuid::new_v4().to_string()
 }
 
-/// A newtype wrapper around String representing a generic CloudTruth entity name.
+/// A newtype wrapper around String representing a generic Sigma Config entity name.
 /// Used as a base for other name types.
 #[derive(Display, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Name(String);

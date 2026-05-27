@@ -1,7 +1,7 @@
 ```console
 $ cloudtruth projects list --help
 cloudtruth[EXE]-projects-list 
-List CloudTruth projects
+List Sigma Config projects
 
 USAGE:
     cloudtruth[EXE] projects list [FLAGS] [OPTIONS]

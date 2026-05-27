@@ -14,7 +14,7 @@ pub struct ProjectDetails {
     pub modified_at: String,
 }
 
-/// Converts from the OpenApi `Project` model to the CloudTruth `ProjectDetails`
+/// Converts from the OpenApi `Project` model to the Sigma Config `ProjectDetails`
 impl From<&Project> for ProjectDetails {
     fn from(api_proj: &Project) -> Self {
         Self {

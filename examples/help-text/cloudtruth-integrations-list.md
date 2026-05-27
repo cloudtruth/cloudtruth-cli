@@ -1,7 +1,7 @@
 ```console
 $ cloudtruth integrations list --help
 cloudtruth[EXE]-integrations-list 
-List CloudTruth integrations
+List Sigma Config integrations
 
 USAGE:
     cloudtruth[EXE] integrations list [FLAGS] [OPTIONS]

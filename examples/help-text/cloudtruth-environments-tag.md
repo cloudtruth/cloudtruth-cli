@@ -13,7 +13,7 @@ FLAGS:
 SUBCOMMANDS:
     delete    Delete an environment tag value [aliases: del, d]
     help      Prints this message or the help of the given subcommand(s)
-    list      List CloudTruth environment tags [aliases: ls, l]
+    list      List Sigma Config environment tags [aliases: ls, l]
     set       Create/update an environment tag [aliases: s]
 
 ```

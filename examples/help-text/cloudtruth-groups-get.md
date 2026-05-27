@@ -1,7 +1,7 @@
 ```console
 $ cloudtruth groups get --help
 cloudtruth[EXE]-groups-get 
-Get detailed CloudTruth user group information
+Get detailed Sigma Config user group information
 
 USAGE:
     cloudtruth[EXE] groups get <NAME>

@@ -1,7 +1,7 @@
 ```console
 $ cloudtruth environments set --help
 cloudtruth[EXE]-environments-set 
-Create/update a CloudTruth environment
+Create/update a Sigma Config environment
 
 USAGE:
     cloudtruth[EXE] environments set [OPTIONS] <NAME>

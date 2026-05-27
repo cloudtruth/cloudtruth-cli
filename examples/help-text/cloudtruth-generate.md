@@ -1,7 +1,7 @@
 ```console
 $ cloudtruth generate --help
 cloudtruth[EXE]-generate 
-Generate items using CloudTruth service
+Generate items using Sigma Config service
 
 USAGE:
     cloudtruth[EXE] generate [SUBCOMMAND]

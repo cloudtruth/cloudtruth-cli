@@ -1,7 +1,7 @@
 ```console
 $ cloudtruth logout --help
 cloudtruth[EXE]-logout 
-Removes a CloudTruth configuration profile api_key
+Removes a Sigma Config configuration profile api_key
 
 USAGE:
     cloudtruth[EXE] logout [FLAGS]

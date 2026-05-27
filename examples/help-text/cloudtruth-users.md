@@ -1,7 +1,7 @@
 ```console
 $ cloudtruth users --help
 cloudtruth[EXE]-users 
-Work with CloudTruth users
+Work with Sigma Config users
 
 USAGE:
     cloudtruth[EXE] users [SUBCOMMAND]
@@ -12,11 +12,11 @@ FLAGS:
 
 SUBCOMMANDS:
     current        Display information about current user [aliases: cur, c]
-    delete         Delete specified CloudTruth account [aliases: del, d]
-    get            Get detailed CloudTruth user information
+    delete         Delete specified Sigma Config account [aliases: del, d]
+    get            Get detailed Sigma Config user information
     help           Prints this message or the help of the given subcommand(s)
     invitations    Manage user invitations [aliases: invitation, invite, inv, in, i]
-    list           List CloudTruth users [aliases: ls, l]
-    set            Create/update a CloudTruth service account [aliases: s]
+    list           List Sigma Config users [aliases: ls, l]
+    set            Create/update a Sigma Config service account [aliases: s]
 
 ```

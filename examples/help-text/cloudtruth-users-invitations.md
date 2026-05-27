@@ -15,6 +15,6 @@ SUBCOMMANDS:
     help      Prints this message or the help of the given subcommand(s)
     list      List user invitations [aliases: ls, l]
     resend    Resend the user invitation to the specified user [aliases: re, r]
-    set       Create/update a CloudTruth user invitation [aliases: s]
+    set       Create/update a Sigma Config user invitation [aliases: s]
 
 ```

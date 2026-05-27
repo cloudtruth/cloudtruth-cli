@@ -1,7 +1,7 @@
 ```console
 $ cloudtruth projects --help
 cloudtruth[EXE]-projects 
-Work with CloudTruth projects
+Work with Sigma Config projects
 
 USAGE:
     cloudtruth[EXE] projects [SUBCOMMAND]
@@ -12,10 +12,10 @@ FLAGS:
 
 SUBCOMMANDS:
     copy      Copy a project and its children to new project(s) [aliases: cp]
-    delete    Delete specified CloudTruth project [aliases: del, d]
+    delete    Delete specified Sigma Config project [aliases: del, d]
     help      Prints this message or the help of the given subcommand(s)
-    list      List CloudTruth projects [aliases: ls, l]
-    set       Create/update a CloudTruth project [aliases: s]
-    tree      Display CloudTruth project inheritance [aliases: tr]
+    list      List Sigma Config projects [aliases: ls, l]
+    set       Create/update a Sigma Config project [aliases: s]
+    tree      Display Sigma Config project inheritance [aliases: tr]
 
 ```

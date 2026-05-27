@@ -1,7 +1,7 @@
 ```console
 $ cloudtruth configuration profiles --help
 cloudtruth[EXE]-configuration-profiles 
-Work with CloudTruth CLI profiles
+Work with Sigma Config CLI profiles
 
 USAGE:
     cloudtruth[EXE] configuration profiles [SUBCOMMAND]

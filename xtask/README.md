@@ -54,7 +54,7 @@ If you change the help text of a command and would like to regenerate the test c
 
 ## Clean Up Integration Test Data With `cleanup`
 
-The `cleanup` command will use the CloudTruth CLI to perform bulk data cleanup. This is useful when running integration tests because sometimes the data does not get fully cleaned at the end of test execution. The `cleanup` will use your current Cloudtruth CLI configuration to bulk delete resources that match the input substrings given via command-line arguments.
+The `cleanup` command will use the Sigma Config CLI to perform bulk data cleanup. This is useful when running integration tests because sometimes the data does not get fully cleaned at the end of test execution. The `cleanup` will use your current Sigma Config CLI configuration to bulk delete resources that match the input substrings given via command-line arguments.
 
 Example:
 ```sh

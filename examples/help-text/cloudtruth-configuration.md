@@ -14,6 +14,6 @@ SUBCOMMANDS:
     current     Show the current arguments and their sources. [aliases: curr, cur, c]
     edit        Edit your configuration data for this application [aliases: ed, e]
     help        Prints this message or the help of the given subcommand(s)
-    profiles    Work with CloudTruth CLI profiles [aliases: profile, prof, pr, p]
+    profiles    Work with Sigma Config CLI profiles [aliases: profile, prof, pr, p]
 
 ```

@@ -1,7 +1,7 @@
 ```console
 $ cloudtruth templates get --help
 cloudtruth[EXE]-templates-get 
-Get an evaluated template from CloudTruth
+Get an evaluated template from Sigma Config
 
 USAGE:
     cloudtruth[EXE] templates get [FLAGS] [OPTIONS] <NAME>

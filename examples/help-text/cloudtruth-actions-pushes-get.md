@@ -1,7 +1,7 @@
 ```console
 $ cloudtruth actions pushes get --help
 cloudtruth[EXE]-actions-pushes-get 
-Gets all the information for the specified CloudTruth push
+Gets all the information for the specified Sigma Config push
 
 USAGE:
     cloudtruth[EXE] actions pushes get [OPTIONS] <push-name>

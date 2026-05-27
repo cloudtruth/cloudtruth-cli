@@ -12,7 +12,7 @@ pub struct EnvironmentDetails {
     pub modified_at: String,
 }
 
-/// Converts the OpenApi `Environment` reference into a CloudTruth `EnvironmentDetails` object.
+/// Converts the OpenApi `Environment` reference into a Sigma Config `EnvironmentDetails` object.
 ///
 /// The `parent_name` is filled in later, so it can be done with a map of URLs to names.
 impl From<&Environment> for EnvironmentDetails {

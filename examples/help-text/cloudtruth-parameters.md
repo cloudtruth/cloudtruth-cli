@@ -1,7 +1,7 @@
 ```console
 $ cloudtruth parameters --help
 cloudtruth[EXE]-parameters 
-Work with CloudTruth parameters
+Work with Sigma Config parameters
 
 USAGE:
     cloudtruth[EXE] parameters [SUBCOMMAND]
@@ -21,7 +21,7 @@ SUBCOMMANDS:
                    [aliases: expo, exp, ex]
     get            Gets value for parameter in the selected environment
     help           Prints this message or the help of the given subcommand(s)
-    list           List CloudTruth parameters [aliases: ls, l]
+    list           List Sigma Config parameters [aliases: ls, l]
     pushes         Show push task steps for parameters [aliases: push, pu, p]
     set            Set a value in the selected project/environment for an existing parameter or creates a new one if
                    needed [aliases: s]

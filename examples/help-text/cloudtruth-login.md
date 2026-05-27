@@ -1,7 +1,7 @@
 ```console
 $ cloudtruth login --help
 cloudtruth[EXE]-login 
-Sets up a CloudTruth configuration profile api_key
+Sets up a Sigma Config configuration profile api_key
 
 USAGE:
     cloudtruth[EXE] login [FLAGS]

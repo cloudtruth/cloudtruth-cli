@@ -147,7 +147,7 @@ impl ParamDrift {
 #[serde(rename_all = "PascalCase")]
 pub struct ParamDriftEntry {
     pub name: String,
-    #[serde(rename = "CloudTruth")]
+    #[serde(rename = "Sigma Config")]
     pub cloudtruth: String,
     pub shell: String,
     pub difference: String,

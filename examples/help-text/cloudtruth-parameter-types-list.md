@@ -1,7 +1,7 @@
 ```console
 $ cloudtruth parameter-types list --help
 cloudtruth[EXE]-parameter-types-list 
-List CloudTruth parameter types
+List Sigma Config parameter types
 
 USAGE:
     cloudtruth[EXE] parameter-types list [FLAGS] [OPTIONS]

@@ -14,7 +14,7 @@ OPTIONS:
     -e, --env <ENVIRONMENT>     Default environment for profile (use "" to remove)
     -p, --proj <PROJECT>        Default project for profile (use "" to remove)
     -s, --source <SOURCE>       Source (or parent) profile
-    -k, --api-key <api_key>     CloudTruth API key
+    -k, --api-key <api_key>     Sigma Config API key
     -d, --desc <description>    Profile's description
 
 ARGS:

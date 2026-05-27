@@ -1,7 +1,7 @@
 ```console
 $ cloudtruth parameter-types delete --help
 cloudtruth[EXE]-parameter-types-delete 
-Delete specified CloudTruth parameter type
+Delete specified Sigma Config parameter type
 
 USAGE:
     cloudtruth[EXE] parameter-types delete [FLAGS] <NAME>

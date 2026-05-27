@@ -1,7 +1,7 @@
 ```console
 $ cloudtruth templates set --help
 cloudtruth[EXE]-templates-set 
-Set the CloudTruth template
+Set the Sigma Config template
 
 USAGE:
     cloudtruth[EXE] templates set [OPTIONS] <NAME>

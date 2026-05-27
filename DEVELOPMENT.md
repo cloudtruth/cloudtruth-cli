@@ -1,6 +1,6 @@
-CloudTruth CLI Development Guide
+Sigma Config CLI Development Guide
 ==========================
-- [CloudTruth CLI Development Guide](#cloudtruth-cli-development-guide)
+- [Sigma Config CLI Development Guide](#sigma-config-cli-development-guide)
   - [Getting Started](#getting-started)
     - [Installing The Development Environment](#installing-the-development-environment)
     - [Configuration](#configuration)
@@ -48,7 +48,7 @@ To use the CLI, you'll need to configure a profile with a server URL and API key
 Building
 --------
 
-The CloudTruth CLI is written in Rust, using the Rust 2021 edition. The target rustc version is configured in the [rust-toolchain.toml](rust-toolchain.toml) file. To build the application with debug info, check out the source code and then run:
+The Sigma Config CLI is written in Rust, using the Rust 2021 edition. The target rustc version is configured in the [rust-toolchain.toml](rust-toolchain.toml) file. To build the application with debug info, check out the source code and then run:
 
 `cargo build`
 
@@ -107,7 +107,7 @@ cargo xtest
 
 ### Integration Tests
 
-The integration tests run against the CloudTruth service, and verify a wide range of CLI functionality. To run the tests, you'll need an API key with admin access.
+The integration tests run against the Sigma Config service, and verify a wide range of CLI functionality. To run the tests, you'll need an API key with admin access.
 
 The tests live in the `tests` directory and can be run using cargo-nextest:
 
@@ -180,7 +180,7 @@ debugcloudtruth () {
         args="$args'$arg', "
     done
     args="$args]"
-    launch_config="{type: 'lldb', request: 'launch', name: 'CloudTruth', sourceLanguages: ['rust'], program: '\${fileWorkspaceFolder}/target/debug/cloudtruth', args: $args}"
+    launch_config="{type: 'lldb', request: 'launch', name: 'Sigma Config', sourceLanguages: ['rust'], program: '\${fileWorkspaceFolder}/target/debug/cloudtruth', args: $args}"
     debug_url='vscode://vadimcn.vscode-lldb/launch/config'
     code --wait --reuse-window --verbose --open-url "$debug_url?$launch_config"
 }

@@ -1,7 +1,7 @@
 ```console
 $ cloudtruth projects set --help
 cloudtruth[EXE]-projects-set 
-Create/update a CloudTruth project
+Create/update a Sigma Config project
 
 USAGE:
     cloudtruth[EXE] projects set [OPTIONS] <NAME>

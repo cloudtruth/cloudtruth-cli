@@ -1,7 +1,7 @@
 ```console
 $ cloudtruth projects delete --help
 cloudtruth[EXE]-projects-delete 
-Delete specified CloudTruth project
+Delete specified Sigma Config project
 
 USAGE:
     cloudtruth[EXE] projects delete [FLAGS] <NAME>

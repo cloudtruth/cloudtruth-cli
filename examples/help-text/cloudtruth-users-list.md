@@ -1,7 +1,7 @@
 ```console
 $ cloudtruth users list --help
 cloudtruth[EXE]-users-list 
-List CloudTruth users
+List Sigma Config users
 
 USAGE:
     cloudtruth[EXE] users list [FLAGS] [OPTIONS]

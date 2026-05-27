@@ -25,7 +25,7 @@ impl ConfigFile {
             r#"
             # You can have multiple profiles to group your configuration. E.g., if you use multiple
             # projects, you can create two separate profiles each with its own role appropriate API
-            # key. When you invoke the CloudTruth CLI tool, you can pass an argument to choose
+            # key. When you invoke the Sigma Config CLI tool, you can pass an argument to choose
             # which profile to load. Profiles can inherit values from other profiles by using the
             # `source_profile` setting, providing it with the name of another profile. Profile
             # chains can be arbitrarily deep, but may not contain cycles.

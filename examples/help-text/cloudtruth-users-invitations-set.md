@@ -1,7 +1,7 @@
 ```console
 $ cloudtruth users invitations set --help
 cloudtruth[EXE]-users-invitations-set 
-Create/update a CloudTruth user invitation
+Create/update a Sigma Config user invitation
 
 USAGE:
     cloudtruth[EXE] users invitations set [OPTIONS] <e-mail>

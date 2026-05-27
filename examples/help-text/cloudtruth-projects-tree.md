@@ -1,7 +1,7 @@
 ```console
 $ cloudtruth projects tree --help
 cloudtruth[EXE]-projects-tree 
-Display CloudTruth project inheritance
+Display Sigma Config project inheritance
 
 USAGE:
     cloudtruth[EXE] projects tree

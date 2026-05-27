@@ -268,7 +268,7 @@ fn api_key_arg() -> Arg<'static, 'static> {
     Arg::with_name(API_KEY_OPT)
         .short("k")
         .long("api-key")
-        .help("CloudTruth API key")
+        .help("Sigma Config API key")
         .takes_value(true)
 }
 
@@ -468,14 +468,14 @@ fn push_check_owner_arg() -> Arg<'static, 'static> {
     Arg::with_name("CHECK_OWNER")
         .long("no-force")
         .visible_alias("check-owner")
-        .help("Make sure CloudTruth is the destination owner ")
+        .help("Make sure Sigma Config is the destination owner ")
 }
 
 fn push_no_check_owner_arg() -> Arg<'static, 'static> {
     Arg::with_name("NO_CHECK_OWNER")
         .long("force")
         .visible_alias("no-check-owner")
-        .help("Allow the push even if CloudTruth is not the destination owner")
+        .help("Allow the push even if Sigma Config is not the destination owner")
 }
 
 fn push_local_arg() -> Arg<'static, 'static> {
@@ -493,37 +493,37 @@ fn push_no_local_arg() -> Arg<'static, 'static> {
 fn push_coerce_params_arg() -> Arg<'static, 'static> {
     Arg::with_name("COERCE_PARAMS")
         .long("coerce-params")
-        .help("Include non-secret CloudTruth parameters, even in a secret store destination")
+        .help("Include non-secret Sigma Config parameters, even in a secret store destination")
 }
 
 fn push_no_coerce_params_arg() -> Arg<'static, 'static> {
     Arg::with_name("NO_COERCE_PARAMS")
         .long("no-coerce-params")
-        .help("Do not include non-secret CloudTruth parameters in a secret store destination")
+        .help("Do not include non-secret Sigma Config parameters in a secret store destination")
 }
 
 fn push_include_params_arg() -> Arg<'static, 'static> {
     Arg::with_name("INCLUDE_PARAMS")
         .long("include-parameters")
-        .help("Include non-secret CloudTruth parameters in the values being pushed")
+        .help("Include non-secret Sigma Config parameters in the values being pushed")
 }
 
 fn push_no_include_params_arg() -> Arg<'static, 'static> {
     Arg::with_name("NO_INCLUDE_PARAMS")
         .long("no-include-parameters")
-        .help("Do not include non-secret CloudTruth parameters in the values being pushed")
+        .help("Do not include non-secret Sigma Config parameters in the values being pushed")
 }
 
 fn push_include_secrets_arg() -> Arg<'static, 'static> {
     Arg::with_name("INCLUDE_SECRETS")
         .long("include-secrets")
-        .help("Include secret CloudTruth parameters in the values being pushed")
+        .help("Include secret Sigma Config parameters in the values being pushed")
 }
 
 fn push_no_include_secrets_arg() -> Arg<'static, 'static> {
     Arg::with_name("NO_INCLUDE_SECRETS")
         .long("no-include-secrets")
-        .help("Do not include secret CloudTruth parameters in the values being pushed")
+        .help("Do not include secret Sigma Config parameters in the values being pushed")
 }
 
 fn push_include_templates_arg() -> Arg<'static, 'static> {
@@ -579,7 +579,7 @@ pub fn build_cli() -> App<'static, 'static> {
             Arg::with_name("env")
                 .short("e")
                 .long("env")
-                .help("The CloudTruth environment to work with")
+                .help("The Sigma Config environment to work with")
                 .takes_value(true),
         )
         .arg(
@@ -591,7 +591,7 @@ pub fn build_cli() -> App<'static, 'static> {
         .arg(
             Arg::with_name("project")
                 .long("project")
-                .help("The CloudTruth project to work with")
+                .help("The Sigma Config project to work with")
                 .takes_value(true)
         )
         .subcommand(SubCommand::with_name("audit-logs")
@@ -669,7 +669,7 @@ pub fn build_cli() -> App<'static, 'static> {
                     .about("Edit your configuration data for this application"),
                 SubCommand::with_name("profiles")
                     .visible_aliases(&["profile", "prof", "pr", "p"])
-                    .about("Work with CloudTruth CLI profiles")
+                    .about("Work with Sigma Config CLI profiles")
                     .subcommands(vec![
                         SubCommand::with_name(DELETE_SUBCMD)
                             .visible_aliases(DELETE_ALIASES)
@@ -718,22 +718,22 @@ pub fn build_cli() -> App<'static, 'static> {
         .subcommand(
             SubCommand::with_name("environments")
                 .visible_aliases(&["environment", "envs", "env", "e"])
-                .about("Work with CloudTruth environments")
+                .about("Work with Sigma Config environments")
                 .subcommands(vec![
                     SubCommand::with_name(DELETE_SUBCMD)
                         .visible_aliases(DELETE_ALIASES)
-                        .about("Delete specified CloudTruth environment")
+                        .about("Delete specified Sigma Config environment")
                         .arg(name_arg().help("Environment name"))
                         .arg(confirm_flag()),
                     SubCommand::with_name(LIST_SUBCMD)
                         .visible_aliases(LIST_ALIASES)
-                        .about("List CloudTruth environments")
+                        .about("List Sigma Config environments")
                         .arg(show_times_arg())
                         .arg(values_flag().help("Display environment information/values"))
                         .arg(table_format_options().help("Format for environment values data")),
                     SubCommand::with_name(SET_SUBCMD)
                         .visible_aliases(SET_ALIASES)
-                        .about("Create/update a CloudTruth environment")
+                        .about("Create/update a Sigma Config environment")
                         .arg(name_arg().help("Environment name"))
                         .arg(description_option().help("Environment's description"))
                         .arg(rename_option().help("New environment name"))
@@ -759,7 +759,7 @@ pub fn build_cli() -> App<'static, 'static> {
                                 //     .help("Display tag usage data"))
                                 .arg(values_flag().help("Display environment tag information"))
                                 .arg(table_format_options().help("Format for environment tag values data"))
-                                .about("List CloudTruth environment tags"),
+                                .about("List Sigma Config environment tags"),
                             SubCommand::with_name(SET_SUBCMD)
                                 .visible_aliases(SET_ALIASES)
                                 .arg(env_name_arg())
@@ -798,15 +798,15 @@ pub fn build_cli() -> App<'static, 'static> {
                 ])
         )
         .subcommand(SubCommand::with_name("login")
-            .about("Sets up a CloudTruth configuration profile api_key")
+            .about("Sets up a Sigma Config configuration profile api_key")
             .arg(confirm_flag()))
         .subcommand(SubCommand::with_name("logout")
-            .about("Removes a CloudTruth configuration profile api_key")
+            .about("Removes a Sigma Config configuration profile api_key")
             .arg(confirm_flag()))
         .subcommand(
             SubCommand::with_name("integrations")
                 .visible_aliases(&["integration", "integrate", "integ", "int", "in"])
-                .about("Work with CloudTruth integrations")
+                .about("Work with Sigma Config integrations")
                 .subcommands(vec![
                     SubCommand::with_name("explore")
                         .visible_aliases(&["exp", "ex", "e"])
@@ -825,7 +825,7 @@ pub fn build_cli() -> App<'static, 'static> {
                         .arg(integration_name_arg()),
                     SubCommand::with_name(LIST_SUBCMD)
                         .visible_aliases(LIST_ALIASES)
-                        .about("List CloudTruth integrations")
+                        .about("List Sigma Config integrations")
                         .arg(show_times_arg())
                         .arg(values_flag().help("Display integration information/values"))
                         .arg(table_format_options().help("Format for integration values data")),
@@ -838,7 +838,7 @@ pub fn build_cli() -> App<'static, 'static> {
         .subcommand(
             SubCommand::with_name("parameters")
                 .visible_aliases(&["parameter", "params", "param", "par", "pa", "p"])
-                .about("Work with CloudTruth parameters")
+                .about("Work with Sigma Config parameters")
                 .subcommands(vec![
                     SubCommand::with_name(COPY_SUBCMD)
                         .visible_aliases(COPY_ALIASES)
@@ -910,7 +910,7 @@ pub fn build_cli() -> App<'static, 'static> {
                         .arg(key_arg().help("Name of parameter to get")),
                     SubCommand::with_name(LIST_SUBCMD)
                         .visible_aliases(LIST_ALIASES)
-                        .about("List CloudTruth parameters")
+                        .about("List Sigma Config parameters")
                         .arg(Arg::with_name("external")
                             .long("external")
                             .alias("dynamic")
@@ -1038,11 +1038,11 @@ pub fn build_cli() -> App<'static, 'static> {
         )
         .subcommand(SubCommand::with_name("templates")
             .visible_aliases(&["template", "temp", "te", "t"])
-            .about("Work with CloudTruth templates")
+            .about("Work with Sigma Config templates")
             .subcommands(vec![
                 SubCommand::with_name(DELETE_SUBCMD)
                     .visible_aliases(DELETE_ALIASES)
-                    .about("Delete the CloudTruth template")
+                    .about("Delete the Sigma Config template")
                     .arg(confirm_flag())
                     .arg(name_arg().help("Template name")),
                 SubCommand::with_name(DIFF_SUBCMD)
@@ -1064,7 +1064,7 @@ pub fn build_cli() -> App<'static, 'static> {
                     .about("Edit the specified template")
                     .arg(name_arg().help("Template name")),
                 SubCommand::with_name(GET_SUBCMD)
-                    .about("Get an evaluated template from CloudTruth")
+                    .about("Get an evaluated template from Sigma Config")
                     .arg(raw_arg().help("Display unevaluated template body"))
                     .arg(as_of_arg().help(" Date/time (or tag) of template (and parameters)"))
                     .arg(secrets_display_flag().help("Display secret values in evaluation"))
@@ -1080,7 +1080,7 @@ pub fn build_cli() -> App<'static, 'static> {
                     .arg(values_flag().help("Display template information/values"))
                     .arg(table_format_options().help("Format for template values data"))
                     .arg(show_times_arg())
-                    .about("List CloudTruth templates"),
+                    .about("List Sigma Config templates"),
                 SubCommand::with_name("preview")
                     .about("Evaluate the provided local template file without storing")
                     .visible_aliases(&["prev", "pre"])
@@ -1093,11 +1093,11 @@ pub fn build_cli() -> App<'static, 'static> {
                     .arg(template_body().takes_value(true).short("b").long("body"))
                     .arg(rename_option().help("New template name"))
                     .arg(description_option().help("Template description"))
-                    .about("Set the CloudTruth template"),
+                    .about("Set the Sigma Config template"),
                 SubCommand::with_name("validate")
                     .visible_aliases(&["valid", "val", "v"])
                     .arg(name_arg().help("Template name"))
-                    .about("Validate a CloudTruth template"),
+                    .about("Validate a Sigma Config template"),
             ])
         )
         .subcommand(
@@ -1116,19 +1116,19 @@ pub fn build_cli() -> App<'static, 'static> {
                         .possible_value( "overlay")
                         .possible_value("exclusive")
                         .default_value("overlay")
-                        .help("Handle the relationship between local and CloudTruth environments"),
+                        .help("Handle the relationship between local and Sigma Config environments"),
                     Arg::with_name("set")
                         .long("set")
                         .short("s")
                         .takes_value(true)
                         .multiple(true)
-                        .help("Set the variables in this run, even possibly overriding the CloudTruth environment"),
+                        .help("Set the variables in this run, even possibly overriding the Sigma Config environment"),
                     Arg::with_name("remove")
                         .long("remove")
                         .short("r")
                         .takes_value(true)
                         .multiple(true)
-                        .help("Remove the variables from the CloudTruth environment for this run"),
+                        .help("Remove the variables from the Sigma Config environment for this run"),
                     Arg::with_name("command")
                         .long("command")
                         .short("c")
@@ -1143,7 +1143,7 @@ pub fn build_cli() -> App<'static, 'static> {
                     Arg::with_name("permissive")
                         .long("permissive")
                         .short("p")
-                        .help("Allow CloudTruth application variables through"),
+                        .help("Allow Sigma Config application variables through"),
                     Arg::with_name("strict")
                         .long("strict")
                         .help("Fail when any parameters are unset"),
@@ -1153,7 +1153,7 @@ pub fn build_cli() -> App<'static, 'static> {
         .subcommand(
             SubCommand::with_name("projects")
                 .visible_aliases(&["project", "proj"])
-                .about("Work with CloudTruth projects")
+                .about("Work with Sigma Config projects")
                 .subcommands(vec![
                     SubCommand::with_name(COPY_SUBCMD)
                         .visible_aliases(COPY_ALIASES)
@@ -1165,48 +1165,48 @@ pub fn build_cli() -> App<'static, 'static> {
                         .arg(Arg::with_name(COPY_DEST_NAME_ARG).required(true).index(2).help("Destination project name")),
                     SubCommand::with_name(DELETE_SUBCMD)
                         .visible_aliases(DELETE_ALIASES)
-                        .about("Delete specified CloudTruth project")
+                        .about("Delete specified Sigma Config project")
                         .arg(name_arg().help("Project name"))
                         .arg(confirm_flag()),
                     SubCommand::with_name(LIST_SUBCMD)
                         .visible_aliases(LIST_ALIASES)
-                        .about("List CloudTruth projects")
+                        .about("List Sigma Config projects")
                         .arg(show_times_arg())
                         .arg(values_flag().help("Display project information/values"))
                         .arg(table_format_options().help("Format for project values data")),
                     SubCommand::with_name(SET_SUBCMD)
                         .visible_aliases(SET_ALIASES)
-                        .about("Create/update a CloudTruth project")
+                        .about("Create/update a Sigma Config project")
                         .arg(parent_arg().help("Parent project name, use empty string to remove parent"))
                         .arg(name_arg().help("Project name"))
                         .arg(rename_option().help("New project name"))
                         .arg(description_option().help("Project's description")),
                     SubCommand::with_name(TREE_SUBCMD)
                         .visible_aliases(TREE_ALIASES)
-                        .about("Display CloudTruth project inheritance"),
+                        .about("Display Sigma Config project inheritance"),
                 ])
         )
         .subcommand(SubCommand::with_name("actions")
             .visible_aliases(&["action", "act", "ac"])
-            .about("Manage CloudTruth actions")
+            .about("Manage Sigma Config actions")
             .subcommands(vec![
                 SubCommand::with_name(PUSH_SUBCMD)
                     .visible_aliases(PUSH_ALIASES)
-                    .about("Manage CloudTruth pushes")
+                    .about("Manage Sigma Config pushes")
                     .subcommands(vec![
                         SubCommand::with_name(DELETE_SUBCMD)
                             .visible_aliases(DELETE_ALIASES)
-                            .about("Delete a CloudTruth push")
+                            .about("Delete a Sigma Config push")
                             .arg(confirm_flag())
                             .arg(integration_name_opt())
                             .arg(push_name_arg()),
                         SubCommand::with_name(GET_SUBCMD)
-                            .about("Gets all the information for the specified CloudTruth push")
+                            .about("Gets all the information for the specified Sigma Config push")
                             .arg(integration_name_opt())
                             .arg(push_name_arg()),
                         SubCommand::with_name(LIST_SUBCMD)
                             .visible_aliases(LIST_ALIASES)
-                            .about("List CloudTruth pushes")
+                            .about("List Sigma Config pushes")
                             .arg(integration_name_opt())
                             .arg(values_flag().help("Show push info values"))
                             .arg(show_times_arg())
@@ -1216,7 +1216,7 @@ pub fn build_cli() -> App<'static, 'static> {
                             .arg(project_name_opt()),
                         SubCommand::with_name(SET_SUBCMD)
                             .visible_aliases(SET_ALIASES)
-                            .about("Create/modify CloudTruth integration push")
+                            .about("Create/modify Sigma Config integration push")
                             .arg(integration_name_opt()
                                 .help("Integration name (required for create)"))
                             .arg(push_name_arg())
@@ -1301,7 +1301,7 @@ pub fn build_cli() -> App<'static, 'static> {
                             .arg(push_no_include_templates_arg()),
                         SubCommand::with_name(TASK_STEPS_SUBCMD)
                             .visible_aliases(TASK_STEPS_ALIASES)
-                            .about("List task steps for the specified CloudTruth push")
+                            .about("List task steps for the specified Sigma Config push")
                             .arg(integration_name_opt())
                             .arg(push_name_arg())
                             .arg(values_flag().help("Show push task step info values"))
@@ -1309,7 +1309,7 @@ pub fn build_cli() -> App<'static, 'static> {
                             .arg(table_format_options().help("Push task steps info format")),
                         SubCommand::with_name(TASKS_SUBCMD)
                             .visible_aliases(TASKS_ALIASES)
-                            .about("List tasks for the specified CloudTruth push")
+                            .about("List tasks for the specified Sigma Config push")
                             .arg(integration_name_opt())
                             .arg(push_name_arg())
                             .arg(values_flag().help("Show push task info values"))
@@ -1318,28 +1318,28 @@ pub fn build_cli() -> App<'static, 'static> {
                     ]),
                 SubCommand::with_name(IMPORT_SUBCMD)
                     .visible_aliases(IMPORT_ALIASES)
-                    .about("Manage CloudTruth imports")
+                    .about("Manage Sigma Config imports")
                     .subcommands(vec![
                         SubCommand::with_name(DELETE_SUBCMD)
                             .visible_aliases(DELETE_ALIASES)
-                            .about("Delete a CloudTruth import")
+                            .about("Delete a Sigma Config import")
                             .arg(confirm_flag())
                             .arg(integration_name_opt())
                             .arg(pull_name_arg()),
                         SubCommand::with_name(GET_SUBCMD)
-                            .about("Gets all the information for the specified CloudTruth import")
+                            .about("Gets all the information for the specified Sigma Config import")
                             .arg(pull_name_arg())
                             .arg(integration_name_opt()),
                         SubCommand::with_name(LIST_SUBCMD)
                             .visible_aliases(LIST_ALIASES)
-                            .about("List CloudTruth imports")
+                            .about("List Sigma Config imports")
                             .arg(integration_name_opt())
                             .arg(values_flag().help("Show import info values"))
                             .arg(show_times_arg())
                             .arg(table_format_options().help("Format for import info")),
                         SubCommand::with_name(SET_SUBCMD)
                             .visible_aliases(SET_ALIASES)
-                            .about("Create/modify CloudTruth integration import")
+                            .about("Create/modify Sigma Config integration import")
                             .arg(pull_name_arg())
                             .arg(integration_name_opt().help("Integration name (required on create)"))
                             .arg(rename_option().help("New import name"))
@@ -1373,7 +1373,7 @@ pub fn build_cli() -> App<'static, 'static> {
                             .arg(integration_name_opt()),
                         SubCommand::with_name(TASK_STEPS_SUBCMD)
                             .visible_aliases(TASK_STEPS_ALIASES)
-                            .about("List task steps for the specified CloudTruth import")
+                            .about("List task steps for the specified Sigma Config import")
                             .arg(integration_name_opt())
                             .arg(pull_name_arg())
                             .arg(values_flag().help("Show import task step info values"))
@@ -1381,7 +1381,7 @@ pub fn build_cli() -> App<'static, 'static> {
                             .arg(table_format_options().help("Import task step info format")),
                         SubCommand::with_name(TASKS_SUBCMD)
                             .visible_aliases(TASKS_ALIASES)
-                            .about("List tasks for the specified CloudTruth import")
+                            .about("List tasks for the specified Sigma Config import")
                             .arg(pull_name_arg())
                             .arg(integration_name_opt())
                             .arg(values_flag().help("Show import task info values"))
@@ -1392,28 +1392,28 @@ pub fn build_cli() -> App<'static, 'static> {
             ]))
         .subcommand(SubCommand::with_name("users")
             .visible_aliases(&["user", "us", "u"])
-            .about("Work with CloudTruth users")
+            .about("Work with Sigma Config users")
             .subcommands(vec![
                 SubCommand::with_name("current")
                     .visible_aliases(&["cur", "c"])
                     .about("Display information about current user"),
                 SubCommand::with_name(DELETE_SUBCMD)
                     .visible_aliases(DELETE_ALIASES)
-                    .about("Delete specified CloudTruth account")
+                    .about("Delete specified Sigma Config account")
                     .arg(name_arg().help("Account name"))
                     .arg(confirm_flag()),
                 SubCommand::with_name(GET_SUBCMD)
-                    .about("Get detailed CloudTruth user information")
+                    .about("Get detailed Sigma Config user information")
                     .arg(name_arg().help("Account name")),
                 SubCommand::with_name(LIST_SUBCMD)
                     .visible_aliases(LIST_ALIASES)
-                    .about("List CloudTruth users")
+                    .about("List Sigma Config users")
                     .arg(show_times_arg())
                     .arg(values_flag().help("Display account information/values"))
                     .arg(table_format_options().help("Format for account values data")),
                 SubCommand::with_name(SET_SUBCMD)
                     .visible_aliases(SET_ALIASES)
-                    .about("Create/update a CloudTruth service account")
+                    .about("Create/update a Sigma Config service account")
                     .arg(name_arg().help("Account name"))
                     .arg(description_option().help("Account's description"))
                     .arg(role_arg()
@@ -1438,7 +1438,7 @@ pub fn build_cli() -> App<'static, 'static> {
                             .arg(invitation_name_arg()),
                         SubCommand::with_name(SET_SUBCMD)
                             .visible_aliases(SET_ALIASES)
-                            .about("Create/update a CloudTruth user invitation")
+                            .about("Create/update a Sigma Config user invitation")
                             .arg(invitation_name_arg())
                             .arg(role_arg().help("Role for invited user [default: viewer (on create)]")),
                     ])
@@ -1446,25 +1446,25 @@ pub fn build_cli() -> App<'static, 'static> {
         )
         .subcommand(SubCommand::with_name("groups")
             .visible_aliases(&["group", "grp", "gr", "g"])
-            .about("Manage CloudTruth user groups ")
+            .about("Manage Sigma Config user groups ")
             .subcommands(vec![
                 SubCommand::with_name(DELETE_SUBCMD)
                     .visible_aliases(DELETE_ALIASES)
-                    .about("Delete specified CloudTruth user group")
+                    .about("Delete specified Sigma Config user group")
                     .arg(name_arg().help("Group name"))
                     .arg(confirm_flag()),
                 SubCommand::with_name(GET_SUBCMD)
-                    .about("Get detailed CloudTruth user group information")
+                    .about("Get detailed Sigma Config user group information")
                     .arg(name_arg().help("Group name")),
                 SubCommand::with_name(LIST_SUBCMD)
                     .visible_aliases(LIST_ALIASES)
-                    .about("List CloudTruth user groups")
+                    .about("List Sigma Config user groups")
                     .arg(show_times_arg())
                     .arg(values_flag().help("Display group information/values"))
                     .arg(table_format_options().help("Format for group values data")),
                 SubCommand::with_name(SET_SUBCMD)
                     .visible_aliases(SET_ALIASES)
-                    .about("Create/update a CloudTruth user group")
+                    .about("Create/update a Sigma Config user group")
                     .arg(name_arg().help("Group name"))
                     .arg(description_option().help("Group description"))
                     .arg(rename_option().help("Rename the group"))
@@ -1473,7 +1473,7 @@ pub fn build_cli() -> App<'static, 'static> {
             ])
         )
         .subcommand(SubCommand::with_name("schema")
-            .about("View CloudTruth OpenAPI schema")
+            .about("View Sigma Config OpenAPI schema")
             .subcommands([
                 SubCommand::with_name("server")
                     .visible_aliases(&["serv", "s"])
@@ -1494,7 +1494,7 @@ pub fn build_cli() -> App<'static, 'static> {
         )
         .subcommand(SubCommand::with_name("versions")
             .visible_aliases(&["version", "vers", "ver", "ve", "v"])
-            .about("Manage CloudTruth CLI versions")
+            .about("Manage Sigma Config CLI versions")
             .subcommands([
                 SubCommand::with_name(GET_SUBCMD)
                     .arg(Arg::with_name("latest")
@@ -1524,7 +1524,7 @@ pub fn build_cli() -> App<'static, 'static> {
         )
         .subcommand(SubCommand::with_name("import")
             .visible_aliases(&["imp", "im"])
-            .about("Perform imports into the CloudTruth environment")
+            .about("Perform imports into the Sigma Config environment")
             .subcommands([
                 SubCommand::with_name("parameters")
                     .visible_aliases(&["parameter", "param", "par", "pa", "p"])
@@ -1575,18 +1575,18 @@ pub fn build_cli() -> App<'static, 'static> {
         )
         .subcommand(SubCommand::with_name("parameter-types")
             .visible_aliases(&["parameter-type", "param-types", "param-type", "types", "type", "ty"])
-            .about("Manage parameter types in the CloudTruth environment")
+            .about("Manage parameter types in the Sigma Config environment")
             .subcommands([
                 SubCommand::with_name(DELETE_SUBCMD)
                     .visible_aliases(DELETE_ALIASES)
-                    .about("Delete specified CloudTruth parameter type")
+                    .about("Delete specified Sigma Config parameter type")
                     .args(&[
                         name_arg().help("Parameter type name"),
                         confirm_flag(),
                     ]),
                 SubCommand::with_name(LIST_SUBCMD)
                     .visible_aliases(LIST_ALIASES)
-                    .about("List CloudTruth parameter types")
+                    .about("List Sigma Config parameter types")
                     .args(&[
                         values_flag().help("Display parameter type information/values"),
                         show_times_arg(),
@@ -1621,7 +1621,7 @@ pub fn build_cli() -> App<'static, 'static> {
         )
         .subcommand(SubCommand::with_name("generate")
             .visible_aliases(&["gen", "ge"])
-            .about("Generate items using CloudTruth service")
+            .about("Generate items using Sigma Config service")
             .subcommands([
                 SubCommand::with_name("password")
                     .visible_aliases(&["passwd", "pass", "pw", "pa"])
@@ -1673,7 +1673,7 @@ pub fn build_cli() -> App<'static, 'static> {
         )
         .subcommand(SubCommand::with_name("backup")
             .visible_aliases(&["back", "ba"])
-            .about("Manage backups of CloudTruth data")
+            .about("Manage backups of Sigma Config data")
             .subcommands([
                 SubCommand::with_name("snapshot")
                     .visible_aliases(&["snap", "sn"])

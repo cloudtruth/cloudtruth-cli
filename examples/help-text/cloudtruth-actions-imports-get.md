@@ -1,7 +1,7 @@
 ```console
 $ cloudtruth actions imports get --help
 cloudtruth[EXE]-actions-imports-get 
-Gets all the information for the specified CloudTruth import
+Gets all the information for the specified Sigma Config import
 
 USAGE:
     cloudtruth[EXE] actions imports get [OPTIONS] <import-name>

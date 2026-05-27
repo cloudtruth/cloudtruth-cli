@@ -1,7 +1,7 @@
 ```console
 $ cloudtruth users delete --help
 cloudtruth[EXE]-users-delete 
-Delete specified CloudTruth account
+Delete specified Sigma Config account
 
 USAGE:
     cloudtruth[EXE] users delete [FLAGS] <NAME>

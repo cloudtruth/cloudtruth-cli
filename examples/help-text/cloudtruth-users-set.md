@@ -1,7 +1,7 @@
 ```console
 $ cloudtruth users set --help
 cloudtruth[EXE]-users-set 
-Create/update a CloudTruth service account
+Create/update a Sigma Config service account
 
 USAGE:
     cloudtruth[EXE] users set [OPTIONS] <NAME>

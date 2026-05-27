@@ -1,7 +1,7 @@
 ```console
 $ cloudtruth actions pushes tasks --help
 cloudtruth[EXE]-actions-pushes-tasks 
-List tasks for the specified CloudTruth push
+List tasks for the specified Sigma Config push
 
 USAGE:
     cloudtruth[EXE] actions pushes tasks [FLAGS] [OPTIONS] <push-name>

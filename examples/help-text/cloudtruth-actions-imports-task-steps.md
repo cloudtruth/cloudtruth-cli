@@ -1,7 +1,7 @@
 ```console
 $ cloudtruth actions imports task-steps --help
 cloudtruth[EXE]-actions-imports-task-steps 
-List task steps for the specified CloudTruth import
+List task steps for the specified Sigma Config import
 
 USAGE:
     cloudtruth[EXE] actions imports task-steps [FLAGS] [OPTIONS] <import-name>

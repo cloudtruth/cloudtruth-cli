@@ -1,7 +1,7 @@
 ```console
 $ cloudtruth environments tag list --help
 cloudtruth[EXE]-environments-tag-list 
-List CloudTruth environment tags
+List Sigma Config environment tags
 
 USAGE:
     cloudtruth[EXE] environments tag list [FLAGS] [OPTIONS] <env-name>

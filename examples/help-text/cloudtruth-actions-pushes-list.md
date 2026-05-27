@@ -1,7 +1,7 @@
 ```console
 $ cloudtruth actions pushes list --help
 cloudtruth[EXE]-actions-pushes-list 
-List CloudTruth pushes
+List Sigma Config pushes
 
 USAGE:
     cloudtruth[EXE] actions pushes list [FLAGS] [OPTIONS]

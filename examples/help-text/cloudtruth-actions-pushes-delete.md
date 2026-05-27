@@ -1,7 +1,7 @@
 ```console
 $ cloudtruth actions pushes delete --help
 cloudtruth[EXE]-actions-pushes-delete 
-Delete a CloudTruth push
+Delete a Sigma Config push
 
 USAGE:
     cloudtruth[EXE] actions pushes delete [FLAGS] [OPTIONS] <push-name>

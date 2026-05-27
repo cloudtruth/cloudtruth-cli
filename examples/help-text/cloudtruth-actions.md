@@ -1,7 +1,7 @@
 ```console
 $ cloudtruth actions --help
 cloudtruth[EXE]-actions 
-Manage CloudTruth actions
+Manage Sigma Config actions
 
 USAGE:
     cloudtruth[EXE] actions [SUBCOMMAND]
@@ -12,7 +12,7 @@ FLAGS:
 
 SUBCOMMANDS:
     help       Prints this message or the help of the given subcommand(s)
-    imports    Manage CloudTruth imports [aliases: import, imp, im, i]
-    pushes     Manage CloudTruth pushes [aliases: push, pu, p]
+    imports    Manage Sigma Config imports [aliases: import, imp, im, i]
+    pushes     Manage Sigma Config pushes [aliases: push, pu, p]
 
 ```

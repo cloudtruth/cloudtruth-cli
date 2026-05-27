@@ -1,7 +1,7 @@
 ```console
 $ cloudtruth versions --help
 cloudtruth[EXE]-versions 
-Manage CloudTruth CLI versions
+Manage Sigma Config CLI versions
 
 USAGE:
     cloudtruth[EXE] versions [SUBCOMMAND]

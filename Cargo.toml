@@ -1,11 +1,11 @@
 [package]
 name = "cloudtruth"
 version = "1.2.8"
-description = "A command-line interface to the CloudTruth configuration management service."
-authors = ["CloudTruth <support@cloudtruth.com>"]
+description = "A command-line interface to the Sigma Config configuration management service."
+authors = ["Sigma Config <support@sigma-automate.com>"]
 edition = "2021"
 license = "Apache-2.0"
-homepage = "https://cloudtruth.com/"
+homepage = "https://sigma-automate.com/"
 repository = "https://github.com/cloudtruth/cloudtruth-cli"
 readme = "README.md"
 build = "build.rs"

@@ -72,7 +72,7 @@ impl fmt::Display for SubProcessError {
             SubProcessError::StrictRunError(e) => {
                 write!(
                     f,
-                    "Running in strict mode. CloudTruth parameter found without a value: {e}"
+                    "Running in strict mode. Sigma Config parameter found without a value: {e}"
                 )
             }
         }
@@ -155,7 +155,7 @@ impl SubProcess {
             resolved.project_display_name().to_string(),
         );
 
-        // Add in the items from the CloudTruth environment (looking for collisions)
+        // Add in the items from the Sigma Config environment (looking for collisions)
         let mut collisions: Vec<String> = vec![];
         let empty = "".to_string();
         for (k, v) in &self.ct_vars {

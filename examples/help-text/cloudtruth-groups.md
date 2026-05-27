@@ -1,7 +1,7 @@
 ```console
 $ cloudtruth groups --help
 cloudtruth[EXE]-groups 
-Manage CloudTruth user groups 
+Manage Sigma Config user groups 
 
 USAGE:
     cloudtruth[EXE] groups [SUBCOMMAND]
@@ -11,10 +11,10 @@ FLAGS:
     -V, --version    Prints version information
 
 SUBCOMMANDS:
-    delete    Delete specified CloudTruth user group [aliases: del, d]
-    get       Get detailed CloudTruth user group information
+    delete    Delete specified Sigma Config user group [aliases: del, d]
+    get       Get detailed Sigma Config user group information
     help      Prints this message or the help of the given subcommand(s)
-    list      List CloudTruth user groups [aliases: ls, l]
-    set       Create/update a CloudTruth user group [aliases: s]
+    list      List Sigma Config user groups [aliases: ls, l]
+    set       Create/update a Sigma Config user group [aliases: s]
 
 ```

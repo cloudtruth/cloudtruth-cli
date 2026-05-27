@@ -1,7 +1,7 @@
 ```console
 $ cloudtruth schema --help
 cloudtruth[EXE]-schema 
-View CloudTruth OpenAPI schema
+View Sigma Config OpenAPI schema
 
 USAGE:
     cloudtruth[EXE] schema [SUBCOMMAND]
