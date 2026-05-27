@@ -1,8 +1,8 @@
 use crate::cli::{
-    opposing_flags, show_values, CONFIRM_FLAG, DELETE_SUBCMD, DESCRIPTION_OPT, ENV_NAME_OPT,
-    FORMAT_OPT, GET_SUBCMD, IMPORT_SUBCMD, INTEGRATION_NAME_ARG, LIST_SUBCMD, PROJECT_NAME_OPT,
-    PULL_NAME_ARG, PUSH_NAME_ARG, PUSH_SUBCMD, RENAME_OPT, SET_SUBCMD, SHOW_TIMES_FLAG,
-    SYNC_SUBCMD, TAG_NAME_OPT, TASKS_SUBCMD, TASK_STEPS_SUBCMD,
+    binary_name, opposing_flags, show_values, CONFIRM_FLAG, DELETE_SUBCMD, DESCRIPTION_OPT,
+    ENV_NAME_OPT, FORMAT_OPT, GET_SUBCMD, IMPORT_SUBCMD, INTEGRATION_NAME_ARG, LIST_SUBCMD,
+    PROJECT_NAME_OPT, PULL_NAME_ARG, PUSH_NAME_ARG, PUSH_SUBCMD, RENAME_OPT, SET_SUBCMD,
+    SHOW_TIMES_FLAG, SYNC_SUBCMD, TAG_NAME_OPT, TASKS_SUBCMD, TASK_STEPS_SUBCMD,
 };
 use crate::database::{
     last_from_url, parent_id_from_url, ActionDetails, Environments, IntegrationError, Integrations,
@@ -318,6 +318,13 @@ fn print_push_details(push: &ActionDetails) {
         push.last_task.created_at,
         push.last_task.modified_at,
     );
+    if push.last_task.state != "success" {
+        help_message(format!(
+            "The last task failed. Run '{} actions pushes task-steps {} --values' for per-parameter details.",
+            binary_name(),
+            push.name,
+        ));
+    }
 }
 
 fn proc_action_push_get(
@@ -667,6 +674,7 @@ fn proc_action_push_task_steps(
         let mut hdr = vec![
             "Task",
             "Result",
+            "Error Code",
             "Venue",
             "Project",
             "Environment",
@@ -675,6 +683,7 @@ fn proc_action_push_task_steps(
         let mut properties = vec![
             "task-name",
             "result",
+            "error-code",
             "venue-name",
             "project",
             "environment",
@@ -926,6 +935,13 @@ fn print_pull_details(pull: &ActionDetails) {
         pull.last_task.created_at,
         pull.last_task.modified_at,
     );
+    if pull.last_task.state != "success" {
+        help_message(format!(
+            "The last task failed. Run '{} actions imports task-steps {} --values' for per-parameter details.",
+            binary_name(),
+            pull.name,
+        ));
+    }
 }
 
 fn proc_action_pull_get(
@@ -1133,6 +1149,7 @@ fn proc_action_pull_task_steps(
         let mut hdr = vec![
             "Task",
             "Result",
+            "Error Code",
             "Venue",
             "Project",
             "Environment",
@@ -1141,6 +1158,7 @@ fn proc_action_pull_task_steps(
         let mut properties = vec![
             "task-name",
             "result",
+            "error-code",
             "venue-name",
             "project",
             "environment",

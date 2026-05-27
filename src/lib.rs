@@ -56,6 +56,7 @@ use color_eyre::eyre::Result;
 use is_terminal::IsTerminal;
 use std::io;
 use std::process;
+use std::time::Duration;
 use utils::default;
 use version_compare::Version;
 
@@ -198,7 +199,21 @@ pub fn main() -> Result<()> {
         ));
         process::exit(26);
     }
-    let config = Config::init_global(cfg_result.unwrap());
+    let mut owned_config = cfg_result.unwrap();
+    // A --timeout argument takes precedence over the profile, the
+    // CLOUDTRUTH_REQUEST_TIMEOUT environment variable, and the built-in default.
+    if let Some(timeout_str) = matches.value_of("timeout") {
+        match timeout_str.parse::<u64>() {
+            Ok(secs) => owned_config.request_timeout = Some(Duration::new(secs, 0)),
+            Err(_) => {
+                error_message(format!(
+                    "Invalid --timeout value '{timeout_str}'; expected a whole number of seconds."
+                ));
+                process::exit(26);
+            }
+        }
+    }
+    let config = Config::init_global(owned_config);
     let rest_cfg = OpenApiConfig::from(config);
 
     if let Some(matches) = matches.subcommand_matches("login") {

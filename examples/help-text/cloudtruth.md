@@ -1,6 +1,6 @@
 ```console
 $ cloudtruth  --help
-cloudtruth 1.2.7
+cloudtruth 1.2.8
 CloudTruth <support@cloudtruth.com>
 A command-line interface to the CloudTruth configuration management service.
 
@@ -16,6 +16,8 @@ OPTIONS:
     -e, --env <env>            The CloudTruth environment to work with
         --profile <profile>    The configuration profile from the application configuration file to use
         --project <project>    The CloudTruth project to work with
+        --timeout <SECONDS>    Per-request timeout in seconds (overrides the profile/CLOUDTRUTH_REQUEST_TIMEOUT; default
+                               90)
 
 SUBCOMMANDS:
     actions            Manage CloudTruth actions [aliases: action, act, ac]

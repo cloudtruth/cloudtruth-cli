@@ -7,6 +7,7 @@ pub struct TaskStepDetails {
     pub provider: String,
     pub success: bool,
     pub detail: String,
+    pub error_code: String,
     pub task_name: String,
 
     pub project_name: String,
@@ -30,6 +31,7 @@ impl TaskStepDetails {
                 self.detail
             ),
             "detail" => self.detail.clone(),
+            "error-code" => self.error_code.clone(),
             "task-name" => self.task_name.clone(),
             "project" => self.project_name.clone(),
             "environment" => self.environment_name.clone(),
@@ -59,6 +61,7 @@ impl From<&AwsPushTaskStep> for TaskStepDetails {
             provider: "aws".to_string(),
             success: api.success,
             detail,
+            error_code: api.error_code.clone().unwrap_or_default(),
             task_name: "".to_string(), // to be filled in later
             project_name: api.project_name.clone().unwrap_or_default(),
             environment_name: api.environment_name.clone().unwrap_or_default(),
@@ -83,6 +86,7 @@ impl From<&AwsPullTaskStep> for TaskStepDetails {
             provider: "aws".to_string(),
             success: api.success,
             detail,
+            error_code: api.error_code.clone().unwrap_or_default(),
             task_name: "".to_string(), // to be filled in later
             project_name: api.project_name.clone().unwrap_or_default(),
             environment_name: api.environment_name.clone().unwrap_or_default(),
@@ -107,6 +111,7 @@ impl From<&GitHubPullTaskStep> for TaskStepDetails {
             provider: "aws".to_string(),
             success: api.success,
             detail,
+            error_code: api.error_code.clone().unwrap_or_default(),
             task_name: "".to_string(), // to be filled in later
             project_name: api.project_name.clone().unwrap_or_default(),
             environment_name: api.environment_name.clone().unwrap_or_default(),
@@ -131,6 +136,7 @@ impl From<&TaskStep> for TaskStepDetails {
             provider: "".to_string(), // to be filled in later?
             success: api.success,
             detail,
+            error_code: api.error_code.clone().unwrap_or_default(),
             task_name: "".to_string(), // to be filled in later
             project_name: api.project_name.clone().unwrap_or_default(),
             environment_name: api.environment_name.clone().unwrap_or_default(),

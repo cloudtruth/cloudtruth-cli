@@ -1,3 +1,8 @@
+# 1.2.8 - 2026-05-26
+* added a global `--timeout <SECONDS>` option to override the per-request HTTP timeout (also settable via `CLOUDTRUTH_REQUEST_TIMEOUT` or the profile; default 90)
+* `actions pushes task-steps` and `actions imports task-steps` now include an `Error Code` column, so a failed push/pull shows the underlying per-parameter error code (e.g. `aws:ValidationException`) alongside the detail
+* `actions pushes get` and `actions imports get` now point to the `task-steps --values` command when the most recent task did not succeed
+
 # 1.2.7 - 2025-05-19
 * updated parameters will now properly update their values
 

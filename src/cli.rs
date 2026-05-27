@@ -7,6 +7,7 @@ pub use cloudtruth_config::binary_name;
 pub const ADD_USER_OPT: &str = "username-to-add";
 pub const API_KEY_OPT: &str = "api_key";
 pub const AS_OF_ARG: &str = "datetime|tag";
+pub const TIMEOUT_OPT: &str = "timeout";
 pub const CHILD_NAMES_OPT: &str = "child-names-mapping";
 pub const CONFIRM_FLAG: &str = "confirm";
 pub const COPY_SRC_NAME_ARG: &str = "src-name";
@@ -268,6 +269,14 @@ fn api_key_arg() -> Arg<'static, 'static> {
         .short("k")
         .long("api-key")
         .help("CloudTruth API key")
+        .takes_value(true)
+}
+
+fn timeout_arg() -> Arg<'static, 'static> {
+    Arg::with_name(TIMEOUT_OPT)
+        .long("timeout")
+        .value_name("SECONDS")
+        .help("Per-request timeout in seconds (overrides the profile/CLOUDTRUTH_REQUEST_TIMEOUT; default 90)")
         .takes_value(true)
 }
 
@@ -565,6 +574,7 @@ pub fn build_cli() -> App<'static, 'static> {
     app_from_crate!()
         .setting(AppSettings::SubcommandRequiredElseHelp)
         .arg(api_key_arg())
+        .arg(timeout_arg())
         .arg(
             Arg::with_name("env")
                 .short("e")
